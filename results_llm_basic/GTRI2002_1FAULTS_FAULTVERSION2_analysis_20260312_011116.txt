@@ -1,0 +1,38 @@
+I reviewed the workbook you pasted. I found three clear, likely-causing-errors and a few related inconsistencies. Below I list each problem, why it’s wrong, and a short, explicit fix you can apply.
+
+1) Totals include Water even though the note says “Excludes Water”
+- Where it appears: sheet "2002 Report" (R11, R23 and other R## totals that use B##).
+- What’s wrong: the R## totals are calculated as =B##+C##+D## (i.e. B = Water included). But the sheet caption says water is excluded, and most analysis/percent-change cells (e.g. R24) are intended to compare air+land only.
+- Fix: change the total formulas so they exclude the water column (B). Example:
+  - Replace R11 formula with =C11+D11 (not =B11+C11+D11).
+  - Replace R23 formula with =C23+D23 (and any other R## cells that currently include B##).
+- Why this fixes it: the percent-change and totals will then use the same definition (air+land), matching the sheet note and avoiding misleading percent changes.
+
+2) Duplicate / misaligned year column and stray values on the 2003 Report sheet
+- Where it appears: sheet "2003 Report" has years in both column A (A7:A20) and again in column J (J7:J20). Also G20 and H20 contain stray numbers (8.449074 and 0.6381540899) that do not belong to the table layout you described.
+- What’s wrong: duplicate year columns and stray cells break lookups, named ranges and any formulas or charts that expect a single year column. Stray numbers can cause accidental inclusion in sums or charts.
+- Fix:
+  - Keep one authoritative Year column (preferably A). Either delete column J (if it’s unnecessary) or set J7 = A7 and copy down (so J mirrors A if you need J present for formatting).
+  - Delete the stray values in G20 and H20 (or move them to the correct sheet/cells if they belong somewhere else).
+- Why this fixes it: eliminates ambiguity for INDEX/MATCH, pivot tables and charts and prevents accidental referencing of the wrong year/cell.
+
+3) Cells that should be formulas are hard-coded (inconsistent formulas)
+- Where it appears: multiple places (examples:)
+  - sheet "data": rows where C cells sometimes are numbers rather than the formula =E#-B# (e.g. C10 is a constant instead of =E10-B10).
+  - sheet "1999 Report" / "2002 Report": some rows have raw numbers where the pattern elsewhere is F#/1000000 (inconsistent use of conversion formulas).
+- What’s wrong: hard-coded values break automatic updates and lead to silent errors when source data changes.
+- Fix:
+  - Replace hard-coded cells with the intended formulas. Example for sheet "data":
+    - In row 1997 (A10) set C10 to =E10-B10 and copy down so all C cells follow C# = E# - B#.
+  - For the report sheets, verify and standardize conversion formulas: If a column represents “millions of pounds,” all source rows should be =RawPounds/1000000 consistently.
+- Why this fixes it: ensures changes to source pounds automatically update all computed totals and comparisons.
+
+How to check you’ve fixed everything
+- After applying the fixes above:
+  1. Recalculate workbook (F9) and scan suspicious mismatches (for example transfers > releases — these may be real, but check units).
+  2. Confirm any percent-change formulas (like R24) now produce expected results.
+  3. Use Find (Ctrl+F) for any other formulas still using B## + C## + D## for totals—confirm whether B is supposed to be included or not.
+
+If you want, I can:
+- Provide the exact list of cells to change (I can enumerate R11, R12… etc) if you paste a smaller target range,
+- Or generate the exact fixed formulas for every affected cell if you want me to be exhaustive.

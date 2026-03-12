@@ -1,0 +1,19 @@
+I checked the MODEL07 sheet and found two clear formula mistakes that will break the consolidation results. Short, direct fixes below.
+
+1) Faulty cell: F71
+- Error type: Hard-coded value (mechanical / logic error)
+- Problem: F71 contains the constant 1 instead of calculating Additional Paid‑in Capital. That value is pulled into C129 (= $F$71) later, so the subsidiary’s Additional PIC and all downstream totals will be wrong.
+- Fix/formula: replace the 1 with =C71-D71+E71
+- Why this fixes it: All equity lines in this worksheet use the pattern (C - D + E). Putting that formula back makes F71 compute the actual Additional PIC instead of forcing an incorrect constant.
+
+2) Faulty cell: C95
+- Error type: Range-selection / inclusion error
+- Problem: C95 is =SUM(C90:C94). That includes C94 (which should be the credit column’s row and is usually blank) — this is likely a slip and risks including a value in C94 if someone later edits that cell. The debit total should only sum the debit lines in C90:C93.
+- Fix/formula: change to =SUM(C90:C93)
+- Why this fixes it: C90–C93 are the debit lines of the basic elimination entry; C94 is the credit (in column D). Summing only C90:C93 gives the correct debit total and prevents accidental mis‑sums.
+
+Optional check (quick audit steps)
+- After making the two fixes, verify C95 = D95 (debits = credits for the basic elimination entry) and check that subsidiary Additional PIC in C129 now equals the expected value.
+- Scan for any other hard-coded values in the F column of the equity section (F70:F73) — they should use the same (C - D + E) pattern, not constants.
+
+If you want, I can (a) produce the exact changed formulas for copy/paste, or (b) scan the rest of the sheet for more subtle reference inconsistencies. Which would you like?

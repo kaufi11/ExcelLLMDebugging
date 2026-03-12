@@ -1,0 +1,81 @@
+I inspected all formulas you provided and found a number of clear formula errors and consistency problems. Below I list the problematic cells, why they are wrong, and suggested corrections.
+
+Summary of the main problems
+- Typo in weighting (produces huge/incorrect final grade) in Sheet1 I3.
+- Many wrong row references in Sheet3 student-average formulas (P4:P18 reference L40..L54 instead of L4..L18).
+- One hard-coded numerator in Sheet3 F12 (=561/...) instead of using the student cell.
+- Scale mismatch between Final Grade number (I column) and the grade-translation table (K column), causing VLOOKUP to fail/misclassify.
+- Several AVERAGE/MAX etc. produce #DIV/0! because their source ranges are empty — not necessarily a formula bug but expected given missing data.
+
+Detailed problems and corrections
+
+1) Sheet1 — Final Grade calculation row 3
+- Cell: Sheet1!I3
+- Problem: Uses 25 and 12.5 (i.e. D3*25, E3*25, F3*25, G3*12.5) rather than decimal weights. This is inconsistent with rows I4:I17 (which use 0.25 and 0.125).
+- Effect: I3 returns an incorrectly scaled value (very large) when compared to other rows.
+- Fix: Replace with the same weight pattern as other rows. Correct formula:
+  = (C3*0.125) + (D3*0.25) + (E3*0.25) + (F3*0.25) + (G3*0.125)
+
+2) Sheet3 — Student averages referencing the wrong cells (systematic)
+- Cells: Sheet3!P4, P5, P6, ... P18
+- Problem: Each Pn uses an AVERAGE formula that accidentally refers to L40..L54 (L40, L41, L42, … L54) instead of the corresponding L4..L18. Example:
+  - P4: =AVERAGE(D4,F4,H4,J4,L40) — should be L4
+  - P5: =AVERAGE(D5,F5,H5,J5,L41) — should be L5
+  ... and so on through P18 (they reference L40 through L54).
+- Effect: AVERAGE ignores the intended last element or references blank cells which gives incorrect averages.
+- Fix pattern: For row n (n from 4..18) use:
+  =AVERAGE(Dn,Fn,Hn,Jn,Ln)
+  e.g. P4:
+  =AVERAGE(D4,F4,H4,J4,L4)
+  P5:
+  =AVERAGE(D5,F5,H5,J5,L5)
+  etc.
+
+3) Sheet3 — Hard-coded numerator in one test-percentage cell
+- Cell: Sheet3!F12
+- Problem: Formula is =561/$F$24. That hard-coded 561 is inconsistent with the pattern on other rows which use the student's raw points (E12/$F$24).
+- Effect: Produces 5.1 in F12 (and then propagates into MAX/AVERAGE etc).
+- Fix: Use the student cell E12:
+  = E12 / $F$24
+
+4) Sheet3 — correlated incorrect results (example)
+- Cell: Sheet3!P12 shows 1.275 because of the hard-coded 561 and the wrong L48 reference in the P12 formula. Fixing F12 and P12 as above will correct P12.
+
+5) Sheet1 VLOOKUP scale / lookup-range consistency
+- Cells: Sheet1!J3:J17 (all use =VLOOKUP(Ix,$K$5:$L$17,2,TRUE()))
+- Problems:
+  - Lookup table K5:L17 appears to hold numeric grade cutoffs on a 0–100 scale (K values like 60, 63, 66, ... 96).
+  - The I column formulas compute a weighted average from inputs in Sheet2/Sheet3 that are currently fractional percentages (0–1). That means I values will be approximately 0–1 while K uses 60–100. VLOOKUP will not match correctly because of the different scales.
+- Effect: J results will be wrong (or #N/A) once I is populated with 0–1 values.
+- Fix options (choose one):
+  - Convert I formulas to a 0–100 scale (multiply final-weighted sum by 100), e.g.
+    =100 * ((C3*0.125)+(D3*0.25)+(E3*0.25)+(F3*0.25)+(G3*0.125))
+  - OR change the cutoff thresholds in K5:K17 to decimals (0.60, 0.63, … 0.96).
+  - Also ensure the K table is sorted ascending for approximate (TRUE) VLOOKUP.
+
+6) Sheet3 and Sheet2 AVERAGE / MAX / MIN results showing #DIV/0!
+- Many AVERAGE formulas in Sheet2 and Sheet1 give #DIV/0! because the underlying input cells are blank (e.g. Sheet2 C5:L5 are empty). This is expected behavior, not a formula typo, but you should be aware that summary cells will error until data are present.
+- You can suppress #DIV/0! with IFERROR or IF(COUNT(...)=0,"",AVERAGE(...)) if you want blank/zero instead of an error.
+
+7) Other minor consistency notes
+- The VLOOKUP uses TRUE() — Excel accepts TRUE() or TRUE; that is not an error.
+- Some header typos exist (e.g. "Sudents", "Studnets", "Higest") — not formulas, but worth fixing for clarity.
+
+Concrete corrections to paste in:
+- Sheet1!I3:
+  =(C3*0.125)+(D3*0.25)+(E3*0.25)+(F3*0.25)+(G3*0.125)
+- Sheet3!F12:
+  =E12/$F$24
+- Sheet3!P4..P18 (example P4 and P5):
+  P4: =AVERAGE(D4,F4,H4,J4,L4)
+  P5: =AVERAGE(D5,F5,H5,J5,L5)
+  (and similarly for P6..P18: use L6..L18 respectively)
+
+- If you want J lookup to work without changing K table, change Sheet1 I formulas to:
+  =100*((C#*0.125)+(D#*0.25)+(E#*0.25)+(F#*0.25)+(G#*0.125))
+  (replace # with row number)
+
+If you want, I can:
+- Produce a list of every cell that contains a wrong reference (I already listed the pattern for P4:P18),
+- Generate the corrected formulas for every affected cell (I3, P4..P18, F12) in a single block ready to paste,
+- Or scan for other subtle mismatches once you confirm whether the I column should be 0–1 or 0–100 (so I can recommend the appropriate VLOOKUP fix). Which would you like next?

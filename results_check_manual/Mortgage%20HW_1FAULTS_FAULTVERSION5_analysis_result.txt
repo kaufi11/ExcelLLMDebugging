@@ -1,0 +1,40 @@
+I inspected the formulas in the HW sheet and found one clear formula error plus several inconsistencies / poor practices that make the sheet produce wrong results or be hard to maintain. Summary, details and suggested fixes follow.
+
+1) Definitive formula error (causes wrong balances and negative balances later)
+- Cell C37 currently: = $A$25 + B37
+  - This is incorrect. Column C is "principal portion" = Payment - Interest, so it should subtract the interest.
+  - Correction: change C37 to = $A$25 - B37
+  - Effect: fixing this restores the proper amortization progression. The wrong + caused an inflated principal payment in row 5, which propagated and produced incorrect balances (D37 onward) and eventually negative balances and negative interest values.
+
+2) Other formula inconsistencies and issues (recommend addressing)
+- Hard-coded inputs rather than referencing central input cells:
+  - Many formulas use literals 6%, 100000 and 15 (e.g. A25 = -PMT(6%,15,100000,0); G22 = 0.06*100000). But the sheet shows different input cells at the top (B5 = 196555, B6 = 0.0572 and B4 text "30 years with MONTHLY payments"). This creates a mismatch between the example and the declared inputs.
+  - Recommendation: store the loan amount, annual rate and term as numeric input cells and reference them in formulas. Example:
+    - Payment (annual example): = -PMT($B$6, $B$termYears, $B$loanAmount, 0)
+    - For monthly payments: = -PMT($B$6/12, $B$termYears*12, $B$loanAmount, 0)
+  - This makes the sheet consistent and avoids accidental hard-coded contradictions.
+
+- Inconsistent use of absolute references:
+  - Some rows use $A$25 whereas others use A25 (not absolute). Not an error per se, but inconsistent and could cause errors when copying formulas. Standardize to absolute references for the payment cell (e.g. $A$25 or better a named cell like Payment).
+
+- Header / scenario mismatch:
+  - Cell B4 text “30 years with MONTHLY payments” but the worked example is a 15-year annual example at 6% on a $100,000 loan. Decide which scenario the sheet should model and update the header or the example so they match.
+
+3) Recommended concrete changes (minimum to fix and harden the sheet)
+- Fix C37 to = $A$25 - B37.
+- Replace hard-coded formulas to reference input cells; e.g.:
+  - Put numeric inputs: LoanAmount in B5, AnnualRate in B6, TermYears in B4 (as a number), and PaymentsPerYear in B4b (or separate cell).
+  - PMT formula (monthly 30-yr example): = -PMT($B$6/12, $B$4*12, $B$5)
+  - Interest each period: = PreviousBalance * ($B$6 / PaymentsPerYear)
+  - Principal each period: = Payment - Interest
+  - New balance: = PreviousBalance - Principal
+- Standardize absolute references or use named ranges (e.g. LoanAmt, AnnualRate, Payment).
+
+4) Notes about the current sheet behavior
+- The only explicit formula bug I found was C37 (+ instead of -). Once corrected, the amortization should flow normally (assuming the rest of the rows are consistent with annual payments at 6% on $100,000 for 15 years).
+- If you intended to use the top-of-sheet inputs (196,555 and 5.72% and 30 years monthly), you need to convert the entire table to monthly periods and replace 6%/100000/15 literals accordingly.
+
+If you’d like, I can:
+- produce the exact replacement formulas for every row using the top-of-sheet inputs (30 years monthly, B5 and B6), or
+- produce a corrected full amortization table for the 15-year 6% $100,000 example, or
+- suggest a small redesign (input area + formulas using named ranges) and give the exact formulas to paste. Which would you prefer?

@@ -1,0 +1,21 @@
+I inspected the formulas in both sheets and found one clear formula inconsistency plus a couple of minor issues / suggestions.
+
+1) Bulk compost!C19 — inconsistent subtraction constant (probable error)
+- Current formula (as stored): =A19+(B19/24)-2.00188636389994
+- All other rows in Bulk compost use: =A#+(B#/24)-1.48
+- Effect:
+  - Current value: 13.5293636361001 (matches the current -2.001886... constant)
+  - If changed to -1.48 the value would be: 15 + 12.75/24 - 1.48 = 14.05125
+  - Difference ≈ 14.05125 − 13.5293636361001 = 0.5218863638999
+- Recommendation: Replace Bulk!C19 with =A19+(B19/24)-1.48 (unless there is an intentional reason for using -2.0018863).
+
+2) Sheet label inconsistency (minor)
+- Bulk compost!C1 = "Days from " (trailing space)
+- Treatments!C1 = "Days from" (no trailing space)
+- Recommendation: make the two headers identical (remove trailing space) to avoid lookup/label matching issues.
+
+3) Consistency / maintainability suggestion
+- Bulk uses baseline subtraction -1.48, Treatments uses -1.71 — that may be intentional (different offsets), but if the offset is supposed to be the same across many rows it is safer to store the offset in a single cell (or named range) and use e.g. =A4+(B4/24)-$Z$1. This prevents accidental deviations like the one in Bulk!C19.
+- Consider formatting the "start" column (column C) to a consistent number of decimal places to avoid long floating precision values showing up.
+
+I did not find other differing formulas in column C (Treatments uses -1.71 consistently; Bulk uses -1.48 consistently except C19). If you want, I can prepare the exact fix (change Bulk!C19 and/or convert the offset to a single referenced cell and update all formulas).

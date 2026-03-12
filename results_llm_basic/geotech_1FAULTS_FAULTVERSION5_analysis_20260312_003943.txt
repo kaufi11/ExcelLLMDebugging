@@ -1,0 +1,44 @@
+Summary — I checked the two sheets and found a few real problems and some fragile formulas. Short fixes below.
+
+1) Suspicious / wrong formulas in Data Analysis row 23
+- Problem: Data Analysis!CP23 = 'input-output'!D9 and Data Analysis!CQ23 = 1. These two cells do not follow the pattern used elsewhere (most CP/CQ cells are IF(...) that output course codes or "-" ). CP23/CQ23 look like stray/wrong values and will corrupt any logic that depends on that column.
+- Fix: Replace CP23/CQ23 with the correct formulas (or remove them). If the intent was to show a course code only when a corresponding input flag is "x", use the same pattern as nearby rows, for example:
+  - CP23: =IF(V2="x","CE 3050","-")
+  - CQ23: =IF(V2="x",1,0)
+  (Adjust V2 and the course code to whatever input column is correct for that row.)
+- Why: the rest of the sheet expects CP/CQ to mirror the "course present?" pattern. A hard link to input-output!D9 or a stray constant breaks downstream totals and labels.
+
+2) Fragile text comparison for the "Include all extents?" switch
+- Problem: many formulas use IF('input-output'!$I$48="Y",CLx,CMx). Users sometimes type "y", "Y ", "yes", or add spaces. This may give wrong branch selection.
+- Fix (make comparison robust): change those IF tests to compare a normalized value, e.g.
+  - =IF(UPPER(TRIM('input-output'!$I$48))="Y", CL5, CM5)
+  or allow either "Y" or "y":
+  - =IF(OR('input-output'!$I$48="Y",'input-output'!$I$48="y"),CL5,CM5)
+- Why: UPPER(TRIM()) prevents spacing/case mistakes and makes the file more robust.
+
+3) SUM formulas written as SUM(a+b+c+...) (non‑standard / fragile)
+- Problem: input-output!I52 and J52 use SUM(I5+I9+I10+...). SUM() accepts a single expression, so SUM(I5+I9+...) will return the sum, but it is harder to read and can mask errors if a referenced cell is text or error.
+- Fix: use SUM with commas or ranges:
+  - =SUM(I5,I9,I10,I21,I31,I38,I42,I43,I44,I45,I46)
+  - or, if they are contiguous blocks, use ranges: =SUM(I5:I10, I21, I31:I46) (only if blocks are really contiguous).
+- Why: clearer, less error-prone, and consistent with Excel conventions.
+
+4) Inconsistent ordering / manual maintenance of totals
+- Problem: J52 and I52 list non-contiguous cells manually and in different orders (J52 has J10 before J9). This is a maintenance / human error risk.
+- Fix: consider calculating the lists dynamically (SUMIF / SUMPRODUCT / INDEX+MATCH) or maintain a single column of totals and SUM that column. Example: place all outcome subtotals in one column and use =SUM(columnRange).
+- Why: prevents omission/duplication when rows are added or deleted.
+
+5) Minor: possible typos and labels
+- Problem: a few labels are misspelled (e.g., "Fundamntal Courses") and some cells contain text like "Outcome =" that might be placeholders and confuse downstream references.
+- Fix: correct typos and remove/replace placeholder text with the intended formulas or explanations. Ensure any "Outcome =" text cells are not used in numeric calculations.
+
+Quick checklist to apply now
+1. Fix CP23/CQ23 (restore consistent IF pattern) — this is the most concrete/corrective fix.
+2. Replace IF(...="Y",...) tests with UPPER(TRIM(...))="Y".
+3. Replace SUM(I5+I9+...) with SUM(I5,I9,I10,...).
+4. Scan for other isolated hard-coded values (like the constant 1 in CQ23) and align them to the established pattern.
+5. Test totals (I52/J52, B46, EJ3, EJ4 etc.) after the fixes.
+
+If you want I can:
+- give the exact replacement formulas for CP23/CQ23 if you tell me which input column (D2..AR2 mapping) should control that row; or
+- produce a cleaned-up version of I52/J52 and the IF comparisons and return a bullet list of exact cell edits.

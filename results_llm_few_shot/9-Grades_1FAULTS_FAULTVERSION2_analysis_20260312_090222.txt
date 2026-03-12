@@ -1,0 +1,50 @@
+Summary — main problems found
+1) Many column totals include the totals row (off-by-one) or use inconsistent end rows, causing double-counting/wrong totals.
+   - Example: On sheet "University Total" row 31:
+     - B31 =SUM(B9:B29) (OK) but D31 =SUM(D9:D30) — D30 is the Total row for that column, so D31 is summing the Total cell too (double-count).
+   - This pattern repeats across many department tables (some totals end at :…:row29, others include :…:row30 or :…:row64 etc.).
+
+2) Wrong function used / hard-coded values in totals
+   - O31 on "University Total" uses COUNT(O9:O30) instead of summing percentages. That returns a count, not the sum of percents.
+   - M31 is hard-coded as 1 instead of being calculated from the data.
+
+3) Division formulas can divide by the wrong cell or produce #DIV/0!
+   - On Sheet1 the D-column formulas use D1 =+C1/+C24 (works syntactically), but C24 is a computed grand total — if C24 = 0 the formula will error. Also the leading plus signs are unnecessary and make the formula harder to read.
+
+Why these are errors (short)
+- Including the totals cell in the SUM adds the column total into itself → inflated/double totals.
+- COUNT returns the number of numeric cells, not the numeric sum of percentages.
+- Hard-coded totals (like M31 = 1) break if the underlying data change.
+- Dividing by a wrong/zero denominator causes incorrect percentages or divide-by-zero errors.
+
+How to fix (simple, copy/paste formulas)
+1) Make all column totals sum only the actual data rows (exclude the totals row).
+   - For the "University Total" top block, change:
+     - D31 → =SUM(D9:D29)  (instead of =SUM(D9:D30))
+     - N31 → =SUM(N9:N29)  (instead of =SUM(N9:N30))
+     - O31 → =SUM(O9:O29)  (instead of COUNT(...))
+     - M31 → =SUM(M9:M29)  (instead of 1)
+   - General rule: totals row should be =SUM(first_data_row:last_data_row). Do not include the row that contains the column total.
+
+2) Replace COUNT with SUM where you need the sum of values:
+   - O31: =SUM(O9:O29)
+
+3) Replace hard-coded totals with formulas:
+   - M31: =SUM(M9:M29)
+
+4) Make division formulas robust and readable:
+   - Replace D1 =+C1/+C24 with:
+     - =IFERROR(C1/C24,"")  or =IF(C24=0,"",C1/C24)
+   - Remove the leading +. Do this for D1:D23 (the same pattern exists down column D).
+
+5) Quick consistency clean-up (recommended)
+   - Use named ranges or structured tables, or copy a correct total formula (e.g., =SUM(B9:B29)) across the same columns so all totals use identical start/end rows.
+   - Check other department sheets for the same off-by-one / COUNT / hard-coded problems (many department total rows show mixed ranges like SUM(...: :64) vs SUM(...: :63) — standardize to the last data row in that block).
+
+Short verification steps after fixing
+- After fixing totals, check each totals row sums to (approximately) 1.00 (100%) where expected.
+- For division cells, confirm no #DIV/0! appears; use IF to hide/handle zeros.
+
+If you want, I can:
+- Produce a list of every specific cell that has an inconsistent SUM range (I saw many across the workbook), and give the exact corrected formula per cell.
+- Or produce a small macro (VBA) or Excel formula approach to standardize all totals automatically. Which do you prefer?

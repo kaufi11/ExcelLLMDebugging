@@ -1,0 +1,59 @@
+I inspected both sheets and compared values and formulas. I found several clear formula errors and a number of inconsistencies between the two sheets (layout differences and inconsistent ranges). Summary with locations, why they are wrong, and suggested fixes:
+
+1) Wrong multiplier in D4 (Sheet "2003")
+- Problem: D4 = "=C4*1927" (value 75,345.7). This is almost certainly wrong: all other MM→mg conversions use "*1000".
+- Effect: E4 (=B4/D4) and all downstream values for K+ (F4,H4,J4,M4, percent in I4, ionic strength B20) are wrong.
+- Fix: Change D4 to =C4*1000.
+
+2) Incorrect percent formula in I4 (Sheet "2003")
+- Problem: I4 = "=SUM(H3:H4)/SUM(H3:H6)". For percent of K+ this sums H3 and H4 in the numerator instead of using H4 only.
+- Effect: I4 reports (H3+H4)/sum(H3:H6) rather than H4/sum(H3:H6).
+- Fix: Change I4 to =H4/SUM(H3:H6).
+
+3) Inconsistent/incorrect anion percent formulas (Sheet "2003")
+- Problem: I7, I9, I10 use denominators that are not the full anion sum and they exclude/omit some anions:
+  - I7 = H7/(H7+H9+H10) — excludes NO3 (H8) and CO3 (H11) depending on intent.
+  - I9 = H9/(H9+H7+H10) — same inconsistent set.
+  - I10 = H10/(H10+H9+H7) — same.
+- Effect: Percent values for anions are inconsistent and likely wrong if the intended denominator is "total anions".
+- Fix: Use the same denominator for all anion % rows, e.g. =H7/SUM(H7:H11) (or SUM(H7:H13) if you include F- and others). Make the denominator reference the same contiguous anion sum for all anion rows.
+
+4) #N/A propagation in OH- and charge balance cells
+- Problem: F15 = =NA(), so H15, J15, L15, M15 and any sums including H15 produce #N/A. E23 = C23+H15 therefore =#N/A and then E22 = ((E24-E23))/(E23+E24)*100 returns #N/A.
+- Effect: Charge balance that is intended "including H/OH" returns #N/A because OH is NA().
+- Fix: Either supply a numeric OH- or wrap sums in IFNA/IFERROR to treat missing OH as zero. Example: E23 = C23 + IFNA(H15,0) or E23 = IF(ISNA(H15),C23,C23+H15). Then E22 will compute.
+
+5) Different column layout between "2003" and "Sheet2" (inconsistent column mapping)
+- Observation: In sheet "2003" the columns are:
+  - I = "%", J = "mi*zi^2", K = "log gi", L = "gi", M = "a"
+  In "Sheet2" the "mi*zi^2" block is in column I (so labels shift left): I = "mi*zi^2", J = "log gi", K = "gi", L = "a".
+- Effect: If formulas were copied between sheets without adjusting column references, SUM ranges and references (e.g. ionic strength formula) will point to the wrong column.
+- Example: Ionic strength:
+  - "2003" B20 = =0.5*SUM(J3:J13) (J holds mi*zi^2 in that sheet)
+  - "Sheet2" B20 = =0.5*SUM(I3:I13) (I holds mi*zi^2 in that sheet)
+- Recommendation: Standardize the column layout (make headers and formula columns identical in both sheets) so identical formulas work on both sheets without manual adjust.
+
+6) Small inconsistencies in percent / location formulas (other rows)
+- In "2003" I5 and I6 use H5/SUM(H3:H6) and H6/SUM(H3:H6) (cations) — that is fine — but I4 was wrong as noted. Make all cation % rows consistently use single-row numerator / SUM(H3:H6).
+- Verify all percent formulas use the intended group (cations vs anions) and consistent SUM ranges.
+
+7) Neutral species (SiO2) and zero-charge handling
+- H12 references G12 (charge). G12 is blank/zero so H12 = 0 — result is OK but you should explicitly set G12 = 0 to make formulas transparent.
+- K12 = -0.51*(G12^2)*SQRT($B$20) returns 0; L12 = 10^K12 returns 1; consistent.
+
+8) Suggestion: avoid hard-coded scaling factor 999.7 and magic numbers
+- All rows use F = E*(1000/999.7). That scaling is applied consistently, but consider adding a named cell for the correction factor (e.g. cell X1 = 1000/999.7) and use it by reference to clarify intentions.
+
+9) Minor: inconsistent use of SUM in some % formulas (extra SUM() wrapping unneeded)
+- Example: I6 = "=H6/(SUM(H3:H6))" is fine but has extra parentheses. Not an error but keep style consistent.
+
+Summary of immediate corrections to get consistent, correct numeric results:
+- Fix D4 in "2003" to =C4*1000.
+- Fix I4 in "2003" to =H4/SUM(H3:H6).
+- Decide and apply a single definition of "total anions" and replace I7/I9/I10 with Hx/SUM(H7:H11) (or H7:H13 if F- included).
+- Handle OH- NA(): replace E23 = C23+IFNA(H15,0) (or use IFERROR).
+- Standardize columns/headers between both sheets so the mi*zi^2 column is in the same column in both sheets (and then use the same ionic strength formula: =0.5*SUM(that column range)).
+
+If you want, I can:
+- Provide the exact corrected formulas for all impacted cells (I can list the corrected formula per cell),
+- Or produce a patched version of the workbook with those fixes and return a diff of changed cells. Which would you prefer?

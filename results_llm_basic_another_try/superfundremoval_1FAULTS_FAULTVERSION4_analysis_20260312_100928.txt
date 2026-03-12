@@ -1,0 +1,60 @@
+Errors found:
+
+1. **Section I Total Weighting Check (F12):**  
+   Formula: `=IF(SUM(F6:F10)<>100%,"ERROR","100%")`  
+   Problem: The sum of weights in F6:F10 is 0.2 + 0.2 + 0.2 + 0.2 + 0.2 = 1.0 (or 100%), but the formula compares to "100%" (text) instead of 1 or 100 as a number. This causes the formula to always return "ERROR".
+
+2. **Section II Total Weighting Check (F24):**  
+   Formula: `=IF(SUM(F16:F22)<>100%,"ERROR","100%")`  
+   Problem: Sum of weights in F16:F22 is approximately 1.0 (sum of decimals like 0.1428), but again compared to text "100%", causing an error.
+
+3. **Section III Total Weighting Check (F36):**  
+   Formula: `=IF(SUM(F28:F34)<>100%,"ERROR","100%")`  
+   Problem: Same as above, sum is about 1.0 but compared to "100%" text.
+
+4. **Section IV Total Weighting Check (F56):**  
+   Formula: `=IF((F55+F54+F53+F45+F41)<>100%,"ERROR","100%")`  
+   Problem: Same issue, sum of weights is decimals (0.334 + 0.333 + 0.333 + 0.333 + 0.334 = about 1.667), but formula expects 100% (text). Also, the sum of weights is incorrect (should be 1 or 100%), but here it sums to more than 1. So the weighting is inconsistent.
+
+5. **Section II, Question 21 (A21, G21):**  
+   Formula: `=IF(C21="yes",(704*F21),IF(C21="no",(0*F21),""))`  
+   Problem: The multiplier is 704 instead of 1, which is inconsistent with other similar formulas. This will cause an incorrect weighted score.
+
+---
+
+**Solutions:**
+
+1. **Fix weighting sum checks in F12, F24, F36, F56:**  
+   Change the formula to compare sum to 1 (or 100 if weights are in percent number format), and remove quotes from 100%. For example:  
+   `=IF(ROUND(SUM(F6:F10),4)<>1,"ERROR","100%")`  
+   Use ROUND to avoid floating point precision errors.
+
+2. **Fix Section IV weighting sum (F56):**  
+   The sum of weights (F41, F45, F53, F54, F55) should add to 1 (or 100%). Currently, it sums to about 1.333 (0.334 + 0.333 + 0.333 + 0 + 0). Adjust weights so they total 1 or fix formula accordingly.
+
+3. **Fix formula in G21:**  
+   Change `704*F21` to `1*F21` to be consistent:  
+   `=IF(C21="yes",(1*F21),IF(C21="no",(0*F21),""))`
+
+---
+
+**Explanation:**
+
+- Weightings are decimals representing percentage (e.g., 0.2 = 20%). The sum of weights should equal 1 (100%). Comparing to "100%" (text) causes errors. Use numeric 1 instead.  
+- Floating point sums may slightly differ from 1, so use ROUND to avoid false errors.  
+- The odd multiplier 704 in G21 is likely a typo and should be 1 to keep scoring consistent.  
+- Section IV weights sum incorrectly; weights must be adjusted to total 1 or the formula logic corrected.
+
+---
+
+**Summary:**
+
+| Cell  | Issue                         | Fix                                      |
+|-------|-------------------------------|------------------------------------------|
+| F12   | Comparing sum to "100%" text  | Use `=IF(ROUND(SUM(F6:F10),4)<>1,"ERROR","100%")` |
+| F24   | Same as F12                   | Use `=IF(ROUND(SUM(F16:F22),4)<>1,"ERROR","100%")` |
+| F36   | Same as F12                   | Use `=IF(ROUND(SUM(F28:F34),4)<>1,"ERROR","100%")` |
+| F56   | Sum of weights incorrect & compared to "100%" text | Adjust weights to sum 1 and use `=IF(ROUND(SUM(F41,F45,F53,F54,F55),4)<>1,"ERROR","100%")` |
+| G21   | Multiplier 704 instead of 1   | Change formula to `=IF(C21="yes",(1*F21),IF(C21="no",(0*F21),""))` |
+
+This will fix errors and ensure correct weighted scoring and validation.

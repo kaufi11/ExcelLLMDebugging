@@ -1,0 +1,57 @@
+Summary — main problems I found
+1) Data inconsistency (most important)
+   - The “average daily” numbers (B17:B19) are far larger than the “yearly” numbers (C17:C19). That cannot be correct: average_daily * 365 should be roughly equal to yearly. Likely the data were entered into the wrong columns or the column headings were swapped.
+
+   Fix / check:
+   - Verify and correct the check origination data so that yearly ≈ average_daily * 365 (or replace average_daily with yearly/365). Example check: if yearly = 2,500,000 then average_daily should be ≈ 2,500,000/365 ≈ 6849, not 20,000,000.
+
+   Why it matters:
+   - All annual cost calculations (opportunity cost and processing cost) depend on these numbers. Wrong units produce meaningless cost outputs and a wrong optimization result.
+
+2) Clear formula error (typo)
+   - Cell C41 currently references C20 (which does not exist). That is wrong and breaks the Midwest / California processing-cost calculation.
+
+   Fix:
+   - Change C41 to use the Midwest yearly checks cell (C19) and the CA per-check fee (C6). For example:
+     C41 = C19 * C6
+
+   (If you prefer anchored references for copying: = $C$19 * C$6 )
+
+3) Inconsistencies / robustness in formulas (recommended fixes)
+   - Decide whether you want to use average-daily or yearly counts consistently and make formulas explicit:
+     - If you keep average daily numbers (B17:B19), use them in the opportunity-cost formulas:
+       B33 = $C$21 * $B$17 * B27
+       C33 = $C$21 * $B$17 * C27
+       etc.
+     - If you prefer to use yearly counts (C17:C19) for opportunity cost, convert yearly → daily inside the formula:
+       B33 = $C$21 * (C17 / 365) * B27
+       C33 = $C$21 * (C17 / 365) * C27
+       etc.
+   - Use yearly counts for processing-charge calculations (processing fee is charged per check, annually):
+       B39 = C17 * B6
+       C39 = C17 * C6
+       B40 = C18 * B6
+       C40 = C18 * C6
+       B41 = C19 * B6
+       C41 = C19 * C6
+
+   - Recommended anchored versions (clear and safe when copying):
+       Opportunity cost (East / PA): = $C$21 * $B$17 * B27
+       Processing cost (East / PA): = $C$17 * B$6
+       (Use $ where you need to prevent unwanted shifts when copying.)
+
+4) Model formulas — check (they are OK)
+   - Objective H52 and the assignment constraints look correctly set up. H52 = SUMPRODUCT(B5:C5,B53:C53) + SUMPRODUCT(B45:C47,B57:C59) is correct once the cost cells are fixed.
+   - Column capacity RHS (B61 = 3*B53) is acceptable if you intend an open box to accept up to 3 regions.
+
+Action list (short)
+1. Fix the data: correct B17:B19 or C17:C19 so yearly ≈ daily*365.
+2. Fix the typo: set C41 = C19 * C6.
+3. Make formulas consistent:
+   - Decide daily vs yearly approach and update opportunity-cost formulas accordingly (use /365 if converting).
+   - Ensure processing formulas use yearly checks.
+4. Recalculate and confirm objective and assignment outputs.
+
+If you want, I can:
+- Provide the exact corrected formulas with $ anchors for each cell,
+- Or (better) fix the swapped data if you paste the intended yearly or daily numbers. Which do you want?

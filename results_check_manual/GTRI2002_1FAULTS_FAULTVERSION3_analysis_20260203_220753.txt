@@ -1,0 +1,25 @@
+Summary — the three clear errors I found and how to fix them:
+
+1) Wrong operator (scale error) in Sheet "2002 Report", cell C13
+- Problem: C13 is " =G13 * 1000000 ". That multiplies pounds by 1,000,000 instead of converting pounds to millions.
+- Fix: change the formula to =G13/1000000
+- Why: column C is meant to show G (pounds) in millions. You must divide by 1,000,000, not multiply. The current formula will produce an enormous wrong number and will break totals that use column C.
+
+2) Stray values in Sheet "2003 Report", row 20 (G20 and H20)
+- Problem: G20 = 8.449074 and H20 = 0.6381540899397388 are out of place (all other rows in that sheet have G and H blank). These look like accidental pasted numbers and will corrupt any range sums/charts that include columns G:H.
+- Fix: Clear cells G20 and H20 (Delete / Clear Contents).
+- Why: They don’t belong to the layout shown and will cause wrong results if any formulas or chart ranges include those columns.
+
+3) Inconsistent / hard-coded formulas in Sheet "data" for later years (rows 1997–1999)
+- Problem: C4:C9 use formulas =E# - B# (recycled = total - incinerated). For 1997–1999 (C10–C12) the recycled values are hard-coded numbers instead of formulas, so they won’t update if source totals change.
+- Fix: Replace the hard-coded values with the formula used earlier. Example:
+  - C10 → =E10 - B10
+  - C11 → =E11 - B11
+  - C12 → =E12 - B12
+- Why: keeps consistency and prevents stale values when upstream data or totals change.
+
+Quick additional check (recommended)
+- Search the workbook for any other cells using "*1000000" where the intent is to show "pounds in millions" and convert them to "/1000000". A stray multiply is the common copy/paste error here.
+- After fixes, recalculate and verify totals and any charts that used those ranges.
+
+If you want, I can give the exact list of formulas to paste (for every affected cell) or provide a short macro to find/replace "*1000000" → "/1000000" only where appropriate. Which would you prefer?

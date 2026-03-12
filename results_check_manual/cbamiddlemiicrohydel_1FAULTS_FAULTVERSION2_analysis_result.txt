@@ -1,0 +1,57 @@
+I inspected the workbook formulas on both sheets. I found one clear formula error that affects discounting (and therefore the whole PV / B/C / NPV results), plus a couple of likely logical/range inconsistencies you should check. Summary and recommended fixes below.
+
+1) Critical error — discount factor row for Costs (row 19)
+- Problem:
+  - Cell R19 contains the formula =Q19/(1/1.12). All prior cells in row 19 use "* (1/1.12)" (i.e. multiply by 1/1.12) to step the discount factor forward; R19 breaks that pattern by dividing by (1/1.12). That produces an incorrect discount-factor sequence from R19 onward (R19 and S19 become repeats / shifted values).
+  - As a result the Present Value of Costs row (row 20) which multiplies year costs by row19 is wrong for columns R and later (R20..AA20), and the total present value of costs (C20, G36, C36, G36 etc.) / B/C ratio / NPV are therefore incorrect.
+- Where:
+  - R19 is wrong; S19..AA19 are then wrong because they are chained from R19.
+  - R20..AA20 (present value of costs) are impacted.
+  - C20 (sum of G20:AA20), G36/C36 (present value of costs), C38/C39 (B/C, NPV) etc. will all be affected.
+- Correct formula:
+  - Replace R19 with =Q19*(1/1.12) so the discount-factor series continues correctly.
+  - After fixing R19 you should recalc row 19 through AA19, then row 20 through AA20, and then the PV totals (C20, C36, C38, C39, G36, G38, G39, etc.).
+- Why this matters:
+  - The workbook uses row 19 discount factors for costs but row 31 discount factors for benefits. Row 31 is correctly chained; row 19 must match row 31. With the current R19 error the two DF series differ and the PVs are inconsistent.
+
+2) Inconsistent use of discount-factor rows for Costs vs Benefits
+- Observation:
+  - The sheet uses row 19 as discount factors for costs and row 31 as discount factors for benefits. That is OK only if both rows contain the identical DF series.
+  - Because of the R19 error above the DF series are not identical; once R19 is fixed the two rows should match.
+- Recommendation:
+  - Keep a single canonical discount-factor row (or name it) and reference it for both costs and benefits to avoid divergence in the future.
+
+3) Potential logical / range inconsistencies (review and confirm intent)
+- AA17 (environmental cleanup in year 2020)
+  - Formula: =0.1*G5+0.1*G6
+  - Issue: the label says "cost of environmental clean up" — the formula uses only G5 and G6 (AKRSP and community construction contributions in 2000). The description (0.1*) suggests 10% of the total cost of the project, but it's implemented as 10% of only two items. If the intent was 10% of the whole project cost in year 2000, use something like =0.1*SUM(G5:G17) (or the appropriate range of capital cost items).
+- AA29 (scrap value)
+  - Formula: =0.02*G5+0.02*G6
+  - Issue: same pattern as AA17. Label says "scrap value (2% of total cost of the project)" but the formula uses only G5 and G6. If scrap value should be 2% of total project cost use =0.02*SUM(G5:G17) (or 0.02*G18 if G18 contains total initial cost for year 2000).
+- G30 (Total benefits for year 2000)
+  - Formula: =SUM(G23:G29) — this yields 0 because G23..G29 have values starting in column H, and AA29 (scrap) is not included in column G. This is probably intentional (no benefits in 2000) but check you intended benefits to begin from column H (2001).
+- Suggestion:
+  - If AA17 and AA29 are intended to be percentages of the project total, change them to reference the total cost cell (e.g. G18 or SUM(G5:G17)) rather than only G5+G6. Document the intended base.
+
+4) Minor items / housekeeping
+- Row 31 (discount factor for benefits) is correctly formed — leave it, but consider using only one DF row and reference it both for costs and benefits.
+- Some averages and conversions in the "Individ. Hh. Analysis" sheet use hard-coded factors (0.797, 0.712, etc.). They appear to be price/deflator factors — verify that these constants are correct and applied consistently (e.g. AE3..AE10 and AE13).
+- If you recalc after fixing R19 you should re-check:
+  - C20 (present value of costs),
+  - C32/C35/C36 (present values and totals),
+  - B/C ratio cells C38/G38 and NPV C39/G39.
+
+5) Quick checklist of exact cells to change / inspect
+- Fix formula:
+  - R19: change from =Q19/(1/1.12) to =Q19*(1/1.12)
+- Recalculate:
+  - Row 19 cells R19..AA19 (they will cascade).
+  - Row 20 cells R20..AA20 (PV of costs).
+  - Totals: C20, G36/C36 (Present value of costs), C35/G35 (PV benefits unchanged), C38/C39 & G38/G39 (B/C & NPV).
+- Review:
+  - AA17 and AA29 — confirm intended base and change formulas to reference full project cost if necessary (e.g. =0.1*G18 or =0.1*SUM(G5:G17) and =0.02*SUM(G5:G17) respectively).
+  - Ensure G30 and other per-year sums include the intended columns/ranges.
+
+If you want, I can:
+- Apply the R19 correction and show the updated PV totals and B/C/NPV values (I can recompute the affected cells and report the new values),
+- Or suggest exact replacement formulas for AA17/AA29 depending on your intended base (total project cost vs. AKRSP+community only). Which would you prefer?

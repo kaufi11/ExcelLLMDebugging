@@ -1,0 +1,43 @@
+Summary — key errors I found and how to fix them (short & clear):
+
+1) Faulty cell: C11
+- Error: Wrong numerator (uses Shotgun grand total instead of Q20 grand total).
+- Why it’s wrong: C11 should show cost per Q20 base = (grand cost for Q20) / (Q20 total), but formula =B21/C10 uses B21 (Shotgun total).
+- Fix: replace with =D21/C10
+- Quick explanation: Use the grand total for the same column/group as the denominator.
+
+2) Faulty cell: G21
+- Error: COUNT used instead of SUM.
+- Why it’s wrong: COUNT(G19:G20) returns how many numeric cells are present (1 or 2), not the dollar total.
+- Fix: replace with =SUM(G19:G20)
+- Quick explanation: Grand Cost Totals must sum the dollar lines, not count them.
+
+3) Faulty cell: B23
+- Error: Depends on G21 (which was wrong).
+- Why it’s wrong: B23 =B21+D21+G21 will add the count if G21 isn’t fixed.
+- Fix: after step 2, keep or use =B21+D21+G21 (or =SUM(B21,D21,G21))
+- Quick explanation: B23 should sum the three grand totals — correct once G21 is corrected.
+
+4) Faulty cells: C21, E21, H21 (they are hard-coded as 1)
+- Error: Hard-coded values (1) instead of calculated totals of percent components.
+- Why it’s wrong: These should reflect the sum of the percent rows (e.g. should equal 1 or 100% only if calculated from components).
+- Fix: replace with:
+  - C21 = C19 + C20
+  - E21 = E19 + E20
+  - H21 = H19 + H20
+- Quick explanation: This keeps percent subtotals consistent with the component percentages and avoids stale/hard-coded values.
+
+5) Faulty cells (divide-by-zero risk): Tech Dev sheet B18 (=B17/B6) and Bioinformatics sheet B18, B31, B44 (=something / $B$6)
+- Error: Division by zero (B6 = 0), causes #DIV/0.
+- Why it’s wrong: B6 is currently 0 so percentage formulas break.
+- Two options to fix:
+  - Option A (preferable if B6 should equal the total): set B6 = B17 (or the true total). Then existing percentage formulas work.
+  - Option B (safer formula): wrap with an IF to avoid #DIV/0, e.g. =IF($B$6=0,"",B17/$B$6) or =IF($B$6=0,0,B17/$B$6).
+- Quick explanation: Either supply the correct total in B6 or prevent division when total = 0.
+
+Notes / sanity checks:
+- Check all "cost per X" cells (B11, C11, D11, etc.) to ensure each uses the grand total from the same category (use B21 for Shotgun, D21 for Q20 group, G21 for Other).
+- After fixes, confirm C19+ C20 = C21 (and equivalent for other percent columns) and B19+B20 = B21 etc.
+- Replace COUNT used anywhere else by SUM if you expect dollar totals.
+
+If you want, I can produce the exact list of replacement formulas for every affected cell (copy/paste-ready). Which option do you prefer for the Tech Dev / Bioinformatics totals: set B6 = B17 or use the IF-protection approach?

@@ -1,0 +1,25 @@
+Findings (short)
+- Error: Spring 2001 "All Grades" tested cell (D17) uses =SUM(D11:D16) and omits Grade 3 (D10). Passing total (E17) does include Grade 3: =SUM(E10:E16). That mismatch makes the overall percent (F17 = E17/D17) wrong.
+- All other years' "All Grades" tested formulas use the correct ranges (they include Grade 3).
+
+Why it’s wrong (simple)
+- The denominator D17 is too small because it leaves out 265,357 tested students in Grade 3. That makes F17 much larger than it should be.
+
+Concrete impact (numbers)
+- Current D17 (wrong) = 1,616,875
+- E17 = 1,536,561
+- Current F17 (wrong) = 1,536,561 / 1,616,875 ≈ 95.01%
+- Correct D17 = SUM(D10:D16) = 1,882,232
+- Correct F17 = 1,536,561 / 1,882,232 ≈ 81.67%
+So the published percent is hugely inflated because Grade 3 tested were excluded from the denominator.
+
+Fix (how to correct)
+1. Select cell D17.
+2. Replace the formula =SUM(D11:D16) with =SUM(D10:D16).
+3. Press Enter. F17 (which is =E17/D17) will update automatically to the correct percent.
+
+Quick recommendation to avoid similar errors
+- For each year verify the All Grades tested formula sums the exact grade rows above (include Grade 3 through Grade 10). Or convert each year block to a proper Excel Table and use structured references so totals automatically adjust when rows change.
+- Optionally use IFERROR or checks like =IF(D17=SUM(D10:D16),"OK","ERROR") next to totals to detect mismatches.
+
+If you want, I can provide corrected formulas for every All Grades cell or a small macro/checker to find any other range mismatches.

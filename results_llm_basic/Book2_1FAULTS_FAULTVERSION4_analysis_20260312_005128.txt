@@ -1,0 +1,29 @@
+Summary of errors
+- M3: wrong divisor. M3 =L3/944 is a typo — should be dividing by the number of homeworks, not 944. This makes M3 (and any averages that include it) wrong.
+- Inconsistent averaging method: most rows use Lx/10 but many rows have missing homework cells (blanks). Dividing by 10 when some homeworks are blank under‑states the student's average.
+- Missing / shifted scores in several rows (examples: rows 4, 25, 27, 28, 45 and others). Those blank cells are treated as zero in the SUM(Bx:Kx) result, so totals and averages are wrong if data are misaligned or omitted.
+- Totals row Lx is OK (SUM), but the row averages (column M) must be computed consistently using actual counts of scores.
+
+How to fix (simple, safe)
+1. Fix the M formulas so each row averages only the actual numeric scores:
+   - Replace each M cell with:
+     =AVERAGE(B3:K3)
+   OR, if you prefer explicit SUM/COUNT and to show blank when no scores:
+     =IF(COUNT(B3:K3)=0,"",SUM(B3:K3)/COUNT(B3:K3))
+   Copy the formula down M3:M45.
+
+   Explanation: AVERAGE(Bx:Kx) (or SUM/COUNT) ignores blank cells and divides by the number of numeric scores. That removes the bad /944 and the incorrect /10 divisions when homeworks are missing.
+
+2. Correct data alignment/missing entries:
+   - Inspect the rows with many blanks (e.g. rows 4, 25, 27, 28, 45). Verify whether values are actually missing or shifted left/right. Re-enter or move the scores into the correct columns B:K.
+   - Quick check: use Filters or conditional formatting to highlight blanks in columns B:K so you can spot misaligned rows faster.
+
+3. Make formulas consistent:
+   - Ensure L3:L45 use =SUM(Bx:Kx) (already used) and M3:M45 use AVERAGE(Bx:Kx) (step 1).
+   - Recalculate the overall averages in row 47 (your AVERAGE formulas are fine; they will update once M values are corrected).
+
+Optional improvements
+- If every student should always have 10 homeworks and missing values should be treated as 0, keep dividing by 10 but first confirm no misalignment. Otherwise use COUNT approach above.
+- Add data validation to B:K to accept only numbers 0–10 to prevent accidental text.
+
+If you want, I can give the exact formula to paste in M3 and show how to copy it down, and list the rows that show likely misalignment based on the blanks you reported. Which would you prefer?

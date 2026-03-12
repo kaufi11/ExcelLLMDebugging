@@ -1,0 +1,48 @@
+I reviewed the workbook and found several clear errors (mostly copy/paste / wrong reference and one hard‑coded value). Short list of the problems, why they’re wrong, and the fix for each.
+
+1) Hard‑coded cell in the DCF sensitivity table (Q1)
+- Problem: cell E19 contains the value 6 (hard‑coded) while every other cell in that row has the discounted cash flow formula. That breaks the row’s SUM (B19) and any interpolation/graph.
+- Why wrong: it should be the discounted value of the cash flow in column E at the discount rate on row 19, not a literal 6.
+- Fix: replace the 6 with the consistent formula used in the row, e.g. (for row19, column E)
+  = $E$2 / (1 + $J19) ^ $E$1
+  (or copy the neighboring formula: =$E$2/(1+$J19)^$E$1)
+
+2) Wrong discount‑rate cell used in the “No debt” discounted totals (Q2)
+- Problem: in the "WITHOUT DEPRECIATION / NO DEBT" section the final discounting cells (C31, D31, etc.) reference the wrong discount cell ($C$19 or $C$20) instead of the no‑debt discount rate cell ($C$4).
+- Why wrong: discounting must use the no‑debt discount rate shown at the top of that block (C4). Using $C$19 or $C$20 pulls values from the DEBT section or a different metric (cost of equity), producing incorrect PVs.
+- Fix: use the no‑debt discount rate absolute reference $C$4. Example for C31:
+  = C30 / (1 + $C$4) ^ C6
+  then copy across to D31:E31:F31:G31 (adjust the exponent cell per column).
+
+3) Repeated copy/paste reference mistakes in “Tax Loss Carry Forward” (WITH DEPRECIATION and DEBT scenarios)
+- Problem: carry‑forward formulas are referencing the wrong column cells. Example: E46 is =IF(D47=0,SUM(D45:D47),0) — it references column D instead of E. Same pattern appears in F46, G46 and similarly in the debt scenario (E70, F70, etc).
+- Why wrong: these formulas should refer to the same column's values (E45:E47, F45:F47, etc). Cross‑column references give incorrect taxable income / tax calculations.
+- Fix: correct each carry‑forward cell to use its own column. Example (for column E):
+  E46 = IF(E47=0, SUM(E45:E47), 0)
+  and E47 = IF(E45<0, 0, E45 + E46)
+  Repeat the pattern for F and G.
+
+4) Inconsistent discounting anchors across blocks (general)
+- Problem: several discount formulas use different absolute anchors ($C$4, $C$19, $C$20, etc) inconsistently across the sheets.
+- Why wrong: inconsistent anchors cause wrong PVs when you intended to discount at a specific rate for that block (unlevered vs equity discount).
+- Fix: decide which rate each block must use (unlevered/WACC for project cashflows, cost of equity for equity cashflows) and update all discounting formulas in that block to reference that single absolute cell. Example: project DCF (no debt) -> use $C$4 everywhere; equity DCF (debt scenario) -> use $C$20 (cost of equity) everywhere.
+
+5) Potential IRR/NPV conceptual hazard (Q1)
+- Problem: the cash flows are non‑conventional (signs change more than once). The IRR function can return multiple roots or pick a particular root depending on guess; comments in the sheet are correct but some IRR cells assume a single solution.
+- Why important: IRR alone may mislead; NPV with your chosen cost of capital is the reliable decision rule.
+- Fix: when using IRR, supply different guesses to find other possible roots (IRR(range, guess)), and always check NPV at your discount rate(s). Prefer NPV for the investment decision.
+
+6) Minor: floating display artefacts (0.0399999999999999 etc)
+- Problem: many rate cells show floating rounding artifacts.
+- Why not critical: this is display/precision; it can confuse readers.
+- Fix: format the cells to a reasonable number of decimals (e.g. 2 or 4 decimals) or round the input cell values (ROUND) if you want tidy numbers.
+
+Summary of what to do now (quick checklist)
+- Replace the hardcoded E19 with the proper discounted cashflow formula.
+- Fix the discounting references in the no‑debt block (use $C$4 consistently).
+- Fix all copy/paste column‑mismatch formulas for tax loss carry forward (make them reference their own column).
+- Standardize which discount rate cell is used in each block and update formulas accordingly.
+- Use NPV (at the firm’s cost of capital) for decisions; treat IRR results cautiously for non‑conventional cash flows.
+- Format rate cells to show fewer decimals.
+
+If you want, tell me which sheet and range you want me to produce exact replacement formulas for and I’ll output them ready to paste.

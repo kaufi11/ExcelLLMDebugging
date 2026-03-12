@@ -1,0 +1,29 @@
+Good summary — I found two real formula errors in the Jan.-Dec.2002 sheet that will produce incorrect per-class and grand totals. Fixes are simple.
+
+1) Wrong function in U52 (Total row under class on row 51)
+- Problem: U52 is =COUNT(U51*$E$51). COUNT returns 1 (if product is numeric) or 0, not the numeric product you need.
+- Effect: the U‑column "Total" for that class is wrong and every higher-level total that sums that cell is wrong.
+- Fix: replace with the correct calculation. Use either
+  - =U51*$E$51
+  or
+  - =SUM(U51*$E$51)
+  (the simple product =U51*$E$51 is cleanest).
+- Why: you want the RISE dollars for that company = number of participants (U51) × RISE cost (E51). COUNT was the wrong function.
+
+2) BK261 overwritten with a constant instead of the sum formula
+- Problem: BK261 currently contains the value 12 (hard-coded) instead of the usual formula =SUM(F261:BG261).
+- Effect: BK261 is the "Number of Participants Per Class" for row 261. Because it is hard-coded it will not update when company participant cells in row 261 change; BL261 (student days), BM261 (public cost), and all rollups that include BK261 will be wrong/unstable.
+- Fix: restore the formula
+  - Put =SUM(F261:BG261) into BK261 (or copy BK from another class row and paste).
+- Why: BK must always be the sum of the company participant columns for that class so downstream calculations remain correct.
+
+Quick verification and housekeeping
+- After you change those two cells, press F9 (recalculate) and verify:
+  - BK268 (grand participants) and BL totals update,
+  - Column U totals and the FP/L grand totals that include U now look correct.
+- Optional improvements:
+  - Replace single-argument SUM usages like =SUM(C3*BK3) with the simpler C3*BK3 to make sheet easier to read.
+  - Use a consistent block of formulas for each class (copy/paste the three-row block) to avoid accidental overwrites of formula cells (like BK261).
+  - Use Formula Auditing (Trace Dependents/Precedents) or Go To Special → Constants to find other cells accidentally changed to constants.
+
+If you want I can list other suspicious cells (e.g., any BK row that is not a SUM formula, or any Total row that contains COUNT) or produce corrected formulas you can paste.

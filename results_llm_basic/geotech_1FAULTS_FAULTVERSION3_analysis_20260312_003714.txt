@@ -1,0 +1,29 @@
+I checked the two sheets and found a few clear formula errors that will give wrong totals or wrong labels. Short summary + fixes below.
+
+1) Wrong hard-coded number inflating totals (critical)
+- Problem: cell Data Analysis!AU32 contains =IF(D$2="x",345,0). All other AU## cells follow the pattern =IF(D$2="x",D##,0). That 345 is almost certainly a typo. It will massively inflate row 32 and any sums that include AU32 (and downstream totals).
+- Fix: replace AU32 with the correct pattern:
+  =IF(D$2="x",D32,0)
+- Why: AU32 should pull the value from D32 when the course (column D) is selected. Using 345 instead of D32 causes incorrect totals.
+
+2) Wrong label pulled into Data Analysis A2 (layout / confusing)
+- Problem: Data Analysis!A2 = 'input-output'!D9. D9 on input-output is a course name ("Geotech"), but A2 is immediately under the sheet note/header and is not intended to be a course value. This looks like a misplaced mapping and can overwrite or confuse headers/notes.
+- Fix: remove the formula from Data Analysis!A2 (make it the intended note text or blank). If you intended to show a particular field, move the formula to a correctly labeled cell. Example (if you meant to copy the note): put the note text directly in A1/A2; otherwise move ='input-output'!D9 to the proper lookup cell.
+- Why: A2 is a header/note area; pulling course names into it breaks readability and may misalign other references.
+
+3) Wrong reference for Outcome on input-output (label showing header text)
+- Problem: input-output!I3 is = 'Data Analysis'!B1. Data Analysis!B1 contains the header text "Outcome Total" (a label), not the numeric total. So I3 will show text, not the value you probably want.
+- Fix: if you want the numeric Outcome Total, change input-output!I3 to:
+  ='Data Analysis'!B2
+  (or to whatever cell contains the numeric Outcome Total in Data Analysis).
+- Why: formulas were pointing to the header cell instead of the calculated cell.
+
+4) Cleanup recommendation (not strictly breaking, but safer/clearer)
+- Replace SUM(I5+I9+I10+...) style with proper SUM argument lists:
+  =SUM(I5,I9,I10,I21,I31,I38,I42,I43,I44,I46,I45)
+  and similarly for J52. Excel evaluates both, but the comma-separated form is correct/clear and avoids mistakes if you later edit.
+- Use explicit absolute row references where formulas are copied across rows if your intention is to always check row 2 flags (e.g. use D$2 consistently). I see mostly correct use, but check any inconsistent uses (D2 vs D$2).
+
+If you want, I can:
+- give a short list of every cell affected by the AU32 error (which totals include row 32),
+- or produce the exact corrected formulas for any other cells you point out.

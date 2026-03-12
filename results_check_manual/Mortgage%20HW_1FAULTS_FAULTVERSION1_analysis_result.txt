@@ -1,0 +1,55 @@
+I inspected the workbook "HW" sheet and found a mix of logical inconsistencies and one clear formula mistake that breaks the amortization schedule. Summary first, then details and concrete fixes.
+
+Summary of problems
+- Major formula bug:
+  - C40 uses addition instead of subtraction. It is = $A$25 + B40 but should be = $A$25 − B40. This causes an incorrect (too large) principal payment at row 40 and throws off the balances thereafter (D40 onward), producing negative balances and even negative interest later.
+- Inconsistent / mismatched data and assumptions:
+  - B4 states "30 years with MONTHLY payments" but the worked example is a 15‑year schedule with annual payments (PMT used with 15 periods and 6% rate). Header and worked example disagree.
+  - Top input cells (B5 = 196,555 and B6 = 0.0572) do not match the example calculations (example uses a 100,000 loan at 6%). The example mixes two different loan amounts and rates.
+  - The PMT cell (A25) hard‑codes 6% and 15 periods: =-PMT(6%,15,100000,0). That literal makes the sheet fragile and inconsistent with the input cells (B5/B6). It should reference the input cells (and convert rate/periods if monthly).
+- Consequence of the above:
+  - Because of the wrong formula in C40 and inconsistent inputs, balances go negative well before the schedule should end (D46, D47 etc.), and interest turns negative (B47) because prior balance became negative.
+
+Detailed items and suggested fixes
+
+1) Fix the clear formula bug
+- Cell C40 currently:
+  - Wrong: =$A$25 + B40
+  - Correct: =$A$25 - B40
+Reason: principal payment = payment − interest, not payment + interest.
+
+2) Make the schedule reference input cells (avoid hard‑coded rates/terms)
+- Replace the PMT formula in A25 with a reference to the rate, term and loan amount instead of literals. Example (for annual payments, 15 years, loan in B5, annual rate in B6, years in B4 if you store years there):
+  - =-PMT($B$6, $B$4, $B$5, 0)
+  - If your B4 currently contains "30 years with MONTHLY payments" change B4 to a numeric years cell (e.g., 15) or store term in another numeric cell and reference that.
+- If you intend monthly payments: convert the annual rate and years to period rate/nper:
+  - =-PMT($B$6/12, $B$4*12, $B$5, 0)
+
+3) Standardize the amortization row formulas (use relative references anchored to payment and rate)
+For row n (where previous balance is in D[n-1], payment in $A$25, rate in $B$6 as annual rate and assuming annual payments), use:
+- Interest Bn: = $B$6 * D[n-1]
+- Principal Cn: = $A$25 - Bn
+- Balance Dn: = D[n-1] - Cn
+Implement these as proper Excel formulas copied down (with appropriate absolute $ anchors for $A$25 and $B$6).
+
+4) Align inputs and narrative
+- Decide whether the sheet example should be 15-year annual at 6% on $100,000 (current example), or the homework inputs at top (196,555 at 5.72%, 30 years monthly).
+- Update B4, B5, B6 (and any narrative text) so the header, PMT and amortization rows all use the same numeric inputs.
+- If you want the example to be generic, put:
+  - Loan amount in one cell (e.g., $B$5)
+  - Annual rate in one cell (e.g., $B$6)
+  - Years and payment frequency in one or two cells
+  - Then reference those cells everywhere (no hard‑coded 6% or 100000).
+
+5) Notes on sign conventions and rounding
+- Using =-PMT(...) is fine to get a positive payment. Be consistent with signs everywhere (principal is positive, balance reduces).
+- Slight rounding differences can leave a tiny final balance; if you see a small residual at the last row, you can adjust the final principal to bring the remaining balance to zero.
+
+What to change immediately to restore a correct schedule
+- Change C40 to =$A$25 - B40
+- Replace A25 with a formula referencing the loan/rate/term cells, e.g. (annual):
+  - =-PMT($B$6,$B$4,$B$5,0)
+  - or (monthly): =-PMT($B$6/12,$B$4*12,$B$5,0)
+- Make B27 (and all B rows) reference your rate cell rather than hardcoded 0.06: e.g. = $B$6 * D26 (or D27 depending on where you put the prior balance)
+
+If you want, tell me which configuration you intend (use B5/B6 = 196,555 and 5.72% for 30 years monthly, or keep the 100,000/6%/15 years annual example) and I will produce the exact corrected formulas for every affected cell (and give a copy‑down formula set for the whole amortization table).

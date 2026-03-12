@@ -1,0 +1,28 @@
+Summary — what's wrong
+- Many numbering formulas in column B are pointing to the wrong rows (copy/paste mistakes). Example: B40 contains =+B53+1 (should continue from the previous row B39), B47 uses =+B54+1, B97 uses =+B221+1, B232 uses =+B106+1, etc. These produce incorrect numbers or jump the sequence.
+- There are also a few formulas that appear to reference themselves or header cells (possible circular or meaningless formulas), e.g. any B cell that references B27 when B27 is not a number.
+- Cosmetic: the leading + in formulas (e.g. =+B12+1) is unnecessary (not an error, just untidy).
+
+Why it’s a problem
+- The sheet is intended to create a simple running index in column B (each row = previous row + 1). Wrong references break the sequence, create gaps/jumps and can introduce circular references.
+
+Fix (short & safe)
+1. Pick the first correct seed number (for your sheet that is B12 = 1).
+2. Replace every numbering formula in column B (starting B13 and down) with a formula that always references the row immediately above. Use one of these, depending on whether you want blank rows unnumbered:
+   - Simple continuous numbering: =B12+1 (in B13) then fill down. More generally, in Bn use =B(n-1)+1.
+   - Number only when there is an item in column C (recommended): =IF(TRIM(C13)="","",B12+1) — put this in B13 and fill down. This prevents numbering empty rows.
+3. Remove the unnecessary leading + if you want tidy formulas (change =+B12+1 to =B12+1).
+
+Quick steps to apply
+- In cell B13 enter: =IF(TRIM(C13)="","",B12+1)
+- Drag (fill) that formula down the whole column B to row 248 (or to the last row in your sheet).
+- Spot-check places where you previously saw weird references (B40, B47, B97, B232) — they should now show the correct sequential numbers or blank.
+
+Extra: check for circulars
+- If Excel warns about a circular reference, go to Formulas → Error Checking → Circular References to find and fix any B cell that referenced itself. Replace those with the corrected formula above.
+
+Why this solution
+- Referencing the previous row makes the sequence predictable and robust to row insert/delete.
+- The IF(TRIM(Cn)="","",...) prevents numbering empty rows and keeps numbering tied to rows that have content in column C.
+
+If you want, I can generate a corrected column-B formula map (list of exact formulas for each specific problematic row) or create a single ROW()-based formula that auto-numbers without a seed. Which would you prefer?

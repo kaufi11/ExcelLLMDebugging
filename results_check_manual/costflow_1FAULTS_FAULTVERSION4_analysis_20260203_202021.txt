@@ -1,0 +1,51 @@
+Summary — what’s wrong (top issues)
+- Many formulas point to the wrong cells (they reference totals instead of the row values). That causes wrong averages and wrong inventory/COGS amounts.
+- Several SUM ranges are wrong (e.g. SUM(I9:I9) instead of SUM(I8:I9)).
+- Signs are inconsistent (double negatives). Example: I11 = -I10 - SUM(C17:C18) returns a negative ending units when you want a positive ending units.
+- Some key cells are blank or “?” (K11, K12) so COGS and ending inventory cost aren’t computed.
+
+Concrete fixes (easy, copy/paste these formulas)
+1) Fix beginning / purchase row-level references (top of sheet)
+- I8: =C8
+- K8: =E8
+- J8: =K8/I8
+- I9: =C9
+- K9: =E9
+- J9: =K9/I9
+
+Why: those rows should use their own units and cost, not the totals.
+
+2) Fix goods-available / totals
+- I10: =SUM(I8:I9)
+- K10: =SUM(K8:K9)
+- J10 (average unit cost for the period): =IF(I10=0,0,K10/I10)
+
+Why: sums must include both beginning and purchase rows; average = total cost / total units (guard against divide-by-zero).
+
+3) Fix ending inventory units & cost
+- I11 (ending units): =I10 + SUM(C17:C18)
+  - Explanation: C17:C18 are sales entered as negative numbers in your sheet; adding them reduces I10. (If your sales are positive, use =I10 - SUM(C17:C18).)
+- K11 (ending inventory cost): =I11 * J10
+- K12 (COGS): =K10 - K11
+
+Why: ending cost = ending units * average unit cost; COGS = total cost available − ending inventory cost.
+
+4) Other obvious bad ranges / single-cell sums
+- Replace any SUM(Xn:Xn) that is meant to be a total of multiple rows. Example you had I10 = SUM(I9:I9) — it should be SUM(I8:I9) (see 2).
+- Replace references like =+C14 or =+E14 in a row that should use its own row values (see 1).
+
+5) General cleanup / sign consistency
+- Use positive numbers for units and costs inside rows (C8:E13 positive). Use sales as positive quantities in a separate “sold” column or if you keep them negative, write formulas that account for that explicitly (I11 = I10 + SUM(C17:C18) when sales are negative).
+- Add IF guards around divisions: e.g. =IF(I10=0,0,K10/I10) to avoid #DIV/0!.
+
+Quick checklist to validate after fixes
+- Total units available (I10) should equal 17,000 (1,000 + 6,000 + 5,000 + 5,000) for your data.
+- Units sold should sum to 11,000 (abs of C17 + C18).
+- Ending units (I11) should be 6,000.
+- Average unit cost J10 = K10 / I10.
+- Ending inventory cost K11 = 6,000 * J10.
+- COGS K12 = K10 − K11.
+
+If you want, I can:
+- Provide the corrected formulas for the FIFO and LIFO periodic and perpetual sections (they have similar reference/sign issues), or
+- Create a cleaned-up duplicate sheet with every formula fixed and validation cells showing expected totals.

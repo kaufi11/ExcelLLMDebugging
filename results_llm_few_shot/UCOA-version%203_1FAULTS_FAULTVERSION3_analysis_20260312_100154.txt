@@ -1,0 +1,42 @@
+Summary — 2 primary errors found and how to fix them (short & simple)
+
+1) Symptom: many cells show text like
+   FORMULA =A$9  (or FORMULA =E$10, FORMULA =I12, FORMULA =A5+1, etc.)
+   — they are not calculating, they are stored/displayed as text.
+
+   Cause: the literal word "FORMULA " (or the cell formatted as Text / has a leading apostrophe) prevents Excel from treating the entry as a formula. Anything that starts with text instead of a leading "=" will not evaluate and will break any dependent calculations.
+
+   Fix (quick, workbook‑wide):
+   - Set the sheet/workbook cell format to General (Home → Number → General).
+   - Use Find & Replace across the workbook:
+     Find: FORMULA =
+     Replace with: =
+     (Make sure you do this for all sheets.)
+   - After replacing, force recalculation: press Ctrl+Alt+F9 (recalculate all).
+   - If some cells still show text, edit (F2) and Enter to re-evaluate (or remove a leading apostrophe if present).
+
+   Why this fixes it: replacing "FORMULA =" with a true "=" turns the cell contents into a real formula. Changing format to General and recalculating ensures Excel evaluates the formulas.
+
+2) Symptom: many Account number pairs (col A vs col B) are inconsistent / shifted. Examples: A23 = 1115 but B23 = 1190, A33 = 1310 but B33 = 1270, A91 = 2020 but B91 = 2200, etc. (there are multiple rows like this).
+
+   Cause: column B appears to have been misaligned or values were pasted/shifted so the B column no longer matches the A column where it should. This will cause wrong lookups, wrong mappings, and incorrect reports.
+
+   Fix (detect & realign):
+   - Add a helper column (e.g., column Z) with a check formula on one row:
+     =IF(A15=B15,"OK","Mismatch")
+     then copy down to flag mismatches.
+   - For rows that should match, restore B from A by one of:
+     • If B should equal A for all those rows: select the A column range, copy, then Paste → Values into B (or use formula in B: =A15 and copy down, then Paste Values).
+     • If only some rows should match, fix only the mismatched rows manually or by using a reliable mapping table (VLOOKUP/INDEX-MATCH) to repopulate correct B values.
+   - After repairing, re-run any dependent calculations/reports.
+
+   Why this fixes it: aligning the account code columns ensures formulas and lookups using column B return the correct account codes.
+
+Extra checks (short):
+- After you fix #1, switch Calculation to Automatic (Formulas → Calculation Options → Automatic).
+- Check for any SUMs or totals that include header rows or include the total cell itself (self-reference). If you find totals like =SUM(C1:C4) where the total is in C4, change to =SUM(C1:C3).
+- Scan for circular references after re-evaluation (Excel shows a warning if any).
+
+If you want, I can:
+- give the exact Find/Replace steps and a macro for replacing "FORMULA =" across the whole workbook, or
+- produce a small helper formula sheet to realign column B to column A and list all mismatches. Which would you prefer?

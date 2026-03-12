@@ -1,0 +1,75 @@
+I reviewed the formulas in both sheets and found a few formula mistakes and a number of inconsistencies that will produce incorrect results or are likely not what the author intended. Below I list the issues I found, explain why each is a problem, and give suggested fixes.
+
+Summary of the main problems
+- A few cells in the "colour key" area are entered as formulas (starting with "=") pointing to names that likely do not exist (this will produce #NAME? in Excel). Cells: J5, J6, J7, J8.
+- One clear typo in a monthly calculation (divide by 265 instead of 12) that causes the cost-per-desk-per-month column to be wrong for the Services row (and propagates to totals). Cell: L14.
+- Inconsistent approach to computing "TOTAL CHARGE" / revenue: C37 uses SUM(C12:C35)*0.9 while F37 is computed as C37 + SUMPRODUCT(C12:C35,F12:F35). These two formulas together do not produce a consistent / intuitive total of base + markups (likely a logic error).
+- The NPV construction uses many IF() clauses and includes an extra year (IF up to <11) — not a hard error but odd/unnecessary and a potential source of confusion.
+- Minor: some cell text has typographical mistakes (e.g., "eequal") — not a formula error but worth checking.
+
+Detailed items (cell, current formula, problem, suggested fix)
+
+1) Cells that look like text but are entered as formulas (likely produce #NAME? or are unintended)
+- J5 formula: "= independent variables"  
+- J6 formula: "= dependent variables"  
+- J7 formula: "= costs to the mezzanine"  
+- J8 formula: "= revenues to the mezzanine"  
+Problem: These start with "=" so Excel will try to evaluate them as names (named ranges). If the named ranges do not exist the cell will show #NAME?; they were likely intended to be plain text labels.  
+Suggested fix: Remove the leading "=" so the cell contains the label text (e.g., independent variables).
+
+2) Wrong divisor in monthly cost column (obvious typo)
+- L14 formula: "=$J14/265" (value shown 1.5330...)  
+Problem: All other monthly values are Jxx/12 (annual per desk divided by 12). Using 265 here is almost certainly a typo and makes the per-desk-per-month cost for "Services" wrong (and thus L29, L37, L78 etc that sum monthly costs). Note M14 uses =K14/12 and is correct (33.854...), so L14 is inconsistent with M14.  
+Suggested fix: Change L14 to =J14/12 (so L14 = 406.25/12 = 33.8541667). Recalculate L29, L37, L78 and any dependent totals.
+
+3) Inconsistent total/revenue calculation logic (potential modeling bug)
+- C37 formula: "=SUM(C12:C35)*0.9" (gives 470,250)  
+- F37 formula: "=C37+SUMPRODUCT(C12:C35,F12:F35)" (gives 477,110)  
+Problem: C37 applies a 0.9 multiplier to the sum of the C12:C35 base charges (i.e., reduces total base by 10%). Then F37 adds C37 to the sumproduct(C,F) (which = sum of C12*C%markup). That results in F37 = 0.9*SUM(C) + SUM(C*F). That is not the same as either:
+  - SUM(C*(1+F)) (sum of each item with its markup), nor
+  - 0.9 * SUM(C*(1+F)) (apply 10% reduction after markups),
+nor any other immediately obvious consistent rule. In short: the discount and mark-up logic appears inconsistent and will not represent either "10% discount on base then add markups" or "sum of individually marked-up amounts with a 10% adjustment".  
+Suggested checks/fixes:
+  - Decide the correct business logic:
+    a) If you want total revenue = sum of each item with its mark-up, use: =SUMPRODUCT(C12:C35,1+F12:F35) (or =SUM(C12*(1+F12),C13*(1+F13),...)).
+    b) If you want a global 10% discount applied to the total after mark-ups: =SUMPRODUCT(C12:C35,1+F12:F35)*0.9.
+    c) If you want 10% discount on base and then add markups to that discounted base, implement that explicitly (but be careful how percent markups are defined).  
+  - Replace C37 and/or F37 accordingly so the two totals are consistent and their meaning is clear. As-is the combination is confusing and likely incorrect.
+
+4) L → M monthly revenue vs cost mismatch because of L14 bug
+- Because L14 is wrong, sums in L29 (sum of L12:L27) and L37 (L29 + SUM(L31:L35)) are wrong. M29 and M37 (which use /12 correctly) will not match the L totals; this will cause differences between cost/month and revenue/month totals.  
+Suggested fix: Correct L14 to /12 and then re-evaluate L29, L37 and any rows that use these monthly totals.
+
+5) NPV construction is clumsy and contains an extra IF()
+- F85 formula: =NPV($C$69,IF($C$65<1,0,F$80),IF($C$65<2,0,F$80), ... IF($C$65<10,0,F$80),IF($C$65<11,0,$F$80)) - $F$76  
+Problem: This is mechanically OK, but:
+  - It supplies up to 11 cash flows (the last IF uses <11) while elsewhere a comment says "years (max = 10)". The extra IF is unnecessary if lease length is capped at 10.
+  - The logic: IF($C$65<1,0,F$80) etc includes F$80 for every year up to C65; that's ok but verbose and error-prone.  
+Suggested fix:
+  - Use a simpler construct, e.g. build a column of annual cash flows and use =NPV(rate, range_of_annual_cashflows) - initial_investment, or use =NPV(rate,IF({1,2,3,...},(IF({1<=C65,...},F80,0)))) but the simplest is a contiguous range and simpler maintenance.
+  - Remove the extra IF($C$65<11,...) if 10 years is the maximum, or adjust if you intend up to 11.
+
+6) Minor editorial / text items (not formula errors)
+- B83 text contains "eequal" (typo). Not a formula error but worth correcting.
+- Several cells have leading "+" in formulas (e.g., =+SUM(...)). This is harmless but inconsistent style.
+
+Other checks I ran mentally / flagged as suspicious but not necessarily errors
+- Many cells in column F (F12:F35) are blank (markup percentages). Where blank is used in formulas like (1+$F12) Excel treats blank as zero, so that behaves OK — but be sure that blanks are intended 0% markups and not omissions.
+- Division references to $C$5 and $C$8 (area and desks) look consistent throughout.
+- PMT usage (e.g., F82, B29) appears correct (arguments in right order and sign convention). The break-even PMT logic is fine.
+- The monthly per-desk / per-year conversions are consistent except for the L14 typo already flagged.
+
+Recommended immediate actions
+1. Fix L14 to =J14/12. Recalculate and verify monthly totals L29 and L37 and downstream rows.  
+2. Replace the “= text” entries in J5:J8 with plain text (remove leading "=").  
+3. Revisit the TOTAL CHARGE logic (C37 & F37). Decide the intended order of discount and markups, then implement a consistent formula (SUMPRODUCT or SUM of individually computed rows) so the base, markup and total revenue are coherent. Example candidates:
+   - Sum of individually marked up items: =SUMPRODUCT(C12:C35,1+F12:F35)
+   - If you want an overall 10% discount afterwards: =SUMPRODUCT(C12:C35,1+F12:F35)*0.9
+4. Simplify the NPV calculation by building an explicit cashflow range (1..C65 years) and pass that range to NPV; remove the excessive IFs and extra year.
+
+If you want, I can:
+- produce corrected formulas for the cells (showing exact formulas to paste), or
+- produce a repaired version of the sheet (I can list all changed cells and their new formulas), or
+- walk through a consistent revenue calculation approach and adjust the whole model accordingly.
+
+Which would you prefer?

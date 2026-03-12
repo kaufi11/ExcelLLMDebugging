@@ -1,0 +1,56 @@
+I checked the workbook and found several real formula errors and a few risky / inconsistent formulas. Below are the problems, why they’re wrong, and exactly how to fix them. Short and direct.
+
+1) Major — Circular references in Year 1 opening cash (row 6)
+- What’s wrong: In Year 1 you used each month’s opening cash to reference the end-of-month cell in the same column (e.g. B6 = B55, C6 = C55, D6 = D55 …). But the end-of-month (row 55) is calculated from the month’s opening cash (row 6). That creates circular references and incorrect results.
+- Fix: Month 1 opening cash must be an input (not computed from row 55). For months 2..12 the opening cash should reference the previous month’s end-of-month.
+  - Example corrections (on sheet "Year 1"):
+    - B6 → remove formula and enter your starting cash (manual input) or link to a dedicated input cell (e.g. =Inputs!StartCash).
+    - C6 = B55
+    - D6 = C55
+    - E6 = D55
+    - F6 = E55
+    - G6 = F55
+    - H6 = G55
+    - I6 = H55
+    - J6 = I55
+    - K6 = J55
+    - L6 = K55
+    - M6 = L55
+    - N6 = M55
+- Why: Opening cash for a month should be the previous month’s closing cash (except the very first month which must be an input). This removes the circular dependency.
+
+2) Wrong hard-coded value in Year 1 K55
+- What’s wrong: K55 is =SUM(K15-90). The "90" is a hard-coded wrong number — it looks like it should subtract the month’s total cash paid out (row 54), not 90.
+- Fix: Change K55 to =K15-K54 (or simply =K15-K54 without SUM). This matches the pattern used for other months (end = available - paid out).
+- Why: Keeps the end-of-month calculation consistent and accurate.
+
+3) Row for “Total Fixed Costs” (row 63) uses wrong references
+- What’s wrong: B63 = +O54 - O23 (mixing TOTAL column O into column B and using a subtraction that doesn’t equal “total fixed costs”).
+- Fix: Make row 63 equal the subtotal fixed-expenses row (row 47) for each column:
+  - B63 = B47, C63 = C47, … O63 = O47 (or use =SUM(B24:B46) in each column if you prefer summing the fixed expense lines).
+- Why: Total fixed costs should be the fixed-expenses subtotal, not an arithmetic using total cash paid out.
+
+4) Inconsistent / unnecessary use of SUM() and + prefixes (clean-up, not fatal)
+- What’s wrong: Many formulas use SUM() around single-cell arithmetic (e.g. =SUM(B6+B14)) or + at the start (e.g. =+O23/O$57). This isn’t an error but is confusing and can hide mistakes.
+- Fix: Use clean formulas like =B6+B14, =O23/O$57, etc.
+- Why: Cleaner formulas are easier to audit and less likely to hide copy/paste errors.
+
+5) Variance % formulas risk #DIV/0
+- What’s wrong: Variance formulas like =(D8-C8)/C8 will return #DIV/0 if the base (C8) is zero or blank.
+- Fix: Wrap with a safe test, e.g. =IF(C8=0,"", (D8-C8)/C8 ) or =IFERROR((D8-C8)/C8,"").
+- Why: Prevents error values showing up and makes reports more robust.
+
+6) Check TOTAL % columns that divide totals by themselves
+- Note: P57 in Year1 is =O57/O$57 (total sales divided by total sales) — it will always equal 1 (100%). That’s not an error if you intend 100% in the % of Sales column for total, but it is redundant. Confirm intent.
+
+7) General consistency check (recommended)
+- Many variance sheets and Year2 reference columns must map exactly to Year1 month columns. After fixing the Year1 opening cash flow references, quickly scan the variance sheets to ensure each “Actual” column refers to the correct Year1 column (no off-by-one column errors).
+- Example to watch for: some sheets use 'Year 1'!H55 for a month where they should use a different column — verify month-to-column mapping.
+
+Summary of the immediate critical fixes to apply now:
+1. Replace Year 1 B6 with a starting cash input (or link to an input cell). Then change C6..N6 so each equals the previous column’s row55 (C6=B55, D6=C55, etc).
+2. Change Year 1 K55 from =SUM(K15-90) to =K15-K54.
+3. Fix row 63 to reference the fixed-expense subtotal (row 47) for each column (e.g. B63=B47 … O63=O47).
+4. Add IF or IFERROR around variance % formulas to avoid divide-by-zero errors.
+
+If you want, I can produce the exact formulas to paste into each corrected cell (or a small macro to auto-fix them). Which would you prefer?

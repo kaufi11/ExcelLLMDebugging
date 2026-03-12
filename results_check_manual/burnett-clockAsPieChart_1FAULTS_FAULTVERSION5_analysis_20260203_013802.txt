@@ -1,0 +1,25 @@
+Problems found
+- C4 uses B3 (a blank/wrong cell). That makes the "difference" segment wrong and lets the minute/hour slices swap colors when minutes become a larger percentage.
+- A4/F3 logic works but is awkward. F3 tests equality of floating values (A3=C3) — risky and unnecessary.
+
+Quick fixes (replace the formulas exactly)
+
+1) Make A4 explicitly the smaller of the two hand positions:
+A4 = MIN(A3,C3)
+
+2) Make C4 the absolute difference (with the 0.01 minimum):
+C4 = MAX(ABS(C3 - A3), 0.01)
+
+3) (Optional) Simplify F3 to avoid an equality test:
+F3 = IF(A3 < C3, 1, 3)
+(keep a three-state comparison only if you really need a distinct "equal" case)
+
+Why this fixes it (short)
+- A4 = MIN(A3,C3) ensures the first slice is always the smaller hand fraction (no swapping).
+- C4 = MAX(ABS(C3 - A3), 0.01) always gives the positive gap between minute and hour (and enforces the 0.01 minimum). The original formula used B3 (empty/wrong cell) so the difference was computed incorrectly and the slices/colors could flip.
+- Removing the exact equality check avoids floating-point equality problems.
+
+If you prefer to keep the constant in B4 (0.01), use $B$4 in the formulas:
+- C4 = MAX(ABS(C3 - A3), $B$4)
+
+That will resolve the color-switching bug and make the slices consistent.

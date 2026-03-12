@@ -1,0 +1,35 @@
+Summary — main errors
+1) Wrong/typo cell references in the Opportunity Cost block (rows 33–35).
+   - C35 currently references $B20 (doesn't exist) — a typo.
+   - B33:B35 and C33:C35 mix column B and C check counts. The sheet's header shows yearly checks are in column C, but the opportunity formulas use column B values (and one uses a non‑existent B20).
+
+2) Inconsistent/unclear anchoring (use of $). This makes copying formulas fragile. Example: check processing formulas use $C17 (no fixed row) instead of $C$17 (better).
+
+Why these are errors
+- Opportunity cost must use the yearly number of checks (column C) consistently. Using column B (or a non‑existent B20) produces wrong and/or #REF errors.
+- The typo ($B20) will produce a #REF or wrong result.
+- Inconsistent $ locks will make formulas behave incorrectly when copied.
+
+Correct formulas (replace the ones shown in your sheet)
+- Opportunity cost (use cost of capital $C$21 and yearly checks in column C):
+  - B33:  =$C$21 * $C$17 * B27
+  - C33:  =$C$21 * $C$17 * C27
+  - B34:  =$C$21 * $C$18 * B28
+  - C34:  =$C$21 * $C$18 * C28
+  - B35:  =$C$21 * $C$19 * B29
+  - C35:  =$C$21 * $C$19 * C29
+
+- Check processing charge (use yearly checks $C$17:$C$19 and per‑check fee in row 6; lock rows with $):
+  - B39:  =$C$17 * B$6
+  - C39:  =$C$17 * C$6
+  - B40:  =$C$18 * B$6
+  - C40:  =$C$18 * C$6
+  - B41:  =$C$19 * B$6
+  - C41:  =$C$19 * C$6
+
+Notes / quick checks
+- Keep $C$21 locked in all opportunity formulas (cost of capital constant).
+- Make sure the header meaning is correct: column C is yearly checks. If your B17:B19 are actually daily counts (not dollar amounts), you must use the yearly numbers (column C) for processing charges and opportunity costs, or else adjust formulas appropriately.
+- The Objective cell (SUMPRODUCT(...) + SUMPRODUCT(...)) looks structurally fine once the cost cells are corrected.
+
+If you want, I can provide the exact Excel formula text you can paste into each cell, or verify any other ranges (for example: are the numbers in B17:B19 daily or dollar amounts?).

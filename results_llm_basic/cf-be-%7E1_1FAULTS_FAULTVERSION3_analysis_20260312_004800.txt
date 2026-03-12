@@ -1,0 +1,46 @@
+Thanks — I reviewed the three main sheets and found the key errors that will produce wrong cash balances, wrong fixed-cost and break-even numbers, and some shifted/mis‑referenced rows. Short, clear fixes below.
+
+1) Wrong function used for beginning cash (Year 1)
+- Problem: Year 1, cell E6 is =COUNT(D55). That returns 0/1 (count) instead of the numeric balance from the prior month → month 3 beginning cash is wrong.
+- Fix: Replace with a direct link. Example: set E6 = D55 (or =SUM(D55) if you prefer SUM for style).
+- Why: COUNT returns number of entries, not the numeric amount you need.
+
+2) Total Fixed Costs formula is incorrect (Year 1)
+- Problem: Year 1, B63 is =+O54-O23. That computes "total paid out minus variable expenses" which includes non‑fixed items (loan principal, capital purchases, owner draws), so it is NOT pure fixed costs.
+- Fix: Point to the subtotal fixed expenses. Change B63 to =O47 (or =SUM(O24:O46)).
+- Why: O47 is the subtotal of fixed expenses; use it so fixed costs are correct.
+
+3) Break‑even Sales uses wrong numerator (Year 1)
+- Problem: F64 is =(O54-O23)/B64. Because B63 was wrong, the break‑even formula uses the wrong numerator. Break‑even should be Fixed Costs / Contribution Margin.
+- Fix: Change F64 to =O47 / B64 (or =B63 / B64 after you fix B63).
+- Why: Break‑even sales = total fixed costs ÷ contribution margin.
+
+4) Mis‑shifted / wrong row references in Year 2 (several rows)
+- Problem: In Year 2 some O‑column totals are summing the wrong row range (example shown: O20 is missing and O22 is used for Payroll Expenses; you have O22 =SUM(C22:N22) where it should sum row 20). This looks like a row shift so many O20:O46 and corresponding P cells may be off by two rows.
+- Fix: Rebuild or correct the O‑column formulas so each O(row) = SUM(C[row]:N[row]) for that same row. Example: O20 should be =SUM(C20:N20), O21 =SUM(C21:N21), etc. Then P20 = O20 / O$57 (or whatever your percentage base is).
+- Why: Misaligned totals cause subtotal & total rows to include wrong values and break aggregation.
+
+5) Cosmetic / dangerous formulas to clean up
+- Observations:
+  - Many cells use SUM(B15-B54) or SUM(B6+B14). SUM(number) returns the same number, but it’s confusing. Use plain arithmetic: =B15-B54 or =B6+B14.
+  - Several variance % formulas are like =(D8-C8)/C8 — if C8 = 0 this returns #DIV/0!. Consider wrapping with IF or IFERROR: =IF(C8=0,"", (D8-C8)/C8 ) or =IFERROR((D8-C8)/C8,"").
+  - Some P‑column % formulas reference O57/O57 (self division). Ensure the P formulas use the intended denominator (total sales cell) — typically P(row) = O(row) / $O$57.
+
+6) How to check after fixing
+- After applying fixes:
+  1. Confirm each month’s "Cash Position End of Month" (row 55) flows into next month beginning cash (row 6) correctly.
+  2. Confirm B63 (Total Fixed Costs) equals the subtotal fixed expenses (row 47).
+  3. Confirm F64 (Break‑even) = fixed costs ÷ contribution margin and makes sense.
+  4. Scan Year 2 O20:O46 and P20:P46 to ensure each row sums its own monthly range and percentage base is correct.
+
+Exact quick replacements (copy/paste):
+- Year 1 E6: =D55
+- Year 1 B63: =O47
+- Year 1 F64 (or D64 cell where break‑even result lives): =O47 / B64
+- Year 2 O20: =SUM(C20:N20) (then verify O21, O22, … O47 use matching row numbers)
+
+If you want, I can:
+- produce a short list of all wrongly shifted cells in Year 2 (I can scan every O/P in that range and give the corrected formulas), or
+- create the IF / IFERROR wrappers for all variance % cells to avoid #DIV/0.
+
+Which follow‑up would you like?

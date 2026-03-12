@@ -1,0 +1,40 @@
+I checked the three sheets and found several real misreferences and a few clearly wrong hard‑coded values. Short, clear list of problems and fixes:
+
+1) Summary sheet — Financial Aid (wrong row/range references)
+- Faulty cells: F9, G9, H9, I9, J9, K9, L9, M9, N9 (and similarly any column >E where the formula is SUM(Detail!F9:F11) etc).
+- Error: They reference Detail rows 9–11 (tuition area) instead of the financial‑aid subtotal (Detail row 15) — so the wrong numbers are pulled.
+- Fix (example for F9): replace =SUM(Detail!F9:F11) with =-Detail!F15
+- Why: Detail!D15 (and equivalent columns) holds subtotal financial aid (already negative). Summary D9 uses -Detail!D15 — keep same pattern across columns so signs & totals match.
+
+2) Summary sheet — Subtotal Net Tuition (wrong ranges)
+- Faulty cells: F10, G10, H10, I10, J10, K10, L10, M10, N10
+- Error: those use ranges like =SUM(Detail!F10:F17) (wrong block) instead of summing Summary's Tuition + Financial Aid rows.
+- Fix (example for F10): use =SUM(F8:F9) (and same pattern for G10..N10)
+- Why: Subtotal should be the Summary sheet’s Tuition (row 8) plus Financial Aid (row 9); current formula pulls unrelated rows on Detail.
+
+3) Detail sheet — Beginning fund balance references wrong cells (circular/incorrect)
+- Faulty cells: E64, F64, K64 (they are =D65) and N64 (=K65).
+- Error: beginning balances are pointing to the Current/Projected row (row 65) instead of the beginning balance itself → wrong result and possible circular logic.
+- Fix: change E64 and F64 and K64 to =D64 (or enter the actual beginning balance for each column). Change N64 to =K64 (or the correct value for that column).
+- Why: beginning balance should reference the beginning balance input (row 64), not depend on row 65.
+
+4) Summary sheet — Beginning fund balance does same wrong reference
+- Faulty cells: E37, F37, K37 (they are =D38) and N37 (=K38).
+- Error/Fix: same as #3 above. Set them to =D37 (or the correct values for each column) and N37 :=K37.
+- Why: beginning balance must be an input (row 37), not a formula pointing at row 38.
+
+5) RCM Report — wrong hard‑coded value
+- Faulty cell: F14 (University Fund allocation)
+- Error: formula is =2 (obviously wrong/hard‑coded).
+- Fix: change to =Detail!F20 (or the correct Detail cell for University Fund in that column).
+- Why: allocation amounts must link to Detail, not a fixed number.
+
+6) Minor / style issues (not calculation‑breaking but confusing)
+- Many cells use SUM(A-B) (e.g., =SUM(D25-D61)) — SUM around a single subtraction is unnecessary. It doesn’t break the math but is confusing. Replace with =D25-D61 for clarity.
+
+How to apply the fixes quickly
+- For Summary: update the Financial Aid row to =-Detail!<col>15 for each column, and update Subtotal row to =SUM(<col>8:<col>9) (drag across).
+- For Detail & Summary beginning balances: change those cells to point to the correct row (64 or 37) or replace with the actual beginning balance values.
+- For RCM F14: replace 2 with =Detail!F20 (or proper source).
+
+If you want, I can give an exact list of the corrected formulas for every affected cell (copy‑paste ready) — tell me which sheet(s) to output full corrected formulas for.

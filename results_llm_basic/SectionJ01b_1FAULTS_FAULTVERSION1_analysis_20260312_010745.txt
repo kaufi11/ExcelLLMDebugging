@@ -1,0 +1,30 @@
+Summary — the sheet has three types of mistakes. Fix these and the workbook will calculate correctly.
+
+1) Grand Total on Total LOE sheet omits the last column
+- Error: B70 = SUM(B68:H68) — this only sums columns B through H and leaves out column I (Opt.7).
+- Fix: change to B70 = SUM(B68:I68)
+- Why: you want to add all option-period totals (B68 through I68). Including I68 gives the true grand total.
+
+2) Wrong multiplier (0.023) used in many Option‑4 formulas (column N)
+- Error: In many rows on Fixed Price, Cost Type and T&M sheets the formula for the N (Opt.4) column is written with *0.023 (for example N5 = K5 + (K5 * 0.023)). Everywhere else the chain uses 2% growth (0.02). The 0.023 is a typo/inconsistency.
+- Fix: change N‑column formulas to use 0.02, i.e. N5 = K5 + (K5 * 0.02), and similarly for every N row.
+- Why: the increment logic is B -> E -> H -> K -> N -> Q etc where each step adds 2% to the previous option. Using 0.023 at option 4 breaks the consistent 2% escalation and produces incorrect hours/prices.
+
+3) Hard-coded number instead of a cell reference (example in T&M sheet)
+- Error: K20 = 670 + (670 * 0.02) — the formula uses literal 670 instead of referencing the previous option cell (H20).
+- Fix: replace the hard-coded formula with a reference consistent with the pattern: K20 = H20 + (H20 * 0.02)
+- Why: hard-coded values won’t update if base/previous-option numbers change. Use references so all options recalc automatically.
+
+How to quickly fix across the workbook
+- Fix the Grand Total manually: edit B70 to =SUM(B68:I68).
+- Fix the 0.023 typos quickly: use Find/Replace in formulas (Find "*0.023" replace with "*0.02") or search for “*0.023” and update each affected N‑column formula to use the previous column reference with *0.02.
+- Fix hard-coded literals: search for formulas containing explicit numbers (like “=670+”) and change to the proper cell reference (e.g., =H20 + H20*0.02). Prefer editing one example and then fill/fill-right or copy the correct formula pattern to the whole row/column.
+
+Example corrected formulas (pattern to apply everywhere)
+- Ecol = Bcol + (Bcol * 0.02)
+- Hcol = Ecol + (Ecol * 0.02)
+- Kcol = Hcol + (Hcol * 0.02)
+- Ncol = Kcol + (Kcol * 0.02)
+- (and continue with Qcol = Ncol + Ncol*0.02, etc.)
+
+If you want, I can produce a list of every cell that currently uses *0.023 or any formula with hard-coded numbers (like 670) so you can fix them exactly — do you want that?

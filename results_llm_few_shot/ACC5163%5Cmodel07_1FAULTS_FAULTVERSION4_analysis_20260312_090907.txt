@@ -1,0 +1,23 @@
+Summary — main errors found
+1) Faulty cells: F70, F71, F72, F73
+- F70 contains a hard-coded constant "295" and omits column B.
+- F71:F73 omit column B in their formulas.
+
+Why this matters
+- Cells C128, C129, C130, C131 (and many downstream totals) pull values from F70:F73 (e.g., C128 = $F$70). Because F7x are wrong, subsidiary equity lines and consolidation totals will be wrong and the worksheet will likely be out of balance.
+
+What to fix (exact replacement formulas)
+- F70: change from =(295-D70+E70) to =(B70+C70-D70+E70)
+- F71: change from =(C71-D71+E71) to =(B71+C71-D71+E71)
+- F72: change from =(C72-D72+E72) to =(B72+C72-D72+E72)
+- F73: change from =(C73-D73+E73) to =(B73+C73-D73+E73)
+
+Short explanation of the fix
+- The intended pattern for those “F” cells is Old Balance (B) + Push‑down (C) + Dr (D) − Cr (E). The current formulas omit the Old Balance (and F70 used a hard constant), so they understate the account balances. Restoring B70–B73 puts the original balances back into the calculation and corrects any linked consolidation amounts.
+
+Quick checks after fixing
+- Recalculate the sheet.
+- Verify C128:C131 now match the expected subsidiary equity balances.
+- Check totals (e.g., F118, F132, D134/E134 proofs) to see if the consolidation proof balances.
+
+If you want, I can list any other suspicious formulas or scan for more inconsistencies.

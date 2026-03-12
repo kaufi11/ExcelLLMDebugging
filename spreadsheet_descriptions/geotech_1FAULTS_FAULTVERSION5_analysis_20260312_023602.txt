@@ -1,0 +1,51 @@
+High-level summary — purpose and structure
+- Workbook has two sheets: "input-output" (data entry / display) and "Data Analysis" (calculation engine).
+- Purpose: map selected courses (marked "x") to program outcomes, weight/score them, and produce summed outcome totals, comparisons to fixed targets, and distribution/category summaries.
+
+"input-output" sheet (layout & key cells)
+- Columns C–F list course codes and markers (e.g., C10 CE1030, D10 = x or blank, E10 course numbers in column E/F). Many rows (C10:C46) enumerate courses.
+- Columns H–I pull outcome labels/numeric outcome totals from Data Analysis (e.g., H3 ='Data Analysis'!A2, I3 ='Data Analysis'!B1).
+- Column J contains fixed Target numbers for each outcome (static numeric targets like J5 = 106.2, J6 = 72, etc.).
+- Column I contains computed outcome totals (most I# cells are formulas = 'Data Analysis'!B# or similar); Column K uses K# = IF(I#>J#,"Over","Under") to compare actual vs target.
+- Cells I48 (user control): "Include all extents ? Y/N" (I48 = "y" or "n"). O49 displays descriptive text via O49 = IF(I48="Y","INCLUDES ALL EXTENTS","ONLY CONSIDERS 4 AND 5 EXTENTS").
+- I52 and J52: grand sums — I52 = SUM of selected outcome totals (SUM(I5+I9+I10+...)), J52 = SUM of corresponding targets (SUM(J5+J10+...)). R22 references I52 (Sum of all Extents = , R22 = I52).
+- Several output columns (M:Q, R:S, etc.) reference Data Analysis to show course-category strings and distribution results (e.g., M3..S3 = 'Data Analysis'!CO3..CU3).
+
+"Data Analysis" sheet (calculation logic & layout)
+- Row 1: headers listing all course columns (D1..AL1 plus duplicated blocks CX1..EI1 etc.). A1 has a note. B1 = "Outcome Total", C1 = "Outcome (%)".
+- Row 2: reads course-selection markers from input-output (D2 = 'input-output'!D10, E2 = 'input-output'!D11, etc.). These feed the whole analysis.
+- Columns for course inclusion mapping: many CP/../ etc cells use IF(D2="x", "CE 1030", "-") to show course names when selected.
+- Weight mapping (columns CX3:EI3 and CX4:EI4 etc.): for each outcome row, formulas like CX3 = IF(D$2="x",0.5,0) assign numeric weights (credit or extent) when the course is selected. EJ3 (and EJ4...) = SUM(CX3:EI3) give the total weighted contribution for that outcome row.
+- Per-outcome scoring rows (A4..A45): each outcome has a detailed row with per-course ratings in columns D..AR (numeric 0–5). These represent how strongly each course contributes to that outcome.
+- Conditional inclusion of course scores: for each outcome row there are two parallel aggregation columns:
+  - CL# = SUM(AU#:CI#) — AU#:CI# are the per-course scores after applying IF(D$2="x",D#,0) (i.e., only included if course marked "x").
+  - CM# = sum of only those included course scores that are >=4 (calculated using a long SUM(IF(...>=4,...,0)+... ) ). CM# therefore totals only 4/5 extents.
+- B# cells choose which aggregate to use based on Include-all-extents toggle: B# = IF('input-output'!$I$48="Y", CL#, CM#). So:
+  - If I48 = "Y": B# uses the sum of all included extents (CL#).
+  - If I48 = "N": B# uses only high extents (CM#).
+- C# typically shows the normalized value C# = B# / $B$46 (B46 is the sum of multiple category totals).
+- B46 is the overall denominator: B46 = SUM(B4+B8+B9+... + B45) — used for normalizing outcomes to percentages.
+- Bottom summary area (A64:B87) pulls selected C# values into an executive summary table (e.g., A64 label, B64 = C45 etc.) and also produces the numeric consolidation shown in columns B and C at rows A77:A87.
+
+Key formulas & controls (quick list)
+- Course selection flags: row 2 on Data Analysis (D2, E2, ...) are driven from input-output and control inclusion.
+- Per-course score inclusion: AU#..CI# = IF(<course flag cell>="x", <score cell>, 0).
+- Include-all-extents toggle: input-output!I48 — controls whether B# picks CL# (all extents) or CM# (only >=4).
+- Comparison: input-output K# = IF(I#>J#,"Over","Under") for each outcome.
+- Totals: Data Analysis EJ# = SUM of mapped weights; Data Analysis CL# sums included scores; CM# sums only >=4; input-output I52 and J52 are combined sums used for final checks.
+
+Outputs to watch
+- Column B on Data Analysis (B4:B45) = final aggregated outcome totals (subject to I48 control).
+- Column C (C4:C45) = normalized outcomes (percent of B46).
+- input-output I# columns mirror the Data Analysis B# totals for display and comparison against J# targets.
+- The workbook uses many repeated IF patterns and wide per-course blocks (AU:CI range) to scale to many courses without macros.
+
+Notes / cautions
+- The workbook relies on consistent "x" markers in row 2 of Data Analysis; if those are missing/misplaced results will be zero.
+- CM# formulas are long explicit SUMs of IF(...>=4,...) — they exclude scores <4 when I48="N".
+- Many course-name cells use IF(...="x", "CE ####", "-") to produce human-readable lists of which courses feed which outcome.
+
+If you want, I can:
+- Produce a compact diagram of the data flow (which cells control which totals),
+- Verify a particular outcome's calculation step-by-step (show which course flags and scores contribute), or
+- Suggest formula simplifications (e.g., replace repeated IF+SUM blocks with SUMPRODUCT or array formulas to shorten and reduce errors).

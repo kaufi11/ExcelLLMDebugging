@@ -1,0 +1,54 @@
+I reviewed the formulas and values on sheet "PHYS102-0101" and found no #ERROR or #DIV/0 Excel errors, but there are multiple inconsistencies and a few suspicious / fragile formulas you should review. Summary first, then specific problematic cells and recommended fixes.
+
+Summary — main issues found
+- Inconsistent methods for computing percents: some rows compute percentage with numerator/denominator*100, others use value*2, others hard-code percentages (e.g. "=100" or "=93.3"). This makes the sheet fragile and non-uniform.
+- Many derived quantities are stored as constant values instead of formulas that depend on component cells (so they won't update automatically if inputs change). Example: the "2nd Ex total" column (Q) appears to be the sum of O + P but contains plain values rather than a formula.
+- A few cells contain odd arithmetic expressions instead of a straightforward reference to raw scores (e.g. "=14+1+12"). These are unusual and should be checked for intent.
+- Different denominators are used in the same assignment column for different rows (for example Homework 1 column E usually uses /35 but some rows use /25). That may be correct for special cases, but is inconsistent and should be intentional/annotated.
+- Some cells use literal numeric formulas (e.g. "=93.3" or "=100") rather than plain numbers or formulas tied to raw data — harmless numerically but inconsistent.
+
+Specific problematic / suspicious cells (examples)
+- Column Q (2nd Ex total):
+  - Q6..Q104: these appear to be the sums of O (Pt II) + P (Pt I), but no cell shows a formula. Example: Q6 = 71 while O6=48 and P6=23. You should convert Q to formula =O6+P6 and fill down so totals update when O or P change.
+- Column E (Homework 1) denominators inconsistent:
+  - Many E cells use formulas like =27.5/35*100 (expected if HW1 max=35). But some use /25 instead of /35:
+    - E48 = "=22/25*100"
+    - E67 = "=18/25*100"
+    - E77 = "=18/25*100"
+    If HW1 has a consistent max (35) these /25 entries are likely wrong; if certain students had a different max, annotate why.
+- Column F (Homework 2) mixed methods:
+  - Example uses: "=34.5*2" (F15), "=21.5*2" (F23), "=20/30*100" (F81), "=28*2" (F83). Some rows double a stored half-score, others divide by different denominators. Decide on a single approach (store raw points then compute percent with a reference to max).
+- Standalone literal/formula constants (inconsistent):
+  - R64 = "=93.3" (a formula returning a literal constant instead of a plain number or a computation).
+  - Several S cells set "=100" (harmless but inconsistent).
+  - K47 = "=5" (this may be a valid score but is an unusual presentation compared to other K entries).
+- Odd arithmetic expression:
+  - P35 = "=14+1+12" — this sums to 27; unusual notation (would be clearer as a single raw score or references to components).
+- Cells with percent expressions but inconsistent numerators/denominators:
+  - Example: many columns use "*100 after numerator/denominator" (good). But some do things like "=37.5*2" (which is probably doubling a half-credit); mixing styles makes auditing harder.
+- Columns that look like they should be calculated but are hard-coded:
+  - Many columns that are logically derived (e.g., Q as O+P, M and N sometimes computed, R and S quiz % computed for some rows but not others) are inconsistently implemented as formulas vs pasted constants.
+- Averages row:
+  - The AVERAGE formulas themselves look OK and reference the same row ranges (E6:E104 etc). They will average the mix of hard-coded values and formula results (so they work), but because input cells are inconsistently computed the averages may be harder to audit if source scoring changes.
+
+Recommendations / fixes
+1. Standardize: pick a single canonical representation for raw scores and calculated percentages:
+   - Keep raw points in dedicated columns (e.g., store raw points for HW1, HW2, etc).
+   - Compute percent with formulas that reference the raw cell and a single "max points" cell (or named constant). Example: if HW1 max = 35 put max in X1 and use =Eraw / $X$1 * 100.
+2. Make totals formulas instead of constants:
+   - For Q (2nd Ex total) use: Q6 = O6 + P6 and fill down.
+3. Replace odd literal formulas with direct values or references:
+   - Replace "=93.3" with 93.3 as a value or better, a computation from raw inputs.
+   - Replace "=14+1+12" with either the raw total cell or formula summing the referenced component cells (e.g., =P35_component1 + P35_component2 + P35_component3).
+4. Audit denominator differences:
+   - Verify why E48/E67/E77 use /25 while typical E uses /35. If those students had a different assignment total, add a comment; otherwise correct to /35.
+5. Consolidate "% of max" patterns:
+   - Avoid mixing "*2" tricks and "/max*100" — use uniform =raw/max*100 so that changes in max are handled by one reference.
+6. Use cell references instead of hard-coded numerics inside formulas so changes propagate (e.g., use =A1/B1*100 rather than =21.5*2).
+7. Optionally add header row with max points for each assignment (e.g., above row 1) and use absolute references for percent calculations; that will make it easy to change maxima.
+
+If you’d like, I can:
+- Generate a list of every cell that contains a formula (and show the formula) vs every cell that has a hard-coded numeric that looks like it should be computed (based on neighboring rows). OR
+- Produce corrected formulas for the most important columns (for example set up E,F,G,I,M,N,R,S,Q as proper formulas referencing raw scores and a max-points table) and give a small script or copy-paste block you can use to replace the current cells.
+
+Tell me which of the above (detailed list or automatic rewrite suggestions) you want and I’ll produce it.

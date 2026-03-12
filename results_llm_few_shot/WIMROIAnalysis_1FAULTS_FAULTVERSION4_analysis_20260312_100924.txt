@@ -1,0 +1,43 @@
+Here are the main errors I found, explained plainly, with quick fixes you can apply.
+
+1) Hard-coded incorrect value (big error)
+- Faulty cell: G86
+- Problem: Instead of the max-savings formula it contains the number 7. This breaks I86 (avg) and all subtotals that include G86.
+- Fix: Replace 7 with the correct formula. If max is 25% use:
+  =C86*C87*C88*0.25
+- Why: That computes Shipping max savings consistently (same pattern other rows use).
+
+2) Missing input cells referenced by formulas (causes zeros)
+- Faulty/missing inputs: C15, C104, C106, C110, C111, C130 (and several similar "data" cells are blank)
+- Problem: Formulas use these cells and therefore return 0 or incorrect results when the input is blank.
+- Fix: Enter the correct numeric inputs in those cells.  
+  Optional guard: wrap formulas to avoid misleading zeros until inputs exist, e.g.
+  =IF(C15="","", (C15/C16)*2.1 )
+- Why: A formula returning 0 from a blank input will make subtotals and ROI wrong.
+
+3) Inconsistent hard-coded “min / max” values vs. stated range cells
+- Examples: Many formulas use literal 0.16 / 0.25 / 0.44 etc while the sheet also has cells that are supposed to hold the range value (e.g. C57, C89, C113). Some of those cells are different or blank, causing mismatch/confusion.
+- Problem: Hard-coded constants make the workbook fragile and create mismatches between displayed “Range” and computed values.
+- Fix: Put min and max percentages in dedicated cells (e.g. put Min% in a cell and Max% in the cell next to it) and change formulas to reference them. Example:
+  - Put 0.16 in cell X (Min) and 0.25 in Y (Max) for a line, then use:
+    =C54*C55*C56*$X$ and =C54*C55*C56*$Y$
+- Why: Using cell references avoids manual edits in multiple places and keeps displayed ranges and calculations consistent.
+
+4) Several subtotal/summary cells depend on the faulty cells above
+- Faulty cells impacted: I86, E95/G95/I95, E149/G149/I149, E151/G151/I151, all downstream totals (C216/E216 etc.)
+- Problem: Because G86 was wrong and many inputs were blank, all subtotals and the final ROI/payback are incorrect.
+- Fix: Correct G86 and fill required input cells (point #1 and #2). After that, recalc totals and verify.
+
+5) Potential user-friendly improvements (not errors but recommended)
+- Add an input validation / highlight for required inputs (conditional formatting to flag blank required cells).
+- Use IF/CELL checks in summary formulas to avoid dividing by zero (e.g., in payback formulas wrap denominators: =IF(C255=0,"",((C257+C258)/C255)*12) ).
+
+Summary of immediate actions
+1. Fix G86 to =C86*C87*C88*0.25 (or to reference a Max% cell if you create one).
+2. Populate the blank data inputs listed (C15, C104, C106, C110, C111, C130, etc.).
+3. Replace hard-coded % values with references to dedicated Min% / Max% cells to keep ranges and formulas aligned.
+4. After fixes, verify subtotals E95/E149/E151 and the payback/ROI formulas recalculate correctly.
+
+If you want, I can:
+- Give an exact list of all blank data cells used by formulas, or
+- Provide the exact formulas to replace hard-coded percentages with cell references for a section you pick.

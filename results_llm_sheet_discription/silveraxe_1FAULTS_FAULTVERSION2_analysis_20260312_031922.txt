@@ -1,0 +1,18 @@
+Summary — main error
+- Cell C19 is wrong. Its formula uses H16 (=HLOOKUP(H16,R5:AW15,3,TRUE)) but H16 is empty. It should look up Endurance (G16). Because of this, the "Hit Mod." product (F19) and Hit Points (H19) are incorrect.
+
+Fix (exact steps)
+1. Select C19 and replace its formula with:
+   =HLOOKUP(G16,R5:AW15,3,TRUE)
+2. Press Enter. This makes C19 pull the Endurance HP modifier correctly.
+
+Why this fixes it (short)
+- The HLOOKUP table R5:AW15 has row 3 (within that range) containing Endurance HP modifiers. You need to lookup the character's Endurance score (G16). H16 is blank, so the previous lookup returned wrong/zero results and ruined the multiplication for HP.
+
+Optional/Recommended cleanup
+- Replace H19's manual +0.49 rounding trick with a proper ROUND to avoid confusion:
+   =ROUND(F19*E15,0)
+  (or =ROUNDUP(F19*E15,0) if you always want to round up)
+- Quick check: scan other HLOOKUPs to ensure each uses the correct lookup_value cell (e.g., Strength -> B16, Endurance -> G16, Agility -> B17, Intelligence -> G17, Charisma -> B18). Most are correct already.
+
+If you want, I can compute the corrected Hit Mod, Hit Points and show the updated numeric outputs. Which would you prefer?

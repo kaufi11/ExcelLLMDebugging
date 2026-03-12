@@ -1,0 +1,51 @@
+Kurzfassung — gefundene Hauptfehler
+- Viele ID‑Felder in Spalte A wurden versehentlich als Formel eingegeben (z. B. =356-78-4365). Excel rechnet die Subtraktion und zeigt negative Zahlen statt der ID.  
+- Noten‑IF Formeln verwenden inkonsistente Bezugszellen für die Maximalpunktzahl (manche verweisen auf andere Sheets wie 'F Noon'!O$38 oder 'M Noon'!O$38). Ergebnis: unterschiedliche/inkorrekte Notengrenzen.  
+- Statistik‑Formeln (AVERAGE, MAX, COUNT) nutzen unterschiedliche Zeilenbereiche in verschiedenen Sheets (z. B. B6:B37, B6:B23, B7:B30 …) → Vergleich/Reporting inkonsistent.  
+- Teilweise werden Grenzwerte mit ">" geprüft; dadurch fällt exakt der Grenzwert (z. B. genau 90% von Max) in die niedrigere Note.
+
+Lösungen (kurz, verständlich, in deutscher Formel‑Schreibweise)
+
+1) ID als Text statt Formel eingeben
+Problem: Ein Eintrag wie =356-78-4365 wird berechnet.  
+Lösung: Entferne das führende = und gib die ID als Text ein (Apostroph voran):  
+Beispiel (Zelle A6):  
+'356-78-4365
+
+2) Notenformel vereinheitlichen und Grenzwerte inklusiv machen
+Empfehlung: Alle Noten‑IF auf die gleiche absolute Max‑Punktzahl $O$38 verweisen (oder besser: benannten Bereich MaxPoints verwenden). Verwende >= für die Grenzwerte. Beispiel (in P6, dann nach unten kopieren):  
+=IF(O6>=$O$38*0.9;"A";IF(O6>=$O$38*0.8;"B";IF(O6>=$O$38*0.7;"C";IF(O6>=$O$38*0.6;"D";"F"))))
+
+Wenn Du eine zentrale Zelle in einem anderen Blatt benutzen willst, erstelle einen Namen (z. B. MaxPoints) und benutze:  
+=IF(O6>=MaxPoints*0.9;"A";IF(O6>=MaxPoints*0.8;"B";IF(O6>=MaxPoints*0.7;"C";IF(O6>=MaxPoints*0.6;"D";"F"))))
+
+3) Statistiken über konsistente Bereiche vereinheitlichen
+Wähle für alle Sheets denselben Zeilenbereich (z. B. 6:37). Beispiel (für Spalte B):  
+Durchschnitt: =AVERAGE(B$6:B$37)  
+Max: =MAX(B$6:B$37)  
+Anzahl Werte: =COUNT(B$6:B$37)
+
+Setze das in allen Sheets ein (statt der unterschiedlichen Bereiche wie B6:B23, B6:B30 usw.).
+
+4) SUM/Felder prüfen
+Stell sicher, daß die Summenformeln immer dieselben Spalten addieren (falls O die Gesamtpunkte ist):  
+O6: =SUM(B6:N6)  (kopiere diese Formel für alle Zeilen)  
+Falls in einigen Zellen Text steht, ist das normal — SUM ignoriert Text. Prüfe aber fehlende Werte (leere Felder) manuell.
+
+5) Untersuche und korrigiere falsche Fremdbezüge
+Beispiele, die Du ersetzen sollst:  
+- In 'M Noon' P12 steht: IF(O12>'F Noon'!O$38*0.9;...) — wahrscheinlich falsch. Ersetze durch Bezug auf $O$38 auf dem gleichen Blatt oder benannten Bereich (siehe Punkt 2).  
+- In anderen Sheets (z. B. W 2 p.m. P27) siehst Du Verweise auf 'M Noon'!O$38; vereinheitliche das wie oben.
+
+Praktischer Ablauf (empfohlen)
+1. Ersetze alle ID‑Formeln in Spalte A durch Text (Finden/Ersetzen: =??? — manuell prüfen).  
+2. Erstelle einen Namensbereich MaxPoints = 'M Noon'!$O$38 (optional).  
+3. Ersetze alle P‑Spalten Formeln mit der einheitlichen IF‑Formel (siehe Punkt 2) und kopiere nach unten.  
+4. Vereinheitliche AVERAGE/MAX/COUNT auf die gleiche Zeilenbereiche (z. B. 6:37) in allen Sheets.  
+5. Prüfe O‑Summen (=SUM(Bx:Nx)) und fehlende numerische Einträge.
+
+Wenn Du willst, kann ich:
+- die exakten Zellen mit falschen Fremdbezügen aufführen, oder  
+- eine Liste der Zellen erzeugen, die in Spalte A Formeln statt Text enthalten (damit Du schnell korrigieren kannst).
+
+Welche Hilfe hättest Du gern als Nächstes? Soll ich die genauen Zellen mit fehlerhaften IF‑Bezügen und ID‑Formeln auflisten?

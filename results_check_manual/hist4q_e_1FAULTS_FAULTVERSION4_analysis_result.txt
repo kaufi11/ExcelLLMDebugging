@@ -1,0 +1,36 @@
+I inspected the formulas in both sheets and found one clear formula error and a couple of consistency issues that follow from it.
+
+1) Incorrect SUM range (formula error)
+- Sheet "1", cell H12 contains:
+  =SUM(H10:H11)
+  This omits H9. All other columns in row 12 use SUM(<col>9:<col>11). H12 should be:
+  =SUM(H9:H11)
+
+Why it matters
+- Because H12 is used in totals and P&L lines, the wrong H12 value propagates to many downstream cells in column H and causes a mismatch between the "Sales by Product and P&L" totals and the segment/consolidated totals shown elsewhere (sheet "2"). For example:
+  - H15 (=SUM(H12:H14)) is wrong (511,951) because H12 is low.
+  - H17 (copy of H15), H19, H20, H22, H23, H29, H30, H33, H35, H36 (all column H formulas that depend on H12/H15/H17 etc.) will be incorrect as a result.
+
+2) Resulting inconsistency between sheets
+- After fixing H12 to =SUM(H9:H11), sheet "1" column H totals (e.g., H15 Total of net sales, H22 Operating profit, H35 Net income) will align with the consolidated/segment values shown on sheet "2" (sheet "2" already shows the correct consolidated H37 = 759,277 and H38 = 86,640 which reflect the correct business-machine total including H9).
+- Currently (before fix) sheet "1" shows H15 = 511,951 while sheet "2" shows H37 = 759,277 for the same quarter — this is the direct result of the H12 error.
+
+3) Minor/formatting inconsistency (not an error but worth noting)
+- In sheet "1" percentage formulas (rows 20, 23, 30, 36, etc.) the IF() branches return the text "-  " when the denominator is zero, e.g.
+  =IF(C$17=0,"-  ",C19/C$17)
+  In sheet "2" similar IF() formulas return "" (empty string) instead, e.g.
+  =IF(C9=0,"",C10/C9)
+  Suggestion: standardize the empty/placeholder behavior (either "" or a consistent display string) so that downstream numeric calculations and formatting are consistent (returning a string makes the whole cell non-numeric).
+
+4) Cumulative effect cell placement (note)
+- Row 34 (Cumulative effect of accounting change) has a value only in G34 (3692). All SUM-based formulas that include row 34 handle blanks as zero so this is not a formula error; just verify that the cumulative effect is supposed to be applied only to the G column.
+
+Recommended fixes
+- Correct H12 on sheet "1" to:
+  =SUM(H9:H11)
+- After that, re-check the derived column-H values (H15, H17, H19, H20, H22, H23, H29, H30, H33, H35, H36) to confirm they now match the corresponding consolidated/segment values on sheet "2".
+- Optionally standardize the IF() return values for percentage cells across sheets (either "" or a consistent placeholder).
+
+If you want, I can:
+- produce a short list of all cells whose displayed value will change when H12 is corrected, or
+- create the exact corrected formulas (in case there are any other copy/paste errors) and produce a patch you can apply.

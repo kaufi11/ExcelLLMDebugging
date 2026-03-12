@@ -1,0 +1,31 @@
+I reviewed the formulas in all four sheets and found one clear formula error plus a few inconsistencies/ambiguities that you should check. Summary first, then details and recommended fixes.
+
+1) Critical formula error (needs immediate fix)
+- Sheet: Johnson - Base
+- Cell: E23 (floor, UA)
+- Current formula: =C23*D23
+- Problem: All other sheets (and the physical meaning of UA = Area / R) use E23 = C23 / D23. E23 in this sheet is multiplying area by R-value, producing 28,500 instead of ~78.95. That single error inflates the TOTAL (UA) in E26 and propagates into all heating energy, fuel, cost and CO2 results on that sheet.
+- Correct formula: =C23/D23
+- Cells that are incorrect as a consequence (dependent on E26 and propagate further): E26 (TOTAL UA), E27 (UA NON-SOUTH), D29 (BALANCE POINT TEMP), C34/D34 (DD@Tbal / degree-days interpolation), D36 (ANNUAL ENERGY DELIVERED), D37 (ANNUAL FUEL NEEDED), D38 (Therms/year), D39 (ANNUAL HEATING FUEL BILL), C85/E85 (TOTAL NATURAL GAS and cost), E99 (Natural Gas CO2), E101 (TOTAL ANNUAL ENVIRONMENTAL IMPACT), E103 (trees required), and any other downstream cells that use those results. Fixing E23 to C23/D23 will bring Johnson - Base into alignment with the other sheets.
+
+2) Logical/consistency items to review (not necessarily "errors" but ambiguous or fragile)
+- Emissions weighting (all sheets)
+  - Cell: C100 formula = C90*E90/100 + C91*E91/100 + C92*E92/100 + C93*E93/100 + C94*E94/100
+  - Observation: C93 and C94 (emission factors for nuclear and hydro/renewables) are left blank in the workbook. Excel treats blank as zero so the calculation currently weights only coal/oil/natgas and treats nuclear/hydro as 0 emissions. If you intended non‑zero life‑cycle emission factors for nuclear/hydro, fill C93 and C94. If you intended zero, consider explicitly entering 0 for clarity.
+- Conditional conversions related to fuel/electric heating (all sheets)
+  - Cells: D38 = IF(C13<1, D37/100000, 0) and F38 = IF(C13=G34, D37/F9, 0)
+  - Observation: These IF tests are a bit odd:
+    - D38 divides D37 by 100000 only if C13 < 1. If someone set furnace efficiency C13 >= 1 (unrealistic but possible input), D38 would be 0. Consider removing the IF and always converting D37 (Btu/yr) to therms by dividing by 100000 (or make the condition explicit about units).
+    - F38 computes kWh/year only if C13 equals G34 (i.e. furnace efficiency equals "electric baseboard" efficiency 1). That logic is fragile (comparisons of floats, relying on equality). If the intention is: "if heating is electric, compute kWh", use a clearer flag (e.g. a dedicated cell saying "electric = TRUE/FALSE") or compare a heating type cell rather than comparing efficiencies.
+- Labels reused across sheets
+  - Several sheets still show "JOHNSON HOUSE CO2 EMISSIONS" etc when the sheet is "Your Home". This is only a cosmetic/clarity issue but could confuse readers.
+
+3) Suggested quick corrections
+- Fix E23 on Johnson - Base to =C23/D23.
+- After that, check the cascade of totals and verify the corrected numbers match expectations (they should be very close to the other sheets that already have E23 correct).
+- For emissions, either (a) fill C93 and C94 with the intended lbs CO2/kWh values (if you want non‑zero values), or (b) set them explicitly to 0 to make your intent clear.
+- Consider revising the IF logic in D38 and F38 to be more robust (always convert D37/100000 for therms, use a clear "heating type" flag for electric vs gas).
+
+If you want, I can:
+- Apply the correction to E23 and compute the corrected cascade results for Johnson - Base and list the updated cell values; or
+- Search and list any other cells that are logically fragile (e.g. other places using equality checks on numeric values).

@@ -1,0 +1,75 @@
+I inspected the formulas you provided on Sheet1 and found multiple incorrect / inconsistent formula patterns. Summary first, then concrete examples and recommended fixes.
+
+Summary of problems
+- Many category cells (columns F:M for rows 9–39) are formulas that simply reference the previous column (e.g. F9 = SUM(E9), G9 = SUM(F9), …). That duplicates/propagates values across columns instead of using the actual category values or summing the correct ranges.
+- E9 contains =SUM(E42) which points to an unrelated cell (row 42) and is almost certainly wrong.
+- H19 uses COUNT(G19) while the surrounding pattern uses SUM on the previous cell; COUNT on a single cell will return 1 for any numeric value (including 0) and is inconsistent here.
+- The totals row (row 40) has an off-by-one / chained pattern: after E40 = SUM(E9:E39) the rest of totals chain left (F40 = SUM(E40), G40 = SUM(F40), …) instead of summing the respective column ranges. That produces identical or incorrect column totals.
+- Use of SUM() on a single cell is unnecessary (not an error by itself) but most of these single-cell SUM references reveal the larger referencing mistakes.
+
+Concrete problematic formulas (examples)
+- E9: currently =SUM(E42) — references row 42 (outside the data area). Likely wrong.
+- Row 9 chain:
+  - F9: =SUM(E9)
+  - G9: =SUM(F9)
+  - H9: =SUM(G9)
+  - I9: =SUM(H9)
+  - J9: =SUM(I9)
+  - K9: =SUM(J9)
+  - L9: =SUM(K9)
+  - M9: =SUM(L9)
+  These copy the previous column across the row rather than being independent category entries or summing correct ranges.
+- Same pattern repeats for rows 10–39: F# = SUM(E#), G# = SUM(F#), … M# = SUM(L#). (So the problem is repeated for every day row.)
+- Row 19 exception:
+  - H19: =COUNT(G19) — inconsistent and wrong for a category count; COUNT(G19) will return 1 if G19 is numeric (even if 0).
+- Totals row (row 40):
+  - C40: =SUM(C9:C39) — OK
+  - D40: =SUM(D9:D39) — OK
+  - E40: =SUM(E9:E39) — OK
+  - F40: =SUM(E40) — WRONG (should sum F9:F39)
+  - G40: =SUM(F40) — WRONG (should sum G9:G39)
+  - H40: =SUM(G40) — WRONG (should sum H9:H39)
+  - I40: =SUM(H40) — WRONG (should sum I9:I39)
+  - J40: =SUM(I40) — WRONG (should sum J9:J39)
+  - K40: =SUM(J40) — WRONG (should sum K9:K39)
+  - L40: =SUM(K40) — WRONG (should sum L9:L39)
+  - M40: =SUM(L40) — WRONG (should sum M9:M39)
+
+Recommended corrections
+1. If the intention is to record category counts per day in D9:M39:
+   - Remove the formulas that copy previous columns (F9:M39) and make those cells plain data-entry cells (user inputs).
+   - Compute each day’s total (column C) with a per-row sum across categories: example for row 9:
+     - C9 = SUM(D9:M9)
+     - Fill down C9:C39.
+   - Totals row: each column total should sum its column:
+     - D40 = SUM(D9:D39) (already OK)
+     - E40 = SUM(E9:E39) (already OK)
+     - F40 = SUM(F9:F39)
+     - G40 = SUM(G9:G39)
+     - … continue similarly through M40 = SUM(M9:M39)
+
+2. If some columns were meant to be cumulative or computed values, explicitly state the intended logic. But the current chain (each column referencing the previous) is almost certainly not the intended behavior.
+
+3. Fix E9:
+   - If E9 is a data cell, remove =SUM(E42) and make it a direct entry.
+   - If E9 must sum a range, correct the range (for example =SUM(E9:E39) would be a circular formula and is not correct for a single day). Most likely E9 should be a number entered manually.
+
+4. Fix H19:
+   - Replace =COUNT(G19) with either =SUM(G19) or make H19 a data entry, depending on intended meaning. Using COUNT on a single cell is inappropriate here.
+
+5. Clean up single-cell SUM usage:
+   - SUM(A1) is equivalent to A1 but unnecessary. Replace with direct references if you intend to copy a single value, or remove formula to allow data entry.
+
+Quick examples of corrected formulas
+- C9: =SUM(D9:M9)
+- Copy C9 down to C39
+- F40: =SUM(F9:F39)
+- G40: =SUM(G9:G39)
+- ... M40: =SUM(M9:M39)
+- Remove formulas like F9 = SUM(E9), G9 = SUM(F9), etc., unless there was a deliberate reason for cascading values (which seems unlikely).
+
+If you want, I can:
+- Produce a list of every individual cell that uses the incorrect chained formula (I already noted it applies to F9:M39 and F10:M39 … F39:M39) and output corrected formulas for each, or
+- Produce a corrected version of the sheet’s formulas (i.e., the exact replacement formula for each erroneous cell) if you confirm how you want totals/per-day totals calculated.
+
+Which would you prefer?

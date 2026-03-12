@@ -1,0 +1,38 @@
+Summary of the errors I found and the simple fixes.
+
+1) Accounts receivable (D11) references a non‑existent cell (D98) and manually adds many detail cells.
+- Problem: D11 is fragile and inconsistent with the "TOTAL RECEIVABLES" row (D114) and the "Due from officers and employees" row (D12). This can produce wrong numbers or break if row numbering changes.
+- Fix (simple, robust): replace the D11 formula with
+  =D114 - D12
+  Explanation: D114 is the total of all A/R detail rows (SUM(D99:D113)). D12 holds the "due from officers" amount (D100+D101). D11 is supposed to be "Accounts receivable, less allowance" excluding the due-from-officers line, so using D114-D12 guarantees consistency and removes the stray D98 reference.
+
+2) Total current assets (D18) formula includes the header row range SUM(D8:D17).
+- Problem: summing D8:D17 includes row(s) that are not numeric detail rows (D8 is a header). This is sloppy and can hide errors when rows are moved/inserted.
+- Fix: change D18 to explicitly sum the subtotal lines:
+  =SUM(D9:D16)
+  Explanation: This ensures D18 only totals the current asset line items shown (Cash, Investments, A/R, Due from officers, Due from Foundation, Inventory, Prepaids, Other current assets) and will not pick up stray cells.
+
+3) Balance / summary cells on the right (H281, H282, H285, H286, etc.) are hard‑coded numbers instead of links to the sheet totals.
+- Problem: H285 and H286 (Assets and Liabilities/Capital) are literal constants (3855164.52). H281 and H282 are also fixed numbers. Hard‑coding prevents the balance check from updating and hides mismatches. The sheet already has dynamic checks (H289..H291) but the visible DIFF field (H287 = H285-H286) uses the static values.
+- Fixes (make them point to the authoritative totals):
+  - H281 (CAPITAL) := D281
+  - H282 (PROFIT/LOSS) := D278
+  - H285 (ASSETS =) := D178
+  - H286 (LIABILITIES/CAPITAL) := D283
+  - Leave H287 as =H285-H286 (it will now show the correct difference)
+  Explanation: by linking these to the real totals the top‑right summary always reflects the current numbers and the "DIFF SHOULD = 0" check becomes reliable.
+
+4) (Optional / best practice) Replace other explicit long lists of cell references with SUM ranges or references to the subtotal lines.
+- Examples: wherever a subtotal is built by listing many individual cells (e.g., D43 lists many D18x cells), consider using the contiguous SUM(range) if the detail rows are contiguous or reference the sub‑total row. This reduces risk of missing a new detail row when the layout changes.
+
+Quick action checklist you can paste into Excel:
+- In D11: replace with =D114 - D12
+- In D18: replace with =SUM(D9:D16)
+- In H281: replace with =D281
+- In H282: replace with =D278
+- In H285: replace with =D178
+- In H286: replace with =D283
+
+After these changes: recalculate and confirm H287 = 0 (or shows the actual difference). If it is not zero afterwards, we can trace which detail row is out of place.
+
+If you want, I can produce a short list of the exact formulas you currently have that I think should be replaced (include current vs. corrected) or scan for any other stray hard‑coded totals.

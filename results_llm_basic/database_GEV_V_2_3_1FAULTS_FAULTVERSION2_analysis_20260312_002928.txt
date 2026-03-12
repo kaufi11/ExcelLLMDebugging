@@ -1,0 +1,37 @@
+Ho analizzato il file. Ci sono 3 problemi principali, con soluzioni semplici.
+
+1) Errori di digitazione nelle formule (doppio +)
+- Dove trovi formule come:
+  =D7++G7+J7+M7 (compare in Q7, Q8, Q9, …)
+- Problema: il "++" è una svista; anche se Excel lo interpreta (unary plus) è sbagliato e rischia confusione.
+- Soluzione: sostituire con:
+  =D7+G7+J7+M7
+- Spiegazione: rimuovi il + duplicato per avere una somma chiara e corretta.
+
+2) Intervalli fissi troppo piccoli (solo righe 3:4)
+- Dove: molte formule nel foglio "calcoli" e altrove usano intervalli limitati come db!A3:A4, db!AP3:AP4, db!AN3:AN4, ecc.
+- Problema: queste formule contano/sommmano solo quelle due righe di esempio. non aggiornano i risultati quando aggiungi nuovi servizi (righe).
+- Soluzione semplice e rapida: usare riferimenti a colonna intera o intervalli dinamici. Esempi pratici:
+  - Numero servizi (prima B60 =COUNTA(db!A3:A4)) → usare:
+    =COUNTA(db!A:A)-1
+    (sottrai 1 se nella colonna A c'è una riga di intestazione)
+  - Somma ore (prima SUM(db!AP3:AP4)) → usare:
+    =SUM(db!AP:AP)
+  - Conteggio orari (prima COUNT(db!AN3:AN4)) → usare:
+    =COUNT(db!AN:AN)
+- Spiegazione: riferimenti colonna-intera contano/sommmano tutti i record nuovi senza dover aggiornare le formule ogni volta. In alternativa crea un "Table" strutturato o Named Range dinamico (OFFSET / INDEX) se preferisci evitare colonne intere.
+
+3) Controlli di selezione impostati sempre su TRUE (selezione "prendi tutti")
+- Dove: nel foglio "calcoli" le celle D21 e/o D23 sono TRUE (controlli "prendi tutti").
+- Problema: quando quei flag sono TRUE le formule di filtro (es. AE16, AG16, ...) restituiscono TRUE sempre e quindi includono tutti i record nelle estrazioni/statistiche anche se non vuoi.
+- Soluzione: cambiare i flag (D21, D22, D23, ecc.) in FALSE se vuoi applicare i criteri di filtro reali.
+- Spiegazione: quei TRUE servono come "select all". Mettili a FALSE per filtrare in base a anno/mese/GEV/tipo servizio.
+
+Suggerimenti pratici rapidi
+- Per il conteggio GEV (B61 in calcoli → usato in Home I21): verifica dove memorizzi i nomi delle GEV (parametri!A:A o SetPar!E:E) e usa:
+  =COUNTA(<colonna_dei_nomi>) - 1  (se c'è intestazione)
+- Se vuoi una soluzione più robusta: converti il foglio "db" in una Excel Table (Seleziona i dati → Inserisci → Tabella). Le formule con riferimenti strutturati cresceranno automaticamente.
+
+Se vuoi, posso:
+- fornirti le formule esatte da copiare per le celle principali (B60, B27, B28, B29, B61, ecc.);
+- oppure applicare io le correzioni se mi dici quali intervalli vuoi contare (ad es. fino a colonna A o SetPar!E:E).

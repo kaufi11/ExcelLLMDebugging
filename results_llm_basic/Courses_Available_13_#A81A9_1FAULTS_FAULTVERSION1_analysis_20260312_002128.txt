@@ -1,0 +1,26 @@
+Summary of the errors
+- A63 contains =5 (a hard-coded/reset value). That breaks the increment sequence that had been counting up from A4.
+- A165 is using =A162+1 (skips the rows where you put headers like B164). That can create gaps or incorrect references when you insert header rows.
+- There are other manual numbers in column A (for example A314 = 1) that may be intentional (starting a new list) or may also be accidental resets. The sheet mixes formulas and hard values, so the numbering is fragile.
+
+Why this matters
+- The intended pattern is "each row = previous row + 1". Any hard-coded number or a formula that references the wrong previous cell will break the sequence and produce wrong IDs.
+
+Quick fixes
+1. Fix the clear mistake at A63
+   - Replace =5 with =A62+1
+
+2. Fix the header-skip problem (A165 and any rows after headers)
+   - Replace formulas that reference a non-adjacent previous cell with a formula that always finds the last numeric value above and adds 1. Example for A165:
+     =IF(B165="","",LOOKUP(9.99999999999999E+307,$A$4:A164)+1)
+   - This returns the last numeric value in A4:A164 and adds one. It will still work if there are header rows or blanks between.
+
+3. Find and fix any other manual values in column A
+   - Use Go To Special → Constants (Column A) to locate non-formula numbers and convert them to the correct incremental formula (either =A(previous)+1 or the LOOKUP variant shown above).
+
+Notes / Best practice
+- The leading plus sign in formulas (=+A4+1) is harmless but unnecessary; you can use =A4+1.
+- If you intentionally restart numbering for a new section, keep that as a manual value (but be consistent), or start a new block with a new formula base.
+- If you expect to insert header rows frequently, prefer the LOOKUP form so numbering never breaks.
+
+If you want, tell me which approach you prefer (simple sequential =A(prev)+1 or the robust LOOKUP method) and I’ll give the exact formula to paste and show how to autofill it down the whole column.

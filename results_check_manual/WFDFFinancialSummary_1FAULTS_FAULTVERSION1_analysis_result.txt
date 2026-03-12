@@ -1,0 +1,50 @@
+I reviewed the workbook formulas and values on the sheets you provided. I found several formula errors and inconsistencies (some causing small numerical mismatches, one producing a clearly wrong balance-sheet total). Below are the issues, explanations and recommended fixes.
+
+1) Balance Sheet — 2002 Total Equity and Total Liabilities & Equity are wrong (COUNT used instead of SUM)
+- Cells:
+  - H14 currently: =ROUND(COUNT(H10:H13),5)  → yields 3
+  - H15 currently: =ROUND(H9+H14,5) → yields 3 (nonsense for a monetary total)
+- Problem: H14 uses COUNT instead of SUM, so it returns the count of numeric cells (3) not the dollar total of equity components. That propagates to H15, making the balance-sheet total incorrect for Dec 31, 2002.
+- Fix: Replace H14 with =ROUND(SUM(H10:H13),5) (or simply =SUM(H10:H13)) and adjust H15 to =ROUND(H9+H14,5) or =ROUND(H9 + SUM(H10:H13),5) depending on the intended structure.
+
+2) Financial summary — Inconsistent linking of "Checking Account" rows causes tiny differences
+- Cells:
+  - C35 = =C33 (correct)
+  - E35, G35, I35, K35, M35 are hard-coded rounded numbers (69161.82, 8578.49, 12823.99, 14326.7, 10525.9) instead of referencing their respective Ending Cash/Inv. Balance cells (E33, G33, I33, K33, M33).
+- Problem: The breakdown (Checking + Money Market + Loan) does not consistently reference the Ending Cash cell; some are entered as rounded values. That causes tiny Differences in row 39 (e.g. -0.0005948...) and makes reconciliation fragile.
+- Fix: Make each checking account cell reference its corresponding ending balance, e.g. E35 :=E33, G35 :=G33, I35 :=I33, K35 :=K33, M35 :=M33 (or ensure the sum of the components equals the exact Ending Cash value). Alternatively, use consistent full-precision values rather than rounded manual entries.
+
+3) Financial summary — Small floating-point / rounding mismatches in "Difference" row
+- Cells: C39, E39, G39, I39, K39, M39 use formulas =<Ending>-SUM(components)
+- Problem: Several differences show tiny non-zero results (-0.0005947955...), caused by a mixture of derived (full-precision) values and manually-entered rounded values (see #2). This is a numeric precision/reconciliation issue rather than a broken formula.
+- Fix: Make the component cells reference the precise values (no manual rounding), or wrap the reconciliation formulas with a rounding function (e.g., =ROUND(E33 - SUM(E35:E37),2)) if cents precision is acceptable.
+
+4) Balance Sheet — H4 and H5 reference 'Financial summary'!K35 / K36 (correct), but overall some Balance Sheet cells use rounded hard-coded values rather than direct links
+- Example: E4 = 69161.82 (hard-coded) while 'Financial summary'!E33 is 69161.8194052045. This inconsistency contributes to the tiny mismatches mentioned above.
+- Recommendation: Where possible, link Balance Sheet asset lines directly to the Financial summary ending balances (E4 := 'Financial summary'!E35 or E33 depending on desired mapping) so numbers are always consistent.
+
+5) Balance Sheet — Retained earnings / Net Income chaining is unusual but consistent if intentional
+- Observed pattern: retained earnings in a column equals prior retained + prior net (i.e., cumulative net up to prior year), then current-year Net Income is in the same column (so Total Equity sums Opening Bal + Retained + Net).
+- This is not an error per se, but the layout is non-standard and can be confusing. Keep it but document the intended chain, or align retained/net so retained = prior retained + prior net exactly and use SUM for totals.
+- No immediate formula change required (except fixing H14 noted above), but review for intent.
+
+6) Financial summary — Hard-coded literal formula-like value
+- Cell I19 = "=8238.33" — it contains an equals sign then a literal number. Excel will treat that as text in many contexts; in the JSON you show it returned as value 8238.33 and formula "=8238.33".
+- Recommendation: Replace with a numeric value 8238.33 (no leading "=") or remove the unnecessary equals sign to avoid any ambiguity.
+
+7) Financial summary — Some formulas use direct constant subtraction rather than referencing source lines
+- Example: K21 = "=8821.24-118.52" (Events inc. travel for 2002)
+- This works but is brittle: if the 8821.24 or 118.52 values are recorded elsewhere (e.g., as line items), better to reference the source cells rather than hard-coded numbers so changes flow automatically.
+
+8) Miscellaneous / housekeeping items
+- SUM ranges sometimes include a header row (e.g., SUM(C6:C13) when actual income data starts in C7). These are harmless if header cells are blank/non-numeric, but it's cleaner to use exact ranges.
+- There are many manually-entered numbers (rounded) across sheets. To improve reconciliation, use direct cell references or consistent rounding.
+
+Summary of concrete immediate fixes I recommend (in order of priority)
+1. Fix Balance Sheet H14: change COUNT to SUM (H14 := ROUND(SUM(H10:H13),5)).
+2. Fix Balance Sheet H15 accordingly (it will flow correctly once H14 is fixed).
+3. On Financial summary, link each Checking Account cell to its corresponding Ending Cash cell (E35 :=E33, G35 :=G33, I35 :=I33, K35 :=K33, M35 :=M33) or replace the inconsistent hard-coded values.
+4. Optionally ROUND the Difference row formulas (C39, E39, ...) to 2 decimal places to hide floating-point artifacts if cents precision is desired: e.g., =ROUND(E33 - SUM(E35:E37),2).
+5. Remove accidental equals literals (e.g., I19) and replace hard-coded subtractions with cell references where appropriate (e.g., K21).
+
+If you want, I can produce the exact formulas to paste into the cells (and indicate cell-by-cell replacements), or I can generate a corrected workbook (apply the changes and return new file). Which would you prefer?

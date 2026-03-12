@@ -1,0 +1,44 @@
+Summary of the problem
+- Many cells in the daily data area (rows 9–39, columns D:M and some others) contain wrong formulas that point to other single cells instead of real data ranges. Examples:
+  - E9 =SUM(E42) (points to a single unrelated cell outside the table)
+  - F9 =SUM(E9), G9 =SUM(F9), H9 =SUM(G9) … (each cell just sums the previous column) — this shifts data across columns and produces wrong totals
+  - K19 =SUM(235) (sum of a literal number, not of a range)
+  - Totals row (row 40) is chained the same way: F40 =SUM(E40), G40 =SUM(F40), etc.
+- These formulas either (a) produce incorrect values because they reference the wrong place, (b) create unnecessary chains, or (c) reference constants. The result: row totals and column totals are wrong or unreliable.
+
+Why this is wrong (brief)
+- Daily input cells should be raw counts (entered by you), not formulas that point at other columns.
+- The "Total #" per day (column C) must sum that day’s service columns (D:M).
+- Column totals (row 40) must sum each column down (rows 9:39).
+- Current formulas instead propagate values sideways and do not compute the intended sums.
+
+Correct layout and exact formulas to fix it
+1. Make columns D:M (rows 9–39) be data-entry cells. Remove formulas from these cells so you can enter counts manually.
+2. Put the per-day total in column C:
+   - C9: =SUM(D9:M9)
+   - Fill C9 down through C39 (so C10 =SUM(D10:M10), etc.)
+3. Put the column totals in row 40 (sum each column down):
+   - C40: =SUM(C9:C39)
+   - D40: =SUM(D9:D39)
+   - E40: =SUM(E9:E39)
+   - F40: =SUM(F9:F39)
+   - ... continue across to M40: =SUM(M9:M39)
+   - You can enter D40 and then copy it across to M40; Excel will adjust column references.
+4. Remove / replace any single-cell SUMs or literal sums:
+   - Replace K19 =SUM(235) with either a direct value (if it’s data) or with the correct formula referencing actual input cells. (If K19 is a data entry cell, clear the formula and type the number.)
+   - Remove formulas like F9 =SUM(E9) etc. They belong to input columns or are wrong references.
+
+Quick step-by-step to implement
+- Select D9:M39 → press Delete (clears incorrect formulas) → enter counts manually.
+- Enter C9 =SUM(D9:M9) → drag-fill down to row 39.
+- Enter D40 =SUM(D9:D39) → copy D40 across to M40; set C40 =SUM(C9:C39).
+- Inspect K19 and similar odd cells; clear formulas and enter correct values or correct range references.
+
+Why this solution works (short)
+- Each day’s total now sums that day’s service columns (no cross-column drift).
+- Each column total now aggregates the correct vertical range (rows 9–39).
+- Removes chains and incorrect references so totals are stable and correct.
+
+If you want, I can
+- Give the exact copy-paste formulas for every cell in row 40 (D40..M40) and C9..C39, or
+- Create an adjusted example workbook (or show the corrected formulas inserted into the cells).

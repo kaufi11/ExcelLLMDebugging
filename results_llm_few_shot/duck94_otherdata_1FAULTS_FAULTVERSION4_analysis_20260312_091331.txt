@@ -1,0 +1,20 @@
+Summary of errors (FRF sheet):
+
+1) Wrong constant in I20
+- Faulty cell: I20 has =SUM(482-J20)
+- Problem: “482” is a hard-coded number (typo) instead of using the H20 cell value.
+- Fix: Replace with =H20-J20
+
+2) Odd / nonstandard formulas in I5:I19, I21:I28
+- Faulty cells: I5:I19, I21:I28 show =SUM(Hn-Jn)
+- Problem: SUM(Hn-Jn) works technically (it just sums the single result of Hn-Jn) but is confusing and nonstandard. It also increases risk of typos (like the 482 above). If those cells are literal text like "FORMULA =SUM(...)" they are not real formulas at all.
+- Fix: Use a clear subtraction formula and remove any leading text. For example put in I5:
+  =H5-J5
+  then fill down through I28 (skip rows where H or J are N/A).
+
+Notes / explanation (short):
+- =Hn-Jn directly calculates the difference between columns H and J. That is clearer, less error-prone, and easier to audit than wrapping the subtraction in SUM.
+- If any cells actually contain the text "FORMULA =SUM(...)" (including the word FORMULA), delete the text and enter the real formula starting with = (e.g. =H5-J5). Text will not calculate.
+- After fixing, scan column I for unexpectedly negative values (could indicate wrong order or bad data entry) and correct source data if needed.
+
+If you want, I can provide the exact formulas to paste and the fastest way to fill them down.

@@ -1,0 +1,60 @@
+I checked the workbook and found a few clear formula errors that will produce wrong totals/reconciliations. Short list of problems, why they matter and exactly how to fix them.
+
+1) Wrong row-number formula (typo)
+- Where: Table 1.0 (I & E) — cell B57
+- Problem: formula is =525+1 (typo). This breaks the row numbering sequence and is obviously wrong.
+- Fix: change B57 to =B56+1
+- Why: keeps the auto-incremented row numbers consistent (same pattern used elsewhere).
+
+2) Monthly totals in Cashflow (Original forecast) only use the last month instead of summing months
+- Where: Table 3.0 (Operating Cash Flow — ORIGINAL CASH FORECAST)
+  - T22 currently =S22 (should be the Total for row 22)
+  - T23 currently =S23 (should be the Total for row 23)
+- Problem: T22 and T23 only copy July's month (S column). That means the column T "Total" is wrong for those rows and any dependent totals (T24 etc.) are wrong.
+- Fix: replace:
+  - T22 with =SUM(H22:S22)
+  - T23 with =SUM(H23:S23)
+  - (T24 can remain =SUM(T22:T23) or you can set T24 = SUM(H22:S23) — both OK once T22/T23 are correct)
+- Why: T (Total) column must sum all months H:S, otherwise reconciling totals and the “These cells should be zero” checks will fail.
+
+3) Same monthly-total mistake in Cashflow (Actual/Revised forecast)
+- Where: Table 3.0 (ACTUAL/REVISED FORECAST)
+  - T45 currently =S45
+  - T46 currently =S46
+- Problem & impact: same as (2) — Totals only reflect July, so financing totals and reconciliations are wrong.
+- Fix: replace:
+  - T45 with =SUM(H45:S45)
+  - T46 with =SUM(H46:S46)
+  - Leave T47 = SUM(T45:T46) (it will then be correct)
+- Why: total column must aggregate months.
+
+4) Fragile/misplaced % formula (potential bug)
+- Where: Table 2.0 (Balance Sheet) — cell K69
+- Problem: K69 is set to =K49. That borrows the % from “Total Net Assets” rather than computing percentage for “Total Funds” itself.
+- Recommended fix: replace K69 with the standard pattern used elsewhere:
+  - K69 = IF(H69=0,"N/A",(J69/H69)*100)
+- Why: even if H69 equals H49 now, copying a different cell’s % is fragile and confusing. Use the proper percentage formula for consistency and to avoid errors if either H49 or H69 changes.
+
+5) General housekeeping / possible additional issues
+- There may be other cells where the T (Total) column was set to =Sxx instead of =SUM(Hxx:Sxx). Search the workbook for formulas that equal Sxx and verify they should really be SUM(Hxx:Sxx).
+- Cross-sheet reconciliation formulas (for example T26 and T49 that compare cash totals to Balance Sheet cells) assume the correct columns are being used — once you fix totals above, re-check those reconciliation cells to ensure they show zero.
+
+How to implement (step-by-step)
+1. Open the workbook.
+2. Go to the noted cells and replace the formulas exactly as above.
+   - B57: =B56+1
+   - T22: =SUM(H22:S22)
+   - T23: =SUM(H23:S23)
+   - T45: =SUM(H45:S45)
+   - T46: =SUM(H46:S46)
+   - K69: =IF(H69=0,"N/A",(J69/H69)*100)
+3. After changes, check:
+   - T24 and T47 recalculate correctly.
+   - “These cells should be zero” rows (e.g. H25..H26, H48..H49, etc.) are zero or show expected small differences.
+4. Use Excel’s Find (Ctrl+F) to locate any other Txx = Sxx formulas and correct them similarly.
+
+If you want, I can:
+- Provide a small macro to find/fix all T-column instances where the formula equals Sxx,
+- Or give a quick checklist of all cells to re-check after edits.
+
+Would you like me to list every cell that currently uses =Sxx (so you can verify them), or provide the macro to fix them automatically?

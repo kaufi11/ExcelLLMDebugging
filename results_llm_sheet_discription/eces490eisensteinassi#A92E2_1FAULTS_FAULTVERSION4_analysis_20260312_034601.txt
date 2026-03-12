@@ -1,0 +1,20 @@
+Findings (short)
+- Error: cell G19 has =E19/F19 but it should be =E19*F19. That makes the right-side entropy contributions (G19:G44) and their sum (G46) wrong.
+- No other formula errors found; probability columns sum to 1 for both distributions.
+
+Fix (steps)
+1. In G19 replace =E19/F19 with =E19*F19.
+2. Fill/copy G19 down through G44 so every G-row uses =E#*F#.
+3. Recalculate (or let Excel recalc). G46 is =SUM(G19:G44) so it updates automatically.
+
+Why this fixes it (simple)
+- Entropy contribution per symbol is p * I(p) where I(p) = -log2(p). Division (p / I) is the wrong operation; multiplication gives the correct contribution value and thus the correct total entropy.
+
+Result (approx)
+- After the fix the right-side 26-symbol entropy H(A) ≈ 4.2613 bits (will show in G46). Left-side and Part 1 are unchanged.
+
+Optional cleanups
+- Replace the Max H formula 26*((1/26)*-LOG((1/26),2)) with the simpler =-LOG(1/26,2) or =LOG(26,2).
+- Use Fill Down to ensure consistency in repeated rows and scan for accidental / instead of *.
+
+If you want, I can give the exact corrected numeric values for G19:G44 and the new total.

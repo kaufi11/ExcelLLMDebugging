@@ -1,0 +1,60 @@
+I reviewed the sheet and found the real errors and inconsistencies. Short summary first, then exact fixes you can paste.
+
+Main problems (what's wrong and why)
+1. Hardcoded quantity
+   - Cell F5: =PRODUCT(887,D5) — uses 887 instead of the quantity cell C5. This will give wrong client totals.
+2. Wrong/ inconsistent unit price used for Custom Programming lines
+   - Rows 78–81: D78:D81 = 195 but E78:E81 use 175 (E78 = PRODUCT(C78,175)). Dealer/client prices must use the D column, not a different hardcoded value.
+3. Installation/Training dealer price uses wrong unit price
+   - Rows 91–94: D91:D94 = 1200 but E91:E94 use 1000 (E91 = PRODUCT(C91,1000)). Dealer price should use D and the dealer multiplier.
+4. Warranty lines are inconsistent and confusing (possible circular/logical errors)
+   - Rows 85 & 86: D85 = PRODUCT(F82,0.09), F85 = PRODUCT(F82,C85,0.09), E85 = PRODUCT(F85,0.9) (similarly for row 86 with 0.18). Problems:
+     - E85 uses 0.9 but the sheet uses G2 = 0.75 as the dealer multiplier elsewhere — inconsistent.
+     - Layout mixes "unit price" (D) and a percent-of-subtotal (F82) in odd places; formulas are hard to follow and likely wrong if quantities change.
+5. Text values in price column break arithmetic
+   - Several D cells contain "CALL" or "TBD" (e.g., D57, D60, many G-cells). Any multiplication with those text values will return errors or 0 if wrapped in PRODUCT. You should keep numeric values or guard formulas.
+6. Inconsistent PRODUCT syntax (cosmetic)
+   - Some cells use PRODUCT(Cx:Dx) while others use PRODUCT(Cx,Dx). PRODUCT(range) works, but use consistent and simpler formulas (Cx*Dx) for clarity.
+
+Exact fixes (pasteable formulas and brief why)
+1. Fix F5 (use the quantity cell)
+   - Replace: =PRODUCT(887,D5)
+   - With: =C5*D5
+   - Why: uses the actual quantity (C5) so client price updates when quantity changes.
+2. Fix custom programming rows (use D column and dealer multiplier G2)
+   - For each row 78–81:
+     - Dealer (E78) → =C78*D78*$G$2
+     - Client (F78) → =C78*D78
+     - Repeat for 79–81 (replace row numbers)
+   - Why: keeps unit price consistent with D column and applies the standard dealer multiplier in G2.
+3. Fix installation/training dealer price rows (91–94)
+   - For each row:
+     - Dealer (E91) → =C91*D91*$G$2
+     - Client (F91) → =C91*D91  (if not already)
+   - Why: E must be derived from D (1200) and G2; current formulas use wrong 1000.
+4. Rebuild warranty lines cleanly (rows 85 & 86)
+   - Recommended approach (assume warranty is X% of software client subtotal F82; let C85 be qty (0/1)):
+     - F85 (Client price) → =F$82 * C85 * 0.09
+     - E85 (Dealer price) → =F85 * $G$2
+     - (Optional) D85 (NPL/unit) → =IF(C85>0, F$82 * 0.09, "")
+   - For 24/7 warranty row 86 (18%):
+     - F86 → =F$82 * C86 * 0.18
+     - E86 → =F86 * $G$2
+     - D86 optional → =IF(C86>0, F$82 * 0.18, "")
+   - Why: this avoids circular references, uses the single dealer multiplier G2 consistently, and clearly computes warranty as a percentage of the software subtotal.
+5. Protect formulas from text in D column
+   - Use guarded formula pattern where needed (example for any row x):
+     - Dealer: =IF(ISNUMBER(Dx), Cx*Dx*$G$2, 0)
+     - Client: =IF(ISNUMBER(Dx), Cx*Dx, 0)
+   - Why: prevents errors when D contains "CALL" or "TBD".
+6. Make PRODUCT usage consistent (optional)
+   - Prefer simple multiplication: =Cx*Dx or =Cx*Dx*$G$2. Simpler to audit.
+
+Other recommended housekeeping (short)
+- Replace "CALL"/"TBD" with numeric values when you have them; or leave text but use the IF(ISNUMBER(..)) guards above.
+- Ensure quantities are entered in column C (the sheet currently has zeros).
+- Consider making G2 absolute ($G$2) in formulas so copying down keeps the dealer multiplier fixed.
+
+If you want, I can:
+- Provide a short list of exact cell-by-cell replacement formulas for every erroneous cell, or
+- Produce corrected formulas for the whole sheet (pasteable into a text file). Which would you prefer?

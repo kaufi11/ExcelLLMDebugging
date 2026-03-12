@@ -1,0 +1,44 @@
+I reviewed the workbook and found several real formula errors (wrong signs and mis‑referenced cells) that will give you wrong NPVs / tax calculations. Below I list the errors, why they are wrong, and the simple fixes (short and actionable).
+
+1) Q1 (DCF table) — wrong sign in one discount formula
+- Error: cell E19 uses =(1 - $J19) in the denominator (you wrote =$E$2/(1-$J19)^$E$1).
+- Why it’s wrong: discounting always uses (1 + rate). A minus makes the discount factor incorrect.
+- Fix: change E19 to =$E$2/(1+$J19)^$E$1
+
+2) Q2 (WITHOUT DEPRECIATION) — inconsistent discount rate used for period 0 equity cashflow
+- Error: C31 uses the wrong rate reference: =C30/(1+$C$19)^C22 while D31..G31 use cost of equity ($C$20).
+- Why it’s wrong: you should discount equity cash flows using the cost of equity (C20) for all periods, so the period‑0 cell should be consistent with the others.
+- Fix: change C31 to =C30/(1+$C$20)^C22
+  (Alternatively, if C30 is period 0 cashflow, you can just use =C30 because ^0 = 1. But keep the same reference style for clarity.)
+
+3) Q2 (WITH DEPRECIATION and the duplicate debt/depreciation block) — mis‑shifted column references for tax loss carry‑forwards and related rows
+- Examples of errors:
+  - E46 uses IF(D47=0,SUM(D45:D47),0) (references D‑column cells instead of E).
+  - F46 uses IF(E47=0,SUM(E45:E47),0) (shifted left by 1).
+  - Similar pattern appears in D70 / E70 / F70 etc in the later block.
+- Why it’s wrong: those formulas are shifted one column to the left, so tax carryforward and taxable income calculations use wrong columns.
+- Fix: rewrite these formulas so each column references its own column. Example correct formulas:
+  - D46: =IF(D47=0,SUM(D45:D47),0)
+  - E46: =IF(E47=0,SUM(E45:E47),0)
+  - F46: =IF(F47=0,SUM(F45:F47),0)
+  - Apply the same fix for D70/E70/F70 etc (use D71, E71, F71 in the IF test and SUM ranges).
+
+4) WITH DEPRECIATION — wrong references to loan/interest input cells
+- Error: D67 (and the equivalent interest rows) uses =-$C$17*$C$18 (or other references) but in this block the loan and interest inputs are C58 and C61 (not C17/C18).
+- Why it’s wrong: cells refer to inputs in the wrong section so interest cashflows are computed from non‑existent or wrong numbers.
+- Fix: point interest formulas at the local loan and rate. Example:
+  - D67 (interest in year 1) should be = - $C$58 * $C$61
+  - Use absolute references if you will fill right: D67 = -$C$58 * $C$61 and copy to E/F/G.
+
+5) General consistency / best practice issues (short notes)
+- When you fill formulas right across columns, use relative column references for per‑period cells (e.g. D43, E43) and absolute references for inputs (e.g. $C$58, $C$61). This prevents the “one‑column shift” mistakes above.
+- Watch for the Excel binary display of some rates (e.g. 0.0399999999) — that’s just floating point; use formatting or ROUND when you present values.
+- IRR on non‑conventional cashflows: not an "error" in Excel, but be aware IRR may return one of multiple solutions. Use NPV profile or specify a guess in IRR(...) to explore alternative roots.
+
+Summary of the quick concrete fixes to apply now
+- Change E19: from =$E$2/(1-$J19)^$E$1 to =$E$2/(1+$J19)^$E$1
+- Change C31: from =C30/(1+$C$19)^C22 to =C30/(1+$C$20)^C22 (or simply =C30 for period 0)
+- Fix column‑shifted carryforward formulas: D46/E46/F46 etc → use the same column in each formula (e.g. E46 =IF(E47=0,SUM(E45:E47),0))
+- Fix interest formulas to reference the local loan and rate (e.g. D67 = -$C$58 * $C$61)
+
+If you want, I can prepare the exact corrected formulas for any block (paste of a few dozen cells) or produce a version of the workbook with the fixes applied — tell me which sheet(s) you want fixed first.

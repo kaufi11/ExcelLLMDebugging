@@ -1,0 +1,40 @@
+I checked both sheets and found the clear formula mistakes and one (likely) logic problem that will give wrong monthly totals and incorrect roll-ups. Short, clear fixes below.
+
+1) Wrong divisor in Services monthly cell (definite error)
+- Error: L14 = J14/265
+- Why it's wrong: L-column is "DESK/MONTH" and every other monthly cell divides the annual per-desk number (Jxx) by 12. Dividing by 265 is wrong and produces a value ~30x too small.
+- Fix: change L14 to =J14/12
+- Effect: fixes the Services monthly amount and corrects any totals that include L14 (L29, L37, monthly totals and summaries).
+
+2) Propagation problem from (1)
+- Symptom: Monthly totals in L29, L37 and any downstream monthly calculations (M14, M29, M37, M74–M80, etc.) will be wrong because they included the incorrect L14.
+- Fix: after correcting L14 above, recalc (Excel does this automatically) — all dependent monthly totals will then be correct.
+
+3) Suspicious hard-coded 0.9 in TOTAL CHARGE (possible logic error)
+- Cell: C37 = SUM(C12:C35)*0.9
+- Why suspicious: C6 contains "% Common Area" = 0.33. If the intent was to remove common area from chargeable area the correct factor would be (1 - C6) i.e. 0.67, not 0.9. If the 0.9 was intended for some other adjustment (a blanket 10% reduction) it should be documented.
+- Fix (choose one according to intent):
+  - If you want to exclude common area from chargeable totals: change to =SUM(C12:C35)*(1-$C$6)
+  - If you meant no adjustment: change to =SUM(C12:C35)
+  - If you do intend a 10% reduction, add a comment near C37 explaining why 0.9 is used.
+- Effect: prevents a systematically wrong total charge used in profits and breakeven calculations.
+
+4) NPV / repeated-year cashflow construction (design/clarity issue)
+- Current: B85 uses a long IF(...) list to repeat the same annual operating profit F80 up to 10 (actually 11) times. This is clumsy and error-prone (it even includes an IF for year 11).
+- Problems: hard to maintain, easy to introduce an off-by-one, and not transparent.
+- Recommended fix (simple and robust):
+  - Create a small column (e.g. column N or an area labeled "Cashflows") that lists the operating profit F80 repeated down for the number of years (C65). Then use =NPV($C$69,range_of_cashflows) - $F$76. That is easier to read and maintain.
+  - Alternatively, if you want to keep one formula, replace the IF-chain with a single NPV on a proper range (but creating the range is simplest and clearest).
+- Effect: avoids off-by-one errors and keeps NPV accurate and maintainable.
+
+5) Minor notes (no immediate breakage but tidy up)
+- There are some blank C54/C55 references used in H54/J54 etc. If those rows are unused you can remove those formulas or ensure C54/C55 are intended inputs.
+- PMT formulas use -1*Value (works) but could be simplified to -Value for readability (no functional change).
+
+Summary (action checklist)
+- Change L14 from =J14/265 to =J14/12.
+- Decide intended behavior for C37 and update to either =SUM(C12:C35)*(1-$C$6) or =SUM(C12:C35) or leave but document why *0.9.
+- Replace the IF-heavy NPV with a small explicit cashflow range repeated for C65 years and use NPV on that range (or create that column and use it in the NPV).
+- Review dependent totals (L29/L37, M29/M37, F79/F80 and breakeven outputs) after the fixes.
+
+If you want, I can give the exact formulas to paste in (or produce the small cashflow column with formulas) — tell me which of the C37 options you want and I’ll write them.

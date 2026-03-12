@@ -1,0 +1,49 @@
+Summary of the problems
+- Several Ap sheets contain incorrect references to the Rate sheet’s weight column (E11:E20). Some L-cells multiply the wrong E-row (e.g., using E17 when the question text in B points to G19). That misalignment is an off-by-row error and will produce wrong scores if Rate!E values change (they all happen to be 100 now, which hides the bug).
+- Ap3 L20 contains a hard-coded literal "784" inside the IF tests (IF(784=2,...)) instead of the K20 cell reference. That always evaluates false and returns wrong results.
+
+Why this matters
+- Because L-cells are supposed to multiply the weight that corresponds to the same preference text (Rate!Gxx ↔ Rate!Exx), wrong E references produce incorrect partial scores and therefore wrong totals. The 784 typo breaks that cell completely.
+
+Concrete fixes (quick, direct replacements)
+- Fix each L-cell so it uses the Rate!E row that corresponds to the Rate!G row used in the B-cell of the same row. Example corrections for the explicit errors shown in your dump:
+
+Ap1
+- L19 (currently using Rate!E14) → replace with:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 (currently using Rate!E17) → replace with:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (currently using Rate!E18) → replace with:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap2
+- L19 → same pattern (use Rate!E16):
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 → use Rate!E19:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 → use Rate!E20:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap3
+- L19 (fix same mis-index) → use Rate!E16:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L20 (replace literal 784 with K20) → use:
+  =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+- L32 → use Rate!E19:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 → use Rate!E20:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Recommendation — make formulas robust (prevents future mapping mistakes)
+- Instead of hard-coding the E-row numbers into each cell, use MATCH/INDEX to find the correct weight by matching the preference text in column B back to Rate column G. That avoids row-number errors when rows are moved or the order is changed.
+
+Example robust formulas
+- Proficiency (replace any L16-type formula):
+  =INDEX(Rate!$E:$E,MATCH(B16,Rate!$G:$G,0)) * IF(K16=2,0.33,IF(K16=3,0.66,IF(K16=4,1,0)))
+- Experience (replace any L29-type formula):
+  =INDEX(Rate!$E:$E,MATCH(B29,Rate!$G:$G,0)) * IF(K29=2,0.25,IF(K29=3,0.5,IF(K29=4,0.75,IF(K29=5,1,0))))
+
+These INDEX/MATCH formulas automatically pull the correct Rate!E weight for whatever Rate!G text appears in column B.
+
+If you want
+- I can generate the exact corrected formulas for every affected cell in your workbook (Ap1 L16:L20, L29:L33; Ap2 same; Ap3 same) or provide a corrected copy with INDEX/MATCH implemented. Which would you like?

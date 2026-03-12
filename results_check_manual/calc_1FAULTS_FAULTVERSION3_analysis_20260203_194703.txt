@@ -1,0 +1,36 @@
+Summary — main errors found
+1. Total Possible INzone Savings (Your Company!C41) is hard‑coded as 7. It should sum the calculated savings components.
+2. Several annual/average expense cells on "Your Company" are zero because they have no formulas:
+   - Annual Customs Duty Expense (C18) should be calculated, not left 0.
+   - Annual Interest Expense (C19) should be calculated, not left 0.
+   - Average Interest Expense (C20) should show the cash‑flow result (the same as C22).
+
+Why these are errors
+- The "Text Only" print sheet pulls totals from 'Your Company'!C41, so a hard-coded 7 prints instead of the real total.
+- Annual and average expense cells are needed inputs/outputs for the savings calculations; leaving them zero makes results incorrect or incomplete.
+
+Exact fixes (enter these formulas on the "Your Company" sheet)
+
+1) Annual Customs Duty Expense (C18):
+   =C13*C15
+   - Explanation: annual import value × average duty rate (gives annual duty paid).
+
+2) Annual Interest Expense (C19):
+   =C13*C17
+   - Explanation: annual import value × interest rate (gives annual interest on imports).
+
+3) Average Interest Expense (C20):
+   =C22
+   - Or directly: =C13/C14*C15*C17
+   - Explanation: average cost of money (cash flow) — link to the computed Cash Flow cell so it stays consistent.
+
+4) Total Possible INzone Savings (C41):
+   =SUM(C22,C24,C27,C30,C33,C36,C39)
+   - Or if cells are contiguous and safe: =SUM(C22:C39)
+   - Explanation: adds each component (cash flow, obsolete, waste, exports, returns, zone transfers, inverted duty) to give total savings.
+
+Optional/verification
+- The sample sheet uses these logic/formulas (e.g., sample total = SUM of component cells). After making the fixes above, the "Text Only" sheet (which references 'Your Company'!C41) will print the correct total instead of 7.
+- Check that the percentage input cells (B25, B28, B31, B34, B37) contain the intended decimals (e.g., 0.05 = 5%).
+
+If you want, I can list the exact cell changes as a pasteable set of formulas or prepare the corrected formulas for the Text Only sheet as well.

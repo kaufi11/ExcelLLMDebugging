@@ -1,0 +1,30 @@
+Findings (short)
+1) Q4 Homework — cell H5 (Evans) is wrong. It uses =COUNT(B5:G5) so it returns 6 (count of numeric cells) instead of the student’s total points. This breaks every sheet that links to that total.  
+2) Q4 Summary — cells F3:F12 (weighted-score column) use the D column twice (they end with + Dn*0.2). That ignores the homework column (E) and duplicates the project column, so every weighted score and percent in this sheet (and the Year Summary Q4) is wrong.
+
+Why these are errors
+- H5 should add the student’s scores, not count them.  
+- The weighted formula must multiply each category by its correct weight (B*0.3 + C*0.1 + D*0.4 + E*0.2). Using D twice omits homework and double-counts projects.
+
+How to fix (apply these exact formulas)
+
+1) Fix Evans total (Q4 Homework sheet)
+Replace H5 with:
+=SUM(B5:G5)
+
+2) Fix weighted scores (Q4 Summary sheet)
+Use the category weights in row 2 so the formula is robust when copied down. Put this in F3 and copy down to F12:
+=B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+
+(If you prefer hard-coded weights, use =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2 and copy down.)
+
+After fixing those two things
+- Column G in Q4 Summary ((F/300)*100) will show correct Q4 percentages.  
+- Year Summary cells that link to Q4 Summary G will update and the Final Average and Final Grade formulas will be correct.
+
+Quick check you can do
+- After fixes, H2 on Q4 Homework should be 300.  
+- F2 on Q4 Summary should be 1.0 (weights sum).  
+- Q4 Summary G4 (Brantley) should change from the wrong value to the correct percent; Evans’ Q4 percent should jump from a tiny value (because it used 6) to the correct ~91% (273/300 → 91%).
+
+If you want, I can calculate the corrected weighted scores / final averages for every student and list them.

@@ -1,0 +1,40 @@
+I reviewed the two sheets and found the main formula errors. Short, clear list with fixes and brief explanations:
+
+1) AA17 (Environmental clean‑up in 2020)
+- Problem: formula uses G5 and G6 (year 2000 values) -> pulls first‑year numbers into 2020.
+- Error type: Wrong column reference (year mismatch).
+- Fix: change to =0.1*AA5 + 0.1*AA6
+- Why: you must use the 2020 values (AA5 and AA6) when calculating a 2020 cost.
+
+2) AA29 (Scrap value in 2020)
+- Problem: formula =0.02*G5 + 0.02*G6 (again uses year 2000 cells).
+- Error type: Wrong column reference (year mismatch).
+- Fix: change to =0.02*AA5 + 0.02*AA6
+- Why: scrap value in column AA should be based on AA5 and AA6 (2020), not G5/G6.
+
+3) I19 (Discount factor chain)
+- Problem: I19 = H19*(249/249.2492) — that 249/249.2492 factor is almost 1 and looks like a typo.
+- Error type: Typo / inconsistent discount calculation.
+- Fix: make the DF chain consistent, e.g. I19 = H19*(1/1.12)
+- Better (recommended): use an explicit power formula instead of chained multiplications:
+  - Put the annual discount rate in a single cell (say $F$19 = 12%) and compute year n DF with =1/(1+$F$19)^(n-1)
+- Why: keep discount factors consistent; typos in the chain give wrong PVs.
+
+4) AE13 (Average cost of wiring per hh)
+- Problem: AE13 = AVERAGE(AE3:AE10) — this excludes row 11 while other averages use rows 3:11.
+- Error type: Range omission.
+- Fix: AE13 =AVERAGE(AE3:AE11)
+- Why: to average the same households as the other averages (rows 3–11) and be consistent.
+
+5) AA17/AA29 and similar end‑year cells (general)
+- Observation: I found other end‑year (AA column) formulas that reference G (first year) — search for any formula in columns beyond G that still reference G5 or G6 and update to match the correct column (same-row year).  
+- Why: recurring copy/paste or fill errors lead to using first‑year numbers across all years.
+
+6) Robustness / best practice suggestions (small fixes that prevent future errors)
+- Use absolute cell for discount rate (e.g. $F$19) and compute DF as =1/(1+$F$19)^(year-2000) for each column. This avoids chained multiplications and accidental typos.
+- Where you repeat a per‑household formula across years, place the base per‑household inputs in a single row and use references (instead of retyping numbers) to prevent inconsistent constants.
+- Use structured formulas rather than hard‑coded ranges that can be shifted by rows/columns (or use named ranges).
+
+If you want, I can:
+- produce the exact corrected formulas for every affected AA‑column cell (search & replace), or
+- give a corrected copy of the sheet with the fixes applied. Which would you prefer?

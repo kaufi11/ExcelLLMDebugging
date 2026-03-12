@@ -1,0 +1,66 @@
+I inspected the workbook formulas you provided and found several formula issues and inconsistencies you should review. Summary first, then a prioritized list of specific problems (sheet + cell addresses) and recommended fixes.
+
+Summary (high‑priority)
+- Multiple grade formulas (column P) compare the student total O# to a cell on a different sheet (e.g. 'F Noon'!O$38 or 'M Noon'!O$38). Most grade IFs compare to the local sheet's O$38. The mixed cross‑sheet references are almost certainly accidental and will produce wrong grades if O$38 differs between sheets.
+- Several summary rows (AVERAGE / MAX / COUNT) in the same sheet use different row ranges (e.g. Average uses B6:B29 while Max uses B6:B37). That mismatch appears to be a copy/paste mistake and will give inconsistent summary results.
+- A few P (GRADE) formulas reference a different sheet for the threshold (see above) and at least one uses a different threshold anchor (e.g. 'M Noon' vs 'F Noon') — inconsistent logic.
+
+Detailed issues and recommendations
+
+1) Cross‑sheet grade threshold references (likely errors)
+- M Noon!P12:
+  - Formula: =IF(O12>'F Noon'!O$38*0.9, ...)
+  - Comment: All other P# formulas on M Noon use O$38 of the same sheet (e.g. IF(O6>O$38*0.9,...)). P12 referencing 'F Noon' is inconsistent. If you intend to grade against M Noon’s maximum (O$38), change to IF(O12>O$38*0.9,...).
+- W 1 p.m.!P7:
+  - Formula references 'F Noon'!O$38 (instead of local O$38). Inconsistent with neighboring P formulas.
+- W 1 p.m.!P27:
+  - Formula references 'M Noon'!O$38. Inconsistent.
+- W 2 p.m.!P27:
+  - Formula: =IF(O27>'M Noon'!O$38*0.9,...) — inconsistent with other grades on W 2 p.m.
+- F 1 p.m.!P7:
+  - Formula references 'F Noon'!O$38 (cross referencing same sheet name but different context) — verify intent.
+- F 1 p.m.!P7 and other P# in F 1 p.m. also show some cross‑sheet references; please audit all P column formulas to ensure they consistently reference the intended O$38 cell (either local sheet or a single master cell).
+
+Recommendation: Decide whether grade thresholds should be based on each sheet’s O$38 (most likely), or a single master sheet (e.g. 'M Noon'!O$38). Then update all P# formulas to reference the same absolute cell (e.g. =IF(O6>$O$38*0.9,...) or =IF(O6>'Master'!$O$38*0.9,...).
+
+2) Mismatched summary ranges inside the same sheet (AVERAGE / MAX / COUNT use different row ranges)
+- W 2 p.m. (multiple cells):
+  - B39 =AVERAGE(B6:B29) but B40 =MAX(B6:B37) and B41 =COUNT(B6:B29). MAX uses B6:B37 while Average/Count use B6:B29.
+  - Similarly C39 =AVERAGE(C6:C29) but C40 =MAX(C6:C37).
+  - Several MAX formulas in row 40 use :B6:B37 / :C6:C37 / etc while the AVERAGE/COUNT rows use shorter ranges ending at row 29.
+  - Effect: MAX may include blank or additional rows not included in AVERAGE/COUNT, producing inconsistent summary results.
+- W 2 p.m. (general): many row40 formulas appear to have been copied from another sheet and not updated to the same data range used by AVERAGE/COUNT.
+
+Recommendation: For each sheet, make the AVERAGE, MAX and COUNT formulas use the same consistent data range. Prefer using the actual data rows (for example B6:B29) or a table named range so summaries always line up even if rows change.
+
+3) Inconsistent start rows in summary formulas across sheets
+- Some sheets compute B39 using B6:B37, others B6:B30, some B7:B30, etc. That can be legitimate if sheets have different numbers of student rows, but verify intended ranges. Example:
+  - M Noon: B39 =AVERAGE(B6:B37) and B40 =MAX(B6:B37) — consistent.
+  - M 1 p.m.: B39 =AVERAGE(B6:B23), B40 =MAX(B6:B23) — consistent.
+  - W 1 p.m.: B39 =AVERAGE(B7:B30), B40 =MAX(B7:B30) — note starting at row 7, verify this was intentional (maybe row 6 contains data to exclude).
+Recommendation: Confirm each sheet’s summary ranges intentionally reflect which student rows should be included. Consider converting each sheet area into an Excel Table and using structured references to avoid off‑by‑one/copy/paste range errors.
+
+4) Missing or inconsistent formulas in summary cells (some summary cells are values with no formula)
+- Examples: Many C41 cells across sheets show numeric totals but the "formula" field is null in the dump. If these were intended to be COUNT formulas, some are present (e.g., =COUNT(C6:C37) in some sheets) but many are missing. This may be just your JSON extraction, but verify these cells actually contain formulas in the workbook, not hardcoded values.
+Recommendation: Recompute summary cells consistently (COUNT, AVERAGE, MAX, SUM) rather than entering manual numbers.
+
+5) Miscellaneous / possible issues to check
+- Grade thresholds use > rather than >=: IF(O6>O$38*0.9,"A",...). Using > means a total exactly equal to 90% of O$38 will not receive the higher grade. Confirm intended tie behavior; often >= is used.
+- A few ID No. cells (column A) contain arithmetic formulas like =356-78-4365. That’s unusual for ID numbers (they normally should be text or static numbers), but may be intentional. If these were intended to be student IDs, check why arithmetic is used.
+- Some rows have O# cells explicitly set to 0 or duplicated =SUM(B30:N30) entries for rows that are otherwise empty — harmless but tidy up if not needed.
+- There are several cross‑sheet references in header cells (e.g. 'M Noon'!D3) — these are fine if intended for consistent labeling.
+
+Suggested immediate fixes (concrete)
+1. Normalize all grade formulas (column P) across all sheets to reference the same threshold cell. Example (if local sheet threshold intended):
+   - Replace IF(O#>'F Noon'!O$38*0.9,...) with IF(O#>O$38*0.9,...) (or with >= if desired).
+   - Or if a master sheet should be used, point all to that single cell, e.g. IF(O#>'Master'!$O$38*0.9,...)
+2. Fix summary MAX formulas (and any other summary formulas) on W 2 p.m. so their ranges match the corresponding AVERAGE and COUNT ranges. e.g. change MAX(B6:B37) → MAX(B6:B29) (or whatever the correct rows are).
+3. Audit all summary rows (AVERAGE, MAX, COUNT) across sheets to ensure they use consistent row ranges and include the same student rows.
+4. Optionally change IF comparisons to >= if you want inclusive thresholds at e.g. 90%.
+
+If you want, I can:
+- produce a list of every P# formula across all sheets (so you can quickly spot non‑local references), or
+- output suggested replacement formulas for each inconsistent cell (i.e., a "patch" list),
+- or check any specific sheet/range you name and produce exact corrected formulas.
+
+Which action would you like next?

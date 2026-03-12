@@ -1,0 +1,22 @@
+Faulty cell
+- A60 (and therefore every cell after it that depends on A60)
+
+What’s wrong (short)
+- A60 contains =745+1 (a hard-coded constant) instead of adding 1 to the previous row. That forces A60 = 746 and breaks the intended sequential numbering. All downstream IDs become incorrect.
+
+Fix (quick)
+- Replace the formula in A60 with: =A59+1
+
+Better, safer formulas (optional improvements)
+- If you only want numbers when Column B has a course name, use:
+  =IF(B60<>"",A59+1,"")
+- Or use a row-based auto-number (no cascade risk):
+  =IF(B60<>"",ROW()-3,"")  (adjust the -3 offset if your first numbered row is different)
+
+How to apply the fix
+1. Edit A60 → replace =745+1 with =A59+1 (or one of the safer formulas above).  
+2. If needed, copy that corrected formula down through the rest of column A to re-sync the whole sequence.  
+3. Optionally search column A for other hard-coded constants (e.g., “745”) and correct them the same way.
+
+Why this fixes it
+- Using A59+1 continues the intended sequential chain. The safer IF formulas prevent numbering where there’s no course name and avoid a single bad cell breaking the whole list.

@@ -1,0 +1,48 @@
+I checked the workbook. Two types of problems show up: (A) a clear formula bug that breaks all discounting from 2011 onward and (B) several data/inconsistency issues that will produce incorrect economics or confusion. Short, actionable fixes below.
+
+1) Critical formula bug (fix this first)
+- What is wrong: cell R19 (the discount-factor row for costs) uses
+  =Q19/(1/1.12)
+  That divides by (1/1.12), i.e. multiplies by 1.12, so the discount factor jumps up in 2011 and every DF to the right is wrong. Because G20:AA20 (PV of costs) multiply yearly costs by these DFs, costs from 2011 onward are massively over‑stated. NPV and B/C are therefore wrong.
+- Why it matters: once one DF is wrong the cascade R19→S19→T19… makes all later discount factors wrong and all present values that use them wrong.
+- Correct formula: change R19 to
+  =Q19*(1/1.12)
+  or simpler
+  =Q19/1.12
+  (This matches the pattern used in H19:I19:… and keeps DF = 1/(1.12)^(n-1).)
+- Quick fix steps:
+  1. Edit R19 and replace with =Q19/1.12
+  2. Fill/copy R19 to the right (S19:AA19) so the chain continues correctly.
+  3. Recalculate workbook. Present-value rows (G20:AA20 and C20) will update and NPV and B/C will change.
+
+2) Recommended robust replacement for discount factors
+- Centralize the discount rate in one cell (e.g. put 0.12 in F19).
+- Use a stable formula that doesn’t rely on the cascading multiplication, e.g. in column for year n:
+  =1/(1+$F$19)^(n-1)
+  or if G is year 0:
+  G19 = 1
+  H19 = G$19/(1+$F$19)
+  then copy H19 right.
+- Or compute PVs directly with Excel’s NPV function for the series (NPV(0.12, H18:AA18)+G18 if G18 is time 0 cashflow).
+
+3) Other errors / inconsistencies (short list and fixes)
+- Inconsistent tube-light / bulb assumptions:
+  - Assumptions area has conflicting statements: B50 says “tube lights replaced once a year at Rs 170” while A89 says “tube light costs Rs. 50 and changed 6 times p.a.” The formulas (row11) use 50*6. Decide which assumption is correct and update:
+    - If cost = 50, frequency = 6 → keep current formulas.
+    - If cost = 170, frequency = 1 → change row11 formulas to 5.67*30*170*1 (and adjust other dependent cells).
+  - Same for energy-saving bulbs: assumption text and formulas conflict (monthly vs yearly). Put unit cost and replacement frequency into dedicated assumption cells and reference them from formulas.
+- Hard-coded magic numbers scattered through formulas:
+  - Example: AA17 and AA29 use 0.1*G5+0.1*G6 and 0.02*G5+0.02*G6 — better as 0.1*(G5+G6) and 0.02*(G5+G6) or (preferred) reference named cells (e.g. Ass_ScrapRate) then use =Ass_ScrapRate*(G5+G6).
+  - Q10 uses 4275*7.5 while H10..I10 use 4297*15 — check if 4275 is a typo (should be 4297) or intended (re-wiring fraction). Convert these hard numbers to assumption cells and reference them.
+- Sensitivity / extraordinary events placement:
+  - I see flood/damage/refurbishment costs added into Q8 (2010). Confirm these event-years match the assumption list (B80:B85). If misaligned, move those additions to the correct year column.
+- Present-value rows use separate DF rows for costs and benefits (row19 and row31). Ensure both DF rows are built consistently (both should use same discount rate cell).
+
+4) Best-practice suggestions (short)
+- Put all key assumptions (unit costs, lifetimes, discount rate, household counts) into a single assumptions table and reference them with absolute or named ranges.
+- Replace repeated arithmetic with references: e.g. H23 = (Ass_KeroBefore - Ass_KeroAfter)*Ass_HHs*Ass_Price etc.
+- Use Excel NPV for series vs manual multiply-by-DF if you prefer simpler formulas: =NPV(discountRate, cashflowRange) and then add any time-0 cashflow separately.
+
+If you want, I can:
+- give the exact corrected formula for R19 and a formula to replace the whole DF row that you can paste,
+- or produce a short list of assumption cells (names + example values) and show how to rewrite one representative cost row to use them. Which would you prefer?

@@ -1,0 +1,44 @@
+Summary of problems I found (short & clear)
+
+1) Grand total cells (input-output I52 and J52) are incomplete/wrong
+- Issue: I52 = SUM(I5+I9+I10+I21+I31+I38+I42+I43+I44+I46+I45) and J52 similarly only add a selection of rows. Many outcome rows (I11, I12, I13, I14, etc.) are missing. Because R22 = I52, the displayed "Sum of all Extents" and any overall comparisons are wrong/understated.
+- Why it matters: final totals / checks / comparisons use this sum. Missing rows give incorrect totals and misleading "Over/Under" results.
+
+Fix & explanation
+- Replace the ad-hoc SUM of individual cells with a range SUM that covers all outcome rows. Example (on input-output sheet):
+  - I52 replace with: =SUM(I5:I45)
+  - J52 replace with: =SUM(J5:J45)
+- Explanation: SUM(range) safely adds every numeric outcome in that block. It's shorter, less error-prone, and will automatically include new rows if you extend the block.
+
+2) Comparison formula treats equal as "Under"
+- Issue: K# cells use =IF(I#>J#,"Over","Under"). If actual = target the formula returns "Under" (because not >). That can misrepresent "meets target".
+- Fix & explanation:
+  - Use either >= or add a third branch. Example:
+    - To count equal as Over/Meets: =IF(I5>=J5,"Over","Under")
+    - Or to distinguish equal: =IF(I5>J5,"Over",IF(I5=J5,"Meets","Under"))
+  - Explanation: This makes the logic explicit and avoids treating a perfect match as failure.
+
+3) Include-all-extents toggle (input-output I48) can misfire if user types unexpected text (spaces/case)
+- Issue: many formulas use IF('input-output'!$I$48="Y",CL#,CM#). If the user enters "y " (with trailing space) or a different letter, the test can fail and you get the wrong branch.
+- Fix & explanation:
+  - Enforce a choice and normalize input. Two suggestions:
+    1) Use Data Validation (List) on I48 with choices: Y,N (prevents typos).
+    2) Make formulas robust: use =IF(UPPER(TRIM($I$48))="Y",CL5,CM5)
+  - Explanation: TRIM+UPPER avoids problems with spaces and lower/upper-case versions of y/n.
+
+4) Very long "only 4 and 5 extents" formulas (CM#) are fragile / hard to maintain
+- Issue: CM# formulas are explicit long sums of IF(cell>=4,cell,0)+..., which is error-prone and hard to edit.
+- Fix & explanation (recommended improvement, not mandatory):
+  - Replace with SUMPRODUCT or SUMIFS constructs. Example for row 5 (instead of long CM5):
+    - =SUMPRODUCT((AU5:CI5>=4)*AU5:CI5)
+    - or =SUMIF(AU5:CI5,">=4",AU5:CI5)
+  - Explanation: These do the same thing but are much shorter and easier to audit. They also avoid accidentally omitting columns.
+
+Other small suggestions
+- Use consistent named ranges (e.g., OutcomesRange) or a single outcome totals column reference so summary formulas become =SUM(OutcomesRange) — easier maintenance.
+- Consider using a TRUE/FALSE control for the toggle (I48 = TRUE/FALSE) and reference it directly in IF checks: =IF($I$48,CL5,CM5). That avoids text comparison entirely.
+
+If you want I can:
+- Give the exact replacement formulas for your workbook where each CM# should be changed to SUMPRODUCT,
+- Provide a corrected copy of the I52/J52 formulas for all summary lines,
+- Or create a short checklist (cells to change) and a sample Data Validation list for I48. Which would you like?

@@ -1,0 +1,24 @@
+Summary — main errors found and quick fixes:
+
+1) Faulty cell: E12
+- Error type: Typo / wrong constant
+- Problem: Formula uses 463 instead of the observed theta in C12, so the squared error is wrong.
+- Fix: Replace with = (C12 - D12)^2
+- Why: Squared error should compare observed (C12) with predicted (D12).
+
+2) Faulty cell: E19 (Sum Sq Er)
+- Error type: Range/omission error
+- Problem: E19 =SUM(E14:E18) omits E12 and E13 (and may include blank E17:E18), so SSE is incorrect.
+- Fix: Change to =SUM(E12:E16) (or =SUM($E$12:$E$16) if you want it fixed)
+- Why: Sum of squared errors must include all point errors E12:E16.
+
+3) Related / consequential cell: B7 (SSE)
+- Error type: Dependent error
+- Problem: B7 = E19 shows the wrong SSE because E19 summed the wrong range.
+- Fix: No change needed once E19 is corrected — B7 will display the correct SSE.
+
+Optional checks (recommended):
+- Confirm the van Genuchten prediction formula D12:D16 is intended as written ($B$3 + ($B$4-$B$3)/((1+$B$5*(-B12)^$B$6)^(1-1/$B$6))). It looks correct, but ensure the sign convention for pressure (using -B12 and LN(-B12)) is what you want.
+- If you expect more data rows later, use a dynamic SUM range (e.g., =SUM(E12:E100) or convert the data to an Excel Table and sum the column) to avoid future omissions.
+
+Apply the two formula fixes above and the SSE will be correct.

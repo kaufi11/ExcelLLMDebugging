@@ -1,0 +1,53 @@
+I checked the three sheets and found a few real errors and a couple of risky/misleading formulas. Short summary, explanation, and exact fixes below.
+
+1) Wrong formula in Seq Production — "Other Activities" grand total (big error)
+- Problem: G21 is set to =COUNT(G19:G20). That returns 0/1/2 (a count), not the dollar sum of "Other Activities". This makes B23 (one-year total = B21 + D21 + G21) incorrect.
+- Fix: change G21 to sum the dollar cells:
+  - Replace with: =SUM(G19:G20)
+- Why: G19 and G20 hold the Other Activities direct and indirect dollar amounts; you must SUM them to get the grand $ total for Other Activities.
+
+2) Missing / inconsistent "Total Direct Costs" in Tech Dev & Bioinformatics Infrastructure (layout/formula mismatch)
+- Problem: On Tech Dev sheet A15 is labeled "Total Direct Costs" but B15 has no formula. Instead B17 = SUM(B9:B16) is being used as the "Total Tech Dev Costs". This is confusing and can double-count if B15 is later filled manually. Same pattern exists for the Infrastructure section on the Bioinformatics sheet: total/direct rows are inconsistent.
+- Fix (clear, standard approach):
+  - For Tech Dev:
+    - Put in B15 (Total Direct Costs): =SUM(B9:B14)
+    - Put in B17 (Total Tech Dev Costs): =B15 + B16
+  - For Bioinformatics — Infrastructure section:
+    - Put in B15 (Total Direct Costs for Infrastructure): =SUM(B9:B14)
+    - Put in B17 (Infrastructure Cost Totals): =B15 + B16
+- Why: keep direct and indirect separated and then add them for the section total. This avoids ambiguity and accidental double-counting.
+
+3) Division-by-zero risk in percent formulas (Tech Dev, Bioinformatics, possibly Seq Production)
+- Problem: Several percent formulas divide by a total cell that can be zero (B6 on Tech Dev & Bioinformatics is initialized to 0; B21/D21 may be 0). That produces #DIV/0! or confusing output.
+- Fix: wrap these % formulas with an IF to avoid divide-by-zero and show blank (or 0). Example replacements:
+  - Tech Dev B18: =IF($B$6=0,"",B17/$B$6)
+  - Bioinformatics B18: =IF($B$6=0,"",B17/$B$6)
+  - Bioinformatics B31: =IF($B$6=0,"",B30/$B$6)
+  - Bioinformatics B44: =IF($B$6=0,"",B43/$B$6)
+  - Seq Production percent cells that divide by B21/D21 (e.g., C13, E13, H13, C19 etc.): =IF($B$21=0,"",B13/$B$21) (adjust absolute ref to the correct total column as already used)
+- Why: prevents #DIV/0! and makes the sheet cleaner until totals are filled.
+
+4) Hard-coded 1’s for percent total cells (minor/optional)
+- Observation: C21, E21, H21 are hard-coded to 1. That is OK (shows 100%) but better practice is to compute them (e.g., =B21/B21) so they always reflect the actual totals. Optional cleanup.
+
+Quick checklist of exact cell edits to make
+- On Seq Production sheet:
+  - G21: change to =SUM(G19:G20)
+  - (Optional) replace any percent cells that might divide by zero with IF tests as above.
+- On Tech Dev sheet:
+  - B15: =SUM(B9:B14)
+  - B17: =B15 + B16
+  - B18: =IF($B$6=0,"",B17/$B$6)
+- On Bioinformatics sheet (Infrastructure section):
+  - B15: =SUM(B9:B14)
+  - B17: =B15 + B16
+  - B18: =IF($B$6=0,"",B17/$B$6)
+  - B31: =IF($B$6=0,"",B30/$B$6)  (if not already wrapped)
+  - B44: =IF($B$6=0,"",B43/$B$6)  (if not already wrapped)
+
+Why these fixes solve the issues
+- Changing G21 to SUM restores correct dollar totals for "Other Activities" and thus fixes B23 (one-year total).
+- Separating Total Direct and Total (direct+indirect) makes totals explicit and prevents accidental double-counting or user overwrite.
+- Using IF to guard against divide-by-zero prevents errors and keeps percentage fields blank until valid totals are entered.
+
+If you want, I can produce the exact formulas for every percent cell changed to safe IF(...) forms, or give a short macro to apply these fixes automatically. Which would you prefer?

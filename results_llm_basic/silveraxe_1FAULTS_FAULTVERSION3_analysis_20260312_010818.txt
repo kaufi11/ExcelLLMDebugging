@@ -1,0 +1,34 @@
+I looked through the sheet and found the problems and simple fixes. Short answers:
+
+1) Problem: many cells show the text "FORMULA =..." instead of an actual formula.
+- Why it’s wrong: Excel treats "FORMULA =ROUNDUP(...)" as text, not a formula, so dependent calculations that reference those cells will be wrong or return text.
+- Fix: remove the leading "FORMULA " so the cell begins with "=". Easiest: do a Find & Replace: find "FORMULA " and replace with nothing (or replace "FORMULA =" with "="). After that the cells will evaluate.
+- Example: change the cell that reads
+  FORMULA =ROUNDUP(B15/50,0)
+  to
+  =ROUNDUP(B15/50,0)
+
+2) Problem: Hit points rounding uses a fragile +0.49 hack:
+- Cell H19 = (F19*E15)+0.49 will not reliably round to the nearest integer (use +0.49 instead of +0.5 and it’s unclear).
+- Fix: use a proper rounding function. For nearest integer:
+  =ROUND(F19 * E15, 0)
+  or if you want the old-style round-half-up:
+  =INT(F19 * E15 + 0.5)
+- Why: ROUND is explicit and reliable.
+
+3) Possible logic bug: Base HTH damage is being looked up using carrying capacity (C22)
+- H22 currently: =HLOOKUP(C22, R2:AG4, 3, TRUE)
+- Why this may be wrong: the HTH damage table in R2:AG4 appears keyed to Strength/weight thresholds, not carrying capacity. Usually base HTH is derived from Strength (B16), not the calculated carrying capacity (C22).
+- Fix (if you intended to key on Strength): change to
+  =HLOOKUP(B16, $R$2:$AG$4, 3, TRUE)
+  (and lock the lookup table with $ if you copy the formula).
+- If you did intend to key on carrying capacity, keep it but be aware of the design decision.
+
+4) Minor / recommended improvements
+- Lock your lookup table ranges with absolute references when copying formulas, e.g. $R$5:$AW$15 instead of R5:AW15.
+- Check any cells that were pasted as text (numbers or formulas) and convert them back to numbers/formulas (Home → Number or VALUE() if needed).
+- Replace any manual rounding hacks with Excel ROUND/INT functions for clarity.
+
+If you want, I can:
+- produce a short macro or step-by-step Find/Replace instructions to fix all "FORMULA =" occurrences,
+- or update the specific formulas for you (with $-locks) and return the corrected formulas. Which would you prefer?

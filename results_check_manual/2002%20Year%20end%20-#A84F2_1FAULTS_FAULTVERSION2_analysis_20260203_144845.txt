@@ -1,0 +1,64 @@
+I reviewed the Financial Statements sheet and the linked Five Year Review. I found several concrete formula mistakes and inconsistencies that are causing wrong totals and (in one case) a circular reference. Below are the main problems, why they’re wrong, and exactly how to fix them. Short and simple.
+
+1) Circular / inconsistent formulas in the Audit Fees note (cells C468/C469 and E468/E469)
+- Problem: C468 is calculated from C469 (C468 = C469 - C467) while C469 should be the total of current fees + prior year overprovision (i.e. C469 = C467 + C468). That creates a circular dependency (same for the E‑column).
+- Effect: wrong or unstable values; hard to follow audit fee totals.
+- Fix: Choose one cell to be the input and calculate the other.
+  - Recommended: enter prior‑year overprovision as a fixed value (C468 and E468 as numbers), then set totals:
+    - C469 = C467 + C468
+    - E469 = E467 + E468
+  - Or if you want to calculate overprovision, make C468 a value: C468 = (actual prior provision number) and then use C469 = C467 + C468. Do NOT have C468 and C469 each depend on the other.
+
+2) Hard‑coded / wrong sign in “Cash paid to suppliers and employees” (C121)
+- Problem: C121 is a hard-coded expression “=-26907-7561074”. That is brittle, easy to mistype, and likely the wrong sign or wrong components.
+- Effect: cash flow totals and the cash reconciliation are incorrect.
+- Fix: Replace hard-coded value with a formula that references the total expenditure cell(s). The sheet already has Total Expenditure in C100, so use:
+  - C121 = -C100
+  (or if cash paid excludes non‑cash items, use the appropriate cash‑only range, e.g. =-SUM(range_of_cash_payments)). Using references prevents manual errors and keeps the cash flow consistent with the income statement.
+
+3) Incorrect / confusing working‑capital change signs (Note 17.1 lines C507–C510)
+- Problem: Some working‑capital formulas are written inconsistently and labels (e.g. “-Decrease in inventory”) are confusing vs. formula signs. Examples: C507 = E18 - C18 is OK for “decrease in inventory” but if similar rows use the opposite direction you can get wrong cash movement.
+- Effect: cash (applied to) / generated from operations (C511) can be wrong.
+- Fix: standardize all working capital lines so a positive result increases cash:
+  - Decrease in inventory = (prior_inventory - current_inventory) → C507 = E18 - C18
+  - Decrease in accounts receivable (i.e. cash from receivables) = E19 - C19 → C508 = E19 - C19
+  - Increase in accounts payable (cash inflow) = C37 - E37 → C509 = C37 - E37
+  - Increase in subscriptions received in advance (cash inflow) = C38 - E38 → C510 = C38 - E38
+  - Then C511 = SUM(C504:C510)
+  If any of these are currently hard‑coded or reversed, correct them to the formulas above.
+
+4) Overwritten formula cells / inconsistent hard‑coded values
+- Problem: Many cells in column E (and some in C) show values where you would expect formulas (or vice‑versa). Examples: some totals in notes are hard‑entered instead of =SUM(...). This causes mismatches between totals and dependent calculations.
+- Effect: sheet shows inconsistent numbers; audit trails broken and changes don’t flow through.
+- Fix: don’t overwrite formula cells with numbers. Restore formulas where intended (use the sheet text to see intended SUM ranges), e.g. where you see a total but no formula, re‑enter the SUM of the component cells (use Trace Precedents to find components). Use Go To Special → Formulas to find cells that should be formulas but are values.
+
+5) Five Year Review links / references might point to wrong cells or have been broken
+- Problem: Several Five Year Review cells reference the Financial Statements sheet. If the link is to the wrong column (e.g. E54 instead of C54 for 2002) or the source cell has been overwritten by a value, the 5‑year numbers will be wrong.
+- Effect: the five‑year totals and ratios will be wrong.
+- Fix: verify each link. For 2002 columns the FYR should link to 'Financial Statements'!Cxx (not Exx), for 2001 to 'Financial Statements'!Exx, etc. Example:
+  - FYR C15 (2002 Subscriptions) should be = 'Financial Statements'!C54
+  - FYR E15 (2001 Subscriptions) should be = 'Financial Statements'!E54
+  Check and correct any wrong references.
+
+6) Presentation of depreciation in Note 4.2 (C268 = -C289)
+- Problem: Depreciation components are positive in C284:C288, then C289 = SUM(…) is positive, and C268 is set to = -C289. That mixes signs across the sheet and is confusing.
+- Effect: inconsistent sign usage increases risk of error and misinterpretation.
+- Fix: use consistent sign conventions. Either:
+  - Keep depreciation as positive in C289 and use +C289 when adding back to cash flow, or
+  - Keep depreciation as negative where it’s a reduction. But be consistent across the whole workbook. I recommend: set C268 = C289 (positive total depreciation) and use negative signs only where the label requires it (e.g. “‑Depreciation” row in reconciliation should show +C268 as an add‑back).
+
+How to find and prevent these errors (quick checklist)
+- Use Trace Precedents / Trace Dependents to see whether totals depend on underlying lines.
+- Go To Special → Formulas to ensure totals are formulas (not values).
+- Resolve circular references: Excel will flag them — locate and break by making one cell an input (value) and deriving the other.
+- Replace hard‑coded numbers with references/ SUMs, and use consistent signs.
+- After fixes, recalc and verify key reconciliations:
+  - Balance sheet totals = Total assets (C23) and total equity & liabilities (C42) must match.
+  - Cash flow ended balance (C147) = beginning balance (C145) + net change (C144).
+  - Surplus per income statement (C102) should flow into Accumulated funds (C330, C29).
+
+If you want, I can:
+- produce an exact list of cells to edit (I’ll give the exact CELL → NEW FORMULA), or
+- correct the workbook for you if you upload the file or paste any specific problem cell formulas you want fixed.
+
+Which would you prefer?

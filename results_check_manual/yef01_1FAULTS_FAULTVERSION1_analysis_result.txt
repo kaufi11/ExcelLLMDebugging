@@ -1,0 +1,74 @@
+I reviewed the workbook formulas and found several formula errors, inconsistencies and unusual manual adjustments. Summary by sheet, with specific cells and suggested fixes:
+
+Revenues by Source (sheet "Revenues by Source")
+- Inconsistent SUM ranges / missing rows:
+  - B16 formula =SUM(B10:B15) and C16 formula =SUM(C10:C15) — there is no row 15 present. The totals are computed from B10:B14/C10:C14 and they sum to 1 / 324,319,138, so the omitted row is treated as zero. Still, referencing B15/C15 is inconsistent and confusing. Suggestion: change SUM ranges to B10:B14 and C10:C14 or insert a proper row 15 if data was intended.
+- Odd / manual constructs:
+  - C12 =147577404-1 — this subtracts 1 to produce 147,577,403. It's unusual; replace with the literal constant or correct source cell.
+  - C14 is computed by a sum of parts (=579467+2102504+3320377+14252767) — OK but could be consolidated to reference the component cells if they exist elsewhere.
+
+Expenditures by Function (sheet "Expenditures by Function")
+- SUM range includes a non-existent row:
+  - B20 =SUM(B10:B19) and C20 =SUM(C10:C19) but only B10:B18 / C10:C18 are present. The totals are correct because row 19 is implicitly zero, but again the range is misleading. Suggest using B10:B18 and C10:C18 (or insert row 19 if required).
+
+Expenditures by Category (sheet "Expenditures by Category")
+- SUM range includes a non-existent row:
+  - B16 =SUM(B10:B15) and C16 =SUM(C10:C15) but only rows 10–14 are present. Totals are correct because missing row(s) are blank; fix ranges to B10:B14 / C10:C14 or add the missing row.
+- Manual adjustments in percent calculations:
+  - B10..B14 mostly use ROUND(Cx/$C$16,4) which is fine, but B12 is =ROUND((C12/$C$16),4)-0.0001 (manual subtraction). This is a hard-coded tweak that should be documented or removed; it will alter consistency if underlying data changes.
+
+General State Financial Aid (sheet "General State Financial Aid")
+- Mostly consistent. Minor note:
+  - B23 is entered as =12027969 (formula that just returns a constant). Not an error but unnecessary; could be entered as a value.
+
+FTEE Calculation (sheet "FTEE Calculation")
+This sheet contains the largest number of problems and inconsistent manual adjustments.
+
+1) Clear formula error
+- C14 (ILCC-03) =20/24 (result 0.8333333). This is inconsistent with the rest of column C which is Credit FTEE calculated as Bx/24. For ILCC-03 B14 = 61327, so C14 should be =B14/24 (≈ 2555.291) not 20/24. This is a functional error; fix to =B14/24.
+
+2) Inconsistent / incorrect values in column D
+- Many D12..D23 values appear to be constants taken from another table (they match percent values present elsewhere) and do NOT follow the same pattern as D25/D26 which are computed as =C25/H25 and =C26/H26. If D is intended to be "% of college (credit share)" it should be computed consistently (e.g., =C12/H12). Example:
+  - D12 currently =0.036029 but C12/H12 ≈ 3432.646/4254.644 ≈ 0.8068. So D12 is incorrect for that interpretation.
+- Action: Decide the intended formula for column D and apply it consistently (e.g., Dn = Cn / Hn if that is correct).
+
+3) Inconsistent tiny manual adjustments and rounding hacks
+- Several small adjustments are manually added/subtracted across the sheet:
+  - Many Hn totals are computed as Cn+Fn +0.01 for some rows but not others (e.g., H12 = C12+F12+0.01, H14 = C14+F14 without +0.01). This is inconsistent.
+  - Totals and subtotals include arbitrary tiny corrections:
+    - C28 =SUM(C12:C27)+0.02
+    - F28 =SUM(F12:F27)+0.03
+    - H28 =SUM(H12:H27)-0.02
+    - C28/F28/H28 adjustments are inconsistent and obscure the real totals.
+  - I20/I21 are adjusted by -0.000001 in their formulas.
+  - I28 =SUM(I12:I27)+0.000002 (tiny tweak to force 1.0000002675…)
+- These manual tweaks (adding/subtracting 0.01, 0.02, 0.03, 0.000001, etc.) are brittle and hide rounding or reference problems. They also make reproducibility and auditing difficult. Suggest removing these manual corrections and using consistent rounding (ROUND) at display time or use a single, documented rounding strategy (e.g., ROUND on the percentage columns).
+
+4) SUM ranges include rows beyond present data
+- Many totals sum ranges to row 27 (e.g., SUM(H12:H27), SUM(C12:C27)) but the last data row is 26. Row 27 is blank, so results are still correct, but ranges should match actual data (SUM(H12:H26) etc.) to remove ambiguity.
+
+5) Column G formula dependency on inconsistent H values
+- Gn = Fn / Hn is used in many rows. Because some Hn have been artificially adjusted (+0.01) and others have not, Gn results will be inconsistent. Fix the Hn computations first (remove arbitrary +0.01), then recompute Gn.
+
+6) Totals not exactly 1.0
+- I28 = 1.00000026752363 (file uses tiny adjustments to force totals close to 1). If percentages should sum exactly to 1, compute and then apply a single rounding method; otherwise report that totals may not equal 100% due to rounding. Avoid scattered manual offsets.
+
+FTEE Graph (sheet "FTEE Graph")
+- This sheet contains static values copied in D10:D24. No formula issues but note they are static copies (OK if intentional).
+
+Other general notes
+- The workbook uses a lot of unary plus signs "=+..." — harmless but inconsistent style.
+- There are several places where formulas produce correct numeric totals only because missing rows are blank. That is fragile (e.g., SUM ranges referencing nonexistent rows). Clean ranges to match populated rows.
+- There are multiple manual tiny offsets and subtraction/addition of 1 in a few cells; these are suspect and should be documented or removed.
+
+Recommended prioritized fixes
+1. Correct outright formula error: change C14 (sheet FTEE Calculation) to =B14/24.
+2. Remove or consolidate manual tiny adjustments (+0.01, -0.02, +0.02, +0.03, -0.000001, etc.). Replace with proper ROUND where needed.
+3. Standardize formulas for columns that should be computed the same (e.g., column D in FTEE Calculation: pick a formula such as =C/H and apply to all rows).
+4. Align SUM ranges to actual populated rows (avoid referencing missing rows).
+5. Replace odd constructs like =147577404-1 or =12027969 (formula returning a literal) with proper values or references and document why any subtraction is performed.
+6. Re-audit percent columns after removing manual tweaks to ensure totals and percentages behave as intended.
+
+If you want, I can:
+- Produce a corrected version of the problematic sheet(s) with my proposed formula fixes (I can show the fixed formulas for the specific cells), or
+- Generate a list of exact cell edits (old formula → suggested new formula) to apply. Which would you prefer?

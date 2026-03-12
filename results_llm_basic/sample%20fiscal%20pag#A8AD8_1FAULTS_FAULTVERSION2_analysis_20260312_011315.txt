@@ -1,0 +1,26 @@
+Summary of the error(s)
+- Main error: Sheet "1198" cell H25 (Total Revenues, Projected column) has the wrong function. It uses =COUNT(H9:H24) instead of =SUM(H9:H24).
+  - Effect: H25 returns a small integer (the count of non-empty revenue rows) instead of the sum of projected revenues. That wrong value flows into H6 (carry forward), H14 (total revenues), H24 (net transfers if applicable) and all Summary totals that use the 3‑D SUM('1003:1856'!H6/H14/…) — so the entire Projected column totals are incorrect.
+
+Why this is a problem
+- The workbook uses many inter-sheet aggregated formulas and chained carry‑forward formulas (e.g. D6 = +E6 + D72 - D25 - D35). One wrong cell in a fund sheet (like 1198!H25) propagates through those chains and into the Summary sheet, producing materially wrong totals.
+
+How to fix it (step‑by‑step)
+1. On sheet 1198, change cell H25 from:
+   - =COUNT(H9:H24)
+   to:
+   - =SUM(H9:H24)
+2. Press F9 (recalculate) or save/close/reopen to force recalculation (or ensure automatic calculation is on).
+3. Verify the Summary Projected column totals (Summary H6, H14, H24, H26, H61, H63, etc.) now reflect correct amounts.
+
+Extra checks (recommended)
+- Scan other fund sheets for accidental COUNT usage in total rows (cells C25, C72 or other Total cells). They should use SUM across revenue/expenditure rows. From the workbook excerpt only 1198.H25 showed COUNT; correct any similar mistakes the same way.
+- Confirm the sheet order: your 3‑D formulas use ranges like '1003:1856'!D6. Excel includes every sheet between the two named sheets in tab order — make sure all fund sheets are actually placed between the "1003" and "1856" tabs, otherwise SUM('1003:1856'!...) will miss or include unintended sheets.
+- After fixing, use Excel’s Evaluate Formula on a few chained cells (e.g., 1003!D6 and Summary!H6) to confirm the numbers trace correctly.
+
+Why the correction works
+- Replacing COUNT with SUM returns the numeric total of the revenue lines for the Projected column. That restores the correct base value that downstream formulas (carry forward, net resources, ending balance) depend on, so all aggregated totals become accurate again.
+
+If you want, I can:
+- Provide a short list of all cells to check for the same mistake, or
+- Give the exact FIND/Replace steps to locate COUNT used where SUM is expected.

@@ -1,0 +1,34 @@
+Summary — one clear error found
+
+Faulty cell
+- Bulk compost sheet: C19
+
+What’s wrong
+- C19 uses =A19+(B19/24)+1.48 while every other row on that sheet uses -1.48. The sign is wrong (a single-character typo).
+- Impact: the value in C19 is shifted by +2.96 days (1.48 − (-1.48) = 2.96) relative to the expected series, so that measurement is misaligned with the rest.
+
+Fix (quick)
+- Change C19 to:
+  =A19 + (B19/24) - 1.48
+
+Concrete numbers (to show effect)
+- A19 = 15, B19 = 12.75 → A19 + (B19/24) = 15.53125
+- With +1.48 → 17.01125 (wrong)
+- With -1.48 → 14.05125 (correct / consistent)
+
+Better (recommended) solution to avoid future typos
+1. Put the offset in a single cell (e.g., put -1.48 in Bulk sheet cell Z1 and -1.71 in Treatments sheet Z1 or a named range).
+2. Use a reference in the formula, e.g.
+   =A19 + (B19/24) + $Z$1
+   (store −1.48 in Z1 so the formula becomes A19+(B19/24)+(-1.48))
+3. Or create a named constant (e.g., Offset_Bulk) and use:
+   =A19 + (B19/24) + Offset_Bulk
+
+Why that helps
+- Centralizes the offset so one change updates all rows.
+- Prevents accidental sign/typing errors in many formulas.
+
+Checklist for you
+- Fix C19 formula to the minus form.
+- Scan the column for any other inconsistent signs (you already looked through — only C19 differs).
+- Replace hard-coded offsets with a referenced cell or named range.

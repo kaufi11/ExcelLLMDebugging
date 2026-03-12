@@ -1,0 +1,33 @@
+Summary — two problems found:
+
+1) Wrong formula (typo) in L5
+- Fault: L5 uses minus signs instead of pluses:
+  =(B5/100)-(2*C5-2*E5-H5)*12.5/1000-(D5-F5-G5)*12.5/1700-(I5-J5)*70/4000
+- Why it’s wrong: signs are flipped so positive components become subtractions → Net score is incorrect.
+- Fix (correct consistent formula for row 5):
+  =(B5/100) + (2*C5 + 2*E5 + H5)*12.5/1000 + (D5 + F5 + G5)*12.5/1700 + (I5 + J5)*70/4000
+
+2) Missing / inconsistent input data in several rows
+- Several rows have required inputs missing (the L formula still references them). Missing B (questionnaire) occurs at rows: 17, 38, 40, 46, 49. Other rows also omit C, E, F, G or H values in the table you provided.
+- Why it’s a problem: blanks may behave as 0 (OK) but they could be accidental omissions and produce wrong totals. Also inconsistent formulas (like L5) amplify errors.
+
+Recommended final, robust solution
+1. Put one correct formula in L2 and fill/copy it down the whole column so every row uses the exact same expression:
+   =B2/100 + (2*C2 + 2*E2 + H2)*12.5/1000 + (D2 + F2 + G2)*12.5/1700 + (I2 + J2)*70/4000
+   Then drag/fill from L2 down to L59 (or double-click the fill handle).
+
+2. Make the formula tolerant of blanks (optional but safer). Use N() to force blanks/text to zero:
+   =N(B2)/100 + (2*N(C2) + 2*N(E2) + N(H2))*12.5/1000 + (N(D2) + N(F2) + N(G2))*12.5/1700 + (N(I2) + N(J2))*70/4000
+
+3. Data check/fix:
+- Review rows I listed with missing B (17, 38, 40, 46, 49) and any other rows with missing expected inputs (C,E,F,G,H). Enter the correct values if they were omitted.
+- After filling/correcting values, recalc L column (filling the formula down will update results).
+
+Why this fixes everything (brief)
+- Using a single correct formula copied down ensures consistency (removes the typo in L5).
+- Using N() (optional) prevents #VALUE or wrong behavior if a cell contains text; blanks become zero.
+- Filling missing input cells corrects accidental omissions so totals reflect true data.
+
+If you want, I can:
+- Give a list of every row that has at least one missing input cell.
+- Provide the exact fill-down steps or a macro to replace all L formulas at once. Which would you prefer?

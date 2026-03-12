@@ -1,0 +1,63 @@
+Overview
+- Workbook: 3 sheets (Sheet1 described; Sheet2 and Sheet3 present but no content provided).
+- Primary sheet: Sheet1 titled "Monthly Operation Statistics" (A2). Month and Year fields at I3 and K3.
+
+Sheet1 layout and contents
+- Main header row (row 7, columns A:M):
+  - A7: Day
+  - B7: Date
+  - C7: Total #
+  - D7: Homework
+  - E7: Job Search
+  - F7: Games
+  - G7: Internet
+  - H7: College
+  - I7: Business
+  - J7: Class
+  - K7: New
+  - L7: Web Design
+  - M7: Other
+- Additional labels: D6 = "SERVICES"; K8 = "member"; L8 = "Specialist".
+- Day rows: Rows 9–39 correspond to days 1–31 (B9:B39 contains day numbers 1..31; A column appears to hold a text label "Day" in header).
+- Totals row: Row 40 labeled "TOTAL" in A40. Column totals in row 40 (C40:M40).
+
+Formulas and key formulas
+- Per-day formula pattern (rows 9–39):
+  - C column totals not listed per row in the spec (C9:C39 used in C40).
+  - Many service columns use chained SUM formulas within each row, e.g. for row 9:
+    - E9 = SUM(E42) (references an off-sheet/out-of-range cell E42)
+    - F9 = SUM(E9)
+    - G9 = SUM(F9)
+    - H9 = SUM(G9)
+    - I9 = SUM(H9)
+    - J9 = SUM(I9)
+    - K9 = SUM(J9)
+    - L9 = SUM(K9)
+    - M9 = SUM(L9)
+  - The same pattern repeats for rows 10–39 (each row uses SUM of previous column in that same row, and the first service cell often references E(row) or E42).
+  - One exception: L19 uses =COUNT(K19) (different function).
+- Totals row formulas (row 40):
+  - C40 = SUM(C9:C39) (correct column sum)
+  - D40 = SUM(D9:D39)
+  - E40 = SUM(E9:E39)
+  - From F40 onward the formulas chain the previous total rather than summing their own column:
+    - F40 = SUM(E40)
+    - G40 = SUM(F40)
+    - H40 = SUM(G40)
+    - I40 = SUM(H40)
+    - J40 = SUM(I40)
+    - K40 = SUM(J40)
+    - L40 = SUM(K40)
+    - M40 = SUM(L40)
+
+Notes / observations
+- Sheet1 is structured as a daily breakdown of service usage by category with a monthly total row.
+- Several formulas look incorrect or likely to produce unintended results:
+  - Many per-day service cells point to a single out-of-range cell (E42) or chain across columns, which will either return incorrect values or create circular/propagated totals.
+  - Totals row columns F40:M40 chain off the previous total instead of summing their respective columns; this will not produce column totals (only repeats/propagates E40).
+  - L19 uses COUNT(K19) which probably does not match the intended sum/count across a range.
+- Sheet2 and Sheet3: present but no details provided — likely unused or additional supporting sheets.
+
+If you want, I can:
+- Propose corrected formulas for per-day columns and the totals row, or
+- Fix the chaining and off-range references and return a corrected version of Sheet1.

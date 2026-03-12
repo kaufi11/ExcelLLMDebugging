@@ -1,0 +1,78 @@
+I reviewed the workbook formulas you provided (all sheets: P&L, P&L Crib, BS, BS Crib, CF) and found a number of formula problems and suspicious/inconsistent patterns that can cause errors or make the workbook fragile. Below I list the concrete issues (sheet, cell, problem, why it’s a problem and suggested fix). I focused on formula errors and inconsistencies rather than stylistic items.
+
+High‑priority / definite errors
+- CF!H14
+  - Formula: =COUNT(H11:H12)
+  - Problem: COUNT returns the number of numeric cells (gives 2) instead of summing the loss components. This is almost certainly wrong for “Loss from continuing operations”.
+  - Suggestion: Replace with SUM(H11:H13) (or SUM(H11:H13) / appropriate range) so it matches the other columns (D14/E14 use SUM of the underlying items).
+
+- BS Crib: inconsistent SUM start rows in the Property, Plant & Equipment block
+  - Cells: D59 (=SUM(D54:D58)) vs F59 (=SUM(F53:F58)), G59 (=SUM(G53:G58)), H59 (=SUM(H53:H58)), J59 (=SUM(J53:J58))
+  - Problem: the D column starts at row 54 while F/G/H/J start at 53. If rows are inserted/removed, these mismatched ranges will produce inconsistent results across columns.
+  - Suggestion: Make the SUM ranges consistent across all columns (use SUM(???:???) starting at the same row, e.g., SUM(54:58) for all columns) unless there is a deliberate reason one column should include row 53.
+
+Medium‑priority / probable mistakes or fragile formulas
+- CF: E14 vs H14 / I14 inconsistency
+  - E14 uses =SUM(E11:E13) (expected); H14 uses COUNT (wrong as noted). I14 uses SUM(I11:I12) — I14 likely should include I13 as well (SUM(I11:I13)), check intent.
+  - Suggestion: Standardize to SUM across all columns and confirm which rows to include (likely row 11–13).
+
+- P&L: H39 and I39 (Income Tax Benefit)
+  - Cells: H39 = =+K39-O39 and I39 = =+L39-P39, but K39 and O39 are missing (no formulas/values shown); L39 and P39 contain values (119).
+  - Problem: formulas refer to K39/O39 which are blank (treated as zero). That may be intentional but is fragile and hides missing data.
+  - Suggestion: Populate K39 and O39 (and K/L/P counterparts) properly, or change formula to reference the actual source cells. If those K/O cells intentionally blank, add a comment.
+
+- P&L: P23 (Selling, General & Administrative)
+  - P23 has a hard-coded value (253) and no formula, while K23/L23/O23 are derived with formulas (e.g. K23 = =499+48).
+  - Problem: inconsistent treatment — P23 should either be calculated or documented why hard-coded.
+  - Suggestion: Replace with a formula that matches the pattern used elsewhere (e.g. =SUM(P? : P?) or consistent components) or add a comment.
+
+- P&L: EPS small manual adjustment
+  - Cell: H51 = =+K69+0.01
+  - Problem: adding an unexplained 0.01 (manual adjustment) to an EPS calculation is suspicious (may be rounding, but should be documented).
+  - Suggestion: Document the reason for +0.01 in-cell comment; if for rounding, consider ROUND() so intent is clear: =ROUND(K69,2) etc.
+
+- P&L and P&L Crib: many hard-coded “+/- constant” formulas
+  - Examples: K23 = =499+48, L23 = =376+117, M61 = =114835741-2081898, numerous places like “=A-B+C” instead of using named components (and some have no formulas).
+  - Problem: ad-hoc arithmetic inside a cell is harder to audit and more error-prone than summing the actual component cells; if component rows change the formula doesn’t adapt.
+  - Suggestion: Wherever practicable replace A+B style formulas with SUM of actual component cells (SUM(range)) or reference the component cells directly so structure remains consistent.
+
+Lower‑priority / fragility / inconsistent patterns to consider
+- BS Crib: Total Assets formulas differ by column (inclusion/exclusion of restricted securities)
+  - D100 = =D50+D59+D98+D79  (does not include D64)
+  - F100 = =F50+F59+F98+F79+F64  (does include F64)
+  - J100 = =J50+J59+J98+J79+J64 (includes J64)
+  - Problem: inconsistent inclusion of the restricted securities subtotal (row 64) across columns. That may be intentional because D64=0, but it is inconsistent and fragile.
+  - Suggestion: Standardize the Total Assets formula across all columns to the same pattern, e.g. =D50+D59+D98+D79+D64, and if D64 = 0 it will still produce the same result; this prevents errors if D64 becomes non-zero.
+
+- BS Crib: F48 vs D48 (summing of other current assets)
+  - D48 = SUM(D32:D47) while F48 = SUM(F32:F47) — these match; I flagged earlier inconsistent ranges elsewhere but this is OK. Overall there are a number of places where the ranges start on different rows in different columns — review all totals for consistent ranges (example earlier D59 vs F59).
+
+- CF: E33 formula is unusual
+  - E33 = =-6+1+2 (presented strangely; hard-coded arithmetic)
+  - Suggestion: Replace with SUM of the contributing cells or reference them directly; similarly for other “literal arithmetic” formulas.
+
+- Many cases reference cells in columns not present in provided JSON (N, R, S, etc.)
+  - Problem: There are references such as =+N71, =+R71, =+S71, etc. I cannot verify those because they are not included in the pasted area; ensure those referenced cells do exist and contain the expected values.
+  - Suggestion: Audit cross-column references and document dependencies. Consider using named ranges to make intent clearer.
+
+- Mixed use of “=+A-B” style vs standard “=A-B”
+  - This is not an error, just an inconsistent style. It can make bulk parsing/text searches slightly harder. No functional failure but note for consistency.
+
+Other observations (not necessarily errors but worth checking)
+- Several totals are hard-coded values (no formula) even though the subcomponents are present (makes the sheet brittle).
+- Some sums in crib appear to include small manual reconciliation items (examples of adding/subtracting small numbers in the formula). These should be documented in a comment so future reviewers understand intentional adjustments.
+- Several cells are using arithmetic like "=114835741-2081898" (very large numbers). These may be intermediate calculations for EPS. Confirm these are intended and reference notes documented somewhere.
+
+Summary (action plan)
+1. Fix the clear formula error: CF!H14 should be a SUM, not COUNT.
+2. Standardize SUM ranges in BS Crib (D59/F59/G59/H59/J59 and the Total Assets formulas) so all columns use the same row ranges (prevents future breakage).
+3. Replace ad-hoc arithmetic in many cells with explicit references to the component rows or SUM ranges, or at minimum add comments explaining the constants/adjustments (e.g., H51 +0.01).
+4. Audit cells that reference empty cells (e.g., P&L H39 referencing K39/O39) — populate or change references as needed.
+5. Scan for more instances of hard-coded values where a formula would be expected (P&L P23 and other cells) and correct them or annotate.
+
+If you want, I can:
+- Produce a prioritized list of every single cell that contains a hard-coded value but is part of a total, or
+- Provide corrected formulas (I can propose exact formula strings) for the specific cells you want standardized (e.g., CF!H14, BS Crib totals, P&L EPS cells),
+- Or run a structural check (flag all cells where a total does not equal the SUM of its apparent components) if you give me permission to auto‑generate fix suggestions.
+
+Which follow-up would you prefer?

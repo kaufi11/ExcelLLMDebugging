@@ -1,0 +1,30 @@
+Summary of the problem
+- Cause: A prior-year ending-inventory error is being carried forward to the next year’s beginning inventory, but the prior-year error was NOT closed (adjusted) to retained earnings. Changing inventory therefore changes assets and COGS/net income, but equity is not adjusted for the prior-year error — so Assets ≠ Liabilities + Equity.
+- Symptom: Total Assets and Total Liabilities & Equity differ by the inventory-error amount.
+
+Where to look (cells)
+- The chain: prior-year ending inventory cells (Sheet1 B11, Sheet2 B11, Sheet3 B13) feed next year’s beginning inventory (Sheet1 D8, Sheet2 D8, Sheet3 D10).
+- Retained earnings cells (Sheet1 B33 / D33 / F33, Sheet3 B35 / D35 / F35) are only linking to current-year Net Income, so they do not include a prior-period correction.
+
+Why that causes imbalance (simple)
+- Ending inventory affects prior-year COGS → prior-year Net Income → prior-year Retained Earnings.
+- If you correct ending inventory but do not adjust retained earnings for the prior-year error, Assets change (inventory) but Equity is left wrong. Hence the balance sheet won’t balance by exactly the inventory error amount.
+
+How to fix (two valid approaches)
+1) Restate the prior year (preferred accounting fix)
+   - Correct the wrong prior-year ending inventory cell (e.g., change B11 to the correct value).
+   - Let all linked formulas recalc. Assets, COGS, Net Income and Retained Earnings will update and the statements will balance.
+
+2) If you do NOT restate prior year, make a prior-period adjustment to retained earnings
+   - Compute inventory error: Error = (correct prior-year ending inventory) − (reported prior-year ending inventory).
+   - Add that Error to beginning retained earnings (so equity reflects the prior-year correction).
+   - Example formula change (use the correct cell names in your sheet):
+     - Replace retained earnings formula that now reads =CurrentYearNetIncome
+       with: =CurrentYearNetIncome + PriorYearInventoryError
+     - Concretely (like Sheet3 did): D35 = E17 + 17000  (or F35 = G17 − 25000) — these add/subtract the prior-year inventory correction.
+
+How to confirm you fixed it
+- After applying one of the fixes, check: Total Assets (e.g., C24/E24/G24) = Total Liabilities + Total Equity (C35/E35/G35 or C37/E37/G37). The difference should be zero.
+
+One-line answer you can apply now
+- Either correct the prior year ending inventory value (restatement) OR add the inventory error amount to retained earnings (prior-period adjustment). This brings Equity into line with the asset change and makes the balance sheet balance.

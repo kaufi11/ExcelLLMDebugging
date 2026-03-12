@@ -1,0 +1,32 @@
+I checked the sheet for inconsistent formulas and obvious mistakes. Found a few concrete errors that will cause wrong totals and wrong %/mean results — and a simple fix for each.
+
+Summary of errors and fixes (short and exact)
+
+1) AI10 is hard‑coded (19) instead of summing the rows above
+- Problem: AI10 should be the total of AI5:AI9 but is a fixed value (19). That will make any % or mean that uses AI10 wrong.
+- Fix: Replace AI10 with =SUM(AI5:AI9)
+
+2) E11 uses the wrong SUM range (only E5:E7)
+- Problem: E11 currently =SUM(E5:E7). All other total rows sum rows 5 through 9, so E11 is missing row8/9 (or is inconsistent with other columns).
+- Fix: Change E11 to =SUM(E5:E9) (or whatever consistent range you use for the other columns)
+
+3) F44 excludes the first row of the block (off‑by‑one)
+- Problem: F44 is =SUM(F40:F43) and therefore excludes F39. Most other column totals in that block use row39:row43.
+- Fix: Change F44 to =SUM(F39:F43)
+
+4) General consistency problem: mixed hard‑coded totals and inconsistent SUM ranges
+- Problem: Several totals were created manually or with different ranges. This leads to mismatched Total Exams, which then makes "% of Grades 3+" and Mean Grade values wrong.
+- Fix: Standardize totals: for every subject/column use the same row range for summing (for example SUM(<col>5:<col>9) for the school block rows, SUM(<col>39:<col>43) for the Davidson block, etc.). Replace hard-coded numbers with SUM formulas and then copy across with the fill handle.
+
+Why these fixes work (short)
+- Totals must aggregate the same set of source rows. If a total is hard‑coded or misses rows, downstream calculations (percentages, means, Georgia comparisons) use incorrect denominators, so every % or mean based on that total is wrong.
+- Using consistent formula ranges (and copying formulas across columns) ensures totals update automatically when source cells change.
+
+Quick Excel tips to apply changes safely
+- Edit the cell and paste the correct SUM formula, then drag the fill handle (right or left) to copy the corrected formula across the block so ranges adjust automatically.
+- After fixing, press Ctrl+` (or show formulas) to inspect that all SUM ranges are consistent.
+- Optionally convert each school block into an Excel Table so formulas auto‑fill consistently.
+
+If you want, I can:
+- Provide a list of every cell where SUM ranges differ from the pattern (I found the three above; I can scan for more).
+- Give the exact formulas to paste across each problematic row/column.

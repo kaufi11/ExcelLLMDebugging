@@ -1,0 +1,46 @@
+Summary of the problems I found
+- Multiple #REF! errors in formulas — these are the root cause. Cells that contain values/formula references were deleted or moved, and formulas that pointed to them now show #REF!.
+  - Explicit #REF! occurrences from your sheet text: O39, P39, Q39, R39, K40, N40, O40, S44, S39 (indirectly because of K39:R39), P45, P50, P51, many P5x/P53 formulas that now reference #REF!.
+- Inconsistent units (percent as whole-number vs decimal) and unusual single-cell SUM ranges that look wrong (e.g., SUM(S44:S44), SUM(P45:P45)).
+- Potential logic errors: several formulas multiply by a missing “base amount” (the #REF! is likely the discipline $ amount cell). Other formulas divide percent-by-percent without consistent unit use (e.g., N45 / N44 where one may be a percent and the other a decimal).
+
+Why this breaks the workbook
+- Any formula that contains #REF! returns an error and breaks dependent calculations (row/column sums and totals).
+- Broken references make totals like the per-firm allocations (columns K:R, column S) and P‑column allocations incorrect or empty, so the contract and budget breakdowns don’t reconcile.
+
+How to fix it (short, actionable steps)
+1. Find all #REF! formulas
+   - Home → Find (Ctrl+F) → type #REF! to list every offending cell.
+
+2. Identify what each #REF! should reference
+   - For each cell with #REF!, click it, then:
+     - Use Formulas → Trace Precedents to see the original intent (or look at a neighboring row that is working).
+     - Check the pattern in that row: many allocation formulas are “base amount * percentage.” So the missing reference is usually the discipline’s base $ amount (e.g., E39 for Cost Consultant, E40 for next discipline, etc.) or the single “base” cell that was deleted.
+
+3. Replace #REF! with the correct cell (examples)
+   - If the row is allocating the Cost Consultant dollar amount and E39 holds that amount, change:
+     - O39  from =#REF!*0.0547  to  = $E$39 * 0.0547
+     - P39  from =#REF!*0.0109  to  = $E$39 * 0.0109
+     - Q39, R39 similarly use $E$39
+   - If row 40 allocations should use E40, change K40,N40,O40 to = $E$40 * multiplier.
+   - For P45 (=(O45/100)*#REF!) determine the base amount intended (probably a total dollar cell such as E62 or E31) and replace #REF! with that cell. Example: =(O45/100)*$E$62
+   - For P50/P51/P52/P53: replace #REF! with the correct total-dollar cell (e.g., $E$62 or the relevant discipline $ amount cell).
+
+4. Repair single-cell SUMs and percent/decimal mismatches
+   - Replace odd SUM(S44:S44) with a direct reference to the intended sum range (e.g., SUM(S36:S44) or the correct multi-row range), not a single cell.
+   - Make percent units consistent: choose either percent format (10.01%) or decimal (0.1001). Update formulas accordingly. For example, if N44 = 0.2297 (22.97%), and N45 = 10.01 (percent as 10.01), convert N45 to 10.01% or change formulas to account for that.
+
+5. Prevent recurrence
+   - Create named input cells for key base amounts (e.g., “CostConsultant_Base”, “Total_Discipline_E62”, “Total_AE_Contract”) and rewrite formulas to use the names. Named ranges survive row/column moves better and make auditing simpler.
+   - Use Formula Auditing (Trace Precedents / Dependents) to verify changes.
+   - If the #REF! appeared after a recent deletion, Undo or restore from a previous version.
+
+Quick diagnostic checklist you can run now
+- Ctrl+F for “#REF!” → fix each by replacing with the correct $ cell (likely column E discipline amounts or E62).
+- Check E62 (SUM of E36:E57) exists and is correct — many percentage formulas divide by $E$62.
+- Verify E31 (Total Basic Services / Contract Amount) — some allocations may reference it.
+- Convert percent values to consistent format (all decimals or all percent).
+
+If you want, I can:
+- Map each #REF! cell to a suggested replacement (I’ll need to know which cell holds the base amounts — e.g., confirm where the 69,500 and 417,000 came from: are those in E39/E37/E29?), or
+- Provide the exact corrected formulas if you paste the values in E36:E57 and tell me which total cell (E31 or E62) is the intended base.

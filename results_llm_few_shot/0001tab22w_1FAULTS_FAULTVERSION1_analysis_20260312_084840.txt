@@ -1,0 +1,44 @@
+Summary of errors found
+1) Misplaced data (alignment errors)
+   - Several rows have percentage values entered one column off (extra values in columns F, H, Z, etc.). Example: row 18 (Education) has numbers in F18 and H18 that should be in the B and C columns (G18 and I18). These stray entries mean the formulas that add the expected columns (E,G,I,K,M for Lower Level and S,U,W,Y,AA for Upper Level) miss those values and produce incorrect "Other" (O / AC) results.
+
+2) Wrong cell reference (typo)
+   - AC26 reads: =SUM(100-(S26+U27+W26+Y26+AA26)) — it incorrectly references U27 instead of U26.
+
+3) Unnecessary use of SUM()
+   - Many "Other" formulas are written =SUM(100-(...)). SUM around a single arithmetic expression is unnecessary (not harmful but confusing).
+
+4) No handling of "n/appl"
+   - Rows with "n/appl" return incorrect results or confusing values because formulas always try to compute 100 - sum(...).
+
+How to fix (simple steps)
+1) Fix misaligned data
+   - For each affected row, move values from the stray columns into the correct columns so they line up with the column headers:
+     - If you see a percent in column F, move it left to G.
+     - If you see a percent in column H, move it left to I.
+     - If you see a percent in column Z (between Y and AA), move it right to AA (or check the correct offset for your sheet).
+   - Quick check: after fixing, the five grade percents (E,G,I,K,M for Lower Level) should sum to ~100 (or sum <100 if "Other" is >0). Use a helper cell: =ROUND(100-SUM(E6,G6,I6,K6,M6),1) — it should equal the O cell.
+
+2) Fix the typo in AC26
+   - Replace U27 with U26. Example corrected formula:
+     =100-(S26+U26+W26+Y26+AA26)
+
+3) Replace SUM-wrapped arithmetic (optional cleanup)
+   - Replace constructs like =SUM(100-(E6+G6+I6+K6+M6)) with:
+     =100 - SUM(E6,G6,I6,K6,M6)
+
+4) Handle "n/appl" rows cleanly (recommended)
+   - Use an IF to avoid calculation when no data, e.g. for Lower Level "Other" (column O):
+     =IF(COUNTA(E6,G6,I6,K6,M6)=0,"n/appl",100 - SUM(E6,G6,I6,K6,M6))
+   - For Upper Level "Other" (column AC):
+     =IF(COUNTA(S6,U6,W6,Y6,AA6)=0,"n/appl",100 - SUM(S6,U6,W6,Y6,AA6))
+
+Why these fixes work (short)
+- Moving values into the correct columns makes the formula ranges actually include the intended numbers.
+- Fixing U27→U26 corrects the single-cell typo so the formula reads the correct B-percent.
+- Using 100 - SUM(...) is clearer and does the same arithmetic without wrapping SUM around a single expression.
+- The IF(COUNTA(...)=0, "n/appl", ...) prevents meaningless calculations when all inputs are blank or text.
+
+If you want, I can:
+- Provide a list of exactly which rows contain stray entries (I can scan and list cells like F18, H18, Z22, etc.).
+- Give you a corrected copy of all the "Other" formulas for the whole table.

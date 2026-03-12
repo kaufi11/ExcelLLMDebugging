@@ -1,0 +1,102 @@
+I inspected the formulas you provided (sheet "3. Budget" and the small "4. Sources of Funding" snippet) and found multiple formula inconsistencies and some likely mistakes. Summary first, then a concise list of problematic cells and recommended fixes.
+
+High-level problems
+- Many "Spent in total" (column H) cells use the formula =C#*G# (units times "Spent (other funds)") which is almost certainly wrong. "Spent in total" should normally be either:
+  - the sum of the two spent columns: =F# + G#, or
+  - units times unit-rate: =C# * D# (if F/G are not used and total is computed from units*rate).
+  Using C*G mixes "number of units" with "spent (other funds)" and produces incorrect results in most realistic setups.
+- Several subtotal ranges include header or non-data rows (e.g., SUM(H5:H12) includes H5, a label row), which is harmless numerically but inconsistent/unclear and may hide missing rows.
+- Some totals depend on blank cells (Administrative costs H56, Contingency H58) so H57 and H59 are currently effectively echoes of H55 until those are calculated.
+- A few cells are hard-coded instead of computed (H12 = 4). Hardcoding may be intentional but is inconsistent with surrounding formula pattern.
+
+Detailed problematic cells and recommended fixes
+1) Individual item lines (column H)
+Current pattern: many lines use Hn = Cn * Gn
+Cells affected (non-exhaustive from provided listing):
+- H6, H7, H8, H10, H11, H12 (H12 currently =4 hard-coded)
+- H16, H17
+- H21, H22, H23, H24
+- H28, H29, H30, H31
+- H35, H36, H37, H38, H39, H40, H41
+- H44, H45, H46
+- H52
+
+Why it's wrong: C is "# of units", G is "Spent (other funds)"; multiplying them combines unrelated units and amounts. Usually total spent = Spent (EU) + Spent (other). Alternatively total = units * unit rate.
+
+Recommended fixes (pick the one that matches your intended logic):
+- If you maintain separate spent columns F (EU) and G (other) and want the total spent in H:
+  Replace formula with: =Fn + Gn
+  Example: H6 -> =F6 + G6
+- If instead you calculate totals from units and unit rate (and F/G should be derived later), set:
+  Hn -> =Cn * Dn
+- Avoid using C*G unless it was intentionally designed that way.
+
+2) Subtotal Human Resources (H13)
+- Current formula: =SUM(H5:H12)
+- Issue: H5 is a descriptive row (label) and likely should not be in the sum. It is harmless but inconsistent.
+- Recommended: =SUM(H6:H12)
+
+3) Subtotal Travel (H18)
+- Current formula: =SUM(H16:H17) — OK, but ensure H16/H17 formulas are corrected as per (1).
+
+4) Subtotal Equipment and supplies (H25)
+- Current formula: =SUM(H21:H24) — OK after fixing H21:H24.
+
+5) Subtotal Local office/project costs (H32)
+- Current formula: =SUM(H28:H31) — OK after fixing H28:H31.
+
+6) Subtotal Other costs, services (H42)
+- Current formula: =SUM(H35:H41) — OK after fixing H35:H41.
+
+7) Subtotal Real estate and works (H47)
+- Current formula: =SUM(H44:H46) — OK after fixing H44:H46.
+
+8) Subtotal Other (H53)
+- Current formula: =SUM(H51:H52)
+- Issue: H51 is not present in your dump (only H52 shown). Either H51 is a missing row or the range is wrong.
+- Recommended: adjust to the actual rows, e.g. =SUM(H52) or =SUM(H50:H52) depending on intended items. Ensure the range matches actual item rows.
+
+9) Subtotal direct project costs (H55)
+- Current formula: =H53+H47+H42+H32+H25+H18+H13
+- This is correct in structure (sums all subtotals). It depends on all subtotals being fixed.
+
+10) Administrative costs (H56)
+- H56 has no formula shown; H57 currently =H56 + H55.
+- Recommendation: Administrative costs line should be calculated as (if you want the maximum 7%):
+  H56 -> =H55 * 0.07
+  or, if you need to enforce a maximum relative to contract rules, use MIN() to cap it: =MIN( H55 * 0.07, <contract-limit> )
+- After setting H56, H57 (=H55 + H56) will be meaningful.
+
+11) Total eligible project costs (H57)
+- Current formula: =H56 + H55 — OK once H56 has a formula.
+
+12) Contingency reserve (H58)
+- H58 currently empty (H59 = H58 + H57 shows H59 equals H57 as found).
+- Recommendation: if contingency is maximum 5% of total eligible costs:
+  H58 -> =H57 * 0.05
+  or apply MIN() with a cap if needed.
+
+13) Total costs (H59)
+- Current formula: =H58 + H57 — OK after H58 is set.
+
+Other notes
+- Hard-coded H12 (=4) stands out. If that is a deliberate known number of participants, consider replacing with a formula consistent with the rest (either C12*D12 or F12+G12). If it was for testing, replace with the correct formula.
+- Duplicate header rows (A48 etc.) are not a formula error but make the sheet harder to parse. Consider removing redundant headers.
+- Sheet "4. Sources of Funding" contains only text headers in your dump — no formulas to check there.
+
+Concrete quick-change list (recommended edits)
+- Replace all Hn formulas of the form =Cn*Gn with =Fn + Gn (if the design is to sum EU + other):
+  H6, H7, H8, H10, H11, H12 -> =F6+G6, =F7+G7, etc.
+  H16, H17 -> =F16+G16, =F17+G17
+  H21:H24, H28:H31, H35:H41, H44:H46, H52 likewise.
+- Change H13 to =SUM(H6:H12)
+- Change H53 to the appropriate sum range (e.g. =SUM(H52) or =SUM(H50:H52))
+- Set H56 -> =H55*0.07 (or MIN(...) to cap)
+- Set H58 -> =H57*0.05 (or MIN(...) to cap)
+- Check/replace hard-coded H12 with formula consistent with the chosen method.
+
+If you want, I can:
+- produce a full list of exact replacement formulas for each H-cell (I can generate them programmatically if you want),
+- or open the workbook and show exact corrections and create a corrected copy.
+
+Which would you prefer?

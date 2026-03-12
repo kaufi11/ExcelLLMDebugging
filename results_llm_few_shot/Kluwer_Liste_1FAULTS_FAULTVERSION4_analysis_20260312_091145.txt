@@ -1,0 +1,25 @@
+Summary — two real errors found:
+
+1) Faulty cell: I2
+- Error type: Bad/invalid cell content (openpyxl ArrayFormula object instead of number/formula).
+- Why: Column I should hold the eBook retail price (I = H * 0.7). I2 currently contains an object placeholder (<openpyxl.worksheet.formula.ArrayFormula ...>) so the cell has no numeric value.
+- Fix: Replace I2 with a normal formula or value. Example formula for row 2:
+  =H2*0.7
+  Then fill / copy that formula down the I column (I2:I456) so every row is I = H * 0.7.
+
+2) Faulty cell: J41
+- Error type: Formula mistake (wrong operator).
+- Why: Column J is the institutional eBook price and every other row uses J = H * 1.5, but J41 uses H41 / 1.5 by mistake.
+- Fix: Replace J41 with the correct formula:
+  =H41*1.5
+  Then fill / copy that formula down the J column (J2:J456) so every row uses J = H * 1.5.
+
+How to apply fixes quickly (Excel steps)
+- For I: select I2, type =H2*0.7, press Enter. Drag the fill handle down (or double-click it) to fill the column.
+- For J: select J2 (or the first J row with correct formula), ensure it is =H2*1.5, then drag the fill handle down. If you prefer only to fix J41, edit J41 to =H41*1.5 and press Enter.
+- If I2 still shows a non‑Excel object (because file was edited by a library), delete I2 then re-enter the formula as above.
+- Optional: after filling, if you want values instead of formulas: copy the column, Paste Special → Values.
+
+Note
+- The small long-decimal values (e.g. 92.39999999999999) are just floating‑point display artifacts; you can format the cells to 2 decimals to show tidy numbers.
+- Quick check: search column J for “/1.5” to catch any accidental divisions; search column I for non-numeric cells.

@@ -1,0 +1,25 @@
+Summary of the problem
+- Faulty cell: C30 (on the Formulas sheet)  
+- Error type: Mechanical (wrong sign) — beginning inventory was entered as negative: =-B7 instead of =B7.
+- Effect: The cost-of-goods-available-for-sale (C32 = C30+C31) becomes C31 - 80,000, so COGS (C34 = C32 - C33) and all downstream gross margin / net income numbers are wrong.
+
+What to fix
+1. Change C30 from =-B7 to =B7 (or simply =$B$7).  
+   - Why: beginning inventory should be added, not subtracted. This fixes C32 and therefore C34, C18, C19, C25, C26, C27, etc.
+
+2. Check the beginning-inventory link for subsequent periods:
+   - Keep E30 = C33 (i.e., next period beginning = prior period ending). That is correct.
+   - For the very first period use the July 31 inventory $B$7 (as corrected).
+
+Optional robustness suggestion (for easier maintenance)
+- Use consistent references and remove unnecessary + signs. For example:
+  - C30: =$B$7
+  - C31: =ROUND(C17*$B$6,-3)
+  - C32: =C30+C31
+  - C33: =ROUND($B$4+$B$5*E17,-3)
+  - C34: =C32-C33
+
+Short test you can run after fixing
+- After changing C30 to =B7, verify C32 equals B7 + C31, and C34 equals (B7 + C31) - C33. Gross margin and net income should change accordingly.
+
+If you want, I can compute the corrected numbers given the input values.

@@ -1,0 +1,62 @@
+I reviewed the workbook formulas and found several clear formula errors and a few inconsistencies that will produce incorrect summary numbers (and in one case a wildly incorrect student score). Below are the problems I found, why they are wrong, and exactly how to fix them.
+
+Important root cause
+- Many incorrect results propagate from Sheet3 (the Tests worksheet): several per-student AVERAGE formulas (column P) reference the wrong cells (and one contains a literal number). Those wrong averages feed Sheet1 column D (Tests %), which in turn breaks the final grade (I column) for at least one student (Ming, Ho Chi) producing an extremely large final grade (3827).
+
+Detailed issues & fixes
+
+1) Sheet3 — per-student test AVERAGE cells (P4:P18)
+- Problem: The AVERAGE formulas for P4..P18 reference wrong cells in the last argument. They use L40, L41, ..., L54 instead of L4..L18 (off by +36). Example:
+  - P4 currently: =AVERAGE(D4,F4,H4,J4,L40) — should average the five percentage columns D4,F4,H4,J4,L4.
+- Also a special case:
+  - P13 currently: =AVERAGE(D13,F13,H13,599,L49) — includes a literal 599 and L49. This is definitely wrong and explains the huge 150.399... value in P13.
+- Effect: These incorrect AVERAGE results cause Sheet1 column D to be wrong for every student (and produce the enormous D12/P13).
+- Fix (apply to each row n = 4..18):
+  - Replace Pn formula with: =AVERAGE(Dn,Fn,Hn,Jn,Ln)
+  - Specifically correct P13 to: =AVERAGE(D13,F13,H13,J13,L13) (remove the 599 and wrong L49).
+- After fixing these, Sheet1 D3:D17 will show correct test percentages and the final grade (I column) will normalize.
+
+2) Sheet1 — Student summary & class summary range inconsistencies
+- Row 19 (High Grade) is okay: C19 =MAX(C3:C17) etc.
+- Row 20 (Low Grade):
+  - Problem: C20 formula is =MIN(C4:C18). That omits the first student (C3) and includes C18 (outside student block). Should be same row-range as row 19.
+  - Fix: C20 → =MIN(C3:C17)
+  - Check other Low Grade cells if present; D20..I20 appear to use correct D3:D17 etc but verify consistency.
+- Row 21 (Class Average):
+  - Problem: C21 currently =MAX(C5:C19) even though the label is "Class Average" — wrong function and wrong range.
+  - Fix: C21 → =AVERAGE(C3:C17)
+  - Verify other class-average cells: D21 =AVERAGE(D3:D17) is correct; E21..G21 use AVERAGE(E3:E17) etc — keep consistent row ranges C3:C17 for all summaries.
+- After correcting Sheet3 averages, re-check I21 (Class average of final numeric grades) — it currently is inflated due to the P13 problem; it should correct after fixes.
+
+3) Sheet1 — Grade translation / VLOOKUP table misalignment
+- Problem: The VLOOKUP used to convert numeric final grade → letter uses table $K$5:$L$17. The K/L block as stored contains an inconsistent/shifted row at the top: K5 appears not to contain a numeric threshold (it contains text "F" or is misaligned). The numeric thresholds appear to start at K6 (59.5), etc. VLOOKUP with approximate match (last argument TRUE) requires the first column to be numeric thresholds sorted ascending and the top row must be the smallest threshold (typically 0 or the minimum % for an F).
+- Effect: If the first row in the lookup range is not the lowest numeric threshold (or contains text), VLOOKUP may return incorrect letter grades.
+- Fix options (choose one, depending on intended layout):
+  - Option A (recommended): Put numeric thresholds in K5..K17 (e.g., K5 = 0 or the minimum percentage for F, K6 = 59.5, ...), and corresponding letters in L5..L17. Keep VLOOKUP(I3,$K$5:$L$17,2,TRUE).
+  - Option B: If thresholds begin at K6, change the VLOOKUP range to $K$6:$L$17 (and ensure K6 is indeed the lowest threshold and the column is sorted ascending).
+- Also confirm the K column is sorted ascending (required for approximate VLOOKUP = TRUE).
+
+4) Sheet3 — some small / general issues to correct
+- Row references used for dividing test points to get percentages are correct (e.g., D4 = C4/$D$24), and the curve/possible points are in row 24 — those are fine.
+- Header typos (not formula errors) you may want to fix: "Studnets" (A1) and "Higest Grade" (Sheet2 A21) etc — optional.
+
+5) Consequences to expect after the fixes
+- Fixing Sheet3 P4:P18 to average the correct cells (and correcting P13) will:
+  - Convert D12 (the inflated 150.399...) back into a number between 0 and 1.
+  - Bring Sheet1 I12 (and I21 average) back to a normal 0–100 scale.
+- Fixing the summary ranges on Sheet1 (C20, C21) will make High/Low/Average consistent and correct.
+
+Summary of specific cells to edit immediately
+- Sheet3: P4..P18 — change each to: =AVERAGE(Dn,Fn,Hn,Jn,Ln) (n=4..18)
+  - Especially fix P13 → =AVERAGE(D13,F13,H13,J13,L13)
+- Sheet1:
+  - C20: change =MIN(C4:C18) → =MIN(C3:C17)
+  - C21: change =MAX(C5:C19) → =AVERAGE(C3:C17)
+  - Review other summary cells to ensure all use the same student range C3:C17 (and D3:D17, E3:E17, ...).
+- Sheet1: Verify VLOOKUP range and grade table:
+  - Either move/insert proper numeric threshold into K5 and keep $K$5:$L$17, or change the VLOOKUP range to start at K6 if that's where the numeric thresholds begin: e.g. =VLOOKUP(I3,$K$6:$L$17,2,TRUE())
+
+If you want, I can:
+- Produce exact corrected formulas for every affected cell (I can output a list of replacement formulas you can paste).
+- Generate a small checklist you can follow to update the workbook step-by-step.
+Which would you prefer?

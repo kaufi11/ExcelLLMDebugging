@@ -1,0 +1,33 @@
+Summary — found the main errors and fixes. I kept each fix short and easy to apply.
+
+1) Faulty: Sheet1!I15
+- Error: Typo (mechanical)
+- Problem: Formula contains "15*25" instead of referring to the Final column cell F15.
+- Fix: = (C15*0.125) + (D15*25) + (E15*25) + (F15*25) + (G15*12.5)
+- Why: restores the same weighting pattern used on other rows (homework + tests + midterm + final + participation).
+
+2) Faulty: Sheet1!C20
+- Error: Wrong range (off-by-one)
+- Problem: =MIN(C4:C18) excludes the first student (row 3) and includes a non-student row.
+- Fix: =MIN(C3:C17)
+- Why: summary should cover the student rows 3:17.
+
+3) Faulty: Sheet1!C21
+- Error: Wrong function and wrong range
+- Problem: =MAX(C5:C19) — uses MAX instead of AVERAGE and wrong row range.
+- Fix: =AVERAGE(C3:C17)
+- Why: "Class Average" must be the average across the student rows.
+
+4) Faulty: Sheet3!P4:P18 (each of these P cells)
+- Error: Wrong cell references / copy-paste typo
+- Problem example: P4 =AVERAGE(D4,F4,H4,J4,L40) — L40 (and similar L41,L42...) are wrong; AVERAGE should include L4, L5, etc.
+- Fix (apply to each row n): Pn =AVERAGE(Dn, Fn, Hn, Jn, Ln)
+  - Example P4: =AVERAGE(D4, F4, H4, J4, L4)
+  - Example P5: =AVERAGE(D5, F5, H5, J5, L5)
+- Why: this computes the student's test average from the five test percentage columns (D,F,H,J,L) for that same row.
+
+Notes / quick checks
+- After applying the above fixes, recalc Sheet1 column I (final numeric grade) and column J (VLOOKUP letter) to verify results. The I-column formula pattern you use mixes a homework score out of 100 (C) with test/midterm/final/participation as decimals (D–G). That works with your chosen multipliers (C*0.125, D*25, etc.), so no further scale changes are required unless you want all inputs normalized to 0–1 first.
+- Minor: TRUE() in VLOOKUP is acceptable but you can use TRUE (no parentheses).
+
+If you want, I can produce the exact corrected formulas for every affected cell (I4:I17, P4:P18, summary rows) so you can paste them in. Which do you prefer?

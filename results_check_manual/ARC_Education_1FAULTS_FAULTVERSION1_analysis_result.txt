@@ -1,0 +1,21 @@
+I inspected the workbook formulas and found several clear formula errors / inconsistencies. Summary (sheet, cell, problem, recommended fix):
+
+1) Sheet "Student-teacher"
+- Cell F56
+  - Current formula: =COUNT(F45:F55)
+  - Problem: COUNT returns the number of numeric cells in F45:F55 (11) rather than the sum of teachers. The value shown (11) is incorrect for a "TOTAL" of teacher counts.
+  - Fix: replace with =SUM(F45:F55)
+
+- General inconsistency: several "TOTAL" rows in this sheet are hard-coded values rather than formulas (for example the TOTAL row in the 1990–1993 block uses entered values instead of SUM formulas). This is not strictly an error, but it is inconsistent and makes the sheet error-prone. Recommend replacing manual totals with SUM formulas (and ensure ranges exclude any subtotal rows).
+
+2) Sheet "university"
+- Row 15 (Two Year Colleges total)
+  - B15 is correct: =SUM(B12:B14)
+  - But C15..K15 are wrong: they use =SUM(C5:C14), =SUM(D5:D14), ... =SUM(K5:K14)
+  - Problem: these ranges (5:14) include the four-year college rows and the four-year "Total" subtotal (row 9), so the two-year "Total" is double-counting / including unrelated rows. This is inconsistent with B15 and yields incorrect totals.
+  - Fix: change each to sum only the two-year rows, e.g. C15 => =SUM(C12:C14), D15 => =SUM(D12:D14), … K15 => =SUM(K12:K14)
+
+Notes / suggestions
+- Anywhere a SUM includes a subtotal row (e.g., summing 5:14 when row 9 is already a subtotal of 5:8) risks double-counting. Always point SUM ranges at the original detail rows only, or use a consistent structure (e.g., use table features or SUMIF by category).
+- There are other inconsistencies in the workbook (mix of manual totals and formulas, and some numerical fields that look like percentages vs decimals), but the three items above are the explicit formula problems I found (the mis-used COUNT in Student-teacher!F56 and the incorrect SUM ranges in university!C15:K15).
+If you want, I can produce corrected formulas and a patch (list of exact replacements) you can paste into the workbook.

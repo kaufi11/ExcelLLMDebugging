@@ -1,0 +1,39 @@
+Errors found:
+
+1. In Ap3 sheet, cell L20 formula is:
+   `=IF(784=2,Rate!E15*0.33,IF(784=3,Rate!E15*0.66,IF(784=4,Rate!E15*1,0)))`
+   - The number 784 is used instead of the cell reference K20.
+   - This causes the formula to always evaluate the same condition (784=2, etc.), which is false, so it returns 0.
+
+2. In Ap3 sheet, cells L32 and L33 formulas reference Rate!E17 and Rate!E18 incorrectly for experience calculations:
+   - L32 formula uses Rate!E17 but should use Rate!E19 (matching the proficiency reference in B32).
+   - L33 formula uses Rate!E18 but should use Rate!E20 (matching the proficiency reference in B33).
+   - This causes incorrect weighting of experience scores.
+
+3. In Ap3 sheet, cell L31 K31 is 0, but formula expects values 2 to 5 for correct calculation:
+   - This results in zero or no score for that item.
+
+Solutions:
+
+1. Correct L20 formula in Ap3 to use K20:
+   ```
+   =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+   ```
+   Explanation: Replace the hardcoded number 784 with the proper cell reference K20 to dynamically calculate based on the proficiency key.
+
+2. Fix L32 and L33 formulas to reference correct Rate!E columns:
+   - L32:
+     ```
+     =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+     ```
+   - L33:
+     ```
+     =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+     ```
+   Explanation: Align the experience weighting formulas with the correct Rate sheet rating scale cells for those skills.
+
+3. For L31 with K31=0, ensure K31 has a valid key (2 to 5) or adjust formula to handle 0:
+   - Either update K31 to a valid key or modify formula to return 0 if key is outside expected range.
+   Explanation: The formula expects keys 2-5; zero is invalid and leads to zero score.
+
+Summary: Fix the incorrect hardcoded value in L20, correct cell references in L32 and L33, and ensure valid keys in K31 to get accurate calculations.

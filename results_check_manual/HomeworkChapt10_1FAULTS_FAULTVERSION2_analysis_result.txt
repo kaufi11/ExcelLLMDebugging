@@ -1,0 +1,34 @@
+I inspected every formula you provided on Sheet1 and found several formula errors / inconsistencies (mostly omitted or hard‑coded cells that break the intended copy-down logic). Below I list each problem, why it’s wrong, and a suggested fix.
+
+Summary of the problems
+1) Row 5–9 table (Page 291 #1a)
+- Cell B9 is blank.
+  - Problem: D9 = B9 - C9 evaluates as -20.48 because Excel treats the blank B9 as 0. That is inconsistent with periods 1–4 where B = 25. If period 5 income should be 25, B9 must be filled.
+  - Fix: Enter B9 = 25 (or explicitly 0 if income is intended to be zero and you want that outcome).  
+
+2) Row 16–20 table (Page 291 #1b)
+- Cell C17 contains =765 (hard-coded), and C18..C20 are chained references to C17 (C18 = C17, C19 = C18, C20 = C19).
+  - Problem: Using =765 here is almost certainly an error. It produces very large negative D17..D20 values (e.g. D17 = 25 - 765 = -740) that break the accumulation logic. The pattern from #1a suggests consumption should be copied from the prior row (C17 should be =C16).
+  - Fix: Change C17 to =C16 (then C18 = C17, C19 = C18, C20 = C19 are OK). This yields consumption = 20.72 in each subsequent period.
+- Cell B20 is missing.
+  - Problem: D20 = B20 - C20 produced -765 (B20 treated as 0) because B20 is blank. If incomes are 25 for all periods 1–5, B20 should be 25.
+  - Fix: Enter B20 = 25 (or 0 if period 5 intentionally has zero income).
+- Cell E16 formula uses =1*(1.05)+D16 (literal 1 used).
+  - Problem: This hard-coded "1" is inconsistent with the accumulation pattern used later (E17 uses E16*(1+0.05)+D17). Typically E16 should reference a prior initial-asset cell (e.g. E15) rather than a literal 1. Also your note elsewhere mentions "initial assets of $1,000" — the "1" in the formula suggests a units mismatch or an incorrect initial asset.
+  - Fix: Put the initial assets in a dedicated cell (e.g. E15 = initial assets) and change E16 to =E15*(1+0.05)+D16. If initial assets are 1000, set E15 = 1000 (or use consistent units across the sheet).
+
+Other observations / suggestions
+- Many cells are hard-coded (=765, =765 typed into the formula bar) rather than using references; that makes copy-down fragile and caused the mistaken 765 value to propagate. Replace hard-coded numbers with cell references where appropriate.
+- Check unit consistency: your note about "$1,000" suggests you may be working in dollars while many numbers look like "25" and "20.48" (maybe thousands). Decide on units (dollars vs thousands) and make the initial-asset cell reflect that unit consistently.
+- E5 = D5 is fine if you intend assets at the end of period 1 to equal the period-1 saving. But make sure the period indexing (beginning vs end) and how the interest is applied is what you intend. (This is a modeling note rather than a formula error.)
+
+Suggested concrete corrections (quick patch)
+- B9 → enter 25 (if income in period 5 = 25)
+- C17 → change formula to =C16
+- B20 → enter 25 (if income in period 5 = 25)
+- E15 → enter initial assets (e.g., 1000 or 1 depending on units)
+- E16 → change formula to =E15*(1+0.05)+D16
+
+If you want, I can:
+- produce the corrected formulas and show the corrected numeric results for the two tables (assuming B9=25, B20=25, C17=C16, initial assets = X you choose), or
+- open and modify the actual workbook and return a corrected file with these fixes. Which would you prefer?

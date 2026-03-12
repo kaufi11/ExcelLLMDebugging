@@ -1,0 +1,53 @@
+I checked the workbook and found several clear errors (wrong ranges, inconsistent units/formatting, and data-entry mistakes). Short, specific items below with the fix and a one-line explanation.
+
+1) Sheet "Student-teacher" — incorrect sum for 1997–98 teachers (F56)
+- Faulty formula: F56 = SUM(F46:F55)
+- Fix: F56 = SUM(F45:F55)
+- Why: the F45 row (ATLANTA teachers for 1997–98) was omitted from the total.
+
+2) Sheet "Student-teacher" — suspicious data-entry (BUFORD, row 15)
+- Problem: E15 = 1.548 (Average Daily attendance) — out of scale compared to other districts (typically ~1,000–100,000).
+- Fix/action: Verify source and replace with correct value (likely 1,548 or 1548). If it should be 1,548: change E15 → 1548.
+- Why: decimal misplaced or thousands separator lost; causes wrong ratios and totals.
+
+3) Sheet "Teachers adv degrees" — inconsistent Percent values and many decimal teacher counts
+- Problem A: In the 1995–1999 block (rows 21–31) Percent cells are decimals (0.4690...) while earlier years used 50.9 etc. Units are inconsistent (some are percent-as-number, some fraction-of-1).
+- Fix A: Convert all percent values to the same convention. Either:
+  - If values are fractions (0.4690...), format cells as Percentage (Format Cells → Percentage) OR
+  - Multiply by 100 if the cell should store 46.90 as a numeric rather than a percent (e.g., =oldvalue*100).
+- Why: Mixing “47” and “0.47” breaks calculations that use Percent.
+
+- Problem B: "Total No." columns contain decimals (e.g., 1995.8, 1789.9) but they must be whole people.
+- Fix B: Recalculate totals using consistent percent scaling and round to integers, e.g.:
+  - =ROUND(Percent * TotalTeachers,0)  (if Percent is stored as decimal like 0.469)
+  - or =ROUND((Percent/100) * TotalTeachers,0) (if Percent is stored as 46.9)
+- Why: totals of people must be integers and decimals indicate a wrong percent->count conversion or formatting mismatch.
+
+4) Sheet "university" — wrong sum ranges for Two-Year Colleges totals (row 15)
+- Faulty formulas (examples): C15 = SUM(C5:C14), D15 = SUM(D5:D14), etc.
+- Fix (use the two‑year rows only): 
+  - B15 = SUM(B12:B14) (already OK),
+  - C15 = SUM(C12:C14),
+  - D15 = SUM(D12:D14),
+  - E15 = SUM(E12:E14), … and so on through K15 = SUM(K12:K14).
+- Why: the current formulas include the four-year colleges (rows 5–8) and double-count totals.
+
+5) Sheet "Student-teacher" (Totals row A37) — ratio cell G37 is "**" / not calculable
+- Note: You cannot sum ratios; G37 should be left blank or recalculated as: TotalAttendance / TotalTeachers and then formatted as "x-1" if desired.
+- Example formula: =ROUND(B18 / C18,1) & "-1"  (adjust cell references to your totals)
+- Why: summing text ratios causes asterisks and is meaningless.
+
+6) Sheet "State test" — out-of-scale values from 1991–92 onward
+- Symptom: 1989–90 and 1990–91 scores ~200; 1991–92 onward show small numbers (e.g., 57, 53) — likely decimal/scale or column-shift error.
+- Fix/action: Compare these values against the original source. They look like wrong units or truncated numbers; correct by restoring the original values or adjusting the decimal places.
+- Why: scale change breaks trend analysis and averages.
+
+General recommendations to prevent recurrence
+- Keep units consistent: store percents as true percentages (0.469 formatted as 46.9%) or as whole-number percents (46.9) — but be consistent and document which convention you use.
+- Use explicit ranges anchored to header rows (avoid manual edits that shift ranges). Use named ranges for totals.
+- Wrap calculated headcounts with ROUND(...,0) to ensure integer teacher counts.
+- When you see a single cell wildly out of scale (1.548 vs ~1,500), verify source data before guessing.
+
+If you want, I can:
+- Provide the exact corrected formulas pasted into the workbook for every affected cell (F56, C15:K15, the rounding formulas for totals, example percentage conversions), or
+- Inspect one sheet you choose and produce a corrected version (I’ll list every changed cell). Which would you prefer?

@@ -1,0 +1,40 @@
+I reviewed the sheet and found several consistent formula mistakes that are causing wrong Totals, %3+ and Mean Grade values. Short summary of the problems and how to fix them plus simple example formulas to paste.
+
+Main problems
+1) Inconsistent / wrong SUM ranges for “Total Exams” rows (and some totals are hard-coded).  
+   - Example: F10 uses =SUM(F6:F9) (omits F5). AI10 is the number 19 (hard-coded), not a SUM. C44 and D44 are entered as numbers instead of formulas. E11 uses =SUM(E5:E7) (omits rows 8–9). These omissions and hard-codes make downstream % and means incorrect.
+
+2) % of Grades 3+ (rows like 12, 21, 29, 37, 45, etc.) appear to be typed numbers rather than a formula using the correct totals. If totals are wrong, these percentages are wrong.
+
+3) Mean Grade (rows like 13, 63, 71, etc.) should be a weighted average of grade counts, but the sheet contains values (not reliably-calculated formulas). With wrong totals or missing grades the mean will be wrong.
+
+How to fix (simple, copy/paste into the sheet)
+- Make every “Total Exams” cell use the full sum of the grade rows (grades 5 → 1 are in rows 5:9 for the county summary). Use the correct column for each cell. Example (for column C):
+  - C10: =SUM(C5:C9)
+  - F10: =SUM(F5:F9)  (fixes the current F6:F9 omission)
+  - AI10: =SUM(AI5:AI9)  (replace the hard-coded 19)
+
+  For school subtotals (e.g. Davidson row 44): use the exact rows for that school:
+  - C44: =SUM(C39:C43)
+  - D44: =SUM(D39:D43)
+  - (E44 is already =SUM(E39:E43) — make the other columns consistent the same way)
+
+- Replace any other single-number totals with corresponding SUM formulas (search for totals that are constants or that sum only a subset of rows).
+
+- % of Grades 3+ formula (replace row12, row21, etc. in each column). Percentage is sum of counts for grades 5, 4 and 3 divided by Total Exams. Example for column C:
+  - C12: =IF(C10=0,"", SUM(C5:C7) / C10)
+  Format the cell as Percentage (with one decimal) to match your sheet style.
+
+- Mean Grade formula (weighted average). Example for column C:
+  - C13: =IF(C10=0,"", (5*C5 + 4*C6 + 3*C7 + 2*C8 + 1*C9) / C10)
+
+Notes and quick checklist
+- Replace every Totals cell that currently is hard-coded or uses an inconsistent range with the appropriate SUM for its column and the row-range for that block (e.g., 5:9 for the overall school summary, 39:43 for Davidson block, etc.). Use Excel’s fill/drag across once the first column is corrected (ensure relative references) or copy/paste the appropriate column address into each cell.
+- Then replace % cells with the SUM(grades 5:3)/Total formula; then replace Mean cells with the weighted formula above.
+- After changes, recalc (F9) or save: verify that %3+ = (counts of 5+4+3) / Total and that Mean equals weighted average. If any Total cell still does not match the sum of its grade rows, check that the grade rows are in the exact rows you expect (some blocks use different row numbers).
+
+If you want, I can:
+- Provide a short list of exact cells to change (I can enumerate all wrong formulas I spotted: e.g., F10, AI10, C44, D44, E11, etc.), or
+- Produce the exact formula for every mis-set cell across the sheet (I’ll list them column-by-column).
+
+Which do you want?

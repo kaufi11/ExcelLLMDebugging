@@ -1,0 +1,50 @@
+Summary — main errors found
+1) Wrong cell references in Valuing Ending Inventory (these make average unit cost, ending units and costs wrong).
+2) Ending‑inventory units formula is incorrect (I11 produces 4,000 instead of 6,000).
+3) Several cost totals/placeholders (K11, K12 and cells shown as “?”) are missing/incorrect.
+4) A handful of header cells on Errors sheet use text references (minor, cosmetic).
+
+Fixes (short, exact changes) — Valuing Ending Inventory
+
+A. Fix beginning‑lot references
+- Replace I8 (currently =C10) with: =C8
+- Replace K8 (currently =E10) with: =E8
+- Replace I9 (currently =D14 or other wrong ref) with: =C9
+- Replace K9 (currently =E14 or other wrong ref) with: =E9
+Why: I8/I9 should hold the units of each beginning lot, K8/K9 the cost of each lot. They incorrectly pointed to totals, so all downstream averages/costs were wrong.
+
+B. Correct ending inventory units (I11)
+- Replace the current formula with one of these (choose the one that matches your sign convention). Using your sales as negative numbers, use:
+  = I10 + SUM(C12:C13) + SUM(C17:C18)
+Explanation: I10 = beginning units (C8+C9); C12:C13 = purchases; C17:C18 = sales (entered as negative). This yields units remaining (7000 + 10000 - 11000 = 6000). The previous formula (-I10 - SUM(C17:C18)) produced 4,000 because it used wrong algebra/signs.
+
+C. Compute ending inventory cost and COGS in the Weighted‑Average (periodic) block
+- K11 (ending inventory cost) → set to:
+  = I11 * J10
+  (or = -I11 * J10 if you want K11 to be stored as a negative value like other “- Ending Inventory” cells)
+- K12 (Cost of Goods Sold) → set to:
+  = K10 - (I11 * J10)
+  or, if you used negative K11: = K10 + K11
+Why: K10 is total cost available. Ending inventory cost = units remaining * average unit cost (J10). COGS = total cost available - ending inventory cost. Previously K11/K12 were missing ("?") so periodic weighted average COGS/ending inventory could not be computed.
+
+D. After fixes, propagate/verify dependent formulas
+- K10 = SUM(K8:K9) will now be correct because you fixed K8/K9.
+- Any averages that use I$11 (absolute ref) will now be correct because I11 is fixed.
+- Replace any other cells that pointed to totals where they should point to individual lots (scan for formulas like =+C10 used in place of =C8 or =C9).
+
+Minor / cosmetic
+- In Errors sheet, D25 and F25 formulas reference label cells (D6/F6). They are harmless (return text), but you may want to replace with static labels (e.g., “Understated” / “Overstated”) for clarity.
+- Check sign consistency across the workbook: units sold are entered as negative numbers while purchases and beginning inventory are positive. Keep that convention and use formulas that account for it (as above).
+
+Why these fixes work (one‑line explanations)
+- Using the correct lot-level units/costs (I8/I9 and K8/K9) produces correct totals and average unit cost (J10).  
+- Correcting I11 computes remaining units from beginning + purchases − sales (respecting your negative sales entries).  
+- Ending cost = units remaining × average unit cost; COGS = total cost available − ending inventory cost. These are standard periodic weighted average calculations.
+
+What to check after changes
+- Verify I11 = 6000 (units).  
+- Verify J10 = K10 / I10 (average cost).  
+- Check that periodic weighted average COGS matches your periodic results in the NetIncome sheet.  
+- Scan other sections (FIFO/LIFO/perpetual) for similar mis‑references (look for formulas that point to totals where they should point to the lot row).
+
+If you want, I can give exact formulas for FIFO/LIFO/perpetual rows too and scan the workbook to produce a list of every incorrect reference. Which would you prefer?

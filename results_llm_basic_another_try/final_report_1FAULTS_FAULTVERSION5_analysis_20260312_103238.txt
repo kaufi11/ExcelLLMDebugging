@@ -1,0 +1,72 @@
+Errors and Issues:
+
+1. Circular Reference in Raw Data Sheet:
+   - In Raw Data!I5, the formula is =J6, which refers to a cell in the next row.
+   - Similarly, I6 = J6, I7 = J7, etc.
+   - This is inconsistent and likely incorrect because I column is "$$ per child" and J column is "$$ per partic".
+   - Referencing J6 in I5 is wrong and creates confusion or circular reference.
+
+2. Missing or Incorrect Formulas in Raw Data:
+   - For example, in Raw Data!I20 and J20, values are "N/A" instead of formulas.
+   - This breaks consistency and calculations downstream.
+
+3. Inconsistent Use of SUM with + Operator in Summary Information:
+   - For example, in Summary Information!B43: =SUM(D5+D6+D7+...) uses SUM with addition inside, which is redundant and may cause errors.
+   - SUM expects a range or multiple arguments separated by commas, not addition inside.
+   - Should be either =SUM(D5:D19) or =D5+D6+D7+...
+
+4. Inconsistent or Missing Data in Raw Data!E22:
+   - The sum formula is =SUM(E5:E15), but data goes to E19.
+   - This causes incomplete summation of parents data.
+
+5. Inconsistent Hours Calculation in Raw Data:
+   - Some hours are hardcoded numbers (e.g., H7=100), others are formulas.
+   - Some formulas may have incorrect parentheses, e.g., H13: =3*(1*5)+(5*6) should be =3*((1*5)+(5*6)) or clarified.
+
+6. In Age Data Sheet:
+   - Some rows have missing values in E or F columns (Primary or Secondary).
+   - For example, row 6 (Mordi Chels Sec) has E5 empty but F5=7, but formulas use $E5 and $F5.
+   - This may cause zero or wrong calculations.
+
+7. In Charts 2000 Sheet:
+   - Formulas like =SUM(J28+J29+...) use SUM with addition inside, which is incorrect.
+   - Should be =SUM(J28:J38) or =J28+J29+...
+
+8. Inconsistent Use of IF Statements:
+   - In Charts 2000, some IF formulas check if a cell equals "bullying" but the referenced cells may not contain exact matches or have case sensitivity issues.
+
+Solutions:
+
+1. Fix Circular Reference in Raw Data!I Column:
+   - Change I5 formula from =J6 to =J5 or calculate $$ per child directly.
+   - Usually, $$ per child = budget / number of children (D column).
+   - So formula in I5 should be =K5/D5 (if D5>0), or handle zero children.
+
+2. Replace "N/A" in Raw Data!I20 and J20 with proper formulas or leave blank if no data.
+
+3. Correct SUM Formulas in Summary Information and Charts Sheets:
+   - Replace =SUM(D5+D6+D7+...) with =SUM(D5:D19) or =D5+D6+D7+... (without SUM).
+   - SUM is for ranges or comma-separated arguments, not expressions.
+
+4. Extend Parent Sum Range in Raw Data!E22 to E19 to include all data.
+
+5. Review and correct parentheses in formulas for hours to ensure correct calculation order.
+
+6. In Age Data, ensure Primary (E) and Secondary (F) columns are filled correctly or formulas handle blanks.
+
+7. In Charts 2000 and similar sheets, fix all SUM formulas with addition inside to proper range sums or additions.
+
+8. For IF formulas checking text, ensure exact matches or use case-insensitive functions like =IF(LOWER(B4)="bullying",1,0).
+
+Explanation:
+
+- Circular references cause Excel to error or miscalculate; referencing next row in current row is wrong.
+- SUM function expects ranges or multiple arguments, not expressions with + inside.
+- Incomplete ranges cause totals to be wrong.
+- Parent and child counts must be consistent for cost calculations.
+- Parentheses in formulas affect calculation order; wrong parentheses lead to wrong results.
+- Text comparisons should be consistent in case and spelling.
+
+Summary:
+
+Fix formulas in Raw Data!I column to directly calculate $$ per child from budget and children count. Correct all SUM formulas that misuse SUM with addition inside. Extend sum ranges to cover all data rows. Replace "N/A" with proper formulas or blanks. Review parentheses in hours formulas. Ensure Age Data primary/secondary counts are correct for calculations. Use consistent text matching in IF formulas.

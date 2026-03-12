@@ -1,0 +1,21 @@
+Summary — I found clear formula typos that will produce zeros in Year 2 / Year 3 in the In-Kind Contributions block.
+
+1) Sheet "In-Kind Contributions", row for "Personnel costs (C23)"
+- Faulty formulas:
+  - R23 = Q23  (should not reference Q)
+  - AF23 = AE23 (should not reference AE)
+- Why it's wrong: Q and AE are the blank separator columns in your layout. Those two formulas therefore pull blank/0 instead of the intended month values, so Year‑2 / Year‑3 totals are wrong.
+- Fix (replace the two formulas):
+  - R23 should be =O23  (month 13 should copy month 12)
+  - AF23 should be =AC23 (month 25 should copy month 24)
+- Explanation: Your sheet pattern is D:O = months 1–12, P = Yr1 total, R:AC = months 13–24, AD = Yr2 total, AF:AQ = months 25–36. After each year-total column you must reference the previous month column (O for month13, AC for month25). Using Q / AE jumped over the totals column and pointed at blank columns.
+
+2) Recommendation — search for similarly mistyped references
+- There are many repeating patterns. Use Find (Ctrl+F) to look for formulas that reference Q (e.g. "=Q") or AE (e.g. "=AE") in the data blocks to catch any other accidental references to the separator columns. Replace:
+  - any R (month13) that equals Q? → change to =O?
+  - any AF (month25) that equals AE? → change to =AC?
+
+Quick tests after fixes
+- Check P20 (Yr1 total) and AD20 (Yr2 total) on the "In-Kind Contributions" sheet — they should now include the expected values from row 23 and feed correctly to the Financial Summary (C9/D9/E9).
+
+If you want, I can scan the whole workbook for other instances of formulas referencing Q or AE and list all hits (or provide a short macro to fix them).

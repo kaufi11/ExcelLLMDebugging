@@ -1,0 +1,20 @@
+Findings (short)
+- Error: On the "Your Company" sheet cell C41 is hard-coded to 7 (FORMULA =7). That makes the “Total Possible INzone Savings” wrong (it will always show 7, not the sum of the calculated savings).
+- Consequence: The "Text Only Version" sheet pulls C41 from "Your Company" (C32 = 'Your Company'!C41), so it also shows 7 instead of the real total.
+
+Why this is wrong
+- C41 should total the calculated savings rows (Cash flow cost + Obsolete + Waste + Exports + Returns + Zone transfers + Inverted duty). A hard-coded value cannot reflect user inputs.
+
+How to fix (simple)
+- Replace the hard-coded 7 in 'Your Company'!C41 with a SUM of the result cells. Use either:
+  - =SUM(C22,C24,C27,C30,C33,C36,C39)
+  or (if you prefer a contiguous range)
+  - =SUM(C22:C39)
+- After changing that, the "Text Only Version" C32 will automatically show the correct total because it references 'Your Company'!C41.
+
+Extra quick checks (recommended)
+- Make sure your percentage inputs are entered as decimals (for 5% enter 0.05, not 5).
+- Format result cells as Currency or Number for readability.
+- If you prefer the print sheet to calculate its own total instead of referencing C41, change 'Text Only'!C32 to =SUM(C13,C15,C18,C21,C24,C27,C30) (these are the local result cells on that sheet).
+
+If you want, I can give the exact steps (click cell → replace formula) or paste a version of the workbook formula map to use.

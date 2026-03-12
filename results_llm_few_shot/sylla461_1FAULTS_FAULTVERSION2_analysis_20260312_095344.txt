@@ -1,0 +1,22 @@
+Summary of errors
+1) Sheet "2000", cell B19 — wrong constant: formula is =B15+579. This adds 579 days (≈1.6 years) instead of the intended class interval (4 days). All dates after B19 are therefore shifted and incorrect.
+
+2) (Likely) Sheet "1999", cell B7 — the start date shown is 2000-08-22. That looks like a copy/paste error because the sheet is for 1999. If the sheet should use 1999 dates, B7 should be the 1999 start date (not 2000).
+
+Fixes and why they work
+1) Fix B19 on sheet "2000"
+- Replace the formula =B15+579 with =B15+4
+- Why: the schedule pattern around that area uses +4 days between the listed Tuesdays (B15 → B19 should be +4). Using +4 restores the intended weekly progression and fixes all downstream dates that reference B19 (B23, B27, B31, …).
+
+2) Fix B7 on sheet "1999" (if you want 1999 dates)
+- Change the date to the correct 1999 course start date (for example, if classes began Tuesday 1999-08-24, enter 1999-08-24 00:00:00).
+- Why: the rest of the sheet’s formulas add offsets to B7, so a wrong start date makes every computed date wrong.
+
+Quick check list after fixes
+- After correcting B19 (sheet 2000), verify B23, B27, B31… all show expected dates.
+- After correcting the 1999 start date, check that formulas like B11 =B7+2, B15 =B11+1 etc produce dates in 1999.
+
+Optional improvement (more robust)
+- Instead of adding fixed numbers, consider using actual weekday arithmetic (WORKDAY, or DATE+N with documented intervals) or use a single seed date and fill down with the correct pattern so accidental large constants can’t propagate.
+
+If you want, I can give the exact corrected formulas for every affected cell or fix the sheet for you — tell me which sheet(s) you want corrected automatically.

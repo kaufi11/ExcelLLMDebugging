@@ -1,0 +1,26 @@
+Findings (short)
+- Main error: A19 on sheet "program" contains =A18-1 (a minus) instead of =A18+1. That creates duplicated / out-of-order EVENT numbers from that row onward.
+- Related problem: A15 (Break‑A) has identical START and END (10:15:00 → 10:15:00) and is marked "Eliminated" — it should be removed or its times corrected. Keeping an eliminated row plus the wrong formula explains why numbering got off.
+- Minor: some textual AM/PM labels in the "schedule" sheet (e.g., "10.15 - 12.20 AM") look incorrect for midday but this is cosmetic.
+
+Why it matters
+- The bad formula produces duplicate event IDs (e.g., two rows labeled 6, two labeled 7). That breaks any lookup/matching or sorting that relies on unique sequential EVENT numbers and makes the master program inconsistent.
+
+Quick fix (recommended)
+1. Fix the formula:
+   - Go to program!A19, replace =A18-1 with =A18+1 and press Enter.
+2. Ensure the increment pattern continues:
+   - Select program!A19, drag the fill handle down through the rest of the EVENT column (A20, A21, A22, A24, …) so every EVENT cell is =previous+1.
+3. Remove or correct the eliminated break:
+   - If Break‑A is supposed to be deleted: delete row 15. After deleting, confirm EVENT formulas still increment correctly (they will if they reference the cell above).
+   - If Break‑A should remain with real times: set a correct END time (e.g., 10:15 → 10:30) and adjust the EVENT value as above.
+
+Alternative robust formula
+- To avoid manual +1 errors, use a row-based formula in A12 and fill down, e.g. in A12 enter =ROW()-11 (this yields 1 in row12, 2 in row13, etc.). Then copy down. This prevents accidental +/- mistakes.
+
+What to check afterward
+- Verify there are no duplicate EVENT numbers and that each session in column A increases by 1 sequentially.
+- If you use EVENT IDs in VLOOKUP/INDEX-MATCH elsewhere, re-run checks to make sure mappings are correct.
+- Fix any AM/PM text labels in schedule if you want the printed labels to match actual times.
+
+If you want, I can give the exact step-by-step keystrokes for deleting the eliminated row and re-filling the EVENT column.

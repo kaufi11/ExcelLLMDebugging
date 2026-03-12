@@ -1,0 +1,41 @@
+Summary of the problem
+- The sheet has multiple #REF! errors. Those appear because one or more source cells that many formulas referenced were deleted or moved. When Excel can’t find the referenced cell it shows #REF!, and that breaks all dependent calculations (percent allocations, dollar conversions, subtotals).
+- A second symptom: some formulas look like they intend to convert a percent to dollars (e.g. (O45/100)*<total>), but the <total> part is the #REF! so the dollar amounts are not computed.
+
+How to find the broken places quickly
+1. Press Ctrl+F and search for "#REF!" — Excel will list every broken formula cell.
+2. Inspect each broken formula to see what the missing input should be (usually a single “base” total or a discipline total).
+
+Typical broken formulas and how to correct them (short, concrete fixes)
+- Problem: formulas like O39 = #REF!*0.0547 (and other cells in that row)
+  - Why: they expected a base amount (69500 in your sheet) but that base-cell reference was deleted.
+  - Fix: point them to the base cell that holds 69500 (or put 69500 into a stable cell and reference it). Example:
+    - If you put 69500 in cell E39, change O39 to = $E$39 * 0.0547 (and similarly for P39,Q39,R39).
+    - Better: create a named cell (e.g. CostConsultantTotal) and use =CostConsultantTotal * 0.0547.
+
+- Problem: P45 = (O45/100) * #REF!
+  - Why: converting percent O45 to dollars needs the contract total, but that cell was deleted (hence #REF!).
+  - Fix: replace #REF! with the correct total cell (probably Total Basic Services/Contract Amount). In your layout the correct cell looks like either E31 or E62. Use whichever contains the dollar total. Example:
+    - P45 = (O45/100) * $E$62  (or *$E$31 if that is the real total).
+  - Then verify E62 = SUM(E36:E57) indeed equals the Total Basic Services / Contract Amount. If not, fix that linkage.
+
+- Problem: S44 = #REF!, P53 = P52 - #REF!, and other similar #REF!s
+  - Why: same cause — they reference a deleted cell.
+  - Fix: restore the intended reference (likely a row total or a cell containing the overall contract amount). Replace #REF! with the correct cell.
+
+General recommended clean-up steps (short)
+1. Use Find "#REF!" and list all affected cells.
+2. Identify what each broken formula was supposed to reference (most likely a small number of "base" cells: cost-consultant total = 69500, overall basic-services total = E31/E62, maybe D21).
+3. Restore those base values into stable single cells (for example, put the Cost Consultant total into one cell and the Contract Amount into one cell).
+4. Replace the #REF! parts of formulas with absolute references to those stable cells (e.g. $E$62 or named ranges).
+5. Recalculate and confirm:
+   - E62 = SUM(E36:E57) (should equal Total Basic Services / Contract Amount).
+   - Any percent-to-dollar formulas use that same total cell.
+6. Consider using named ranges (e.g. ContractTotal, CostConsultantTotal) so future moves/deletions won’t break formulas as easily.
+
+Why this solves it (one-line explanation)
+- #REF! arises when a referenced cell was removed; putting the needed totals back in a stable place and updating formulas to refer to those cells restores the calculation chain and removes the errors.
+
+If you want, I can:
+- produce exact corrected formulas for each cell with #REF! if you tell me which cell currently holds the true totals (e.g. confirm whether the master total is E31 or E62 and where the 69500 value should be), or
+- create a short script of the replacements to run.

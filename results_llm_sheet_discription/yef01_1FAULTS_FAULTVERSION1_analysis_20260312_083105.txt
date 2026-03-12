@@ -1,0 +1,53 @@
+Summary — main errors found
+1) Wrong formula in FTEE Calculation (cell C14)
+   - Problem: C14 = 20/24 (hard‑coded 20) instead of dividing the college’s credit hours.
+   - Effect: Credit FTEE for ILCC (row 14) is wildly wrong, which breaks H totals and all percent shares.
+   - Fix: Replace C14 with =B14/24. Recalculate totals and % columns.
+
+2) Many manual “balancing” tweaks (bad practice)
+   - Examples: Revenues C12 uses …-1; many H‑row totals add +0.01; totals rows add/subtract 0.02, +0.03, −0.000001, +0.000002; Expenditures by Category B12 ends with −0.0001.
+   - Problem: These are arbitrary adjustments to force sums to match. They hide real calculation issues and create inconsistent, hard‑to‑trace numbers.
+   - Effect: Makes auditing and future updates error‑prone; percentages and totals don’t reflect true data.
+   - Fix: Remove all manual offsets. Use proper formulas and rounding:
+     - Calculate all percentages directly from raw dollar/hour totals (e.g., =C10/$C$16).
+     - Use ROUND for display: e.g., =ROUND(C10/$C$16,4) — but keep internal calculations on unrounded values.
+     - If you need a displayed “100%” total, either accept small rounding difference (and keep footnote) or compute the last percent as 1 - SUM(other percents) for display only.
+
+3) Hard‑coded / inconsistent percent values used for the FTEE chart
+   - Problem: The chart (FTEE Graph) contains fixed values (D10:D24) instead of linking to the live percent column (I10:I24). Also some % cells appear hard‑typed rather than formula‑driven.
+   - Effect: Chart won’t update if FTEE inputs change; possible mismatch between sheet and chart.
+   - Fix: Point the chart series to the calculated % of total FTEE (I10:I24). Ensure I10:I24 are formula-based (Hx/$H$28) with no manual tweaks.
+
+4) Inconsistent SUM ranges and unnecessary leading “+”
+   - Problem: Some SUM or percent formulas use inconsistent ranges or unnecessary prefixes (e.g., =SUM(B10:B15) vs data in B10:B14; many formulas begin with =+ which is harmless but untidy).
+   - Effect: Potential omitted rows or confusion; readability suffers.
+   - Fix: Verify SUM ranges include exactly the data rows used (e.g., SUM(B10:B14) if there are only 10–14). Remove leading “+” from formulas (optional cosmetic).
+
+Concrete changes to make now (short checklist)
+- In FTEE sheet:
+  - C14: change to =B14/24.
+  - Remove any +0.01 additions in H12:H26. Set Hx = Cx + Fx (no manual offsets).
+  - Set H28 = SUM(H12:H27) (no -0.02).
+  - Set Ixx = Hxx / $H$28 (no tiny +/- corrections).
+  - Recalculate; verify I28 = 1 (or very close). If rounding shows small difference, leave footnote rather than forcing values.
+
+- In Revenues sheet:
+  - Remove the −1 in C12. Make C12 equal the actual figure (or the proper SUM of its components).
+  - Recalculate C16 = SUM(C10:C15). Set B10..B15 = Cx / $C$16 (use ROUND for display if needed).
+
+- In Expenditures by Category:
+  - Remove the -0.0001 from B12; use =ROUND(C12/$C$16,4).
+  - Make B16 = SUM(B10:B15) (ensure range matches actual data rows).
+
+- In General:
+  - Replace manual total adjustments (e.g., +0.02, −0.02, +0.000002) with correct formulas and rounding.
+  - Update chart data source to formula cells (I10:I24 for % of total FTEE).
+
+Why this fixes things (brief)
+- Using correct cell references (e.g., B14/24) yields correct intermediate FTEE values so totals and percentages are true.
+- Removing manual offsets prevents hidden errors and ensures any future data change flows through correctly.
+- Using ROUND only for display (not for source cells) keeps arithmetic accurate while showing tidy percentages; if exact "100.00%" is required for display, compute the last item as 1 - SUM(others) explicitly.
+
+If you want I can:
+- Provide the exact replacement formulas for every cell with a manual tweak, or
+- Produce a corrected mini workbook summary showing before/after values.

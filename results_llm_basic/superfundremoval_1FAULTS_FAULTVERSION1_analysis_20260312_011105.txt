@@ -1,0 +1,23 @@
+Summary of the errors I found, why they matter, and how to fix them (short & simple):
+
+1) Wrong value/formula in G21
+- Problem: G21 contains the literal 1 instead of calculating the weighted score. That cell should show F21 when C21 = "Yes" (or 0 when "No").
+- Impact: Section II’s weighted score (G24) will be inflated/wrong.
+- Fix: Replace G21 with a consistent IF formula. Example:
+  =IF(C21="yes",F21,IF(C21="no",0,""))
+  (Or to match your style: =IF(C21="yes",(1*F21),IF(C21="no",(0*F21),"")) )
+
+2) Potential false "ERROR" from the total-weight checks (F12, F24, F36, F56)
+- Problem: Each Total Section Score uses IF(SUM(weights)<>100%,"ERROR","100%"). Due to floating-point rounding, SUM(...) can be 0.9999999 or 1.0000001 and cause a false "ERROR".
+- Impact: You may see "ERROR" even though the visible weights sum to 100%.
+- Fix: Compare with a rounded value or use an absolute-tolerance test. Examples:
+  =IF(ROUND(SUM(F16:F22),3)<>1,"ERROR","100%")
+  or
+  =IF(ABS(SUM(F16:F22)-1)>0.0001,"ERROR","100%")
+  Apply the same change to F12, F24, F36, F56 (adjust ranges appropriately).
+
+Optional suggestions (short):
+- Keep the IF formulas consistent across the sheet (use the same pattern for all G cells).
+- Decide how to treat N/A answers (currently they return "" which may be fine; alternatively make them return 0 if you want them included numerically).
+
+If you want, I can give the exact corrected formulas for each wrong cell (copy/paste-ready).

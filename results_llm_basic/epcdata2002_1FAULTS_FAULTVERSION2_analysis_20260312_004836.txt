@@ -1,0 +1,27 @@
+I checked the workbook and found two clear, actual errors and one structural inconsistency that will produce wrong totals. Short fixes and why they work are below.
+
+1) GNVQ Intermediate sheet — wrong function in check cell
+- Problem: cell B37 contains =COUNT(B7:B34). COUNT returns the number of numeric cells (a count), not the total of the numbers. That makes the “check” total meaningless/wrong.
+- Fix: replace with =SUM(B7:B34).
+- Why: SUM adds the values (what you want). COUNT simply returns how many cells contain numbers.
+
+2) GCSE entries sheet — inconsistent/incorrect handling of “Science: Combined” and the check rows
+- Problem A (inconsistent formulas): The Combined Science row is treated inconsistently across columns/rows. In some places the sheet uses the double-award and single-award cells to compute the combined total (correct approach), but in the check block (rows 82–84) some columns copy only the double-award (e.g. B83 = B54) and other columns add double+single (F83 = F54+F56). This leads to double-counting or under-counting and wrong grand totals.
+- Problem B (confusing check logic): The extra rows B82:B84 and the mix of SUM and add/subtract logic are hard to follow and error-prone.
+- Fix (clear, consistent approach):
+  1. Make the Combined Science row (row 52) the single authoritative calculation for every year/column. Example for column F: put in F52:
+     =F54*2 + F56
+     and copy that formula across all year columns (B52:I52).
+  2. Remove ad-hoc adjustments in rows 82–84 (or rewrite them consistently). The simplest reliable check is:
+     - set row 82 to =SUM(B4:B78) etc (sum of the subject rows including the Combined Science row),
+     - set the TOTAL row (row 80) to =SUM(C4:C78) etc (already present),
+     - remove the extra B83/B84 correction rows (they are causing confusion).
+- Why: Combined Science is explicitly double-counted (double-award = two GCSE entries), so the correct combined total is (double_award * 2) + single_award. If that single formula is the only place where Combined is computed, SUM of subjects will be correct. The current mixture of copying and adding in different places causes wrong totals.
+
+3) General bookkeeping / cross-sheet references (recommended check)
+- Problem: There are many cross-sheet references used to estimate totals by subject. If any of the per-subject mean values or the Combined Science correction are wrong, those downstream estimated totals will also be wrong.
+- Fix / recommendation:
+  - After you apply fixes (1) and (2), recalc the workbook and then audit key cross-sheet links: e.g. in Primary estimated total by subj make sure B7..F7 pull the correct number-of-schools from Total Spending (estimated) and that subject multipliers come from the correct "Primary Spend by Subject (EPC)" cells.
+  - Add a small validation table that compares: SUM of per-subject totals vs the total-spend estimate. If they differ, colour the cell and inspect.
+
+If you want, I can give the exact formulas to paste (for every affected cell) or prepare a short macro to fix the GCSE Combined row and remove the old check rows. Which would you prefer?

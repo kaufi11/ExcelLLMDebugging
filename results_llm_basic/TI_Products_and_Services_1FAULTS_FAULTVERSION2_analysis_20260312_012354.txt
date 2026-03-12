@@ -1,0 +1,44 @@
+Summary — what’s wrong
+- Many B-column cells are intended to be sequential numbers (each = previous + 1) but some formulas were mistyped and point to the wrong row. Those bad references break the sequence and give incorrect numbers.
+- One clear obvious typo: B14 adds 376 instead of 1 (=+B13+376).
+- Other examples of wrong references (copy/paste mistakes): B40 (=+B53+1), B47 (=+B54+1), B53 (=+B38+1), B54 (=+B45+1), B97 (=+B221+1), B107 (=+B96+1), B232 (=+B106+1). There are a few more with the same pattern.
+
+Why this happens
+- Copy/paste or dragging formulas can accidentally shift the target cell. Instead of referencing the immediately previous numeric cell, the formula points to an unrelated cell (often far below), producing jumps or duplicates.
+
+How to fix (quick fixes)
+1. Restore the intended pattern: each B cell should be the previous B numeric cell + 1.
+   - Example corrections:
+     - B14: change =+B13+376 to =B13+1
+     - B40: change =+B53+1 to =B38+1 (or to the nearest previous numeric B cell +1)
+     - B47: change =+B54+1 to =B46+1 (or previous numeric B cell +1)
+     - B53: change =+B38+1 to =B52+1
+     - B54: change =+B45+1 to =B53+1
+     - B97: change =+B221+1 to =B96+1
+     - B107: change =+B96+1 to =B106+1
+     - B232: change =+B106+1 to =B231+1 (or previous numeric B cell +1)
+   - Apply the same idea for any other B cells that don’t follow the previous-row +1 pattern.
+
+Better, robust solution (recommended)
+- Replace fragile hard-coded references with a formula that finds the last numeric value in column B above the current row and adds 1. That removes dependence on exact previous-row references and tolerates blank/header rows.
+
+Example (put this in the first row after your starting number and copy down):
+- Suppose B12 = 1 (seed). In B13 use:
+  =IF(TRIM(C13)="","",LOOKUP(9.999999999E+307,$B$1:B12)+1)
+- Then copy B13 down the column for all rows that should be numbered.
+- Explanation: LOOKUP(9.9999E+307,$B$1:B12) finds the last numeric value above the current row; +1 gives the next sequential number. The IF(TRIM(C13)...) keeps B blank if the row has no main content (assumes C has your item name).
+
+How to apply (steps)
+1. Fix the obvious manual typos first (e.g., B14).
+2. In a blank test cell, enter the LOOKUP-based formula adjusted to your row and verify it produces the correct next number.
+3. If correct, copy that formula down the whole B column (or the range you use).
+4. Once verified, you can delete the old formulas.
+
+Notes / tips
+- Avoid using “=+” prefix — Excel accepts it but it’s unnecessary.
+- If you want strict “previous row” sequencing (no skipping), you can simply use =IF(Cn="","",Bn-1+1) and copy down — but that assumes every row above that should have a number in B (no headers/blank rows).
+- If you prefer formula-free fix: correct the few bad cells manually to =previous-number+1.
+
+If you want, I can:
+- produce the exact LOOKUP formula ready for the specific start row in your file, or
+- give a short macro to clean up the whole column automatically.

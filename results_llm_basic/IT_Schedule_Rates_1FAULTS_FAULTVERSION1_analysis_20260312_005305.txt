@@ -1,0 +1,27 @@
+Summary of the problem
+- On sheet "EER SITE", cell D6 is wrong: it contains the value/formula "=2" instead of calculating Year 2 pay from Year 1. Because E6:F6:G6:H6 chain off D6, the whole row's escalated rates are wrong.
+
+Why it’s wrong
+- All other rows use D = B * 1.04 (or B*(1+C)) to escalate Year 1 to Year 2. Row 6 should do the same, but "=2" is just a constant, not an escalation of the B6 value.
+
+Fix (quick)
+1. Select D6 and replace the contents with:
+   =B6*1.04
+2. Press Enter. E6–H6 are already =D6*1.04 etc., so they will update automatically.
+
+Better, more robust fix
+- Use the escalation rate stored in column C (0.04) so formulas adapt if the rate changes:
+  Replace D6 with:
+  =B6*(1+$C6)
+- Then copy D6 across to E6:H6 (or fill right) and copy down the D column if needed. This keeps each row using its own C cell if different, or change to an absolute reference if the rate is a single global value.
+
+Optional improvement (single global escalation)
+- Put the single escalation rate in one cell (for example C3 = 0.04) and use:
+  =B6*(1+$C$3)
+  Then fill across/down. Using $C$3 fixes the reference so all rows use the same rate.
+
+Other minor issues to check
+- Header text: "L3 Government Services In." looks like a typo — probably should be "Inc."
+- Some rows have "added 8/02" in B (so Year1 is in D). That is intentional but be aware the base year for those rows is column D, not B.
+
+If you want, I can produce the corrected formulas for the whole sheet (or a single formula you can fill down/right).

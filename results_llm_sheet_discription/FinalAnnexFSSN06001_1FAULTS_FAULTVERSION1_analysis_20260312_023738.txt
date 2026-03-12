@@ -1,0 +1,43 @@
+Thanks — I reviewed the workbook description and found a few clear formula errors and some inconsistent formula patterns. Short summary below with concrete fixes and short explanation.
+
+1) Hard‑coded / wrong percent expressions in Annex1 (commercial banks' share)
+- Problem: cells use literal additions of percentages or decimal additions instead of dividing the group value by the total. Examples: C7 = "73.3%+3.7%", G7 = "0.903+0.048", E7 = "(60.8+3.7)/100". These are fragile/hard‑coded and can be wrong if underlying numbers change.
+- Fix: replace each with the proper division of the group's amount by that year's total assets. Example (generic): if commercial banks' assets for 1992 are in cell X (the cell that holds the group amount for 1992) and the total assets for 1992 are C6, use:
+  - C7 = X / C6
+- Why: this makes the percentage update automatically when source amounts change and avoids rounding/typing mistakes.
+
+2) Wrong denominator in Deposits / percent column (Annex3)
+- Problem: K52 (Bank Al‑Amal, percent for the 1996 column) uses (J52 / $H$77). That divides the 1996 amount by the 1995 grand total — wrong year denominator.
+- Fix: change K52 to use the same‑column grand total, i.e.:
+  - K52 = J52 / $J$77
+- Why: every percent column must divide by the grand total for the same year/column. Search other percent cells for denominators referencing the wrong $column$77 and fix similarly.
+
+3) Missing row in SUM range for Assets group (Annex3)
+- Problem: L26 (sum of foreign commercial banks for 1997 assets) is SUM(L27:L30) while the other year columns sum L27:L31 (the group has 5 banks). L26 excludes the 5th bank (UNIBAN).
+- Fix: change L26 to:
+  - L26 = SUM(L27:L31)
+- Why: group totals must include all member rows; failing to include a row understates the group and grand totals.
+
+4) Inconsistent copy‑pattern / other potential mis‑anchoring
+- Problem: Some percent formulas use absolute references to different total cells (e.g., $B$38, $D$38, $B$32 etc.) — that is fine if the total is the correct one for that section and year, but some cells deviate (see item 2). Also some totals are divided by themselves (e.g., B38/$B$38) — harmless but redundant.
+- Fix / recommendation:
+  - Standardize the formula pattern for each block, then copy across columns rather than typing different denominators. For example, for the Assets % column pattern use C = B / $B$38 (with the correct fixed row for the grand total in that block).
+  - Use Excel’s Trace Precedents / Trace Dependents or “Find” to locate suspicious denominators (search for “/$H$77”, “/$D$77”, etc.) and verify they match the column.
+
+5) General robustness improvements (prevent future errors)
+- Use named ranges for each year total (e.g., TotalAssets1998) or for block totals (AssetsTotal_1997) so percent formulas read clearly and cannot accidentally point to the wrong column.
+- Instead of typing percent expressions manually, compute percent as amount / total and format as %.
+- After fixes, run a quick reconciliation: check group sums = grand totals; check sum of group % = 100% (or 1) for each year.
+
+How to implement quickly (practical steps)
+1. Fix the three concrete cells now:
+   - K52 -> =J52/$J$77
+   - L26 -> =SUM(L27:L31)
+   - Replace C7 / E7 / G7 with formulas that divide the group amount by that year’s total (e.g., if the group amount for that column is in cell Bx and total in By then =Bx/By).
+2. Use Find (Ctrl+F) for “/$H$77”, “/$D$77” etc. and correct any denominators that do not match the percent column year.
+3. Use Trace Precedents on a few percent cells to ensure they point to the intended total cell.
+4. Optionally create named ranges for totals and replace references to make formulas self‑documenting.
+
+If you want, I can:
+- List every cell that currently uses a denominator from a different year (I can parse all formulas and produce a short list), or
+- Provide the exact corrected formula for each problematic cell if you paste the exact current cell addresses/values.

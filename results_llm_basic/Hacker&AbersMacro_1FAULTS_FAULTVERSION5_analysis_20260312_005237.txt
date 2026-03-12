@@ -1,0 +1,32 @@
+Summary — main problems found
+- Several cells in the database sheet contain the literal text "FORMULA =..." instead of a real Excel formula. Because they are text these values do not recalculate when inputs change. Example cells: H6, H8, H11, H13, H14, H15, H19, H50, H49, H10 (and a number of other database H-cells shown as "FORMULA =...").  
+- A few cells contain stray text references that look wrong (not real references). Example: database M40 contains "L80" (text) in a column that should hold a note/reference or a calculated value — that looks like a misplaced token rather than a proper reference or note.
+- Some cells in the export show "FORMULA =" prefix (instead of starting with "="). This is the root of the first problem — Excel treats the whole string as text, so no calculation occurs.
+
+Why this is a problem (short)
+- Any cell that is text will not update when its precedent cells change, so results downstream will be stale/incorrect.
+- Mis-typed references (like plain "L80") are ambiguous and can break formulas or mis-document the source.
+
+How to fix (simple steps)
+1. Identify all cells showing "FORMULA =..." (search for the string FORMULA or scan column H in the database sheet).  
+2. Edit each such cell and remove the leading text "FORMULA " so the cell starts with = (equal sign) followed by the expression. Example:
+   - change
+     FORMULA =56400000000*1.01097683452934/(1+F6*0.42*R6*298)
+     to
+     =56400000000*1.01097683452934/(1+F6*0.42*R6*298)
+3. Ensure the cell format is not Text. Set format to General or Number, then re-enter the corrected formula (press F2 then Enter) so Excel recognizes it as a formula.
+4. For stray tokens like M40 = "L80":
+   - Decide intended content. If it was supposed to be a note, convert it to a proper text note (keep but maybe prefix with ' to keep as text). If it was intended to reference another cell, replace with a real formula, e.g. =L80 (with =). If L80 is itself a wrong address, correct to the proper cell (for example =L29*(H40/H39) if that was intended).
+5. After fixing, force a full recalculation (press Ctrl+Alt+F9). Check dependent sheets (minerals, rocks) to confirm values update.
+
+Extra checks to run after fixes
+- Search the workbook for cells that begin with the text "FORMULA " and fix them all.
+- Use Excel’s Formula → Show Formulas to scan for unexpected literal formula text.
+- Use Error Checking or Trace Dependents/Precedents to confirm no broken links or circular references remain.
+
+Why this will solve it (brief)
+- Removing "FORMULA " and entering the expression with an initial "=" makes Excel evaluate the expression. Once the cell is a proper formula, any change in precedent cells automatically updates results; downstream sheets (minerals, rocks) will then show correct recalculated properties.
+
+If you want, I can:
+- Provide a short list of every cell in the workbook that currently contains the literal "FORMULA " so you can correct them, or
+- Produce the exact corrected formulas for the specific cells you list. Which do you prefer?

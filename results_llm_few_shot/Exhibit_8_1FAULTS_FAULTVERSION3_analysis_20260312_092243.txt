@@ -1,0 +1,56 @@
+I reviewed both sheets and found the clear formula / reference errors plus a few consistency problems. Short fixes and explanations below.
+
+NAIC increase sheet — errors & fixes
+1) D6 (yrly grth for 2000)
+- Faulty: =(C6-C5)*C5
+- Fix: =(C6-C5)/C5
+- Why: growth rate = (new − old) ÷ old. Multiplying gives a meaningless huge number.
+
+2) E7 (2001 "total yrly Sng+Grp")
+- Faulty: =E8-2258280 (references a future cell and hard-coded offset)
+- Fix (recommended): set E7 to the actual 2001 fee revenue value or compute consistently. Example if you know 2001 and want 2002 from 2001 using the growth in F8, use E8 = E7*(1+F8) — or if you want the 2001 value from 2002 and a known difference, place the subtraction in E8 instead.
+- Why: formulas that point forward (depend on later rows) or hard-coded offsets are fragile and make auditing/errors likely. Keep calculations one direction (previous → current) or use explicit growth rates.
+
+3) E16 / E17 / E18 (dollar amount of premiums hit by cap)
+- Faulty:
+  - E16 =(0.46*C7)
+  - E17 =(0.43*C8)
+  - E18 =(0.46*C9)  (also wrong percent used)
+- Fix: reference the total premiums column (not expenses) and use the percent cell instead of hard-coding. For example:
+  - E16 =D16 * B7
+  - E17 =D17 * B8
+  - E18 =D18 * B9
+- Also correct E18’s percent (D18 = 0.35) — do not use 0.46.
+- Why: you must multiply the percent-of-total-premium (Dxx) by the total premiums (Bxx). Using column C (expenses) or hard-coded percentages produces incorrect amounts.
+
+4) G16 / G17 / G18 (amount paying % of database fee)
+- Faulty pattern: G16 =(0.22*E7) (hard-coded percent and uses potentially-wrong E7)
+- Fix (better): G16 =F16 * E7 ; G17 =F17 * E8 ; G18 =F18 * E9
+- Why: use the Fxx cell (paid % of fee) so formulas auto-update if the percent changes, and ensure E7/E8/E9 are the correct total fee bases.
+
+5) Hard-coded constants (rows with 0.46, 0.22, etc.)
+- Problem: Several cells contain hard-coded percentages copied into multiple places (makes updates error-prone).
+- Fix: centralize the percent in one cell per row (you already have Dxx, Fxx). Always reference those cells (Dxx, Fxx) instead of typing numbers.
+
+6) A20 block (insurer counts & percents)
+- Issue: D21 = 0.46 and F21 = 0.22 look copied rather than calculated.
+- Fix suggestion: compute the percent formulas instead of hard-coding, e.g. D21 = C21 / B21 (if D21 is “insurers that hit cap % of total insurers”), and link any other percents to source data.
+- Why: reduces manual-copying errors and keeps percentages consistent.
+
+Consumer Price Index sheet — notes & potential issues
+1) Overall: most row-to-row growth formulas are consistent (N = (Mcurrent − Mprior)/Mprior, P = (Ocurrent − Oprior)/Oprior). These look correct for year-over-year and annual % changes.
+
+2) R21 and S21 (2001 extra columns)
+- R21 = (Q21 − Q12)/Q12 and S21 = (M21 − M12)/M12
+- Note: these compute change since 1992 (they use 1992 as the base). That is valid if intended, but it’s easy to mistake for “change vs prior year.” If intent was “change vs prior year,” change R21 to (Q21 − Q20)/Q20 and S21 to (M21 − M20)/M20.
+- Why: double-check the base year you want. Using Q12/M12 uses 1992 as baseline.
+
+General recommendations (short)
+- Always reference the cell that contains the % value (e.g., D16 or F16) instead of typing the percentage into the formula.
+- Avoid formulas that point forward (referencing values in later rows) unless you have a specific reason; compute forward from known prior-year values.
+- Use descriptive headers and/or a small "assumptions" area with the growth rates so formulas can reference those single source cells.
+- After fixing, spot-check a few rows by hand to confirm the results make sense (e.g., growth rates near expected percentages, sums equal component totals).
+
+If you want, I can:
+- Produce the corrected formulas for every affected cell and show the fixed cell text, or
+- Provide a worked, corrected snippet of the NAIC table with the exact formulas you should paste in. Which would you prefer?

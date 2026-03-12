@@ -1,0 +1,36 @@
+I reviewed the workbook and found several formula/reference errors caused by incorrect copying (wrong sheet or wrong column shifting). Fixes and short explanations below.
+
+1) pricing sheet (Sheet: "pricing") — Period 1 layoff cost wrong
+- Error: C15 contains the literal 1 instead of computing layoff cost.
+- Fix: replace C15 with:
+  =C5*Sheet1!$B$20
+- Why: layoff cost should be (# laid off in C5) * (layoff cost/worker on Sheet1 B20). The cell accidentally has the number 1.
+
+2) Sheet2 — Overtime cost formulas point to wrong Sheet1 cells
+- Error: E16..E20 reference Sheet1!B24, B25, B26, B27, B28 instead of Sheet1!B23 (overtime cost/hour). (This looks like AutoFill shifted the column reference.)
+- Fix: set E15:E20 to:
+  =E5*Sheet1!$B$23   (then copy down so E16 uses E6, etc.)
+  or explicitly for each row, e.g. E16 = E6*Sheet1!$B$23
+- Why: overtime cost per hour is in Sheet1!B23. The formulas were pointing to the wrong cells (subcontract / non-existent cells).
+
+3) Sheet3 — many cost rows reference Sheet2 instead of Sheet3
+- Error: B15..B20 (hiring cost calculations) use Sheet2!B5..B10. Similarly other per-period cost rows reference Sheet2 cells instead of the values on Sheet3.
+- Fix: change those formulas to reference the Sheet3 row values (no sheet prefix) or explicitly to Sheet3. Example corrections on Sheet3:
+  B15 = Sheet1!$B$19 * B5
+  B16 = Sheet1!$B$19 * B6
+  (and likewise for B17..B20)
+  And for other cost formulas that use C5, D5, E5, F5, G5, H5, I5 ensure they reference the Sheet3 cells (C5, D5, …) not Sheet2.
+- Why: the cost rows should multiply the costs per unit (on Sheet1) by the decision variables on the same sheet (Sheet3). They were accidentally tied to Sheet2.
+
+4) Sheet3 — Revenue formula is wrong
+- Error: A24/C24 uses =SUM(J5:J10)*31
+- Fix: use the correct revenue formula (price × demand), e.g.:
+  =SUMPRODUCT(J5:J10,K5:K10)
+- Why: multiplying total demand by 31 is incorrect. Revenue should be sum of (demand × price) per period.
+
+General cleanup recommendations
+- Use absolute references for the fixed cost parameters on Sheet1 (e.g. Sheet1!$B$19, Sheet1!$B$20, Sheet1!$B$22, Sheet1!$B$23, Sheet1!$B$16, etc.) so copying down won’t shift them.
+- After fixing one row, copy that corrected row down rather than relying on AutoFill over a block that might change sheet references.
+- Quick check: compare a single period’s decision variables (hiring, layoff, workforce, OT, inventory, subcontract, production) with its cost row to ensure each cost uses the correct cell (same row) and correct Sheet1 parameter.
+
+If you want, I can produce the exact corrected formulas for every affected cell (pricing C15, Sheet2 E16:E20, Sheet3 B15:B20 and C15:I20 row-by-row, and Sheet3 C24). Which would you prefer?

@@ -1,0 +1,40 @@
+I reviewed the sheets and found the clear formula errors and the simple fixes. Short explanations and corrected formulas below.
+
+1) Sheet E20-9 (second copy: "E20-9 (2)")
+- Fault: C11 uses the wrong range — it omits Utilities (C6).
+- Problem: indirect cost/hour is too low because one expense is left out.
+- Fix (correct formula): =SUM(C4:C6)/C2
+- Explanation: include C6 so total indirect costs are divided by total hours.
+
+2) Sheet P20-3B (both copies)
+- Fault 1: I10 is wrong.
+  - Current: I10 = +F14*H10
+  - Problem: it multiplies the overhead rate by the total labor (F14) instead of the labor for that job (F10). Overhead allocated to job 449 is overstated and uses the wrong base.
+  - Fix: I10 = F10*H10
+  - Explanation: multiply the job’s direct labor (row 10) by the overhead rate to get that job’s overhead.
+- Fault 2: I14 (Total Cost) is wrong.
+  - Current: I14 = +I10+F14+D14
+  - Problem: it uses only I10 (overhead for job 449) rather than the total overhead for all jobs, so total cost is incorrect.
+  - Fix: I14 = D14 + F14 + SUM(I10:I12)
+  - Explanation: total cost = total materials (D14) + total labor (F14) + total overhead (sum of the I-rows).
+- (Optional tidy) D14 = SUM(D10:D13) — if you only have D10:D12, change to =SUM(D10:D12) to avoid referencing an empty row.
+
+3) Sheet P20-1B (both copies) — mis‑placed posting formulas
+- Symptom: Several journal posting formulas are in the wrong column (shifted one column to the right). Examples:
+  - G23 = +F22 (Sales Revenue is placed in column G instead of the correct column)
+  - G27 = +F26 (Finished Goods decrease posted one column right)
+  - G15 = +F14, G19 = +F18 etc. — similar column-shift problems
+- Problem: debit/credit amounts are not recorded in the correct ledger column, so the posting is misaligned.
+- Fix (two ways):
+  - Move the formula one column left to the correct posting column, or
+  - Change the formula to write to the proper column. Example corrections:
+    - Put =F22 into F23 (not G23)
+    - Put =F26 into F27 (not G27)
+    - Put =F14 into F15 (not G15), and =F18 into F19 (not G19)
+- Explanation: the ledger columns are fixed; posting formulas must go into the matching column (debit/credit) — being one column to the right makes the ledger inconsistent.
+
+General notes
+- Unary plus (+) is harmless but unnecessary; you can remove it for clarity.
+- After you make the fixes, recompute totals and check that totals balance (materials + labor + overhead = total cost; postings land in the correct debit/credit columns).
+
+If you want, I can return an exact list of cell-by-cell corrected formulas (ready to paste) or produce a corrected workbook (if you upload the file).

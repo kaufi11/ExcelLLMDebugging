@@ -1,0 +1,35 @@
+Errors found:
+
+1. In sheet "annex e", cell B31 has formula `=B29+775`. This is incorrect because all other row number increments are by 1, but here it jumps by 775, which will cause row reference errors and break the sequence.
+
+2. In "annex f", the same pattern is not seen, so B31 should likely be `=B29+1` to maintain consistent row numbering.
+
+3. In "annex g", row 18 (Balance b/f) formulas reference the next row's balance c/f (e.g. I18 = H19, J18 = I19, etc.), which is incorrect. The balance b/f should reference the previous month's balance c/f, not the next row.
+
+4. Similarly, in "annex g", row 41 (Balance b/f) references the next row's balance c/f (e.g. I41 = H42), which is incorrect for the same reason.
+
+5. In "annex e" and "annex f", many percentage variance formulas divide by zero (e.g. `IF(H9=0,"N/A",(J9/H9)*100)`) because original forecast values (H column) are zero, causing #DIV/0 errors or "N/A". This may be intentional but should be checked.
+
+Solutions:
+
+1. Correct the row numbering formula in "annex e" B31 from `=B29+775` to `=B29+1` to keep the sequence consistent and avoid reference errors.
+
+2. Fix the balance b/f formulas in "annex g" rows 18 and 41 to refer to the previous month's balance c/f, not the next. For example, in I18, change from `=H19` to `=H18` or the correct previous cell (usually the previous column's balance c/f).
+
+3. Review zero values in original forecast columns (H column) to avoid division by zero in variance % formulas or handle zero denominators gracefully.
+
+Explanation:
+
+- Row numbering in column B is used to keep track of line references and must increase by 1 each row. The jump by 775 breaks this logic and causes formula errors.
+
+- Balance brought forward (b/f) should be the closing balance from the previous period, so referencing the next period's balance c/f is logically incorrect and causes circular or wrong calculations.
+
+- Division by zero in variance % formulas is mathematically invalid. Using IF to show "N/A" is correct, but if many zeros exist in original forecasts, it may indicate missing or incomplete data.
+
+Summary:
+
+- Change `=B29+775` to `=B29+1` in annex e B31.
+
+- Adjust balance b/f formulas in annex g rows 18 and 41 to reference previous period balances correctly.
+
+- Check original forecast data for zeros to avoid excessive "N/A" in variance % calculations.

@@ -1,0 +1,28 @@
+I inspected the formulas you included for the "Syracuse, NY" sheet. One clear formula error/inconsistency stands out and it has cascading effects on the market shares and HHI:
+
+1) Cell F29 (Savannah Bank, N.A.)
+- Current formula: =891*$E29
+- Current value: 21,581,802 (this is the source of the very large weighted-deposits total)
+- Why it is wrong: Every other bank uses either =1*$E## (banks) or =0.5*$E## (thrifts). C29 is "Bank", so F29 should be equal to E29 (or =1*$E29). The multiplier 891 appears accidental.
+- Correct formula: =1*$E29 (or simply = $E29)
+- Correct value after fix: 24,222 (since E29 = 24,222)
+
+Consequences of the F29 error
+- Cell F36 (Totals) uses =SUM($F$10:$F$33) and therefore is inflated by the erroneous F29. Current F36 = 28,993,561.5; after correcting F29 this would become:
+  28,993,561.5 − 21,581,802 + 24,222 = 7,435,981.5
+- Because all G# formulas are = $F# / $F$36 * 100, every market-share percentage (G10:G33) and the HHI values (H10:H33, H36) are incorrect while F29 remains wrong. For example:
+  - G29 currently = 74.4365% (driven by inflated F29); after fix it would be ~0.326%.
+  - H36 is currently 5,616.413 (dominated by the squared huge G29); after fixing F29 H36 will drop to a sensible HHI.
+
+Other observations
+- The pattern of =1*$E## and =0.5*$E## is consistent and reasonable (banks = full deposits, thrifts = 50% weighting). No other F# formula in F10:F33 contains an unexpected multiplier except F29.
+- D36, E36, and G36 formulas appear syntactically correct: D36 =SUM(D10:D33), E36 =SUM(E10:E33), G36 =SUM(G10:G33). The odd results in G and H are a direct result of the inflated F36 from F29.
+
+Recommended actions
+1. Change F29 to =1*$E29 (or = $E29).
+2. Recalculate/refresh the sheet so F36, the G% values, and the HHI (H# and H36) update.
+3. Verify final HHI (H36) after the correction to ensure results are now in expected range.
+
+If you want, I can:
+- Provide the recalculated G% and HHI values for all rows after correcting F29 (I can compute them here and return the corrected numbers), or
+- Scan for any other improbable outliers if you prefer a full automated check of the workbook.

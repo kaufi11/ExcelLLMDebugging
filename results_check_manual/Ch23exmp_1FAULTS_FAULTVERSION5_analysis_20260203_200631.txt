@@ -1,0 +1,28 @@
+Found the problems and how to fix them. Short and simple.
+
+Problems
+1. Wrong function: C24 on the "Formulas" sheet uses COUNT(B21:B24) instead of SUM(...). COUNT returns how many numeric cells there are (e.g. 4), not the total expense amount. This makes Operating Income, Tax and Net Income wrong.
+2. Wrong ranges / column mis‑alignment: C24 on the "Example" sheet is SUM(B21:B24) (and on the "Formulas" sheet COUNT(B21:B24)). That sums values from column B while the monthly expense lines for that month are in the adjacent data column (C). In other words the expense rows and the expense total are using different columns, so totals and downstream calculations are incorrect.
+3. (Consequence) Because the expense total is wrong, C25, C26, C27 and all downstream numbers that depend on operating expense are wrong.
+
+Correct fixes (apply to both sheets)
+- Put each month’s expense lines in the same column as that month’s sales and results (i.e. if August data is in column C then Salaries, Rent, Depreciation, Insurance for August must be in C21:C24).
+- Replace the bad formula in the total row with a SUM over the same-column expense cells.
+
+Exact formulas to use (example assuming August data is column C and September data is column E)
+- C21 (Salaries & commission for August): =ROUND($B$9 + ($B$10 * C17), -3)
+- C22 (Rent): = $B$11
+- C23 (Depreciation): = $B$12
+- C24 (Operating expenses, August total): =SUM(C21:C24)
+
+- E21 (Salaries & commission for Sept): =ROUND($B$9 + ($B$10 * E17), -3)
+- E22: = $B$11
+- E23: = $B$12
+- E24 (Sept total): =SUM(E21:E24)
+
+If you prefer to keep the expense formulas where they currently are (in B and D), then change the totals to sum those same columns consistently (e.g. C24 should not sum B21:B24 — instead use SUM(B21:B24) in a cell that belongs to that column set), but I recommend moving the expense lines so each month's data is together (cleaner and less error‑prone).
+
+Why this fixes it
+- SUM returns the total expense amount (not the count). Using the same-column ranges keeps each month’s inputs and totals aligned, so Operating Income = Sales − COGS − Operating expenses will calculate correctly and taxes/net income that depend on it will be correct.
+
+If you want, I can produce the exact corrected formulas for every affected cell (including the COGS schedule) and a short checklist to align the whole sheet.

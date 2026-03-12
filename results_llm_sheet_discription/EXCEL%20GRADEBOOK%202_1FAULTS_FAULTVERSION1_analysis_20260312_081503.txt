@@ -1,0 +1,21 @@
+Findings (short)
+- Primary error: X5 (Quiz average for Reed, Bret) has the wrong formula:
+  - Current (wrong): =(SUM(R5:V5)+MIN(R5:V5))/(COUNT(R5:V5)+1)
+  - Correct pattern used elsewhere: =(SUM(R5:V5)-MIN(R5:V5))/(COUNT(R5:V5)-1)
+- Why it's wrong: X5 adds the smallest quiz score and increases the denominator instead of subtracting the smallest and reducing the denominator. That inflates the quiz average instead of dropping the lowest score.
+- No other formula errors were found; totals and weighted Final Grade formula reference the proper cells.
+
+Exact fix
+- Replace X5 with:
+  =(SUM(R5:V5)-MIN(R5:V5))/(COUNT(R5:V5)-1)
+- Quick way: copy X2 (or any correct X cell) down to X5 (drag-fill) so the same correct formula is used for every student.
+
+Robustness improvement (optional)
+- To avoid errors when fewer than 2 quiz scores exist, use:
+  =IF(COUNT(R5:V5)>1,(SUM(R5:V5)-MIN(R5:V5))/(COUNT(R5:V5)-1),AVERAGE(R5:V5))
+- This returns the drop-lowest average when possible, otherwise returns the normal average (or blank if you prefer).
+
+Suggested usability improvements (optional)
+- Move the weight values next to each category header or create named ranges (HomeworkWeight, ClassworkWeight, etc.) and update AE formulas to use names. This makes the sheet easier to read and less error-prone.
+
+If you want, I can give the exact copy-down steps or produce the IF-based correction for the whole X column.

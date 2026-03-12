@@ -1,0 +1,17 @@
+Found two clear errors (and one cause that explains many wrong numbers):
+
+1) Month headers are mis‑placed (causes many formulas to point to wrong columns)
+- Problem: The month labels are in B16 and D16 (August, September) but the monthly calculations are in columns C and E. That column shift makes many cells (salaries, COGS schedule, collections, etc.) reference the wrong column and produce incorrect results.
+- Fix: Move the month headers into the same columns where the monthly data lives. Put "August" in C16 and "September" in E16 (cut B16 → paste C16; cut D16 → paste E16). After that the formulas that already reference C17/E17, C31/E31, C33/E33, etc. will line up correctly.
+- Why: Formulas use column C for the first month and column E for the next. Having the labels in B and D only misleads you and makes it look like the numbers are under the wrong month; more importantly any manual references to the header columns would be wrong.
+
+2) Wrong function used in Formulas sheet cell C24
+- Problem: Formulas!C24 =COUNT(B21:B24). COUNT returns the number of numeric entries (a count), not the sum of expenses.
+- Fix: Change it to =SUM(B21:B24).
+- Why: Operating expenses should be totaled; COUNT returns e.g. 3 instead of the monetary total.
+
+Extra checks (quick suggestions)
+- After fixing the header placement and C24, review the “collections/disbursements” cells (F38, F42, F44 etc.). They currently mix columns (e.g. F38 = E38 + C37). That may be intentional timing logic, but verify these references so they sum prior/current items correctly after the header move.
+- Recalculate and confirm beginning/ending inventory links: C30 should =B7 (July 31), E30 should =C33 (prior month ending). C33 should reference next period sales (E17) and E33 should reference October sales (B8) — those look correct once months are aligned.
+
+If you want, I can give an exact list of cells to edit/move and the final formulas to paste after you move the headers.

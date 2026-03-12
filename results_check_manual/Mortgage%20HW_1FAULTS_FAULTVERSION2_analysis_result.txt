@@ -1,0 +1,51 @@
+I reviewed the formulas on sheet "HW". I found one clear formula error that corrupts the amortization schedule and a number of inconsistencies / hard-coded values you should fix to make the sheet reliable and generic.
+
+1) Critical formula error (causes the wrong balances from that row onward)
+- Cell D36 currently contains: =937-C36
+  - This is incorrect. It should continue the amortization pattern and reference the prior balance.
+  - Correct formula: =D35-C36
+  - Effect of the error: D36 becomes wrong and the subsequent interest rows (B37:B44 etc.) become negative (because they multiply 0.06 by a wrong negative balance). Fixing D36 will restore normal decreasing balances and positive interest/principal amounts.
+
+2) Inconsistencies and hard-coded values
+- The sheet header (A4:B6) indicates a 30-year mortgage with monthly payments, loan amount 196,555 and interest 0.0572 (5.72% annual). The amortization example below, however, is a 15-year annual-payments example on $100,000 at 6%:
+  - A25 uses =-PMT(6%,15,100000,0)
+  - G22, B35, C30, B36, etc. use 0.06 or 100000 directly.
+  - Recommendation: pick one set of inputs (term, frequency, rate, loan) and wire all formulas to those input cells instead of hard-coding numbers.
+- Hard-coded rate (0.06) repeated in many formulas:
+  - Example cells: G22 (=0.06*100000), C30 (=0.06*D27), B35 (=0.06*D33), B36 (=0.06*D35), etc.
+  - Recommendation: replace 0.06 with a reference to your interest input (B6). If payments are monthly, use B6/12. Example monthly interest formula: =($B$6/12)*previous_balance
+- Hard-coded loan amount (100000) and literal 100000 used in D27 (=100000-C27) and G22:
+  - Recommendation: reference the loan amount input cell (e.g., $B$5).
+  - Example D27 (initial balance after first payment): =$B$5 - C27
+- A25 (payment) uses PMT(6%,15,100000,0) — OK for the 15-year/annual example, but inconsistent with the header. If you intended a 30-year monthly mortgage use:
+  - Example monthly payment (using B6 = annual rate, B5 = loan, term 30 years): =-PMT($B$6/12,30*12,$B$5)
+  - Or more generally if term is in years in some input cell (e.g., B4 numeric years): =-PMT($B$6/12,$B$4*12,$B$5)
+- Mixing absolute/relative references:
+  - You used $A$25 in many formulas for the payment; that’s OK if you always want to copy formulas down, but be sure A25 is the single canonical payment cell. Better: put payment in a named cell (e.g., Payment) and reference it.
+- Small formatting / labeling inconsistency:
+  - A4 contains the text "Length" and B4 "30 years with MONTHLY payments" — because B4 includes descriptive text, you cannot easily parse years from it in formulas. If you want formulas to be dynamic, keep numeric inputs in dedicated cells (e.g., TermYears = 30, PaymentsPerYear = 12).
+
+3) Suggested corrected structure / sample formulas
+(assuming inputs: loan in $B$5, annual rate in $B$6, term in years in $B$4 (numeric), payments per year in $B$4p or fixed 12))
+
+- Payment (monthly, 30 years example):
+  =-PMT($B$6/12, $B$4*12, $B$5)
+- Row n amortization (copied down):
+  - Interest_n = previous_balance * ($B$6/12)
+  - Principal_n = Payment - Interest_n
+  - NewBalance = previous_balance - Principal_n
+
+- For the current 15-year/annual example (if you keep annual):
+  - Payment A25: =-PMT($B$6, 15, $B$5) (set B6=0.06, B5=100000, term cell 15), then
+  - Interest = previous_balance * $B$6
+  - Principal = Payment - Interest
+  - NewBalance = previous_balance - Principal
+
+4) Immediate fixes to make the current sheet consistent
+- Change D36 to =D35-C36 (fixes the broken schedule).
+- Replace hard-coded 0.06 and 100000 with input-cell references ($B$6 and $B$5). If you want monthly payments, change the rate to $B$6/12 and adjust NPER accordingly.
+- Replace any literal "937" or other stray constants with references to the correct cells.
+
+If you want, I can:
+- produce the exact cell-by-cell corrected formulas for the whole amortization table,
+- or modify the workbook to: (a) use the 30-year monthly inputs (B4/B5/B6) and (b) correct D36 and replace hard-coded values with references. Tell me which option (15-year annual example vs. 30-year monthly using B5/B6) you want and I’ll provide the exact replacement formulas.

@@ -1,0 +1,62 @@
+Found several clear problems. Short summary first, then fixes and why they work.
+
+Main errors (what and why)
+1. MasterMethod_Checks — n = 0 row
+   - A11 = 0 causes invalid math: LOG(0,2) is undefined and C11 = 0^CE makes D11 = B11/C11 -> 0/0 (#DIV/0!). Asymptotic tests assume n ≥ 1.
+2. MasterMethod_Checks — one wrong hard-coded f(n)
+   - B19 is =473/2 instead of =A19/2 (copy/paste error). It makes that row inconsistent.
+3. SubstitutionMethod_Checks — domain errors (log of ≤1)
+   - A10 = 1 => LOG(LOG(1,2),2) is LOG(0,2) -> #NUM! . The asymptotic function n * log(log n) requires n > 1 (start n ≥ 2).
+4. SubstitutionMethod_Checks — missing factor in c2*asymptotic
+   - Some C cells (e.g. C10) are missing the multiplication by n: they use = $B$5*LOG(LOG(...)) instead of = $B$5 * A# * LOG(LOG(...)).
+5. SubstitutionMethod_Checks — broken recurrence references
+   - Many D cells use absolute references such as 5*$D$11, 5*$D$12 etc. (from bad copy/paste). This does not consistently reference T(n/2) and gives wrong T(n) values.
+6. General robustness
+   - Several formulas will throw errors (LOG of ≤0, division by zero). Sheets should guard against invalid inputs.
+
+How to fix (simple, exact actions + short explanation)
+
+A. MasterMethod_Checks fixes
+1. Remove the n = 0 row (or change A11 to 1).
+   - Why: prevents LOG(0) and 0/0 errors and aligns with asymptotic usage.
+2. Fix the hard-coded row:
+   - In B19 replace =473/2 with =A19/2
+   - Why: makes f(n) consistent with the other rows.
+3. Make formulas robust (optional but recommended):
+   - Replace D11 (and D#) with: =IF(C11<>0, B11/C11, "")  — avoids #DIV/0! when C is 0.
+   - Replace H# with: =IF(A#>0, LOG(A#,2), "")  — avoids LOG(0) error.
+   - Replace B6 with a robust version if desired: =IF(AND(B4>0,B5>0), LOG(B4)/LOG(B5), "")
+
+B. SubstitutionMethod_Checks fixes
+1. Start n at 2 (set A10 = 2) or otherwise ensure A column values are ≥2.
+   - Why: LOG(LOG(n,2),2) requires n>1.
+2. Fix C-column formula so it always multiplies by n:
+   - Use for C10 (and fill down): = $B$5 * A10 * LOG(LOG(A10,2),2)
+   - And B-column already: = $B$4 * A10 * LOG(LOG(A10,2),2)
+   - Why: c1 and c2 are meant to multiply the whole asymptotic function n * log(log n).
+3. Fix D-column so it references T(n/2) correctly (no absolute fixed-cell copy/paste).
+   - If your A column contains exact halves (e.g., n values that include n/2), use INDEX+MATCH:
+     - Example formula for D10 (for general n row): 
+       =IF(A10=base_n, base_T, 5 * INDEX($D$10:$D$39, MATCH(A10/2,$A$10:$A$39,0)) + A10/LOG(A10,2))
+     - Replace base_n and base_T by your base-case (e.g., if T(1)=5, have a row for n=1 with D = 5 and handle that as base).
+   - Or using VLOOKUP (if n/2 exists in column A): 
+     =5 * VLOOKUP(A10/2, $A$10:$D$39, 4, FALSE) + A10/LOG(A10,2)
+   - Why: these look up the T-value for n/2 rather than pointing to the wrong fixed cell. This fixes the recurrence evaluation.
+4. Add an explicit base-case cell
+   - Put T(1)=5 (or whatever base) in a fixed cell and ensure the recurrence references it when n/2 = 1.
+5. Guard against invalid logs:
+   - Use IFERROR or conditional checks: =IF(A10>1, A10*LOG(LOG(A10,2),2), "") so rows with invalid n don’t crash.
+
+Quick checklist you can apply now
+- Change A11 from 0 → 1 (Master sheet) or delete the 0 row.
+- Change B19 → =A19/2.
+- Change Substitution A10 from 1 → 2.
+- Fix every C cell to: = $B$5 * A# * LOG(LOG(A#,2),2)
+- Replace D formulas that use 5*$D$11 etc. with INDEX/MATCH or VLOOKUP lookup of T(n/2) + A#/LOG(A#,2). Ensure a base T(1) value exists.
+- Add IF guards for LOG and division by zero where useful.
+
+If you want, tell me:
+- whether column A in Substitution will contain only powers of two (easiest recurrence lookup), and
+- the base-case value for T(1).
+
+I can then give exact copy-paste formulas (one per column) ready to paste down the sheet.

@@ -1,0 +1,21 @@
+Summary — main error
+- Faulty cell: C35 (shows the constant 4)
+- Error type: Hard‑coded / logical error
+- Why it’s wrong: C35 should be the opportunity cost for Midwest checks deposited to the California lockbox. Instead of computing it from the cost of capital, average daily dollars and total days float, someone typed “4”. That wrong value flows into C47 (Midwest total cost) and into the model objective (H52), so the objective and any decisions are incorrect.
+
+Fix
+- Replace C35 with this formula:
+  = $C$21 * $B19 * C29
+  (or in Excel: =$C$21*$B19*C29)
+
+Why this fixes it (short)
+- $C$21 is the annual cost of capital (anchored).
+- B19 is the Midwest average daily dollars (the same cell used in B35).
+- C29 is the total days float for Midwest→California.
+- Multiplying r * avg daily dollars * days float gives the annual opportunity cost for that region‑lockbox combination, consistent with the other rows (B33/B34/B35 and C33/C34).
+
+Small robustness suggestions (optional)
+- Use consistent absolute referencing for the yearly checks / average daily cells where needed to avoid accidental shifts when copying formulas (for example use $C$17, $C$18, $C$19 when formulas must always point to those yearly‑check cells).
+- Recalculate C47 and the objective (H52) after fixing C35 to see corrected totals.
+
+If you want, I can give the exact list of cells affected by this change (where the bad value propagates) or produce a corrected workbook.

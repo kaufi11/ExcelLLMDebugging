@@ -1,0 +1,44 @@
+I checked the workbook and found several concrete formula errors caused by bad relative references and one accidental numeric constant. Below are the problems, the fix for each, and a short explanation.
+
+Summary of errors and fixes
+
+1) Sheet2 — overtime cost formulas point to the wrong Sheet1 cells
+- Cells affected: Sheet2!E16, E17, E18, E19, E20
+- Current (wrong) pattern: E16 =+E6*Sheet1!B24, E17 =+E7*Sheet1!B25, … (the referenced row increments as the formula was dragged)
+- Correct formula for each period: =E6*Sheet1!$B$23 (and respectively E7, E8, …)
+- Why: the overtime unit cost is on Sheet1 cell B23. Because B23 was not locked (and/or the reference lost the $) dragging changed it to B24,B25,... so overtime cost used wrong cells.
+- Fix: replace each E16:E20 with =E(cell)*Sheet1!$B$23 (use absolute $B$23). Example for period 2 (row 16): =E6*Sheet1!$B$23
+
+2) Sheet3 — many cost formulas mistakenly reference Sheet2 instead of Sheet3
+- Cells affected: Sheet3 B15, B16, B17, B18, B19, B20 (hiring cost formulas)
+- Current (wrong) pattern: B15 =+Sheet1!$B$19*Sheet2!B5 (uses Sheet2!B5)
+- Correct formula: =Sheet1!$B$19*B5 (or =Sheet1!$B$19*Sheet3!B5)
+- Why: copying/dragging or editing introduced Sheet2 references; the costs must use the decision variables on the same sheet (Sheet3).
+- Fix: change B15:B20 to refer to the Sheet3 workforce/hire cells (remove Sheet2! prefix). Example B15: =Sheet1!$B$19*B5
+
+3) Sheet3 — accidental numeric constant in inventory cost row
+- Cell affected: Sheet3!F16
+- Current (wrong): =534*Sheet1!$B$17
+- Correct formula: =F6*Sheet1!$B$17
+- Why: a numeric literal (534) was typed or left in place of the intended cell reference (F6). This produces wrong inventory cost.
+- Fix: replace 534 with the inventory cell (F6) so the cost equals inventory*holding cost/unit: =F6*Sheet1!$B$17
+
+4) Sheet3 — other inconsistent references in cost section
+- Review Sheet3 cost rows B15:I20 — some cells reference Sheet2 instead of Sheet3 (similar to #2) or do not use $ for Sheet1 constants.
+- Fix: Make all cost formulas on Sheet3 refer to the local decision variables (B5:B10, C5:C10, D5:D10, etc.) and to Sheet1 constants with absolute references (e.g., Sheet1!$B$19, Sheet1!$B$20, Sheet1!$B$22, Sheet1!$B$23, Sheet1!$B$17, Sheet1!$B$18, Sheet1!$B$24, Sheet1!$B$16). Example D15: =D5*Sheet1!$B$22*8*20
+
+5) (Recommended) Use absolute references for Sheet1 cost constants everywhere
+- Problem: some formulas use Sheet1!B23 (no $) so dragging changed the row (as in Sheet2). This is the root cause of several errors.
+- Fix: change references to Sheet1 constants to absolute form — e.g., Sheet1!$B$23, Sheet1!$B$19, Sheet1!$B$17, etc. This prevents accidental shifts when copying.
+
+How to apply fixes fast
+- For Sheet2 overtime column: select E16:E20 and replace their formulas with =E6*Sheet1!$B$23 (and adjust row numbers for each row) — or enter =E16*Sheet1!$B$23 in the first and fill down (using correct relative row).
+- For Sheet3 cost table: open each formula in B15:I20 and remove any "Sheet2!" prefix so they reference the local sheet values, and correct F16 to =F6*Sheet1!$B$17. Or retype one correct row and fill down.
+- After fixes: recalculate (F9) and verify Total Cost / Profit numbers change appropriately.
+
+Quick debugging tips
+- Use Trace Precedents/Dependents to see where a cost cell pulls values from.
+- Find any formulas containing numbers like 534 (search) — that indicates a stray literal.
+- When copying cost formulas that use constants, always lock the constant cells (use $) to avoid the kind of row-shift errors above.
+
+If you want, I can give the exact corrected formulas for each affected cell (Sheet2 E16:E20, Sheet3 B15:B20, Sheet3 F16, etc.) or produce a small macro / Find&Replace sequence to fix them automatically. Which would you prefer?

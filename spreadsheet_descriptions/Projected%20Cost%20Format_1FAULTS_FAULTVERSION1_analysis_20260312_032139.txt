@@ -1,0 +1,50 @@
+High-level summary
+- Workbook contains three themed, linked one-year cost forms for RFA HG-03-002: "Seq Production Costs" (Sheet 1), "Tech Dev Costs" (Sheet 2), and "Bioinformatics Costs" (Sheet 3). Each sheet starts with instructions and fields for proposed grant year and center name, followed by category rows for dollar entries and computed totals/percentages.
+- User-entered cells are the non-gray cost and activity count cells (e.g., read counts, Q20 bases, finished bases, and category dollar amounts). Gray cells are pre-set with formulas—do not overwrite them.
+
+Sheet: Seq Production Costs (Sheet 1)
+- Purpose: calculate total cost per shotgun read and per finished basepair and summarize other activities.
+- Key input cells:
+  - Counts: B10 = total shotgun reads (user), C10 = total Q20 bases (user), D10 = finished bases (user).
+  - Other Activities: G10 (list the activities), and G13:G18 (their category dollar entries).
+  - Cost categories (rows A13:A18): Amortized Equipment, Labor, Materials & Reagents, Sub-contracts, Travel, Other. Enter dollar amounts in columns B (for Shotgun), D (for Finished), G (for Other Activities) as appropriate.
+  - Indirect costs: B20, D20, G20 (user-entered).
+- Key computed cells/formulas:
+  - Average costs per unit (A11): B11 = B21/B10 (avg cost per shotgun read); C11 = B21/C10 (avg cost per Q20 base); D11 = D21/D10 (avg cost per finished basepair).
+  - Category percent breakdowns: C13 = B13/$B$21, C14 = B14/$B$21, … E13 = D13/$D$21, H13 = G13/$G$21, etc. (each category row divides that category by the respective Grand Cost Total).
+  - Totals: B19 = SUM(B13:B18) (Total Direct Costs for Shotgun); D19 = SUM(D13:D18); G19 = SUM(G13:G18).
+  - Grand Cost Totals: B21 = SUM(B19:B20); D21 = SUM(D19:D20).
+  - Other Activities count/total: G21 = COUNT(G19:G20) (note: this uses COUNT, not SUM).
+  - One-year total costs (all activities): B23 = B21 + D21 + G21 (sums Shotgun, Finished, Other).
+- Note/flag: G21 is calculated with COUNT(G19:G20) which returns a count (integer) not a dollar sum; consequently B23 will add that count to monetary totals. This appears inconsistent—likely G21 should be a monetary SUM rather than COUNT.
+
+Sheet: Tech Dev Costs (Sheet 2)
+- Purpose: capture technology development costs for the grant year.
+- Layout: Column A lists cost categories (Equipment amortized over 3 yrs, Labor, Supplies, Sub-contracts, Travel, Other, Total Direct Costs, Indirect Costs, Total Tech Dev Costs). Column B holds dollar amounts; column C reserved for explanatory notes/breakdowns.
+- Key cells/formulas:
+  - B6 is the sheet-level TOTAL COSTS cell (set to 0 by default in template).
+  - B9:B16 — user enters category dollars (equipment, labor, supplies, subcontracts, travel, other).
+  - B17 = SUM(B9:B16) (Total Direct Costs).
+  - B18 = B17 / B6 (percent of sheet total) — watch B6 must be populated to avoid divide-by-zero.
+  - A19 (Contribution to total read cost $) is provided for cross-reference; no formula shown in template.
+
+Sheet: Bioinformatics Costs (Sheet 3)
+- Purpose: capture infrastructure, assembly, and annotation costs (each as separate blocks) and compute their totals and percentages.
+- Structure: Three repeating blocks—INFRASTRUCTURE (rows A7:A17), ASSEMBLY (A20:A30), ANNOTATION (A33:A43). Each block has category rows (Equipment amortized 3 yrs, Labor, Supplies, Sub-contracts, Travel, Other), totals, indirects, and percent-of-total calculations.
+- Key cells/formulas:
+  - B6 is the sheet TOTAL COSTS (0 by default).
+  - For Infrastructure: B9:B16 input dollars; B17 = SUM(B9:B16) (Infra Total Direct); B18 = B17 / $B$6 (percent).
+  - For Assembly: B22:B29 input dollars; B30 = SUM(B22:B29); B31 = B30 / $B$6.
+  - For Annotation: B35:B42 input dollars; B43 = SUM(B35:B42); B44 = B43 / $B$6.
+  - Each block has a line "Contribution to total read costs ($)" for cross-reference (A19, A32, A45) — template shows these as placeholders, no specific formulas provided.
+- Notes: Column C in each block is for explanatory notes (labor breakdowns, equipment amortization explanations).
+
+Overall layout and key outputs
+- Each sheet: descriptive header/instructions (rows A1:A7), then cost-category tables (columns A and B primarily) with explanatory column C where used.
+- Primary summary metrics produced on Sheet 1: average cost per shotgun read (B11), average cost per Q20 base (C11), average cost per finished basepair (D11), and the Grand Cost Totals (B21, D21).
+- Inter-sheet consistency: Tech Dev and Bioinformatics sheets compute their own totals (B17, B30, B43) and percent contributions relative to each sheet’s B6 total; lines labeled "Contribution to total read cost ($)" are present for manual cross-linking but no explicit linking formulas are included in the template.
+- Important: equipment amortization is required to be amortized over 3 years per instructions; template provides amortization rows but amortization calculations are expected to be handled by user entries (the template just labels them "amort 3 yrs").
+
+If you want, I can:
+- Produce a condensed checklist of every cell you need to fill in for one grant year, or
+- Correct the apparent COUNT vs SUM inconsistency on Sheet 1 (G21/B23) and propose corrected formulas.

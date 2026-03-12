@@ -1,0 +1,64 @@
+I inspected all formulas in the workbook you supplied and found a few definite formula errors and several formula inconsistencies (likely bugs or typos). Below I list the problems I found, explain why each is an issue, and give recommended corrective formulas.
+
+1) Strong / definite error — stray constant in a subtraction (causes large negative profit)
+- Location: Lab Notes sheet, D95
+- Current formula: =C95-287
+- Problem: all other profit cells in these transaction tables use =C#-B#; D95 uses the constant 287 instead of subtracting the B95 cell. That produces a large incorrect -287 in D95 and corrupts sums that include D95 (e.g. E117 = SUM(D56:D95)).
+- Fix: change to the consistent formula:
+  =C95-B95
+
+2) Inconsistent / likely incorrect use of "number of fishermen" vs "number of fish" in profit calculation
+- Location: Lab Notes sheet
+  - D116 current formula: =SUM(B10:B49)-10*B109
+  - E116 current formula: =SUM(B56:B95)-10*B110
+- Problem: D116/E116 subtract 10 * (number of fishermen), using B109/B110 (the Number of Fishermen). But the competitive prediction used elsewhere (Homework F47) and the natural interpretation of "total fishermen profit" use cost-per-fish (10 per fish) times number of fish sold. For consistency the experiments' fishermen cost should be 10 * number of fish actually caught/sold (C109/C110), not 10 * number of fishermen. Using fishermen count instead of fish caught produces inconsistent totals (and makes the "experimental" totals not comparable to the competitive predictions in Homework).
+- Recommendation (if cost is per fish): change to subtract 10 * number of fish caught:
+  - D116 → =SUM(B10:B49) - 10 * C109
+  - E116 → =SUM(B56:B95) - 10 * C110
+- Note: if the intended cost is indeed 10 per fisherman, leave as-is, but then the Homework competitive predictions (which use cost per fish) are not comparable and that inconsistency should be documented.
+
+3) Consequence of (1) and (2): totals and summary cells are probably wrong
+- Because D95 was wrong (item 1) SUM(D56:D95) (Lab Notes E117) and any dependent totals (E118 etc.) are likely wrong.
+- Because D116/E116 used the "wrong multiplier" (item 2), D118/E118 (total profits all participants) and the Homework comparisons that pull those values will be inconsistent with the competitive calculations.
+- Action: after fixing D95 and deciding which base to use for the 10*x subtraction (fishermen vs fish), recompute D116/E116 and then recompute D117/E117 and D118/E118 (and downstream Homework cells that reference them).
+
+4) Blank / unexpected referenced cell in Homework (likely unintended)
+- Location: Homework sheet, H69
+- Current formula: =F55
+- Observation: F55 on the Homework sheet is empty (the "Prediction" column label sits above row 55). So H69 becomes zero. In Problem 2.7 the worksheet shows:
+  - F69 = Homework!F45 (value 20)
+  - H69 = F55 (0)
+  which results in "20 to 0" — this looks suspicious.
+- Suggested actions:
+  - If H69 was intended to show the (competitive or experimental) mean price for session 2, change it to a direct reference, for example:
+    = 'Lab Notes'!E114   (experimental mean price session 2)
+    or = F55 if F55 is later filled with a value (but currently F55 is blank).
+  - If H69 intentionally references F55, ensure F55 is filled with the intended value.
+
+5) Minor / stylistic issues (not formula errors but worth noting)
+- Homework sheet, F69 uses =Homework!F45 — this is legal but unnecessary (a cell on a sheet can refer to another cell on the same sheet without the sheet name). Not an error but inconsistent style.
+- There are many formula cells in the transaction tables that compute C#-B# for rows where B# and C# are blank; Excel treats blanks as zero, so these give 0. That is not an error but can be surprising. If you prefer blanks to show blank rather than zero, replace formulas with e.g.
+  =IF(OR(B26="",C26=""),"",C26-B26)
+  (apply per-row as needed).
+
+6) Cells to re-check after fixes (these will change after corrections)
+- Lab Notes E117 = SUM(D56:D95) (consumer total profit for session 2) — recompute after fixing D95.
+- Lab Notes E116 = SUM(B56:B95)-10*C110 (if you adopt the per-fish cost fix).
+- Lab Notes E118 = E116 + E117 (total all participants) — will change.
+- Homework references that pull Lab Notes totals:
+  - Homework D55, D56, D57, D58, D59 (and F57/F58/F59) will change as they reference Lab Notes cells.
+  - Homework comparisons in Problems 2.6 and 2.7 that display these numbers should be reviewed.
+
+Summary of recommended concrete corrections
+- Change Lab Notes D95 to:
+  =C95-B95
+- Change Lab Notes D116 to:
+  =SUM(B10:B49) - 10 * C109
+- Change Lab Notes E116 to:
+  =SUM(B56:B95) - 10 * C110
+- Review and update dependent sums (D117/E117, D118/E118 and all Homework cells that reference them).
+- Fix Homework H69 (and any other cell that references blank cells) to point to the intended source (for example 'Lab Notes'!E114) or populate F55 if F55 was intended to hold a value.
+
+If you want I can:
+- produce the corrected formulas for you to paste in, or
+- recompute the affected totals (D116/E116, D117/E117, D118/E118 and Homework summaries) after applying the suggested fixes and report the corrected numeric results. Which would you prefer?

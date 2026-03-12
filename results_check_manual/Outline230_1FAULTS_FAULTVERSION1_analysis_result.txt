@@ -1,0 +1,38 @@
+I reviewed the workbook formulas on both sheets and found one clear formula mistake and a few inconsistencies / fragile formulas you should consider fixing. Summary and recommended fixes below.
+
+1) Clear formula error (causes negative/incorrect day numbers)
+- Cell: Sheet1!D15
+  - Current formula: =1-D14
+  - Symptom: D15 evaluates to -5 and this breaks the incrementing day sequence (D16..D19 become negative).
+  - Likely intent: increment the day number by 1 (all other rows use +).
+  - Recommended fix: change to =1+D14 (or better: =D14+1)
+
+After fixing D15 the chain D16..D19 (which reference D15, etc.) should return to the expected increasing sequence.
+
+2) Cascade effect / missing values in the day column
+- Because of the D15 error the day numbers D15:D19 (and their dependents) are incorrect. After fixing D15 those dependent cells will correct themselves.
+- Also note: some later rows do not have D values (for example D63 is missing). If you expect a continuous day sequence throughout the sheet, add formulas there as well (e.g. D63 = D62 + 1).
+
+3) Potential / recommended improvements to SUM ranges and totals
+- Cell: Sheet1!J65
+  - Current formula: =SUM(J8:J64)
+  - Comment: this range starts at J8. Your points appear to begin at J10, so the summed range may include unintended cells (headers, blank, or hidden values). If the intended range is the points listed from J10 to J64, change to =SUM(J10:J64).
+- Cells: Sheet1!J67 and J68
+  - J67 contains a manual 700 (duplicate of the computed total). J68 =+J67-J65. Having both a manual total and a computed total invites mismatch errors if one is changed.
+  - Recommendation: Remove the manual total in J67 and compute any difference directly from the computed total (or keep one canonical total only). If you want to check equality, use Sheet1!J68 = 0 as an explicit check (but compute J67 from J65 rather than hard-code).
+
+4) Minor style / consistency issues (do not break calculation but worth cleaning)
+- Several formulas use a leading plus, e.g. =+B2*C2, =+J67-J65. Leading plus is redundant; using =B2*C2 etc is clearer.
+- Date increment formulas are written as =1+C9. That works, but =C9+1 is clearer/readable and consistent with common practice.
+- On Sheet2 there are a number of D10..D15 formulas (=+B10*C10 etc) that reference blank B/C cells and show 0; that is fine but you might want to keep the used range tight to avoid summing lots of placeholder zeros.
+
+5) Sheet2 total consistency check
+- Sheet2!D23 = SUM(D2:D22) and Sheet2!D24 = Sheet1!J65; D25 = D23-D24. These are intended to verify that the two totals match. Keep Sheet1!J65 and Sheet2!D23 ranges aligned (both summing exactly the same set of point cells) to avoid false mismatch.
+
+Actionable checklist
+- Fix Sheet1!D15 to =D14+1
+- Verify the day-number series after that and add missing D formulas if you want a continuous series (e.g. D63 = D62 + 1).
+- Adjust Sheet1!J65 to sum only the real points cells (e.g. =SUM(J10:J64)) and remove any manual duplicated total at J67 (or make J67 reference J65).
+- (Optional) Remove leading plus signs and standardize date increments to Cn+1 for readability.
+
+If you want, I can produce a cell-by-cell patch (exact formulas to paste) or run a re-check after you make the D15 + J65 edits.

@@ -1,0 +1,41 @@
+Here are the errors I found, with a short explanation and the exact fix for each. Keep changes limited to the indicated cells.
+
+1) Municipal — wrong cell reference (copy/paste error)
+- Problem: F5 currently =E6 (Hatboro recommend equals Hatfield request).
+- Fix: Change F5 to =E5
+- Why: F5 should recommend Hatboro’s request, not reference a different project.
+
+2) County total double-counts Rehab
+- Problem: County!E13 = SUM(E9:E12). E9 = Municipal total, E10 = Non‑Profit total (which already includes rehab projects), E11 = Rehab total (duplicate of subset of E10), E12 = County total. Summing E9:E12 double-counts Rehab.
+- Fix: Change County!E13 to exclude the Rehab subtotal. Use either:
+  - =E9+E10+E12  (explicit); or
+  - =SUM(E9:E10,E12)
+- Why: Don’t add Rehab twice. If rehab projects are a subset of Non‑Profit, include them only once in Total Requested.
+
+3) AHTF — Recommend total range inconsistent
+- Problem: AHTF E14 = SUM(E2:E13) but F14 = SUM(F3:F13) (F2 omitted).
+- Fix: Change F14 to =SUM(F2:F13)
+- Why: Totals for Request (E14) and Recommend (F14) should sum the same roster of projects.
+
+4) AHTF — non-numeric text in a Recommend cell
+- Problem: AHTF F10 contains text "Pending Feasibility Study". Non-numeric text is ignored by SUM and can hide intended omissions.
+- Fix: Move the note "Pending Feasibility Study" to a comment cell or a new Notes column, and set F10 to a numeric value (e.g., 0) or leave blank if no recommendation. For a numeric zero use: F10 = 0
+- Why: Keep numeric columns numeric so SUMs are accurate and transparent.
+
+5) AHTF — hard-coded Continuum of Care match
+- Problem: AHTF E16/F16 = 2432890*0.15 uses a magic number (2432890) instead of referencing the base amount.
+- Fix: Replace with a reference to the correct base cell, for example:
+  - =<BaseCell>*0.15
+  - Example if the base is HOME!E11: =HOME!E11*0.15
+- Why: Use references so the match updates automatically if the base total changes and avoid hidden constants.
+
+6) General consistency check (recommendation)
+- Problem: Several Recommend cells are blank or some Recommend formulas are =E# while others are hard-coded. Inconsistent ranges or blank cells can hide calculation errors.
+- Fix: Standardize:
+  - All F totals should SUM the same rows as E totals on each sheet (e.g., F22 on Municipal = SUM(F2:F21)).
+  - If you want default Recommend = Request, use F# = E# consistently or set as needed.
+- Why: Consistency prevents accidental mis-references and makes auditing easier.
+
+If you want, I can:
+- Give the exact formulas to paste into each cell (I already provided the critical ones), or
+- Recalculate the affected totals after fixing these errors and show the before/after numbers.

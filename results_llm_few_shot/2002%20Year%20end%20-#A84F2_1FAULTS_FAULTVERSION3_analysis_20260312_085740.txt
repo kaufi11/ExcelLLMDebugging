@@ -1,0 +1,36 @@
+I checked the workbook and found the main, concrete faults that will cause wrong numbers or circular / text errors. Short fixes and brief explanations below.
+
+1) Cell C29 (Sheet: Financial Statements)  
+- Problem: formula =+C330 — wrong reference / circular. C330 is the SUM(C324:C329) that includes C29, so C29 is effectively referring to a cell that depends on itself.  
+- Fix: replace with the opening balance cell =C324 (or simply enter the correct number 690869).  
+- Why: C29 should show the accumulated funds opening balance, not the total that includes itself. Removing the circular reference restores correct totals.
+
+2) Cell E92 (Sheet: Financial Statements)  
+- Problem: formula =SUM(E93:E97) omits row E98 (Travelling expenses).  
+- Fix: =SUM(E93:E98)  
+- Why: excluding E98 undercounts Other operating costs for 2001, so totals and derived subtotals are wrong.
+
+3) 5 Year Review — wrong-year links (Sheet: 5 Year review)  
+- Problem: C15 =+'Financial Statements'!E54 and C16 =+'Financial Statements'!E61 are pulling 2001 (E-column) values instead of 2002. That makes the 2002 column show prior-year values.  
+- Fix: change to = 'Financial Statements'!C54 and = 'Financial Statements'!C61 (point to the C-column on the Financial Statements sheet).  
+- Why: the formula references use the E-column (2001) instead of the C-column (2002), so the five-year summary is wrong for 2002.
+
+4) Dash characters ("-") used in numeric cells (examples: C39 Bank overdraft, C267/C280 etc.)  
+- Problem: a dash is text, not zero. When such cells are referenced (e.g., C529 =+C39, C532 =SUM(C529:C531)) Excel treats them as text and SUM ignores them or returns unexpected results in downstream formulas. That can break cash flow totals and differences.  
+- Fix: replace "-" with 0 (or use a true numeric 0) in any cell that is meant to be zero. If you prefer a visible dash, keep a numeric zero and use a custom number format (e.g., 0;-0;"-") to display a dash.  
+- Why: numeric calculations must reference numbers; text entries cause silent mis-sums or errors.
+
+5) Cash-flow / payments line looks suspicious (C121) — check sign/duplication  
+- Symptom: C121 is =-26907-7561074 which produces -7,587,981 while related lines separately show -26,908 (C122) and -7,561,074 (C120). This likely double-counts or mis-signs the -26,907.  
+- Fix / Check: verify intended logic — if C121 should be total cash paid to suppliers (e.g. -7,561,074) remove the extra -26907 from this cell and keep that amount only in C122 (or vice versa). Make the formula explicit (e.g. = -7561074 or =SUM(…range…) ).  
+- Why: inconsistent manual sign arithmetic causes arithmetic mismatches in the cash-flow subtotal C117 and C144.
+
+Quick recommended workflow to repair and validate:
+1. Fix C29 to =C324.  
+2. Fix E92 to =SUM(E93:E98).  
+3. Update 5 Year Review links to point at column C on the Financial Statements sheet (C54, C61, … verify other links too).  
+4. Replace any "-" placeholders with numeric 0 or apply a custom number format to show dashes while keeping underlying zeros.  
+5. Recheck cash-flow lines (C121, C122, C117, C144) after the above fixes and correct any remaining sign issues by rewriting formulas to use explicit cell references (avoid embedding literal arithmetic unless intentional).  
+6. After fixes, recalc workbook and scan for #REF!, circular references, or totals that don’t match. Trace precedents for any totals that still look off.
+
+If you want, I can produce the exact corrected formulas for every affected cell (including C121/C117/C144 reconciliation) or check other suspicious totals — tell me which sheet(s) you want me to fully validate next.

@@ -1,0 +1,60 @@
+I inspected the formulas and results on the "Optimization" worksheet and compared them with the "Answer Report". I found one clear formula/unit error that propagates through many results, plus several consequential inconsistencies and a mismatch between the Optimization sheet values and the Answer Report. Summary and recommended fixes below.
+
+Primary problem (unit / scale error)
+- Cell B21: =SQRT(812) → returns 28.49561369755 (interpreted as metres).
+  - Likely intent: sqrt(812) mm = 28.495... mm, so B21 should be 0.02849561369755 m.
+  - Fix: change formula to =SQRT(812)/1000 (or otherwise convert from mm to m).
+- Consequence: Because B21 is ~28.5 m instead of ~0.0285 m, many downstream quantities are grossly wrong:
+  - B30 t = B29/(2*(B7-B21)) becomes negative (denominator B7-B21 << 0), giving t = -0.000183859 m (physically impossible).
+  - B31 l_wire = 4*B11*(B30+B21) → extremely large (~1.4e6 m).
+  - B32 R, B33 wire weight become huge (and unrealistic) because they use the incorrect length.
+  - Constraints involving d (B21) such as A47, A49, A50 are invalid or inconsistent because d is orders of magnitude too large.
+
+Other formula checks (logical correctness)
+- B29 A_w = B11*(B14/2000)^2*H12*PI()
+  - This is correct if B14 is diameter in mm. (B14/2000)^2 * PI equals PI*(d_mm^2)/4, converted to m^2, so formula is fine.
+- B22 = B10/(H8*B9) (reluctance R_g = g/(mu0*Ac)) — formula looks correct.
+- B23, B24, B25 (Phi_max, B_max, L) formulas are consistent: Phi = N*I*mu0*Ac/g, B = Phi/Ac, L = N^2 / R_g — they are mathematically consistent with B22.
+- B32 and B33 conversions use /1000 to convert "per km" to per m; formulas are internally consistent:
+  - R = length (m) * Ohm/km / 1000 -> Ohm. OK.
+  - Wire weight = length * Kg/km /1000 -> kg. OK.
+- B35 I density = H9/((B14/2000)^2*PI()) uses single-wire cross-sectional area (no packing factor), which looks intentional; check interpretation if you intended current density in conductor pack (would need packing factor K_w).
+
+Answer Report vs. Optimization sheet mismatch
+- Several numbers in the "Answer Report" do not match the Optimization sheet cells:
+  - Optimization B39 (Total weight) = 21247.7922197697, but Answer Report D8,E8 show 623.997945954058.
+  - Optimization B32 (R) = 17938.2606209144 while the Answer Report shows constraint-related value 120.42475... (and other mismatches).
+- These mismatches indicate:
+  - Either the Answer Report was generated from a different set of input units/values (likely with d in meters corrected) or
+  - The workbook has inconsistent saved states; the Answer Report does not reflect the current Optimization sheet values.
+- Recommendation: regenerate the Answer Report after correcting B21 and recalculating the workbook.
+
+Constraints that show as "Binding" but are actually invalid due to the B21 error
+- A30 (t negative) is a physical impossibility — caused by incorrect d.
+- A47 (A_w <= (B8-B21)*(B7-B21)) uses B21; with the current (wrong) B21 the right-hand side becomes negative or nonsensical.
+- A49/A50 (no fringing tests) compare g and d to d/10 and l_c/10; because d is 28.5 m these fail or become meaningless.
+
+Recommended corrections / steps
+1. Correct the unit error in B21:
+   - Replace =SQRT(812) with =SQRT(812)/1000 (or the appropriate conversion from mm to m).
+2. Recalculate the workbook and check these cells after correction:
+   - B30 (t) should be positive and reasonable.
+   - B31, B32, B33 (wire length, R, wire weight) should drop to realistic values.
+   - Verify A_w (B29) vs available coil area ((B8-B21)*(B7-B21)) — ensure d < min(h,w) so (B8-B21) and (B7-B21) are positive.
+3. Regenerate the Answer Report (Excel Optimization Report) so the reported "Original" and "Final" values match the recalculated Optimization sheet.
+4. Review current-density interpretation (B35): if you intend current density in the packed conductor area, divide denominator by packing factor K_w; if you intend single-wire current density, keep as-is.
+
+Optional: quick approximate results after fixing B21
+- If B21 is 0.0284956 m, I estimate:
+  - t ≈ 0.00796 m
+  - l_wire ≈ 1.8 km
+  - R ≈ 22.9 Ω
+  - Wire weight ≈ 26.6 kg
+  - Core weight remains ≈ 484.6 kg
+  - Total weight ≈ 511–513 kg (order-of-magnitude check)
+  - These are far smaller than the current (incorrect) 21,247 kg total weight in the sheet, and closer to the Answer Report 623.998 (but still not identical — regenerate report to get exact updated values).
+  
+If you want, I can:
+- Provide the corrected formulas for the affected cells,
+- Recompute the sheet (and give corrected cell values) assuming B21 should be in meters (i.e., dividing sqrt(812) by 1000), or
+- Scan for any additional unit inconsistencies after the B21 fix.

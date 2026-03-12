@@ -1,0 +1,34 @@
+I reviewed the workbook and found the main formula errors that cause incorrect COGS / ending inventory numbers in Part B and a counting mistake in the LIFO section. Short fixes and why they work are below.
+
+1) Fault: J105
+- Error type: Wrong function (mechanical)
+- Problem: J105 uses COUNT(H103:H104). COUNT returns the number of cells (2), not the sum of their amounts.
+- Fix/formula: =SUM(H103:H104)
+- Why: You need the total cost of the oldest layers (to compute EI under LIFO), not the number of cells.
+
+2) Fault: J106 (LIFO COGS) — result wrong because of J105 error
+- Error type: Dependent error (logical consequence)
+- Problem: J106 =J102 - J105 returns a wrong COGS because J105 was 2.
+- Fix/formula: Keep =J102 - J105, but only after fixing J105 to SUM. Result will be 80500 - 19700 = 60800.
+- Why: COGS = GAFS - Ending Inventory (LIFO). With J105 fixed to 19700, the formula produces the correct 60800.
+
+3) Fault: D83 (Weighted-average COGS) — currently 60735 (wrong)
+- Error type: Calculation error (mechanical/logical)
+- Problem: D83 does not equal GAFS minus correct weighted-average ending inventory.
+- Fix/formulas (two-step, robust):
+  - compute weighted unit cost: =E92 / C92  (E92 = total cost = 80500, C92 = total units =10000 → 8.05)
+  - ending inventory: =2500 * (E92 / C92)  → 20125
+  - COGS: =E92 - (2500 * (E92 / C92)) → 80500 - 20125 = 60375
+- One-line COGS option: =E92 - (2500 * (E92 / C92))
+- Why: Weighted-average COGS = total cost of goods available for sale minus ending inventory priced at the average unit cost.
+
+4) Consequence to Gross Margin rows (E81:E83 or related)
+- Error type: Dependent error
+- Problem: Gross margin formulas that use the wrong COGS (D83) produce wrong margins.
+- Fix: After correcting COGS (D83), Gross Margin formulas that compute =7500*13 - COGS will be correct. For weighted average: Gross margin = 97500 - 60375 = 37125.
+
+Extra note / housekeeping:
+- There are several stray/helper cells (K, L columns) and some cells placed in inconsistent columns. They don’t break the core results if you fix the formulas above, but you should clean up unused stray calculations to avoid confusion.
+- Part A journal / income-statement formulas look consistent (purchase discount and cash paid were computed correctly), so no further critical errors there.
+
+If you want, I can provide the exact cell formulas replacing the wrong ones (copy/paste-ready) and a cleaned-up small table with final numeric answers for FIFO, LIFO and Weighted Average. Which do you prefer?

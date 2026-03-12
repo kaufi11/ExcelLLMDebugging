@@ -1,0 +1,58 @@
+I inspected the sheet formulas and the computed values and found several clear formula mistakes and range inconsistencies that will distort the summary statistics. Below I list the problems, why they’re problems, and recommended fixes.
+
+1) Obvious data/formula typo in main data (outlier)
+- Cell: N5
+- Formula/value: "=269+5" → value = 274
+- Why it’s a problem: Column N is "HW4 (/25)". A value of 274 is obviously a typo and creates a huge outlier that inflates the N column statistics (average, stdev, min/max).
+- Recommendation: Replace with the intended numeric value for HW4 (likely 24 or similar). After correcting N5, recompute the summary stats.
+
+2) MAX summary rows use inconsistent/incorrect ranges (exclude many rows)
+- Cells:
+  - B69: "=MAX(B33:B68)" — but averages/min/stdev use B2:B68
+  - C69: "=MAX(C33:C68)"
+  - D69: "=MAX(D33:D68)"
+- Why it’s a problem: These MAX formulas only examine rows 33–68 and therefore ignore students in rows 2–32, producing incorrect maxima.
+- Recommendation: Change to use the full student range, e.g. B69 =MAX(B2:B68), C69 =MAX(C2:C68), D69 =MAX(D2:D68) (or whatever full row range you intend).
+
+3) MAX summary for N and Q use different starting rows (inconsistent)
+- Cells:
+  - N69: "=MAX(N17:N68)"
+  - Q69: "=MAX(Q17:Q68)"
+- Why it’s a problem: These exclude rows 2–16 from the MAX calculation while the averages/STDEV for those columns use N2:N68 and Q2:Q68. Inconsistent ranges lead to mismatched summary values.
+- Recommendation: Make the MAX ranges consistent with the ranges used elsewhere, e.g. N69 =MAX(N2:N68), Q69 =MAX(Q2:Q68).
+
+4) MIN summary rows include summary cells or use inconsistent ranges
+- Cells:
+  - N70: "=MIN(N17:N69)" — currently includes N69 (the MAX) inside the MIN range and uses 17 as the start row
+  - Q70: "=MIN(Q17:Q69)" — includes Q69 (the MAX)
+- Why it’s a problem: Including the summary cell in the range is logically wrong (and (depending on calculation order) can produce incorrect results). Also these MIN formulas start at row 17 instead of row 2 (inconsistent with other summary formulas).
+- Recommendation: Change to a consistent raw-data range and exclude summary cells, e.g. N70 =MIN(N2:N68), Q70 =MIN(Q2:Q68).
+
+5) A MIN value looks suspicious / check for stray zero
+- Cell: C70 shows 0 from formula =MIN(C2:C68)
+- Why it’s a problem: I don’t see any zeroes in the extracted C-column values listed; a MIN of 0 is unexpected and may indicate a stray zero in the column or an unintended cell in the range.
+- Recommendation: Inspect C2:C68 for an accidental 0 (or for formulas that evaluate to 0). If you intended to ignore empty rows, ensure they are truly blank (not zero). If a row has missing grade, decide whether to exclude it.
+
+6) Summary STAT formulas use mixed ranges
+- Cells: the AVERAGE and STDEV formulas use ranges like B2:B68, C2:C68, etc., but some MAX/MIN use different starts (as noted above).
+- Why problematic: Mixed ranges cause the summary statistics to be inconsistent and misleading.
+- Recommendation: Decide on a single consistent data range for all students (e.g. rows 2:68) and apply that same range to MAX, MIN, AVERAGE, STDEV for each column.
+
+7) Several individual cell formulas in data use arithmetic additions rather than referencing cells
+- Example patterns: many cells in N and Q are entered as small arithmetic expressions such as "=20+4", "=17+5/2", "=58+2+3", "=41+5".
+- Why it’s a problem: While mathematically valid, these expressions are fragile (easy to mistype, e.g. the N5 typo) and make the sheet harder to audit. Some of them produced values outside the expected maximum (see N5).
+- Recommendation: Prefer entering the final numeric value or reference the actual components (e.g. if the value is base + bonus, store base and bonus in separate cells and compute base+bonus by cell references). At minimum, double-check any arithmetic-formula entries for typos.
+
+8) Effect of N5 (and similar mistakes) on summary statistics
+- Because N5 is 274, N71 (AVERAGE N2:N68) and N72 (STDEV N2:N68) are distorted. After fixing N5, recompute N column summary cells.
+
+Quick checklist of cells to change (minimum):
+- N5: correct the "269+5" typo to the intended HW4 value.
+- B69, C69, D69: change ranges to B2:B68, C2:C68, D2:D68.
+- N69, Q69: change to N2:N68 and Q2:Q68.
+- N70, Q70: change to N2:N68 and Q2:Q68 (do not include summary cells).
+- Re-check C2:C68 for any zero producing C70 = 0.
+
+If you want, I can:
+- Suggest exact corrected formulas (I can produce a list of exact formula edits).
+- Recompute the summary stats after fixing N5 (I would need the intended corrected N5 value, or I can suggest a likely correction such as 24).

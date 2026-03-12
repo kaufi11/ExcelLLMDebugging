@@ -1,0 +1,35 @@
+I inspected every formula in the supplied sheet and found no Excel syntax errors (no #REF!, #NAME!, circular refs, etc.). However there are some clear logical/inconsistency issues you should check and (probably) fix.
+
+Summary of issues found
+- C41: formula is =73+C40 — this jumps the sequence from 24 (C40) to 97 (C41). Almost certainly incorrect; it looks like it should be =1+C40 (to continue the incremental numbering).
+- Missing/omitted numbering cells and inconsistent references:
+  - There is no value/formula in C25. Several formulas skip over rows that have no C value. For example:
+    - C26 =1+C22 (C22 = 10) — that yields 11 and continues the count, but it skips C23–C25. This may be intentional, but if C25 should be a numbered session it is missing.
+  - Several rows (for example rows 4, 6, 8, 11–15, 23–24, 51–56) only contain E-column text and no C value; ensure those are intentionally omitted and that subsequent formulas point to the intended precedent cell.
+- Date inconsistency (not a formula error but likely unintended): A25 is 2003-02-07 while all other dates are 2002. Verify whether that is a typo.
+
+Why these matter
+- The C-column is used as a running session number via formulas like =1+C(prev). A wrong reference or a hard-coded offset (73) will propagate incorrect numbering to all following rows.
+- Skipped rows or missing C-values can cause later formulas to reference a non-contiguous "previous" row (for example C26 referencing C22). That may be intentional, but it makes the numbering brittle to row insertions/deletions.
+
+Recommended fixes
+1. Fix the obvious jump
+   - Change C41 from =73+C40 to =1+C40 (if the intent is to continue a simple +1 sequence).
+
+2. Decide how to handle missing numbers
+   - If every class row that has a date should have a sequential number, populate C25 (and any other missing C cells) and adjust formulas so each row references the immediately preceding numbered row.
+   - Example (simple, if every row is used): put in C3 and fill down: =IF(A3="","",C2+1). This ensures numbering only where column A has a date and always increments by 1 from the previous numbered row.
+   - More robust alternative (handles occasional blank rows): in C3 and fill down:
+     =IF(A3="","",MAX($C$2:C2)+1)
+     This always uses the last assigned number and adds 1 even if some intermediate rows have no C value.
+
+3. Verify C26
+   - If C25 should exist, consider changing C26 from =1+C22 to =1+C25 (or use the robust formulas above so you don't need to hard-code which prior row to reference).
+
+4. Audit
+   - Search column C for any other non-+1 offsets like the one at C41.
+   - Confirm the A25 date (2003 vs 2002) if chronological ordering matters.
+
+If you want, I can:
+- produce a corrected set of formulas (e.g., populate column C with a robust formula and show exact formulas to paste),
+- or generate a patch listing each cell to change. Which would you prefer?

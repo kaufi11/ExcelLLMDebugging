@@ -1,0 +1,35 @@
+Findings (short):
+
+1) Sum-range error — H15 is wrong.
+   - Current: H15 =SUM(H8:H14)
+   - Problem: H7 (Gift Pledges & Cash FY02 Total = 3,527,011) is excluded, so the FY02 grand total is understated.
+
+2) Hard-coded subtraction formulas — B10 and C10 use literal numbers.
+   - Current: B10 =1672298-748584 and C10 =2824612-1091293
+   - Problem: those formulas use fixed numbers instead of cell references. If the source numbers change the results will not update.
+
+3) Minor: header typo "4rd Qtr." (F6 & G6) — should be "4th Qtr." (no calculation error but fix for clarity).
+
+Suggested fixes (exact, simple):
+
+1) Fix H15 to include all category rows:
+   - Replace H15 with: =SUM(H7:H14)
+   - Why: this includes H7 through H14 so the FY02 category total is complete.
+
+2) Replace hard-coded arithmetic with cell references:
+   - If the “1672298” is stored in some cell (call it the total cell) replace the B10 formula with a reference version. For example, if the total that should be reduced is in cell B? use:
+     =B? - B9
+   - Likewise for column C:
+     =C? - C9
+   - If you don’t know which cell currently contains 1,672,298 (or 2,824,612), locate that total cell and use its address instead of typing the number.
+   - Why: cell references update automatically when source numbers change and avoid manual errors.
+
+3) Fix the label typo:
+   - Change "4rd Qtr." to "4th Qtr."
+
+Quick verification steps after changes:
+
+- Recalculate sheet (press F9). Confirm row15 values (B15:H15) equal the sum of rows 7–14 for each column.
+- Check the Resolution numbers (text area) match the numeric totals shown (e.g., gifts = G7, gifts-in-kind = G8, grants = sum of appropriate grant rows) to ensure narrative matches the corrected figures.
+
+If you want, tell me which cell currently contains the 1,672,298 and 2,824,612 totals (or attach the workbook) and I’ll give the precise replacement formulas.

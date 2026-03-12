@@ -1,0 +1,19 @@
+Short answer — main error found
+- Cell C29 is wrong: it contains the hard-coded value 5. It should be the total days float for Midwest → California, i.e. clearing float in California + mail float from Midwest to California = 1 + 3.2 = 4.2.
+
+Why this matters
+- C29 is used in the opportunity-cost calculation C35 (= cost of capital * avg daily dollars for Midwest * C29). With C29 = 5 the opportunity cost for Midwest→California is overstated by 1,632,000 (0.085 * 24,000,000 * (5 - 4.2)). That inflates the objective and can change the optimal assignments.
+
+Fix (what to change)
+- Replace the entry in C29 with this formula:
+  =C$7 + C13
+  (or =C$7+C13 — either is fine; $ only used if you want to lock row 7 when copying.)
+
+Small additional checks / best-practice fixes
+- Make sure all cells that should be formulas are not hard-coded (scan for other hard-coded totals).
+- Use consistent absolute references where appropriate so copying formulas doesn’t break (e.g. use $C$21 for cost of capital, and use $C$17/$C$18/$C$19 or named ranges for yearly checks so formulas remain stable if copied).
+- Verify Solver constraints: ensure column sums (B60, C60) are constrained with <= B61, <= C61 so assignments cannot be made to a closed box.
+
+If you want, I can:
+- Give the exact corrected formulas for the whole model (with recommended $-locking or named ranges), or
+- Recalculate the objective before/after the fix to show the numeric impact.

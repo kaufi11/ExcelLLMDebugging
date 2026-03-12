@@ -1,0 +1,59 @@
+### Errors Found:
+
+1. **Revenues by Source Sheet:**
+   - Cell C10 formula: `=9595817+116896967` is fine (adds two numbers).
+   - Cell C12 formula: `=147577404-1` subtracts 1 dollar arbitrarily, which is unusual and likely an error.
+   - Cell B16 formula sums B10:B15 but B15 is missing or not mentioned, so total percentage might be incorrect.
+   - Cell C16 sums C10:C15 but C15 is missing or not mentioned, so total revenue might be incomplete.
+
+2. **Expenditures by Function Sheet:**
+   - Cell B20 formula sums B10:B19 but B19 is missing or not mentioned, so total percentage might be incorrect.
+   - Cell C20 sums C10:C19 but C19 is missing or not mentioned, so total expenditures might be incomplete.
+
+3. **Expenditures by Category Sheet:**
+   - Cell B12 formula: `=ROUND((C12/$C$16),4)-0.0001` subtracts 0.0001 arbitrarily, which is unusual and may cause inaccuracies.
+   - Cell B16 sums B10:B15 but B15 is missing or not mentioned, so total percentage might be incorrect.
+   - Cell C16 sums C10:C15 but C15 is missing or not mentioned, so total expenditures might be incomplete.
+
+4. **FTEE Calculation Sheet:**
+   - Cell C14 formula: `=20/24` is a hardcoded number instead of using B14/24, inconsistent with other rows.
+   - Cells D12, D13, D15, D25, D26 formulas reference `H12`, `H13`, `H15`, `H25`, `H26` respectively, which are the same row cells they depend on, causing circular references.
+   - Cells G12:G26 formulas reference `H12:H26` respectively, causing circular references.
+   - Some cells add arbitrary constants like `+0.01` or subtract `-0.000001` without explanation, which can cause confusion.
+   - Total row formulas add or subtract small constants (e.g., `+0.02`, `-0.02`, `+0.03`), which may cause slight inaccuracies.
+
+---
+
+### Solutions:
+
+1. **Revenues by Source Sheet:**
+   - Remove the `-1` in C12 formula to avoid arbitrary subtraction: change `=147577404-1` to `=147577404`.
+   - Ensure all revenue source rows (including row 15) are included in the total sums in B16 and C16.
+
+2. **Expenditures by Function Sheet:**
+   - Include all expenditure rows in the sum ranges for B20 and C20, i.e., extend from B10:B18 and C10:C18 if row 19 is empty or remove B19 and C19 from the sum.
+
+3. **Expenditures by Category Sheet:**
+   - Remove the `-0.0001` from B12 formula to avoid arbitrary adjustment.
+   - Ensure all expenditure categories are included in the total sums in B16 and C16.
+
+4. **FTEE Calculation Sheet:**
+   - Change hardcoded `=20/24` in C14 to `=B14/24` for consistency.
+   - Fix circular references in columns D and G by changing formulas:
+     - D column should be calculated independently, e.g., `=C12` or a correct formula without referencing H column.
+     - G column should not reference H column; it should be calculated based on other available data.
+   - Remove arbitrary constants like `+0.01`, `-0.000001` unless justified.
+   - Adjust total row formulas to sum exact values without adding/subtracting constants.
+
+---
+
+### Explanation:
+
+- **Removing arbitrary constants** avoids skewing data and ensures accuracy.
+- **Fixing circular references** prevents Excel errors and allows correct calculation flow.
+- **Using consistent formulas** (e.g., referencing B14 in C14) ensures data integrity and easier maintenance.
+- **Including all relevant rows in totals** ensures sums are accurate and complete.
+
+---
+
+If you fix these points, your sheet will calculate percentages and totals correctly without errors or inconsistencies.

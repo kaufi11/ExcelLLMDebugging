@@ -1,0 +1,40 @@
+Summary — main problems found
+- Inconsistent / incorrect RANK ranges (many RANK formulas use the wrong end-row or only a single cell) — this gives wrong place numbers.
+  - Examples: Pre‑Teen J2 uses I2:I15 while modeling/strut ranges use D2:D16 / G2:G16. College K2 ranks J2 in J2:J2 (always 1).
+- Totals (column K) mix “places” and “points”. K is SUM(F,H,J) but H and J are RANK (place) values, not points — that mixes units and produces meaningless totals.
+- Hard‑coded values inserted into formulas (example: K41 = SUM(F41,68,J41)) — breaks consistency and will be wrong when data changes.
+
+What to fix (short, practical)
+1) Make every RANK use the same, correct competitor range and consistent sort order.
+   - If you want the top score = rank 1, use descending (third argument 0 or omit). Use absolute ranges so you can copy formulas.
+   - Example for Pre‑Teen (rows 2:16):
+     - Modeling place (E2): =RANK(D2,$D$2:$D$16,0)
+     - Strut place (H2): =RANK(G2,$G$2:$G$16,0)
+     - Solo place (J2): =RANK(I2,$I$2:$I$16,0)
+
+2) Convert places to points consistently (don’t add place numbers to point totals).
+   - Recommended method: create dedicated “points” columns for each event and compute points so that better place = more points.
+   - Example (if 0.5 points per place step and 1st place should get the most):
+     - Let N = number of competitors (ROWS($D$2:$D$16) or COUNTA($B$2:$B$16)).
+     - Modeling points (replace current F2): =(ROWS($D$2:$D$16)-E2+1)*0.5
+     - Strut points (insert a new column, e.g. column I if you can, or use a spare column): =(ROWS($G$2:$G$16)-H2+1)*0.5
+     - Solo points (similar): =(ROWS($I$2:$I$16)-J2+1)*0.5
+   - Then Total points (K2) = ModelingPoints + StrutPoints + SoloPoints
+     - Example if you used F (model), new column (say I) strut points, and new column (say M) solo points: =F2 + I2 + M2
+
+3) Final place ranking must use the full Total Points range and correct sort direction
+   - Example (Pre‑Teen final place L2): =RANK(K2,$K$2:$K$16,0)  (use 0/omit if higher total = better)
+
+4) Remove hard-coded constants (like 68) and replace with formulas using the proper place→points conversion.
+
+Why these fixes work (brief)
+- RANK must compare each competitor to the exact same list of scores; inconsistent ranges give wrong place numbers.
+- Totals must add comparable numbers (points), not mix places and points. Converting place → points with a clear rule produces meaningful totals.
+- Using ROWS/COUNTA and absolute ranges ($D$2:$D$16) makes formulas robust and copyable.
+- Removing fixed numbers prevents silent errors when you add/remove competitors.
+
+If you want, I can:
+- Give the exact formulas adjusted for each sheet (Pre‑Teen, Junior, Senior, College) using their actual row ranges, or
+- Provide a simple sheet layout showing where to add the Strut/ Solo Points columns so you can paste corrected formulas.
+
+Which would you like me to do next?

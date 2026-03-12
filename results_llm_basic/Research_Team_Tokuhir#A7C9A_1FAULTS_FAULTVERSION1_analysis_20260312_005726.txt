@@ -1,0 +1,27 @@
+Summary of the problem
+- Cell A8 has a typo: =A7+277 instead of =A7+1. This throws the whole sequence up by 276 (A8 becomes 282, A9 becomes 283, etc.).
+- There is also a structural issue: a header row (rows 13–14) interrupts the list and a deleted/missing row (row 27) may have caused some formulas to reference the wrong cell (e.g., A28 shows =A26+1 instead of the expected =A27+1). Those are secondary issues but can make numbering inconsistent.
+
+Why it’s wrong
+- The +277 is a simple typing error that produces a large jump in the numbering and breaks the consecutive ID list.
+- If a row was deleted, formulas that don’t consistently reference “the cell above” (e.g., =A27+1) can end up pointing to a non-consecutive cell and break the sequence.
+
+Quick fixes (pick one)
+1) Fix the typo only
+   - Change A8 to =A7+1
+   - Then copy A8 down (drag the fill handle) so each cell becomes “value above + 1.” This will restore the proper sequence.
+
+2) Refill the whole column reliably (recommended)
+   - In A3 enter 1.
+   - In A4 enter =A3+1 and copy/fill that formula down through your last row (A40). This ensures every row references the cell directly above and prevents jumps if one cell was wrong.
+   - Or use a robust formula: in A3 enter =ROW()-2 and copy down. (Because your data starts at row 3, ROW()-2 yields 1,2,3,... automatically.)
+
+3) Prevent numbering across blank/header rows
+   - If you have header rows inside the list (e.g., row 14), use a conditional formula to only number rows with data: in A3 put =IF($B3="","",MAX($A$2:A2)+1) and copy down. Or use =IF($B3="","",ROW()-2) if your rows with data are always contiguous.
+
+What to check after fixing
+- Scan column A for any other unexpected large numbers.
+- Make sure each formula in A references the cell directly above (e.g., =A[n-1]+1) unless you intentionally skip numbering for header rows.
+- If any rows were deleted, review formulas around the deletion to ensure they still point to the correct above cell.
+
+If you want, I can give the exact formula to paste into A3 and the steps to fill down for your sheet.

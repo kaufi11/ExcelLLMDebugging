@@ -1,0 +1,37 @@
+I inspected the formulas in Sheet1 and found several formula errors and inconsistencies. Summary (location, problem, why it matters, suggested fix):
+
+1) Missing Income value in period 5 (Case 1a)
+   - Cells: B9 is blank (Period 5 Income).
+   - Symptom: D9 shows -20.48 (formula =B9-C9) which implies B9 = 0; E9 then becomes slightly negative.
+   - Why: Every earlier period uses Income = 25; leaving B9 blank produces an incorrect savings value and final accumulated assets.
+   - Fix: Enter the correct income (likely 25) in B9 so D9 = B9 - C9 yields the expected 4.52 and E9 updates correctly.
+
+2) Inconsistent hard-coded initial asset term in E16 (Case 1b)
+   - Cell: E16 formula is =1*(1.05)+D16 (value 5.33).
+   - Problem: E16 uses a literal 1 rather than referencing a previous accumulated-assets cell (or a dedicated initial-assets cell). All subsequent rows use E(n) = E(n-1)*(1+0.05)+D(n).
+   - Why: This is inconsistent and fragile — if the initial asset level should change, you must edit the formula rather than a single cell.
+   - Fix: Replace with a reference to an initial assets cell (e.g., if initial assets are in E15 put =E15*(1+0.05)+D16) or, if initial assets are zero, use =0*(1+0.05)+D16 (or better, put initial assets in a named cell and reference it).
+
+3) Hard-coded/wrong Consumption values in Case 1b from period 3 onward
+   - Cells: C18 is =332 (hard-coded via formula), C19 =C18, C20 =C19.
+   - Symptom: Consumption jumps from 20.72 to 332, producing large negative savings (D18, D19, D20).
+   - Why: Likely C18 was intended to be =C17 (constant consumption across periods) but was mistakenly set to 332.
+   - Fix: Change C18 to =C17 (or to the cell holding the intended consumption) so the series remains consistent. Remove the hard-coded “=332”.
+
+4) Missing Income in period 5 (Case 1b)
+   - Cell: B20 is blank (Period 5 Income).
+   - Symptom: D20 = -332 (formula =B20-C20) implies B20 = 0; contributes to a large negative E20.
+   - Why: Same as item 1 — blank income produces incorrect results.
+   - Fix: Enter the correct income (likely 25) in B20.
+
+5) Inconsistent treatment of period-1 accumulated assets (stylistic)
+   - Cell: E5 in Case 1a is =D5 (period-1 accumulated assets set equal to period-1 saving).
+   - Observation: Later rows use E(n) = E(n-1)*(1+0.05)+D(n). For clarity and consistency it’s better to compute E5 as initial_assets*(1+rate)+D5 (with initial_assets = 0 if that is intended) or reference an initial-assets cell.
+   - Fix: Use a consistent formula pattern for period 1: e.g., if initial assets are in a cell (say G1 = 0), set E5 = G1*(1+0.05)+D5. This makes the model easier to maintain and less error-prone.
+
+Other notes / best practices
+- Avoid hard-coding constants (1, 332, 1.05) inside formulas where a named cell or single reference would be clearer (e.g., a cell for interest rate r, and a cell for initial assets).
+- Make sure all Income cells (column B) for each period are filled consistently (25 in these examples).
+- Replace any “=number” formulas (e.g., =332) with just the number if you really want a literal value, but better: reference the correct source cell so the pattern is consistent.
+
+If you want, I can produce the corrected formulas (and exact corrected values) for each affected cell and/or generate a corrected workbook. Which would you prefer?

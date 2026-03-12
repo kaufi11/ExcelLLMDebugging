@@ -1,0 +1,36 @@
+I reviewed the three sheets. I found a few clear formula/placement errors and give a short fix + explanation for each.
+
+1) Sheet E20-9 / E20-9 (2)
+- Error: In the second copy (E20-9 (2)) cell C11 is wrong:
+  - It currently has =SUM(C4:C6)*C2 (multiplies by direct labor hours).
+  - Correct formula (as in the first sheet) is =SUM(C4:C6)/C2 (divide total indirect costs by total direct hours).
+- Why: Indirect cost hourly rate = total indirect costs ÷ total direct labor hours. Multiplying by hours produces a huge, incorrect rate.
+- Fix: Change C11 to =SUM(C4:C6)/C2. Keep C10 = C3/C2 and C12 = C11/C10.
+
+2) Sheet P20-3B
+- Error: I10 = +F14*H10. That uses F14 (the TOTAL of direct labor for the whole job) instead of the current-row direct labor amount.
+- Correct formula: change I10 to =F10*H10 (apply the overhead rate to that day's/line's direct labor base).
+- Why: Manufacturing-overhead applied on each line should use that line's base (F10), not the total (F14). Using F14 double-counts/overapplies overhead and breaks totals.
+- Fix: set I10 = F10*H10. Then I14 (=I10+F14+D14) will correctly sum overhead + labor + materials.
+
+3) Sheet P20-1B
+- Symptom / error: Several journal entries and totals are placed in the wrong columns (they are shifted into the Cost of Goods Sold columns instead of the Finished Goods or WIP cost columns). Example signs:
+  - F14 appears to be a Finished Goods total but is sitting in column F (which is the "Job" column under Cost of Goods Sold) instead of column E (Finished Goods cost column).
+  - G15 and G19 reference F14/F18, etc. Many postings are one column to the right of the correct account column.
+- Why: The sheet layout has three accounts side-by-side (WIP: B/C, Finished Goods: D/E, COGS: F/G). Posting totals or journal entries into the wrong cost column makes the ledger wrong (you debit the wrong account).
+- Fix (how to correct):
+  - Move each misplaced formula/value one column left so the amounts sit under the matching account cost column:
+    - Move F14 into E14 (Finished Goods cost column).
+    - Move G15 into F15 (if that was meant to be a WIP/Finished Goods cross-reference), and similarly move any other G-column postings that belong to Finished Goods or WIP into the correct E or C columns respectively.
+  - After moving, edit the moved formulas so they reference the correct cost-column ranges (e.g., Finished-Goods totals must SUM values in column E; WIP totals must SUM values in column C; COGS totals must SUM values in column G).
+  - Check these specific formulas after moving:
+    - Replace F14 (=+E4+G6) with the appropriate finished-goods formula sitting in E14, and ensure it sums only finished-goods cost cells (E-column).
+    - Replace F18 (=+G9+G10+G11) with a formula in E18 that sums finished-goods cells (E8:E11) if the intent was to total finished goods moved.
+    - Replace G27 (=+F26) with a formula in E27 (or the correct finished-goods column) that credits Finished Goods when Cost of Goods Sold is debited.
+  - Reconcile totals (SUMs) after the moves to ensure WIP + Finished Goods + COGS totals match expected stage balances.
+
+If you want, I can:
+- give the exact corrected formulas for P20-1B line-by-line (I didn't do every single cell because many are just shifted), or
+- produce a corrected copy of each sheet with the fixes applied.
+
+Which would you prefer?

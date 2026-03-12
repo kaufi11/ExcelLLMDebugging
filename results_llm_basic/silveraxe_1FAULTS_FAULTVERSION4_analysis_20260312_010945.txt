@@ -1,0 +1,45 @@
+I reviewed the sheet. Two types of problems show up repeatedly: (A) many cells contain the literal text "FORMULA =..." instead of a working formula, and (B) at least one lookup formula uses the wrong lookup value / wrong table rows. Fixing those will make the sheet calculate correctly.
+
+1) "FORMULA =" text instead of real formulas
+- What’s wrong: cells such as E15, H15, H18, B19, C19, D19, E19, F19, G19, B20, G20, B21, H22 (and others in the paste) show "FORMULA =...." as text. Because they begin with the word FORMULA they are not real Excel formulas and won’t calculate.
+- How to fix: edit each of those cells and remove the leading text "FORMULA " so the cell starts with =. Example:
+  - change this text
+    FORMULA =ROUNDUP(B15/50,0)
+    to this formula in the cell:
+    =ROUNDUP(B15/50,0)
+- Why: Excel only evaluates cells that begin with "=". The extra text prevents calculation.
+
+2) Wrong lookup value / wrong lookup table for base HTH damage (cell H22)
+- What’s wrong: H22 currently is shown as
+    FORMULA =HLOOKUP(C22,R2:AG4,3,TRUE)
+  That uses C22 (carrying capacity) as the lookup value and uses the wrong lookup row (the first row of R2:AG4 appears to be weight thresholds, not attribute breakpoints). Base hand-to-hand (HTH) damage should be looked up from the attribute (Strength), not from carrying capacity or weight row.
+- How to fix (recommended, robust formula):
+  Replace H22 with an INDEX/MATCH that matches Strength against the attribute breakpoints row and returns the HTH-damage row. For example (adjust column end if your sheet uses AW rather than AG):
+    =INDEX(R4:AW4, MATCH(B16, R5:AW5, 1))
+  Explanation:
+    - MATCH(B16, R5:AW5, 1) finds the right attribute column (largest breakpoint ≤ Strength).
+    - INDEX(R4:AW4, ...) returns the HTH damage value from the row above (row 4).
+- Alternative if you prefer HLOOKUP and your table is arranged so the attribute breakpoints are the first row of a two-row table: make the lookup_value B16 and the table such that the first row is the attribute breakpoints and the second row is HTH damage. But INDEX+MATCH is clearer when the HTH damage is above the attribute row as in your paste.
+
+3) Minor recommendation: Hit Points rounding
+- Current H19 = (F19*E15)+0.49 (from the paste). That is an odd way to produce an integer.
+- Recommended: use an explicit rounding function for clarity:
+    =ROUND(F19 * E15, 0)
+  or if you always want to round up: =ROUNDUP(F19 * E15, 0) or =INT(F19 * E15 + 0.5) depending on intended rule.
+
+4) Check consistent column ranges in all HLOOKUPs
+- What to check: some HLOOKUPs use R2:AG3, others R5:AW15. Make sure each HLOOKUP’s first row is the set of lookup breakpoints you intend to search (attributes, weights, charisma breakpoints, etc.). If the lookup array’s first row is not the breakpoints row the lookup will return wrong results.
+- How to check/fix: for each HLOOKUP verify:
+  - lookup_value (e.g., B16 for Strength, B17 for Agility, B18 for Charisma, B15 for weight) matches the breakpoint row you supply
+  - the table range includes the full set of columns for that table
+  - the row_index argument points to the correct target row inside that table
+
+Summary (quick actions)
+1. Edit cells that contain "FORMULA =..." and delete the word FORMULA and the space so the cells start with =.
+2. Replace H22 with:
+   =INDEX(R4:AW4, MATCH(B16, R5:AW5, 1))
+   (adjust AW/AG to the last column used on your sheet).
+3. Replace H19 with =ROUND(F19*E15,0) (or your preferred rounding).
+4. Review other HLOOKUP ranges so their first row is the proper breakpoint row and the row_index points to the correct result row.
+
+If you want, paste a small screenshot or give the exact last column (AG vs AW) and I’ll give the exact corrected formulas to paste in each problematic cell.

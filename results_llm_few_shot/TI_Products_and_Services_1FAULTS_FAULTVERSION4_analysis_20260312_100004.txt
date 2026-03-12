@@ -1,0 +1,35 @@
+Summary — main problems I found
+1) A broken numbering sequence caused by a wrong sign (this corrupts almost every downstream B cell that increments).
+2) Several B‑column increment formulas point to cells that are below them (forward references) — likely typos — which also breaks the intended sequential numbering.
+3) Minor: lots of formulas use the old-fashioned leading “+” (e.g. =+B12+1). It’s harmless but noisy.
+
+Faulty cells and fixes (short)
+
+- B18
+  - Error: Wrong operator (produces negative numbers).
+  - Why: Formula is =-B17-1 which computes -(B17) - 1 instead of incrementing.
+  - Fix: =B17+1
+
+- B19.. onward
+  - Error: These are “correct pattern” formulas but they inherit the error from B18.
+  - Fix: After fixing B18, select B18 and the correct formula pattern (B18 =B17+1), then drag/fill down the column to re‑populate incremental values so all downstream cells are consistent.
+
+- B40
+  - Error: Forward reference to a later cell (=+B53+1). That’s likely a typo and gives an unexpected value.
+  - Why: B40 should continue the previous sequence, not depend on B53.
+  - Fix: =B38+1  (or if you intentionally want to skip a blank row, =B39+1 — use the immediately previous numbered B cell +1)
+
+- B47
+  - Error: Forward reference to B54 (=+B54+1).
+  - Fix: =B45+1 (or use the immediate previous numbered B cell +1)
+
+- B97
+  - Error: References B221 (=+B221+1) — a much later row.
+  - Fix: =B96+1
+
+Additional recommendations (one‑line each)
+- After fixing the root (B18), re-fill the whole B sequence by dragging the corrected formula down instead of editing each cell. That prevents single typos.
+- Replace =+Bnn+1 with =Bnn+1 for clarity (optional).
+- If these B cells are meant to be simple sequential indexes, consider using =ROW()-<constant> or =SEQUENCE(...) (Excel 365) to generate the sequence reliably.
+
+If you want, I can give the exact corrected formulas for every misreferenced B cell in the sheet and produce a corrected B‑column listing. Which would you prefer?

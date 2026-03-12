@@ -1,0 +1,69 @@
+I inspected the formulas in Sheet1 and found one clear formula error that propagates to many totals, plus a few minor inconsistencies/notes. Summary first, then details and recommended fixes.
+
+1) Primary error (must fix)
+- Cell D7 currently: =D5*615
+  - Problem: "615" is a hardcoded wrong multiplier. D7 should calculate 3rd-quarter Sales Revenue = Unit Price (D5) * Units Sold (D4).
+  - Correct formula: =D5*D4
+  - Current value (wrong): 13,530 (based on 22 * 615)
+  - Correct value: 44,000 (22 * 2,000)
+
+Impact: Because D7 is wrong, every total that includes D7 is wrong (F7 and any cell that sums or derives percentages from F7). Below I list the affected cells and the corrected values if you apply D7 = D5*D4.
+
+2) Key affected cells (current value → corrected value) and recommended formulas
+- D7 (fix formula): =D5*D4 → value 44,000
+- F7 (Total Sales): =SUM(B7:E7)
+  - current 122,530 → corrected 153,000
+- F5 (Avg ASP / unit): =F7/F4
+  - current 17.5042857142857 → corrected 21.8571428571429
+- D9 (Gross Margin): =D7-D8
+  - current -4,470 → corrected 26,000
+- F9 (Total Gross Margin): =SUM(B9:E9)
+  - current 60,530 → corrected 91,000
+- D10 (Adv Expense): =6%*D7
+  - current 811.8 → corrected 2,640
+- F10 (Total Adv): =SUM(B10:E10)
+  - current 7,351.8 → corrected 9,180
+- D13 (Misc Expense): =2%*D7
+  - current 270.6 → corrected 880
+- F13 (Total Misc): =SUM(B13:E13)
+  - current 2,450.6 → corrected 3,060
+- D14 (Total Operating Costs): =SUM(D10:D13)
+  - current 1,982.4 → corrected 4,420
+- F14 (Total Operating Costs): =SUM(B14:E14)
+  - current 13,402.4 → corrected 15,840
+- D15 (Operating Income): =D9-D14
+  - current -6,452.4 → corrected 21,580
+- F15 (Total Operating Income): =SUM(B15:E15)
+  - current 47,127.6 → corrected 75,160
+- D16 (Taxes): =IF(D15>0,D15*28%,0)
+  - current 0 → corrected 6,042.4
+- F16 (Total Taxes): =SUM(B16:E16)
+  - current 15,002.4 → corrected 21,044.8
+- D17 (Net Income): =D15-D16
+  - current -6,452.4 → corrected 15,537.6
+- F17 (Total Net Income): =SUM(B17:E17)
+  - current 32,125.2 → corrected 54,115.2
+
+3) Percent-of-sales (column G) implications
+- All Gx formulas that use F7 as denominator (e.g. =F8/$F$7, =F9/$F$7 ...) will change because F7 increases.
+  - Example: G8 (COGS%): current ~0.5060 → corrected = 62,000 / 153,000 ≈ 0.40523
+  - G9 (Gross margin%): current ~0.4940 → corrected 91,000 / 153,000 ≈ 0.59477
+  - G10 (Adv%): stays 0.06 (advertising remains 6% of each quarter, so aggregate fraction still 6%)
+  - Recompute all G cells after fixing F7.
+
+4) Minor notes / possible improvements (not strictly errors)
+- Label typo: A8 "Cost fo Goods Sold" → "Cost of Goods Sold"
+- Some formulas use hard-coded constants (e.g. B11 =200*3, B12 =100*3). That’s not incorrect, but using cell references for month-count or a "months per quarter" cell may improve maintainability.
+- G7 formula =F7/$F$7 returns 1 (intentional for 100% of total Sales). That’s okay but redundant; ensure the intent is understood.
+- F5 and F6 divide by F4 (total units). If F4 could be zero in other scenarios, wrap in IFERROR or IF(F4=0, ...) to avoid divide-by-zero.
+
+5) Recommended immediate action
+- Change D7 to =D5*D4.
+- Recalculate the sheet (Excel will update dependent cells).
+- Verify the new totals/percentages (compare against the corrected values listed above).
+- Optionally search for any other hard-coded numeric constants that should be cell references.
+
+If you’d like, I can:
+- produce a list of all G column corrected percentages,
+- produce a corrected workbook with D7 fixed and all recalculated values,
+- or scan for other potential referencing best-practices and implement them. Which would you prefer?

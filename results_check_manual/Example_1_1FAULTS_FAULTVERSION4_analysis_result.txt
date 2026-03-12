@@ -1,0 +1,35 @@
+I inspected the workbook formulas. I found two clear formula errors/inconsistencies and their downstream effects, plus a couple of suggested robustness improvements.
+
+1) Q4 Homework — wrong function in Evans total
+- Cell: Q4 Homework!H5
+- Current formula: =COUNT(B5:G5)
+- Problem: COUNT returns the number of numeric cells (6), not the sum of the scores. All other student total cells use SUM.
+- Result: H5 shows 6 instead of the correct total (should be =SUM(B5:G5) → 273).
+- Downstream impact: Q4 Summary!E6 (Evans) links to this cell, so Q4 Summary F6 and G6 are incorrect, and those flow into Year Summary G4/H4/I4 (Evans Q4, final average, final grade).
+
+Fix: change to
+=SUM(B5:G5)
+
+2) Q4 Summary — incorrect weight used for Points Possible row
+- Cell: Q4 Summary!F3
+- Current formula: =B3*0.3+C3*0+D3*0.4+E3*0.2
+- Problem: the C3 term is multiplied by 0 instead of the quiz weight 0.1 (row 2 shows weights 0.3, 0.1, 0.4, 0.2). That makes the total 270 instead of the expected 300 for the "Points Possible" weighted total.
+- Result: F3 is 270 but should be 300 (if you intend Points Possible = B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2).
+- Downstream impact: mainly the Points Possible cell itself; this cell doesn't appear to be referenced elsewhere in the workbook, but it is inconsistent with the declared weights.
+
+Fix: replace with either
+=B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+or, better (robust to weight changes),
+=SUMPRODUCT($B$2:$E$2, B3:E3)
+
+Suggested improvements (to avoid similar mistakes):
+- Use SUMPRODUCT with the weight row for all weighted-score formulas instead of hard-coded weights. For example, for student row 4:
+=SUMPRODUCT($B$2:$E$2, B4:E4)
+This prevents manual typing mistakes if the weights change.
+- Consider making the weight references absolute ($B$2:$E$2) so you can copy formulas down safely.
+
+Summary of direct corrections to apply:
+- Q4 Homework!H5 -> =SUM(B5:G5)
+- Q4 Summary!F3 -> =SUMPRODUCT($B$2:$E$2, B3:E3) (or =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2)
+
+If you want, I can produce a small list of all cells affected by changing H5 (Evans) so you can verify final grades, or I can generate corrected formulas across the sheet (convert existing F4:F12 to SUMPRODUCT, etc.).

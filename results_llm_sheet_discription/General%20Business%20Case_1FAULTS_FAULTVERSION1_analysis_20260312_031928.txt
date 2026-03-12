@@ -1,0 +1,37 @@
+Findings (short)
+- Two formula errors on the STMT OF OPERATIONS sheet:
+  1. A typo in C10: it contains =C8-26 instead of =C8-C9.
+  2. The Variance column (column E) is inconsistent: some rows use =A#-C# (Actual minus Forecast) while many use the reversed =C#-A#. That makes many variances and subtotals show the wrong sign and breaks variance totals.
+
+Why these are problems
+- C10 wrong → Gross Profit (Forecast column) and all downstream Forecast and Variance calculations that depend on C10 are incorrect.
+- Mixed signs in column E → individual variances, subtotal variances (E15, E41, E50, E51, E53, etc.) and any dashboard numbers that rely on them will be misleading (positive shown as negative and vice versa).
+
+How to fix (quick steps)
+1. Fix the typo in the Forecast Gross Profit:
+   - On STMT OF OPERATIONS: select C10 and change the formula to:
+     =C8-C9
+   - Press Enter.
+
+2. Standardize the Variance column to one convention (recommended: Variance = Actual - Forecast):
+   - On STMT OF OPERATIONS: in E6 enter:
+     =A6-C6
+   - Drag/fill that cell down through the full variance range (all rows that currently show differences — e.g., E6:E53 or until the last variance row).
+   - This will replace any reversed formulas (=C#-A#) with the correct =A#-C# relative references.
+
+Alternative fast method if there are many isolated reversed formulas
+- Identify reversed formulas by scanning column E or by comparing E# to -(existing formula). For a few cells you can simply replace =C7-A7 with =A7-C7, etc.
+
+Verify
+- After changes:
+  - Check that each E# = A# - C# for all variance rows.
+  - Confirm E15 = A15 - C15, E41 = A41 - C41, E50 = A50 - C50, E51 = A51 - C51, E53 = A53 - C53.
+  - Recalculate workbook (F9 or Ctrl+Alt+F9) and verify SUMMARY F26 (Current Month Profit/Loss) matches STMT OF_OPERATIONS A53 and that variance totals now look logical (positive if Actual > Forecast).
+
+Why this solution works
+- Correcting C10 fixes the Forecast Gross Profit source so Forecast subtotals are mathematically correct.
+- Using a single variance convention (Actual − Forecast) ensures each row and each subtotal is consistent and the roll-up variances (sums/differences) are mathematically coherent.
+
+If you want, I can:
+- Provide the exact list of cells in column E that were reversed, or
+- Generate a small macro/formula set to automatically replace any =C#-A# pattern with =A#-C#. Which would you prefer?

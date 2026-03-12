@@ -1,0 +1,46 @@
+I reviewed the workbook and found several clear formula mistakes that will cascade through demand → price → profit → IRR. Below are the errors, why they matter, and the exact fixes (short and simple).
+
+1) DRAM cost side — wrong price reference in 2001 var-profit
+- Problem (cell): DRAM cost side!D21
+- Wrong formula: =+D31*D9*D10 - D16 - (D9)*D17
+  - D31 is “price after fab add” (not the baseline price).
+- Correct formula: =+D13*D9*D10 - D16 - D9*D17
+  - Use D13 (baseline P predicted) like the other columns (E21..H21 use E13..H13).
+- Why it matters: D21 is var profit per wafer for 2001. Using D31 instead of D13 pulls in the post‑addition price and gives an incorrect profit number for 2001, which flows into wafer profit, cash flows and the IRR for that scenario.
+- Fix: Edit D21 to reference D13 instead of D31, then recalc.
+
+2) DRAM cost side — amortization typo for H column
+- Problem (cell): DRAM cost side!H22
+- Wrong formula: =+$D$18/380
+- Correct formula: =+$D$18/5
+  - (All other year columns use /5 to amortize cap cost over 5 years.)
+- Why it matters: H22 is the cap cost/start amortization for 2006; dividing by 380 makes the amortization tiny and inflates profit in column H. That skews undiscounted profit/wafer (H23), totals and cash‑flow/IRR results that include 2006.
+- Fix: Change H22 to /5 to match D22:E22:F22:G22.
+
+3) fisher sheet — malformed Paasche & inconsistent Laspeyres ranges in column D
+There are copy/paste / range errors in the 2002 (column D) index formulas. Fix both Laspeyres (D37) and Paasche (D38) so they match the pattern used in other years.
+
+- Problems (cells):
+  - fisher!D37 (Laspeyres) currently uses range C24:C27 and D31:D34 (wrong base-year ranges).
+  - fisher!D38 (Paasche) is malformed: it has extra *(1/(1-D28)) and misses the correct +D28*1/D35 term.
+- Correct formulas:
+  - D37 (Laspeyres): =SUMPRODUCT(D24:D28, D31:D35)
+  - D38 (Paasche): =1/( D24*(1/D31) + D25*(1/D32) + D26*(1/D33) + D27*(1/D34) + D28*(1/D35) )
+  - Then D39 (Fisher) remains =SQRT(D37*D38)
+- Why it matters: Laspeyres/Paasche are the building blocks for the Fisher price index (fisher!D39) and the chained index (fisher!D40 etc). Wrong ranges/extra terms give the wrong price index, which feeds LEM Demand Calibration and all price/quantity inversions — ultimately corrupting price, revenue, and IRR results everywhere downstream.
+- Fix: replace D37 and D38 with the corrected formulas above, then recalc the fisher chained index and any dependent sheets (LEM Demand Calibration, Capacity&Price Calculation, Static RoI, etc).
+
+Quick checklist to apply and verify fixes
+1. Make the three formula edits above.
+2. Recalculate workbook. Confirm:
+   - fisher!D39 and fisher!D40 change sensibly and are consistent with other years.
+   - DRAM cost side D21/D23..D28 values become similar in logic to E–H columns.
+   - Static RoI & Capacity&Price sheets change — verify IRR cells update and look sensible.
+3. Spot‑check: compare the formulas in D37..D39 and E37..E39 to ensure they follow the same pattern (no stray C‑column ranges or extra multipliers).
+
+Why these happened
+- Both types of errors look like copy/paste slips (wrong relative ranges or a missed edit). They are small but high‑impact because these cells are upstream inputs to many calculations.
+
+If you want I can:
+- Produce a one‑page list of the exact corrected formulas for you to paste,
+- Or produce a short macro to replace these three formulas automatically.

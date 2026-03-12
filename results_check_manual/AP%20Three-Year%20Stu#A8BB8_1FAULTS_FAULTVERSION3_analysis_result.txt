@@ -1,0 +1,67 @@
+I inspected the sheet you provided (sheet "AP Grades") and checked all cells that contain formulas as well as a number of related totals/summary cells. I found no #REF or syntax errors, but I did find several inconsistencies and places where values are hard-coded instead of being computed — these can cause silent mistakes if source rows change. Below is a concise summary of the issues and specific recommended fixes.
+
+Summary of problems / inconsistencies
+- Inconsistent SUM ranges
+  - Cell F10 has formula =SUM(F6:F9) but most column totals in row 10 use SUM(col5:col9). F6:F9 excludes the row-5 (AP grade = 5) count in F5. This is almost certainly an accidental different range and will under-count that column if F5 should be included.
+  - Many other column totals are inconsistent in whether they are formulas or hard-coded values (see next point).
+- Mixed use of formulas and manual (hard-coded) totals
+  - Some "Total Exams" cells are formulas summing the underlying grade rows (example: C10, D10, E10, E44), but many other totals in the same blocks are entered as numbers with no formula (for example: C44, D44, many "Total Exams" in school sections like C20, D20, C28, etc.). The presence of some SUM formulas and some manual totals is inconsistent and risky: a change in the per-grade rows will update formula totals but not the manual numbers.
+- Missing SUM formulas where expected
+  - AI10 holds the value 19 but has no SUM formula. The underlying AI5:AI9 contain counts (2,3,14) that sum to 19, so AI10 should probably be =SUM(AI5:AI9).
+- Partial / ambiguous SUMs
+  - E11 contains =SUM(E5:E7). E10 is =SUM(E5:E9). It's not clear why E11 is a partial subtotal (maybe intended to show 5+4+3 only). If that is intended, it should be labeled clearly (or use a named cell). If not intended, it is inconsistent.
+- Percent and Mean cells are hard-coded
+  - Cells such as the "% of Grades 3+" rows (row 12, row 21, row 29, etc.) and "Mean Grade" rows are entered as numbers rather than calculated from the grade counts and totals. That makes them vulnerable to being out-of-sync with the underlying counts.
+- Inconsistent labeling across blocks
+  - The top block uses years 2001–2003; later AP blocks use 2000–2002, etc. That may be intentional (different AP subjects/year spans) but is worth verifying.
+- Some SUM ranges include columns that are entirely blank or zero — not an error per se, but double-check that the intended ranges are those rows (5:9 and analogous).
+
+Recommended fixes (specific formulas)
+1) Standardize column totals (row 10 and other "Total Exams" rows)
+   - Replace inconsistent formulas / manual totals with a uniform SUM over the AP-grade rows (rows 5:9 for the top block). Example for column F:
+     - F10 -> =SUM(F5:F9) (fixes current =SUM(F6:F9))
+   - For AI10 add:
+     - AI10 -> =SUM(AI5:AI9)
+
+   - General pattern (for column X): in the "Total Exams" cell use =SUM(X5:X9).
+
+2) Make % of Grades 3+ calculated
+   - Example for column C (row 12):
+     - C12 -> =IF(C10=0,0,100*SUM(C5:C7)/C10)
+     - This computes percent of scores >=3 (grades 5,4,3) as percentage of total exams; returns 0 if total is zero.
+   - Apply same formula across the other columns (adjust column references).
+
+3) Make Mean Grade calculated (weighted average)
+   - Example for column C (row 13):
+     - C13 -> =IF(C10=0,"", (5*C5 + 4*C6 + 3*C7 + 2*C8 + 1*C9) / C10)
+   - Copy/adapt for each subject column.
+
+4) Replace manual totals in school blocks with SUM formulas
+   - Where you currently have manual "Total Exams" for each school (many entries are numbers, not formulas), replace them with SUM over the grade rows for that school. For the school grade rows that occupy (for example) rows 39:43 you already used =SUM(E39:E43) in one place — apply the same approach consistently for all columns and schools.
+
+5) Clarify partial sums (like E11)
+   - If E11 is intended as "total of grades 5–3" rename or add a comment and use:
+     - E11 -> =SUM(E5:E7)
+     - or better: cell label "Total (3+)" and formula =SUM(E5:E7)
+   - If E11 was accidental, remove it or make it consistent with the full total.
+
+6) Check blocks using different header years
+   - Confirm whether the different year ranges per block are intentional (not a formula error but could be a data-organization issue).
+
+Why these changes matter
+- Standardizing to formulas prevents silent errors when a per-grade number is edited.
+- Calculating % and Mean via formulas ensures those summary statistics always reflect the underlying counts (and avoids inconsistent manual rounding).
+- Uniform SUM ranges avoid accidental exclusion of rows (like F5 currently excluded).
+
+Quick checklist you can run through the workbook
+- Search for totals that are numbers (no formula) but should equal SUM of underlying rows: replace with SUM.
+- Search for SUM formulas that use different start/end rows (e.g., F6:F9 vs others F5:F9) and standardize.
+- Convert all "% of Grades 3+" and "Mean Grade" outputs to formula-driven cells (examples above).
+- Add labels/comments for any intended partial sums so they are not mistaken for full totals.
+- Optionally: protect summary formula cells so they aren't accidentally overwritten with values.
+
+If you want, I can:
+- produce a list of specific cells that currently contain numbers but likely should be formulas (I can output a list of addresses),
+- or generate the exact formulas for every column/row that should be replaced (i.e., a small script of replacements you can apply).
+
+Which would you prefer?

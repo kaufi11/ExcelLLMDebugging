@@ -1,0 +1,43 @@
+Errors and Solutions:
+
+1. **Inconsistent Cell References in DRAM Cost Side (Rows 21 and 25):**  
+   - In row 21 (var profit wafer), the formula in D21 uses `D31` (price after fab add) but `D31` depends on `D30` which depends on `D11` (baseline mil units produced). However, `D11` depends on `D8` which uses `$F$7` (discount factor) from cell `F7`. This is fine, but the formula in D21 subtracts `D16` (var fab cost/wafer incl overhead) and `(D9)*D17` (var A&T cost/yielded die incl overhead). The problem is that `D16` and `D17` use fixed references `$E$15` and `$H$15` which are constants, but `D9` is a variable die count. This is okay, but check if `D16` and `D17` should be dynamic per year or node.  
+   - In row 25 (var profit wafer excluding overhead), the formula divides `D16` and `D17` by `(1+$C$15)`. This is inconsistent with row 21 where overhead is included. This may cause double counting or miscalculation of overhead.  
+   **Solution:** Ensure consistent overhead treatment. If overhead is included in `D16` and `D17`, do not divide again by `(1+$C$15)` in row 25. Adjust formulas to avoid double counting overhead.
+
+2. **Inconsistent Use of Absolute and Relative References:**  
+   - In many formulas, absolute references like `$C$15` (overhead SG&A rate) and `$E$15` are used, but sometimes relative references are used inconsistently, which can cause errors when copying formulas across columns or rows.  
+   **Solution:** Review all formulas for consistent use of absolute references for constants and relative references for variables.
+
+3. **Potential Circular Reference in Price Calculation (Cells like D31):**  
+   - The price after fab add (D31) formula depends on `D30` which depends on `D11` and `$C$29` (20K fab starts). `D31` is used in cash flow calculations that feed back into price or capacity.  
+   **Solution:** Check for circular references and use iterative calculation if intentional, or restructure formulas to avoid circularity.
+
+4. **Inconsistent Formula Signs (Row 13 in DRAM Cost Side):**  
+   - In row 13, the formula in G13 is `=-(G11-fisher!G49)/-fisher!G50` which has double negatives and is inconsistent with other columns.  
+   **Solution:** Correct G13 formula to match the pattern of other columns: `=(G11-fisher!G49)/-fisher!G50` without the extra negative sign.
+
+5. **Missing or Incorrect Data Links to 'fisher' Sheet:**  
+   - Many formulas depend on the 'fisher' sheet (e.g., `fisher!D10`, `fisher!D49`, `fisher!D50`). If these cells are missing or have incorrect data, formulas will error.  
+   **Solution:** Verify that all referenced cells in 'fisher' sheet exist and contain correct data.
+
+6. **Inconsistent Units and Scaling:**  
+   - Some formulas multiply or divide by 1000 or 1,000,000 inconsistently (e.g., converting K units to millions).  
+   **Solution:** Standardize units across the workbook to avoid scaling errors.
+
+Summary of Key Fixes:  
+- Fix formula in G13 (remove extra negative sign).  
+- Ensure consistent overhead handling between rows 21 and 25.  
+- Verify 'fisher' sheet references are valid.  
+- Use absolute references consistently for constants.  
+- Check for circular references in price and capacity calculations.  
+- Standardize units and scaling factors.
+
+Explanation:  
+- Overhead costs should be consistently applied to avoid double counting or omission.  
+- Formula signs and references must be consistent to ensure correct calculations.  
+- External sheet references must be valid to avoid errors.  
+- Circular references can cause calculation issues unless iterative calculation is enabled.  
+- Unit consistency is crucial for financial accuracy.
+
+Implement these fixes to correct errors and improve model reliability.

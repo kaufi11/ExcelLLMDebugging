@@ -1,0 +1,75 @@
+Sheet name: "Homework4 Estimating Reliabilit" — single worksheet containing six problems (reliability estimation exercises) arranged vertically with small blank-row separators.
+
+Overall layout
+- Column layout is used repeatedly: subject/item identifiers in column A, time/split/item scores in B–F (and later K–Q for a second split), and auxiliary calculations (deviations, squared deviations, cross-products) in neighboring columns (D–H, N–Q, etc.). Sums and means are computed in rows labeled "sum" and "mean". Key result cells for each problem are given explicit formulas (see below).
+
+Problem 1 (rows ~1–11)
+- Purpose: compute Pearson r between two times (time1 in column B, time2 in C) using per-subject means.
+- Per-subject rows: A5:A7 subjects; B5:B7 time1 scores; C5:C7 time2 scores.
+- Deviation/square/cross-product columns:
+  - D = x1 − mn1 (uses constant mn1 = B9 ≈ 8.8/3 = 2.93333)
+  - E = (D)^2
+  - F = x2 − mn2 (mn2 = C9 = 6/3 = 2)
+  - G = (F)^2
+  - H = (D)*(F) (note H5 is hard-coded to 5 in your sheet)
+- Totals: sums in row 8 (SUM for B, C, E, G, H); means in row 9 (B9, C9).
+- Result: Pearson r in B11 calculated as H8 / (SQRT(E8)*SQRT(G8)).
+
+Problem 2 (rows ~15–31)
+- Purpose: split-half reliability across odd/even items; performed separately at time1 (columns B–H) and time2 (columns K–Q).
+- For each split:
+  - B/C (time1) and K/L (time2) are xo (odd mean) and xe (even mean) per subject.
+  - D/M = xo − mean(xo); E/N = (D or M)^2; F/O = xe − mean(xe); G/P = (F or O)^2; H/Q = (D or M)*(F or O).
+- Sums in row 26, means in row 27. Correlations:
+  - time1 split r in B29 = H26 / (SQRT(E26)*SQRT(G26))
+  - time2 split r in K29 = Q26 / (SQRT(N26)*SQRT(P26))
+- Spearman–Brown (Prophesy) formula: B30 and K30 = (2*r) / (1 + r).
+- Notes: sheet instructs ignoring unequal odd/even counts when applying Spearman–Brown.
+
+Problem 4 (rows ~34–62)
+- Purpose: inter-item correlation matrices and Cronbach-style alpha estimates for Time 1 (rows 36–47) and Time 2 (rows 51–62).
+- Inter-item correlations are entered pairwise in a 5×5 (only off-diagonals shown). Example: row/column headings Q1–Q5.
+- Intercorrelation averages per item in row 43 (averaging appropriate off-diagonals).
+- mean rij (theoretical alpha) in B44 (and H44 for reversed Q5 scenario). H44 shows a version where Q5 is reversed (−1 * correlations involving item 5).
+- Alpha (Adjusted Alpha) computed in B45 and H45 using formula: alpha = (k * mean_r) / (1 + (k−1)*mean_r) implemented with k=5 as (5*mean_r)/(1+4*mean_r).
+- Item-deleted mean rij in row 46 (each cell averages intercorrelations excluding that item) and adjusted alpha-if-deleted in row 47: (k−1)*mean/(1+(k−2)*mean) implemented as (4*mean)/(1+3*mean) for k=5.
+- Time 2 has analogous calculations in rows 51–62.
+
+Problem 5 (rows ~65–84)
+- Purpose: Cohen’s kappa from a 4×4 rating matrix (categories 1–4).
+- Row totals Ri in row 69, column totals Cj in row 70, N = 51 in A71.
+- Expected agreement cells (B75,B76,B77,B78) computed as (Ri*Cj)/N; observed agreement cells in column C (some set manually: C75..C78 = 8,6,8,9).
+- Sums: observed agreement sum in C79, expected agreement sum in B79.
+- Kappa in B81 = (Observed_agreement − Expected_agreement) / (N − Expected_agreement) implemented as (C79 − B79)/(51 − B79).
+
+Problem 6 (rows ~84–125) — Kuder–Richardson 21 and 20
+- KR21 (rows 85–104):
+  - Data matrix: 5 dichotomous items (rows 87–91) by 5 students (columns B–F).
+  - Student totals (row 92) sum each column; average student score H92 is average across students.
+  - Sum of X and sum of X^2 computed in B95:C99 and summed in row 100.
+  - Sample variance in B103 = (sum X^2 − (sum X)^2 / n) / (n−1) with n=5 (formula uses /4).
+  - KR21 (B104) computed as 1 − ((mean_X*(k−mean_X)) / (k*sample_variance)), implemented with k=5.
+  - Corrected KR21 in F104 scales by k/(k−1): F104 = (5/(5−1)) * (1 − (...) ).
+
+- KR20 (rows 106–125):
+  - For each item: compute p = proportion correct (H108..H112), q = 1−p, and p*q in J108..J112.
+  - Sum p*q in J113.
+  - Student totals and sums used to compute population variance in B124 = (sum X^2 − (sum X)^2 / n) / n (note denominator n for population variance).
+  - KR20 in B125 = (k/(k−1)) * (1 − (sum p*q)/population_variance) implemented for k=5.
+
+Notable details / anomalies
+- Several means are inserted as numeric constants in deviation formulas (e.g., D5 uses 2.93333; D23 etc. use constants like 2.777767). Some of these match computed means (B9/C9/B27 etc.) but are hard-coded rather than referenced.
+- H5 is set to 5 instead of D5*F5 (inconsistent with pattern — other H rows use D*F).
+- Some labels/headers contain minor typos (sheet name truncated, "Prophesy" used for Spearman–Brown).
+- A couple of headings reference "x3" in column headers (G22/P22) — likely a label typo for xe.
+
+Key result cell addresses (where final estimates appear)
+- Problem 1: rxx' → B11
+- Problem 2: split-half r → B29 (time1) and K29 (time2); Spearman–Brown → B30 and K30
+- Problem 4: theoretical mean rij → B44 and H44; alpha → B45 and H45; item-deleted alphas → B47:F47 (time1) and B62:F62 (time2)
+- Problem 5: expected agreement sum → B79, observed sum → C79, kappa → B81
+- Problem 6: KR21 → B104 (and corrected: F104); KR20 → B125
+
+If you want, I can:
+- Point out and correct the H5 inconsistency and replace hard-coded means with cell references,
+- Or produce a cleaned version with all mean references, consistent formulas, and any missing references corrected.

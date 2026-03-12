@@ -1,0 +1,99 @@
+Errors found:
+
+1. **H15 formula**: `=HLOOKUP(B15,R2:AG3,2,TRUE)`  
+   - Problem: The lookup range `R2:AG3` includes only 2 rows, but the lookup value is 170 (Weight). The lookup row 2 contains weights but row 3 contains negative agility mods, which is unrelated. The lookup is trying to find a value in a row of weights but returns the second row which is agility mod, which is unrelated to weight.
+
+2. **H18 formula**: `=HLOOKUP(B18,R17:AN18,2,TRUE)`  
+   - Problem: The lookup range `R17:AN18` is only 2 rows, but the lookup value is 15 (Charisma). The first row (R17:AN17) has Charisma values but the second row (R18:AN18) has reaction modifiers. This is correct in structure, but the lookup value 15 is not guaranteed to be found exactly, so approximate match is used. This may be okay but should be checked for accuracy.
+
+3. **B19 formula**: `=HLOOKUP(B16,R5:AW15,2,TRUE)`  
+   - Problem: The lookup range `R5:AW15` spans 11 rows, but the formula asks for row 2. Row 2 of this range corresponds to row 6 of the sheet, which is "Str HP Mod" values, not "Hit Mod" or similar. The lookup value is Strength (30).  
+   - Similarly, C19, D19, E19 use rows 3, 5, 9 of the same range, which correspond to different attributes. The row numbers seem inconsistent with the data.
+
+4. **F19 formula**: `=PRODUCT(B19:E19)`  
+   - Problem: Multiplying hit mods from different attributes may not be correct game-wise, but formula-wise it's okay if intended.
+
+5. **H19 formula**: `=(F19*E15)+0.49`  
+   - Problem: E15 is "Basic Hits" calculated as `=ROUNDUP(B15/50,0)`. Multiplying by F19 (product of hit mods) may be okay, but check if this is the intended calculation.
+
+6. **B20 formula**: `=HLOOKUP(G17,R5:AW15,6,TRUE)+HLOOKUP(B17,R5:AW15,10,TRUE)`  
+   - Problem: Lookup ranges and row numbers may not align with intended data.
+
+7. **G20 formula**: `=E15*HLOOKUP(G16,R5:AW15,4,TRUE)`  
+   - Problem: Same as above.
+
+8. **B21 formula**: `=HLOOKUP(B17,R5:AW15,11,TRUE)`  
+   - Problem: Same as above.
+
+9. **G21 formula**: `=SUM(B16:B17,G16:G17)`  
+   - Problem: Summing Strength, Agility, Endurance, Intelligence (B16, B17, G16, G17) is unusual for "Power" but formula-wise okay.
+
+10. **C22 formula**: `=((B16/10)^3+(G16/10))*(B15/2)`  
+    - Problem: This formula looks okay mathematically.
+
+11. **H22 formula**: `=HLOOKUP(C22,R2:AG4,3,TRUE)`  
+    - Problem: Lookup range includes rows 2 to 4, but row 4 contains "HTH damage" strings and dice notations, not numeric values. This will cause errors or incorrect results.
+
+12. **B25 formula**: `=HLOOKUP(G17,R5:AW15,7,TRUE)`  
+    - Problem: Same lookup range and row number issue.
+
+13. **G25 formula**: `=HLOOKUP(G17,R5:AW15,8,TRUE)`  
+    - Same issue.
+
+14. **C26 formula**: `=(G17*10)*H4`  
+    - H4 is Level (2), G17 is Intelligence (11), so this is 11*10*2=220. Seems okay.
+
+15. **B27 formula**: `=G17*3`  
+    - Intelligence * 3, okay.
+
+Summary of main errors:
+
+- Lookup ranges and row indexes in HLOOKUP formulas are inconsistent and often point to wrong rows or rows with text instead of numbers.
+- H15 formula uses agility modifiers for weight, which is incorrect.
+- H22 formula looks up in a range that contains text dice notations, causing errors.
+
+---
+
+**Solutions:**
+
+1. **Fix H15 formula**:  
+   - The goal is to find the Agility Mod for the character's weight (170).  
+   - The agility mod row is in row 3 (R3:AG3), weights are in row 2 (R2:AG2).  
+   - Correct formula:  
+     `=HLOOKUP(B15, R2:AG3, 2, TRUE)`  
+   - But this is the current formula, so the problem is that the agility mod values in row 3 are negative and may not correspond to weight properly.  
+   - Check if the agility mod row is correct or if a different row should be used. Possibly the agility mod is in row 3 but the values are negative and correct. So no error here unless the data is wrong.
+
+2. **Fix B19, C19, D19, E19 formulas**:  
+   - The lookup range `R5:AW15` covers multiple attributes.  
+   - The row numbers should correspond to the correct attribute rows:  
+     - Row 2 in range = row 6 in sheet (Str HP Mod)  
+     - Row 3 in range = row 7 (End HP Mod)  
+     - Row 5 in range = row 9 (Int HP Mod)  
+     - Row 9 in range = row 13 (Agl HP Mod)  
+   - But the formulas use row 2,3,5,9 which may not be consistent.  
+   - Confirm the intended attribute for each lookup and adjust row numbers accordingly.
+
+3. **Fix H22 formula**:  
+   - Lookup value is C22 (Carrying Capacity), lookup range is R2:AG4, row 3 is "HTH damage" strings like "1d2", "1d3", etc.  
+   - HLOOKUP expects numeric values but gets text, causing error.  
+   - Solution: Use a different range with numeric values or convert dice notations to numeric equivalents.  
+   - Or use a different method to calculate base HTH damage.
+
+4. **Fix B25 and G25 formulas**:  
+   - Lookup range `R5:AW15` and row numbers 7 and 8 may not correspond to correct data.  
+   - Adjust row numbers to match the correct attribute rows.
+
+---
+
+**Explanation of solutions:**
+
+- HLOOKUP requires the lookup range to have the lookup values in the first row and the return values in subsequent rows. The row index must point to the correct row with desired data.  
+- Using text strings as return values in HLOOKUP causes errors if numeric results are expected.  
+- Ensure lookup ranges include only numeric data when numeric results are needed.  
+- Verify that the row numbers in HLOOKUP formulas correspond to the correct rows in the lookup range.  
+- Adjust formulas accordingly to fix errors and get correct results.
+
+---
+
+If you want, I can provide corrected formulas for the main problematic cells.

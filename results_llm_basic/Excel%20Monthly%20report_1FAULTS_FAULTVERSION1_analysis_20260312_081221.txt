@@ -1,0 +1,41 @@
+Summary of the problems
+- Many cells use SUM on a single cell (e.g. F9 = SUM(E9), G9 = SUM(F9), … or F40 = SUM(E40)). That produces wrong values and a chain of shifted references instead of the intended column/row totals.
+- The copy/paste of formulas has produced a "shifted cascade" (each column summing the previous column's result) rather than summing its own data.
+- One cell uses COUNT on a single cell (J19 = COUNT(I19)) which is almost certainly wrong (COUNT returns 1 if the cell is numeric, not the numeric value).
+- Result: daily totals and column totals are incorrect or circular.
+
+Why it happened
+- You copied formulas without fixing the ranges/anchors. Excel adjusted relative references and turned what should be range sums (e.g. SUM(F9:F39) or row sums) into single‑cell or shifted references.
+
+How to fix (short, exact steps)
+1) Daily total (column C)
+   - Put this in C9 and copy down to C39:
+     =SUM(D9:M9)
+   - This sums all category columns for that day.
+
+2) Column totals (row 40)
+   - Replace the current F40:M40 chain with proper column sums. Example:
+     D40 = SUM(D9:D39)
+     E40 = SUM(E9:E39)
+     F40 = SUM(F9:F39)
+     … copy across through M40.
+   - Do NOT use formulas like =SUM(E40) or =SUM(F40) — those just reference other total cells.
+
+3) Remove or correct single-cell SUMs in the daily category cells
+   - Cells like F9 = SUM(E9), G9 = SUM(F9) etc are wrong. These should either be:
+     - Manual data entry cells (if each category is entered per day), or
+     - Proper formulas that sum the source range you intended (for a running total use SUM($E$9:E9), for a subtotal use SUM(range_of_items)).
+   - If those were intended to be raw daily counts, delete the formula and enter the count value.
+
+4) Fix J19
+   - Change J19 = COUNT(I19) to the appropriate formula:
+     - If you intended the numeric value of I19, use =I19.
+     - If you intended to sum a column, use =SUM(I9:I39) (or =SUM(I19) if you really only want that cell's value).
+     - Most likely: replace COUNT(I19) with =SUM(I19) or simply =I19.
+
+How to check your sheet quickly
+- Use Formulas → Show Formulas to spot cells like =SUM(E9) or =SUM(E40) and correct them.
+- Use Evaluate Formula (Formulas tab) to see how Excel computes any suspicious cell.
+- After fixing, verify: each column total (row 40) should equal the sum of that column's daily cells and each C row total should equal the sum of its daily categories.
+
+If you want, I can give you the exact corrected formula set for every damaged cell (C9:C39 and D40:M40), or produce a small macro to replace the wrong formulas automatically. Which would you prefer?

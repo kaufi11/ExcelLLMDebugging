@@ -1,0 +1,74 @@
+Summary of workbook — concise structure, key formulas and values
+
+Sheets
+1) CBA
+- Purpose: 20-year cost–benefit analysis for a micro-hydro unit (MHU) with yearly columns for 2000–2020 (columns G:AA).
+- Layout:
+  - Left columns (A–F): serial numbers, descriptions (Costs:, Benefits:, Assumptions, Sensitivity tests).
+  - Year columns: G = 2000, H = 2001, …, AA = 2020.
+  - Costs block: rows 5–17 (construction, community contribution, O&M, connection, wiring, tube lights, bulbs, recycling, appliances, repairs, special items).
+  - Total costs: row 18 (per-year SUM of cost rows).
+  - Discount factors (DF @ 12%): row 19 (G19 = 1, subsequent years multiply prior DF by 1/1.12).
+  - Present value of costs: row 20 (yearly costs * DF), C20 = SUM of G20:AA20.
+  - Benefits block: rows 23–29 (kerosene savings, battery savings, handicraft profits, time savings for washing and churning, scrap from bulbs/tubes, 2% scrap of project in AA29).
+  - Total benefits: row 30 (per-year SUM of benefit rows).
+  - Discount factors for benefits: row 31 (same pattern as row 19).
+  - Present value of benefits: row 32 (yearly benefits * DF), C32 = SUM(G32:AA32).
+  - Summary: rows 35–39 show PV(benefits) (C35/C32), PV(costs) (C36/C20), B/C ratio (row 38), and NPV (row 39 = PV benefits − PV costs).
+  - Assumptions: rows 43–60 (unit costs, counts, labour/time valuations, replacement frequencies).
+  - Sensitivity tests (scenario costs): rows ~78–85 list ad hoc repairs/damages and timings with amounts.
+
+- Key formulas / constants in CBA sheet:
+  - AKRSP construction: G5 = 240,000 / 0.4825 (adjust 1993 → 2000 price).
+  - Community construction: G6 = 21,780 / 0.4825.
+  - O&M (repeated for most years): formula = 55,200 − (1,200*12) − (600*12) + (500*12). (In 2010 (Q8) extra items added: +10000+25000+(500*5)+50000+5000 to reflect repairs).
+  - Connection costs (first two years): H9 and I9 = 500 * 15 (average connection charge Rs.500, half households year 1, half year 2).
+  - Household wiring: H10/I10 = 4,297 * 15 (wiring in first two years); Q10 = 4,275 * 7.5 (replacement scenario).
+  - Tube lights cost (per year per village): row 11 per-year = 5.67 * 30 * 50 * 6 (5.67 units/household, 30 hh, Rs50 each, 6 replacements/year).
+  - Energy-saving bulbs: row 13 per-year = 4.22 * 30 * 12 * 15 (4.22 bulbs/household, change monthly, Rs15 each).
+  - Tubelight-unit replacement (excluding bulb): row 12 per-year = 5.75 * 1 * 30 * 120.
+  - Recycling transport & labour: row 14 per-year = (500*2) + (60*2).
+  - Scrap (10%): row 28 per-year = 0.1*(tube-cost + bulb-cost) per year.
+  - Scrap value 2% of total project cost: AA29 = 0.02*G5 + 0.02*G6 (appears placed in column AA).
+  - Discount rate: 12% (used to generate DF rows 19 & 31).
+  - PV calculations: row 20 and 32 multiply yearly totals (row18, row30) by corresponding DF; summary PVs are sums across G:AA.
+
+- Notable/important constants and assumptions called out:
+  - Discount rate = 12%; analysis period 20 years.
+  - AKRSP contribution (base year 1993) = Rs.240,000; community contribution = Rs.21,780 (both deflated/adjusted to 2000 by dividing by 0.4825).
+  - Wiring per house = Rs.4,297; connection charge = Rs.500/house.
+  - Kerosene price = Rs.13/litre; battery pair Rs.18; gas Rs.35/kg; tube light price Rs.50 (6 changes/year); energy-saver price Rs.15 (monthly).
+  - Household counts used vary: many benefit/cost rows use 30 households; elsewhere 31 households are used (see Individ. Hh. sheet) — potential inconsistency.
+  - Several sensitivity cost items: headworks damage Rs.10,000 (yr10), flood damage Rs.25,000, 5 poles @ Rs.500, turbine refurbishment Rs.50,000 (yr7), penstock replacement Rs.5,000, 25% rewiring cost in year10 (4297*30).
+
+2) Individ. Hh. Analysis
+- Purpose: micro (household-level) survey and aggregation to village-level inputs used in the CBA.
+- Layout:
+  - Columns: A household ID; B–J qualitative impacts (workload, activities); L–S fuels used before/after; T–AA quantities per month for kerosene, gas, fuelwood, batteries before & after; AB monthly bill; AC no. tube lights; AD no. energy savers; AE cost of wiring; AF when wired; AG–AO appliances present; AP/AP Q flags (more economical yes/no); AR notes.
+  - Rows: individual households 1–11 (rows 3–11), with formulas in several quantity cells (e.g., convert gallons to litres).
+  - Aggregation and averages: row formulas compute averages and village totals (T13, V13, X13, Y13, Z13, AB13, AC13, AD13, AE13).
+  - Village-level calculations below (rows ~32–113) convert sample averages to annual and village totals and value them:
+    - Conversions: 1 gallon = 4.54596 litres used in some conversions (T3 formulas).
+    - Average kerosene consumption per hh p.a. before/after: C34 = 13.66759*12; C35 = 2.181987*12 (these are derived values).
+    - Village totals multiply by 31 households in many calculations (C37 = C34*31 etc.), then value using conversion to gallons and Rs50/gallon (C40, C41).
+    - Battery averages: C47 and C48 compute sample averages; annual village consumption C50/C51; values at Rs18/pair in C53/C54; savings in C57 = C53 − C54.
+    - Firewood averages and village totals: C60–C70 using Rs70 per maund.
+    - Gas: current per-hh averages taken from sheet (Y13) and valued at Rs35/kg (C77).
+    - Electricity bills: average monthly bill AB13 used to compute per-year and village totals (C82/C83).
+    - Tubes & bulbs: average per-household AC13/AD13 scaled to village (C87–C94) and costed using Rs50 and Rs15 rates and replacement frequencies.
+    - Wiring: average AE13 scaled by 31 (C113).
+
+- Key formulas / conversions in Individ. Hh. sheet:
+  - Many per-household quantity cells use constants and conversions: e.g., T3 = 4 * 4.54596 (convert 4 gallons → litres), W3 = 8 * 18 (battery pairs * Rs18).
+  - Row averages: T13 = AVERAGE(T3:T11) etc. AE13 = AVERAGE(AE3:AE10).
+  - Village aggregation multiplies hh averages by 31 households (some CBA rows used 30 — check consistency).
+  - Time savings valuations: in CBA benefits these are monetized using Rs60 per day (see assumptions) and conversion of hours saved into days (e.g., ((11*10*52)/8)*60 for washing time saving).
+
+Quality notes / potential issues to check
+- Household count inconsistency: CBA uses 30 households in many benefit formulas (tube lights, bulbs etc.) while Individ. Hh. aggregation uses 31 households for village totals — reconcile before final reporting.
+- Discount factor row: row 19 uses a strange factor in I19 (H19*(249/249.2492)) — likely a copy/paste error; DF should consistently be prior DF * 1/1.12.
+- Some formulas refer to specific years for repairs or replacements (extra costs in Q8/Q10/Q18); ensure the intended timing lines up with the year columns.
+- Many totals use SUM(G:AA) for cross-year totals and SUM(range-of-rows) for per-year totals — sensible structure; PVs computed by multiplying yearly totals by DF and summing.
+
+Bottom line
+- The workbook has two sheets: a multi-year CBA (costs, benefits, discounting, PVs, B/C, NPV) and a household survey sheet that feeds the village-level input values. Key constants: discount rate 12%, AKRSP contribution Rs240,000 (adjusted), wiring Rs4,297/house, kerosene Rs13/litre (valued at Rs50/gal later), batteries Rs18/pair, tube Rs50, energy bulb Rs15, wage valuation Rs60/day. Check household count (30 vs 31) and the discount factor oddity for correctness before finalizing results.

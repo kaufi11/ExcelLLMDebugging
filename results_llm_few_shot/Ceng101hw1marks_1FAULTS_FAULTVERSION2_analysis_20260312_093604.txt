@@ -1,0 +1,43 @@
+Summary of the main problems I found and how to fix them (short and simple).
+
+1) Wrong MAX ranges (excluded early rows)
+- Faulty cells: B69, C69, D69
+- Error: Range starts at row 33 (e.g. B33:B68) so the MAX ignores rows 2–32.
+- Fix formulas:
+  - B69 = MAX(B2:B68)
+  - C69 = MAX(C2:C68)
+  - D69 = MAX(D2:D68)
+- Why: Summary should use the full data range (rows 2–68), not just part of it.
+
+2) MAX/MIN summary ranges wrong / include other summary cells
+- Faulty cells: N69, Q69, N70, Q70
+- Errors:
+  - N69 = MAX(N17:N68) — ignores N2:N16.
+  - Q69 = MAX(Q17:Q68) — ignores Q2:Q16.
+  - N70 = MIN(N17:N69) and Q70 = MIN(Q17:Q69) — these include the MAX result row (row 69), so the MIN may be wrong (and you’re mixing raw data with summary).
+- Fix formulas:
+  - N69 = MAX(N2:N68)
+  - Q69 = MAX(Q2:Q68)
+  - N70 = MIN(N2:N68)
+  - Q70 = MIN(Q2:Q68)
+- Why: Use the same data-only ranges for MIN/MAX and do not include the summary rows (row 69).
+
+3) Operator-precedence / ambiguous formulas in column N
+- Examples: N10 = 17+5/2, N15 = 18+5/2, N28 = 17+5/2, N34 = 17/2+2, N22 = 12/2+3, etc.
+- Error: Excel calculates multiplication/division before addition, so 17+5/2 = 17 + (5/2) = 19.5. If you meant the whole sum divided by 2, you must use parentheses.
+- How to fix (if intended to divide the sum):
+  - If intended (17 + 5) / 2 → write =(17+5)/2
+  - If intended 17 + (5/2) → leave as is (but be explicit to avoid mistakes)
+- Why: Parentheses ensure the intended order of operations.
+
+4) Potential accidental inclusion of summary row in other summaries
+- Check any other summary formulas that reference a range ending in row 69 (or any summary row). Summary rows should reference only raw-data rows (2:68), not include any summary rows.
+
+Quick checklist to apply:
+- Replace all MAX/MIN formulas to use consistent data ranges (N2:N68, Q2:Q68, B2:B68, etc.).
+- Review each N-column formula that uses "/" or "/2" and add parentheses where you intend to divide a sum.
+- Do not let summary rows (69, 70, 71, 72) be included inside other summary ranges.
+
+If you want, I can:
+- Provide a corrected list of every single N-row formula converted to the intended parentheses form if you tell me which ones should be “(a+b)/2” vs “a+(b/2)”.
+- Produce the exact replacement formulas and mark them by cell.

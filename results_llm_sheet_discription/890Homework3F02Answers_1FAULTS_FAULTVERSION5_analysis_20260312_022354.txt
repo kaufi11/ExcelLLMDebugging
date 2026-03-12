@@ -1,0 +1,23 @@
+Findings — main error
+- Cell E19 on sheet "Q1" contains the literal value 6 instead of the discounted cash‑flow formula used in the rest of that row. All other D19, F19, G19 are formulas but E19 is a hard number.
+
+Why this is wrong (short)
+- Row 19 is one discount-rate scenario. E19 should be the present value of the t=1 cash flow at that row's discount rate. The hard-coded 6 makes the row sum (B19) and the plotted NPV curve incorrect at that rate and can shift apparent IRR roots.
+
+Fix (exact and simple)
+- Replace E19 with the correct formula (copy the same structure used in the other discounted cells). Example to enter in E19:
+  =$E$2/(1+$J19)^$E$1
+- Or copy E4 (or any proper discounted-cell) and paste down into row 19 so the cell becomes the correct formula referencing J19.
+
+Quick verification steps
+1. After fixing, check B19 (SUM of D19:G19) — it will change.  
+2. Turn on Show Formulas (Ctrl+`) or use Trace Precedents to find any other accidentally overwritten formula cells.  
+3. Recalculate and re-check the IRR (E48) and any NPV curve—they will now reflect the correct discounted value.
+
+Optional cleaner alternative
+- Instead of per-cell discount formulas, you can compute NPV per rate with:
+  =NPV(rate, range_of_future_CFs) + time0_cashflow
+  e.g. =NPV($J19,$E$2:$G$2)+$D$2
+  This reduces the chance of a single-cell overwrite breaking the curve.
+
+If you want, I can list any other cells that are hard-coded (not formula) — tell me to scan for constant values in the discounted-CF block and I’ll point them out.

@@ -1,0 +1,51 @@
+Summary — main errors found
+- Many weighted-average and some total cells on the FINANCIAL DATA & ANALYSIS sheet ignore the third data column (G) — they only combine C and E. That undercounts/miscomputes totals and averages when data exist in column G.
+- There are also direct cell‑reference typos (wrong row or wrong cell used) that break the calculations.
+
+Problems and exact fixes (short, copy-paste formulas into the indicated cell)
+
+1) Problem: Number of handsets / planned handsets only pull from the third source (G) instead of summing all sources.
+- Cell I10 (NUMBER OF HANDSETS) — current: =G10
+  Fix: =C10+E10+G10
+  Why: Total handsets should sum all sources like the example’s total column.
+
+- Cell I11 (PLANNED NO. OF HANDSETS) — current: =G11
+  Fix: =C11+E11+G11
+  Why: Same as above.
+
+2) Problem: Local average duration uses only C and E (ignores G).
+- Cell I16 — current: =IF((C14+E14) <>0,((C14*C16)+(E14*E16))/(C14+E14),"")
+  Fix: =IF((C14+E14+G14)=0,"", (C14*C16 + E14*E16 + G14*G16) / (C14+E14+G14))
+  Why: Weighted average duration must include all three sources and avoid division by zero.
+
+3) Problem: Long-distance (not to mobiles) average duration has a typo and omits G.
+- Cell I22 — current (wrong): =IF(C2+E20<>0,((C20*C22)+(E20*E22))/(C20+E20),"")
+  Fix: =IF((C20+E20+G20)=0,"", (C20*C22 + E20*E22 + G20*G22) / (C20+E20+G20))
+  Why: C2 is a typo; also the G source must be included.
+
+4) Problem: Long-distance-to-mobiles weighted duration ignores G.
+- Cell I34 — current: =IF(C32+E32<>0,((C32*C34)+(E32*E34))/(C32+E32),"")
+  Fix: =IF((C32+E32+G32)=0,"", (C32*C34 + E32*E34 + G32*G34) / (C32+E32+G32))
+  Why: Include the third source in numerator and denominator.
+
+5) Problem: Inbound (1800) average call length ignores G.
+- Cell I61 — current: =IF(C59+E59<>0,((C61*C59)+(E61*E59))/(C59+E59),"")
+  Fix: =IF((C59+E59+G59)=0,"", (C61*C59 + E61*E59 + G61*G59) / (C59+E59+G59))
+  Why: durations are weighted by call counts from all three columns.
+
+6) Problem: Inbound (1300) average call length is wrong (copies only E67).
+- Cell I67 — current: =E67
+  Fix: =IF((C65+E65+G65)=0,"", (C67*C65 + E67*E65 + G67*G65) / (C65+E65+G65))
+  Why: should be weighted average of durations across all sources.
+
+General recommendation (cleaner, less error‑prone)
+- Use the same pattern for every weighted average: IF(SUM(counts)=0,"", (C*dur + E*dur + G*dur) / SUM(counts)).
+- Or, if your source columns are contiguous in the future, use SUMPRODUCT for compactness. Example (if counts in C14:E14 and durations in C16:E16): =IF(SUM(C14:E14)=0,"",SUMPRODUCT(C14:E14,C16:E16)/SUM(C14:E14))
+  (Note: in your file columns are non-contiguous (C,E,G), so the explicit C* + E* + G* approach is easiest and clearer.)
+
+Why these fixes matter (one-line)
+- Ignoring column G or using wrong cells understates totals and produces incorrect averages (biased or invalid results). Fixing to include all three sources makes totals and weighted averages accurate.
+
+If you want I can:
+- Apply the corrected formulas to all corresponding rows and produce a small checklist of cells to review, or
+- Provide a single copy/paste block of corrected formulas for every weighted-average field on the FINANCIAL sheet.

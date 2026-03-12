@@ -1,0 +1,41 @@
+Overview
+- Workbook with 3 sheets: Sheet1 (data + summary), Sheet2 and Sheet3 (no content shown).
+- Sheet1 is a student-grade table: headers in row 1 (columns A–Q), student records in rows 2–68, and a 4-row summary block in rows 69–72 (MAX, MIN, AVERAGE, STDEV).
+
+Layout / column meanings (A–Q)
+- A: Stdt ID (numeric IDs per student).
+- B: HW1 (/30)
+- C: HW2 (/40)
+- D: Exam1
+- E: exam2 bonus (small numeric bonus values)
+- F–M: attendance / lecture / dated columns (mixed: F = 14/4/2003, H = 22/4/2003, I = 28/4/2003, J/K and several lecX columns). Many are 0/1 flags or small integers.
+- G: HW3 (/30)
+- N: HW4 (/25) — many N-row cells are formula expressions (e.g., =20+4, =14+4, =17+5/2, =12/2+3, etc.) rather than references.
+- O: lec Q 5 (/10)
+- P: rep 2 (/10) — decimal scores like 7.5, 8.5 appear.
+- Q: Final exam — contains numeric scores for most students; several cells use arithmetic formulas (e.g., =41+5, =58+2+3, =78+2+5).
+
+Data details and anomalies
+- Student rows mostly cover rows 2–68. Some student IDs are unusually large (e.g., A16 = 98227577, A68 = 99650185).
+- Several lecture/attendance columns are sparsely populated (J, K, M are present for some rows, absent for others).
+- Many HW4 (column N) and Final (column Q) entries are simple constant formulas (sums, divisions) rather than cell-based calculations.
+- Some formula ranges in the summary use inconsistent row spans (see next section).
+
+Summary formulas (rows 69–72)
+- Row 69 (MAX): B69 = MAX(B33:B68), C69 = MAX(C33:C68), D69 = MAX(D33:D68), G69 = MAX(G2:G68), N69 = MAX(N17:N68), Q69 = MAX(Q17:Q68).
+  - Note: MAX for B/C/D uses only rows 33–68 (not full 2–68).
+- Row 70 (MIN): B70 = MIN(B2:B68), C70 = MIN(C2:C68), D70 = MIN(D2:D68), G70 = MIN(G2:G68), N70 = MIN(N17:N69), Q70 = MIN(Q17:Q69).
+  - Note: N70 and Q70 include the computed MAX row (N69/Q69) in their MIN ranges (N17:N69, Q17:Q69), which is likely unintended.
+- Row 71 (AVERAGE): B71 = AVERAGE(B2:B68), C71 = AVERAGE(C2:C68), D71 = AVERAGE(D2:D68), G71 = AVERAGE(G2:G68), N71 = AVERAGE(N2:N68), Q71 = AVERAGE(Q2:Q68).
+- Row 72 (STDEV): B72 = STDEV(B2:B68), C72 = STDEV(C2:C68), D72 = STDEV(D2:D68), G72 = STDEV(G2:G68), N72 = STDEV(N2:N68), Q72 = STDEV(Q2:Q68).
+
+Key observations / potential issues
+- Summary ranges are inconsistent (some MAX/MIN use different start rows) and some MIN/MAX include the summary row(s), which can distort results.
+- Many grade cells (N and some Q entries) are direct arithmetic formulas of constants — these are fine but make it harder to update if components move to separate cells.
+- Several empty or zero cells in attendance/lecture columns; columns J/K/M present but inconsistently filled.
+- Sheets 2 and 3 are placeholders (no data supplied).
+
+If you want, I can:
+- Normalize summary ranges to consistent row spans (e.g., B2:B68 for all).
+- Convert the constant arithmetic in N/Q to explicit component columns for traceability.
+- Flag or clean outliers (very large student IDs) or blanks in lecture columns.

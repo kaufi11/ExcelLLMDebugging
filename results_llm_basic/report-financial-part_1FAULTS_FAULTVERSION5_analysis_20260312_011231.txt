@@ -1,0 +1,61 @@
+Short summary of the problems
+- Many "Spent in total" cells (column H) are wrong: they multiply # of units by the "Spent (other funds)" cell (example: H6 = C6*G6). That makes no sense: H should be the total spent (EU + other), not C * G.
+- One cell is a constant: H12 = 4 (should be a money formula).
+- Several subtotal ranges include the wrong rows or include blank header rows (example: H13 = SUM(H5:H12) should start at H6).
+- Important totals are missing formulas: H56 (Administrative costs 7%), H58 (Contingency 5%) are not defined.
+- Some subtotal (H53) references H51 which does not exist / is blank.
+
+Why these are wrong (brief)
+- Column D is the unit rate, column C is # units, columns F and G are spent by source. The logical total is either:
+  - H = F + G (actual spent split by source), or
+  - H = C * D (if you compute amount from units and unit rate).
+  Multiplying C * G mixes a unit count with an absolute money value and produces nonsense.
+- Fixed values (H12 = 4) create wrong totals.
+- Subtotals that start on the wrong row include headers/empties so totals are incorrect or inconsistent.
+
+Concrete, easy fixes (apply these exact formulas)
+1) For every item line where you track spending by source (recommended):
+   - Replace the H-row formula with:
+     Hn = Fn + Gn
+   Example: H6 → =F6+G6 ; H7 → =F7+G7 ; H10 → =F10+G10 ; etc.
+
+2) If you prefer to compute from units and unit rate (instead of entering F/G):
+   - Compute amount in contract or amount line:
+     En = Cn * Dn
+   - And then Hn = En (or Hn = Fn + Gn if you still track F/G).
+   Choose one consistent method across the sheet.
+
+3) Fix H12 (Per diem seminar participants):
+   - Replace H12 =4 with either =F12+G12 or =C12*D12 (depending on your data method).
+
+4) Fix subtotals to use the correct item rows:
+   - H13 = SUM(H6:H12)
+   - H18 = SUM(H16:H17) (already correct)
+   - H25 = SUM(H21:H24) (already correct)
+   - H32 = SUM(H28:H31) (already correct)
+   - H42 = SUM(H35:H41) (already correct)
+   - H47 = SUM(H44:H46) (already correct)
+   - H53 = SUM(H51:H52) — only keep this if H51 exists; otherwise set H53 = SUM(H52) or include the correct rows. (Check which row 51 was supposed to be; likely a missing row.)
+
+5) Direct project costs subtotal:
+   - H55 = H13 + H18 + H25 + H32 + H42 + H47 + H53
+   (Your formula has these but ensure H13 & H53 corrected first.)
+
+6) Admin cost (max 7% of H55):
+   - Put formula in H56: =H55 * 0.07
+   - Or if you allow a manually entered admin cost but want to enforce the cap, use:
+     H56 = MIN(entered_admin_cell, H55*0.07)
+
+7) Total eligible costs and contingency:
+   - H57 = H55 + H56 (you already have this)
+   - H58 (contingency, max 5% of H57): =H57 * 0.05
+   - H59 = H57 + H58 (your H59 formula is correct once H58 exists)
+
+Quick checklist to implement and verify
+- Replace every Hn = Cn*Gn with Hn = Fn + Gn (or with Cn*Dn if you use unit-rate calculations).
+- Replace H12 = 4.
+- Fix H13 to SUM(H6:H12) and H53 to the correct range.
+- Add H56 and H58 formulas shown above.
+- Use Excel’s Trace Precedents/Dependents and evaluate formulas to confirm.
+
+If you want, tell me whether you want H to be computed from (F+G) or from (C*D) and I will list every exact cell-by-cell change to paste into Excel.

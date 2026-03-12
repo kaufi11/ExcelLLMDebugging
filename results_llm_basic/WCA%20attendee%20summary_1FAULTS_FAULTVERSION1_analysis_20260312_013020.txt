@@ -1,0 +1,19 @@
+Summary: I found one clear spreadsheet formula error and one data inconsistency. Fixes and short explanations below.
+
+1) Wrong formula for total "would like to attend"
+- Problem: B20 is =COUNT(B12:B19). COUNT returns how many numeric cells exist (8), not the sum of those numbers. So the sheet shows 8 instead of the actual total 66.
+- Fix: Replace the formula in B20 with =SUM(B12:B19).
+- Why: SUM adds the values (0+4+1+8+14+12+15+12 = 66). Use COUNT only when you want to count cells containing numbers, not total their values.
+
+Optional improvement: if you may filter rows later use =SUBTOTAL(9,B12:B19) so filtered views only sum visible rows.
+
+2) Data inconsistency in Carnegie breakdown (possible error)
+- Problem: Row "Doctoral/Research Extensive (or RE)" shows E28 = 1 (would like to attend) but G28 = 0 (eligible invitees = 0). That is logically inconsistent: an interested person from a category with zero eligible invitees should not exist, so either E28 or G28 is wrong.
+- Fix: Verify the source records (Participant List or original extraction) and correct the mis-entered cell. If the person truly belongs to an RE eligible group, set G28 (eligible invitees) accordingly; if not, set E28 to 0 and reassign that interested person to the correct classification.
+- Tip to avoid this: derive the summary counts from the Participant List rather than entering them by hand. Use a PivotTable or formulas (SUMIFS/COUNTIFS) to aggregate automatically; that prevents manual mismatches.
+
+Quick consistency checks you can add
+- Check that totals match: in a helper cell put =IF(SUM(B12:B19)=E30,"B total OK","Mismatch") (and similarly compare SUM(C12:C19) to F30 and SUM(D12:D19) to G30).
+- Per-category check (example): =IF(AND(G28=0,E28>0),"Check RE row","OK")
+
+If you want, I can give the exact SUMIFS or PivotTable steps to rebuild the summary from the Participant List so everything stays consistent.

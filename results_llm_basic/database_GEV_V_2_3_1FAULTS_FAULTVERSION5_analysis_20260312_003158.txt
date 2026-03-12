@@ -1,0 +1,25 @@
+Ho analizzato il file. Ho trovato 3 problemi rilevanti (uno è un errore evidente che altera i totali; gli altri sono miglioramenti/correzioni consigliate).
+
+1) Errore grave: cella visualizza_gruppo P15
+- Problema: la formula è =C15+F15+I15+833 — il valore 833 è chiaramente un errore di battitura (doveva essere il contenuto di L15). Questo inserisce +833 nei totali mensili/annuali e falsifica tutte le somme.
+- Soluzione: sostituire con =C15+F15+I15+L15
+- Perché: P colonne sommano i numeri di servizi (C,F,I,L). Usare 833 somma un valore fisso elevato; usando L15 la somma sarà corretta.
+
+2) Piccolo refuso sintattico ma fonte di confusione: doppio segno + nelle formule Q7:Q18 (es. =D7++G7+J7+M7)
+- Problema: la doppia + è un refuso. Excel lo interpreta comunque (un + unario) e la formula funziona, ma è poco leggibile e rischia errori se qualcuno modifica la cella.
+- Soluzione: correggere a =D7+G7+J7+M7 (e analoghe per le altre righe Q8..Q18, Q15 ecc.)
+- Perché: migliora la chiarezza e riduce rischi futuri di errori di modifica.
+
+3) Possibile problema con recupero nomi GEV (mapping INDEX su intervallo sbagliato)
+- Sintomo: nelle formule di calcoli (es. J15..N15, AA15) si usa INDEX(parametri!$A$1:$A$4, …). Se in parametri!A1:A4 non sono presenti i nomi delle GEV, vedrai risultati vuoti o non corretti.
+- Soluzione (scegliere una, a seconda di come vuoi gestire i nomi):
+  a) Inserire i nomi delle GEV in parametri!A1:A4 (così l’INDEX trova i nomi lì), oppure
+  b) modificare le formule INDEX per leggere l’intervallo dove realmente hai inserito i nomi (ad esempio SetPar!E7:E11 se lì salvi i nomi): es. =INDEX(SetPar!$E$7:$E$11, J11)
+- Perché: INDEX deve puntare all’intervallo che contiene i valori desiderati; se punta ad un intervallo sbagliato ritorna testo errato o vuoto.
+
+Controlli consigliati dopo le correzioni
+- Rifare i calcoli e verificare i totali annuali/mensili (celle P20/Q20/R20 e B60-B61 in calcoli) per confermare che siano diventati coerenti.
+- Sostituire i refusi +/+ ovunque per coerenza.
+- Se ci sono ancora nomi mancanti nelle tabelle riepilogative, correggere gli intervalli INDEX come indicato.
+
+Se vuoi, applico io le modifiche e ti do le formule esatte da incollare (oppure ti invio l’elenco preciso delle celle da correggere). Quale preferisci?

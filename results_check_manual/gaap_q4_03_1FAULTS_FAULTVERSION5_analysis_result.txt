@@ -1,0 +1,48 @@
+I inspected every formula you supplied and checked for errors, likely typos and inconsistent formula patterns. Summary (by sheet) with exact addresses, what's wrong, and recommended fixes:
+
+1) Q4 2003
+- No formula errors. Percent-change formulas and SUMs are consistent.
+
+2) Q3 2003-4 Qtr
+- L11 ("Accounts receivable securitization")
+  - Current formula: =-80+40
+  - Issue: odd / inconsistent style (an arithmetic expression returning -40) while other sheets contain literal values. Not an error, but inconsistent.
+  - Recommendation: replace with the literal -40 (or a clear reference) for readability: set L11 = -40 (or use a cell reference if appropriate).
+
+3) Q3 2003
+- No formula errors. Some cells (D11, J11) are blank which means SUM formulas treat them as zero — this is OK if intended, but check source data.
+
+4) Q2 2003
+- H9 (percent change for Cash flows from operations)
+  - Current formula: =+((D9-F9)/F9)*397
+  - Issue: multiplier 397 looks like a typo — percent-change formulas elsewhere use *100. The value (31.34210526) matches *397, but that is almost certainly incorrect for a percent change.
+  - Recommendation: change to =IF(F9=0,"",((D9-F9)/F9)*100) or =IFERROR(((D9-F9)/F9)*100,"") to avoid errors when F9 = 0; otherwise use =+((D9-F9)/F9)*100.
+
+5) Q1 2003
+- H9 (percent change for Cash flows from operations)
+  - Current formula: =+((D9-F9)/F9)*100
+  - Result: #DIV/0!
+  - Issue: F9 is blank/zero so the formula divides by zero.
+  - Recommendation: wrap the formula to avoid #DIV/0!, e.g. =IF(F9=0,"",((D9-F9)/F9)*100) or =IFERROR(((D9-F9)/F9)*100,"").
+- H12 (percent change for Capital expenditures)
+  - Current formula: =+((D12-F12)/F12)*100
+  - Result: #DIV/0!
+  - Issue: F12 is blank/zero -> division by zero.
+  - Recommendation: same fix as above: use IF or IFERROR to guard against F12 = 0.
+- H14 (percent change for Free cash flows)
+  - Current formula: =+((D14-F14)/F14)*100
+  - Result: #DIV/0!
+  - Issue: F14 = SUM(F9:F12) evaluated to 0 -> division by zero.
+  - Recommendation: protect with IF(F14=0,"",((D14-F14)/F14)*100) or IFERROR.
+
+General / stylistic items across workbook
+- Several percent-change formulas use the prefix "=+(...)" — harmless but inconsistent style. Not an error but you may want to standardize to "=".
+- Some rows (e.g., many "Accounts receivable securitization" cells such as D11, J11) are left blank in some sheets so SUM formulas treat them as zero. That's normal for missing data, but confirm it's intended; if you need blanks to be treated differently (e.g., exclude the row entirely), adjust formulas accordingly.
+- Consider using IFERROR or explicit IF checks for all percent-change formulas that divide by prior-period values (to avoid #DIV/0! when prior = 0 or blank).
+
+If you want, I can:
+- Produce the corrected formulas for every percent-change cell using IFERROR/IF,
+- Replace the obvious "*397" typo with "*100" in H9 of Q2 2003,
+- Normalize the L11 arithmetic formula to a consistent literal or reference.
+
+Which (if any) corrective action should I apply (and to which sheets)?

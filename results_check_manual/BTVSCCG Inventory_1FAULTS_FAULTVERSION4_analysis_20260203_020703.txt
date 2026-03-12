@@ -1,0 +1,32 @@
+Summary (short): I found a wrong formula that is producing a constant number instead of reading the "First Patrol" cell. That makes the "Have" totals wrong.
+
+What is wrong
+- Cell F215 (sheet "Class of '99", row for "Clarion Call") contains the formula =SUM(143). That returns the constant 143 — it is not referencing the First Patrol column (K215). Because H215 = SUM(E215:G215) includes that wrong 143, the totals on that row are massively inflated.
+
+Why it's wrong (simple)
+- SUM(143) sums the number 143 (a literal) and always returns 143. The intention is to sum the contents of column K (First Patrol) for that row, e.g. K215. The formula should reference the cell, not a number.
+
+Fix (one-step)
+- Replace the formula in F215 with either:
+  - =K215
+  - or =SUM(K215)
+Either will correctly pull the First Patrol value into F215.
+
+How to do it
+1. Go to Class of '99 → cell F215.
+2. Edit the formula and change =SUM(143) to =K215 (or =SUM(K215)).
+3. Press Enter. H215 will then recalc correctly (H = E + F + G).
+
+Check for any more errors (recommended)
+- Use Excel's Find (Ctrl+F) and search for SUM( followed by a number (e.g. "SUM(1", "SUM(2", …) or search for "SUM(" and inspect any results that do not contain a cell reference/colon. Or:
+  - Home → Find & Select → Go To Special → Formulas, then visually scan any suspicious formulas.
+- Also scan for any accidental numeric literals inside SUM() — those are likely typos.
+
+Optional improvements (prevent future problems)
+- Use direct cell references (=K215) instead of SUM on a single cell (SUM(K215)) to make intent clearer.
+- Set up the correct formulas in the top row and fill down so rows stay consistent (=I2+J2 for E, =K2 for F, =L2+M2 for G, =E2+F2+G2 for H).
+- Use Excel Table (Insert → Table) so formulas auto-fill consistently for new rows.
+
+If you want I can:
+- List any other suspicious formulas I find if you paste a small sample of formulas around rows you’re worried about, or
+- Provide a Find/Replace string you can run to catch SUM(number) occurrences.

@@ -1,0 +1,46 @@
+Summary — I found three concrete, easy-to-fix problems in your sheet. I describe each error, why it matters, and give a clean corrective formula or fix.
+
+1) Double‑counting of asymmetry (explicitly flagged in D12, D14, D18)
+- Problem: The same asymmetry terms (REQ/ACK driver asymmetry, etc.) are being subtracted more than once: they appear in the transmitter formulas (P12, P13, P14) and again in receiver/other formulas. That artificially increases the margin and skews setup/hold results.
+- Why it matters: You’ll get overstated error budgets and incorrect “safe” windows.
+- Fix (example): remove the duplicated term from the transmitter side if you intend it to be accounted for on receive side only.
+  - P12 (Trnsmt Assertion prd) — replace
+    =C5-C9-C12-C15-C21
+    with
+    =C5-C9-C15-C21
+    (remove -C12)
+  - P13 (Trnsmt Hold Time) — replace
+    =L6-$L9-$L11-$L12-$L15-$L21-$L27-($L30/2)
+    with
+    =L6-$L9-$L11-$L15-$L21-$L27-($L30/2)
+    (remove -$L12)
+- How to decide: pick whether asymmetry is handled on TX or RX and remove it from the other formulas consistently.
+
+2) Wrong source column used in helper columns J / K / L (likely unintended)
+- Problem: Almost every J/K/L helper cell is referencing column C (e.g. J9 = $C9/2, J11 = $C11/2). If J/K/L correspond to the Fast‑80 column they should reference column B, not C. (From the headings: B=Fast‑80, C=Fast‑160, J/K/L look like per‑mode setup/hold helpers.)
+- Why it matters: You may be calculating “Fast‑80” helper values from Fast‑160 numbers, producing incorrect per‑mode budgets.
+- Fix: change J*/K*/L* formulas to reference the correct source column. Example (if J is Fast‑80):
+  - J9 change from =$C9/2 to =$B9/2
+  - J17 from =$C17/2 to =$B17/2
+  - Apply the same column change throughout J9:J36 (and similarly K/L if they should use B or C respectively).
+- If instead J/K/L intentionally use column C, keep as is — but make the mapping explicit (add a comment/header).
+
+3) Inconsistent/partial absolute references and copy errors
+- Problem: Many formulas use mixed absolute references (e.g. $J36, J$13, $K16) or omit $ entirely. When formulas are copied or reused this can shift references incorrectly and produce subtle errors.
+- Why it matters: When you copy formulas across rows/columns the referenced terms may move and you get wrong results (hard to detect).
+- Fix:
+  - Make the intention explicit: if a cell is a fixed parameter, lock both column and row: $J$36.
+  - If you need relative behavior use no $.
+  - Better long-term: give frequently used inputs (e.g. C5, C9, C12, C15, C21, C36, C37) named ranges (e.g., ToleranceHalf, CrosstalkHalf) and use names in formulas — much safer than many $ signs.
+  - Example corrected version of a long P17 with fully locked helper refs:
+    = $P$15 - 3.125 + $J$36 + $J$37 - $J$16 - $J$19 - $J$22 - $J$23 - $J$20 - $J$28 - $J$13 - ($J$30/2)
+
+Quick checklist to validate after you fix:
+- No SUM includes the cell being summed (self‑reference).
+- Each physical error source (e.g. asymmetry) appears once in the error budget (TX or RX, not both).
+- Helper columns (J/K/L) pull from the correct Fast‑80 (B) or Fast‑160 (C) source consistently.
+- Named ranges or consistent $ usage for constants to avoid copy/shift mistakes.
+
+If you want, I can:
+- produce a corrected list of every changed formula (paste-ready), or
+- show exactly which J/K/L cells should point to B vs C if you tell me whether J=Fast‑80 or J=Fast‑160.

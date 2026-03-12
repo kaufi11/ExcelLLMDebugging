@@ -1,0 +1,67 @@
+I inspected the workbook formulas and found several formula bugs and range inconsistencies that will produce incorrect results. Below I list each problem, why it is wrong, the exact cell(s) affected, and a suggested fix (correct formula).
+
+1) Obvious typo producing a huge Final Grade (Sheet1)
+- Problem cell: Sheet1!I15
+- Current formula: =(C15*0.125)+(D15*25)+(E15*25)+(15*25)+(G15*12.5)
+- Why it's wrong: The term (15*25) is a literal number (375) instead of multiplying the F15 cell. That drives I15 (and class statistics) way out of range.
+- Fix: replace 15 with F15:
+  =(C15*0.125)+(D15*25)+(E15*25)+(F15*25)+(G15*12.5)
+
+2) Many AVERAGE formulas in Sheet3 reference the wrong cells (typo with L40..L54)
+- Problem cells: Sheet3!P4:P18 (each Pn)
+- Examples of incorrect formulas:
+  - P4: =AVERAGE(D4,F4,H4,J4,L40)    (L40 is wrong)
+  - P5: =AVERAGE(D5,F5,H5,J5,L41)    (L41 is wrong)
+  - P6: =AVERAGE(D6,F6,H6,J6,L42)    ... etc
+- Why it's wrong: The last argument references far-away cells (L40..L54) instead of the row's L cell (L4..L18). This yields wrong per-student test averages.
+- Fix: For each row use the five correct percentage cells from that row. For example:
+  - P4: =AVERAGE(D4,F4,H4,J4,L4)
+  - P5: =AVERAGE(D5,F5,H5,J5,L5)
+  - …and so on down to P18: =AVERAGE(D18,F18,H18,J18,L18)
+  You can enter the P4 formula and fill down.
+
+3) Summary rows on Sheet1 use incorrect ranges / wrong function
+- Problem cells and issues:
+  - Sheet1!C19 (High Grade) =MAX(C3:C17) — this is OK for highest homework.
+  - Sheet1!C20 (Low Grade) currently =MIN(C4:C18) — range is shifted by one row (should match C3:C17).
+  - Sheet1!C21 (Class Average) currently =MAX(C5:C19) — wrong function (MAX) and wrong range; it returns a max, not an average.
+- Why it's wrong: inconsistent / off-by-one ranges and wrong aggregation produce incorrect summary numbers.
+- Fixes:
+  - Low Grade (C20): use the same student range as High Grade:
+    =MIN(C3:C17)
+  - Class Average (C21): compute the average over the students:
+    =AVERAGE(C3:C17)
+  - Verify similarly that all other summary rows use consistent ranges (D19/D20/D21 appear to be correct as D3:D17, etc.). Adjust any other summary cells that are using shifted ranges (I19/I20/I21 are using I3:I17 which is correct, but I19 currently shows the inflated value caused by I15 — fix (1) first).
+
+4) VLOOKUP grade translation table risk (Sheet1)
+- Problem cells: Sheet1!J3:J17 use =VLOOKUP(Ix,$K$5:$L$17,2,TRUE())
+- Why it could misbehave:
+  - The lookup range starts at K5 but K5 appears blank (L5 contains "F"). For approximate-match VLOOKUP (fourth argument TRUE), the first key cell should be numeric (e.g., 0) and the K column must be sorted ascending.
+  - If the first key is blank or not numeric the lookup for low scores may fail or behave unpredictably.
+- Recommendations:
+  - Put the lowest threshold explicitly in K5 (e.g., 0 or 0.0) and L5 = "F", so the table keys read 0, 59.5, 63, 66, ... up to 96.
+  - Ensure column K is sorted ascending.
+  - Alternatively use a more robust formula (LOOKUP or nested IF) or use VLOOKUP with exact match on a properly built table.
+
+5) Summary values on Sheet1 are impacted by the I15 error
+- Symptom: Sheet1!I19 (High Grade) is 441.6066 which is incorrect; the inflated value is from the I15 formula mistake noted in (1).
+- Action: fix I15 first, then recompute summary cells.
+
+6) Miscellaneous typos (cosmetic)
+- Sheet1!A1 reads "Sudents" (typo).
+- Sheet3!A1 reads "Studnets" (typo).
+- Sheet2!A21 reads "Higest Grade" (typo).
+These do not affect calculations but you may want to correct them.
+
+Summary of immediate corrective actions (priority)
+1. Fix Sheet1!I15 to use F15 (correct the literal 15).
+2. Fix Sheet3!P4:P18 to average the five percentages on each same row (L4, L5, etc. instead of L40..L54).
+3. Fix Sheet1 summary row ranges and functions:
+   - C20: =MIN(C3:C17)
+   - C21: =AVERAGE(C3:C17)
+   - Verify other summary formulas use consistent ranges C3:C17, D3:D17, E3:E17, F3:F17, G3:G17, I3:I17.
+4. Ensure your VLOOKUP table (Sheet1 K:L) has a numeric lower-bound key (e.g., put 0 into K5) and that K is sorted ascending; or use an alternative lookup method.
+
+If you want, I can:
+- Provide a list of the exact corrected formulas for every affected cell (I can produce a patch list).
+- Produce the corrected workbook (apply the fixes and return it). Which would you prefer?

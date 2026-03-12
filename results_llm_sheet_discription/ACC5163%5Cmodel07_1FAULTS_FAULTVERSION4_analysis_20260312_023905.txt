@@ -1,0 +1,37 @@
+Summary of the errors I found
+1. Cell F70 contains a hard-coded literal "295" in its formula: =(295-D70+E70).  
+   - This is almost certainly wrong. It should reference the account's Old Basis cell (C70), not a literal number. Because of this the Common Stock new-basis value (and downstream totals) will be wrong.
+
+2. Inconsistency in liability/equity row formulas (rows ~67–73).  
+   - Some liability/equity rows use Bxx + Cxx − Dxx + Exx (e.g., F67, F68, F69), others use Cxx − Dxx + Exx (e.g., F71), and F70 uses the hard-coded 295. This inconsistency risks incorrect balances and makes the worksheet behavior unpredictable.
+
+Why these are errors
+- Hard-coding a number (295) breaks the link between the analysis/input cells and the resulting new-basis amount. If the original common stock changes or data are loaded by a macro, F70 will not update correctly.
+- The pattern for calculating new balances should be consistent and driven by the Old Basis column (C) and the adjusting debit (D) / credit (E) columns. Liability/equity accounts typically use New = Old − Dr + Cr (i.e., C - D + E) because they are credit balances. Using B or a literal number causes incorrect results.
+
+How to fix (step-by-step, simple)
+1. Fix the common stock cell (immediate critical fix)
+   - Go to cell F70 and replace the formula:
+     =(295-D70+E70)
+     with
+     =(C70 - D70 + E70)
+   - Press Enter and recalc (F9). Totals will update.
+
+2. Standardize liability/equity formulas (recommended)
+   - For rows that are liabilities/equity (common stock, additional PIC, retained earnings, revaluation capital, etc.), change each Fxx to:
+     =(Cxx - Dxx + Exx)
+   - Specifically review F67, F68, F69, F70, F71, F72, F73 and any similar rows. If some rows truly need Bxx included (unlikely), confirm why; otherwise replace Bxx + Cxx − Dxx + Exx with Cxx − Dxx + Exx.
+
+3. Verify
+   - After changes, check:
+     - Push-down totals (F65 and any other totals).
+     - Proof rows: D76 = D65 + D74 and E76 = E65 + E74 (should still hold).
+     - Consolidation proofs: D134 and E134 should match their corresponding sums.
+   - If you use macros to load data (A–G) and to post entries (P, Q), run them and confirm values update correctly.
+
+Extra tip to find other hard-coded numbers
+- Use Find (Ctrl+F) with "Look in: Formulas" and search for digits like "295" or search for "=" then a numeric character to find any formulas starting with a literal number. Replace literals with the appropriate cell references.
+
+If you want, I can:
+- Give the exact list of cells (F67:F73, etc.) to change and provide the exact replacement formulas, or
+- Run a quick check list for other hard-coded numbers (tell me if you want me to scan for other literals).

@@ -1,0 +1,28 @@
+Findings (short)
+- Error found: KauCC cell E20 uses =COUNT(C20:D20). COUNT returns the number of numeric cells (2), not their sum. E20 should be 112 (C20 = 112, D20 = 0), but shows 2.
+- Risk: E20 is wrong in the per-database totals column. If you ever change row‑29 to sum E10:E28 (recommended), that wrong cell will cause the campus total to be incorrect.
+- No other COUNT formulas were shown in the workbook text. However, the per-campus totals in row 29 (B29, C29, D29) are hard-coded numbers rather than SUM formulas — another weakness that can lead to manual-entry errors.
+
+Fixes and why they work (very short)
+1) Fix the KauCC E20 formula
+- Replace formula in KauCC!E20 with either:
+  - =SUM(C20:D20)
+  - or =C20+D20
+- Why: SUM (or direct addition) returns 112 (112 + 0). COUNT returned 2 because it counts numeric cells, it doesn’t add their values.
+
+2) Make row‑29 totals reliable (recommended)
+- Replace hard-coded totals with formulas so totals always equal the sum of the rows:
+  - B29 -> =SUM(B10:B28)
+  - C29 -> =SUM(C10:C28)
+  - D29 -> =SUM(D10:D28)
+  - E29 -> =SUM(E10:E28)
+- Why: This prevents mismatches if individual row values change and avoids manual-entry errors. Using E29 = SUM(E10:E28) uses the per-database totals (column E) so errors in column formulas will surface directly.
+
+Quick how-to (one-liners)
+- To fix KauCC E20: select KauCC sheet → cell E20 → type =SUM(C20:D20) → Enter.
+- To fix row 29 on a sheet: in the sheet, replace B29 with =SUM(B10:B28), C29 with =SUM(C10:C28), D29 with =SUM(D10:D28), E29 with =SUM(E10:E28). Copy these formulas to the other sheets.
+
+If you want, I can:
+- produce the corrected formulas for every sheet,
+- list which sheets currently have manual totals,
+- or create a consolidated summary sheet that automatically aggregates all campuses. Which would you like?

@@ -1,0 +1,42 @@
+Summary — main problems found
+1) Wrong start rows in several MAX formulas (they skip many students).
+2) Some MIN/MAX formulas include the summary cells themselves (so they reference the result cell), which can give wrong results or unpredictable behavior.
+3) One obvious typographical formula error in N19 (a minus instead of plus).
+4) Inconsistent ranges across summary rows (MAX, MIN, AVERAGE should use the same data range).
+
+Faulty cells and quick fixes
+- B69 (was =MAX(B33:B68))  
+  Fix: =MAX(B2:B68)  
+  Why: original skips rows 2–32 so it can miss the true maximum.
+
+- C69 (was =MAX(C33:C68))  
+  Fix: =MAX(C2:C68)  
+  Why: same issue as B69.
+
+- D69 (was =MAX(D33:D68))  
+  Fix: =MAX(D2:D68)
+
+- N69 (was =MAX(N17:N68)) — inconsistent with other N-summary formulas  
+  Fix: =MAX(N2:N68)  
+  Why: keep the same full data range as used by the average/stdev and others.
+
+- Q69 (was =MAX(Q17:Q68))  
+  Fix: =MAX(Q2:Q68)
+
+- N70 (was =MIN(N17:N69)) — includes N69 (a summary cell) in the range  
+  Fix: =MIN(N2:N68)  
+  Why: never include the summary cell (N69) in the data range; include only raw data rows.
+
+- Q70 (was =MIN(Q17:Q69))  
+  Fix: =MIN(Q2:Q68)
+
+- N19 (was =16-4)  
+  Fix: =16+4  
+  Why: inconsistent with pattern in column N (looks like it should be a sum, not subtraction).
+
+General recommendation (short)
+- Make all summary formulas use the exact same raw-data range (e.g., rows 2:68) for that column. Example set: MAX(...)=MAX(B2:B68), MIN(...)=MIN(B2:B68), AVERAGE(...)=AVERAGE(B2:B68), STDEV(...)=STDEV(B2:B68).
+- Do not include summary rows (69–72) in your data ranges.
+- For robustness, convert the data block to an Excel Table (Insert > Table) and use structured references for summaries — that automatically keeps ranges correct as you add/remove rows.
+
+If you want, I can produce a short list of every summary formula corrected to the consistent ranges.

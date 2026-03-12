@@ -1,0 +1,21 @@
+Faulty cells
+- H5 (Completion %) — primary error
+- L5 (Points) — secondary, caused by H5 being wrong
+
+Error type
+- Wrong cell reference (copy/paste / off-by-one row), causing an incorrect completion % and any dependent result.
+
+What’s wrong
+- H5 uses =D5/C6*100 (divides D5 by the next row’s Attempts). It should divide by the same row’s Attempts (C5). Because H5 is wrong, L5 (which uses H5) is also wrong.
+
+Fix (quick)
+- Change H5 to: =D5/C5*100
+
+Better fixes / recommendations
+- Use percentage formatting and a simpler formula: =D5/C5 and format the cell as % (then you don’t need *100).
+- Protect against divide-by-zero: =IF(C5=0,0,D5/C5)
+- After fixing H5, copy the corrected formula down the H column to ensure all rows are consistent.
+- Verify L column after fix; recalc if needed.
+
+Why this fixes it
+- Using C5 makes Completion% = Completions / Attempts for the same quarterback. L5 then uses the correct completion %, so the Points score will be correct.

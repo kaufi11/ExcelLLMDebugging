@@ -1,0 +1,51 @@
+I reviewed Sheet1 and found a few real errors and several inconsistencies that will produce wrong numbers or confuse users. Short, clear list of problems and how to fix each:
+
+1) Wrong multiplier in Shipping Productivity (row 86)
+- Problem: E86 uses 0.583043333585248 as the min savings multiplier. All similar rows use 0.16 (16%) for min. That 0.583... looks like a stray/typo value.
+- Effect: Min savings for “Improve Shipping Productivity” is inflated/incorrect.
+- Fix: Change E86 to reference the intended percentage or use 0.16. Example: =C86*C87*C88*0.16 — or, better, =C86*C87*C88*C89 (so it references the cell that holds 0.16).
+- Why: Keeps calculation consistent and maintainable.
+
+2) Missing / wrong input reference for Inventory Float “Your Savings” (row 15)
+- Problem: K15 = (C15/C16)*C17 but C17 is not provided in the extract (blank). E15/G15 use constants (2.1 and 4). K15 will be zero if C17 is empty.
+- Effect: “Your Savings” for Reduce Inventory Float Dollars will be wrong/zero until C17 is filled.
+- Fix: Populate C17 with the number of days you want to use for “Your Savings” (e.g., 3) OR change K15 to reference an appropriate existing input cell if the intended cell is different. Example: K15 = (C15/C16)*C51 if C51 is where you keep the chosen days.
+- Why: Ensure “Your Savings” uses a real input, not an empty cell.
+
+3) Inventory carrying-cost calculations inconsistent / hard-coded constants (rows 131–133)
+- Problems:
+  - C131 is 0.06 while the label reads “Range of Savings = 4-6%” (so 0.04 seems missing). The sheet mixes constants and cell references: E133 = C130*0.04*0.18 (hard-coded), G133 = C130*0.06*0.25 (hard-coded), but K133 = C130*C131*C133 (uses cell values).
+  - This mixes hard-coded numbers and cell inputs, and C131’s content doesn’t match the label (4-6%).
+- Effect: Min/max/“Your” calculations can be inconsistent and confusing; K133 may use different percentages than E133/G133.
+- Fix:
+  - Add explicit input cells for min/max inventory reduction and min/max carrying cost (for example: C131_Min = 0.04, C131_Max = 0.06, C132_Min = 0.18, C132_Max = 0.25).
+  - Change E133 to =C130 * C131_Min * C132_Min and G133 to =C130 * C131_Max * C132_Max. Change K133 to =C130 * (user-selected inventory reduction cell) * (user-selected carrying cost cell).
+  - Or at minimum make E133/G133 reference the existing cells instead of hard-coded constants and correct C131 to the right default (0.04 if it’s supposed to be the min).
+- Why: Keeps min/max/your values consistent and editable.
+
+4) Blank required input cells (multiple rows)
+- Problems found: several base-data cells are blank where formulas expect inputs: C15, C17, C48, C104, C106, C110, C111, C112, C130, C135, C107 etc.
+- Effect: Many totals, subtotals, payback and ROI calculations will be zero or incorrect until those inputs are filled.
+- Fix: Populate those input cells with the correct values. Optionally mark required inputs (fill color or data validation) so users know what must be entered.
+- Why: Formulas depend on these base inputs.
+
+5) Inconsistent use of cell references vs. hard-coded constants
+- Problem: Many formulas use hard-coded percentages (0.16, 0.25, 2.1, 4, etc.) instead of referencing the nearby “Range of Savings” cells (e.g., C12, C57, C63).
+- Effect: Harder to maintain and easier to introduce copy/paste errors (like the 0.583... case).
+- Fix: Replace constants with references to the designated input cells for the saving percentages. Example: E9 = C9*C10*C11*$C$12_min (or simply C12 if C12 stores 0.16). Use absolute references where helpful.
+- Why: Makes workbook consistent, reduces accidental typos, and lets users change ranges in one place.
+
+6) Potential confusion in the summary block column labels
+- Problem: The detailed summary tables (A208 onward) use different column-labeling conventions than the main table (e.g., earlier Min is in column E, but the summary puts Min into column C by pulling E-values into C cells). This is not a formula error but is confusing.
+- Effect: Users can misread the report or copy/paste wrong cells.
+- Fix: Standardize headers (keep Min in column E, Max in G, Avg in I, Your in K) or place clear header text for the summary area and/or add a short comment explaining the mapping. Alternatively, change formulas so the summary displays in the same columns as the detailed table.
+
+Quick checklist to get workbook correct immediately
+1. Fix E86 formula to =C86*C87*C88*C89 (or *0.16).
+2. Fill required input cells (C15, C17, C48, C104, C106, C110, C111, C112, C130, C135, etc.).
+3. Decide a single approach for min/max/your inputs and update formulas to reference those input cells (especially for inventory carrying cost area E133/G133/K133).
+4. Standardize summary headers or supply comments to avoid confusion.
+
+If you want, I can:
+- Give the exact cell formulas to paste in (showing the corrected formulas), or
+- Produce a short “Required Inputs” list with exact cell addresses (so you can fill them and get the payback/ROI numbers). Which would you prefer?

@@ -1,0 +1,24 @@
+I checked the workbook sheet "total (2)" for formula errors and inconsistencies. Summary and recommendations below.
+
+Findings
+- Incorrect formula in M42:
+  - M42 = L42/347 (value 0.1772334). All other rows in column M use Ln/10. M42 looks like a typo (should most likely be =L42/10) or at least inconsistent with the rest.
+- Consistency issue (possible design choice):
+  - Column L uses =SUM(Bn:Kn) for totals and column M mostly uses =Ln/10. SUM treats blank cells as 0, so rows with missing homework entries are effectively treated as zeros when computing both total and the fixed denominator average (/10). That is consistent across rows (except M42) but may or may not be what you intend:
+    - If you want the average per assigned homework (i.e., denominator = 10 always) the current approach (Ln/10) is correct (except M42).
+    - If you want the student average only over homeworks actually entered, use Ln/COUNT(Bn:Kn) or Ln/COUNTA(Bn:K n) depending on how blanks/zeros are recorded.
+- The averages row (row 47) uses AVERAGE(B3:B45), etc., consistently — however M47 (AVERAGE(M3:M45)) is pulled down by the incorrect M42 value, so M47 will be understated until M42 is fixed.
+
+Rows with notable missing entries (data gaps)
+- Several rows have one or more blank homework cells (treated as zeros by SUM). Example rows with missing B..K entries include: 25, 27, 28 (H/K blank), 42, 45, etc. This is not a formula error but is relevant to how totals/averages are being computed.
+
+Recommended fixes
+1. Fix M42 to match the pattern used elsewhere. For example:
+   - If you want the fixed /10 average: change M42 to =L42/10
+   - If you want average over entered homeworks: change M42 to =IF(COUNT(B42:K42)=0,0,L42/COUNT(B42:K42))
+2. If your intended logic is to average only submitted homeworks, replace the Mn formulas for all rows with Ln/COUNT(Bn:Kn) (or use AVERAGE(Bn:Kn) directly).
+3. After correcting M42, re-evaluate row47 averages (especially M47) to ensure they reflect the intended calculation.
+
+If you want, I can:
+- Provide the exact list of rows that contain one or more blank homework cells, or
+- Produce corrected formulas for column M (either fixed /10 or dynamic by count) and show how M47 changes after the fix.

@@ -1,0 +1,26 @@
+Summary — I found two real errors that can cause wrong labels or broken sequences in the workbook:
+
+1) Numbering typo on the A‑122 sheet (definite bug)
+- Problem: Cell C34 contains the formula =C33-1. That subtracts 1 instead of incrementing, breaking the sequential numbering in column C (you will get the wrong paragraph number at that row and from that row downward).
+- Why it matters: Column C on that sheet is used as the A‑122 paragraph index referenced elsewhere (column G on other sheets). A wrong number here creates incorrect cross‑references.
+- Fix: Edit C34 and change the formula to =C33+1 (so it continues the sequence). Then fill/drag that corrected formula down the rest of column C to restore the proper +1 sequence.
+- Quick check after fix: create a quick test column next to C and verify each row difference is 1 (e.g., in D5 put =C6-C5 and copy down; all results should be 1).
+
+2) Inconsistent use of relative vs absolute references for the repeated header metadata (likely copy/paste/propagation bug)
+- Problem: Some header cells on the pages use absolute references like =A$9 and =E$10 (good), but other similar header pulls use relative references (e.g., =I12 or =H12 instead of =I$12 or =$I$12). If you copy those header blocks between sheets or rows the relative refs will shift and show wrong values.
+- Why it matters: The workbook depends on consistent header metadata across pages. A relative reference will produce wrong header text on copied pages and confuse downstream mappings.
+- Fix options (pick one):
+  - Best-practice: Replace those relative references with absolute references that point to the single authoritative header cell (for example =Sheet1!$I$12 or =$I$12 if headers are on the same sheet). This prevents shifting when copied.
+  - Even better: Create named ranges for the header cells (e.g., Name cell I12 as Header_Templates) and use =Header_Templates everywhere. That is robust and readable.
+- How to implement (quick steps):
+  1. Use Find (Ctrl+F) for formulas like =I12, =H12 (or inspect the header rows) to find occurrences.
+  2. Replace each with either =SheetName!$I$12 (specifying the sheet that actually stores the master header) or assign and use a named range.
+  3. Test: copy the header block to another sheet or row — values should not change.
+
+Optional additional checks (recommended)
+- Scan A‑122 column C for duplicates or out-of-sequence values (conditional format or formula: flag if Cn-Cn-1 <> 1).
+- On the sheets where headers are mirrored, check a few cells (e.g., A83, B83, I83) after your fixes to confirm the correct master values show everywhere.
+
+If you want, I can:
+- Give the exact Replace/Find strings for your workbook (list of cells to change), or
+- Create a tiny macro to correct C34 and convert header references to named ranges automatically.

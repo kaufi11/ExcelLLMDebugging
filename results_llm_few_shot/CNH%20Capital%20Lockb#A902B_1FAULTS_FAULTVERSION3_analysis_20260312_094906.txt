@@ -1,0 +1,33 @@
+Summary — found 2 real problems and one best-practice fix:
+
+1) Wrong hard-coded total days (clear error)
+- Faulty cell: C29 = 5 (hard-coded)
+- Why wrong: every other "Total days float" cell is clearing float + mail float. For Midwest→California the formula was replaced by 5 instead of adding C7 (clearing float for CA) + C13 (Midwest→CA mail float). That gives the wrong float and cascades into wrong opportunity-cost numbers in column C for Midwest.
+- Fix (repair formula): C29 = C$7 + C13
+- Explanation: uses California's clearing float (C7) plus the Midwest→California mail-float (C13) to compute total days.
+
+2) Fragile / inconsistent references in check-processing and opportunity-cost formulas (can produce wrong results if you copy formulas)
+- Examples of problematic formulas you have (they work now but are inconsistent): B39 =$C17*B$6 , C39 =$C17*C$6 , B40 =$C18*B$6 ...
+- Why it’s risky: some references lock column only ($C17) or not at all; if you copy formulas around or restructure the sheet they can shift incorrectly and produce wrong values.
+- Recommended consistent formulas (use absolute references where appropriate):
+  - Opportunity cost (use cost of capital fixed, average-daily for region and total-days float):
+    - B33 = $C$21 * $B17 * B27
+    - C33 = $C$21 * $B17 * C27
+    - B34 = $C$21 * $B18 * B28
+    - C34 = $C$21 * $B18 * C28
+    - B35 = $C$21 * $B19 * B29
+    - C35 = $C$21 * $B19 * C29
+  - Check-processing cost (yearly checks × per-check fee):
+    - B39 = $C$17 * B$6
+    - C39 = $C$17 * C$6
+    - B40 = $C$18 * B$6
+    - C40 = $C$18 * C$6
+    - B41 = $C$19 * B$6
+    - C41 = $C$19 * C$6
+- Explanation: $C$21 locks the cost-of-capital cell; $C17/$C18/$C19 lock yearly-checks so copies always use the right check counts; B$6 / C$6 lock the per-check fee row while allowing column change.
+
+Quick verification steps
+- After fixing C29 and applying the recommended formulas, check B45:C47 (opportunity + processing totals) and the objective H52 — they should update correctly.
+- If you plan to copy formulas across or down, use the absolute references shown to avoid accidental shifts.
+
+If you want, I can give you the exact one-line formulas to paste into each faulty cell or produce a corrected version of the objective/result numbers.

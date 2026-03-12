@@ -1,0 +1,24 @@
+I reviewed the sheet and found the two clear formula errors and one common data/locale pitfall. Short fixes below.
+
+1) Wrong sign in J39 (Setup total)
+- Problem: J39 = -J25 - J35 (it negates the total). All other “Total Error Inputs” columns (B39, C39, K39, L39) use + sums. This makes the Setup column totals and any dependent results (J40, J41, etc.) incorrect.
+- Fix: change J39 to =J25+J35
+- Why: J39 is intended to be the sum of non‑compensatable and compensatable items for the Setup column. Using minus flips the sign and makes downstream results wrong.
+
+2) Inconsistent column references in P10 (Receive Asrtn prd)
+- Problem: P10 = +P12 - C16 - C17 mixes P‑column results with raw C‑column terms. Most of the P‑method formulas subtract P‑column noise/skew terms (P16, P17) not the C‑column ones. This likely under/over‑subtracts because C16/C17 are the Fast‑160 raw numbers, not the computed P‑method values.
+- Fix: if P column is the “Method 1” computed path, change P10 to use the P equivalents: =P12 - P16 - P17
+- Why: keeping all terms from the same method/column ensures you are subtracting the computed receiver noise and crosstalk for the Method 1 chain, not the unrelated Fast‑160 raw numbers.
+
+3) Locale / numeric formatting check (common pitfall)
+- Problem: Many numeric entries use comma decimals (e.g., "12,5 ns", "3,125"). If your Excel locale expects dots (12.5) those cells may be text and formulas will misbehave.
+- Fix: verify the workbook locale or replace comma decimals with dot decimals (or convert text to numbers). To check quickly: use ISNUMBER(cell) or try Data → Text to Columns to convert.
+- Why: non‑numeric values silently break SUMs and arithmetic and produce unexpected blanks/zeros.
+
+Quick checklist to finish:
+- Update J39 formula as above.
+- Decide whether P10 should reference P16/P17 (recommended). If not sure, verify intended logic for that cell.
+- Scan other cross‑column formulas for similar mixing of C vs P vs J/K/L columns—look for any cell that subtracts Cxx where the rest of the column uses Pxx (or vice versa).
+- Confirm all numeric inputs are actual numbers (no commas-as-text).
+
+If you want, I can (a) give a short list of every formula that mixes columns (C vs P vs J/K/L) so you can verify intent, or (b) show the corrected formulas for the few dependent cells (J40/J41/P15/P16/etc.) after applying the fixes. Which would you prefer?

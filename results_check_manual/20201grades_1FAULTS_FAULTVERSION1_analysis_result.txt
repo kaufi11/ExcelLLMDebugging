@@ -1,0 +1,71 @@
+I reviewed the formulas and the entered values in both sheets and found several formula problems / inconsistencies and a number of suspect data entries that will affect numeric totals. Summary (by issue type) plus specific cells to check and suggested fixes:
+
+1) Inconsistent SUM ranges (likely accidental omission)
+- Sheet1!T5 =SUM(E5:S5) — This is the only T-row that excludes column D. Almost all other rows use =SUM(D#:S#) (e.g. T6, T7, T8...). As a result D5 (Review = 10) is not included in that student's assignment total. Likely should be =SUM(D5:S5).
+
+Suggested fix: change Sheet1!T5 to =SUM(D5:S5) (or make all T# formulas consistent).
+
+2) Non-numeric/text values inside numeric sum ranges (these are ignored by SUM)
+Several cells intended to be numeric contain text like "X", "x", "+ X", "#", "x  #", ".", etc. SUM ignores these, so totals will silently omit those items. Check whether those entries are placeholders/missing-data markers or accidental text.
+
+Notable examples (not exhaustive; review all rows with BG:BL and BN:BR ranges):
+- Sheet1:
+  - BL7 = "X" (affects BM7 =SUM(BG7:BL7))
+  - BL8 = "X" (affects BM8)
+  - BL15 = "+ X" (affects BM15)
+  - BL17 = "+" (affects BM17)
+  - BR6 = "#" (affects BS6 =SUM(BN6:BR6))
+  - BR7 = "x  #" (affects BS7)
+  - BR8 = "x" (affects BS8)
+  - BR9 = "#" (affects BS9)
+  - BE8 = "x" (affects BF8 =SUM(BB8:BE8))
+  - BE11 = "x" (affects BF11)
+  - AZ13 = "x" (affects BA13 =SUM(AV13:AZ13))
+  - BE15 = "x" (affects BF15)
+  - BR15 = "x" (affects BS15)
+  - etc.
+
+- Sheet2: there are multiple "X" markers in AV..AZ and BB..BE ranges (these are used consistently as placeholders on that sheet but verify intent).
+
+Action: Replace placeholders with numeric values (or use a consistent numeric code such as 0 or NA handled by formulas), or explicitly treat them (e.g. use IFERROR/ISNUMBER logic) so totals reflect intended treatment.
+
+3) Negative / suspicious numeric entries
+- Sheet1!BE16 = -2 (included in BF16 =SUM(BB16:BE16)) — negative assignment/lab score is unusual. Confirm whether this was entered intentionally (penalty) or is a data error.
+
+4) Hard-coded denominators vs. header references (inconsistent and fragile)
+- Sheet1 often uses hard-coded denominators: e.g. U# formulas use =T#/150*100, AR# uses =AQ#/350*100, BU# uses =BT#/400*100 and CF# uses =CE#/830*100. Those numbers (150, 350, 400, 830) appear in header rows (AF1/AQ2/BT?/CE4 etc) but are not referenced. If you change the header totals, many percent formulas will not update.
+- Sheet2 is more consistent in using absolute header references in many places (e.g. U5 =T5/$T$1*100, AR5 =AQ5/$AQ$1*100, BU5 =BT5/$BS$1*100 and CF5 =CE5/$CE$1*100).
+
+Suggested fix: replace hard-coded constants with absolute references to the header cells (e.g. =T5/$AF$1*100 or =T5/$T$1 if you keep standard header cells). This prevents mismatch if you adjust the point totals.
+
+5) Mixed use of ranges and headers for totals
+- Sheet1: header totals are in AF1 (150), AO1 (200), AQ2 (350), BZ4/CA4/CB4/CE4 etc. But percent formulas do not always reference these cells. (see item 4)
+- Sheet2: header CE1 =T1+BS1+AQ1 (computes 410) — verify whether "current =" is intended to match CE4 (800) or is a different running subtotal; this is not a formula error but could be confusing.
+
+6) Cells summing ranges that include blank columns beyond the intended set
+- Example: Sheet1!BA3 =SUM(AV3:AZ3). AZ3 is not shown explicitly; if AZ3 is blank or a marker this may be intended, but double-check that your AV:AZ ranges are the intended columns each time.
+
+7) Placeholders / annotations in numeric columns
+- Several columns meant for numeric scoring contain student names, IDs, or repeated names (this is fine in labelled columns), but watch out for labels in numeric columns if you later run numeric-only analyses.
+
+8) AVERAGE ranges include blank rows at the bottom
+- Example Sheet1!U22 =AVERAGE(U5:U21) — your last student row appears to be row19; averaging through U21 likely includes blank cells which AVERAGE ignores, but it's clearer to restrict ranges to the actual student rows (e.g. U5:U19) or use dynamic ranges.
+
+9) Miscellaneous / recommended checks
+- Verify that all per-component totals at the right (BZ..CD ranges on Sheet1) add up to your expected grand total (CE4 = 830 on Sheet1). I checked several rows and the arithmetic matches given the current entries (subject to the text placeholders and the T5 omission).
+- Check BM and BS sums where the BL and BR cells contain text: the SUMs ignore those texts; if those texts were intended to represent points (e.g., "X" meaning extra credit), they must be numeric or handled explicitly.
+- Where you have "x" or "X" meaning missing/incomplete work, consider using a consistent numeric code (e.g. 0) or an IF(ISNUMBER()) wrapper so the behavior is explicit.
+
+Concrete recommended edits (quick list)
+1. Fix Sheet1!T5 to =SUM(D5:S5) (or make all T# formulas consistent).
+2. Replace textual placeholders ("X", "x", "+ X", "#", ".", "x  #") in numeric ranges with proper numeric values or a handled marker; or change SUM formulas to treat them properly (e.g. SUMIF(range,">=0") or use VALUE with error handling).
+3. Confirm negative value Sheet1!BE16 = -2 (intentional?).
+4. Replace hard-coded denominators with absolute references to header total cells (e.g. replace occurrences of /150, /350, /400, /830 with /$AF$1, /$AQ$2, /$BT$1, /$CE$1 or wherever the corresponding header totals live).
+5. Review averages and ranges (AVERAGE(U5:U21) etc.) to ensure you average exactly the intended student rows.
+
+If you want, I can:
+- produce a list of all non-numeric values found in numeric ranges (full inventory) so you can correct them,
+- propose corrected formulas (apply the header-references consistently),
+- or generate a corrected copy (with T5 fixed, placeholders replaced by 0, denominators replaced by header references) for you to inspect.
+
+Which follow-up would you like?

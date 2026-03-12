@@ -1,0 +1,29 @@
+Summary of the problem
+- The sheet balances (D178 = D283), but the reconciliation/check area in column H uses hard-coded totals that do NOT match the actual totals — so the visible “check” can be wrong while the sheet itself is correct.
+- This is a design/error risk: hard-coded control totals can hide reconciling differences when the sheet changes.
+
+Concrete examples from your sheet
+- H285 is a hard-coded number 3,855,164.52 (labelled "ASSETS =") but actual Total Assets (D178) = 3,853,714.52.
+- H286 is also hard-coded 3,855,164.52 (labelled "LIABILITIES/CAPITAL") but actual D283 = 3,853,714.52.
+- H287 = H285-H286 therefore shows 0 (matching the two hard-coded numbers) even though the hard-coded numbers differ from the real totals.
+- You do have a correct formula check later (H289 = D178; H290 = -D283; H291 = SUM(H289:H290)), which will show zero, but the earlier hard-coded check is misleading.
+
+Why it is an error / why it matters
+- Hard-coded totals will not update when the underlying data changes. That can mask misstatements or make debugging confusing.
+- Users reading H285–H287 may think the sheet reconciles because H287 = 0, while that “reconciliation” is based on stale numbers.
+
+Simple fix (step-by-step)
+1) Replace the hard-coded cells with references:
+   - Set H285 = D178
+   - Set H286 = D283
+   - Set H287 = H285 - H286 (or simply =D178 - D283)
+   This makes the check dynamic and always reflects the real totals.
+
+2) (Optional but recommended) Remove one of the duplicate reconciliation checks to avoid confusion. You already have H289:H291 that checks D178 vs D283. Keep one clear, formula-driven check (for example use H285..H287 only), not two different ones.
+
+Additional recommended improvements (short)
+- Replace long explicit additions (A11, A43, etc.) with SUM ranges where appropriate (for readability and to avoid accidentally omitting an account). Example: if accounts for receivables are contiguous, use =SUM(D99:D113) instead of long D98+D99+... (but be careful to exclude any accounts that intentionally sit outside the range).
+- Avoid entering numeric totals manually anywhere on the sheet. Always reference the calculated subtotal cells.
+
+If you want, I can:
+- Provide the exact formulas to paste into H285:H287 and show how to convert a few long addition formulas to SUM ranges safely.

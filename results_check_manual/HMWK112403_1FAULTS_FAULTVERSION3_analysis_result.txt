@@ -1,0 +1,32 @@
+I checked every formula in the provided sheet. There are no Excel error values (#REF!, #DIV/0!, #VALUE!, etc.), no circular references, and the arithmetic in the formulas matches the displayed values. All SUMs and arithmetic formulas compute the values shown.
+
+I did find a few stylistic / logical inconsistencies and places that are fragile (hard-coded constants or mixed-column references) that could lead to future errors if the sheet is edited. Items to review or improve:
+
+1. Hard-coded constants used instead of cell references
+ - H7 (=47500*0.15) uses the literal 47500. The spreadsheet also shows "47,500 outstanding" in text (A39) but not as a numeric cell. Recommend putting 47500 in a cell (e.g. F? or separate cell) and referencing it so the dividend calculation updates if outstanding shares change.
+ - F42 (=100000-20000-7125) and several other formulas use literal numbers (100000, 20000, 7125). Those appear to be derived elsewhere (e.g. E49/E55/E63 etc.). For robustness, reference the source cells instead of hard-coding.
+
+2. Mixing columns for related items (potentially confusing)
+ - F45 =SUM(F41:F44) - E43 subtracts E43 (Treasury Stock value in column E) rather than a same-column (F) cell. It works (E43 has the amount), but mixing columns for components of one total is fragile and can be confusing. Consider moving or mirroring the treasury stock amount into column F and referencing that.
+
+3. Redundant / inconsistent formula style
+ - E73 and E74 use the redundant leading plus (e.g. =+E49+E52+E57). Not an error, but inconsistent style.
+ - Some derived cells are entered as values rather than formulas (manual copies):
+   - G7 and H7 both show 7125; H7 is computed (=47500*0.15) while G7 is a manual value. If they represent the same calculated amount they should both reference the same formula/source.
+   - E60 is 39000 (cash) while D59 is 39000 (treasury stock). E60 could be =D59 to make the relation explicit.
+   - L10 is a plain value (5000) included in L12's SUM(L7:L11). Consider making L10 a formula if it is derived elsewhere.
+
+4. Potentially unintended ranges or omissions
+ - B10 =SUM(B7:B9) — B9 is blank in the extract; that’s fine as-is, but confirm B9 is intentionally blank and not missing a value/formula that should be included.
+ - H19 =COUNT(H17:H18) returns 2 (the count). If the intention was to total amounts rather than count entries, use SUM.
+
+5. Minor consistency checks
+ - Several computations that look like they should be inter-related across the two company sections are done by repeating the arithmetic rather than referencing the prior results (e.g. E73/E74 sum values from E49/E52/E57 / E50/E53/E58 — they do reference those cells, which is good; other places do not). Consider standardizing the approach to use references everywhere.
+
+Summary
+ - No formula errors found; all formulas produce consistent numeric results.
+ - Recommendations: replace hard-coded numbers with references, keep related line items in the same column (or explicitly link them), and convert manual duplicate values into formulas to reduce risk of inconsistencies on edits.
+
+If you want, I can:
+ - produce a list of specific cells to change to cell references, and show the exact replacement formulas; or
+ - create a cleaned version of the workbook (with suggested changes applied). Which do you prefer?

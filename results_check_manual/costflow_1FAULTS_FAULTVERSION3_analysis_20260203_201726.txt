@@ -1,0 +1,75 @@
+I reviewed the three sheets and found the main, real problems: sign inconsistencies and many incorrect/mis-copied cell references (mostly from copy/paste). Below are the most important errors (what’s wrong), the exact fixes (what to change), and short explanations of why those fixes work.
+
+Sheet: Errors
+1) Problem: Expenses in Year 2 are entered as positive numbers.
+- Cells: B37, D37, F37 contain 125000 (positive) but the label in column A is “-Expenses”.
+- Effect: Pretax Income, Taxes and Net Income for Year 2 are too high (expenses are being added instead of subtracted).
+
+Fix:
+- Change B37, D37, F37 to -125000 (put a minus sign).  
+- Or replace with formula =-125000.
+
+Why: All the Year 1 expenses are negative (e.g. B18 = -100000). To subtract expenses from gross profit you must keep the sign consistent (negative). Using a positive number adds the expense instead of subtracting it.
+
+Sheet: Valuing Ending Inventory (biggest sheet)
+There are many incorrect references which look like copy/paste offsets. I’ll call out the key ones that break the calculations and give exact corrected formulas.
+
+2) Problem: Weighted average (top section) — the “Units / Unit cost / Extended” columns reference the wrong rows.
+- Wrong formulas:
+  - I8 = +C11  (should not point to C11)
+  - K8 = +E10 (should not point to E10)
+  - I9 = +C14
+  - K9 = +E14
+- Consequence: average unit cost, totals and everything downstream are wrong because beginning and purchase unit/cost are not being pulled from their own rows.
+
+Fix (exact replacements):
+- I8 → =C8
+- K8 → =E8
+- I9 → =C9
+- K9 → =E9
+- After fixing those, ensure:
+  - I10 = SUM(I8:I9)
+  - K10 = SUM(K8:K9)
+  - J10 = K10 / I10
+
+Why: I8/I9 should show the units for those specific rows (C8, C9). K8/K9 should show the extended cost for their own rows (E8, E9). Using the correct row references restores correct totals and the weighted-average unit cost.
+
+3) Problem: Ending inventory units and COGS use inconsistent sign logic.
+- Example: I11 = -I10 - SUM(C17:C18)
+- Sales in C17:C18 are entered as negative numbers (e.g., -4000, -7000). Because of that, the formula becomes confusing and easy to get wrong.
+
+Fix (pick one consistent convention):
+Option A — make sales positive and compute:
+- Change C17 → 4000 and C18 → 7000 (positive units sold).
+- Then set I11 = I10 - SUM(C17:C18)
+Option B — if you keep sales negative, use:
+- I11 = I10 + SUM(C17:C18)   (because SUM(C17:C18) is negative)
+Explain to user: choose one convention and use it everywhere.
+
+Why: Mixing negative sales values with extra minus signs is the main reason the units formulas look inverted. Use a single sign convention to avoid double-negatives.
+
+4) Problem: Missing or “?” formulas and many downstream references depend on the wrong cells.
+- Examples: K11 = ? , K12 = ? ; J8/J9 used K8/I8 but K8 was wrong; many later blocks (Weighted avg periodic, FIFO periodic, etc.) repeat the same offset errors.
+Fix approach:
+- Fill K11 with the correct ending-extended-cost cell (once E11 is correct). Typically K11 should be =E11 (or =-E29 depending on your layout).  
+- For each block (Weighted average periodic, FIFO, LIFO, Perpetual sections) check that each "Units" column references the C (Units) for the same row, and each "Extended" column references the E (Cost*Units) of that row. Replace any references like C11, C14, E10, E14 that are incorrectly pointing to totals with the correct row references.
+- The general rule: for row X where Units are in column C and Unit cost in D:
+  - Units column (I, C, or whichever mirror column) should be =C[row X]
+  - Extended column (K or E mirror) should be =C[row X]*D[row X] or =E[row X] if E already has the product.
+
+Why: Many cells were shifted when copying formulas, making averages and COGS cascade incorrectly. Fixing the base-row references fixes all totals.
+
+Sheet: NetIncome and Cash Flow
+5) Problem: no critical formula errors here, but because Valuing Ending Inventory has the wrong COGS in earlier sheet, the COGS numbers (B21 etc.) are suspect. Ensure C21 values are pulled from the Valuing Ending Inventory sheet outputs (and that those outputs were fixed).
+
+Other general tips (short and practical):
+- Use positive numbers for physical units (sales should be positive counts) and use formulas to subtract them; it’s less error-prone.
+- When calculating ending inventory units: EndingUnits = UnitsAvailable - UnitsSold (clear and simple).
+- Avoid hardcoding sums that include signed numbers (e.g., do not put the ending inventory as a negative cell if you can instead subtract it in the formula; or be consistent everywhere).
+- For debugging: trace precedents in Excel (Formula > Trace Precedents) to find off-by-row references.
+
+If you want, I can:
+- Provide a corrected list of exact replacement formulas for the entire Valuing Ending Inventory sheet (I can produce a full mapping).
+- Or produce a cleaned copy of the workbook (list all corrected cells / formulas).
+
+Which would you prefer?

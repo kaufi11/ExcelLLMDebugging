@@ -1,0 +1,58 @@
+I examined all formulas in the workbook you provided and found a few real problems and a handful of minor inconsistencies (range off-by-one, missing data used by formulas, inconsistent rounding). Summary below with exact cells and recommended fixes.
+
+1) Primary (real) error — mismatched SUM vs COUNT ranges in "900 Class"
+- Problem:
+  - L81 = =SUM(L4:L39)+SUM(L44:L79)
+  - L82 = =COUNT(L4:L40)+COUNT(L44:L79)
+  - These ranges do not match: the SUM excludes L40 while the COUNT includes L40.
+- Effect:
+  - L83 (=L81/L82) uses a sum that misses an item while the denominator counts it → wrong average. That propagates to L85 (adjustment) and therefore to every M# formula that uses L$85 (all adjusted exam scores in this sheet).
+- Recommendation:
+  - Make the SUM and COUNT cover the same cells. If L40 is a data row that should be included, change L81 to include L40 (e.g. SUM(L4:L40)+SUM(L44:L79)). If L40 is a header/should be excluded, change L82 to COUNT(L4:L39)+COUNT(L44:L79).
+
+2) Missing / manually-handled grades that break automation
+- Sheet "1030 Class"
+  - N33 contains text "Must be hand graded" and M33 is blank. That row will be ignored by the automatic adjustment/normalization formulas — this is a manual exception and is likely intentional, but worth noting.
+- Many rows across sheets have empty L (raw) cells and blank M results (e.g. rows in all class sheets where L is blank and M is " "). Those blanks reduce the COUNT or are treated as 0 depending on formula — verify whether blank should be excluded (COUNT) or treated as zero (SUM). (This is not a formula error per se but can lead to incorrect averages if blanks represent missing data instead of 0.)
+
+3) Inconsistent ranges / headers duplicated mid-sheet (possible source of range mistakes)
+- In all three class sheets the header rows are repeated partway down the sheet (e.g. the same column headers appear again around row ~40). That explains why the SUM/COUNT ranges are broken into two ranges (SUM(L4:L39)+SUM(L44:L79) etc.). This layout is fine but makes it easy to get an off-by-one mistake — as happened in 900 Class. Double-check all SUM/COUNT ranges that are split into two parts to ensure identical endpoints for both SUM and COUNT.
+
+4) Minor inconsistency: different multipliers precision across sheets
+- The scaling multiplier used in the M column formulas differs slightly between sheets:
+  - "900 Class" uses *3.33333
+  - "1030 Class" uses *3.333333
+  - "Noon Class" uses *3.3333333 (and in one place *3.333333)
+- Effect: negligible numeric difference due to rounding, but inconsistent. For clarity/consistency use a single consistent multiplier (recommended: 100/30 = 3.333333333... or 3.333333).
+
+5) Slightly odd construction of the "target" adjusted cell in "Noon Class"
+- M84 = =(L82+L84)*3.3333333
+  - Algebraically this equals L83 * 3.3333333 (because L83 = L79/L80 and L84 = L83 difference etc.). That appears intended (produce 75 scaled). It's not a bug but it's less transparent than simply writing the intended constant (e.g. =22.5*3.3333333 or =75). It's fine but worth noting.
+
+6) Sheet1: formulas referring to potentially-missing cells
+- Several W-row formulas sum N+P+R+T+U+V (e.g. W6 = N6+P6+R6+T6+U6+V6). In many rows some of those referenced cells (T, U, V, X) are blank. Excel treats blank as zero so the formula returns a numerical sum, but if those blanks are supposed to contain data the result will be wrong.
+- Examples:
+  - Row 8: X8 is blank but used in Y8 = (W8 - X8)/3. Because X8 is blank Excel uses 0; check whether X8 should be the lowest exam value (if so, it should be filled).
+- Recommendation:
+  - Either ensure all component cells (T, U, V, X) are filled where intended, or change the summing formulas to only sum the known columns (or use SUM of a contiguous range where appropriate). Consider using AGGREGATE/SMALL or IFERROR tests if blanks are expected.
+
+7) Miscellaneous / housekeeping items
+- A number of rows in class sheets show " " or "   " or text placeholders in cells that are part of ranges used by SUM/COUNT. These are treated as blanks (COUNT ignores text), but they make it harder to reason about ranges. Consider clearing placeholder text in numeric columns or explicitly using COUNTIF to count numeric entries.
+- Consistent absolute cell references: each class sheet uses a different cell (L85, L81, L84) for the adjustment constant — that is fine if intentional, just be aware formulas in each sheet depend on that particular cell.
+
+Actionable checklist (what to change)
+1. On sheet "900 Class":
+   - Fix L81 and/or L82 so SUM and COUNT use identical ranges. (Likely change L81 to SUM(L4:L40)+SUM(L44:L79) or change L82 to COUNT(L4:L39)+COUNT(L44:L79), depending whether L40 is data.)
+2. On each class sheet:
+   - Decide on a single multiplier precision (e.g. 3.333333) and apply it consistently.
+3. Sheet1:
+   - Review rows where X (lowest exam) or T/U/V are blank but are used in formulas; fill missing values or adjust formulas.
+4. Check manual exceptions:
+   - For rows like 1030!N33 ("Must be hand graded") confirm manual entry will be applied and document the exception.
+
+If you want, I can:
+- Suggest the exact corrected formula(s) for the 900 sheet (I can produce the corrected L81 and L82 formulas),
+- Scan and list every row where formula references a blank cell (so you can see where missing data affects results),
+- Or produce a standardized multiplier replacement across all sheets.
+
+Which follow-up would you like?

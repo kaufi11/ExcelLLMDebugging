@@ -1,0 +1,49 @@
+I checked the workbook formulas and flagged the formula errors and suspicious inconsistencies I could find. Summary of the findings, with locations, effects and suggested fixes:
+
+1) Incorrect use of COUNT instead of SUM — likely a real error
+- Sheet: 1856 — Cell: H25
+  - Current formula: =COUNT(H9:H24)
+  - Issue: This returns the number of numeric cells (16) instead of totaling the revenue values in H9:H24.
+  - Effect: Any downstream totals that use '1856'!H25 (for example Summary and other rollups) will show the count (16) rather than the true revenue total for that period/column. I can see Summary (and fund-level totals) displaying 16 in that position.
+  - Fix: Change to =SUM(H9:H24) (or otherwise supply the correct aggregation). Verify dependent totals after change.
+
+2) Potentially fragile 3D SUM ranges depend on sheet order
+- Examples: Summary uses formulas like =SUM('1003':'1856'!D6:D6), =SUM('1003':'1856'!D28:D28), etc.
+  - Note: 3D ranges ('FirstSheet':'LastSheet'!Range) include all sheets between those two sheets in workbook tab order. If the workbook's tab order changes or additional sheets are inserted between 1003 and 1856, these SUMs will include/exclude unexpected sheets.
+  - Recommendation: Confirm workbook sheet order is intentional and stable; if not, replace with explicit sheet references or named ranges.
+
+3) Inconsistent use of SUM vs manual / COUNT in individual fund sheets
+- Example: Sheet 1856 H25 uses COUNT (see #1). Many other fund sheets have totals calculated with SUM; 1856 is inconsistent.
+  - Effect: Summary aggregation depends on consistent per-sheet totals; mixing COUNT/manual results can produce incorrect consolidated numbers.
+  - Recommendation: Audit the other per-sheet total rows (Total Revenues, Total Expenditures, Net Transfers) to ensure they are SUMs of their detailed lines (and not COUNT or manual entries). If some totals are hard-coded, document that or convert to formula-driven totals.
+
+4) Cells with manual/hard-coded totals (risk of becoming stale)
+- Numerous fund sheets contain hard-coded figures for group totals (e.g., 1003 D28 = 85,170,272 is input as a value, not a SUM of the section). Examples appear in many sheets (D28, D35, D72 etc).
+  - Issue: If the underlying lines change but the hard-coded total is not updated, rollups will be wrong.
+  - Recommendation: Where possible replace those manual totals with SUM formulas (e.g. =SUM(D41:D52) or similar) so subtotals update automatically, or mark them as intentional overrides.
+
+5) Repeated labels and multiple totals — potential for confusion
+- Sheet: Summary
+  - There are two “TOTAL EXPENDITURES” blocks: one by function (D42 = SUM(D30:D41)) and one by object class (D61 = SUM(D45:D60)). They currently match numerically, but having the same label twice can be confusing.
+  - Recommendation: Add clarifying labels (e.g., “TOTAL EXPENDITURES — by function” and “TOTAL EXPENDITURES — by object class”) or cross-check that these should always match and why.
+
+6) Floating point artifacts in some cells (display precision)
+- Example: Sheet 1043 H6 / I6 show 2.03000000119209
+  - Cause: Binary floating point arithmetic.
+  - Recommendation: If these tiny tail digits are undesirable, format cells to fewer decimals or wrap with ROUND(..., 2) where appropriate.
+
+7) Suspiciously large values duplicated in unrelated rows (spot-check)
+- I noticed some large values appear in places you might not expect (for example 1043 G65 = 22073880); I could not determine from the export whether these are intentional or pasted by mistake.
+  - Recommendation: Do a targeted check of unusually large numbers in rows where small amounts are expected (repairs, communications, supplies, etc.), and verify those entries against source data.
+
+What I would do next (if you want):
+- Correct H25 on sheet 1856 to =SUM(H9:H24) and recalc the workbook, then re-run the summary totals to see the impact.
+- Run a quick scan to find any other cells using COUNT on ranges that should be summed.
+- Optionally produce a short list of hard-coded totals (cells with values but no SUM formula) so you can decide which to convert to formulas.
+
+If you want, I can:
+- Apply the H25 fix and show the changed totals (or show which summary numbers change), or
+- Produce a list of all cells that are hard-coded totals (values where a SUM would be expected), or
+- Scan for any other COUNT usage/range-aggregation mismatches.
+
+Which follow-up would you like?

@@ -1,0 +1,19 @@
+Summary — main error found
+- Cell J41 contains a wrong formula: it shows "553−B41" instead of subtracting the moraine crest (I41). That produces a meaningless thickness (553 − 9860 = large negative) instead of the expected I41 − B41.
+
+Why this is wrong
+- Column J is supposed to be "Ice Thickness from Moraine" = I − B. Using the constant 553 breaks that rule and makes the comparison between modeled and observed thickness invalid.
+
+How to fix it
+- Change J41 to:
+  = I41 - B41
+  (or copy the correct J formula from another row and paste into J41)
+
+Other recommendations (short and practical)
+1. Check column J for any other hard-coded constants — replace any "number − Bx" with =Ix − Bx so all rows follow the same pattern.
+2. Prevent division-by-zero in the Change (F) formulas. If H(previous) can be zero, wrap F formulas like:
+   =IF(H_prev<=0, "", 22.1*(E/(H_prev*C))*D)
+   This avoids #DIV/0 errors and makes the spreadsheet safer if initial thicknesses are zero.
+3. If you want consistency and easier editing, convert the model rows to a table and fill-down the formulas for E, F, G, H and J so you don't accidentally overwrite a single cell with a wrong constant.
+
+If you want, I can give the exact corrected formulas for F/G/H/J with the IF-protection and show how to fill them down.

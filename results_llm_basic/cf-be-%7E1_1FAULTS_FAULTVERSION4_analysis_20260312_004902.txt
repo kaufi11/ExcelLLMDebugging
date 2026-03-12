@@ -1,0 +1,51 @@
+I reviewed the three main workbook areas (Year 1, Year 2 and the Variance sheets). I found a few real errors (some typos / mis‑references) plus a number of sloppy formulas that can cause circular references and DIV/0 errors. Below are the problems, why they are wrong, and how to fix them. Short and actionable.
+
+1) Critical: circular reference in Year 1 — beginning cash for month 1
+- Problem: Year 1 cell B6 (CASH ON HAND - beginning of month for month 1) is =SUM(B55). But B55 is "CASH POSITION END OF MONTH" for the same month, and B55 is calculated using B6. That creates a circular reference (beginning → end → beginning) and Excel will either return an error or wrong iterative result.
+- Fix: make B6 an input (the actual starting cash) or point it to a dedicated "Opening cash" input cell (not to B55). Example: replace =SUM(B55) with a fixed number (e.g. 10,000) or with =Inputs!$B$2 (if you store startup cash on an Inputs sheet). Then keep C6 = B55, D6 = C55, etc. 
+- Why: beginning-of-month must be known before computing that month's receipts and payments; it cannot depend on that same month's computed ending balance.
+
+2) Typo/hardcoded result in Year 1 month 3 end-of-month
+- Problem: Year 1 E55 is =3 (hardcoded). All other end‑of‑month rows use B55 = B15-B54 pattern. E55 being 3 is almost certainly a mistake.
+- Fix: change E55 to the correct formula: =E15 - E54 (or simply =E15-E54). That makes month 3 consistent with other months.
+
+3) Wrong row/column references (shifted formulas)
+- Problem: Several total (O-column) formulas are pointing to wrong row ranges (a row shift). Example you already listed: Year 2 row for "Payroll Expenses (Direct Labor)" shows O22 = SUM(C22:N22) while it should be O20 = SUM(C20:N20). There are other similar misalignments (rows 20–22 and some O cells appear shifted).
+- Fix: for each row 17..53 verify O<row> = SUM(C<row>:N<row>) — i.e. the total (O column) for that line must sum the same row's months. Correct any O cells that sum the wrong row. Example: set O20 =SUM(C20:N20), O21 =SUM(C21:N21), O22 =SUM(C22:N22), etc.
+- Why: misaligned totals produce wrong totals in O and then incorrect % of sales and aggregates.
+
+4) Inconsistent use of references for Year 2 opening balance
+- Note: Year 2 B6 uses ='Year 1'!N55. That is expected (carry the final month from Year 1 into Year 2). After you fix Year 1's circular reference/hardcode, confirm Year2 B6 points to the correct Year1 end-of-year cell (the month 12 end balance). If your Year1 month 12 end is in N55, that is OK.
+
+5) Variance sheets: possible DIV/0 and reference consistency issues
+- Problem: variance formulas use (D-C)/C (or (D8-C8)/C8) without handling C=0. If the base cell is zero, you'll get #DIV/0!. Also some variance sheets copy formulas that reference the wrong months (make sure each actual & base column point to the correct Year 1 month).
+- Fix: wrap the variance calculation to avoid divide-by-zero, e.g.:
+  - =IF(C8=0,NA(),(D8-C8)/C8)  or =IF(C8=0,0,(D8-C8)/C8) depending how you want to show it
+  - or use IFERROR: =IFERROR((D8-C8)/C8,0)
+- Why: prevents #DIV/0 and makes variance cells robust.
+
+6) Ugly/inefficient use of SUM()
+- Problem: Many cells use =SUM(B6+B14) or =SUM(B15-B54) or =SUM(B55) rather than simple arithmetic or proper ranges. These are not errors per se, but they are confusing and make debugging harder. Also SUM(single arithmetic expression) works but obscures intent.
+- Fix (recommendation): simplify formulas:
+  - replace =SUM(B6+B14) with =B6+B14
+  - replace =SUM(B15-B54) with =B15-B54
+  - replace =SUM(B55) with =B55 (only use SUM for ranges)
+- Why: improves readability and reduces accidental range mistakes.
+
+7) Percent of sales formulas: check absolute references
+- Note: Many P-column formulas are =Oxx/O$57 (divide each item’s total by O$57). That is correct approach (each total divided by total sales in row 57) — just confirm O$57 actually contains total sales. One formula in Year 2 P57 is =+O57/O57 which returns 1 (100%) — that is expected for the Sales row, but double-check the absolute addressing if you intended something else.
+
+Summary of required actions (practical checklist)
+1. Replace Year 1 B6 with the startup cash input (enter the number or point to an input cell). Do not reference B55.
+2. Change Year 1 E55 from =3 to =E15-E54.
+3. Review the O-column totals for rows 17..53 on Year 1 and Year 2 and correct any that sum the wrong row (O<row> should be SUM(C<row>:N<row>)).
+4. In all Variance sheets wrap (new-old)/old with IF(... ) or IFERROR to avoid #DIV/0.
+5. Replace unnecessary SUM(...) wrappers with direct arithmetic for clarity.
+6. After fixes, recalc and confirm that each month’s C6..N6 (beginning cash) equals previous month’s end (B55..M55) and that Year 2 opening B6 equals Year 1 month‑12 end.
+
+If you want, I can:
+- produce the exact corrected formulas for the specific cells listed (I can list them one by one), or
+- produce a minimal changes script/text you can paste-run (like a list of replacements), or
+- examine any one sheet you prefer in more detail (I’ll list every incorrect cell).
+
+Which would you like next?

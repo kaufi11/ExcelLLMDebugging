@@ -1,0 +1,30 @@
+Summary: I found three real errors that will give wrong Q4 scores (and thus wrong final grades). Below are each error, a one-line explanation, the fixed formula, and a short rationale.
+
+1) Q4 Homework — Evans total (Sheet: Q4 Homework, cell H5)
+- Error: H5 contains =1 instead of summing the student’s category scores.
+- Fix: change H5 to =SUM(B5:G5)
+- Why: H5 must total that row’s B–G scores; =1 causes Evans’ homework and all downstream weighted/percent scores to be wrong.
+
+2) Q4 Summary — Points Possible weighted total (Sheet: Q4 Summary, cell F3)
+- Error: formula uses C3*0 (quizzes weight set to 0) so the total possible weighted points is wrong.
+- Current: =B3*0.3+C3*0+D3*0.4+E3*0.2
+- Fix: =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+- Better (robust): =SUMPRODUCT(B3:E3,$B$2:$E$2)
+- Why: the quizzes weight is 0.1 (not 0); SUMPRODUCT ties the calculation to the weight row so it won’t break if weights change.
+
+3) Q4 Summary — Percent calculation uses a hard-coded 300 (Sheet: Q4 Summary, cells G4:G12)
+- Error: percent formulas use (F4/300)*100 etc — that hard-codes the denominator and can become wrong if F3 changes.
+- Fix (example for G4): =F4/$F$3*100  — copy down for G4:G12 and use $F$3 absolute reference
+- Why: using the Points Possible cell (F3) keeps percentages correct and dynamic.
+
+Optional improvements (recommended)
+- Replace each student weighted-score formula (F4:F12) with =SUMPRODUCT(B4:E4,$B$2:$E$2) (and copy down). That avoids hard-coding decimal weights and reduces copy/paste errors.
+- Use consistent absolute references ($) when copying formulas.
+
+Quick verification steps
+1. Fix H5 and F3, update G formulas to use $F$3.
+2. Check that Q4 Summary F3 = 300 and that each student’s F# is in the 0–300 range.
+3. Confirm Q4 Summary G# percentages look correct (e.g., Brantley’s G4 = (F4/300)*100 or =F4/$F$3*100).
+4. Check Year Summary G2..G10 pull updated Q4 percentages and final averages/grades update accordingly.
+
+If you want, I can give the exact formulas to paste into each affected cell and the order to update them.

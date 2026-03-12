@@ -1,0 +1,45 @@
+I reviewed the workbook and found several clear formula errors and a bad header. Below are the problems, why they are errors, and the exact fixes (short and simple).
+
+1) Income sheet — Total Rental Income for 2001 is hard-coded
+- Error: L14 = 1 (should be a sum).
+- Why: breaks Total Income and all downstream subtotals for 2001.
+- Fix: change L14 to =L10+L13
+- Result: L20 and later totals will calculate correctly.
+
+2) OP_EXP (Schedule I) — Operating & Maintenance total (2001) range mismatch
+- Error: L46 = SUM(L33:L44) while J46 = SUM(J33:J43)
+- Why: L46 includes one extra row (L44) so 2001 total is inconsistent with 2002.
+- Fix: change L46 to =SUM(L33:L43)
+
+3) Cash Flows — Investing activities total (2001) range mismatch
+- Error: L45 = SUM(L37:L44) while J45 = SUM(J37:J42)
+- Why: L45 includes extra rows (L43:L44) so 2001 investing total is wrong.
+- Fix: change L45 to =SUM(L37:L42)
+
+4) Balance Sheet — Total Assets formula incorrect
+- Error: J36 = SUM(J23:J35) and L36 = SUM(L23:L35)
+- Why: This range omits the Net Investment in Real Estate component and/or uses wrong rows; total assets must equal Net Investment in Real Estate + Total Other Assets.
+- Fix (preferred, clearer): change to
+  - J36 = J17 + J34
+  - L36 = L17 + L34
+  (Or if you prefer a single SUM, use the full asset ranges that include the investment section, e.g. =SUM(J11:J33), but linking the two subtotal cells is simpler and less error-prone.)
+
+5) Balance Sheet — Partners' Equity subtotal likely wrong / not linked
+- Error: J52 = SUM(J51:J51) (sums only one cell; probably not the actual total equity)
+- Why: Partners’ equity on the balance sheet should link to the total from the Partners' Equity (Exhibit C) schedule, not just copy a single cell.
+- Fix: link this cell to the Partners' Equity sheet total for the correct year. Example (if total is in Stkhold.Equity!O21 for 2002):
+  - J52 = 'Stkhold.Equity'!O21
+  - L52 = 'Stkhold.Equity'!O15  (or whichever cell holds the 2001 total on that sheet)
+- Result: Assets = Liabilities + Partners’ Equity will reconcile when totals are correct.
+
+6) Partners' Equity sheet — heading typo
+- Error: header reads "YEARS ENDED DECEMBER 31, 2001 AND 2001"
+- Why: wrong year shown.
+- Fix: change to "YEARS ENDED DECEMBER 31, 2002 AND 2001"
+
+Why these fixes matter (short):
+- Off-by-one ranges and hard-coded numbers cause totals to omit or double-count rows and break the financial roll-up. Linking subtotal cells (instead of repeating ranges) and fixing the wrong constant restores accurate cascading totals and reconciliations (Assets = Liabilities + Equity).
+
+If you want, I can:
+- Provide the exact cell address on each sheet and paste the corrected formula lines for you to copy/paste.
+- Run a quick check for any other mismatched SUM ranges across the workbook.

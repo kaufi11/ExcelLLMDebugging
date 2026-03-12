@@ -1,0 +1,28 @@
+Summary — two errors found that break the final grades:
+
+1) Wrong function in Q4 Homework H5
+- Error: H5 =COUNT(B5:G5). COUNT returns how many numeric cells (6), not the sum of the student’s homework points. This gives Evans a homework total of 6 instead of 273 and cascades wrong numbers into Q4 Summary and Year Summary.
+- Fix: In Q4 Homework cell H5 use:
+  =SUM(B5:G5)
+  then copy/fill H3:H11 if needed so every student’s total is a SUM.
+
+2) Wrong reference in Q4 Summary weighted-score formulas (F3:F12)
+- Error: Each F cell uses D# twice and never uses E#. Example F4 =B4*0.3 + C4*0.1 + D4*0.4 + D4*0.2. That double-counts the Projects column and omits Homework, producing incorrect weighted totals.
+- Fix (preferred, safer) in Q4 Summary F3 enter and fill down:
+  =SUMPRODUCT(B3:E3,$B$2:$E$2)
+  This multiplies each category by its weight (row 2) and is fill-down friendly.
+  Or explicitly:
+  =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+
+Optional improvement to make percentages robust:
+- Replace G3:G12 (currently (F#/300)*100) with:
+  =F3/$F$3*100
+  and fill down (use $F$3 as the weighted “points possible” reference) — or keep the original if you prefer the literal 300.
+
+Quick check after fixes:
+- Q4 Homework H5 should become 273.
+- Q4 Summary E6 will show 273 and F6 will recalculate correctly (example F6 = 253, G6 ≈ 84.33%).
+
+Why these fixes work:
+- SUM gives the total points for a row (what you intended).
+- SUMPRODUCT or using the correct E cell ensures each category is multiplied by its proper weight (no category is accidentally double-counted or omitted), which fixes the weighted score and final grade calculations.

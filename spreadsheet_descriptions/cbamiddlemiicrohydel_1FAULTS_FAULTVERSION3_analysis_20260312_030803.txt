@@ -1,0 +1,78 @@
+Summary — workbook structure and key calculations
+
+Sheets
+- CBA: Main cost–benefit analysis for a micro-hydro unit (MHU). Year columns run G:AA (2000 → 2020). Left columns (A–F) contain item numbers, descriptions and labels.
+- Individ. Hh. Analysis: Detailed per-household survey data (11 households), fuel/use before & after, appliance ownership, wiring costs and village-level aggregations.
+
+CBA sheet — layout and flow
+- Column headers: E2–F2 contain S# and Description; G2:AA2 are yearly columns labeled 2000…2020.
+- Costs (rows 4–17): items include construction (AKRSP/community contributions), O&M, connection costs, household wiring, tube lights, tube/tubelight unit replacement, energy-saving bulbs, recycling transport/labour, washing machines, butter churners, environmental clean-up, etc.
+  - Key inputs:
+    - AKRSP construction (G5): =240000/0.4825 (1993 → 2000 price conversion).
+    - Community construction (G6): =21780/0.4825.
+    - O&M (H8:AA8): repeated formula =55200-(1200*12)-(600*12)+(500*12); Q8 includes extra sensitivity costs in year 2009 (adds 10000+25000+(500*5)+50000+5000).
+    - Connection costs (H9,I9): =500*15 (assumed half households first two years).
+    - Wiring (H10,I10): =4297*15; some years use alternatives (Q10 =4275*7.5).
+    - Tube lights (H11:AA11): =5.67*30*50*6 (annual replacements).
+    - Tubelight unit replacement (H12:AA12): =5.75*1*30*120.
+    - Energy-saving bulbs (H13:AA13): =4.22*30*12*15.
+    - Recycling transport (H14:AA14): =(500*2)+(60*2).
+    - Washing machines / churners: specific year multipliers × unit prices (3*3000, 5*3000, etc.; churners ×700).
+    - Environmental clean-up (AA17): =0.1*G5+0.1*G6 (applied in 2020 column).
+  - Row 18 (Total costs): per-year sums of rows 5:17, e.g. G18 = SUM(G5:G17); C18 = SUM(G18:AA18) (overall sum).
+
+- Discounting and present value of costs:
+  - Row 19: discount factor at 12% per year (G19 = 1, H19 = G19*(1/1.12), then propagated across years).
+  - Row 20: present value of costs per year = (yearly cost) * (discount factor), e.g. G20 = G18*G19; C20 = SUM(G20:AA20).
+
+- Benefits (rows 23–29): saving on kerosene, saving on batteries, handicraft profits, time saved (washing, butter churning), scrap sales.
+  - Examples:
+    - Kerosene saving (H23:AA23): =(164-26)*30*13 per year.
+    - Battery saving (H24:AA24): =(7.44-0.78)*12*30*18.
+    - Handicraft profits (H25:AA25): =300*12*30.
+    - Time-saving values (rows 26–27): ((hours saved * households * 52)/8)*60 (valued at Rs.60/day converted).
+    - Scrap from bulbs/tubes (row28): 0.1*(tube value + bulb value) per year.
+    - Scrap salvage/specific 2% project scrap (AA29): =0.02*G5+0.02*G6 (entered in 2020).
+  - Row 30 (Total benefits): per-year sums of rows 23:29; C30 = SUM(G30:AA30).
+
+- Discounting and present value of benefits:
+  - Row 31: same DF series at 12%.
+  - Row 32: PV of benefits per year = yearly benefit * DF; C32 = SUM(G32:AA32).
+
+- Summary metrics:
+  - Present value totals: C35 (PV benefits) = C32; C36 (PV costs) = C20.
+  - Benefit–Cost ratio (B/C): C38 = C35/C36 (and per-row G38 = G35/G36).
+  - Net Present Value (NPV): C39 = C35 - C36 (and per-row G39 = G35 - G36).
+
+- Assumptions & Sensitivity (rows 41–85+):
+  - Comprehensive assumptions listing unit prices, household counts (31 households used throughout), replacement frequencies, valuations (kerosene, batteries, firewood, gas), and rationale for several cost items.
+  - Sensitivity tests list specific shock events and costs (damage in year 10 Rs.10k, flood Rs.25k, replace poles, refurbishment year 7 Rs.50k, penstock replacement Rs.5k, partial re-wiring 25% at cost 4297*30 in year 10).
+
+Individ. Hh. Analysis sheet — layout and calculations
+- Per-household rows (A3:A11) for 11 households; columns record impacts on activities, fuels used before/after, monthly quantities, bills, number of tube lights/energy savers, wiring cost and year, appliances owned, and subjective answers (more economical?).
+- Key formulas / aggregates:
+  - Several cells convert units (e.g. T3 = 4*4.54596 converts gallons to litres) and compute battery costs (W3 = 8*18).
+  - Average rows (row 13): T13, V13, X13, Y13, Z13, AB13, AC13, AD13, AE13 = AVERAGE(...) produce per-household averages.
+  - Village totals / values in the analysis block (rows 32–77): use averages × 31 households and unit prices to compute village-level annual consumption and values:
+    - Ker. oil, batteries, firewood and gas calculations use constants from assumptions (e.g. kerosene value Rs.50/gal, battery Rs.18/pair, firewood Rs.70/maund, gas Rs.35/kg).
+    - Electricity bills: AB13 average monthly bill → annual per-household and village totals.
+  - Appliance ownership percentages in rows 101–109 (percent calculations from sample of 9 respondents for some items).
+  - Wiring: average wiring cost AE13 and total for village C113 = C112*31.
+
+Overall calculation flow (concise)
+- Inputs: historical costs adjusted to 2000 prices, per-year recurring costs and benefits defined in rows.
+- Per-year totals: sum costs and benefits into rows 18 and 30 across 2000–2020.
+- Discounting: apply 12% DF across years (rows 19 & 31).
+- PVs: compute PV of costs (row 20) and PV of benefits (row 32); sum to get total PVs.
+- Outputs: Benefit–Cost ratio and NPV reported (rows 38–39) plus sensitivity scenarios in Assumptions.
+
+Notable constants and assumptions
+- Analysis period: 20 years (2000–2020 columns).
+- Discount rate: 12%.
+- Households used in village aggregation: 31.
+- Unit prices: kerosene Rs.13/litre (but also Rs.50/gal noted), battery Rs.18/pair, tube light Rs.50, bulb Rs.15, firewood Rs.70/maund, gas Rs.35/kg.
+- AKRSP original contribution: Rs.240,000 (1993), community contribution Rs.21,780 (1993) — both escalated to 2000 via division by 0.4825.
+
+If you want, I can:
+- Extract and show the final PV totals, B/C and NPV from the sheet (if you supply values or the workbook).
+- Check for formula inconsistencies (there are a few oddities, e.g. K19=69*(1/1.12) and mixed kerosene price units) and suggest corrections.

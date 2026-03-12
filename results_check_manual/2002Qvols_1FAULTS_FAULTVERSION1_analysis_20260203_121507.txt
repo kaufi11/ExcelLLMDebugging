@@ -1,0 +1,32 @@
+Kurz und knapp — Fehler finden, Ursache und Lösung (auf Deutsch, Excel-Formeln im deutschen Format).
+
+Fehler 1 — falsche Funktion
+- Problem: Zelle L31 enthält =COUNT(H31:K31) statt einer Summenfunktion → liefert Anzahl statt Summe.
+- Lösung / Korrektur (Zelle L31):
+  =SUMME(H31:K31)
+
+Fehler 2 — verschobene/fehlende Q4-Werte (Spalten AE:AH nicht einheitlich)
+- Symptome: Viele kumulative Formeln AIx..ALx rechnen mit Werten aus AE..AH. In mehreren Zeilen sind aber Werte nicht in der korrekten Spalte (z. B. AGx fehlt, Wert steht in AHx), dadurch sind AKx (=/= LPG kumulativ) oder AIx falsch (z. B. AK6 verwendet AG6+Y6, aber AG6 ist leer → falscher/0-Wert).
+- Ursache: Eingabewerte der 4. Quartals-Produkte sind in manchen Zeilen um eine Spalte verschoben oder gar nicht in AE..AH eingetragen.
+- Lösung (zwei Optionen):
+  1) Korrekt: Werte verschieben, so dass Spalte AE=Diesel, AF=Illuminating Paraffin, AG=LPG, AH=Petrol für alle Zeilen. Danach bleiben die bestehenden Formeln unverändert (empfohlen).
+     - Beispiel: Wenn bei Zeile 6 der LPG-Wert irrtümlich in AH6 steht, verschiebe AH6 → AG6.
+  2) Alternativ (wenn Daten nicht verschoben werden sollen): Formel anpassen, so dass sie die tatsächliche Spalte referenziert.
+     - Beispiel (aktuelle Formel in AK6 ist =AG6+Y6, aber LPG steht in AH6):
+       AK6 =AH6+Y6
+     - Beispiel (aktuelle Formel in AI36 ist =AE36+W36, aber Diesel steht z.B. in AG36): passe entsprechend an: AI36 =AG36+W36
+- Hinweis: Besser ist Variante 1 (Datenstruktur konsistent halten), sonst müssen sehr viele Formeln angepasst werden.
+
+Fehler 3 — Prüfung/Hilfeformeln zum Finden verschobener Zeilen
+- Zur schnellen Kontrolle, ob in einer Zeile die 4 Q4-Spalten vollständig sind (AE bis AH):
+  - In Hilfsspalte (z. B. Spalte AM) einfügen:
+    =ANZAHL2(AE6:AH6)   → Ergebnis sollte 4 sein (oder mindestens korrekt erwartete Anzahl). Wenn kleiner, Zeile prüfen.
+- Oder für alle Zeilen: markiere Zeilen mit:
+    =WENN(ANZAHL2(AE6:AH6)<>4;"Prüfen";"")
+
+Zusammenfassung / Empfehlung kurz:
+- Unbedingt L31 ändern: =SUMME(H31:K31).
+- Einheitliche Datenstruktur herstellen: sämtliche Q4-Werte in AE:AH korrekt platzieren (AE=Diesel, AF=Illum. Paraffin, AG=LPG, AH=Petrol). Dadurch funktionieren alle AI:AL-Formeln zuverlässig.
+- Falls schnelle Kontrolle gewünscht: =ANZAHL2(AE6:AH6) verwenden, um fehlende Einträge zu finden.
+
+Wenn du willst, prüfe ich automatisch alle Zeilen und gebe dir eine Liste der Zeilen, in denen AE:AH weniger als 4 Werte enthalten oder in denen L‑Funktionen statt SUMME benutzt wurden.

@@ -1,0 +1,52 @@
+Summary — the errors I found
+1) NPS Pollution sheet (row 32, project #612)
+   - Cell I32 contains =47+H32. That 47 is a hard-coded constant and is wrong.
+   - Impact: the running cumulative from that row down is incorrect, so the "remaining funding" and the footer note are wrong.
+
+2) Watershed Protection sheet (column I, starting row 7)
+   - Cell I7 = G7 (and several subsequent I-cells are adding column G). The cumulative column is summing Requested (G) instead of Awarded/Approved (H).
+   - Impact: the running total overstates funding used (it uses requested amounts instead of the actual awarded amounts), so you will show incorrect commitment vs the funding limit.
+
+Why these are wrong (short)
+- Column I is supposed to be the running total of Awarded/Approved funds (column H). Using a constant (47) or summing column G breaks that rule and produces wrong totals.
+
+Simple fixes (exact formulas and steps)
+A — Fix the NPS Pollution sheet (row 32)
+1. Put this in I7 (if not already): =H7
+2. Put this in I8: =I7+H8
+3. Copy I8 down through the end of the list (including row 32). Or, specifically change I32 to:
+   =I31 + H32
+4. Verify I33, I34, ... are correct (they should be previous I + current H).
+
+B — Fix the Watershed Protection sheet (make column I sum Awarded)
+Two robust options — pick one:
+
+Option 1 (preferred, easy to audit):
+1. In I7 enter:
+   =SUM($H$7:H7)
+2. Copy I7 down the column through the last data row.
+   - This makes each I-row the cumulative sum of column H from the first award through the current row.
+
+Option 2 (simple running formula):
+1. In I7 enter:
+   =H7
+2. In I8 enter:
+   =I7 + H8
+3. Copy I8 down the column.
+
+After fixing
+- Check the sheet funding-limit header vs the last I cell. The footer remaining-available notices (the “** Funding limit …”) should now match the corrected totals.
+- Use the same approach on other sheets to ensure consistency: I should always be cumulative SUM of H, not G or constants.
+
+Quick way to find any other problems
+- In Excel use Find (Formulas) to search column I for formulas that:
+  - refer to column G, or
+  - contain hard-coded numbers (like 47).
+- Or temporarily add a check column J with =IF(ROUND(I7,2)=ROUND(SUM($H$7:H7),2),"OK","ERROR") (adjust row numbers when copied down). Any "ERROR" flags a row to fix.
+
+Why these fixes work (one line)
+- Column H is the actual awarded money; the running total must add actual awards (H). Using SUM($H$7:Hn) or I(n-1)+Hn enforces that, removes hard-coded values, and keeps the running total accurate.
+
+If you want, I can:
+- Provide the corrected cumulative totals and the new remaining balances for each affected sheet, or
+- Generate the exact list of all I-cells whose formulas differ from the expected pattern.

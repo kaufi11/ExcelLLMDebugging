@@ -1,0 +1,49 @@
+Summary of workbook structure and contents (concise)
+
+Sheets: Financial summary; Balance Sheet; Stork - 2002 Expenditures; Stork - 2002 Receipts.
+
+1) Financial summary
+- Layout: years run across columns: C=1998, E=1999, G=2000, I=2001, K=2002, M=2003. Rows group: Beginning Cash Balance, Income (multiple revenue categories), Total Income, Expenses (categories), Total Expense, Net Income/(Loss), Ending Cash/Investment Balance, account breakdown (Checking, Money Market, Loan to Organizer), Difference (reconciliation), Notes.
+- Key formulas:
+  - Beginning balances: E4 = C33, G4 = E33, I4 = G33, K4 = I33, M4 = K33 (each year’s beginning = prior year ending).
+  - Total Income rows: C15, E15, G15, I15, K15, M15 use SUM over income category ranges (e.g., =SUM(C6:C13)).
+  - Total Expense rows: C27, E27, G27, I27, K27, M27 use SUM over expense rows (e.g., =SUM(C19:C25)).
+  - Net Income: C30 = C15-C27 (same pattern for E,G,I,M). NOTE: K30 is =K15+K27 (likely a mistake — should be K15-K27).
+  - Ending Cash: C33 = C4 + C30 (and parallels for other years).
+  - Account breakdown: C35 (Checking) = C33 for 1998; other years have explicit checking and MM numbers. Difference row (C39 etc) = Ending Cash - SUM(account lines) to spot reconciliation gaps.
+- Key values / notes:
+  - 1998 beginning cash C4 = 15,023.53.
+  - 2001 was restated (see O4 note): net loss revised to $4,992.05 (vs $492.05 previously).
+  - Several cells include footnotes (a, numbered notes) documenting loans, sponsorships, and classifications.
+
+2) Balance Sheet
+- Layout: columns E–H cover Dec 31 for 1999–2002. Sections: Assets (Current Assets, Total Checking/Savings, Money Market, Total Current Assets), Total Assets, Liabilities & Equity (Opening Bal Equity, Retained Earnings, Net Income), Total Equity, Totals.
+- Cross-sheet links:
+  - Checking and Money Market for 2002 come from 'Financial summary'!K35 and K36 (H4, H5).
+  - Net Income for 2001 and 2002 are pulled from 'Financial summary'!I30 and 'Financial summary'!K30.
+- Key formulas:
+  - Total Current Assets E6 = E4+E5, etc.
+  - Total Assets E7 = ROUND(E2 + E6,5) (E2 appears to be the year label cell—check context).
+  - Total Equity rows use ROUND(SUM(...),5).
+- Note: since Balance Sheet pulls net income from Financial summary, the K30 sign error will propagate into 2002 equity unless corrected.
+
+3) Stork - 2002 Receipts (transaction-level)
+- Purpose: detailed receipts for 2002 with date, type, amount and category columns (Dues, Licensing, Sanctioning, Interest, Donations, Other).
+- Totals: C43 = SUM(C6:C42) and category column totals (D43, F43, H43, J43, L43, N43).
+- Key receipts: large items include C39 = 15,000 (WUCC 2002 sanctioning) and C37 = 3,000 (UPA Grant).
+
+4) Stork - 2002 Expenditures (transaction-level)
+- Purpose: detailed expenditures for 2002 with date, type, amount and many category columns (Administration, Events, Member Services, Dues, Services, Marketing, Special Projects, Other).
+- Totals: row 55 computes SUM for C, D, F, H, etc. (C55 = SUM(C6:C54), H55 = SUM(H6:H54), etc.).
+- Net / reconciliation: H58 uses =H45+H44+H33 to compute “Net as of 7/3/03” (summing specific congress expense lines). Lower summary references receipts/expenditures: D59 = C55 (Receipts), D60 = 'Stork - 2002 Receipts'!C43 (Expenditures cell is referencing the Receipts sheet total — verify label/placement).
+- Key expenditures: several $3,000 entries for quarterly ED fees (F32,F49,F50), a $5,000 WUCC loan (C7), grants and congress-related expenses.
+
+Notable points / potential issues to review
+- K30 on Financial summary uses =K15 + K27 (addition) while all other years use subtraction (Income - Expense). This is likely a sign error that affects K33 (ending balance) and downstream Balance Sheet figures (H13/H14/H15).
+- Several formulas cross-reference between sheets (Financial summary ↔ Balance Sheet; Stork Receipts ↔ Stork Expenditures). Verify the intended direction of the links (e.g., D60 in Expenditures pulls the Receipts sheet total — check if labels are swapped).
+- Ending balances are rolled forward via Beginning = prior Ending (E4=C33 etc.) — good for flow, but will propagate any prior-year formula errors.
+- Some numeric cells contain high-precision decimals (e.g., C12 interest) and some manual adjustments / not-cashed items (e.g., A46 notes) — review rounding and reconciling items (Difference row C39, etc.).
+
+If you want, I can:
+- Compute the summed totals and net incomes for each year from the provided values, or
+- Generate a short list of formulas to correct (e.g., fix K30) and reconciliation checks to run.

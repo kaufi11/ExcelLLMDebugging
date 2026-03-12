@@ -1,0 +1,60 @@
+I reviewed the workbook and found several functional / logical errors. Below are the main problems, short explanations, and precise fixes you can paste into the cells.
+
+1) Total Fixed Costs uses the wrong source
+- Problem: Cell B63 (Total Fixed Costs) = +O54 - O23
+  - O54 = Total Cash Paid Out (includes many items beyond fixed operating costs). Subtracting variable expenses (O23) from O54 does not reliably give fixed operating costs.
+- Fix: Use the subtotal of fixed expenses (O47).
+  - Correct formula: =O47
+- Why: O47 is the explicit subtotal of fixed expenses. Using O54 mixes non-operating/other cash items and gives the wrong "fixed cost" number.
+
+2) Break-even calculation uses the wrong numerator
+- Problem: F64 = +(O54 - O23) / B64 (and D64 label is blank)
+  - This uses the same wrong numerator as B63 (O54 - O23).
+- Fix: Divide the true fixed costs by contribution margin.
+  - Correct formula: =B63 / B64   (or =O47 / B64)
+- Why: Break-even sales = Fixed costs / Contribution margin. Use the correct fixed-cost cell (B63 or O47).
+
+3) Misaligned sum formulas in Year 2 around payroll rows (rows 20–22)
+- Problem: In Year 2 the "Payroll Expenses (Direct Labor)" or similar lines use O22 instead of O20 (formulas are shifted). Example: A20 shows O22: =SUM(C22:N22) instead of O20 summing row 20.
+- Fix: Put the correct row sums back in their matching O-column cells:
+  - O20: =SUM(C20:N20)
+  - O21: =SUM(C21:N21)
+  - O22: =SUM(C22:N22)
+- Why: A shifted row sum means totals are reporting values from the wrong expense line, producing incorrect subtotals and totals downstream.
+
+4) Percent-of-sales totals reference themselves (confusing / fragile)
+- Problem: P57 (Total % of Sales) uses O57/O57 or O57/O$57 in places (dividing the total by itself). Many P formulas are inconsistent across sheets.
+- Fix: For each row, use:
+  - Row percent formula for row X: =O<X>/O$57  (example for row 8: =O8 / O$57)
+  - Total row (row 57) should be 1 (100%): =1  or =O57/O$57
+- Why: Row-level percent should be item total ÷ grand total (O$57 anchored). The totals row should show 100% explicitly. Using self-divisions is confusing and can produce divide-by-zero if O57 is zero.
+
+5) End-of-month cash position uses SUM unnecessarily and can hide mistakes
+- Problem: Many cells use SUM(B15-B54) etc (for B55, C55 ...) — SUM around a subtraction is unnecessary and non-standard.
+- Fix: Replace with direct subtraction:
+  - Example: B55: =B15 - B54
+  - And copy across: C55 = C15 - C54, etc.
+- Why: =SUM(B15-B54) evaluates, but it's awkward, reduces readability and can mask copying mistakes. Use simple arithmetic for clarity and to avoid accidental range inclusion.
+
+6) General copying/offset inconsistency across Year 1 / Year 2 / Variance sheets
+- Symptoms: Several rows in Year 2 and variance sheets have formulas referencing the wrong columns or rows (shifted references). Some percent/variance denominators reference inconsistent absolute/relative cells.
+- Fix / recommendation:
+  - Use Audit → Trace Precedents / Dependents to find shifted references.
+  - Where appropriate, select the correct source cell (e.g. Year1 row X → Year2 row X) and fill across using consistent relative formula patterns (lock the grand total column with $ when needed, e.g. O$57).
+  - Standardize formulas for a row and copy across (e.g. make O8 =SUM(C8:N8) in Year1, then copy O8 down for each expense row).
+
+Quick concrete formula corrections (copy/paste):
+- B63 (Year1): =O47
+- F64 (Year1): =B63 / B64
+- O20 (Year2): =SUM(C20:N20)
+- O21 (Year2): =SUM(C21:N21)
+- O22 (Year2): =SUM(C22:N22)
+- B55 (any sheet): =B15 - B54  (replace SUM(B15-B54))
+- P8 (example row percent): =O8 / O$57  (copy down for P9:P53)
+- P57 (total percent): =1
+
+If you want, I can:
+- Provide a short list of all cells with shifted/wrong row references (I can generate a full audit),
+- Or create a corrected copy of Year1 (and propagate to Year2) with consistent formulas so you can paste it into your workbook.
+
+Which would you prefer?

@@ -1,0 +1,102 @@
+High-level overview
+- Purpose: Standard Bankruptcy Court Monthly Operating Report (General Business, Chapter 11). Captures balance sheet, operations (P&L), cash receipts/disbursements, cash-flow presentation, and supporting schedules (receivables, inventory, fixed assets, taxes, pre‑petition claims, bank accounts).
+- Workbook layout: Separate sheets for SUMMARY, STMT OF OPERATIONS, BALANCE SHEET, SCHEDULES PG1, SCHEDULES PG2, SCHEDULE PG3, STMT OF CASH REC AND DISB, and STMT OF CASH FLOWS. Most numeric totals are formula-driven and pull from the supporting schedules.
+
+Sheet summaries and key cells/formulas
+
+1) SUMMARY
+- Purpose: One‑page statement for the Court/UST summarizing financial status and answers to compliance questions.
+- Key cells pulling other sheets:
+  - Current Assets = 'BALANCE SHEET'!J15 (F15)
+  - Total Assets = 'BALANCE SHEET'!J37 (F16)
+  - Current Liabilities = 'BALANCE SHEET'!J65 (F17)
+  - Total Liabilities = 'BALANCE SHEET'!J73 (F18)
+  - Total Receipts (current) = 'STMT OF CASH REC AND DISB'!F17 (F20)
+  - Total Disbursements (current) = 'STMT OF CASH REC AND DISB'!F47 (F21)
+  - Cumulative receipts/disbursements = 'STMT OF CASH REC AND DISB'!H17 / H47 (J20/J21)
+  - Excess (receipts - disbursements) computed as F22 = F20-F21 (same for prior/cumulative)
+  - Cash balances beginning/end use STMT OF CASH REC AND DISB F49/F50 (F23/F24 and J23/J24)
+  - Profit/(Loss) = 'STMT OF OPERATIONS'!A53 (F26)
+  - A/R (pre/post) = 'BALANCE SHEET'!J9 (F27)
+  - Post-petition liabilities = 'BALANCE SHEET'!J67 (F28)
+  - Past due post-petition AP = 'SCHEDULES PG1'!L8 (F29)
+- Static items: case header, checkboxes/questions, signature/date fields.
+
+2) STMT OF OPERATIONS
+- Purpose: Month and cumulative income statement with Actual / Forecast / Variance / Cumulative / Next Month Forecast columns.
+- Structure: Revenue section (Gross Sales, Returns, Net Sales, COGS), Expenses section (detailed expense lines), Reorganization items, Net Profit (loss).
+- Key formulas:
+  - Variance columns: e.g., E6 = A6-C6 (E = Actual - Forecast or similar)
+  - Aggregations: A15 = SUM(A10:A14) (total revenues), A41 = SUM(A17:A40) (total expenses)
+  - Net profit before tax: A51 = A42 + A50; Net profit after taxes: A53 = A51 - A52
+  - Some inputs pulled from schedules: A9 = +'SCHEDULES PG1'!L31 (COGS)
+- Notes: Many cells use pairwise difference formulas (Actual vs Forecast) and column totals for cumulative (K) and next month (M).
+
+3) BALANCE SHEET
+- Purpose: Statement of assets, liabilities (post‑petition and pre‑petition) and equity (deficit).
+- Key structure:
+  - Current assets listed with Market Value in column J; Total Current Assets J15 = SUM(J7:J14)
+  - Property & equipment market values pulled from SCHEDULES PG2 (J17:J27) and totaled in J28
+  - Other assets total J36 = SUM(J30:J35)
+  - Total Assets J37 = J15 + J28 + J36
+  - Current liabilities summarized and totaled J65 = SUM(J51:J64)
+  - Total post‑petition liabilities J67 = J65 + J66
+  - Pre‑petition liabilities (allowed amounts) pulled from SCHEDULE PG3 (J69:J71) and total J72
+  - Total Liabilities J73 = J67 + J72
+  - Equity total J82 = SUM(J75:J81); Total Liabilities & Equity J83 = J73 + J82
+- Key cross-sheet links: Numerous J-cells reference SCHEDULES PG1/PG2/PG3 for market values and claim amounts.
+
+4) SCHEDULES PG1 (Schedule A & B)
+- Purpose: Accounts receivable/payable aging, inventory and COGS detail.
+- Key formulas:
+  - Receivables total H10 = SUM(H6:H9); A/R net H12 = H10 - H11
+  - Payables total J10 = SUM(J6:J9); Past due post petition (L8) = SUM(J7:J9) (used on SUMMARY)
+  - Inventory totals: F32 = SUM(F19+F22+F25+F26+F27+F29) (aggregate inventories)
+  - COGS calculation: L31 = SUM(L16:L24) - SUM(L27:L29) (fed into STMT OF OPERATIONS A9)
+- Inputs expected: aging buckets, inventory line items, physical inventory dates.
+
+5) SCHEDULES PG2 (Schedule C & D)
+- Purpose: Real property and other depreciable assets cost & market values.
+- Key formulas: category totals are SUM ranges (e.g., E9 = SUM(E3:E8), G9 = SUM(G3:G8)) and are referenced by the Balance Sheet (J17..J22).
+
+6) SCHEDULE PG3 (Schedules E, F, G, H)
+- Purpose: Tax aging (Schedule E), pre‑petition claims (Schedule F), bank account recapitulation (H), and other schedules.
+- Key formulas:
+  - Tax aging totals for federal & state: e.g., K6 = C6+E6+G6+I6; aggregated rows C12/E12/G12/I12 etc.
+  - Total taxes: K25 = K12 + K24
+  - Pre‑petition claims: user-entered claimed/allowed amounts in columns G/I and subtotals used by BALANCE SHEET (J69:J71)
+  - Bank accounts: C46 = C45+E45+G45+I45 total funds on hand (used elsewhere as needed).
+
+7) STMT OF CASH REC AND DISB
+- Purpose: Primary cash receipts and disbursements ledger (current month and cumulative).
+- Key cells:
+  - Total Cash Receipts: F17 = SUM(F6:F16); cumulative H17 = SUM(H6:H16)
+  - Total Cash Disbursements: F47 = SUM(F19:F46); H47 = SUM(H19:H46)
+  - Net increase (decrease) F48 = F17 - F47; cumulative H48 = H17 - H47
+  - Cash balances: F50 = F49 + F48; H50 = H49 + H48
+- Links: SUMMARY pulls F17/F47 for receipts/disbursements and F49/F50 for cash balances.
+
+8) STMT OF CASH FLOWS
+- Purpose: Optional cash-flow presentation (Operating, Reorganization, Investing, Financing) in G (current) and I (cumulative) columns.
+- Key formulas:
+  - Operating net: G34 = G5+G6+G7 - SUM(G8:G33) (I34 similarly)
+  - Reorganization net: G40 = G36 - G37 - G38 - G39
+  - Net cash provided: G41 = G34 + G40
+  - Investing net: G46 = -G43 + G44 - G45
+  - Financing net: G53 = G48 + G49 + G50 - G51 - G52
+  - Net change and ending cash: G54 = G41 + G46 + G53; G56 = G54 + G55
+
+Key cross-sheet dependencies (summary)
+- SUMMARY pulls primary totals from BALANCE SHEET (J15, J37, J65, J73), STMT OF CASH REC AND DISB (F17/F47/F49/F50/H equivalents), STMT OF OPERATIONS (A53), and SCHEDULES PG1 (L8).
+- BALANCE SHEET market-value and category totals are fed from SCHEDULES PG2 and PG1.
+- STMT OF OPERATIONS uses COGS from SCHEDULES PG1 L31.
+
+Where users enter data
+- Input rows in SCHEDULES PG1 (aging, inventory details), PG2 (asset costs/market values), PG3 (tax aging, pre‑petition claim amounts, bank balances), STMT OF CASH REC AND DISB (individual cash receipt/disbursement line items F6:F46 and cumulative H columns), and STMT OF OPERATIONS Actual/Forecast lines (A/C columns).
+- Most summary totals and variance calculations are automated by formulas described above.
+
+Notes / recommendations
+- Verify the named ranges/cell references if changing layout; many sheets rely on exact cell addresses (J15, F17, etc.).
+- Reconcile bank account balances in SCHEDULE PG3 H to STMT OF CASH REC AND DISB beginning/ending balances to ensure cash ties to the Balance Sheet.
+
+If you want, I can: list all inter-sheet links in a single mapping table, validate that specific totals tie (e.g., cash per Balance Sheet = cash per STMT OF CASH REC AND DISB), or point out any formula inconsistencies.

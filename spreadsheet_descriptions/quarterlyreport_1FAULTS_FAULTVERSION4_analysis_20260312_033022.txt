@@ -1,0 +1,39 @@
+Overview
+- Workbook has 3 sheets: Detail (detailed General Fund ledger), Summary (roll-up of Detail for the General Fund), and RCM Report (profit & loss across multiple fund types).
+- Layout on all sheets: rows list Revenues, Expenditures (broken down by personnel categories, fringe, goods/services, equipment, travel, transfers, allocations) and Fund Balance calculations. Columns represent fiscal/status categories (Actuals, Original Budget, Current Budget, YTD Expenditures, Encumbrances, Exp+Enc, Commitments, Year‑end/Projected, Variance $, Variance % and FY03 projected).
+
+Detail (detailed General Fund)
+- Sections: Revenue (Tuition lines, Financial Aid, fees, ICR, State & Univ allocations, reserves, sales/services, other) then Expenditures (Permanent salaries, other salaries, stipends, total salaries, fringe benefits, goods & services, equipment, travel, transfers, facilities/general overhead/academic allocations), then Net change, Beginning and Current/Projected fund balances.
+- Key hard values (Actuals column D): Tuition UG 21,564,821; Graduate 4,321,000; Summer 420,515; Student fees 153,021; ICR 496,123; State appropriation 1,496,024; Univ fund 1,100,000; Dept sales 342,664; Other revenue 125,415. Permanent salary items: D29 4,876,844; D30 2,425,642; etc. Total salaries/fringe/goods values are mostly formulas summing groups.
+- Important formulas:
+  - Subtotals use SUM of relevant ranges (e.g., D11 = SUM(D8:D10); D35 = SUM(D29:D34)).
+  - Financial Aid entries are negative values (D13 = -2,725,154; D14 = -1,311,515) and the subtotal sums them.
+  - Fringe full benefits = permanent salaries * 0.35 (D49 = D35*0.35); FICA = wages * 0.084 (D50 = D42*0.084); total fringe = SUM(D49:D50).
+  - Facilities/general overhead/academic allocations actuals computed as budget * 0.93 (D58 = E58*0.93, D59 = E59*0.93, D60 = E60*0.93).
+  - Totals: Total Revenue D25 = SUM(D16:D24); Total Expenditures D61 = SUM(D52:D60); Net change D63 = D25 - D61; Current balance D65 = D63 + D64.
+- Cross‑fields: Many Projected/Year‑end columns are present (K:N) with analogous formulas using SUM across the same rows.
+
+Summary (General Fund roll-up)
+- Purpose: condensed/summary view of the Detail sheet for reporting. Rows mirror Detail categories but pull values with direct references to Detail.
+- Key formulas:
+  - Many summary cells are explicit links to Detail (e.g., D8 = SUM(Detail!D8:D10); D11 = Detail!D17).
+  - Totals computed from the summary rows (Total Revenue D19 = SUM(D10:D18); Total Expenditures D34 = SUM(D22:D33)).
+  - Net change D36 = D19 - D34; Current/Projected fund balance D38 = D36 + D37 (D37 Beginning = 500,000).
+- Note: Summary largely aggregates Detail by cell references and SUM ranges, serving as a quick check of Detail.
+
+RCM Report (P&L across funds)
+- Purpose: multi‑fund P&L combining Detail values into fund columns (General, Internally Designated, Auxiliary, Gift, Grant, Plant, Total).
+- Structure: same revenue/expenditure rows as Detail/Summary but split by fund columns. Most fund columns pull from Detail (usually into the General column); several fund columns contain hard-coded or separately provided amounts (e.g., Grants H17 = 2,515,462; Restricted Gifts G18 = 91,515; some E column (Designated) values are 0 or specific numbers like E19 = 44,656).
+- Key formulas:
+  - Revenue lines: D8 = SUM(Detail!D8:D10); D9 = -SUM(Detail!D13:D14); J totals are sums across fund columns (e.g., J8 = SUM(D8:I8)).
+  - Expenditures: personnel sums pulled from Detail (e.g., D24 = SUM(Detail!D29:D34), D25 = SUM(Detail!D37:D41)); fringe in H column uses a blended formula H27 = H24*0.35 + H25*0.084 for grant fund fringe.
+  - Totals: J21 (Total Revenue) = SUM across fund columns; J36 (Total Expenditures) analogous; Net change J38 = J21 - J36; Current balances (row 40) add beginning balances (row 39).
+- Notes: RCM mixes Detail links with fund‑specific figures to present consolidated P&L by fund and a grand total column J.
+
+General remarks and checks
+- Consistent use of SUM ranges and cross‑sheet cell references keeps Summary and RCM synchronized to Detail.
+- Fringe calculations: two methods used — permanent salaries * 35% and wages * 8.4% — aggregated for total fringe.
+- Allocation computation: actuals for facilities/general overhead/academic come from budget * 0.93 in Detail.
+- Watch for a few oddities/hard-coded entries (e.g., Summary J14 = 6 appears atypical; some fund columns in RCM contain hard-coded beginning balances and fund‑specific overrides). These are intentional overrides or inputs and should be reviewed if numbers seem off.
+
+If you want, I can: (a) produce a short checklist of cells to audit for potential errors (hard‑coded vs. linked), (b) map the exact cell links for a given line (e.g., Total Revenue) or (c) generate a dependency tree of the main totals. Which would you prefer?

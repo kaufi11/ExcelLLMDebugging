@@ -1,0 +1,32 @@
+Summary of the error(s)
+- I found a clear erroneous hard-coded value in Data Analysis!AU32: the formula is =IF(D$2="x",345,0). That 345 is almost certainly a typo and will massively inflate the total for row 32 (Multidisciplinary aspects), the grand total B46 and any normalized percentages that use B46. This produces incorrect outputs everywhere that uses these totals.
+- Minor / robustness issues (not causing the big error but worth fixing):
+  - The inclusion toggle tests IF(...="Y") but input-output!I48 may be entered as lowercase "y". Excel comparisons are case-insensitive so this currently still works, but making it robust is recommended.
+  - Usage like SUM(I5+I9+...) works but is unusual; SUM(I5,I9,...) is clearer. This is only stylistic.
+
+Why the AU32 error matters (short)
+- AU32 is part of CL32/CM32 and CL32 contributes to B32 and ultimately B46 (grand total). The hard-coded 345 will add 345 points when D2 is "x", producing wildly wrong totals and percentages.
+
+How to fix (exact change)
+1. Replace the formula in Data Analysis!AU32 with the correct reference:
+   - Change =IF(D$2="x",345,0)
+   - To =IF(D$2="x",D32,0)
+   (i.e., mirror the pattern used in the other AU# formulas)
+2. After fixing, check the dependent totals:
+   - Verify CL32 (SUM of AU32:CI32) looks reasonable.
+   - Verify B32 and B46 update to expected values.
+   - Verify normalized C32 = B32 / $B$46 now makes sense.
+
+Optional robustness improvements
+- Make the include-all toggle case-insensitive/robust:
+   - Replace IF('input-output'!$I$48="Y",...) with IF(UPPER('input-output'!$I$48)="Y",...)
+- Replace expressions like SUM(I5+I9+...) with SUM(I5,I9,...) to avoid confusion.
+
+How to verify the fix quickly
+- Use Find (Ctrl+F) to search for "345" to make sure no other accidental constants exist.
+- Inspect B46 before and after change; it should drop from the inflated value to a sensible total.
+- Check a few normalized C# values (e.g., C32) and summary values in A64:B87 to confirm they match expectations.
+
+If you want, I can:
+- Provide the exact new values you should see for B46 / CL32 after the fix (if you tell me the current D32 and other inputs),
+- Or scan the sheet text for any other suspicious hard-coded constants and list them.

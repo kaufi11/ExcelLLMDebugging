@@ -1,0 +1,43 @@
+I inspected the formulas and values on sheet "post1". Below are the formula errors/inconsistencies I found (by cell), with short explanations and suggested fixes.
+
+1) F56 uses SUM instead of AVERAGE
+- Problem: F56 =SUM(F36:F55) returns 1950. All other "MEAN" row cells use AVERAGE (e.g. D56,E56,G56,H56,I56). F56 should be an average, not a sum.
+- Fix: Change F56 to =AVERAGE(F36:F55).
+
+2) Missing Pract.4 value in row 55 (G55 is blank)
+- Problem: Row 55 shows D55=40, E55=39, F55=85, H55=45 and I55 =SUM(D55:G55) =164. G55 is blank (treated as 0) so I55 excludes Pract.4. This is likely missing data (or a shifted cell).
+- Impact: Student total (I55) and Class % (J55) are computed from a missing Pract.4 score.
+- Fix: Enter the correct Pract.4 value into G55 (or correct any mis-shifted data). If Pract.4 really should be blank and you intended to include attendance in I55, adjust the I55 formula accordingly (see point 4).
+
+3) Inconsistent header vs. formulas in the second block (I32 header)
+- Problem: First block header I2 = "Total (w/o A/P)" (explicit). Second block I32 = "Total" (ambiguous), but the totals (I36:I55) are computed as SUM(D:G) — i.e. they exclude attendance/participation (column H). This header could be misleading.
+- Fix: Either change I32 to "Total (w/o A/P)" to match the formula, or change the I36:I55 formulas to include attendance (SUM(D36:H36) and divide by the proper total if attendance is part of the grade).
+
+4) Possible inconsistency whether attendance is included in Class %
+
+- Problem: All J formulas compute =I#/400 (or J26 = I26/I3 where I3 = 400). That divides only by the 4 practicals total (400), so attendance (H) is not included in class % — consistent with "Total (w/o A/P)" in the first table but ambiguous in the second block (see point 3).
+- Recommendation: Decide if attendance should be part of the class percent. If attendance should be included, change I formulas to SUM(D:G,H) and change denominators from 400 to 450 (or reference a single total cell, e.g. $I$3 or a named cell). If attendance should not be included, make both headers explicit ("Total (w/o A/P)") and/or document the logic.
+
+5) Inconsistent comparison operators in Grade formulas (>= vs >)
+- Problem: In the first table (rows 6–25) the grade IF uses >= thresholds, e.g. K6 =IF(J6>=89.9%,"A",IF(J6>=79.9%,"B",...)). In the MEAN row K26 the formula uses > thresholds: =IF(J26>89.9%,"A",IF(J26>79.9%,"B",...)). In the second block (rows 36–55 and K56) the grade IFs also use > thresholds.
+- Impact: Boundary behavior differs (e.g. a value exactly equal to 89.9% would be graded A in one place and not in another).
+- Fix: Make the comparison operators consistent across all grade formulas (choose >= or > consistently). Also consider using conventional cutoffs (e.g. >=90% rather than >=89.9%).
+
+6) Use of percentage literals with decimal J values (clarity, not an error)
+- Observation: J cells contain decimals like 1.0325 (103.25%). The grade formulas compare those decimals to percentage literals like 89.9%. Excel evaluates 89.9% as 0.899, so comparisons will work, but it's confusing to read.
+- Recommendation: Format J cells as Percentage (so 1.0325 displays as 103.25%) and/or use consistent numeric thresholds (e.g. 0.899 vs 89.9%). Alternatively use explicit percentage formatting in formulas (e.g. 90%).
+
+7) Hard-coded denominators / inconsistent references
+- Observation: Some mean-grade cells use I3 as denominator (J26 = I26/I3) and in the second table J56 = I56/I33. These are correct for their blocks but using direct cell references in multiple places is fragile.
+- Recommendation: Create a single named cell for the maximum points (e.g. TotalMax = 400) and use =I#/TotalMax everywhere, or use absolute references ($I$3) so it’s clearer and easier to maintain.
+
+Summary of corrective actions I recommend (in priority order)
+- Fix F56: set to =AVERAGE(F36:F55).
+- Populate G55 with the correct Pract.4 value (or otherwise correct row 55).
+- Decide whether attendance (H) is part of the grade. Then:
+  - If attendance should be included: change I formulas to SUM(D:G,H) and change denominators to 450 (or a named total).
+  - If attendance should not be included: change the second-block header I32 to "Total (w/o A/P)" and document that H is excluded.
+- Make grade IF formulas consistent (use the same comparison operator and the same cutoffs in every K cell).
+- Optionally: Format J cells as Percent and use a single named denominator for clarity.
+
+If you want, I can produce the exact corrected formulas and a small patch list (cell-by-cell) to paste into the workbook. Which behavior do you prefer for attendance — include it in the class % or continue excluding it?

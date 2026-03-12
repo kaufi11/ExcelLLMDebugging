@@ -1,0 +1,25 @@
+Found one clear error that will make the consolidation totals and the “proof of debit and credit postings” wrong:
+
+1) Error
+- Cell F74 (Total Liabilities & Equity) contains:
+  =COUNT(F67:F73)
+  COUNT returns the number of numeric cells, not the sum of the amounts.
+
+2) Why it's wrong / effect
+- F74 should be the total of the liability & equity amounts in F67:F73. Using COUNT gives a small integer (how many numeric cells), so Total Liab. & Equity is incorrect.
+- That error cascades to the proofs (D76/E76 and D134/E134) and any reconciliation or elimination that depends on total liabilities & equity.
+
+3) Fix (short)
+- Replace the formula in F74 with:
+  =SUM(F67:F73)
+
+4) How to implement
+- Select F74, edit the formula bar, change COUNT to SUM, press Enter.
+- Recalculate (F9) or ensure automatic calculation is on.
+- Re-check the proof lines (D76 vs E76 and D134 vs E134) — they should reconcile after the fix.
+
+5) Quick check to confirm
+- After change, F74 should equal the sum of F67:F73.
+- D76 = D65 + D74 and E76 = E65 + E74 should match (proof of debit and credit).
+
+If you want, I can scan for any other suspicious formulas or run through the proof rows step‑by‑step.

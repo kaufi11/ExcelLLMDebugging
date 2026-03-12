@@ -1,0 +1,53 @@
+Short, clear findings and fixes.
+
+Summary of real errors
+1) FTEE sheet — wrong formula in C14
+   - Error: C14 = 302/24 but B14 = 23373. This uses a hard‑coded 302 instead of the credit hours in B14.
+   - Consequence: C14 (credit FTEE), H14 (total FTEE), H27 (system total FTEE) and all % of total (I14 and I27 etc.) are wrong.
+
+2) Several cells have a stray “+1” added to raw numbers
+   - Locations: Revenues C11 (=141577402+1), General State Financial Aid B21 (=3684419+1), FTEE sheet E27 (=SUM(E11:E26)+1).
+   - Consequence: Totals are off by +1 (or more if multiple +1s) and look like data hacks to force totals to match. This is not correct practice and can confuse audits.
+
+3) Percent total ranges / rounding practice (minor, but important)
+   - Some percent totals sum a range that may include blank/missing rows (e.g., B15 = SUM(B9:B14) although only B9:B13 are used), and rounding differences are being “fixed” with +1.
+   - Better: calculate percentages from the exact summed dollar totals and use ROUND when you need whole‑number presentation.
+
+How to fix (step‑by‑step)
+1) Fix the FTEE credit formula
+   - Change C14 to: =B14/24
+   - Why: this converts the credit hours in B14 to FTEE; using 302 was a typo/hard‑code.
+
+2) Remove the +1s and use proper rounding if needed
+   - Change Revenues C11 to: =141577402  (or to a cell reference if that value comes from another cell)
+   - Change General State Financial Aid B21 to: =3684419
+   - Change FTEE E27 to: =SUM(E11:E26)
+   - If you added +1 to make a displayed whole‑dollar total match a source, instead use ROUND on the SUM where you display rounded figures:
+     - Example: C15 (total revenues) → =ROUND(SUM(C9:C14),0)
+     - Or round the displayed percentage: =ROUND(C9/$C$15,4) for 4 decimal places.
+   - Why: +1 corrupts raw data and totals. ROUND preserves presentation without changing underlying values.
+
+3) Make percentages calculate from the corrected totals (and format them)
+   - For each percent cell use the exact total cell as denominator (already done in many places). E.g. B9 = C9 / $C$15
+   - Ensure total percent cell sums only the percent rows in use (or better: display 100% as =1 or =SUM(B9:B13) after fixing all source numbers).
+   - Why: prevents mismatch between dollar totals and percent totals caused by wrong ranges or rounding.
+
+4) Recalculate and validate
+   - After fixing C14 and removing +1s, re-evaluate H27, I-column percentages, B25 (General State total), C15 (Revenue total) and the expenditure totals.
+   - If you need presentation rounded to whole dollars, use ROUND on the total cells (not ad‑hoc +1).
+
+Quick examples of corrected formulas
+- FTEE!C14: =B14/24
+- Revenues!C11: =141577402  (or =GeneralStateAid!B25 if pulling from that sheet)
+- GeneralStateAid!B21: =3684419
+- FTEE!E27: =SUM(E11:E26)
+- Totals rounded for display: Revenues!C15: =ROUND(SUM(C9:C14),0)
+
+Notes / best practices
+- Avoid hard‑coding adjustments like “+1” in data cells. If you must reconcile tiny rounding differences, add a single clearly labeled adjustment cell and document why it exists.
+- Use consistent ranges for SUMs across related sheets (revenues and percentages should reference the same row sets).
+- Use ROUND for presentation; do not change data to force a match.
+
+If you want, I can:
+- give the exact corrected totals (recalculate after fixing C14 and removing +1s),
+- or prepare a small checklist of cells to change so you can update the workbook quickly. Which do you prefer?

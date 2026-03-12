@@ -1,0 +1,45 @@
+I checked the three sheets and found a few clear, fixable formula errors. Short, specific fixes below.
+
+1) Sheet E20-9 (version “(2)”)
+- Faulty cell: C11
+- Error: Reference/typing error — the formula multiplies total indirect costs by hours instead of dividing by hours.
+- Current: =SUM(C4:C6)*C2
+- Fix: =SUM(C4:C6)/C2
+- Why: Indirect cost hourly rate = total indirect costs ÷ direct labor hours. Multiplying gives an enormous, wrong hourly rate.
+
+2) Sheet P20-3B
+- Faulty cell: I10
+- Error: Wrong reference (uses the total F14 instead of the job’s own labor amount), so overhead allocated to the job is wrong.
+- Current: =+F14*H10
+- Fix: =F10*H10
+- Why: Overhead for this job = this job’s labor amount (F10) × overhead rate (H10). Using F14 (the total of several jobs) allocates the entire pool to the single line.
+
+(Other cells that depend on I10 are OK once I10 is fixed — e.g. I14 = D14+F14+I10 is the job total.)
+
+3) Sheet P20-1B (general problem)
+- Symptom: Several summary/transfer formulas point to the wrong columns or mix up Finished Goods, Work-in-Process and COGS totals (an “off-by-column” / wrong-range problem). Examples:
+  - F14 = +E4+G6 — mixes a Finished Goods cell (E4) with a COGS subtotal (G6) and is placed in column F (which is the Cost-of-Goods-sold job column), so the result is in the wrong place.
+  - G15 = +F14 — sets Work in Process = the value just put into F14 (wrong column/value).
+  - G27 = +F26 — copies COGS into the Finished Goods column instead of reducing Finished Goods (or using the correct finished-goods cell).
+- Why: The formulas are either referencing the wrong column (shifted left/right) or using COGS totals where a Finished Goods or WIP total should be used. That corrupts the inventory roll-forward and journal-entry totals.
+- How to fix (approach, apply to the wrong cells in your file):
+  1. Identify which column holds each account:
+     - WIP costs → column C
+     - Finished Goods costs → column E
+     - Cost of Goods Sold costs → column G
+  2. Put totals in the correct column and reference the correct ranges:
+     - WIP total cell (in column C, e.g. C6 or C10) = SUM(C4:C5) or SUM(C8:C9) as intended.
+     - Finished Goods total (cell in column E, e.g. E14) = SUM(E4:E??) — sum the Finished Goods cost cells (do not include G-column values).
+     - COGS total (cell in column G) = SUM(G4:G5) etc.
+  3. When moving costs between accounts, reference the source column and use the correct sign:
+     - To transfer WIP → Finished Goods, reduce WIP (column C) and increase Finished Goods (column E) using the same amount.
+     - To record COGS when a sale happens, debit COGS (column G) and credit Finished Goods (column E). If you need to show the credit as a positive number in a separate column, reference the Finished Goods cell but keep consistent signs (or show negatives).
+- Example corrections (replace the bad ones):
+  - Move F14’s logic into E14 and point it at Finished Goods cells only:
+    - E14 = SUM(E4:E4)  (or SUM of all finished-goods cost cells)
+  - Make the Work in Process summary point to the WIP sum:
+    - (cell for WIP total) = SUM(C4:C5) or =C6 (if C6 already sums them)
+  - When recording the cost of a sale:
+    - If F26 = 2000 is COGS, reduce Finished Goods by that amount: E27 = -F26  (or E27 = previous finished goods - F26 depending on layout)
+
+If you want, paste the exact cell addresses you want fixed in P20-1B and I’ll give the precise corrected formulas (I avoided guessing exact target cells because this sheet has several columns shifted).

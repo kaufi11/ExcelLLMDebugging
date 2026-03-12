@@ -1,0 +1,16 @@
+I inspected the workbook and found one clear spreadsheet error plus a common-pitfall to watch for. Short summary and fix below.
+
+1) Typo in cell K40 (Real(IS))
+- Error: K40 = $B$23 * F40 (uses sin term) while every other row uses K = $B$23 * E (cos term). That makes IS (and downstream M40, N40 etc.) wrong for row 40.
+- Why it's wrong: K is supposed to be the real part of the current phasor = IR_real * cos(β·d). Using F40 (sin) computes IR_real * sin(β·d) instead, so the real/imag decomposition at that distance is off.
+- Fix: Replace K40 with =$B$23 * E40 (matching the other rows). Then copy K4's correct formula down the K column (or re-fill K4:K54) so all rows are consistent.
+
+2) Watch out for ATAN2 argument order if porting formulas or troubleshooting angles
+- Note: In Excel the ATAN2 function signature is ATAN2(x_num,y_num) and Excel returns atan2(y_num,x_num). The sheet uses ATAN2(G,H) and ATAN2(K,L) everywhere — that is correct for Excel to compute angle = atan2(imag, real). If you move formulas to another environment (or mistakenly assume ATAN2 takes (y,x)), the phasor angles will be wrong. No change needed in this workbook — just awareness.
+
+Suggested quick actions (steps)
+1. In K40 put: =$B$23*E40
+2. Select K4 (which has the correct formula), drag-fill or copy it down the K column to overwrite any other accidental deviations (K4:K54).
+3. Optionally verify row 40 values (M40, N40, and any dependent charts) to confirm they now match expected neighbours.
+
+If you want, I can scan for any other single-cell deviations and produce a corrected copy of the K column (or the whole C:N block) for you.

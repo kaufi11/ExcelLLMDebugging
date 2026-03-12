@@ -1,0 +1,44 @@
+Found 4 classes of errors. Short summary, why it’s wrong, and exactly how to fix each (easy steps + one safer formula pattern to use everywhere).
+
+1) Grand totals omit Opt.7
+- Problem: Total LOE B70 = SUM(B68:H68) excludes column I (Opt.7). T&M grand total B62 = SUM(B60:T60) excludes Opt.7 (W column). Other sheet grand-totals may have the same omission.
+- Fix: Update the ranges to include the Opt.7 column.
+  - Total LOE: B70 → =SUM(B68:I68)
+  - T&M: B62 → =SUM(B60:W60)
+  - Check Fixed Price and Cost sheets: ensure their Grand Total formulas include the Opt.7 totals (W59 or W61 / Y etc depending on layout).
+- Why: Excluding the last option underreports totals.
+
+2) Inconsistent escalation rate at Opt.4 (0.023 vs 0.02)
+- Problem: Most option-step formulas use +2% each period, but many cells in the Opt.4 column (N…) use *0.023 (2.3%). A few rows also used 0.02 where most used 0.023 — inconsistent.
+- Fix: Decide the correct escalation (likely 2%). Then standardize:
+  - Replace any formula like =K5+(K5*0.023) with =K5*1.02 (if 2% is intended).
+  - Do this for every sheet (Fixed Price, Cost, T&M, Total LOE where applicable).
+- Why: Mixed escalation rates make option-hour calculations inconsistent and incorrect.
+
+3) Hard-coded / non-referenced formulas
+- Problem: Example in T&M N37 is written as =920+(920*0.023) (literal 920). Hard-coded numbers break automatic updates and produce inconsistencies.
+- Fix: Replace hard-coded expressions with references to the prior option cell:
+  - e.g. N37 → =K37*1.02 (or =K37*1.023 only if 2.3% is intentionally required)
+- Why: Using cell references keeps formulas dynamic and consistent when base/previous values change.
+
+4) Fragile cumulative formulas — risk of future copy errors
+- Problem: Current pattern chains previous column =Prev + Prev*0.02 across many columns; that worked but led to the inconsistent 0.023 and a few manual deviations.
+- Better solution (safer & easier to audit): compute each option directly from the Base Pd with a power formula so each option is self-contained:
+  - C (Opt1) = B * 1.02
+  - D (Opt2) = B * 1.02^2
+  - E (Opt3) = B * 1.02^3
+  - … I (Opt7) = B * 1.02^7
+  - Example for row 14: C14 = $B14*1.02, D14 = $B14*1.02^2, etc.
+- Why: This prevents propagation-of-error and makes it obvious that every option is +2% compounded from base.
+
+Quick checklist to apply now
+- Fix B70 in Total LOE to =SUM(B68:I68).
+- Fix Grand Totals on all sheets to include the Opt.7 column.
+- Find & replace *0.023 → *0.02 (or adjust to *1.02) for all N (Opt.4) formulas if 2% is correct.
+- Replace any hard-coded formulas (like 920) with references (K37*1.02).
+- Optionally convert all option formulas to the B*1.02^n pattern for consistency and auditability.
+- Verify Program Director / Program Manager rows: they are repeated constant values across options — confirm that is intentional.
+
+If you want, I can:
+- give the exact list of all cells containing *0.023 and all hard-coded numerics to change, or
+- provide the precise formula to paste (and a macro-free step-by-step) to update all rows at once. Which would you prefer?

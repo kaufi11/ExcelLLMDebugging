@@ -1,0 +1,40 @@
+I checked the workbook and found the main formula mistakes that produce incorrect totals. Short summary first, then quick fixes + why.
+
+1) Wrong cost reference in each class “Total” row (major error)
+- What’s wrong: For every class the row labeled “Total” (the row immediately under each class) multiplies company participant counts by the RISE cost (column E) instead of the Public Cost (column D).  
+  Example: Row 4 (for the class in row 3) has F4 =SUM(F3*$E$3). That uses $E$3 (RISE cost) but should use $D$3 (Public Cost).
+- Effect: The per-company “Total” values for public cost are wrong (they show RISE-based values instead of public-cost totals), and downstream totals that depend on those cells are wrong too.
+- Fix: Change those formulas to multiply by the Public Cost. For the example above change F4 to:
+  F4 = F3 * $D$3
+  (and remove the unnecessary SUM wrapper). Then copy that fixed formula across the row (to G4:BG4) and replicate for every “Total” row in the sheet (i.e. each class’s Total row uses the class’s D cell).
+
+2) Wrong function used in one total (row 94)
+- What’s wrong: D94 contains AN94 = COUNT(AN93*$E$93). COUNT returns a count (and will usually return 1 or 0) — here you want the numeric product, not a count.
+- Effect: the “Total” at AN94 is incorrect (it won’t show the monetary total).
+- Fix: Replace the COUNT call with multiplication (or SUM if you prefer consistency). For example:
+  AN94 = AN93 * $E$93
+  or
+  AN94 = SUM(AN93 * $E$93)
+  (Either will return the proper numeric total. Prefer the direct product without SUM.)
+
+3) Plenty of unnecessary SUM() wrappers (cosmetic but confusing)
+- Examples: BK3 = SUM(F3:BG3) is fine; but many cells use SUM around a single arithmetic expression (e.g. =SUM(F3*$E$3) or =SUM(BM4-BO4)). These are not errors by themselves, but they make formulas harder to read and can hide mistakes.
+- Recommendation: Use the simple arithmetic form (A*B, A-B) for clarity. This reduces risk of copy/paste mistakes.
+
+4) How to fix the whole sheet quickly (practical steps)
+- Fix one class’s Total row manually (e.g. row 4):
+  - Replace F4 =SUM(F3*$E$3) with F4 =F3*$D$3
+  - Copy across to cover all company columns (G4:BG4).
+- Then copy that corrected row pattern down to every class’s Total row (each “Total” row is the row immediately below the class row). You must adjust row references automatically when copying (Excel will update relative references). If you used absolute $D$3, change so the D reference points to the D cell in the class row (e.g. use $D$3 only when fixing row4; when copying down Excel will change it to $D$6 if you copy to the next block.)
+- Fix the AN94 (and any other accidental COUNT) manually: change COUNT(...) to the arithmetic product.
+- Optional: run Find (Ctrl+F) for patterns like "*$E$" inside SUM(...) to find cases where SUM( ... * $E$...) occurs in “Total” rows and replace with the appropriate $D$ reference.
+
+5) Why these fixes are correct (brief)
+- Public Cost per participant is in column D. To compute the class’s public cost per company you must multiply the number of participants (company column cell) by the public cost (column D of the same class). Using column E used the wrong unit (RISE cost) and produced the wrong totals.
+- COUNT() is for counting items, not for multiplying values — the product of a participant count and a per-student rate must be returned as the numeric product.
+
+If you want, I can:
+- Provide an exact Replace/Fill formula pattern for all “Total” rows so you can paste it in one operation, or
+- Generate a short macro to correct every Total row automatically.
+
+Which would you prefer?

@@ -1,0 +1,33 @@
+I reviewed both sheets and found the problems and fixes. Short summary first, then quick explanations and steps.
+
+1) Critical error (breaks the numbers)
+- What’s wrong: On the "Formulas" sheet cell C18 contains the hard-coded number 207 instead of the formula that calculates COGS (=C34).
+- Why it matters: C18 feeds Gross Margin (C19) and everything below (operating income, tax, net income). A hard-coded 207 gives wrong results and will not update when sales/inventory change.
+- Fix: Replace the value in C18 with =C34.
+  - How: Select C18 → type =C34 → Enter.
+- Effect: C19 and all downstream totals will recalculate correctly based on the COGS schedule.
+
+2) Misaligned expense formulas (confusing / error-prone)
+- What’s wrong: Expense formulas (salaries, rent, depreciation, insurance) are entered in columns B and D (B21:B24 and D21:D24) while the financial columns of the model appear to be C (August) and E (September). Example: salaries formula is in B21 but the sales number used is in C17.
+- Why it matters: This layout is confusing and makes subtotal formulas reference the wrong ranges (or rely on offsets). It makes copying formulas to future months error-prone.
+- Fix (recommended):
+  - Move the expense formulas one column right so they sit in the same month columns as sales:
+    - Put salaries/commissions in C21 and E21 (instead of B21 and D21).
+    - Put rent in C22 and E22, depreciation in C23 and E23, insurance in C24 and E24.
+  - Update the subtotal formulas:
+    - C24 (Operating expenses) → =SUM(C21:C24)
+    - E24 → =SUM(E21:E24)
+  - Verify C25 = C19 - C24 and E25 = E19 - E24 still reference the correct rows.
+- Effect: The model becomes consistent by month and easier to extend/copy.
+
+3) Other inconsistent references you should check
+- Examples found: F38 = E38 + C37, F42 = D42 + B41, F44 = D44 + B43 — these mix columns and look suspicious.
+- Action: Review each of these and confirm whether they should sum same-month current + prior items (e.g., C37 + C38 or E37 + E38) and correct the column references to be consistent by month.
+- If you tell me what those rows are supposed to calculate, I can give exact corrected formulas.
+
+4) Note about ending inventory formulas (not an error if intended)
+- C33 uses E17 (next period sales) and E33 uses B8 (October sales) — that is consistent with the label “Additional End Inv. % of next period sales.” Keep that if the intent is to size month-end inventory based on next month’s sales.
+
+If you want, I can:
+- Give the exact corrected formulas for each affected cell (I can list them),
+- Or produce a corrected version of the sheet layout (showing the corrected formulas placed in C/E columns). Which would you prefer?

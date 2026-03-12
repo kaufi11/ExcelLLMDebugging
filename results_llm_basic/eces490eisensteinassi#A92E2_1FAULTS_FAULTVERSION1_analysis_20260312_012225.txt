@@ -1,0 +1,24 @@
+Findings (short)
+- One clear error: cell F19 contains =-LOG(E19,642). That uses base 642 instead of base 2, so the information I(A) for that symbol is wrong and the G19:G44 entropy sum (G46) is incorrect.
+- Everything else looks consistent (probabilities in A19:A44 and E19:E44 sum to 1, B/C columns use base-2 correctly).
+
+Why it's wrong
+- Info content formula should be -LOG(p, 2) (negative log base 2). Using 642 as the base gives a totally different number and makes the entropy sum too small.
+
+Fix (exact)
+- Change F19 to:
+  =-LOG(E19, 2)
+- Fill or copy that corrected formula down F19:F44 (so each F cell uses its own row’s E cell).
+
+Better / cleaner alternatives
+- Compute each distribution’s entropy without the extra intermediate column with SUMPRODUCT:
+  For E19:E44 distribution:
+  =-SUMPRODUCT(E19:E44, LOG(E19:E44, 2))
+- Compute max entropy for 26 symbols simply as:
+  =LOG(26, 2)    (this equals -LOG(1/26,2) and equals your C47/G47 result)
+
+How this fixes things
+- Using base 2 gives the correct bits units for information and entropy; correcting F19 makes G19 correct and the total G46 equal the true entropy for that distribution. SUMPRODUCT reduces chance of row-copy mistakes.
+
+Quick check you can do
+- After fixing, G46 (entropy for E-distribution) should be > 0 and comparable to the C46 (entropy for A-distribution) depending on distributions. If G46 was very small before, the 642 typo was the cause.

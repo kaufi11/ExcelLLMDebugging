@@ -1,0 +1,36 @@
+Summary — what's wrong
+- Cell E94 (Membership services, 2001) is a hard-coded value (189,785.67) and is not calculated from any supporting rows. That makes the "Other operating costs" subtotal (E92) and all downstream totals potentially incorrect or unverifiable.
+- There are several other hard-coded cells in the sheet where formulas would be expected (this is the same class of problem). Hard-coded numbers break the audit trail and make errors likely.
+
+Why this is a problem (short)
+- Totals like E92 (Other operating costs), E100 (Total expenditure) and the surplus (E102) must be driven from the detailed lines. A wrong or misplaced number in a detail line (E94) will give wrong totals and incorrect financial statements.
+
+How to fix it (exact, short steps)
+1. Find the correct source of the Membership services figure for 2001:
+   - If there is a supporting breakdown on the workbook (or a supporting schedule), use that range.
+   - If you don't have a breakdown, get the correct number from the original records.
+
+2. Replace the hard-coded value in E94 with a formula referencing the supporting cells. Example patterns:
+   - If the membership services components are in E100:E105 (example), put:
+     =SUM(E100:E105)
+   - If you cannot find a breakdown but E92 and the other components (E93, E95:E98) are correct, you can compute E94 from them:
+     E94 = E92 - (E93 + E95 + E96 + E97 + E98)
+     In Excel: =E92 - (E93+E95+E96+E97+E98)
+     (This is a stop-gap; better to link to the original detailed items.)
+
+3. After changing E94 to a formula, recalculate and then:
+   - Use Trace Precedents (Formulas -> Trace Precedents) to confirm E94 now comes from the correct cells.
+   - Use Trace Dependents on E94 to confirm the totals downstream update correctly.
+   - Check E100, E102 and the accumulated funds (E327 / E330) to ensure the totals reconcile.
+
+One quick diagnostic trick
+- Select E94 and press Ctrl+[ (or use Trace Precedents). If nothing points to E94, it's a manual entry — that confirms the error.
+
+Other notes (brief)
+- There are a few other suspicious hard-coded or oddly written formulas elsewhere (examples: C121, some +E147 references). After fixing E94, run a quick audit:
+  - Review every subtotal cell to ensure it is a SUM of the detail rows (not a pasted number).
+  - Use Excel’s Inquire / Formula Auditing tools or conditional formatting to highlight cells with formulas vs. constants.
+
+If you want, I can:
+- Give you the exact formula to enter if you tell me where the membership-service detail rows are, or
+- Inspect other suspect cells (I can list the most likely hard-coded or misreferenced cells).

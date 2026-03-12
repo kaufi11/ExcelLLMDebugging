@@ -1,0 +1,48 @@
+Summary of the problems
+- Many row formulas are wrong/shifted: e.g. F9 = SUM(E9), G9 = SUM(F9), etc. Those just re-sum a single (or the previous) cell instead of using the correct data. This looks like a copied formula with wrong relative references.
+- Some cells reference unrelated cells or outside the data range (E9 = SUM(E42) — E42 is outside the day rows).
+- One cell uses COUNT instead of SUM (H19 = COUNT(G19)).
+- The totals row is chained/shifted: F40 = SUM(E40), G40 = SUM(F40) … so only the one cell is summed and errors propagate instead of summing each column’s day rows.
+
+What this causes
+- Category totals and daily totals are incorrect because formulas point to the wrong places or only a single cell.
+- Propagated/shifted formulas give wrong numbers and hide real data entry.
+
+Correct approach & exact fixes
+1) Daily total (column C)
+- Replace each C-day formula with: C9 = SUM(D9:M9) and fill down to C39.
+  - Why: Total # should sum the service categories for that day.
+
+2) Service category totals (bottom row 40)
+- Use direct column ranges. Put these in row 40:
+  - D40 = SUM(D9:D39)
+  - E40 = SUM(E9:E39)
+  - F40 = SUM(F9:F39)
+  - G40 = SUM(G9:G39)
+  - H40 = SUM(H9:H39)
+  - I40 = SUM(I9:I39)
+  - J40 = SUM(J9:J39)
+  - K40 = SUM(K9:K39)
+  - L40 = SUM(L9:L39)
+  - M40 = SUM(M9:M39)
+  - (C40 can remain =SUM(C9:C39) as you already have.)
+
+3) Remove or correct the erroneous single-cell SUM formulas in the day rows (rows 9:39)
+- Any cell like F9 = SUM(E9) should be replaced with either:
+  - a manual number (if data is entered by hand), or
+  - a correct formula that belongs in that column (but typically service columns D:M should be raw counts per day, not SUMs of other single cells).
+- Example: If cells D9:M9 are data inputs, do NOT put F9 = SUM(E9). Clear those formulas so the actual values can be entered.
+
+4) Fix the COUNT error
+- Replace H19 = COUNT(G19) with H19 = SUM(G19) or with the actual intended value. COUNT(G19) returns 1 if G19 is numeric — not a sum.
+
+Quick checklist to repair workbook
+- Clear all formulas in D9:M39 (if they should be data inputs) and re-enter the daily counts.
+- Put C9 =SUM(D9:M9) and fill down to C39.
+- Put D40..M40 as SUM(column day ranges) as above.
+- Verify there are no formulas referencing unexpected rows (like E42) — adjust to your real range.
+
+Why this fixes it (short)
+- Totals must sum the correct ranges. Right now many formulas point to single cells or shifted columns, so they don’t aggregate the data. Using SUM over the day range for each column and computing each day’s total from that row’s categories gives correct, auditable totals.
+
+If you want, I can produce the exact formulas to paste in each affected cell or provide a macro to fix all at once. Which do you prefer?

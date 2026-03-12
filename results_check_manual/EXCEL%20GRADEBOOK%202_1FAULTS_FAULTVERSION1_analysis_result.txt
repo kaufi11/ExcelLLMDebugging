@@ -1,0 +1,20 @@
+I inspected the formulas on Sheet1. I found one clear formula error and a couple of potential inconsistencies / improvement points.
+
+1) Clear formula error
+- Cell: X5
+- Current formula: =(SUM(R5:V5)+MIN(R5:V5))/(COUNT(R5:V5)+1)
+- Problem: This is the only "quiz average" row using addition and COUNT+1 instead of subtracting the lowest and dividing by COUNT-1. All other quiz average cells (X2:X4, X6) use the "drop lowest" formula (SUM - MIN)/(COUNT - 1). The X5 formula is a typo and produces an incorrect quiz average.
+- Correct formula (consistent with the rest of the sheet): =(SUM(R5:V5)-MIN(R5:V5))/(COUNT(R5:V5)-1)
+- Effect on values:
+  - Current X5 value (wrong): 88.5 (computed from the erroneous formula)
+  - Correct X5 value: 95.25
+  - Because AE5 uses X5 in the weighted final grade, AE5 will also change:
+    - Current AE5: 86.035
+    - Correct AE5 (with corrected X5): 87.7225 (approx.)
+
+2) Potential inconsistencies / suggestions
+- Tests averaging: Tests (columns Y:AB) are averaged with AVERAGE(Yn:ABn) rather than using the "drop lowest" method used for homework/classwork/quizzes. That may be intentional; if you expect the same drop-lowest treatment for tests, change AD formulas accordingly (use (SUM(Y:AB)-MIN(Y:AB))/(COUNT(Y:AB)-1)).
+- Absolute references for weights: AE formulas reference the weight cells as C$1, K$1, S$1, Z$1 (row locked). That works when copying down, but if you copy formulas across columns you could accidentally shift the weight column. Consider using fully absolute references ($C$1, $K$1, $S$1, $Z$1) to lock both row and column if you want to avoid any accidental shift.
+- Division-by-zero risk: The drop-lowest formulas use (COUNT(...) - 1). If any category ever had only 1 score for a student this would cause a divide-by-zero error. (Not an issue in this sheet as counts are >=4.)
+
+Summary: fix X5 to the "(SUM - MIN)/(COUNT - 1)" form; update AE5 will recalculate accordingly. Consider standardizing averaging rules across categories if desired and optionally switch weight cell references to fully absolute ($C$1 etc.).

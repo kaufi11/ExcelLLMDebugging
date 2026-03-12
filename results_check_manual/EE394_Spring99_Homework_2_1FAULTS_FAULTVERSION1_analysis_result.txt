@@ -1,0 +1,21 @@
+I inspected the formulas you supplied. I found one definite formula error/inconsistency and a couple of items worth calling out (possible sources of confusion or improvements).
+
+1) Definite error — D50 is wrong / inconsistent
+- Pattern: in every row Dn is set to =-Cn (mirror of the "z - km" column).
+- Cell D50 is "=-285" (hard-coded) instead of "=-C50" (or "=-2300").
+- Consequence: E50..N50 (cos/sin, voltages/currents, angles) are computed from D50 = -285 rather than the expected D50 = 2300, so that entire row is inconsistent with the rest of the table.
+- Suggested fix: change D50 to =-C50 (or to =2300 if you intended a particular positive value). Most likely you want:
+  D50: =-C50
+
+2) ATAN2 usage — note on argument order (not an error in the sheet)
+- The sheet uses formulas like =ATAN2(G#,H#)*180/PI() to get an angle in degrees, where G is the real part and H is the imaginary part.
+- Excel's ATAN2 signature is ATAN2(x_num,y_num) and returns atan(y_num/x_num) (i.e. it returns the angle atan2(y,x)). So passing ATAN2(Real, Imag) yields atan(Imag/Real) which is the usual complex-phase angle. In short: your ATAN2(Real,Imag) usage is internally consistent and gives the expected phase in degrees.
+- Caveat: this is easy to trip over when porting to other environments (e.g. many programming languages use atan2(y,x)), so be careful if you export/translate formulas.
+
+3) Minor / stylistic points (not errors)
+- B12 and B13 use expanded decimal literals (e.g. 8.854*(0.000000000001), 0.0000001). These are correct numerically, but using scientific notation (8.854187817E-12, 1E-7) or named constants (e.g. mu0, eps0) would improve readability and accuracy (eps0 ≈ 8.854187817E-12).
+- A few formulas use relative references to B4, B5 etc. That is OK, just be aware if you copy rows/columns you may need to lock some references with $.
+
+Summary
+- Fix D50 to =-C50 (or otherwise correct the hard-coded -285). That is the only clear formula error in the supplied sheet.
+- All ATAN2 calls appear consistent for Excel's ATAN2 semantics (Real first, Imag second).

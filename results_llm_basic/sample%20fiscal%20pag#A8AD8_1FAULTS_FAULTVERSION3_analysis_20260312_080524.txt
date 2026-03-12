@@ -1,0 +1,23 @@
+Summary of the problem
+- The main, explicit error is on sheet "1856": cell H25 (Total Revenues, Projected column) uses COUNT(H9:H24) instead of SUM(H9:H24).
+- Because H25 is wrong, any roll‑up that uses that cell (sheet 1856’s H6, the per‑fund totals, and the Summary sheet totals that sum across funds in column H) will be incorrect for the Projected column.
+
+Why this is wrong (short)
+- COUNT() returns the number of numeric cells in the range (an integer like 0..16), not the monetary total. You need SUM() to add the revenue amounts.
+
+How to fix
+1. On sheet 1856, change the formula in H25 from:
+   =COUNT(H9:H24)
+   to:
+   =SUM(H9:H24)
+
+2. After changing, press F9 (recalculate) or save/reopen to refresh all dependent totals. Verify:
+   - Sheet 1856: H25 now shows the total of H9:H24 (a monetary number).
+   - Sheet 1856: H6 (Carry Forward Projected) and H37 (TOTAL NET RESOURCES) update correctly.
+   - Summary sheet column H totals update correctly (because they aggregate across funds).
+
+Extra quick checks (recommended)
+- Use Find (Ctrl+F) to search the workbook for COUNT( in case other totals were accidentally entered with COUNT instead of SUM.
+- For cross‑sheet 3D sums I recommend using the cleaner syntax: =SUM('1003:1856'!D6) (works the same as the current variant but is clearer).
+
+If you want, I can list any other cells that still look suspicious (negative signs, unusually large negatives) or run the COUNT→SUM search for you.

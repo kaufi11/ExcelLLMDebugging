@@ -1,0 +1,47 @@
+I reviewed the formulas on both sheets and found a few real errors / inconsistencies and a couple of questionable modeling choices. Below are the problems I found, the effect they cause, and recommended fixes.
+
+Summary of definite formula errors
+1) Sheet "Early or Late" — broken chain starting at row 32
+- Problem: Cell B32 contains the formula =F31. All prior rows follow the pattern Bn = E(n-1). The formula in B32 therefore appears to be a typo.
+- Effect: Because B32 is wrong, E32 becomes 0 and the entire early-saver chain from row 32 onward collapses to zeros (B32:E48 become wrong). This breaks the Early Saver projection beyond row 31.
+- Fix: Change B32 to follow the pattern and reference the previous end balance:
+  - Correct formula: B32 = E31
+
+(After fixing B32 the subsequent B33 = E32, B34 = E33 etc. will propagate as intended.)
+
+2) Sheet "Vanguard" — textual “formulas” (not real formulas) in D15:D21
+- Problem: Cells D15–D21 contain literal text strings like "= Ending Balance - Beginning Balance", "= $23,833.35 - $10,000", "= $13,833.35", "= (Ending Balance - Beginning Balance) / Beginning Balance", etc. These are not real Excel formulas and therefore do not compute numeric results; they are text.
+- Effect: Capital gain and holding-period-return are not being calculated from the sheet’s numbers; displayed values are static/text and may be out of sync or rounded.
+- Fix: Replace the text with real formulas that reference the sheet cells. For example, assuming Beginning Balance is B4 and Ending Balance is F13:
+  - Capital Gain (put into D16): =F13 - B4
+  - Holding Period Return (put into D19 or another cell): =(F13 - B4) / B4
+  - Then format the holding-period-return cell as decimal or percent as required (e.g., 138.33%).
+- Optional: If you want separate cells showing the decimal and the percentage:
+  - D20 (decimal) = (F13 - B4) / B4
+  - D21 (percentage) = same formula, formatted as Percentage
+
+Other inconsistencies / questionable modeling choices (not strictly “errors” but worth checking)
+1) Vanguard: fee basis
+- E4 (fee) is computed as =E2*(B4 - C4 + D4) — i.e., fee is charged on the balance after adding the period return (B - load + return). The return is computed on (B - load) via D4 = D2*(B4 - C4).
+- Comment: It is unusual (but not invalid) to charge the fee on the post-return value; many models charge fees on beginning assets or on average assets. Confirm whether the fee should be computed on beginning balance (B4 - C4) rather than (B4 - C4 + D4). If you want fee on beginning assets, change the fee formula to =E2*(B4 - C4).
+
+2) Vanguard: C4 uses =0*B4
+- Not an error (returns 0) but stylistically odd; simply entering 0 would be clearer.
+
+3) Early or Late: blank cells treated as zero
+- Many Later-year deposit cells (C19:C48) for Early Saver are blank/omitted and thus treated as 0 by the formulas. That looks intentional (early saver deposits only first 15 years); verify that is intended. The Late Saver deposits (I19:I48) sum to 30,000, and Early Saver C4:C18 sum to 15,000 as confirmed by the Cash Outlay cells.
+
+Other small notes
+- Cell references like =F31 (the erroneous one) are not a #REF error, because column F exists; that can hide the typo (it returns blank/0) rather than producing an easily spotted #REF. This is why B32 silently became 0 — the reference pointed to an empty column instead of the intended E31.
+
+Recommended immediate changes
+1) On "Early or Late" change B32 from =F31 to =E31.
+2) On "Vanguard" replace the text strings with live formulas:
+   - D16: =F13 - B4
+   - D19 (or D18 per layout): =(F13 - B4) / B4
+   - Optionally D20 =D19 (decimal) and D21 =D19 formatted as percentage.
+
+If you want, I can:
+- Produce the exact corrected formulas for every affected cell and the minimal edits to make the workbook fully consistent, or
+- Recompute the corrected numbers for a couple of sample rows (e.g., show the Early Saver balances after fixing B32), or
+- Check for any further typos after you apply those two fixes.

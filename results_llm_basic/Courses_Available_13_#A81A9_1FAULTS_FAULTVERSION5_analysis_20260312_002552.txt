@@ -1,0 +1,21 @@
+Summary of the error
+- Cell A60 contains the formula =745+1 (a hard-coded number), instead of continuing the sequence from the previous row (=A59+1). Because A61 and all later rows depend on A60, the whole numbering after row 60 becomes wrong (starts at 746).
+
+Why this is a problem
+- A hard-coded literal breaks the chain of incremental formulas (A60 should equal A59+1). Any time you want an automatic, continuous sequence, one wrong literal will mis-number every subsequent row.
+
+Quick fix (one-step)
+1. Replace the formula in A60 with: =A59+1
+2. Then select A60 and fill (drag or double-click the fill handle) down through the rest of column A to restore the correct incremental sequence.
+
+Explanation of the fix
+- Changing A60 to =A59+1 restores the formula chain so each row increments from the previous row. Filling down propagates the corrected formula to all later rows that rely on it.
+
+Optional improvement (skip headers automatically)
+If some rows are headers and you want numbering only for actual course rows, use a formula that checks column B and leaves header rows blank. Example (assuming A4 is the initial number 1 and column B contains the course title):
+- In A5 (and fill down): =IF(TRIM(B5)="","",A4+1)
+
+This keeps numbering blank for rows where B is blank (or only a header) and continues numbering elsewhere.
+
+Notes
+- =+A4+1 is valid Excel syntax (same as =A4+1) — it's not an error. The only real error you showed is A60.

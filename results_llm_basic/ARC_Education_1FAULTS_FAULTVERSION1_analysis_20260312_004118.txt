@@ -1,0 +1,57 @@
+I reviewed the workbook. Below are the clear errors I found, a short explanation for each, and the quick fixes (exact formulas or actions). I kept each item short and actionable.
+
+1) Student - Teacher sheet — BUFORD attendance (E15)
+- Problem: E15 shows 1.548 but the same-system attendance values are ~1,500 (nearby H15 = 1540). This is a misplaced decimal / data-entry error.
+- Fix: Replace 1.548 with 1548 (or the correct integer attendance). No formula change required.
+
+2) Student - Teacher sheet — 1997–98 teachers total uses COUNT instead of SUM (F56)
+- Problem: F56 =COUNT(F45:F55) returns the count of cells (e.g. 11) instead of total teachers.
+- Fix: Replace with a SUM:
+  =SUM(F45:F55)
+
+3) Student - Teacher sheet — missing/incorrect totals or ratios shown as "**"
+- Problem: Several total and ratio cells display "**" (data not available) or are blank where a numeric total could be calculated.
+- Fix: If data are available, fill the numeric values and use SUM for totals. For ratio cells you can calculate overall student‑teacher ratio as:
+  =ROUND(TotalAttendance / TotalTeachers,1)
+  then format as desired (example display "17.0" or convert to text: =ROUND(...,0)&"-1").
+
+4) Teachers With Advanced Degrees sheet — percent columns shown as decimals (0.4690…)
+- Problem: In the later block (rows 21–31) the percent columns contain values like 0.469033856… while earlier percent columns show numbers like 50.9. This is either a formatting mismatch (decimal fraction vs percent) or wrong formula.
+- Fix A (formatting): If 0.469… actually means 46.903% then format cells as Percentage with one decimal:
+  Home → Number Format → Percentage (1 decimal).
+- Fix B (if value should be e.g. 46.9 but formula produced fraction): multiply by 100 or correct the formula that produced the fraction. Example convert to percent value:
+  =original_formula * 100  (then format as Number or Percentage)
+
+5) Teachers With Advanced Degrees — counts showing decimals (e.g., 1995.8, 1789.9)
+- Problem: “Total No.” should be integers but some cells show decimals (1995.8, 1789.9), meaning a formula produced a non-integer (maybe from division or averaging).
+- Fix: Change the formula to produce an integer (round) or correct the reference. Example to round:
+  =ROUND(original_formula,0)
+  or if it should be a SUM, use =SUM(range).
+
+6) University sheet — Two-Year Colleges totals use wrong ranges
+- Problem: Row A15 “Total” formulas include the four-year rows (C15 currently =SUM(C5:C14)) instead of only the two-year rows (rows 12–14). This inflates totals.
+- Fix: Change the ranges to the two-year college rows only:
+  B15 =SUM(B12:B14)
+  C15 =SUM(C12:C14)
+  D15 =SUM(D12:D14)
+  E15 =SUM(E12:E14)
+  F15 =SUM(F12:F14)
+  G15 =SUM(G12:G14)
+  H15 =SUM(H12:H14)
+  I15 =SUM(I12:I14)
+  J15 =SUM(J12:J14)
+  K15 =SUM(K12:K14)
+
+7) General: formulas referencing wrong ranges or using COUNT where SUM is intended
+- Problem: I saw at least two instances of COUNT used incorrectly (F56) and totals referencing extra rows (university totals). These produce wrong totals.
+- Fix: Scan totals and replace COUNT with SUM where you intend to add values; check each SUM range and ensure it covers exactly the numeric rows intended.
+
+Quick checklist you can follow to fix similar issues:
+- For any total cell: verify the SUM range (select the range and press SUM to confirm).
+- For any percentage column: check whether values are stored as 0.x (format as %), or stored as 46.9 (format as Number).
+- For any count/total: make sure you used SUM, not COUNT or AVERAGE.
+- For any numeric field showing decimals where integers are expected, use ROUND(...,0) or fix the underlying formula.
+
+If you want, I can:
+- Give the exact cells to change and paste corrected formulas into a list for copy/paste, or
+- Prepare a short step-by-step macro to fix the repeated issues (COUNT→SUM and range fixes). Which would you prefer?

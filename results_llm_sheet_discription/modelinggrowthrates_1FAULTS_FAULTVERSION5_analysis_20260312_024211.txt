@@ -1,0 +1,22 @@
+Findings (short)
+- There is a formula typo in the Data sheet: cell C20 is wrong. It reads =$C$4*(278+$C$5)^B20 + A20*$C$6 but should read =$C$4*(1+$C$5)^B20 + A20*$C$6.
+- Consequence: C20 produces a massively incorrect Q at time = 12, which will (if present when regressions are run) hugely distort ln(Q) and Q regressions (biased coefficients, inflated residuals, or invalid LN if Q≤0).
+- Other checks: LN(C#) requires C#>0. If additive errors can make any C negative, the ln regression will fail.
+
+Fix (what to do)
+1. Correct C20 by replacing the 278 with 1. Exact formula to enter in C20:
+   =$C$4*(1+$C$5)^B20 + A20*$C$6
+2. Copy C8’s formula and Fill Down through C58 to ensure all rows use the same pattern:
+   - Select C8, Ctrl+C, select C8:C58, Edit → Fill → Down (or drag the fill-handle).
+3. Recalculate / refresh the workbook (F9) and re-run the regressions (or check the Regression output sheets).
+
+Why this fixes it (simple explanation)
+- The model is Q = A*(1+r)^t + error. The “278” made the base (278 + r) instead of (1 + r), so Q at t=12 became astronomically large compared to the rest. Replacing 278 with 1 restores the intended exponential base and removes the outlier.
+- Re-filling the whole column prevents other single-cell typos (ensures consistent formula pattern).
+- After fixing, ln(Q) will be valid and the ln(Q) regression will properly recover A≈100 and r≈0.04.
+
+Extra quick checks (optional)
+- Select C8:C58 and use Excel’s “Go To Special → Formulas” or look for “Inconsistent Formula” green markers to find any other mismatches.
+- Verify all C values > 0 before using LN: =MIN(C8:C58) should be >0.
+
+If you want, I can give the exact sequence of menu clicks for "Fill Down" or the Find procedure to locate other inconsistent formulas.

@@ -1,0 +1,18 @@
+Summary — one clear error
+
+Faulty cell: F19
+What’s wrong: Formula uses the wrong logarithm base: =-LOG(E19,642) — base 642 instead of base 2.
+Why it matters: F19 computes the information content for the E-column distribution. With base 642 it gives a much smaller (wrong) value, so G19 (E19*F19) and the total entropy G46 (SUM(G19:G44)) are incorrect.
+
+Fix (quick):
+- Change F19 to: =-LOG(E19, 2)
+- Ensure G19 is =E19*F19
+- Fill/copy F19:G19 down through row 44
+- Recalculate G46 (it already uses =SUM(G19:G44))
+
+Short numeric check (to show the impact):
+- Correct F19 = -LOG2(0.10869565) ≈ 3.2016 → G19 ≈ 0.10869565*3.2016 ≈ 0.348
+- Wrong F19 gave ≈ 0.3434 → G19 ≈ 0.037 (much smaller), so the total entropy was understated.
+
+Optional tidy-up:
+- If you want the theoretical max entropy, you can use =-LOG(1/26,2) or =LOG(26,2) (both equal log2(26)) instead of the longer 26*((1/26)*-LOG((1/26),2)).

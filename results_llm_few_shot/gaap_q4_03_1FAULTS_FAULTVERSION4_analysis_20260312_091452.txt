@@ -1,0 +1,39 @@
+Summary — main errors found
+1. Wrong aggregation (Q4 D14).  
+2. Hard-coded or incorrect percent-change cells (many H11 cells and some others).  
+3. Division-by-zero risk in percent-change formulas when prior-period value = 0 (Q1 H9, H12, etc.).  
+4. Odd/manual formula in Q3 2003-4 Qtr L11 (= -80+40) — unclear and nontransparent.
+
+Fixes (short, exact formulas) and short explanations
+
+1) Q4 sheet — D14
+- Fault: D14 =COUNT(D9:D12) returns 4 (count of numeric cells) instead of summing cash flows.
+- Fix: replace with =SUM(D9:D12)
+- Why: COUNT returns the number of numeric cells; you need SUM to get total free cash flow.
+
+2) All sheets — percent change cells (example pattern H9, H11, H12, H14)
+- Fault: current formula =((D9-F9)/F9)*100 will produce incorrect results when F9 is zero and can be left hard-coded (H11 = 0 in some sheets).
+- Safe replacement (preferred): =IF(F9=0,NA(),(D9-F9)/F9*100)
+- Alternative (show absolute change when prior = 0): =IF(F9=0,D9-F9,(D9-F9)/F9*100)
+- Why: IF prevents #DIV/0 and avoids hard-coded zeros; NA() or a text string signals that % change is not defined when base = 0.
+
+Apply the same pattern to H11, H12, H14, and any other percent-change cells (replace cell refs as needed, e.g. for H11 use F11/D11 references).
+
+3) Q3 2003-4 Qtr — L11
+- Fault: L11 contains the literal formula text =-80+40 (odd and nontransparent). If intended result is -40, enter value or a clear formula referencing source cells.
+- Fix (if result should be -40): replace with =-40 or better yet = (reference cell1)+(reference cell2)
+- Why: Hard-coded arithmetic text makes auditing hard and may not update if inputs change.
+
+4) Q1 (and any sheet where F9 or F12 = 0) — H9, H12
+- Fault: Percent-change formula divides by zero (F9 = 0 or F12 = 0) → #DIV/0 error.
+- Fix: use the safe percent-change formula above, e.g. =IF(F9=0,NA(),(D9-F9)/F9*100)
+- Why: Prevents errors and clearly shows change cannot be expressed as a percent of zero.
+
+Extra housekeeping (recommended)
+- Remove the leading plus sign (=+) in formulas (not required, just cleaner).
+- Standardize the percent-change convention across sheets (use same numerator/denominator and treat negative base consistently — if you want magnitude use ABS(Fx)).
+- Replace any hard-coded numeric results (like H11 =0) with calculated formulas so values update if inputs change.
+
+If you want, I can:
+- Give the exact cell-by-cell replacements for each sheet (I can list them all), or
+- Provide a single “safe percent-change” formula you can paste and adjust across the workbook.

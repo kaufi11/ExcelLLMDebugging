@@ -1,0 +1,35 @@
+Findings (short)
+- Column A (row numbering) has errors:
+  - A42 contains =A41-1 (should be +1). That makes the sequence go backward and creates a duplicate / wrong number.
+  - A52 contains =A49+1 which skips rows 50–51 and produces a wrong number at A52 (another duplicate/gap). This likely resulted from deleted rows or a wrong reference.
+- Column headers: J1 is missing (address line 2 is used in some rows, e.g. J40) — header mis‑labeling can cause confusion and import/mapping errors.
+- Consequence: any lookups, sorting or keys that rely on column A will be incorrect/unreliable.
+
+Quick fixes (pick one)
+
+1) Fast manual fix (recommended if list is static)
+- In A2 type 1.
+- In A3 type =A2+1 and press Enter.
+- Drag (fill handle) A3 down through the last row (e.g., row 75). This replaces all broken formulas with the correct incremental formula and fixes A42/A52.
+
+2) One-step Fill Series (Excel built‑in)
+- Put 1 in A2.
+- Select from A2 down to the last cell in column A you want numbered.
+- Home → Fill → Series… → Series in: Columns, Type: Linear, Step value: 1, Stop value: (your last row number). Click OK.
+
+3) Dynamic formula (keeps numbers consistent if you insert/delete rows)
+- In A2 use =ROW()-1 and fill down. Explanation: ROW() returns the sheet row; subtracting 1 gives 1 on row2, 2 on row3, etc.
+  - Use this only if your numbering should equal worksheet row position (not a compact sequence when you filter/hide rows).
+- Or, if you want a compact sequence ignoring blank rows, use in A2:
+  - =COUNTA($C$2:C2)
+  - and fill down. Explanation: it counts filled Name cells up to that row, giving a continuous ID for rows with names even if some rows are blank or deleted.
+
+Fix the missing header
+- Put a label in J1 such as "Address Line 2" (or "Addr 2") so columns I–K are clearly Address / Address2 / City.
+
+Why these fixes work (short)
+- Replacing wrong formulas fixes arithmetic errors (A41-1 was subtracting instead of adding).
+- Filling the series or using ROW()/COUNTA ensures every row follows the same rule so no accidental references (like =A49+1) remain.
+- Adding J1 clarifies column structure so data parsing or export is consistent.
+
+If you want, I can give the exact formula to paste into A2/A3 or create a short macro to auto-correct column A and insert J1 header. Which would you prefer?

@@ -1,0 +1,51 @@
+I inspected the formulas you provided for the "Reporting" sheet and found no syntactically broken formulas (no #REF, #NAME, etc.). However there are a number of inconsistencies, risky patterns and places where a formula is likely to give an unintended result because it references blank/missing cells or because the sheet uses different summing styles. Summary and actionable items below.
+
+1) Inconsistent summation style
+- Many subtotal/row-total cells in column N are written as explicit additions:
+  =B# + C# + D# + ... + M#
+  while category/week subtotals (e.g. B3, B7, B11, B15, B19) use SUM(range) like =SUM(B4:B6).
+- Recommendation: standardize on =SUM(B#:M#) for row totals. It's shorter, easier to audit and less error-prone.
+
+2) Several row totals reference columns that are blank (possible missing data)
+- Excel will treat missing/blank cells as zero, so these are not formula errors, but they are likely unintentional data gaps and deserve review. Examples (N formulas include columns that have no values listed in that row):
+  - N4 includes M4 (M4 is not present).
+  - N8 includes L8 and M8 (both missing).
+  - N10 includes K10 (missing).
+  - N12 includes D12, K12, L12, M12 (missing).
+  - N13 includes F13 and L13 (missing).
+  - N16 includes B16, D16, G16, H16, I16, K16, L16, M16 (many missing).
+  - N20 includes I20 and M20 (missing).
+  - N21 includes B21..M21 (all are missing; N21 = 0).
+  - N22 includes M22 (missing).
+  - N23 includes L23 (missing).
+  - N24 includes B24, E24, F24, H24, I24, J24, L24, M24 (most are missing).
+  - N26 includes B26..H26 and other blanks (only I26..M26 have values).
+  - N27, N28, N30, N31, N33: all these are =B#:...+M# but B#:M# are empty (all zero).
+  - N32 includes many blank columns except D32,H32,J32.
+  - N34 includes many blank columns except J34,K34.
+- Recommendation: verify whether those blank week cells are legitimately zero or whether values were accidentally omitted (shifted columns or missing entries).
+
+3) Grand total (row 35) may not include all categories
+- Row 35 formulas (e.g. N35 = N3 + N7 + N11 + N15 + N19) sum only five category totals (Management, Models, Requirements, Elective, Studio I). They exclude other populated totals such as QA (N29 = 7) and any other non-top-level rows that might represent billable time.
+- If the intent is "total of everything", change to =SUM(N3:N34) (or the full N-range that contains totals) instead of adding only those five cells. If the intent is to total only those five top categories, leave as is but document the intent.
+- Same applies to B35:M35 which are constructed the same way.
+
+4) Unusual / inconsistent formula entries
+- N29 is "=7" (a formula that returns 7). This works but is inconsistent with other totals which are sums. Consider entering 7 as a number or a SUM for consistency.
+- Many N-row totals use explicit B+C+... rather than SUM(B:M). This is harder to maintain and more likely to contain omissions if columns are later added/removed.
+
+5) Potential off-by-one or layout risks
+- Because many totals are explicit addition, adding columns (or inserting a new week column) will not automatically be included unless you edit every explicit formula. Using =SUM(B#:M#) or structured range names would prevent that class of error.
+
+6) Suggested quick fixes
+- Replace explicit additions for row totals with =SUM(B#:M#) (for example change N4 from =B4+C4+...+M4 to =SUM(B4:M4)).
+- If the desired grand total is "all rows", use =SUM(N3:N34) (or adjust the end row appropriately).
+- Audit rows that have many missing week cells (I listed the likely ones above) and confirm whether the blanks should be zeros or whether data is missing/shifted.
+- Consider consistent formula practice (always use SUM for ranges, avoid literal "=7" unless intentional).
+
+If you want, I can:
+- produce a concrete list of every N# cell that currently uses explicit addition and give a replacement =SUM formula for each, or
+- generate the corrected formulas for the grand total and affected subtotals, or
+- highlight rows where column values are missing so you can check the source data.
+
+Which of these would you like me to do next?

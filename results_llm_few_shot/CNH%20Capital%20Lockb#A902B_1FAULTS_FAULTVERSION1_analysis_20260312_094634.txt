@@ -1,0 +1,28 @@
+Summary — key errors found
+1) Faulty cell: C41
+   - Error type: Wrong cell reference (typo)
+   - Problem: C41 uses = $C20*C$6 but C20 is blank/nonexistent, so the Midwest processing cost for California is wrong/zero.
+   - Fix: change C41 to = $C19*C$6
+   - Why: C19 holds the Midwest yearly checks; multiplying that by California per‑check cost (C6) gives the correct processing charge.
+
+2) Recommended consistency fixes (prevent future copy/reference errors)
+   - Make the source references absolute so copying rows/columns won't shift them incorrectly. Replace the processing‑charge block with:
+     B39 = $C$17 * B$6
+     C39 = $C$17 * C$6
+     B40 = $C$18 * B$6
+     C40 = $C$18 * C$6
+     B41 = $C$19 * B$6
+     C41 = $C$19 * C$6
+   - And make the opportunity‑cost formulas use absolute references for the cost-of-capital and the daily checks, for example:
+     B33 = $C$21 * $B$17 * B27
+     C33 = $C$21 * $B$17 * C27
+     B34 = $C$21 * $B$18 * B28
+     C34 = $C$21 * $B$18 * C28
+     B35 = $C$21 * $B$19 * B29
+     C35 = $C$21 * $B$19 * C29
+   - Why: Using $-anchors avoids accidental relative shifts when formulas are copied; keeps each region using the correct checks and cost-of-capital cells.
+
+Why this matters
+- The incorrect C41 produces an incorrect total in the "Opportunity and check processing costs" matrix (B45:C47), which flows into the objective H52 (SUMPRODUCT) and any constraints that use those totals — so the model could pick a wrong lockbox or compute wrong costs.
+
+If you want, I can return a corrected set of formulas ready to paste into the sheet or check any other suspect cells (e.g., make all absolute references consistent).

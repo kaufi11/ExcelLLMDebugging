@@ -1,0 +1,23 @@
+Short answer — why the sheet doesn’t balance
+- The balance-sheet side (Inventory under Assets) changes when you change ending inventory, and the income statement (COGS → Net Income) also changes. But the equity side isn’t carrying forward the prior-year retained earnings correctly, so the cumulative effect of the inventory misstatement is not reflected in equity. Assets move but Equity does not, so Assets ≠ Liabilities + Equity.
+
+What is wrong (concrete)
+- Retained earnings for later years are set only to that year’s net income (or otherwise not rolled forward). Example fixes you can make in Sheet1:
+  - D33 is =E15 (wrong). It should be previous-year retained earnings + current net income, e.g. D33 = B33 + E15.
+  - F33 is =G15 (wrong). It should be D33 + G15 (or =previous retained earnings + current net income).
+
+Why that fixes it (simple explanation)
+- Net income flows into retained earnings. To reflect a prior-year inventory error you must carry the ending retained earnings forward: RetainedEarnings(t) = RetainedEarnings(t-1) + NetIncome(t). If you only show NetIncome(t) as retained earnings, you drop the prior balance (and any prior-year error), creating the mismatch.
+
+Extra check / other small formula mistakes to correct
+- Make sure each year’s beginning inventory references prior year’s ending inventory (D8 = B11, F8 = D11) — that linkage must be correct.
+- If you see any plus/minus typos in the cost-of-goods lines (e.g. “Cost of goods available” should be Beginning inventory + Purchases, not a subtraction) fix those operators.
+
+How to implement (one-line formulas)
+- For 2002 retained earnings (cell D33): =B33 + E15
+- For 2003 retained earnings (cell F33): =D33 + G15
+
+If there was a prior-year inventory error that you want to correct retroactively
+- Adjust the opening retained earnings by the amount of the prior-year error (add or subtract the difference). After that the rolling retained-earnings formulas above will keep the balance sheet balanced.
+
+If you want I can give the exact cell edits for each sheet (Sheet1/Sheet2/Sheet3) — tell me which sheet you want corrected and I’ll list the precise formulas to enter.

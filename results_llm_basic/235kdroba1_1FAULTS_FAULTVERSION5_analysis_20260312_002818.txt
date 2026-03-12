@@ -1,0 +1,27 @@
+I reviewed Sheet1 and the summary sheets. I found two clear formula mistakes that will give wrong totals/percentages, plus one risky/inconsistent formula you should fix to avoid future problems. Short fixes and explanations below.
+
+1) Wrong sign in O14 (Homework total for row 14)
+- Problem: O14 is set to =L14 - M14 - N14 (subtraction).
+- Why it’s wrong: Every other student’s O cell is the sum of the three homework components (L+M+N). Using subtraction makes O14 negative (or much smaller) and breaks P14 and any totals/averages that include O14.
+- Fix: Replace O14 with =L14 + M14 + N14
+- Explanation: O is supposed to be the total homework score. Summing the three parts restores the correct homework total and downstream % calculations (P14, R14, S14, AI14, AJ14 etc.) will then be correct.
+
+2) AF33 (Total Tests maximum) includes the wrong range
+- Problem: AF33 is =SUM(Z33:AD33)
+- Why it’s risky/wrong: AF3 (each student’s Total Tests) is computed as Z3 + AB3 + AD3, so the total-of-maxima should be Z33 + AB33 + AD33. But SUM(Z33:AD33) also includes AA33 and AC33 (cells between Z and AD). If those cells are ever filled (or currently contain nonzero values), AF33 will be wrong.
+- Fix: Change AF33 to =Z33 + AB33 + AD33  (or =SUM(Z33,AB33,AD33))
+- Explanation: This makes the total tests maximum the exact sum of the three test columns only — consistent with AF3 formula and prevents accidental inclusion of intervening columns.
+
+3) Inconsistent summary values across sheets (observed differences)
+- What I observed: Sheet2/Sheet4/Sheet5 final-grade numbers differ slightly (e.g., Sheet2 E2 = 0.8861 vs Sheet5 E3 = 0.8726).
+- Likely cause: The two errors above (especially the O14 subtraction) will change class totals and averages. Also inconsistent total formulas (like AF33 using a range) or manual/one-off calculations on the summary sheets can create mismatches.
+- Fix: After fixing (1) and (2), recalc and re-check the summary sheets. Make sure all summary sheets pull their inputs from the same source cells (avoid typing values manually). If you want, replace absolute $E$33 style references with named ranges (e.g., Max_Decimals) so every formula uses the same totals.
+
+Extra recommendations (to prevent future problems)
+- Use consistent formula patterns and copy them down rather than typing one-off formulas for individual rows. That prevents accidental signs or operators.
+- Use named ranges for the maximum/denominator cells ($E$33, $J$33, $O$33, $X$33, Z33/AB33/AD33, AF33, AI33) to make formulas clearer and less error-prone.
+- After fixes, recompute averages/medians (A35/A36 etc.) and compare summary sheets again.
+
+If you want, I can:
+- Provide the exact corrected formulas for the cells (I already listed them), or
+- Recalculate the affected summary values (class averages) after applying the fixes and show the corrected final averages. Which would you prefer?

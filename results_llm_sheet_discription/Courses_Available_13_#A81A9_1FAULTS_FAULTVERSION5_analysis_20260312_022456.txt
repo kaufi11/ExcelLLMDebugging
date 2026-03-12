@@ -1,0 +1,22 @@
+Findings (short)
+- Error: A60 has =745+1 (a hard-coded calculation). That makes A60 = 746 and breaks the continuous sequence.
+- Minor issues: many formulas use the redundant leading plus (e.g. =+A5+1) — harmless but nonstandard. Section headers live in column B while column A is used for IDs; that sometimes forces formulas to point to a non-adjacent previous numeric row (this is functional but fragile).
+
+Immediate fix (one cell)
+- Change A60 from =745+1 to:
+  =A59+1
+Explanation: this restores A60 to be one more than the previous ID and repairs the sequence.
+
+Better, robust solution (recommended)
+- Replace the column-A formulas with a formula that:
+  - leaves column A blank for header rows in column B, and
+  - always increments from the last numeric ID above (so inserting header rows won't break numbering).
+- Use this in A5 and fill down (assuming A4 = 1):
+  =IF(TRIM($B5)="","",MAX($A$4:A4)+1)
+Why it works: IF keeps A blank when B is blank or a header; MAX($A$4:A4) finds the last numeric ID above and adds 1, so the sequence stays continuous even with inserted header rows.
+
+Other cleanup (optional)
+- Replace =+A# +1 with =A# +1 for readability.
+- Consider placing section headers in a separate column (or keep A blank on header rows) so the ID column stays numeric-only.
+
+If you want, I can give the exact steps to fill the new formula down the whole A column.

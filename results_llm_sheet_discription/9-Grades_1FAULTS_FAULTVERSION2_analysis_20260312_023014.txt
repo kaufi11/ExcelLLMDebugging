@@ -1,0 +1,63 @@
+Summary of the errors I found (concise) and how to fix them
+
+Main problems
+1) COUNT used instead of SUM in a totals cell
+   - Example: University Total by Sem. O31 = COUNT(O9:O30)
+   - Effect: returns the number of non-blank cells (e.g. 22) instead of the sum of the percentage values. That breaks any downstream calculations that divide by this total (Sheet1 D1:D23 etc.).
+
+2) Inconsistent SUM ranges that include subtotal/total rows (double‑count or omit)
+   - Example: University Total by Sem. column B uses =SUM(B9:B29) but column D uses =SUM(D9:D30).
+   - Effect: some columns are summing one extra row (row 30) which often is a Total/Subtotal row. That causes double counting (or at least inconsistent totals across columns) and incorrect grand totals.
+
+3) Hard-coded totals (value = 1) in some places instead of formulas
+   - Example: M31 = 1 (hard-coded), B65 = 1, etc.
+   - Effect: hides real problems in the underlying summation (if source rows change these hard-coded 1s won’t update and will mask errors).
+
+4) Missing/blank cells and inconsistent blank handling
+   - Some grade-category cells are blank. If the SUM ranges are inconsistent or a COUNT is used, blanks can cause incorrect totals. Also rounding can make totals slightly off; but the major issue is formula mistakes above.
+
+How to fix (step-by-step, simple)
+1) Replace COUNT with SUM
+   - Change O31 from =COUNT(O9:O30) to =SUM(O9:O30) (or to the exact same row range used by other columns — see step 2).
+   - Why: COUNT gives a cell count, SUM gives the total percentage.
+
+2) Make every column's Total formula use the same, correct grade-row range
+   - Decide the correct row range that contains grade percentages (from your file that looks like rows 9 through 29). Then change all Totals to use that exact range. Example:
+     - B31 should be =SUM(B9:B29)
+     - C31 should be =SUM(C9:C29)
+     - D31 should be =SUM(D9:D29)  (not D9:D30)
+     - and similarly for E31, F31, G31, H31, I31, J31, K31, L31, N31, O31 (use row9:row29 consistently).
+   - Why: this prevents accidental inclusion of the Total row itself or other subtotals and avoids double-counting.
+
+3) Replace hard-coded 1s with SUM formulas
+   - Where you see fixed 1s used as "Total" (e.g., M31, B65, etc.), replace them with the corresponding SUM over the grade rows (e.g., =SUM(M9:M29)).
+   - Why: totals should be computed, not hard-coded. That way updates to data are reflected and errors aren’t hidden.
+
+4) Add a validation / check cell
+   - Add one cell that shows =SUM(range_of_totals) - 1 (for each block). If result <> small tolerance (e.g., 0.001), highlight it.
+   - Why: quick way to see if a distribution sums to 100% (1.0) after fixes.
+
+5) Optional robustness improvements
+   - Use consistent named ranges for "grade_rows" (e.g., Define name GradeRows = $B$9:$B$29) and use SUM(GradeRows) copied across columns — avoids manual range mistakes.
+   - Lock formulas with absolute row references or copy totals horizontally so ranges remain correct.
+   - Use conditional formatting or an IF test: =IF(ABS(SUM(B9:B29)-1)>0.001,"Check total","OK").
+
+Quick example corrections you can paste
+- Replace O31:
+   From: =COUNT(O9:O30)
+   To: =SUM(O9:O29)  (or =SUM(O9:O30) if your grade rows actually go to row30; make it consistent with other columns)
+
+- Replace D31:
+   From: =SUM(D9:D30)
+   To: =SUM(D9:D29)
+
+- Replace any hard-coded M31 = 1:
+   From: 1
+   To: =SUM(M9:M29)
+
+Final check
+- After making the fixes, verify each "Total" row ≈ 1.0 (allowing small rounding errors). Then re-run the Sheet1 division formulas — they will be correct once the underlying totals are real sums.
+
+If you want I can:
+- give the exact list of cells with inconsistent SUM ranges (I can scan the sheet and list them), or
+- produce a single wildcard find/replace recipe to make all total ranges uniform (if you confirm the correct grade-row range: row9:row29 or row9:row30).

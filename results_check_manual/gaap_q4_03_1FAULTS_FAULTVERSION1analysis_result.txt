@@ -1,0 +1,54 @@
+I reviewed the workbook formulas in each sheet you provided and found several formula errors and inconsistencies. Below is a concise, itemized list (sheet → cell) with the issue, why it is a problem, and recommended fixes.
+
+1) Division-by-zero errors (real errors)
+- Sheet: Q1 2003
+  - Cells: H9, H12, H14
+  - Problem: Each cell contains a percent-change formula of the form =((D#-F#)/F#)*100 (or =+((...))) but the F# denominator cells used in those formulas are blank or zero, producing #DIV/0!.
+  - Why: You cannot divide by zero or blank cells.
+  - Fix: Either supply the missing historical values (F9, F12, etc.) or protect the calculation with an IF or IFERROR. Example: =IF(F9=0,NA(),(D9-F9)/F9*100) or =IF(F9=0,"", (D9-F9)/F9*100).
+
+2) Inconsistent sign on percent-change formula (likely a logic bug)
+- Sheet: Q2 2003
+  - Cell: H9
+  - Formula: =-((D9-F9)/F9)*100
+  - Problem: Other sheets use =+((D9-F9)/F9)*100 or equivalent ((D9-F9)/F9*100). The negative prefix here flips the sign relative to the usual percent-change definition. For D9=41 and F9=38 the formula returns -7.8947% while the expected change is +7.8947%.
+  - Why: Inconsistent formula conventions across sheets will mislead readers and break automated comparisons.
+  - Fix: Remove the leading negative so the formula is consistent with other sheets: =((D9-F9)/F9)*100
+
+3) Hard-coded arithmetic instead of consistent data reference
+- Sheet: Q3 2003-4 Qtr
+  - Cell: L11
+  - Formula: =-80+40
+  - Problem: This cell uses literal arithmetic rather than a value or a reference consistent with other sheets/columns.
+  - Why: Hard-coded arithmetic is unusual in a table where other rows are values or come from external data; it’s error-prone and may be left-over debugging.
+  - Fix: Replace with the intended static value (if this is the right final number) or, better, replace with a cell reference to the actual data source so all sheets are consistent.
+
+4) Inconsistent period labels / possible header errors
+- Sheet: Q1 2003
+  - Cell: J6 (header)
+  - Text: "Six Months Ended June 30,"
+  - Problem: This sheet is dated March 31, 2003 (A3), but the right-side header reads "Six Months Ended June 30," which is inconsistent with the sheet date and likely copied from Q2.
+  - Why: Mislabelled headings can cause misinterpretation of the reported totals.
+  - Fix: Correct the header to the intended period (for a March 31 / Q1 sheet the cumulative column should likely be "Six Months Ended March 31" or "Six Months Ended Mar. 31" depending on your format). Verify other sheets for similar copy-paste header mistakes.
+
+5) Duplicate/overlapping quarter sheets with inconsistent period definitions (potentially intentional but flagged)
+- Sheets: Q3 2003-4 Qtr vs Q3 2003
+  - Observation: Both are dated Sept. 30, 2003, but one uses a "Twelve Months Ended" column (Q3 2003-4 Qtr) while the other uses a "Nine Months Ended" column (Q3 2003). If both are intended, keep both; if not, this duplication may be confusing.
+  - Why: If the workbook is intended to present comparable quarter-to-quarter tables, the differing cumulative periods (9-month vs 12-month) are inconsistent and may be an error.
+  - Fix: Confirm intent; if you want a consistent presentation for each quarter, standardize whether cumulative columns show YTD (nine months for Q3) or trailing 12 months, and align headings and formulas accordingly.
+
+6) Minor / stylistic inconsistencies (not errors but could be standardized)
+- Many percent-change formulas use a leading plus sign prefix (=+((...))) — unnecessary but harmless. Consider standardizing to =(D#-F#)/F#*100 for clarity.
+- Some rows (Accounts receivable securitization) have values placed in differing columns across sheets (sometimes D11, sometimes F11, sometimes L11). That may be correct (zero in some periods) but is worth auditing to ensure each value is in the intended year/column.
+
+Summary of concrete fixes I recommend you make first
+- Fix the #DIV/0! by supplying missing historical inputs or wrapping percent-change formulas with IF(F#=0,...) or IFERROR(...).
+- Change Q2!H9 to =((D9-F9)/F9)*100 to align sign convention.
+- Replace Q3 2003-4 Qtr!L11 hard-coded formula with the intended data or a reference.
+- Correct Q1 header J6 to the proper cumulative period (and scan all sheet headers for similar copy/paste errors).
+- Optionally standardize percent-change formulas across all sheets (remove + prefix and use same error handling).
+
+If you want, I can:
+- Provide exact corrected formulas to paste into each affected cell,
+- Create IF-wrapped percent-change formulas for all H# cells to avoid #DIV/0!,
+- Or scan for any other potential mis-placed data if you share the full workbook (I can re-check after edits).

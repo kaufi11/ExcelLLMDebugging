@@ -1,0 +1,58 @@
+Overview
+- Workbook contains two sheets: "STEP 1 OF 2" (Personal Financial Profile / data collection) and "STEP 2 OF 2" (Monthly Financial Plan / budget). STEP 2 pulls totals from STEP 1 to compute budget percentages and monthly totals.
+
+STEP 1 OF 2 — Personal Financial Profile (data-entry form)
+- Layout: label-driven form across columns C–M with sections for WHAT I EARN (jobs/other income), WHAT I OWN (assets by type), WHAT I GIVE (charitable/tithes), WHAT I SAVE (emergencies, plans), and WHAT I OWE (debts).
+- Earnings section (rows ~9–20): income lines for Job #1, Job #2, Other, etc. Key total:
+  - E22 = SUM(E11:E20) — total of an earnings-related column.
+  - G22 = SUM(G11:G20) — total tax withheld column.
+- Assets section (columns I–M, rows ~9–20): checking, savings, money market, CDs, stocks, insurance cash value, home, cars, retirement, other. Key total:
+  - M22 = SUM(M9:M20) — total assets/value.
+- Giving section (rows ~25–35): multiple line items for Tithes, Offerings, Other. Key formulas:
+  - G32 = SUM(G29:G31), I32 = SUM(I29:I31), K32 = SUM(K29:K31), M32 = SUM(M29:M31)
+  - E33 = SUM(E29:E30) (looks like subtotal), I33 = SUM(G32+I32), M33 = SUM(K32+M32)
+  - M35 = SUM(E33:M33) — TOTAL GIVING
+- Saving section (rows ~38–45): emergency and future needs/plans.
+  - E43 = SUM(E42), I43 = SUM(I41:I42), M43 = M42 (copy), M45 = SUM(E43:M43) — TOTAL SAVING
+- Debt section (rows ~48–65): credit debt, unsecured debt, interest %, monthly payment columns, many blank lines for individual debts.
+  - G65 = SUM(G53:G63) — total debt amounts
+  - M65 = SUM(K53:K63) — total monthly payments for debts
+- Navigation note: Row 67 instructs to proceed to STEP 2 when complete.
+- General: many cells are placeholders for user entry ($ fields and blanks). Most totals use SUM over the respective entry ranges.
+
+STEP 2 OF 2 — Monthly Financial Plan / Budget (uses STEP 1 totals)
+- Purpose: allocate monthly earnings into categories with percentage guidance.
+- Key inputs and references:
+  - H6 = 'STEP 1 OF 2'!E22 — Monthly earnings (pulls total earnings from STEP 1)
+  - H8 = 'STEP 1 OF 2'!M35 — Total giving from STEP 1
+  - H10 = 'STEP 1 OF 2'!M45 — Total saving from STEP 1
+  - H12 = 'STEP 1 OF 2'!M65 — Total monthly debt payments from STEP 1
+- Category percent calculations (column F typically = Hx / H6):
+  - F6 = 100 (base)
+  - F8 = H8 / H6 (giving %)
+  - F10 = H10 / H6 (saving %)
+  - F12 = H12 / H6 (repaying %)
+  - F14 = H14 / H6 (tax % — H14 is preset to 3 in this sheet, likely intended placeholder)
+  - Other F-cells compute category % similarly (e.g., housing F18 = H32/H6, transport F34 = H43/H6, etc.)
+- Subtotals and formulas:
+  - M18 = SUM(M7:M17) — total of "Enjoying" subitems
+  - H32 = SUM(H19:H31) — housing total
+  - M28 = SUM(M21:M27) — professional services subtotal
+  - M40 = SUM(M31:M39) — entertainment subtotal
+  - H43 = SUM(H35:H42) — transportation total
+  - H50 = SUM(H46:H49) — insurance total
+  - M43 = H32 + H43 + H50 + M18 + M28 + M40 — TOTAL EXPENSE (composite formula)
+  - M45 = H16 — NET INCOME (ENJOYING)
+  - M47 = M45 - M43 — DIFFERENCE (surplus/shortfall)
+- Guidance notes: suggested category percentage ranges are printed in labels (e.g., GIVING 10%, SAVING 10%, TAX W/H 15–25%, HOUSING 20–30%, TRANSPORT 7–13%, ENTERTAINMENT 4–6%, PROF SERVICES 3–7%, INSURANCE 2–4%).
+- Many cells are blanks for entering dollar amounts per subcategory; column K often stores computed % ratios (e.g., K6 = M18 / H6, K20 = M28 / H6, K30 = M40 / H6).
+
+Overall flow and key links
+- Data entry in STEP 1 populates summary totals (E22, M35, M45, M65) which STEP 2 references to calculate category percentages and build a monthly budget.
+- Most calculations are simple SUMs and ratio formulas (category amount divided by total earnings).
+- The workbook is form-oriented: STEP 1 collects assets, liabilities, giving, savings; STEP 2 uses those totals to produce a budget and show a resulting difference (surplus/shortfall).
+
+If you want, I can:
+- Provide a compact map of all cross-sheet references,
+- List every formula cell explicitly,
+- Or suggest improvements (validation, named ranges, consolidated totals).

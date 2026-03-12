@@ -1,0 +1,53 @@
+I inspected every formula and populated value in the "post1" sheet. I found several real issues and a few inconsistencies that can cause wrong results or confusing behavior. Summary (grouped by type) and recommended fixes follow.
+
+1) Inconsistent grade-threshold operators (>= vs >)
+- Problem: The nested IF grade formulas use different comparison operators in different rows.
+  - Section 1 (rows 6:25) student-grade formulas (K6:K25) use >= (e.g. =IF(J6>=89.9%,...)).
+  - Section 1 mean (K26) uses > (=IF(J26>89.9%,...)).
+  - Section 2 (rows 36:55 and mean K56) use > (e.g. K36 =IF(J36>89.9%,...)).
+- Why it matters: Using > in some places and >= in others makes boundary behavior inconsistent (a score exactly equal to 89.9% would be graded differently depending on the cell).
+- Recommendation: pick one rule and apply it everywhere. e.g. standardize to >= in all grade formulas:
+  - Replace K26 and all K36:K56 formulas to use >=89.9%, >=79.9%, >=69.9%, >=59.9%.
+
+2) Wrong average range (F56)
+- Problem: F56 =AVERAGE(F36:F54) — this excludes row 55 (F55).
+- Why it matters: one student's Pract.3 (F55) is left out of the section-average for Pract.3.
+- Recommendation: change F56 to =AVERAGE(F36:F55) so the average includes all students in that section.
+
+3) Missing Pract.4 value at row 55 (G55)
+- Problem: G55 is absent from the provided listing (no G55 value), while D55,E55,F55,H55 exist. I55 uses =SUM(D55:G55) and produced 164, implying G55 was treated as 0 or blank.
+- Why it matters: if the student actually had a 0 it’s OK, but if the value was omitted by mistake it affects I55 and the averages.
+- Recommendation: if the student missed Pract.4 intentionally, enter 0 in G55 explicitly. If it's a data-entry omission, enter the correct Pract.4 score.
+
+4) Inconsistent table labels / total definitions (possible semantic error)
+- Problem: The first table header I2 says "Total (w/o A/P)" (i.e. total without attendance/participation) and J6..J25 use =I6/400 (i.e. class % excludes attendance). The second table header I32 just says "Total" but J36.. use =I36/400 similarly. This is not an error syntactically, but the labeling differs and could be confusing.
+- Why it matters: reviewers might expect class % to include attendance (H column). If attendance should be part of the percentage, current formulas understate/omit it.
+- Recommendation: either (a) make headers consistent ("Total (w/o A/P)" in both tables) or (b) if attendance should factor into class %, change J formulas to (I+H)/(I3+H3) or similar and update the maximum accordingly (400+50=450). Decide which scoring policy you want and apply consistently.
+
+5) Mixed comparison operator usage in mean-row grade formulas
+- Problem: K26 and K56 use > instead of >= (see item 1) — these are mean rows and should follow the same boundary rule as student rows.
+- Recommendation: unify to >= in K26 and K56 as well.
+
+6) Minor numerical/format notes (not errors but worth noticing)
+- Several J cells show values >1 (e.g. 1.0325) because totals exceed 400 (extra credit). That is OK if intended; just ensure threshold comparisons are against percentages (they are: 89.9% is 0.899).
+- Some formulas use 89.9%, 79.9% etc. Verify these are the intended cutoffs (many instructors would use 90%, 80% etc).
+
+Concrete suggested fixes (one-line formulas)
+- Standardize grade IF formula (example replace any K cell formula with):
+  =IF(Jx>=89.9%,"A",IF(Jx>=79.9%,"B",IF(Jx>=69.9%,"C",IF(Jx>=59.9%,"D","F"))))
+  (apply to K6:K26 and K36:K56).
+- Fix F56:
+  =AVERAGE(F36:F55)
+- Set G55 explicitly to 0 if that student missed Pract.4; otherwise enter the correct score.
+- If attendance should be included in Class % change J formulas:
+  = (I6 + H6) / (I3 + H3)
+  and for means J26:
+  = I26 / (I3 + H3)
+  (Only do this if policy requires attendance included.)
+
+If you want, I can:
+- produce corrected formulas for every affected cell (ready to paste),
+- create a uniform replacement for all K formulas,
+- or re-calculate and show the updated means/grades using the corrected formulas and include attendance in the percentage if you prefer.
+
+Which corrective actions would you like me to apply (e.g. standardize operators, fix F56, fill G55, include attendance in %)?

@@ -1,0 +1,31 @@
+Summary — I found 3 real problems (one formula bug and two input inconsistencies) that will change the totals and final setup/hold windows. Fix them, then recalc.
+
+1) Wrong formula reference (bug)
+- Problem: Cell J13 is set to = $C14/2 but it should use the Data Receiver asymmetry value in C13. Because J13 is used in many downstream calculations (P17, totals J25/J39, post-compensation J40, final J41 etc.), this wrong reference makes the whole budget incorrectly small.
+- Fix: Change J13 to = $C13/2
+- Effect/why: J13 should be half of C13 (as per the sheet's “divide by two” rule). Using C14 (which is 0) produced zero in J13 and undercounted errors everywhere.
+
+2) ISI of data appears incorrect vs. the note
+- Problem: C31 (ISI of data) = 4 ns but the comment in H31 says “Should be listed as 2”. That looks like an input mistake.
+- Fix: If the comment is authoritative, change C31 to 2 (and J31/K31/L31 will then use that value appropriately).
+- Effect/why: C31 feeds J31 (and then P11, signal timing skew). A wrong ISI value inflates skew/compensation and therefore the totals and final windows.
+
+3) ISI Compensation value inconsistent with note
+- Problem: C36 (ISI Compensation) = 2 ns but H36 says “Should be listed as 1”. This is another likely input error.
+- Fix: If H36 is correct, change C36 to 1 (J36 becomes 0.5).
+- Effect/why: C36 is part of the compensation total (C38) and subtracts from total error (C40). An incorrect C36 changes post‑compensation error and final data-valid windows.
+
+Other recommendations (brief)
+- After making the corrections above, recalc and check these downstream totals: J25/J35/J38/J39/J40 and J41 (and the equivalent B/C/K/L totals).
+- Audit for similar typos: search the workbook for formulas that reference C14 (or other neighboring cells) where they should reference C13, C31, C36 etc. A quick way: use Excel’s “Trace Precedents” on cells that feed totals (J25, J39, P17) and look for unexpected references.
+- Make the intended absolute/relative referencing consistent. Where input cells are constants you rely on across formulas, prefer $C13 (absolute) so copy/paste of formulas doesn’t break references.
+
+How to apply the fixes (step-by-step)
+1. In Sheet1 select J13 → edit formula to: =$C13/2 and press Enter.
+2. If authoritative, change C31 from 4 to 2 (enter 2).
+3. If authoritative, change C36 from 2 to 1 (enter 1).
+4. Recalculate (F9 or File → Options → set automatic calculation) and inspect J25/J39/J40 and J41 (and the P/Q results) for the expected change.
+
+If you want, I can:
+- Give the exact before/after numeric changes for totals (if you want I can compute expected new numbers), or
+- Search the sheet listing for any other suspicious formula references and list them. Which would you prefer?

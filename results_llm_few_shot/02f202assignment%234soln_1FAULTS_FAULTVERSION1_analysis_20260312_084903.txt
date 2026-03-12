@@ -1,0 +1,37 @@
+Here are the clear errors I found, with short explanations and fixes.
+
+1) Faulty cell: E90
+- Error type: Typo / wrong cell reference (mechanical)
+- Explanation: E90 currently says =C90*722 which multiplies units by 722 (nonsense). That makes the Total GAFS wrong.
+- Fix formula: =C90*D90
+- Why: E90 should be units × unit price (4000 × 8.15 = 32,600). Fixing this restores the correct totals for GAFS and downstream COGS/EI.
+
+2) Faulty cell: E92 (Total GAFS) — consequence of E90
+- Error type: Calculation error (dependent on E90)
+- Explanation: Because E90 is wrong, E92 =SUM(E88:E91) will be incorrect and will make FIFO/LIFO/avg results inconsistent.
+- Fix: After fixing E90 to =C90*D90, E92 will correctly be =SUM(E88:E91) (=80,500).
+- Why: GAFS must equal the sum of the four line totals (8000 + 23400 + 32600 + 16500 = 80,500).
+
+3) Faulty cell: K48
+- Error type: Logical / units vs dollars confusion
+- Explanation: K48 is =1500*8.15. The $1,500 returned in Part A is an amount in dollars, not units — multiplying by unit cost is invalid.
+- Fix: Replace with the correct value for the return. If $1,500 is the dollar amount of returned merchandise, use =1500 (or reference the cell containing 1500). If 1,500 was meant to be units returned, use =1500*unit_cost_cell.
+- Why: Don’t multiply dollars by a per-unit cost; multiply units by unit cost, or record dollars as-is.
+
+4) Faulty item: Journal entry (Part A, c — paying the amount owed)
+- Error type: Presentation / possible debit-credit sign error
+- Explanation: The payment entry logic is fine numerically (A/P = 55,000 - 1,500 = 53,500; discount = 1,070; cash = 52,430) but the sheet’s debit/credit columns are unclear. When paying with a purchase discount the correct journal entry is:
+  - Debit Accounts Payable 53,500
+  - Credit Purchase Discounts 1,070
+  - Credit Cash 52,430
+- Fix: Make sure the amounts are in the correct Debit/Credit columns (debit A/P; credit Purch Disc and Cash).
+- Why: Proper debit/credit placement is required for correct ledger balances.
+
+Quick checklist to correct and verify after fixes:
+- Change E90 to =C90*D90.
+- Recalculate E92 =SUM(E88:E91) and confirm it equals 80,500.
+- Confirm weighted average per-unit =80500/10000 (8.05) and EI (8.05 × 2500 = 20,125).
+- Fix K48 to not multiply dollars by unit cost (use 1500 or units*unit_cost).
+- Ensure the payment journal entry uses Debit A/P and Credits for discount and cash.
+
+If you want, I can give the exact corrected formulas for every affected cell (E90, E92, D108/J110 etc.) and show the recalculated FIFO/LIFO/weighted-average numbers.

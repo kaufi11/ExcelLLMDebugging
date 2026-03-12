@@ -1,0 +1,52 @@
+I inspected the workbook formulas (Summary + the five fund sheets: 1003, 1043, 1166, 1198, 1856). I did not find any Excel error values (#REF!, #DIV/0!, #NAME!, etc.) or obvious circular references. The arithmetic checks (where the same totals are computed two different ways) are consistent in this extract.
+
+Below are the issues, potential risks and minor inconsistencies I found (grouped by severity).
+
+1) No outright formula errors or circular references detected
+- There are no #REF!, #VALUE!, #DIV/0! or similar error results in the cells included in the JSON you supplied.
+- I did not detect circular references in the shown formulas; chains such as D6 → E6 → F6 → G6 terminate at a static G6 on each fund sheet.
+
+2) Potential fragility: use of 3D sheet ranges (e.g., '1003':'1856'!)
+- Summary uses 3D (multi-sheet) references such as =SUM('1003':'1856'!D6:D6) and similar for many rows. These work only if all relevant fund sheets are contiguous in the sheet tab order and the first and last sheet names are exactly those bounds.
+- Risk: if a sheet outside that intended set is positioned between the bounds, or if sheets are reordered/renamed, the 3D ranges can inadvertently include/exclude sheets. Recommendation: confirm the sheet tab order is locked/consistent, or use an explicit SUM of the exact sheet names (or a named range) if you expect the set to change.
+
+3) Hard-coded totals / inconsistent use of formulas vs constants
+- Some fund-sheet subtotals/totals are stored as literal numbers rather than calculated from the underlying line items. Examples include:
+  - 1003: D28, E28, F28, etc. (Central Allocations) are present as values rather than derived via a formula on that sheet.
+  - Many other fund sheets contain cells that appear to be manually populated totals (D28, D32, D33, etc.), while summary aggregates rely on 3D SUMs of those specific cells.
+- Risk: If the detailed rows under those headings are changed but the hard-coded totals are not updated, the summary will be inconsistent. Recommendation: where possible, compute totals on each sheet with SUM ranges, then let the summary pull those totals.
+
+4) Mixed approaches to "TOTAL EXPENDITURES"
+- On the Summary sheet TOTAL EXPENDITURES appears in two places and is computed differently:
+  - D42 = SUM(D30:D41) (function-type totals)
+  - D61 = SUM(D45:D60) (object-class totals)
+  They match numerically in the provided extract (D42 = D61). This is fine, but keep in mind these are two different roll-ups and must be kept synchronized if rows change.
+- On fund sheets the same duplicated approach is present (e.g., 1003 D53 = SUM(D41:D52) and D72 = SUM(D56:D71)) — again these match in the sample, but are a place where errors can creep in if rows are edited.
+
+5) Strange / unnecessary formulas but harmless
+- Several cells have an extra leading plus sign (e.g., =+D37-D72). This is accepted by Excel and harmless, but inconsistent stylistically.
+- Some totals are calculated as =SUM(X:X) over a single row across sheet group (e.g., SUM('1003':'1856'!D28:D28)). Functional but verbose.
+
+6) Floating-point precision artifacts
+- Some cells show very small floating representation artifacts (e.g., 2.03000000119209). This is normal floating‑point behaviour. If exact display is important, consider rounding or use ROUND(...) in formulas where appropriate.
+
+7) A few suspicious single-cell formulas/constants
+- 1856 H25 is given as =3 (a constant via formula). Not an error, but odd that it's entered as a tiny formula. Same for a couple of other cells that use =3 or =+3. Consider cleaning up constants vs formulas for clarity.
+- Several “Total Revenues / Carry Forward” chains rely on manually entered numbers on some sheets rather than a uniform calculation chain; verify these were intentionally set.
+
+8) Sign conventions / negative numbers
+- There are negative values in various transfer and repairs rows (e.g., Summary D18, D22, many fund rows). These are likely intentional (transfers out / credits) but are a frequent source of confusion. If you expect transfers out to be positive and treated separately, consider standardizing sign conventions or adding labels clarifying that “negative = outflow”.
+
+9) Recommendation checklist to reduce future errors
+- Replace hard-coded per-sheet totals with SUM of underlying lines where possible.
+- If you must use 3D ranges, keep the sheet tab order fixed and document which sheets are included. Alternatively maintain an explicit list of sheet names and SUM them with INDIRECT+named ranges (or use Power Query) to avoid accidental inclusion/exclusion.
+- Consider applying ROUND(...) where small floating errors matter.
+- Standardize formula style (avoid =+ prefix if you want consistency).
+- Double-check the cells that are constants entered as formulas (e.g., =3) to ensure they were intended as constants.
+
+If you want, I can:
+- Recalculate a few specific totals to prove consistency (e.g., recalc D26 vs components).
+- Scan for any individual cell where a total on a fund sheet is not derived from the rows beneath it (I can list those explicit cells).
+- Produce a short "clean-up" plan with suggested formula replacements (exact cell formulas) to remove hard-coded totals and make the model robust.
+
+Tell me which of the follow-ups you want (detailed per-cell list of hard-coded totals, a suggested fixed formula set, or automated checks to add), and I’ll produce it.

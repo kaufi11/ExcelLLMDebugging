@@ -1,0 +1,62 @@
+Summary — main errors found
+1. MasterMethod_Checks: first n row is 0 (A11 = 0). This causes 0^CE, division-by-zero and LOG(0,2) errors.  
+2. MasterMethod_Checks: H19 has a typo — LOG(A19,517) (base 517) instead of base 2.  
+3. MasterMethod_Checks: Column H ("Theta Term") is using LOG(A#,2) (log n) but should show the master-theorem theta term (usually n^CE or n^CE * log n). That formula is wrong for the intended output.  
+4. SubstitutionMethod_Checks: C10 is missing *A10 (inconsistent with other C rows).  
+5. SubstitutionMethod_Checks: cells that use LOG(LOG(A,2),2) (double-log) are invalid for small n (n=1 or n=2) — causes LOG(0) or division by zero.  
+6. SubstitutionMethod_Checks: recurrence column D uses hard-coded absolute references ($D$11, $D$12, etc.) that do not point to the correct n/2 row for many n values (wrong row references).
+
+How to fix each (short and exact)
+
+1) Remove/replace the n = 0 row
+- Problem: n = 0 makes C = A^CE (0^CE) and D = B/C produce divide-by-zero; LOG(0,2) is invalid.  
+- Fix: change A11 from 0 to 1 (or start series at n = 1). Or wrap formulas to skip n=0:
+  Example: replace C11 with =IF(A11=0,"",A11^$B$6) and similar for D/E/H to return blank when A11=0.
+- Why: Master method tests require n ≥ 1. Avoids invalid math.
+
+2) Correct H19 base typo
+- Problem: H19 = LOG(A19,517) is a stray typo (base 517).  
+- Fix: change H19 to =LOG(A19,2) or (better) to the corrected Theta expression (see #3).  
+- Why: keeps consistency and avoids unexpected values.
+
+3) Fix Column H to show the correct Theta term
+- Problem: Column H currently uses LOG(A#,2) (log base 2 of n) but the master-term comparison uses n^CE (and possibly an extra log factor for case 2).  
+- Fix: replace H# with a formula that produces the intended Theta term:
+  - If you just want the base function n^CE: use =C11 (C column is A^CE). So in H11 put =C11 (and copy down).
+  - If you want to show case 2 (n^CE * log n) use =C11*LOG(A11,2). Or general conditional:
+    =IF($A$2="Case 2", C11*LOG(A11,2), C11)
+- Why: Theta term should be n^CE (or n^CE * log n), not LOG(n).
+
+4) Fix missing multiplication in C10 (Substitution sheet)
+- Problem: C10 = $B$5*LOG(LOG(A10,2),2) (missing * A10). All other C rows have $B$5*A#*LOG(LOG(A#,2),2).  
+- Fix: change C10 to =$B$5*A10*LOG(LOG(A10,2),2).
+- Why: consistent constants c2 times the asymptotic function.
+
+5) Avoid invalid double-LOG for small n (Substitution sheet)
+- Problem: LOG(LOG(n,2),2) is undefined for n≤2 (LOG(n,2) ≤ 1 => inner log ≤1 => outer log ≤0 or undefined). Rows with n=1 or n=2 produce errors.  
+- Fix options:
+  a) Start the table at n = 3 (set A10 = 3 and shift rows).  
+  b) Guard the formula with IF to skip invalid n: e.g.
+     =IF(A10<=2, "", $B$4*A10*LOG(LOG(A10,2),2))
+  c) Use IFERROR to hide errors: =IFERROR($B$4*A10*LOG(LOG(A10,2),2), "")
+- Why: the asymptotic test using double-log is only valid for sufficiently large n.
+
+6) Make recurrence references dynamic (Substitution D column)
+- Problem: D(n) is hard-coded to 5*$D$11 or 5*$D$12 etc, which are the wrong rows for many n. For a recurrence T(n) = 5*T(n/2) + g(n) you must reference the row whose A value equals n/2.  
+- Correct robust formula (use INDEX/MATCH):
+  In the row where n is in A#, use:
+    =5 * INDEX($D:$D, MATCH(A#/2, $A:$A, 0)) + A#/LOG(A#,2)
+  Example for the cell corresponding to n in A19 (n=10):
+    =5 * INDEX($D:$D, MATCH(A19/2, $A:$A, 0)) + A19/LOG(A19,2)
+- If you prefer VLOOKUP (table range A:D):
+    =5 * VLOOKUP(A19/2, $A:$D, 4, FALSE) + A19/LOG(A19,2)
+- Why: MATCH/VLOOKUP finds the correct D value at the row for n/2. This makes the recurrence formula correct and copy-paste friendly.
+
+Extra tips to make the sheet robust
+- Use IFERROR or IF checks on operations that can produce DIV/0 or LOG(≤0). Example:
+  =IF(A19/LOG(A19,2)>0, A19/LOG(A19,2), "")
+- Avoid many absolute references ($D$11) unless you really want one fixed value. Use relative references or lookup methods to generalize.
+
+If you want, I can:
+- Give the exact corrected formulas for every affected cell (I can list them row-by-row), or
+- Create an INDEX/MATCH template for the recurrence and show how to copy it down. Which would you prefer?

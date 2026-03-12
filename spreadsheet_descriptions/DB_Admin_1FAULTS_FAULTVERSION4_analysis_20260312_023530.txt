@@ -1,0 +1,52 @@
+Summary of workbook structure and contents (concise)
+
+Overall purpose / flow
+- Rate sheet defines the job (requisition, title, department), lists the preference items (text), and assigns a numeric "Rating Scale" weight for each item (E11:E20). Those weights feed the three applicant sheets (Ap1, Ap2, Ap3), which convert user selections (keys in K-column) into weighted scores (L-column). The Summary sheet pulls each applicant's weighted-item scores and totals them.
+
+Sheet-by-sheet
+
+1) Rate
+- Header: Requisition # in C3 = "M34933", Job Title C4 = "DATABASE ADMINISTRATOR", Department C5 = "VICE PROVOST FOR RESEARCH".
+- Table of preference items: columns include keys/flags (A/C/B depending on row), textual preference descriptions in G11:G20 (e.g., "Computer and/or network security...", "Data integrity methods...", "Develop, program..."), and a Rating Scale value in E11:E20.
+- E11:E20 are all 100 (key numeric weights). E22 contains FORMULA =SUM(E11:E20) (total = 1000).
+- Below are legend/key definitions for Expertise (A25:B30) and Experience (G25:H31).
+
+2) Ap1 (Applicant 1 form)
+- Pulls header fields from Rate: D3 = Rate!C3, D4 = Rate!C4, D5 = Rate!C5.
+- Column B rows (B16:B20 etc) pull the textual items from Rate (e.g., B16 = Rate!G11, B17 = Rate!G12 ...).
+- Column K contains the applicant's selected keys (numeric proficiency/experience codes). Example K16 = 2, K17 = 3, etc.
+- Column L computes weighted scores with IF formulas:
+  - Proficiency formulas use IF(K=2,Rate!E*0.33,IF(K=3,Rate!E*0.66,IF(K=4,Rate!E*1,0))).
+  - Experience formulas use IF(K=2,Rate!E*0.25,...,IF(K=5,Rate!E*1,0)).
+- Note: Several L-cell formulas reference Rate!E values; these are the weights used to compute scores.
+
+3) Ap2 (Applicant 2 form)
+- Same structure as Ap1: header fields pulled from Rate, B-column pulls Rate!Gxx items, K column has different selection values (e.g., K16=3, K17=4, ...).
+- L column uses the same IF/weighting logic as Ap1 for proficiency and experience.
+
+4) Ap3 (Applicant 3 form)
+- Same overall layout and formulas as Ap1/Ap2 with its own K selections.
+- One notable oddity: L20 formula is written as IF(K20<>2,Rate!E15*0.33,IF(K20<>3,Rate!E15*0.66,IF(K20<>4,Rate!E15*1,0))) — this uses "<>" tests (inequality) and appears incorrect compared with the other applicant sheets (likely a typo).
+
+Important formula inconsistencies / possible errors to review
+- Ap1 L32: FORMULA references Rate!E17 but B32 pulls Rate!G19 — L32 likely should reference Rate!E19 (inconsistent index).
+- Ap1 L33: FORMULA references Rate!E18 but B33 pulls Rate!G20 — L33 likely should reference Rate!E20.
+- Ap2 L32: FORMULA references Rate!E17 while B32 pulls Rate!G19 — same potential mis-reference.
+- Ap3 L20: uses IF(K20<>2,...) style (inequality) instead of exact-equality logic used elsewhere — probable bug.
+- Check other L-cell references for off-by-one errors (some L formulas use E17/E18 where the corresponding G reference is E19/E20).
+
+5) Summary
+- Header pulls job info from Rate (C3,C4,C5).
+- Grid: rows for Ap1, Ap2, Ap3. Columns B:K map to each applicant's L16:L33 outputs (individual weighted-item scores): e.g., B8 = 'Ap1'!L16, C8 = 'Ap1'!L17 ... K8 = 'Ap1'!L33.
+- Column L for each applicant contains SUM of that row's B:K (total applicant score).
+- This sheet aggregates the applicants' weighted scores for easy comparison.
+
+Key values to note
+- Rating weights (Rate!E11:E20) are all 100 and sum to 1000 (Rate!E22).
+- Applicant score formulas scale those 100s by 0.33/0.66/1 for proficiency and 0.25/0.5/0.75/1 for experience (per the IF logic).
+
+Recommendation (brief)
+- Fix the inconsistent Rate!E references in Ap1/Ap2 L32/L33 and verify all L formulas point to the intended Rate!E row.
+- Correct Ap3 L20 to use equality tests consistent with the other applicant sheets.
+
+If you want, I can (a) produce the corrected formulas for the specific cells, or (b) compute each applicant's numeric line-item and total scores based on the current K values. Which would you prefer?

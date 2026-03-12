@@ -1,0 +1,41 @@
+I checked the workbook and found a few real formula errors and some risky hard‑coding that will produce wrong results if values change. Below are the problems, why they are wrong, and simple fixes (short and clear).
+
+1) Wrong operator in Problem 1 — cross‑product cell
+- Error: H5 = D5 / F5 (it divides instead of multiplies).  
+- Why wrong: H5 should be the product (x1 - mean1)*(x2 - mean2). Division gives wrong cross‑product and breaks the correlation.  
+- Fix: change H5 to =D5*F5
+
+2) Hard‑coded means (fragile / error prone)
+- Examples: D5 = B5 - 2.93333, F5 = C5 - 2, D23 = B23 - 2.777767, M23 = K23 - 1.777667, etc.  
+- Why wrong: if the means are recalculated or the data change, these numbers don’t update and give wrong deviations / sums.  
+- Fix: reference the mean cells instead of typing numbers. Examples:
+  - In Problem 1: D5 = B5 - $B$9 and F5 = C5 - $C$9 (copy down).  
+  - In Problem 2 (odd/even): D23 = B23 - $B$27 and F23 = C23 - $C$27; for the time‑2 split use M23 = K23 - $K$27 and O23 = L23 - $L$27 (copy down).
+- Why this fixes it: formulas stay correct automatically if data or means change.
+
+3) Standard deviation / sqrt misuse in Problem 2 (inconsistent)
+- Issue: N27 and P27 are set to =SQRT(N26) and =SQRT(P26). N26 and P26 are sums of squared deviations, so SQRT(sum) is not a standard deviation. Later correlation uses SQRT(N26) directly in the denominator (not N27), which is inconsistent/confusing.  
+- Fix: decide what you want to show:
+  - If you want the standard deviation (sample SD) for the split half groups, compute SD properly: =SQRT(N26/(n-1)) where n is number of subjects (e.g. n=3 → divide by 2). Example: N27 = SQRT(N26/2). Likewise P27 = SQRT(P26/2).  
+  - Or remove N27/P27 if unused.  
+- Why: SD = sqrt(sum of squared deviations / (n-1)). Using SQRT(sum) is incorrect.
+
+4) KR‑21 / KR‑20 notes (clarify, not necessarily “bug”)
+- Observation: B104 = 1 - ((B102*(5-B102)) / (5*B103)) omits the k/(k-1) multiplier; F104 uses that multiplier (5/4).  
+- Advice/fix: keep the corrected (k/(k-1)) version as the reported KR21. If you intended to show the unadjusted form, label cells accordingly. Correct KR21 = (k/(k-1)) * (1 - (mean*(k-mean)/(k*variance))). For k=5 that is =(5/4)*(1-((B102*(5-B102))/(5*B103))).
+
+5) Problem 1 correlation depends on earlier errors
+- Note: B11 (rxx') uses H8/(SQRT(E8)*SQRT(G8)). That formula is correct, but because H5 was wrong and some deviation cells used hard‑coded means, the numerator/denominators will be wrong until you apply fixes above. After correcting H5 and replacing hard‑coded means with cell references the r value will be correct.
+
+6) Minor labeling/typo issues (non‑critical but confusing)
+- Some labels have typos: e.g. G22 label "(x3-mne)sqrd" — just a label typo. Clean labels for clarity.
+- In Problem 4 some averages are built manually from many cell references — consider using ranges and structured formulas (or the CORREL function for pairwise correlations) to reduce manual errors.
+
+Quick summary of exact formula fixes to apply now
+- H5: =D5*F5
+- Replace all occurrences like D5 = B5 - 2.93333 with D5 = B5 - $B$9 (copy down)
+- Replace F5 = C5 - 2 with F5 = C5 - $C$9 (copy down)
+- In Problem 2 replace hardcoded deviations: D23 = B23 - $B$27, F23 = C23 - $C$27, M23 = K23 - $K$27, O23 = L23 - $L$27 (copy down)
+- If you want SDs in Problem 2: N27 = SQRT(N26/(n-1)) and P27 = SQRT(P26/(n-1)) where n is number of subjects (3 → divide by 2).
+
+If you want, I can produce the exact corrected formulas for every affected cell (I can list them and the ranges to update), or I can produce a short macro to replace the hard‑coded constants with proper cell references automatically. Which would you prefer?

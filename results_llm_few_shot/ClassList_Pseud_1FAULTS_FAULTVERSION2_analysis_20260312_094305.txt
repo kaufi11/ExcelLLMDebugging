@@ -1,0 +1,37 @@
+I checked the workbook and found the clear formula/range problems and a couple of places where formulas were overwritten by text. Short fixes and why:
+
+1) Homework sheet — wrong SUM range (omission)
+- Faulty cell: L5
+- Problem: =SUM(B5:J5) omits HW10 (K5).
+- Fix: =SUM(B5:K5)
+- Why: include all HW columns B:K so the total is correct.
+
+2) Final sheet — inconsistent SUM range (typo)
+- Faulty cell: I7 (Bluesky)
+- Problem: =SUM(B7:H7) includes column H (unused) instead of stopping at G.
+- Fix: =SUM(B7:G7)
+- Why: Total should sum Q1–Q6 (B:G). Scan column I formulas and correct any other rows using B#:H# to B#:G# so all rows are consistent.
+
+3) Final Grades sheet — totals overwritten with text
+- Examples: F4 = "F" (text) instead of numeric total; similar in F14, F16, F22, etc.
+- Problem: someone replaced the numeric SUM formulas with letter grades/statuses.
+- Fix (restore numeric total): put back =SUM(B4:E4) in each affected F cell (copy down from a correct row).
+- Optional handling for pending/Honor-Code text in column D: if you want to display a status instead of a numeric total when Term = "P" or "HC", use:
+  =IF(OR(D4="P",D4="HC"),"Pending/HC",SUM(B4:E4))
+- Why: SUM(B:E) ignores text, so restoring the SUM recovers totals. Use the IF only if you prefer a textual flag when a component is non-numeric.
+
+4) Mid‑term sheet — bad/missing average formulas and inconsistent ranges
+- Faulty cell(s): B46 shows text "average(C4:C42)" (missing "=") and many averages use inconsistent row ranges (some use 4:42, others 6:44).
+- Fix: use proper AVERAGE formulas over the student rows. If student data are in rows 6:44 use:
+  B46: =AVERAGE(B6:B44)
+  C46: =AVERAGE(C6:C44)
+  D46: =AVERAGE(D6:D44)
+  … etc for each column.
+- Why: missing "=" means Excel treats it as text; using consistent ranges ensures the averages include the same set of students.
+
+Quick general checks to run (recommended)
+- Use consistent ranges for every row/column (copy formulas downward rather than manually typing ranges).
+- Replace any totals that are literal text (letters) with formulas; then, if needed, use IF(...) to show statuses.
+- Use Find (e.g. search for "=SUM(" and then scan for unexpected ranges like B#:H# or B#:J#) to catch other typos quickly.
+
+If you want, I can provide a list of every cell in the file that has a SUM/AVERAGE range inconsistent with the header (or a set of corrected formulas you can paste).

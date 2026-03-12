@@ -1,0 +1,40 @@
+Summary (short): The FRF sheet has formula/text errors in column I (the "FRF Coordinates(m)" / difference column). Many cells contain the literal text "FORMULA =SUM(Hx-Jx)" (or a wrong literal like "=SUM(H20-100)") instead of an active formula, so they do not calculate. Also some rows have non-numeric inputs (N/A) which would break a subtract formula. Fixing is straightforward.
+
+What’s wrong (clear list)
+- Column I (FRF sheet) contains the literal text "FORMULA =SUM(H5-J5)" etc instead of a real Excel formula. Because of the extra word "FORMULA " the cell is text, not =SUM(...), so it returns nothing/calculation is not performed.
+- One obvious typo: I20 contains "FORMULA =SUM(H20-100)" — that subtracts 100 (a literal) instead of subtracting J20. That is almost certainly wrong.
+- Some target cells use "N/A" or text in H or J. Even after fixing formulas, H - J will give an error if either side is non-numeric.
+- Minor: using =SUM(Hx-Jx) works but is unnecessary — simpler and clearer is =Hx-Jx.
+
+Quick fixes (step‑by‑step)
+1. Turn the "FORMULA =..." text into real formulas
+   - Use Find & Replace:
+     - Find: FORMULA =
+     - Replace with: =
+     - This will change "FORMULA =SUM(H5-J5)" to "=SUM(H5-J5)" which Excel will evaluate.
+   - Or manually put the correct formula in I5 and fill down:
+     - In I5 enter: =H5-J5
+     - Drag/fill down through the rows that need it.
+
+2. Correct the typo in row 20
+   - Replace the faulty formula with: =H20-J20
+   - (If you used Find & Replace above, change I20 from =SUM(H20-100) to =H20-J20.)
+
+3. Prevent errors where H or J are non-numeric
+   - Replace formulas with an error-safe version, e.g.:
+     =IF(AND(ISNUMBER(H5),ISNUMBER(J5)),H5-J5,"N/A")
+   - Or:
+     =IFERROR(H5-J5,"")
+   - Use whichever output you prefer when data are missing.
+
+4. Format column I as Number (or with desired decimal places) so results display correctly.
+
+Optional checks (recommended)
+- Scan column F (coordinates) for odd negative values (e.g. F23 = -927.3) — verify whether the sign is correct relative to your coordinate system.
+- Remove any leading apostrophes (') if cells are still text after Replace.
+- Spell/label typos (e.g., "coducted") do not affect calculations but you may want to clean them.
+
+Why this works (short explanation)
+- Excel only evaluates a cell as a formula when it begins with '='. The extra text "FORMULA " prevented Excel from recognizing the entry as a formula. Replacing that prefix with '=' turns the text into a real formula that computes H - J. Using IFERROR/ISNUMBER avoids #VALUE or #N/A when inputs are missing or non-numeric.
+
+If you want, I can give the exact Find/Replace commands to apply to the whole sheet or produce the safe formula to paste and autofill for all affected rows.

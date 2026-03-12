@@ -1,0 +1,24 @@
+I checked the sheet and found the main errors and how to fix them. Short and simple:
+
+1) Wrong sum range in H15
+- Error: H15 has =SUM(H7:H13) so it does NOT include row 14 (Advanced Manufacturing Center). That makes the FY02 Total row (row 15) too small.
+- Fix: change H15 to =SUM(H7:H14)
+- Why: H15 should sum every category in rows 7–14. Including H14 fixes the missing contribution.
+
+2) Hard-coded subtraction formulas for "Other Sponsors" (rows 10)
+- Error: B10 is =1672298-748584 and C10 is =2824612-1091293 (etc.). Those formulas use literal totals (1672298, 2824612) instead of cell references. Hard-coding like this is fragile and can produce errors if totals change.
+- Fix: Replace the hard-coded formulas with formulas that reference cells (or enter the correct value directly). For example, if the combined subtotal (Foundations + Other) is in cell X (say Bxx), use:
+  - B10 = Bxx - B9
+  - Or better, list the components of "Other Sponsors" in separate rows and set B10 = SUM(of those component cells).
+- Why: Using cell references keeps numbers consistent when anything else on the sheet changes and avoids hidden constants.
+
+3) General recommendation: replace any formulas that use embedded constants with references
+- Error: Several cells show "FORMULA =..." with embedded numbers instead of references. That increases risk of inconsistency (hard to audit).
+- Fix: Wherever a formula uses a literal number coming from another subtotal, replace the literal with the cell that contains that subtotal.
+- Why: Makes the sheet transparent and prevents mismatches.
+
+Optional quick checks (things to confirm)
+- Verify each column's FY totals follow one consistent logic (e.g., FY01 = sum of 4 quarters or direct fiscal-year data). Some FY01/FY02 cells are labeled "FORMULA =" but it's unclear what they are summing — confirm the intended formula so totals line up.
+- Check the total in H15 after fixing it versus any narrative totals (Board Resolution text) to confirm consistency.
+
+If you want, tell me which specific total (e.g., the grand total in B15/H15) you want me to recompute and I will give the corrected numbers and exact cell formulas to paste in.

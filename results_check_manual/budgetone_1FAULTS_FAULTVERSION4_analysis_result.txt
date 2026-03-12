@@ -1,0 +1,80 @@
+I reviewed the formulas on Sheet1. There is one clear formula error that causes many downstream inconsistencies; I list it below along with the propagated effects and recommended fix.
+
+1) Incorrect/hard-coded multiplier in Q4 Sales (cell E7)
+- Current formula in E7: =E5*846
+- Problem: All other quarter Sales cells use quarter ASP * quarter Units (e.g. B7 = B5*B4, C7 = C5*C4, D7 = D5*D4). E7 uses the hard-coded 846 instead of the Q4 units in E4 (which is 2,500). That is inconsistent and appears to be an accidental leftover hard-coded value.
+- Current value (incorrect): 19,458
+- Correct formula (recommended): =E5*E4
+- Correct value (if changed to =E5*E4): 23 * 2,500 = 57,500
+
+2) Propagated effects (cells whose values change if E7 is fixed)
+Below are the main totals that will change (I show original value → corrected value):
+
+- F7 (Total Sales)
+  - Original formula: =SUM(B7:E7)
+  - Original value: 114,958 → Corrected value: 153,000
+
+- F5 (Average ASP/Unit)
+  - Original formula: =F7/F4
+  - Original value: 16.4225714285714 → Corrected value: 153,000 / 7,000 = 21.8571428571429
+
+- E9 (Gross Margin for Q4)
+  - Original formula: =E7-E8
+  - Original value: -5,542 → Corrected value: 57,500 - 25,000 = 32,500
+
+- F9 (Total Gross Margin)
+  - Original formula: =SUM(B9:E9)
+  - Original value: 52,958 → Corrected value: 91,000 (or F7 - F8 = 153,000 - 62,000)
+
+- E10 (Adv Expense Q4)
+  - Original formula: =6%*E7
+  - Original value: 1,167.48 → Corrected value: 0.06 * 57,500 = 3,450
+
+- E13 (Misc Expense Q4)
+  - Original formula: =2%*E7
+  - Original value: 389.16 → Corrected value: 0.02 * 57,500 = 1,150
+
+- E14 (Total Operating Costs Q4)
+  - Original formula: =SUM(E10:E13)
+  - Original value: 2,456.64 → Corrected value: 3,450 + 600 + 300 + 1,150 = 5,500
+
+- F10, F13, F14 (totals for those rows) will change accordingly:
+  - F10 (Total Adv Expense) 6,897.48 → 9,180
+  - F13 (Total Misc Expense) 2,299.16 → 3,060
+  - F14 (Total Operating Costs) 12,796.64 → 15,840
+
+- E15 (Operating Income Q4)
+  - Original formula: =E9-E14
+  - Original value: -7,998.64 → Corrected value: 32,500 - 5,500 = 27,000
+
+- F15 (Total Operating Income)
+  - Original value: 40,161.36 → Corrected value: 75,160
+
+- E16 (Taxes Q4)
+  - Original formula: =IF(E15>0,E15*28%,0)
+  - Original value: 0 → Corrected value: 0.28 * 27,000 = 7,560
+
+- F16 (Total Taxes)
+  - Original: 13,484.8 → Corrected: 21,045.6
+
+- E17 (Net Income Q4)
+  - Original formula: =E15-E16
+  - Original value: -7,998.64 → Corrected value: 27,000 - 7,560 = 19,440
+
+- F17 (Total Net Income)
+  - Original value: 26,676.56 → Corrected value: 54,115.2
+
+- Column G (percent-of-sales) values will also change because they are dividing by F7. For example G8 = F8/$F$7 will move from ~0.5393 to 62,000 / 153,000 ≈ 0.4052, etc.
+
+3) Other notes / minor issues
+- Label typos (not formula errors but worth correcting for clarity):
+  - A8 "Cost fo Goods Sold" → should be "Cost of Goods Sold"
+  - A6 " CGS/Unit" → typically "COGS/Unit" (or "CGS" vs "COGS" standardize)
+- G7 uses =F7/$F$7 and therefore shows 1. This is mathematically correct (sales as a % of total sales = 100%), but just be aware column G is percent-of-total-sales per row (so G7=1 is expected).
+
+Recommended immediate action
+- Replace E7 with =E5*E4 (remove the hard-coded 846). Then review the sheet: all the totals and percent-of-sales cells will update automatically. After that check formatting (percent/decimal places) and labels if desired.
+
+If you want, I can:
+- Provide a full table of the corrected cell values (including column G updated percentages),
+- Or produce a changed-sheet output showing the corrected values. Which would you prefer?

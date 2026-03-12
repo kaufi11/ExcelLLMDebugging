@@ -1,0 +1,32 @@
+Summary — main errors found
+1) Wrong averaging method (systematic)
+   - Many rows use Mx = Lx/10. That forces division by 10 even when some homework cells (B:K) are blank, so the per-student average is too low.
+   - Example: row 4 has missing E4 and J4 but M4 = L4/10 still divides by 10.
+
+2) Typo / operator error (single cell)
+   - M10 = L10*10 (multiply) — should not multiply.
+
+3) Possible data-alignment/missing-value issues
+   - Several rows have missing cells in B:K (e.g. B25, B27, H11, etc.). If those are accidental shifts, totals/averages will be wrong; if they are legitimately missing scores, the averaging method must ignore them.
+
+Quick fixes (pick one approach)
+
+A — Best and simplest (automatic ignore blanks)
+   - Replace every M cell with: =AVERAGE(B3:K3) and copy down.
+     Why: AVERAGE ignores blanks and computes correct mean of the present numeric scores.
+
+B — If you need to keep L (sum) and then divide by count:
+   - Use: =IF(COUNT(B3:K3)=0,"",L3/COUNT(B3:K3))
+     Why: divides by the actual number of numeric scores (COUNT) and leaves blank if none.
+
+C — Fix the typo
+   - Change M10 from =L10*10 to =L10/10 (or use AVERAGE(B10:K10)).
+
+Check for accidental missing/shifted data
+   - Flag rows with fewer than 10 numeric scores using: =COUNT(B3:K3)  (should equal 10 if all present).
+   - Or conditional formula to highlight: =COUNT($B3:$K3)<10
+
+Short explanation
+- Using a fixed divisor (10) treats blanks as zero implicitly and underestimates averages when scores are missing. AVERAGE or dividing by COUNT(B:K) fixes that. Also correct the multiplication typo at M10 and verify any rows with unexpectedly low COUNT(B:K) to fix misplaced values.
+
+If you want, I can give the exact formulas ready to paste and a short macro or step-by-step to fix all rows.

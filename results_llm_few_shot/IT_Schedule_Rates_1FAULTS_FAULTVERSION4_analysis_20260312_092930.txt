@@ -1,0 +1,21 @@
+Findings (short)
+- Faulty cell: E21 on sheet "EER SITE".
+- Problem: E21 has =D22*1.04 (it references the next row). That breaks the escalation chain for the "Functional Analyst, Senior" row and makes E21:H21 all wrong.
+- Cause: a row-offset mistake when the formula was copied.
+
+Fix (quick)
+1. Replace E21 with:
+   =D21*1.04
+2. Then fill/copy E21 → H21 (so F21 = E21*1.04, G21 = F21*1.04, H21 = G21*1.04) or re-copy the correct formulas from a nearby correct row.
+
+Better (recommended, more robust)
+- Use the escalation cell (column C) instead of hard-coding 1.04. For example:
+  - D21 (first escalation year) = B21*(1+$C21)
+  - E21 = D21*(1+$C21) and fill right
+- This way if the escalation rate in column C changes, formulas update automatically.
+
+Why this works (simple)
+- The wrong reference (D22) pulled the next row’s base value, so the whole chain used the wrong starting number.
+- Changing to D21 uses the correct base for that row; using (1+$C21) makes the multiplier dynamic and less error-prone.
+
+If you want, I can give the exact copy-fill steps or generate corrected formulas for the whole sheet.

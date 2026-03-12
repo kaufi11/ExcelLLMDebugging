@@ -1,0 +1,28 @@
+Summary of errors
+- A23 has a typo: =+A22+808 — this jumps the sequence by 808 instead of +1.
+- There are several manual breaks/resets (e.g. A314 set to 1) and formulas that reference non‑adjacent rows (A165 =A162+1, A191 =A188+1, etc.). Result: numbers get skipped, duplicated or jump unexpectedly.
+- Minor: the leading + (e.g. =+A5+1) is harmless but unnecessary.
+
+Quick fixes (fast, safe)
+1. Correct the obvious typo:
+   - Change A23 to =A22+1
+
+2. Replace the fragile per‑row formulas with a robust numbering formula so headers/blank rows won’t break the sequence. Pick one of these and fill down column A from row 4 to the end of the list:
+
+   Option A — Number only rows that have text in column B:
+   - In A4 enter: =IF($B4="","",COUNTA($B$4:$B4))
+   - Copy A4 down. This returns 1,2,3... only for rows where B has text.
+
+   Option B — If you prefer using the previous A value:
+   - Put 1 in A4 (or =IF($B4="","",1))
+   - In A5 enter: =IF($B5="","",A4+1) and copy down.
+
+Why this works (short)
+- Fixing A23 removes the accidental +808 jump.
+- COUNTA($B$4:$B4) (Option A) counts non‑empty B cells up to that row, so numbering is automatic and won’t be broken by headers, blank rows or accidental manual resets.
+- Option B keeps a simple incremental chain (previous + 1) but blanks when column B is empty.
+
+What to do now
+- Fix A23.
+- Replace the whole column A formulas with Option A (recommended) or Option B.
+- Remove any manual numbers (like A314 = 1) so the new formula controls all numbering.

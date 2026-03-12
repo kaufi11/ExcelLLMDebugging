@@ -1,0 +1,28 @@
+Summary — biggest problems
+- C41 (Total Points) is wrong: it uses COUNT instead of adding the point values, so it under- or miscounts.
+- C43 (Half fee / small business) returns "N/A" in cases it should return the full fee.
+- Several point cells return blanks ("") instead of 0 (e.g., C30, C34). That makes SUM/COUNT inconsistent and caused/compounded the C41 error.
+
+Fixes (copy these formulas into the sheet) and short explanations
+
+1) Total points — replace C41 with:
+=IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+Why: COUNT counts how many numeric cells exist; SUM adds the point values. You want the sum of points, not the count.
+
+2) Small-business / half-fee logic — replace C43 with:
+=IF(B34<>"","N/A",IF(B38<>"",C42/2,C42))
+Why: Current formula returns "N/A" when B38 is blank. This version returns half fee if small business (B38 filled), otherwise the full fee (C42). If General Permit (B34 filled) it still returns "N/A" as intended.
+
+3) Make point cells return numeric 0 instead of blank — update C30 and C34 (and any similar cells that use "" to hide values) so they always return numbers. Example fixes:
+- C30:
+=IF(B31<>"",0,IF(B30<>"",20,0))
+- C34:
+=IF(B35<>"",0,IF(B34<>"",10,0))
+Why: Blanks ("") break arithmetic and produce inconsistent results with SUM. Returning 0 keeps totals reliable.
+
+Notes / optional cleanup
+- C36 = SUM(C34:C35) is fine once C34/C35 are numeric.
+- F5 =IF(C43="N/A",C42,C43) is okay but redundant once C43 returns the correct number; you can display C43 directly if preferred.
+- Scan the range C9:C31 for any other formulas returning "" and change them to 0 where appropriate so SUM works consistently.
+
+If you want, I can produce a version of the sheet with all corrected formulas or review any other specific cells you suspect.

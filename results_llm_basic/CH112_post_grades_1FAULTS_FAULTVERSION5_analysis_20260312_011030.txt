@@ -1,0 +1,22 @@
+Summary of the problem
+- Cell O46 (Overall Grade for student in row 46) is wrong. It uses COUNT(...) where it should be summing the points earned. That gives a tiny/incorrect numerator, so O46 (and any summary stats that reference O4:O46) are wrong.
+
+What to change (exact fix)
+Replace the formula in O46 with the same correct formula used in the other rows. For row 46 use:
+
+=(SUM(B46:F46)+SUM(G46:M46)+N46)/
+ (COUNT(B46:F46)*100 + COUNT(G46:J46)*15 + COUNT(K46:M46)*30 + COUNT(N46)*150)
+*100
+
+(You can copy O4's formula down over O46 to ensure consistency.)
+
+Why this fixes it (short)
+- COUNT(B46:F46) returns the number of numeric cells, not the points earned. The numerator must be the total points earned (SUM), not a count of entries. Changing COUNT to SUM in the numerator correctly totals earned points so the percent calculation is valid.
+- Once O46 is corrected, O46's letter grade (P46) and all summary statistics (AVERAGE, STDEV, # of A/B/C etc.) that include O4:O46 will update correctly.
+
+Optional suggestion (robustness)
+- If you want Excel to treat blank/missing items as zeros (instead of excluding them from the denominator), change the logic (or use fixed maximums) — but only do this if your grading policy says blanks = zero. If you intentionally exclude missing tasks from maximum points, keep the current COUNT approach.
+
+If you want, I can:
+- Give a single improved formula that handles a blank final cell or
+- Show how to fill O4:O46 with the correct formula in one step.

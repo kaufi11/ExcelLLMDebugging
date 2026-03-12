@@ -1,0 +1,56 @@
+Summary — workbook: Convergys free-cash-flow reconciliations (five sheets: Q4 2003, Q3 2003-4 Qtr, Q3 2003, Q2 2003, Q1 2003). Each sheet is the same layout: company header, reconciliation table (three line items + total), then explanatory footnote text.
+
+Common layout (per sheet)
+- A1–A3: Title, reconciliation description, period end date.
+- Row 6 headers: column groups (left: "Three Months Ended …", right: "X Months Ended …" — e.g. Three Months Ended / Twelve (or Nine, Six) Months Ended).
+- Columns:
+  - Column A: primary labels (Cash flows from operations; Free cash flows; footnotes).
+  - Column B: second-line item labels (Accounts receivable securitization; Capital expenditures).
+  - D: current-period three-month values (numeric).
+  - F: prior-year comparable three-month values (numeric).
+  - H: "% Change" formulas comparing D vs F.
+  - J: year-to-date (YTD) values for the matching YTD period.
+  - L: prior-year YTD values.
+- Key rows:
+  - Row 9: Cash flows from operations (D9, F9, J9, L9 given per sheet).
+  - Row 11: Accounts receivable securitization (D11, F11, J11, L11).
+  - Row 12: Capital expenditures (D12, F12, J12, L12).
+  - Row 14: Free cash flows = cash flows from operations + securitization + capital expenditures (formula SUM of rows 9:12 per column).
+
+Key formulas (consistent across sheets)
+- Free cash flow totals:
+  - D14 = SUM(D9:D12)
+  - F14 = SUM(F9:F12)
+  - J14 = SUM(J9:J12)
+  - L14 = SUM(L9:L12)
+- Percent changes (three-month comparisons):
+  - H9, H12, H14 etc. generally use =+((Dn - Fn)/Fn)*100
+    - Note: Q2 2003 H9 uses =-((D9-F9)/F9)*100 (inconsistent sign).
+    - Q3 2003-4 Qtr L11 uses a literal formula = -80+40 (i.e. -40) instead of a standard numeric or reference.
+- Some H11 cells are set to 0 (no percent-change formula) even when prior-year values are non-zero.
+
+Representative numeric values (three-month columns D / F)
+- Q4 2003:
+  - Cash flows from operations D9=95, F9=238; Accounts receivable securitization D11=-25, F11=-100; CapEx D12=-100, F12=-32. D14 = SUM = (95 + -25 + -100) = -30.
+  - YTD: J9=363, L9=429; J11=-25, L11=-130; J12=-174, L12=-91.
+- Q3 2003-4 Qtr:
+  - D9=118, F9=238; D11=0, F11=-100; D12=-27, F12=-32. D14 = 118 + 0 + -27 = 91.
+  - YTD: J9=340.2, L9=454.7; J11=-50, L11= (given as =-80+40 → -40); J12=-85, L12=-114.
+- Q3 2003 (three-month / nine-month YTD):
+  - D9=118, F9=238; D11=0, F11=-100; D12=-27, F12=-32. J9=268, L9=357; J11=0, L11=-80; J12=-74, L12=-80.
+- Q2 2003:
+  - D9=41, F9=38 (H9 uses negative sign formula); D11=0, F11=0; D12=-26, F12=-27. J9=150, L9=119; J12=-46, L12=-48.
+- Q1 2003:
+  - D9=109, F9=0 (note: F9 = 0 — percent-change H9 uses division by F9 → divide-by-zero risk); D11=0, F11=0; D12=-20, F12=0 (again division-by-zero risk in H12). J9=150, L9=119; J12=-46, L12=-48.
+
+Footnotes
+- Rows A17–A23 repeat on each sheet: explanatory language defining free cash flow (cash flow from operations less securitization and capital expenditures) and stating it is a non-GAAP measure used by analysts.
+
+Issues / observations (concise)
+- Percent-change formulas divide by prior-year (F) values; where F = 0 (e.g., Q1 F9 and F12) these will error (divide by zero).
+- Inconsistency: Q2 H9 uses a leading negative sign in the percent-change formula (likely a mistake).
+- One cell (Q3 2003-4 Qtr L11) contains an arithmetic formula (-80+40) instead of a referenced prior-year number.
+- Several H11 cells are hard-coded 0 while underlying values change; inconsistent treatment of percent change for securitization.
+
+If you want, I can:
+- Produce corrected percent-change formulas that handle divide-by-zero (e.g., IF(Fn=0, NA() or ""), (Dn-Fn)/ABS(Fn)*100), and fix the inconsistent sign and literal formula.

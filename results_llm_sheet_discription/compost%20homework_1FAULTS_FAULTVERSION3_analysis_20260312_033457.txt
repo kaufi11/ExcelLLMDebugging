@@ -1,0 +1,23 @@
+Findings (short)
+- Error: On sheet "Bulk compost" only C19 uses a different offset: =A19+(B19/24)-2.00188636389994 while every other C cell on that sheet uses -1.48. This is an outlier/inconsistency.
+- Effect: C19's "start" is about 0.521886 days (≈12.53 hours) earlier than it should be. That will misplace that row on any time series, plot, or when you merge/sort by start.
+
+Why it's wrong (simple)
+- All other rows in the same sheet use the same offset (-1.48). A single row with -2.001886… is almost certainly a mistyped value, not an intentional different baseline.
+- If you compare to the Treatments sheet, that sheet consistently uses -1.71 (which may be correct there). But within a sheet you should be consistent; C19 breaks that consistency.
+
+Fix (exact steps)
+1. Select cell C19 on "Bulk compost".
+2. Replace its formula with the consistent formula used elsewhere, for example:
+   =A19 + (B19/24) - 1.48
+3. Press Enter. If you want to make sure all C cells are consistent, fill or copy the correct formula down the whole C column for your data range.
+
+Better (recommended) solution to avoid this in future
+- Put the offset in one cell (say cell C1 on each sheet) and use a reference, e.g. if C1 contains 1.48 then
+  =A4 + (B4/24) - $C$1
+  Then you can change the offset in one place and avoid manual typos.
+- Optional: If your B column values are HH.MM (like 11.17 meaning 11:17), convert them properly using TIME or split minutes — otherwise 11.17 is treated as 11.17 hours, not 11:10.
+
+If you want, I can:
+- update that exact cell for you and show the corrected numeric change, or
+- standardize all start formulas across both sheets and place the offset in one cell.

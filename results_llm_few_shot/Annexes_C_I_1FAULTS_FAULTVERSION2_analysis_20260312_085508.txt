@@ -1,0 +1,36 @@
+I reviewed the workbook and found a few clear mistakes. Short fixes and simple explanations below.
+
+1) Sheet: annex e — Cell B31
+- Fault: Formula typo (mechanical error).
+- Problem: B31 =B29+775 (should increment row number by 1, not +775). This breaks the row-number sequence and is confusing.
+- Fix: change to =B29+1
+- Why: keeps the numeric row index sequence consistent.
+
+2) Sheet: annex e — Cell K68
+- Fault: Incorrect link / copy‑paste (logical/reference error).
+- Problem: K68 = K48. K68 is “Variance as % of original forecast” for Total Funds but is linked to the percentage for Total Net Assets (K48) instead of calculating its own %.
+- Fix: replace with a percentage formula, e.g.
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Why: K68 should compute J68 as a percent of H68 (same pattern used elsewhere).
+
+3) Sheet: annex g — Cell T26 (and similarly T49)
+- Fault: Wrong reconciliation references (reference/omission error).
+- Problem: T26 = T19-('annex f'!H20+'annex f'!H21). That uses annex f cells H20 and H21 only (investments + cash) but the label says "reconciliation with balance sheet" — you should compare the cash closing balance to the single cell that represents "cash as in balance sheet (incl short‑term investments and bursary/hardship funds)". Using H20+H21 omits other relevant items or the proper summary cell.
+- Fix: point the formula at the correct “cash as in balance sheet” cell in annex f. For example:
+  =T19 - 'annex f'!H22
+  (and similarly change T49 to =T42 - 'annex f'!I22)
+- Why: H22 in annex f is the total current‑cash/investments cell (or the single cell that the template uses for “cash as in balance sheet”). Reconcile totals to that single cell so T26/T49 evaluate to zero when everything matches.
+
+4) Sheet: Annex I — Cell H27
+- Fault: Range sum too broad (logical/clarity error).
+- Problem: H27 =SUM(H10:H26). The intended result is the underlying operating surplus which should be the sum of the specific add‑back lines (e.g. Surplus after depreciation, add‑back exceptional costs, SSAP24 revaluation, other one‑offs), not an unspecific block that may include unrelated cells.
+- Fix: make the sum explicit, e.g.:
+  =H11 + H14 + H17 + H20
+- Why: explicit addition is clearer and avoids accidentally including other rows if layout changes.
+
+Notes and recommendations
+- Apply the same style/pattern used elsewhere in the workbook when fixing K68 and the reconciliation formulas (use IF(H=0,"N/A",…) for %s if you want consistency).
+- After changing B31, re-check any formulas or references that depend on column B numbering (if any exist).
+- Once fixes are applied, recalc and confirm the reconciliation cells (e.g., T26, T49 and other “These cells must be zero”) show zero.
+
+If you want, I can give the exact Edit->Replace formulas for each cell so you can paste them directly.

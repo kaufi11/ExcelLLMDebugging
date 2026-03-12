@@ -1,0 +1,56 @@
+Good — I reviewed the sheet and found the main errors and the fixes you should make. Short, clear, and actionable.
+
+Summary of the real problems
+1. Hard-coded means instead of cell references (Problem 1 and Problem 2). This makes the sheet fragile and causes wrong results if data change.
+2. A wrong value in one cross-product cell (Problem 1, H5 = 5). That directly corrupts the Pearson r.
+3. Inconsistent/incorrect "mean" cells in Problem 2 (N27 and P27 are SQRT(...) but labeled "mean").
+4. Minor robustness improvements (use absolute references when copying).
+
+What to change (exact fixes)
+Problem 1 (rows ~5–11)
+- Replace every hard-coded mean in the deviation formulas with references to the computed mean cells:
+  - B8 already =SUM(B5:B7). Change B9 to =B8/3 (instead of =8.8/3).
+  - C9 to =C8/3 (instead of =6/3).
+  - D5 change to =B5 - $B$9 (copy down to D6:D7).
+  - F5 change to =C5 - $C$9 (copy down to F6:F7).
+  - H5 change from 5 to =D5*F5 (copy down to H6:H7).
+- Keep E = D^2 and G = F^2, sums in row 8, and r formula in B11 = H8 / (SQRT(E8)*SQRT(G8)).
+Why: Using the mean cells (& $ absolute references) ensures formulas update when data change. H5 = 5 was wrong and inflated the cross-product sum H8, producing a wrong correlation.
+
+Problem 2 (split-half, rows ~23–30)
+- Replace hard-coded mean constants with references:
+  - Ensure B26/C26 are sums and B27/C27 = B26/3, C26/3 (time1 means).
+  - Change D23 to =B23 - $B$27 and F23 to =C23 - $C$27 (copy down).
+  - For the time-2 block use K27/L27 as K26/3 and L26/3 and change M23 to =K23 - $K$27, O23 to =L23 - $L$27, etc.
+- Fix N27 and P27: they are currently =SQRT(N26) and =SQRT(P26) but are labeled "mean". Replace with N27 = N26/3 and P27 = P26/3 (if you intended "mean of squared deviations"). If you intended to show SD, rename the label to "sqrt(sum squares)" or compute SD properly (e.g. =SQRT(N26/(n-1)) ).
+- Keep correlation formulas as r = sum_cross / (SQRT(sum_sq_x) * SQRT(sum_sq_y)) — that is OK if you use sum-of-squares in the denominator. Just be consistent with row labels and displays.
+Why: Hard-coded means break when you change data. N27/P27 being SQRT(...) with label "mean" is misleading and inconsistent.
+
+Problem 4 (alpha calculations)
+- Not a fatal error seen, but be careful about how you reverse item 5: when you reverse Q5 you must flip the sign of every correlation involving Q5. Instead of manually listing terms, better to compute a matrix and then compute means programmatically (or use cell references) so reversing is unambiguous.
+Why: Manual sign changes are error-prone.
+
+Problem 5 (kappa)
+- Formula logic looks correct, but make the denominator reference the N cell: use =$A$71 instead of hard-coding 51 in formulas (e.g. B75 = (B69*B70)/$A$71 and B81 = (C79-B79)/($A$71-B79)). This avoids mismatch if N changes.
+Why: Robustness.
+
+Problem 6 (KR-20/21)
+- Main formulas appear correct. Minor suggestion: use absolute references for k and n (k in one cell, n in one cell) so formulas read =($k$/( $k$-1))*(1-(sum_pq)/variance) etc.
+Why: Easier to maintain and check.
+
+Why these fixes matter (brief)
+- The wrong H5 value directly inflated the numerator in the correlation in Problem 1 → wrong r.
+- Hard-coded means make deviation calculations wrong if you or anyone edits data.
+- Mislabelled or miscomputed summary cells (N27/P27) lead to confusion and risk incorrect use in later formulas.
+- Using cell references and absolute references ($) makes the spreadsheet reliable and transparent.
+
+Quick checklist you can run now
+- Recompute Problem 1 after fixes — r in B11 will change. If it doesn't, re-check H5 and D/F formulas.
+- Replace all numeric mean constants (like 2.93333, 2.777767, 2, 3.166667, etc.) with direct references to mean cells ($B$9, $B$27, $C$9, $K$27, etc.).
+- Fix H5 to =D5*F5 and copy down.
+- For Problem 2, change N27/P27 to either the mean (N26/3) or relabel them if you want SDs.
+- Run a quick "trace precedent" (Excel) on key result cells (B11, B29, B30, B45, B81, B104, B125) to make sure they depend on the proper cells.
+
+If you want, I can:
+- Give the exact new formulas for every affected cell (I already gave the key ones above).
+- Or return a corrected copy of the sheet (showing before/after values) — tell me which you prefer.

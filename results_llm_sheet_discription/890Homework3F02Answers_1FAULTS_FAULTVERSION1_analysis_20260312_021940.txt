@@ -1,0 +1,30 @@
+Summary — I found three concrete problems (two real formula errors + one serious potential mistake to fix). Short explanations and exact fixes below.
+
+1) Typo in Q1 (discount table) — wrong column reference in G5
+- Problem: G5 formula uses =$G$2/(1+$K5)^$G$1 but the discount-rate column is J, not K. This makes the year‑3 discount use a blank/wrong cell and gives wrong discounted CF for that row.
+- Fix: Change G5 to =$G$2/(1+$J5)^$G$1 (i.e. replace $K5 with $J5).
+- Why: All period cells must use the same rate cell in that row (Jx). Copying the corrected G5 across/down will keep the table consistent.
+
+2) Inconsistent discount-rate reference in Q2 (debt blocks) — year‑0 formulas point to the wrong rate cell
+- Problem: In the debt scenario blocks the period‑0 discounted cash flow formulas (C31 and C77) use $C$19 (the block’s “Discount Rate”) while the other year formulas use the computed cost of equity ($C$20 or $C$63). Example: C31 = C30/(1+$C$19)^C22 but D31..G31 use $C$20. That is inconsistent.
+- Impact: For period 0 the exponent is 0 so the numerical result currently isn’t changed — but this is a logic/templating bug and will cause wrong results if you later change the period labels or copy the block to use non‑zero exponents.
+- Fix: Make the year‑0 formulas use the same discount as the other years:
+  - Change C31 to =C30/(1+$C$20)^C22
+  - Change C77 to =C76/(1+$C$63)^C65
+- Why: When discounting equity cash flows in the levered case you must consistently use the cost of equity (r_e), not the WACC/other cell. Keep the reference consistent across all periods.
+
+3) P/E / PVGO computation clarity in Q3 (possible conceptual / unit mismatch)
+- Problem/concern: C46 uses C41/C34 (Market value / total earnings) to produce a P/E. That is mathematically okay (Market Cap / Earnings = Price / EPS) but it obscures the per‑share calculation and can be misleading if earnings are negative or when using an average that includes negative years.
+- Fix / recommendation: Compute P/E using per‑share earnings to avoid confusion:
+  - EPS = Average Net Income / Shares (e.g. =C34 / $C$39)
+  - P/E = Price per share / EPS (or =C40 / EPS)
+  - This makes interpretation and sign issues (negative EPS) explicit.
+- Why: Using totals masks issues when earnings are negative or volatile — per‑share measures are standard and clearer.
+
+Other housekeeping suggestions (quick)
+- Search the workbook for any other $Kx references in the discount tables (might be further accidental K references). Replace them with the correct $Jx references.
+- For IRR work: remember IRR() can return a single root depending on its guess. Use different guesses (second argument) or inspect the NPV curve (you already have that) to find multiple IRRs.
+
+If you want, I can:
+- Provide the exact corrected formulas for every affected cell so you can copy/paste; or
+- Produce a cleaned Q1 table (fixed references + a small chart) and send the formulas to paste into your workbook.

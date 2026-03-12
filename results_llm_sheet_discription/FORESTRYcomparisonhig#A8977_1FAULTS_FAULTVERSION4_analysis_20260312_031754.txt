@@ -1,0 +1,43 @@
+Summary — main problems found
+1) Wrong VLOOKUP row reference in DATA TEXT:
+   - C13 contains =VLOOKUP(D14, sort0, 2, FALSE) but should look up D13. This makes C13 and C14 both return the same lookup result and leaves the code for D13 missing.
+
+2) VLOOKUP column index is incorrect (likely):
+   - The named range sort0 is the species table on Title page (columns A:B:C where column C holds the numeric code). The formulas use column index 2 (=VLOOKUP(...,2,FALSE)) which returns column B (a duplicate species name), not the numeric code in column C. So the result in column C will be wrong type.
+
+3) Presentation formulas convert numbers to text:
+   - DATA TEXT uses TEXT(DATA!E5,"#,##0") etc. That returns text, so those cells cannot be used in any numeric calculations and may hide actual numeric/units problems.
+
+4) Possible inconsistent units/formatting:
+   - SOURCE DETAILS says "Thousands of hectares" but the DATA numbers look like whole hectares (e.g. 326318). Either the metadata is wrong or the numbers need scaling. Also some cells (e.g. F28 shown as "23,397") may be text because of manual commas; that breaks numeric sums if used elsewhere.
+
+Fixes and how to apply them (simple steps)
+1) Fix the wrong row reference:
+   - Change C13 to reference D13:
+     =VLOOKUP(D13, sort0, 3, FALSE)
+   - Then fill the corrected VLOOKUP pattern down the column.
+
+2) Return the numeric code from the lookup (use column 3):
+   - Change every VLOOKUP in column C from col_index 2 to 3:
+     Example (for C5): =VLOOKUP(D5, sort0, 3, FALSE)
+   - Ensure the named range sort0 includes the species name in its first column and the code in the 3rd column (A:C). If sort0 is different reorder or redefine it appropriately.
+
+3) Stop using TEXT() for numeric links — format cells instead:
+   - Replace formulas like =TEXT(DATA!E5,"#,##0") with a direct link =DATA!E5.
+   - Then format the cell (Home → Number Format) to show thousand separators (Number format, 0 decimal, Use 1000 Separator).
+   - This keeps the value numeric for any calculations and only changes appearance.
+
+   If you must keep textual presentation for printing, keep a separate presentation column with TEXT(), but keep a numeric column for calculations.
+
+4) Fix number/text issues and confirm units:
+   - Remove manual thousands separators stored as text (e.g. change "23,397" to 23397 as a number).
+   - Confirm whether DATA values are in hectares or thousands of hectares:
+     - If metadata is wrong, update SOURCE DETAILS to "Hectares".
+     - If numbers should be thousands, divide the DATA values by 1,000 (or adjust formulas/sheet) so data and metadata match.
+
+Why these fixes work (short)
+- Using the correct lookup row (D13) and correct column index (3) returns the intended numeric code for each species.
+- Removing TEXT() keeps cells numeric, enabling sums/percentages and correct charting; formatting only changes display.
+- Fixing number-as-text and unit mismatch ensures totals and percentages are computed correctly and metadata is truthful.
+
+If you want, I can give the exact corrected formulas for every affected cell and a one-step macro (or step list) to fix all cells at once. Which would you prefer?

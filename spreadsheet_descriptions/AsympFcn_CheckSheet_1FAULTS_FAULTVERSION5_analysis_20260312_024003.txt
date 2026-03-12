@@ -1,0 +1,52 @@
+Overview
+- Workbook has two sheets for checking asymptotic cases: MasterMethod_Checks and SubstitutionMethod_Checks. Both list n values down rows and perform numeric checks (Big-Oh / Big-Omega) via cell formulas.
+
+MasterMethod_Checks (sheet)
+- Inputs / key cells:
+  - A4/B4: a = 3
+  - A5/B5: b = 3
+  - A6/B6: Critical Exponent (CE) = LOG(B4,B5) — computes log_b(a) (with a=3,b=3 → CE = 1).
+  - A7/B7: constant c = 0.5
+- Layout:
+  - Row 9 headers: Big-Oh Test (F), Big-Omega Test (G), Master Method (H).
+  - Columns per n:
+    - A: n (rows 11–41: n = 0,1,2,...,30)
+    - B: f(n) = n/2 (formula = A#/2)
+    - C: n^CE (formula = A# ^ $B$6, using anchored CE)
+    - D: f(n) / n^CE (= B# / C#)
+    - E: c * n^CE (=$B$7 * C#)
+    - F: Big-Oh test (IF(B# <= E#, "TRUE","FALSE"))
+    - G: Big-Omega test (IF(E# <= B#, "TRUE","FALSE"))
+    - H: Theta term (LOG(A#,2) — log base 2 of n)
+- Purpose: verify whether f(n) is ≤ c·n^{log_b a} (Big-Oh) or ≥ c·n^{log_b a} (Big-Omega) across sample n, to identify Master Theorem case.
+- Notes / issues:
+  - CE is computed correctly as log_3(3)=1.
+  - Row A11 includes n=0 — many formulas (log, power, division) will produce errors/div-by-zero for n=0.
+  - H19 contains LOG(A19,517) (base 517) — likely a typo; all other H rows use base 2.
+  - H column stores log_2(n) but Master Theorem Theta term usually involves multiplying n^{CE} by log n for some cases; the sheet appears to present the log factor alone in H.
+
+SubstitutionMethod_Checks (sheet)
+- Inputs / key cells:
+  - A4/B4: constant c1 = 0.5
+  - A5/B5: constant c2 = 3
+  - A6: n0 >= (blank)
+- Layout:
+  - Row 8 headers: Big-Omega Test (E), Big-Oh Test (F).
+  - Columns per n (rows 10–39 show n=1..30):
+    - A: n
+    - B: c1 * asymptotic_fcn — formula: =$B$4 * A# * LOG(LOG(A#,2),2). (interprets asymptotic function as n * log(log n) with nested log base 2)
+    - C: c2 * asymptotic_fcn — =$B$5 * A# * LOG(LOG(A#,2),2)
+    - D: T(n) fcn — recursively defined using constants; many rows: D# = 5*1 + n/LOG(n,2) for small n, later rows reference previously computed D cells (e.g. 5*$D$11 + A19/LOG(A19,2)) to simulate T(n)=5*T(n/2)+n/log n.
+    - E: Big-Omega test (IF(B# <= D#, "TRUE","FALSE"))
+    - F: Big-Oh test (IF(D# <= C#, "TRUE","FALSE"))
+    - G: Theta()? — IF both E and F true then "True" else "False"
+- Purpose: test whether T(n) is Θ(asymptotic_fcn) by checking c1·g(n) ≤ T(n) ≤ c2·g(n) over sample n.
+- Notes / issues:
+  - Asymptotic function uses LOG(LOG(n,2),2). For n=1 this is LOG(LOG(1,2),2) = LOG(0,2) (undefined) — will error. Small n values will often produce domain errors.
+  - D column attempts recursive evaluation T(n)=5*T(n/2)+n/LOG(n,2) by referencing earlier D cells, but references jump (e.g., $D$11, $D$12, $D$13, $D$14, $D$15) and are inconsistent across ranges — this may be intentional mapping of n→n/2 indices but appears irregular and could cause incorrect recursion or reference errors.
+  - Row formulas use absolute anchors for c1/c2 which is correct.
+
+Overall
+- Both sheets are designed to validate Master Theorem and Substitution (induction) style bounds by evaluating f(n), n^{log_b a}, and recursive T(n) across sample n values and returning TRUE/FALSE for comparisons.
+- Key constants: Master: a=3, b=3, CE=1, c=0.5; Substitution: c1=0.5, c2=3.
+- Watch for domain errors and a few likely typos/inconsistent references: n=0 in Master sheet, LOG(LOG(...)) for n=1 in Substitution, H19 base 517, and inconsistent D# recursion references in Substitution. Fix those to get reliable numeric checks.

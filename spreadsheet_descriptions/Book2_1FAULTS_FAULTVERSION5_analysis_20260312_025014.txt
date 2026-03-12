@@ -1,0 +1,25 @@
+Sheet name
+- total (2)
+
+Layout and contents
+- Header: Row 1 has a label in B1 = "Homework". Row 2 lists assignment numbers across B2:K2 (2 → 11), L2 = "total", M2 = "average".
+- Data block: Rows 3–45 contain one record per student. Column A contains an identifier (IDs or serials). Columns B–K hold up to 10 homework scores. Column L holds per-row totals, column M holds per-row averages.
+- Summary: Row 47 labeled "average" (A47) computes column-wise averages for the dataset (B47:K47, L47, M47) using AVERAGE over rows 3:45.
+
+Key formulas
+- Per-row total (L3:L45): mostly L# = SUM(B#:K#).
+- Per-row average (M3:M45): M# = L#/10 (fixed divisor of 10 for every row).
+- Column averages (row 47): B47 = AVERAGE(B3:B45), C47 = AVERAGE(C3:C45), …, L47 = AVERAGE(L3:L45), M47 = AVERAGE(M3:M45).
+- Exception: L29 uses COUNT(B29:K29) instead of SUM (likely an error).
+
+Notable data issues / potential errors
+- Missing score cells: Some rows omit specific homework cells (blanks). SUM(B#:K#) treats blanks as zero, and M# = L#/10 always divides by 10 — this understates the per-student average when a student has fewer than 10 scores.
+- Inconsistent formula: L29 uses COUNT rather than SUM, producing a non-total value.
+- Using L#/10 for averages is fragile; it assumes every student has 10 scores. If blanks should be ignored, averages are wrong.
+- Some values in column A look like Excel date serials (e.g., 41696) while others look like IDs — check consistency of column A if it's meant to be student IDs.
+
+Recommendations (concise)
+- Fix L29 to =SUM(B29:K29).
+- Replace M# = L#/10 with M# = AVERAGE(B#:K#) or =IF(COUNT(B#:K#)>0, L#/COUNT(B#:K#), "") to compute correct per-student averages that ignore blanks.
+- If blanks represent zeros, keep SUM/L#/10 but fill blanks with zeros explicitly or document that assumption.
+- Consider freezing header rows (1–2) and converting the range to an Excel Table for easier filtering and consistent formulas.

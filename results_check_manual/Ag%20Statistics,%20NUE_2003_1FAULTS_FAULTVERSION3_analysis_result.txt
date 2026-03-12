@@ -1,0 +1,80 @@
+I reviewed the formulas in the three sheets you provided and found a few real formula errors plus a number of inconsistencies / fragile constructions that are likely to cause mistakes later. Below I list the problems, the exact cells involved, why they are wrong or fragile, and recommended fixes (with corrected formulas where applicable).
+
+1) Wrong cell reference — World 1996 (causes incorrect rice N and downstream totals)
+- Cell: World 1996!E19
+- Current formula: =E8*(C20/100)
+- Problem: E19 is the rice N removal row and should use rice’s %N in C19. The formula mistakenly uses C20 (barley %N). That makes the rice N removal too large and propagates into E25, E27/E28, E30, E32, etc.
+- Corrected formula: =E8*(C19/100)
+- Impact (approx): corrected E19 ≈ 6,991,636.2822 (current value ≈ 11,482,199.4228). This lowers Total N removed (E25) and the fertilizer-derived N (E28), and changes estimated NUE (E30) — e.g. E30 would change from ≈0.37731 to ≈0.3323.
+
+2) Likely incorrect multiplier: multiplying by 67 instead of 0.67 (World 1996 and World 2002)
+- Cells:
+  - World 1996!G33 currently =E33*67 (value ≈ -54,776,882,759.65)
+  - World 1996!G34 currently =E34*67
+  - World 2002!F45 currently =D45*67
+  - World 2002!F46 currently =D46*67
+- Problem: other nearby cells (e.g. World 1996!G32 and World 2002!F44) contain 0.67 (not 67). Multiplying by 67 is likely a mistake (off by factor 100) — probably intended to apply 67% (0.67) or to multiply by the cell that contains 0.67. The numbers produced are orders of magnitude too large.
+- Recommended fixes:
+  - If the intent is “multiply by 67%”, change to multiply by 0.67 or reference the 0.67 cell. Example (World 1996 G33): =E33*G32 (or =E33*0.67)
+  - Likewise change the other *67 formulas to *0.67 or to reference the appropriate cell containing 0.67.
+
+3) Wrong/fragile hard-coded references to totals and constants
+- Examples:
+  - World 1996!E4 uses =0.6*82906340 rather than referencing World 1996!E2 (which holds the world total 82,906,340). That leads to fragile formulas if E2 is changed.
+  - Many similar formulas across sheets hard-code 0.60, 0.343, 0.426, 0.295, currency rates (479, 636, 550), and other constants.
+- Recommendation:
+  - Replace repeated hard-coded constants with dedicated parameter cells (e.g., a small parameters block: cereal_share = 0.6; baseline_pct = 0.343; currency_rate_1998 = 479, etc.) and reference those cells. This makes auditing and updates safer and eliminates inconsistent uses of slightly different numeric constants in different places.
+
+4) Inconsistent worksheet labels / header text vs data
+- Examples:
+  - Sheet names vs B1 text:
+    - Sheet "Developed 96": B1 = "World consumption of fertilizer-N" (not explicitly “Developed”)
+    - Sheet "Developing 96": B1 = "Developed world consumption of fertilizer-N" — text and sheet name disagree.
+  - Several descriptive text cells still reference the global number 82,906,340 or other historical constants (e.g., on Developed/Developing sheets B3 reads “0.60 * 82,906,340 = 49,743,804 MT in cereals”), even though the sheet uses its own E1 value. This may confuse readers and maintainers.
+- Recommendation:
+  - Fix B1 labels to match the sheet content. Update or link descriptive text to actual cells (e.g., use = "0.60 * " & TEXT(E1,"#,##0") or similar) so the text always matches the numbers.
+
+5) Mismatched descriptive text vs calculated numbers — World 2002
+- Example: World 2002!A6 text: "0.60 * 82,421,368 = 49,452,821 MT in cereals" but actual D4 = 81,969,570 and D6 = =0.6*D4 = 49,181,742. The text is stale relative to the numeric inputs.
+- Recommendation:
+  - Update descriptive text so it reflects the actual cell values (or replace text with formula-driven text).
+
+6) Inconsistent use of “50% from soil / 50% from fertilizer” coding style
+- Examples: sometimes the split uses E25*0.5, sometimes E25*(1-0.5). Both are mathematically equivalent but inconsistent. Not a bug, but inconsistent style increases chance of accidental error.
+- Recommendation: pick one style and apply across sheets (prefer referencing a named cell for the soil_share variable, e.g., soil_share = 0.5 and use =E25*soil_share and =E25*(1-soil_share)).
+
+7) Ambiguous/unclear formulas for the “N fertilizer savings per 1% increase in NUE” calculation
+- Examples:
+  - World 1996!E32 = (E4*(0.343)-E28) — the cell comment says “per 1% increase in NUE (same yield)”, but using 0.343 is not obviously "1%". Other sheets use different constants (0.426, 0.295, 0.343). The intended base and units aren’t explicit.
+- Recommendation:
+  - Clarify with parameter cells and labels: define what 0.343 represents (e.g., baseline NUE or a factor converting % point to absolute N reduction). If the intent is “for each percentage point” it should be explicit and probably use E4*0.01 * (some efficiency factor) or similar. Document in a parameter/notes block.
+
+8) Suggested concrete corrections I recommend making now
+- Fix the incorrect rice % reference:
+  - World 1996!E19: change to =E8*(C19/100)
+  - After fixing E19, recalc dependent totals (E25, E27, E28, E30, E32, E33, G33, G34).
+- Fix the 67 vs 0.67 multiplications:
+  - Replace =E33*67 with =E33*0.67 or =E33*G32 (if G32 = 0.67).
+  - Do the same for other *67 occurrences (World1996 G34, World2002 F45/F46, etc.)
+- Replace hard-coded uses of the global fertilizer total (e.g., World 1996!E4) with references:
+  - Example: World 1996!E4 → =0.6*E2 (or better: =cereal_share*total_fertilizer where cereal_share is a parameter cell).
+- Create a small parameter section (one per workbook or sheet) containing:
+  - cereal_share = 0.60
+  - soil_share = 0.50
+  - baseline_factor_for_1pctNUE = 0.343 (or rename to meaningful label)
+  - currency_1998 = 479, currency_2001 = 636, currency_2002 = 550
+  - fraction_to_apply = 0.67 (if this is the intended fraction)
+  Then update all formulas to reference those cells.
+
+9) Minor: textual notes left as strings in cells (OK but could be formula-driven)
+- Example: many cells contain explanatory text (e.g., A41 etc.) — okay for human readers, but if you want dynamic explanations create formula-based strings or comments.
+
+Summary / priority fixes
+- Priority 1: Fix the incorrect reference World 1996!E19 → =E8*(C19/100). This is a clear bug with measurable downstream impact.
+- Priority 2: Correct any *67 multiplications that should be *0.67 (World 1996 G33/G34, World 2002 F45/F46).
+- Priority 3: Replace hard-coded constants with named parameter cells (makes future audits straightforward) and update formulas to reference those parameters.
+- Priority 4: Clean up inconsistent sheet/label text to avoid confusion.
+
+If you want, I can:
+- apply the fixes and return the corrected formulas and recalculated numbers for the affected cells (I already computed approximate corrected values for World 1996 E19, E25, E27/E28, E30, E32 — I can recalc and list them precisely), or
+- generate a small “parameters” layout (suggested cells + names) and provide all replacement formulas that reference those parameters. Which would you prefer?

@@ -1,0 +1,37 @@
+I inspected the formulas on the two sheets you provided and found a few clear formula errors / inconsistencies in the "van Genuchten fit theta-h" sheet and one robustness issue to consider. Summary and suggested fixes below.
+
+1) Row 12 — squared error (cell E12) is wrong
+- Current formula in E12: =(463-D12)^2
+- Why it's wrong: it uses the constant 463 instead of the observed theta in C12. That produces a huge incorrect error for row 12 (214,359.78).
+- Correct formula: =(C12-D12)^2
+
+2) Sum of squared errors (cell E19) uses the wrong range
+- Current formula in E19: =SUM(E14:E18)
+- Why it's wrong: it sums E14:E18 and therefore excludes E12 and E13 (and includes blank rows E17/E18). The intended SSE should sum all per-row squared errors (E12:E16 in your sheet).
+- Correct formula: =SUM(E12:E16)
+- Note: B7 contains the SSE value via =E19; B7 will be correct once E19's range is fixed.
+
+3) Inconsistent/missing inclusion of rows in SSE (related note)
+- After fixing E12 and E19 you will include all rows 12–16 (E12:E16) in the SSE. Right now E19 intentionally/accidentally excluded E12 (which masked the error caused by E12 referencing 463).
+- Verify that the row set you want in the SSE is exactly E12:E16 (or expand if you later add more rows).
+
+4) Robustness of predicted-theta formula for pressure sign
+- Current predicted theta formula (D12..D16) uses -B12 to get a positive magnitude (e.g. $B$5*(-B12)^$B$6). This works only if pressure values in column B are negative (as in your data).
+- Recommendation (more robust): use ABS(B12) or ABS(Bn) to get magnitude explicitly and avoid errors if any pressure is zero or becomes positive:
+  Example corrected formula for D12:
+  =$B$3 + ($B$4-$B$3) / ( (1 + $B$5 * ABS(B12)^$B$6)^(1 - 1/$B$6) )
+- If you are certain all B values will always be negative, the current -B12 approach is fine.
+
+5) LN() formulas in column F
+- Current F12..F16 use =LN(-B12) etc. This is consistent with using -B (to get positive magnitudes) but will error if any B value becomes 0 or positive.
+- Recommendation: use =LN(ABS(Bn)) for robustness (and handle B=0 separately if needed).
+
+Quick checklist of exact corrected formulas to paste:
+- E12: =(C12-D12)^2
+- E19: =SUM(E12:E16)
+- (Optional) D12 (robust): =$B$3 + ($B$4-$B$3)/((1+$B$5*ABS(B12)^$B$6)^(1-1/$B$6))
+- (Optional) F12 (robust): =LN(ABS(B12))
+
+Anything else
+- After the E12 fix you should re-run any solver/fit you used: the SSE will change drastically and that will likely alter the fitted parameters if they were optimized based on the incorrect SSE.
+- If you want, I can prepare a small list of all D-row formulas converted to the ABS form, and a corrected SSE formula, or scan the workbook for any other similar hard-coded constants (like the mysterious 463) if you upload a fuller extract.

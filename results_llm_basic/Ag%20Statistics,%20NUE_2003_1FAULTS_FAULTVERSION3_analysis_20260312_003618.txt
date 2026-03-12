@@ -1,0 +1,50 @@
+Summary of the main errors I found and how to fix them (short and clear):
+
+1) Wrong cell reference for rice N removal (causes wrong totals)
+- Where: Sheet "World 1996", cell E19.
+- Problem: formula is =E8*(C20/100) — it uses C20 (Barley %N) instead of C19 (Rice %N).
+- Fix: change E19 to =E8*(C19/100)
+- Why: the rice %N is in C19. Fixing this will correct E19, then E25 (sum of removals), E27/E28, NUE values and all downstream savings calculations.
+
+2) Percent used as integer (67 vs 0.67) — obvious scaling errors
+- Where: several places (examples shown in sheets): World 1996 G33 =E33*67, G34 =E34*67; World 2002 F45 =D45*67, F46 =D46*67 (and similar).
+- Problem: multiplying by 67 treats “67%” as 67 (x67) instead of 0.67. That inflates results by 100×.
+- Fix: replace *67 with *0.67 (e.g. G33 =E33*0.67)
+- Why: percent must be used as a decimal (67% = 0.67). Use 0.67 or a cell containing 0.67.
+
+3) Sheet labels / header text inconsistent (Developed vs Developing swapped / copy-paste numbers)
+- Where: Sheets "Developed 96" and "Developing 96" (and some descriptive text cells across sheets).
+- Problem: header text or hard-coded descriptive numbers do not match the cell values (e.g. a sheet named Developed shows the developing total in E1, and some cells still show the world total 82,906,340 in text).
+- Fix: either
+  a) rename the sheets to match the data they contain, or
+  b) correct the B1 header text to match the E1 value on each sheet.
+  Also remove or update hard-coded textual numbers (the “0.60 * 82,906,340 = …” lines) so they reflect the correct total for that sheet, or replace them with formulas referencing the totals.
+- Why: mislabeling leads to wrong interpretation and copy/paste errors. Keep labels and values consistent.
+
+4) Hard-coded text/numbers inconsistent with formulas
+- Where: many descriptive text cells (e.g. “0.60 * 82,906,340 = …”, World 2002 A6 uses a different base number than the formula uses).
+- Problem: explanatory text was copied and not updated; users may trust the visible number instead of the actual formula-driven value.
+- Fix: replace hard-coded numeric text with either:
+  - a formula cell that shows the calculated value (e.g. set the explanatory cell to =0.6 * D4 or just show the result cell), or
+  - update the text to the correct numbers.
+- Why: avoids confusion and mismatch between displayed text and calculation.
+
+5) General check after fixes
+- After correcting E19 and any *67 → *0.67 fixes, recalculate and verify:
+  - E25 / E24 totals (N removed) match expected sums,
+  - E27/E28 (soil vs fertilizer origin) = 50% of totals,
+  - NUE = fertilizer N removed / cereal fertilizer applied,
+  - Savings rows (E32, E31, etc.) use the corrected values.
+- Tip: use Audit → Trace Dependents/Precedents (Excel) to see where each corrected cell feeds into downstream calculations so you don’t miss any affected formulas.
+
+Example corrected formulas to enter
+- World 1996:
+  - E19: =E8*(C19/100)
+  - G33 (if intended to be 67% of E33): =E33*0.67
+- World 2002:
+  - F45: =D45*0.67
+  - F46: =D46*0.67
+
+If you want, I can:
+- produce a short list of every cell that depends on E19 so you can re-check them, or
+- make the exact replacements and return a corrected workbook (if you upload the file).

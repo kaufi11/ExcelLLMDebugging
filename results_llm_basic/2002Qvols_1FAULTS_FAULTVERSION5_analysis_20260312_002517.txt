@@ -1,0 +1,27 @@
+Summary of the main error
+- The Q4 product data columns are out of place (misaligned) vs the Q4 headers. The Q4 header cells are in AI5:AL5, but the Q4 product numbers are sitting in AE:AH. That causes formulas that expect Q4 values under AI:AL to point to the wrong cells (or to blanks). Symptoms: formulas like AI6 = AE6+W6, AK6 = AG6+Y6 reference AE/AG etc instead of the visible Q4 header columns, and some AG cells are blank while the matching data is one column right.
+
+Why this is wrong
+- Header rows (AI5:AL5) must be directly above their data columns so formulas, checks and users all refer to the same column. When the data is shifted left 8 columns, totals/cumulative formulas point to wrong places or blanks and totals can be wrong or misleading.
+
+Fix (recommended, safe and automatic)
+1. Cut the misplaced Q4 product columns (AE:AH).
+2. Insert them at the Q4 header location (before column AI) using "Insert Cut Cells".
+   - Steps: select columns AE:AH → Right-click → Cut. Select column AI → Right-click → Insert Cut Cells.
+3. Save and recalc. Excel will update formulas so the Q4 values now sit under the correct headers (AI:AL) and cumulative formulas (AI?, AJ?, AK?, AL?) will reference the correct product cells.
+
+Why this fix works
+- Cutting and inserting moves the actual cells (their values) and Excel automatically adjusts cell references in formulas to keep them pointing to the moved data. After the move the headers (AI5:AL5) and the Q4 data will be aligned and cumulative formulas will be correct.
+
+Alternative (if you cannot move columns)
+- Change the formulas that calculate Q4/cumulatives so they reference AE:AH instead of AI:AL (or vice versa). Example: if AI6 currently =AE6+W6 and you want AI to use AI column values instead, you must update cell references consistently. This is error-prone; cutting/pasting columns is simpler and safer.
+
+Other things to check after fixing
+- Look for formulas that explicitly reference AG (or any column that looked blank) — these were symptoms of the shift. After moving, confirm AK formulas reference the correct LPG column.
+- Inspect Grand Total and sector subtotal formulas (AI133, AJ133, AK133, AL133 and the sum ranges) and recalc to verify totals changed as expected.
+- Check any negative values or single strange values (e.g., -31560) — these may be legitimate adjustments but check source data if unexpected.
+- Save a backup copy before making structural changes.
+
+If you want, I can:
+- Give exact examples of a few cells before/after the fix (e.g., show one row’s formulas and correct versions), or
+- Provide a short macro to perform the cut/insert automatically and verify top totals. Which would you prefer?

@@ -1,0 +1,25 @@
+Here are the errors I found and simple fixes for each sheet. Short explanations included.
+
+1) Sheet "Q'back" — touchdown % (row 5)
+- Faulty cell: I5
+- Error: Wrong operator. It’s =G5/C5/100 which divides twice by 100.
+- Fix: =G5/C5*100
+- Why: Touchdown % should be (touchdowns ÷ attempts) × 100. Using /100 makes the value 100× too small and will break the L-column rating formula.
+
+(Also check other I-cells to make sure they use *100 like I6, I7 etc. If you wanted decimals (0–1) instead of percents, use =G5/C5 and change the L formula accordingly.)
+
+2) Sheet "drug bust"
+- Problem: Metadata and notes (filename, author, data source, email, etc.) are mixed into column E and into rows of the data table.
+- Why it’s bad: Text scattered inside the data range breaks filters, charts, pivot tables and any formulas expecting contiguous numeric columns.
+- Fix: Move all metadata to a separate area or a separate sheet (e.g., a new sheet named “Notes” or cells above the table). Keep the data table contiguous with headers in one row (e.g., A2:C2) and numeric rows below (A3:C33). Delete or relocate text from column E rows that sit inside the data range.
+
+3) Sheet "lookup"
+- Problems: Total, Average and Letter Grade cells are blank / missing formulas.
+- Fix formulas (enter in row 4 and fill down):
+  - Total (F4): =SUM($B4:$E4)
+  - Average /100 (G4): =F4/4   (same as =(F4/400)*100)
+  - Letter grade (H4): =VLOOKUP(G4,$F$12:$G$18,2,TRUE)
+- Why: SUM gets the 4 subject scores; dividing by 4 gives average out of 100; VLOOKUP with TRUE finds the correct grade threshold (mapping table must be sorted ascending — it is).
+- Tip: Use absolute refs ($F$12:$G$18) so the lookup range doesn’t move when you fill down. Consider moving the grade-table out of column F (so totals and table don't overlap visually).
+
+If you want, I can produce the exact formulas with $ signs and fill ranges for all rows and point out any other potential inconsistencies.

@@ -1,0 +1,27 @@
+Summary of the concrete error(s)
+- Wrong cell reference in J13. J13 is currently = $C14/2 but it should be = $C13/2. This is a copy/paste/reference mistake.
+- Because J13 is wrong, the J-column sums and downstream results that depend on those sums (J25, J35, J39, J40, J41, etc.) are incorrect.
+- (Recommendation) Scan the J, K and L columns for other similar copy/paste mistakes — the pattern in rows 9–24 is normally "= $C<row>/2" (or a deliberate full value for some rows). Any deviation is likely a mistake.
+
+Why this matters (impact)
+- C13 = 0.35, so correct J13 = 0.35/2 = 0.175 ns. With the wrong formula J13 = C14/2 = 0/2 = 0 ns.
+- That 0.175 ns missing in J13 reduces J25 and J39 by 0.175 ns, which makes J40 (post-compensation error) smaller by 0.175 ns and therefore makes the Minimum Setup (J41 = J6 - J40) larger by 0.175 ns. In short: the sheet currently overstates the J41 minimum setup by 0.175 ns.
+
+How to fix it (step-by-step, easy)
+1. Correct J13:
+   - Replace the formula in J13 with = $C13/2 (or simply =C13/2).
+2. Verify consistency for the whole block:
+   - For rows 9 through 24 in columns J, K and L the intended pattern is either:
+     - =C<row>/2 (for half-cycle adjustments), or
+     - =C<row> (for items meant to be taken full).
+   - Put the correct formula in the first cell (e.g., J9 =C9/2) and Fill Down to avoid manual mistakes.
+3. Recalculate and confirm:
+   - Check J25, J35, J39, J40 and J41 changed by +/−0.175 ns as expected.
+4. Optional preventive steps:
+   - Use consistent formulas (set J9:J24 to use a single pattern then fill down).
+   - Use Excel’s Trace Dependents/Precedents to verify links.
+   - Consider using named ranges or a helper column so you don’t hand-edit many copied formulas.
+
+If you want, I can:
+- Provide the exact list of any other cells that deviate from the expected pattern (I can scan the sheet and list them), or
+- Give an exact corrected formula set for J9:J24 (and K/L equivalents) so you can paste it in.

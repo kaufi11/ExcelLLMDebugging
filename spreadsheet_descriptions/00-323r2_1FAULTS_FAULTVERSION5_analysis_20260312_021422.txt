@@ -1,0 +1,54 @@
+Overview
+- Workbook contains three sheets. Sheet1 holds a timing-budget calculator for two data rates (Fast-80 and Fast-160). Sheet2 and Sheet3 are present but contain no detailed data in the supplied extract.
+
+Sheet1 — layout and sections
+- Header row: A1 = Item, B1 = Fast-80, C1 = Fast-160, D1 = Comments. Additional working/output columns are placed to the right: J:L (per-edge Setup/Hold breakdown), N:R and P:Q (intermediate and device-method results).
+- Major blocks down column A:
+  - Nominals (A3–A6): REQ(ACK) period (B4/C4), Data transfer period (B5/C5), Ideal setup/hold (B6/C6).
+  - Non-compensatable error terms (A7–A25): tolerance, asymmetries, noise, crosstalk, chip noise, jitter, etc. Individual values in B9:B24 (Fast-80) and C9:C24 (Fast-160). Row 25 sums these (B25 = SUM(B9:B24), C25 = SUM(C9:C24)).
+  - Compensatable skew items (A26–A35): transmitter/receiver chip skew, cable skew, ISI, etc. Row 35 sums these (B35, C35).
+  - Compensation (A36–A38): ISI compensation and skew compensation (C36 = 2, C37 = 4.4), C38 = SUM(C36:C37). J/K/L equivalents computed as half or direct copies where appropriate.
+  - Totals and post-compensation results (A39–A41): Total error inputs (B39 = B25+B35, C39 = C25+C35), Post-compensation error (B40 = B39-B38, C40 = C39-C38), Minimum data valid window (B41 = B5-B40, C41 = C5-C40).
+  - Notes (A42–A46): explanatory comments and assumptions.
+
+Key columns and role
+- B / C: numeric inputs and results for two rates: Fast-80 (B) and Fast-160 (C).
+- D: comments and clarifications for many items.
+- J / K / L: per-item breakup into Setup/Hold halves or direct application for one device/edge (many formulas use = $C#/2 or copy of C#).
+- N: labels for intermediate computed metrics (Receive/Transmit assertion period, setup/hold, net times).
+- P / Q: “Method 1” and “Method 2” device-level calculations. They compute transmit/receive assertion periods, setup and hold times, and net setup/hold using combinations of C-column inputs and J/K/L intermediate values. Examples:
+  - P12 = C5 - C9 - C12 - C15 - C21  - C? (transmit assertion period computed by subtracting specific non-compensatable terms from the data transfer period)
+  - P13 = L6 - L9 - L11 - L12 - L15 - L21 - L27 - (L30/2) (transmit hold time assembled from hold-side components)
+  - P14, P15, P16, P17, P18, etc. compute various net/receiver/transmitter setup and hold times by combining P and J/K/L values.
+- R21/R22: further adjustment formulas (e.g., R21 = Q21 + 5.4 - 0.4 — an illustrative offset).
+
+Important numeric values (examples)
+- REQ(ACK) period: Fast-80 = 25 ns, Fast-160 = 12.5 ns (B4/C4).
+- Data transfer period: Fast-80 = 12.5 ns, Fast-160 = 6.25 ns (B5/C5).
+- Ideal setup/hold (half-cycle): Fast-80 = 6.25 ns, Fast-160 = 3.125 ns (B6/C6).
+- Notable error terms (Fast-160 column C):
+  - Tolerance/2 (C9) = 0.06 ns
+  - Data driver asymmetry (C11) = 0.5 ns
+  - Crosstalk (C17) = 0.7 ns
+  - ISI of data (C31) = 4 ns
+  - ISI comp (C36) = 2 ns; Skew compensation (C37) = 4.4 ns
+- Aggregation: C25 sums non-compensatable, C35 sums compensatable; C38 = C36 + C37.
+
+Formulas and calculation patterns
+- Many J/K/L cells are simple halves or copies of the C column (e.g., J9 = $C9/2) to represent half-cycle division or per-edge contributions.
+- Totals use SUM ranges (B25, C25, B35, C35, etc.).
+- Post-compensation and final windows subtract compensation totals from aggregated errors: Post-compensation = Total errors - Compensation total.
+- Final minimum data valid window = Data transfer period - Post-compensation error (B41, C41).
+- Device-method columns P and Q contain composed formulas that assemble transmit and receive setup/hold windows by subtracting relevant error contributors (referencing J/K/L and absolute-referenced P/Q cells).
+
+Comments and assumptions
+- H2 notes: "Assumes all terms can be divided by two except skew."
+- Several D cells flag double-counting, asymmetry handling, and interpretation guidance (e.g., D12, D14, D18, D31).
+- Notes at bottom explain assumptions about half-cycle adjustments, ambiguity, and what Fast-80 budget ignores.
+
+Overall intent
+- Sheet1 is a timing budget and margin calculator that breaks down error contributions (non-compensatable and compensatable), applies compensation, and produces per-rate minimum valid windows and per-device setup/hold results under two methods. The sheet is organized so inputs are on the left (B/C), per-edge breakdowns in J:K:L, and assembled device timing in P:Q (with intermediate labels in N).
+
+If you want, I can:
+- Produce a simplified one-page summary of the key computed outputs (final min windows and device setup/hold) for both Fast-80 and Fast-160.
+- Trace any specific formula chain (e.g., show how P17 is built step-by-step).

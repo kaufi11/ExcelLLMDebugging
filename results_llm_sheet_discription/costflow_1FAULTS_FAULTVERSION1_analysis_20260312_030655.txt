@@ -1,0 +1,49 @@
+Summary — main problems found
+1. Several cells are blank or marked "?" (missing formulas) so ending inventory cost and COGS aren’t computed (e.g., K11 and K12 in the Weighted Average — Periodic block).
+2. Inconsistent / wrong sign conventions produce negative ending units (I11 etc.). Many formulas use negative GAFS or double negatives (e.g., I11 = -I10 - SUM(C17:C18)), so ending inventory units become -6000 instead of +6000 and many downstream formulas compensate by adding/subtracting negatives. This is the root cause of many wrong results and confusing references.
+3. Some row-level formulas reference totals instead of the row inputs (e.g., I8 = C10 and K8 = E10). That mixes "row" values with "totals" and produces incorrect per-row unit costs or double-counting.
+
+Concrete fixes (easy to paste into the workbook)
+
+A. Adopt a clear convention: keep units and costs positive for inputs and totals. Compute COGS as:
+- GoodsAvailableUnits = SUM(units rows)
+- GoodsAvailableCost = SUM(extended cost rows)
+- UnitsSold = -SUM(C17:C18) (or SUMABS the sale rows)
+- EndingUnits = GoodsAvailableUnits - UnitsSold
+- EndingCost = EndingUnits * UnitCost (for weighted avg) or sum of remaining layer costs (for FIFO/LIFO)
+- COGS = GoodsAvailableCost - EndingCost
+
+B. Specific formula replacements for the Weighted Average — Periodic block (replace the shown wrong formulas):
+
+- I8 (Beginning inventory units) -> =C8
+- K8 (Beginning inventory cost)  -> =E8
+- J8 (Beginning unit cost)       -> =IF(I8=0,0,K8/I8)
+
+- I9 -> =C9 ; K9 -> =E9 ; J9 -> =IF(I9=0,0,K9/I9)
+
+- I10 (GAFS units) -> =SUM(I8:I9)
+- K10 (GAFS cost)  -> =SUM(K8:K9)
+- J10 (avg unit cost) -> =IF(I10=0,0,K10/I10)
+
+- I11 (Ending inventory units) -> =I10 + SUM(C17:C18)
+  Explanation: C17 and C18 are negative sales, so adding them is equivalent to subtracting sold units. This yields +6000 instead of -6000.
+
+- K11 (Ending inventory cost) -> =I11 * J10
+- K12 (Cost of goods sold)    -> =K10 - K11
+
+C. Apply the same sign convention and fix patterns in all other method blocks:
+- Always compute EndingUnits = GAFSUnits + SUM(sales rows) (sales rows negative) OR =GAFSUnits - ABS(SUM(sales rows)).
+- Always compute EndingCost per method as the correct leftover-layer cost (FIFO/LIFO) or units * unitcost (weighted / moving).
+- Compute COGS = GAFSCost - EndingCost.
+
+Why this fixes it (short)
+- The workbook mixed negative/positive conventions. When ending units are stored as negative values, many formulas have to invert signs and reference odd cells; that leads to missing formula cells and incorrect references. Using positive, straightforward formulas (GAFS - units sold = ending) eliminates double-negatives and allows simple K11 = I11 * avg_cost and COGS = total_cost - ending_cost. Filling the missing K11 & K12 formulas restores quantitative results.
+
+Other quick checks to run after applying fixes
+- Verify GAFS units = 17,000; Units sold = 11,000; Ending units = 6,000.
+- Weighted average unit cost should be K10 / I10; ending cost = 6,000 * avg unit cost; COGS = K10 - ending cost.
+- Recalculate the NetIncome sheet values — COGS numbers should match the Valuing Ending Inventory outputs.
+
+If you want, I can:
+- Provide the exact corrected formulas for every problematic cell (FIFO/LIFO/Perpetual blocks),
+- Or produce a corrected copy of the workbook with the fixes applied.

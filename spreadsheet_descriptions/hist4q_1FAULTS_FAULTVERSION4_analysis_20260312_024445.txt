@@ -1,0 +1,58 @@
+Summary of workbook structure and contents
+
+General
+- Workbook has 3 sheets:
+  - Sheet 0: Table of contents / cover page (Japanese). Includes title "ヒストリカル・四半期データ集（連結）", page index and notes (e.g. negative numbers shown in parentheses, restatement notes). Date stamp in B25 = 2004-01-29.
+  - Sheet 1: "1. 四半期実績推移(1)" — product-level sales, simple consolidated P&L and regional sales by quarter.
+  - Sheet 2: "2. 四半期実績推移(2)" — business-segment (事業の種類別) info: sales, operating profit and margins by segment and totals.
+
+Common layout (Sheets 1 & 2)
+- Columns C–R = quarterly columns for years 2000–2003 (quarter labels in row 3). Unit: （百万円） indicated in B4.
+- Rows grouped by blocks (product/segment lines, subtotal lines, P&L lines, margins, non-operating items, taxes, minorities, net income, regional breakdown, footnotes).
+
+Sheet 1 — contents and key formulas
+- Product rows:
+  - 事務機 (Office equipment) broken into sub-lines (オフィスイメージング機器, コンピュータ周辺機器, ビジネス情報機器) in rows 9–11 with values per quarter.
+  - Row 12 "事務機　計" mostly =SUM of the three sub-lines (e.g. C12 = SUM(C9:C11)); note H12 uses COUNT(H9:H11) (likely a typo/error).
+  - Rows 13–14: カメラ and 光学機器その他 with quarterly values.
+  - Row 15 "売上合計" =SUM of product category totals (e.g. C15 = SUM(C12:C14)).
+- Consolidated P&L:
+  - Row 17 "純売上高" links to sales (C17 = C15).
+  - Row 18 "売上原価" provided values; row 19 "売上総利益" =C17 - C18.
+  - Row 20 "売上総利益率" =IF(C$17=0,"-  ",C19/C$17) (same pattern for other margin rows).
+  - Row 21 "販売費及び一般管理費" (SG&A) values; row 22 "営業利益" =C19 - C21; row 23 "営業利益率" computed with IF to avoid division by zero.
+  - Rows 24–28: 営業外収益及び費用 (interest, other) with C28 = SUM(C25:C27).
+  - Row 29 "税引前当期純利益" =C22 + C28 and row 30 is corresponding margin.
+  - Rows 31–32 taxes and minority interests; row 33 = pre-tax minus taxes/minorities; row 34 is accounting-change cumulative effect (G34 has value 3692).
+  - Row 35 "当期純利益" =SUM(C33:C34) and row 36 is net-margin using IF.
+- Regional sales block (rows 38–46):
+  - Domestic (国内) and Overseas (米州, 欧州, その他). Row 45 "海外　計" uses SUM of the overseas regions; row 46 "合計" sums domestic + overseas (e.g. C46 = SUM(C40,C45)).
+- Notes/footnotes (B47–B48) explain restatements (EITF00-14/00-22) and reclassification of disposal gains.
+
+Sheet 2 — contents and key formulas
+- Segment blocks: 事務機 (rows 9–11), カメラ (rows 16–18), 光学機器その他 (rows 23–25), 消去又は全社 (eliminations & corporate, rows 30–31).
+  - Each segment provides 売上高 and 営業利益 (values), and 営業利益率 using IF formulas that divide operating profit by segment sales (e.g. C11 = IF(C9=0,"",C10/C9)).
+- Totals (rows 36–39):
+  - Row 37 "売上高" =SUM of segment sales (e.g. C37 = SUM(C9,C16,C23,C30)).
+  - Row 38 "営業利益" =SUM of segment operating profits (e.g. C38 = SUM(C10,C17,C24,C31)).
+  - Row 39 "営業利益率" computed as IF(total sales=0,"", total operating profit/total sales).
+- Same quarterly column structure and units as Sheet 1.
+- Footnotes (rows 43–44) echo restatement notes similar to Sheet 1.
+
+Notable values & checks
+- Units: 百万円 (millions of JPY).
+- Example totals:
+  - Sales for 2000 Q1 (C15/C17) = 527,665 (百万円).
+  - Sales for 2003 Q4 (R15/R17) = 601,896 (百万円).
+  - Accounting-change after-tax impact noted in G34 = 3,692 (百万円).
+- Formula patterns:
+  - Many subtotal/totals use SUM over fixed ranges.
+  - Margins use IF(..., "", numerator/denominator) or IF(..., "-  ", ...) to avoid division by zero.
+  - One probable formula error: H12 = COUNT(H9:H11) (should likely be SUM).
+- Formatting/annotations:
+  - Negative values are indicated (source note on Sheet 0) and negatives appear as negative numbers (some cells show negative values, e.g., 支払利息 in row 26).
+  - Restatement and accounting-change notes appear on both sheets.
+
+If you want, I can:
+- Validate formulas across the workbook and flag any inconsistencies (e.g., H12).
+- Reconcile segment totals vs. consolidated P&L and highlight differences.

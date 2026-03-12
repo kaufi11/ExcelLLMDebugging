@@ -1,0 +1,61 @@
+I inspected the formulas in both worksheets and found a number of real errors, likely mistakes (wrong cell references or hard-coded values), and some stylistic/inconsistency issues that can cause confusing results. Summary first, then details and suggested fixes.
+
+High‑priority problems (should fix)
+- STEP 2!F10 — incorrect reference
+  - Formula: =H8/H6
+  - Why wrong: F10 is the % for "SAVING (10%)" but it divides H8 (GIVING) by H6 (EARNINGS), so it duplicates the Giving % instead of using the Saving amount.
+  - Fix: change to =H10/H6
+
+- STEP 1!M65 — hard-coded value
+  - Value/formula: 6 (entered as =6)
+  - Why suspicious: M65 is labeled "TOTAL MONTHLY" so it should be a SUM of monthly items, not a constant 6. That hard-coded 6 propagates into STEP 2 (H12 = 'STEP 1'!M65) and leads to meaningless % and totals.
+  - Fix: replace with a proper SUM of the monthly cells that make up "TOTAL MONTHLY" (or 0 until data entered).
+
+- Many #DIV/0! errors in STEP 2 (expected while earnings = 0)
+  - Examples: F8, F10, F12, F14, F16, F18, K6, K20, K30, F34, F45 etc. All are formulas of the form =something/H6 or similar.
+  - Cause: H6 (EARNINGS) is zero (STEP 1 E22 = 0), so any cell dividing by H6 shows #DIV/0!.
+  - Action: these are expected while Earnings is zero; once you enter a nonzero EARNINGS value (STEP 1!E22) the errors will go away. Optionally wrap the fractions in IFERROR or IF(H6=0,0, ... ) to avoid showing #DIV/0!.
+
+Other real errors / suspicious formulas
+- STEP 1!M43 = M42
+  - Formula: =M42
+  - Problem: M42 appears to be a text/placeholder cell (underscores / blank), so copying it into M43 yields non-numeric text. That can cause downstream SUMs to skip this value (SUM ignores text). If M43 is intended to be numeric, replace M42 with a numeric cell or compute M43 properly.
+  - Fix: ensure M42 is numeric, or compute M43 from numeric inputs (or remove the link if unintended).
+
+- STEP 2!F12 uses H12/H6 while H12 is coming from STEP 1 M65 (the hard-coded 6)
+  - Symptom from above: because of M65 being 6 and H6 being 0 this currently shows #DIV/0!. If M65 should not be 6, adjust M65.
+
+Stylistic / inconsistent but not strictly errors (recommended cleanups)
+- Many uses of SUM() with arithmetic inside, e.g.:
+  - STEP 1!I33 formula: =SUM(G32+I32) — better form: =G32+I32 or =SUM(G32,I32)
+  - STEP 1!M33 formula: =SUM(K32+M32) — better: =K32+M32 or =SUM(K32,M32)
+  - STEP 1!E43 formula: =SUM(E42) — redundant; use =E42
+  - STEP 1!E22, G22, M22, G32, I32 etc. are fine but many ranges include text placeholders ("_______") so SUM returns 0. That's OK but can be confusing to users.
+  - Suggestion: use simple additions where appropriate and keep SUM(range) for ranges only.
+
+- Several SUM ranges include many placeholder text cells (_______, "___________________"). SUM ignores non-numeric cells, so result may be 0 even though the layout looks populated. This is expected but worth noting so you don't mistake a visual underscore for numeric data.
+
+- STEP 1!E33 =SUM(E29:E30)
+  - Not necessarily wrong, but double-check the intended range. The giving rows span 29–31 in places; make sure the intended rows are included.
+
+Checks/cross-sheet references to verify when you enter data
+- STEP 2!H6 = 'STEP 1 OF 2'!E22 (EARNINGS) — this is the key driver. Populate STEP 1 E11:E20 (JOB #1, JOB #2, OTHER) so E22 is non-zero, then many percentage formulas will compute.
+- STEP 2!H8 = 'STEP 1 OF 2'!M35 (TOTAL GIVING)
+- STEP 2!H10 = 'STEP 1 OF 2'!M45 (TOTAL SAVING)
+- STEP 2!H12 = 'STEP 1 OF 2'!M65 (REPAYING) — because M65 is currently =6 this is suspect; fix M65 first.
+- STEP 2!H14 = 'STEP 1 OF 2'!G22 (TAX WITHHELD)
+- STEP 1 totals (E22, G22, M22) are used throughout STEP 2; make sure they are correctly summing the intended input cells.
+
+Summary of recommended immediate fixes
+1. Fix STEP 2!F10 to =H10/H6 (SAVING percent).
+2. Replace hard-coded STEP 1!M65 (=6) with a proper SUM of the intended monthly items (or 0 if none).
+3. Change any SUM(...) that uses an arithmetic expression inside to a simpler addition or SUM with comma-separated cells for clarity (optional but reduces confusion).
+4. Optionally wrap percent formulas that divide by H6 in IF(H6=0,"",formula) or IFERROR(formula,0) to avoid #DIV/0! before EARNINGS are entered.
+5. Ensure STEP 1 cells that feed STEP 2 (M42, M43, E22, M35, M45, M65, G22) are numeric or computed from numeric inputs.
+
+If you want, I can:
+- produce an explicit list of cells and their corrected formulas (I can modify formulas as suggested), or
+- create the IF(H6=0,0,…) defensive versions to hide #DIV/0!, or
+- open and patch the workbook and return the corrected version.
+
+Which would you prefer?

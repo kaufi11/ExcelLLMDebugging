@@ -1,0 +1,33 @@
+Findings — the two real errors and how to fix them
+
+1) E20-9 (2) — wrong/hard‑coded indirect hourly rate
+- Error: C11 is hard‑coded to 5. That value is inconsistent with the inputs and with the other sheet. Indirect hourly rate should be total indirect costs divided by direct labor hours, not a fixed 5.
+- Why it matters: using 5 instead of (SUM(C4:C6)/C2) dramatically understates indirect cost per hour and underbids the job (example: predicted job cost 31,900 vs correct 50,820).
+- Fix: replace the 5 with the correct formula:
+  C11 = SUM(C4:C6) / C2
+- Explanation: SUM(C4:C6) gives total indirect costs (rent + support salaries + utilities). Divide by total direct labor hours (C2) to get indirect cost per direct‑labor hour.
+
+2) P20-1B (and duplicate) — formulas placed in wrong columns (misclassified accounts)
+- Error: Several totals/transfers are entered into the wrong cost column. Examples:
+  - F14 currently contains Finished Goods total (=E4 + G6) but column F is the Cost of Goods Sold column — Finished Goods amounts belong in column E.
+  - G15 = +F14 and other transfer lines likewise write values into column G or F when they should be in columns C (WIP) or E (Finished Goods) depending on the account.
+- Why it matters: inventory amounts are being recorded in the COGS column (or otherwise misclassified), which makes ending inventory and COGS incorrect and breaks the journal/ledger flow.
+- Fix (how to correct):
+  - Ensure each account’s dollar cells are in the correct cost column:
+    - Work in Process costs → column C (cells C6, C10, C15, etc.)
+    - Finished Goods costs → column E (cells E4, E14, E18, etc.)
+    - Cost of Goods Sold → column G (cells G4, G5, G6, G9, G10, G11, G12, etc.)
+  - Move the misplaced formulas into the cell in the correct column. For example:
+    - Change F14 (=E4+G6) → put the formula in E14: E14 = E4 + G6
+    - Wherever a transfer is recorded as G15 = F14, change to the correct corresponding cell in the WIP column (for a credit to WIP use C15 = [the same amount], or if it’s a debit to FG use E14 as above). In short: debit and credit entries must be mirrored in the correct columns (C <-> E, or C -> G for sales movement to COGS) according to the event being recorded.
+- Explanation: The workbook is arranged as three side‑by‑side ledger columns (WIP C, Finished Goods E, COGS G). If formulas sit in the wrong column the numeric flow (WIP → Finished Goods → COGS) is broken. Moving the formulas back to their correct columns fixes balances and preserves the accounting flow.
+
+Quick checklist you can follow to correct the workbook now
+- In E20-9 (2): change C11 to =SUM(C4:C6)/C2.
+- In P20-1B:
+  - Scan rows where a label says “Finished Goods Inventory” and make sure the amount formula is in column E, not F or G.
+  - Scan rows labeled “Work in Process Inventory” and make sure amounts are in column C.
+  - Scan transfer lines (completion, sale) and confirm the debit/credit pair is entered into the correct columns: WIP (C) decreases, Finished Goods (E) increases at completion; Finished Goods (E) decreases and COGS (G) increases at sale.
+- Recalculate and verify totals (SUM ranges) after you move formulas.
+
+If you want, I can give the exact corrected cell formulas and a small step‑by‑step for moving the P20-1B formulas (tell me which rows you want corrected first).

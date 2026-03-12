@@ -1,0 +1,53 @@
+Errors found:
+
+1. **Incorrect use of SUM with multiplication in totals rows (e.g., row 4, 7, 10, etc.):**  
+   Example: `F4: =SUM(F3*$E$3)`  
+   - `SUM` is unnecessary here because it's a single multiplication, not a range.  
+   - This should be `=F3*$E$3` instead of `=SUM(F3*$E$3)`.
+
+2. **In row 94, cell AN94 uses `COUNT` instead of `SUM`:**  
+   `AN94: =COUNT(AN93*$E$93)`  
+   - `COUNT` counts numbers, but here you want to sum the product, so it should be `SUM`.
+
+3. **In the summary rows (e.g., row 268 and 269), formulas subtract totals incorrectly:**  
+   Example:  
+   `F268: =SUM(F269-F270)`  
+   - `SUM` is used with subtraction of two cells, which is not correct.  
+   - It should be `=F269-F270` without `SUM`.
+
+4. **In the summary row BO268, the formula sums many individual cells instead of a range:**  
+   `BO268: =SUM(BO4+BO7+BO10+...+BO265)`  
+   - Using `SUM` with addition inside is redundant and inefficient.  
+   - Should be `=SUM(BO4:BO265)`.
+
+5. **Similar issue in other summary formulas (e.g., F269, F270, etc.) where many individual cells are summed with `SUM` and addition:**  
+   - For example, `F269: =SUM(F4+F7+F10+...+F265)`  
+   - Should be `=SUM(F4:F265)`.
+
+6. **Inconsistent use of absolute and relative references in multiplication formulas:**  
+   - For example, in totals rows, `$E$3` is used, which is correct, but sometimes the row number is fixed incorrectly.
+
+Solutions:
+
+1. **Remove unnecessary SUM in multiplication formulas:**  
+   Change `=SUM(F3*$E$3)` to `=F3*$E$3`.
+
+2. **Replace COUNT with SUM in AN94:**  
+   Change `=COUNT(AN93*$E$93)` to `=SUM(AN93*$E$93)`.
+
+3. **Fix subtraction formulas in summary rows:**  
+   Change `=SUM(F269-F270)` to `=F269-F270` (similarly for other columns).
+
+4. **Use range references in summary SUM formulas:**  
+   Change `=SUM(BO4+BO7+BO10+...+BO265)` to `=SUM(BO4:BO265)` (and similarly for other columns).
+
+5. **Replace multiple individual cell additions inside SUM with range sums:**  
+   For example, `=SUM(F4+F7+F10+...+F265)` to `=SUM(F4:F265)`.
+
+Explanation:
+
+- `SUM` is designed to add ranges or multiple arguments, not to sum a single arithmetic operation. Using `SUM` around a single multiplication or subtraction is redundant and can cause confusion.  
+- Using ranges (e.g., `F4:F265`) is more efficient and less error-prone than listing many individual cells.  
+- `COUNT` counts the number of numeric entries, not their sum. For summing products, use `SUM`.  
+- Absolute references like `$E$3` ensure the cost per class is fixed when copied across cells.  
+- Fixing these errors will make the sheet calculations accurate and easier to maintain.

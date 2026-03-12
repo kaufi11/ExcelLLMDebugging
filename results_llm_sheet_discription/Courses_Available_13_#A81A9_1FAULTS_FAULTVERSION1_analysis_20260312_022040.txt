@@ -1,0 +1,29 @@
+Summary of errors
+1) A63 is wrong (contains =5). It breaks the sequence: A4..A62 count up correctly, then A63 = 5 makes the IDs jump backwards and creates duplicate/incorrect IDs for all following rows.  
+2) A313 contains text ("ORDER 3 List") in column A. Column A should be numeric IDs only — a text cell here will break formulas that rely on numeric continuity (and is inconsistent).  
+3) Inconsistent / brittle formulas: some rows reference non-adjacent cells (e.g. A165 = A162+1) and some IDs are manually set (A314 = 1). That works now but is fragile — inserting or deleting rows will break the numbering.
+
+Why these are a problem
+- A63 =5 creates duplicate IDs and an incorrect sequence from that point down. This will corrupt any lookup/sort/filter that uses column A as a unique numeric ID.  
+- Non-numeric text in column A (A313) will cause errors if any formula tries to add 1 to it and makes automatic fills unreliable.  
+- Manual resets and references to earlier non-adjacent cells are fragile and make the sheet hard to maintain.
+
+Quick fixes (straightforward, safe)
+1) Fix A63:
+   - Replace the content of A63 with =A62+1 (or simply with the correct numeric value that continues the sequence).
+2) Remove text from column A:
+   - Cut the text "ORDER 3 List" from A313 and paste it into B313 (or B313 if that is the intended column). Clear A313 so it is blank or numeric as appropriate.
+3) Rebuild the ID sequence to be consistent:
+   - In A4 keep 1. In A5 put =A4+1 and fill (drag the formula) down the whole column A through your last row (A327). This will overwrite any stray manual numbers and give a continuous numeric sequence.
+   - Alternatively (faster): enter 1 in A4, select A4:A327, Home → Fill → Series → Type: Linear, Step value: 1, OK.
+
+Better, more robust approach (prevents break on inserted header rows)
+- Use a formula that numbers only real course rows and leaves category/header rows blank. Example pattern (put in A4 then fill down):
+  =IF(B4="","",IF(OR(B4="Skillbuilder DX I.T. Courses",B4="Desktop Courses",B4="SAP Courses",B4="Business and Professional Development Library",B4="(Soft-Skill) Courses","ORDER 3 List"),"",MAX($A$3:A3)+1))
+  (Adapt the OR() list to include any category header text you use.) This keeps headers unnumbered and automatically increments only course rows.
+
+Notes
+- The leading plus in formulas like =+A4+1 is harmless (Excel accepts it) but you can simplify to =A4+1.  
+- After you fix A63 and clear A313, re-check the rest of the column for any other hard-coded numbers (A314 was 1) and replace them by the fill or formula so the sequence is consistent.
+
+If you want, I can give the exact step-by-step commands you can paste into the sheet (simple fill vs. the robust IF formula) — tell me which option you prefer.

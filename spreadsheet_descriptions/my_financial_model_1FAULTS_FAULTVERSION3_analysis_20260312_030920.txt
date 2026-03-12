@@ -1,0 +1,93 @@
+High-level summary — structure, key contents and links
+
+Overall
+- Workbook models a lemonade business over time (columns E:P = 2002–2013 on Income; some monthly sheets use months).
+- Core flow: Income → Cashflow → Balance Sheet. Depreciation is calculated on a separate sheet and feeds back into Income and Cashflow. simple income and RoadMap are supporting/illustrative sheets.
+- Many inputs live in column D on the Income sheet (growth rates, unit inputs); those are used as absolute references ($D$...) and propagate across columns.
+
+Sheets
+
+1) Income (primary P&L)
+- Top: title (B1) and year headers E2:P2 (2002–2013).
+- Stats block (rows 3–8):
+  - E3 start cups produced = 200,000; D3 = 0.05 (growth rate). Future years: F3 = E3*(1+$D$3) and so on (compounded).
+  - E4 price per cup = 4; D4 = 0.08/12 (monthly inflation/price growth) and E→P prices grow by (1+$D$4).
+  - Units per cup: sugar D5 = 0.2 cups; lemons D6 = 1 each.
+  - Input prices: E7 lemons $0.55, E8 sugar $0.375; both inflated each period.
+- Revenue (rows 10–13):
+  - D10 = 0.4 (online sales share); D11 = 1 - D10 (street share).
+  - Revenue cells: E10 = $D$10 * E3 * E4 (online), E11 = E3 * $D$11 * E4 (street). Total in E12 sums the revenue rows (currently only online row is summed but formula pattern repeats).
+  - Annualized row (E13 = E12*12).
+- COGS (rows 15–17):
+  - Lemons cost E15 = E6 * E7; sugar cost E16 = E8 * E5; totals E17 = SUM(E15:E16).
+- Gross profit and net profit (rows 19–34):
+  - Gross profit monthly E19 = E12 - E17.
+  - Fixed expenses block (rows 22–29): GM E22 = 7,500; web-hosting D24 = 500; advertising E25 = 2,500 (propagated across years); legal E28 = 50,000; benefits E27 = E22*0.25.
+  - Fixed total E29 = SUM(E22:E28).
+  - Depreciation row E31 pulls from Depreciation!E7.
+  - Net profit monthly E33 = E19 - E29 - E31; annualized E34 = E33*12.
+- Notes: “Inputs are in blue” (B36).
+
+2) Balance Sheet
+- Title links to Income!B1 and years pull from Income E2:P2.
+- Current assets:
+  - Cash C6 plus related rows: E6 = Cashflow!D13 (starting), then cumulative additions: F6 = E6 + Cashflow!E13 etc (so cash balances roll forward by adding next period cash change).
+  - Lemon inventory row present (E7 = 0).
+- Long-term assets:
+  - Original value C8 / D8 references D14 (sheet uses that as source), and balance sheet value E10 pulls Depreciation!E8 (value at end).
+  - Accumulated depreciation row E9 sourced from Depreciation!E7 and accumulates across periods.
+- Liabilities:
+  - Loan: C14 label “Lear Jet Finance Co.” D14 = 1,000,000; E14 = D14 + Cashflow!E9 and then accumulates with cashflow financing activity.
+- Equity:
+  - Initial investment D18 = 1,200,000.
+  - Retained earnings E19 sourced from Income!E33 and accumulates across periods (cumulative addition pattern).
+  - Total equity sums the components; Equity+Liabilities row sums Liabilities + Equity to match total assets.
+- The sheet stitches Cashflow and Income into balance sheet positions (cash from Cashflow! and retained earnings from Income!).
+
+3) Cashflow
+- Title links to Income!B1. Years copied from Income.
+- Cash from operations row D6 onwards = Income!E33 etc (net profit monthly used as operations cash).
+- Depreciation row D7 onwards = Depreciation!E7 etc (adds back non-cash).
+- Cash from investments: repeated -100,000 entries in D9:E9:F9... (negative outflows).
+- Cash from financing D11 = 'Balance Sheet'!E18 (initial investment).
+- Net change in cash D13 = SUM(D6:D12) per period; these net changes feed Balance Sheet cash (Balance Sheet E6 = Cashflow!D13 etc).
+
+4) Depreciation
+- Title links to Income!B1; years copied.
+- Value at beginning (D6) draws from Balance Sheet D8; E6 = D6 and subsequent years use IF(...) to show positive values.
+- Depreciation life D7 = 7 years.
+- Depreciation expense E7 = IF(E6>0, $D$6/$D$7, 0) — allocates the initial D6 value evenly across the life (note: formula uses $D$6, i.e., the same initial value each year divided by life).
+- Value at end E8 = E6 - E7.
+- Total accumulated depreciation rows accumulate the yearly depreciation.
+
+5) simple income
+- Compact monthly example/alternate P&L:
+  - Shows monthly revenues (E4 onward = 1,000) and COGS (lemons, sugar) with totals (E9) and gross profit (E11).
+  - Fixed expense row (consultant mom E13 = 25) and net profit row (E15 = E11 - E13) with annualized row E16 = E15*12.
+
+6) RoadMap
+- Diagram-like sheet mapping where numbers flow: Income, Cashflow, Balance Sheet, Depreciation and key items (Revenue, Expenses, Cash From Investing/Financing, Assets, Liabilities, Equity, Retained Earnings). Serves as a navigation/flowchart referencing sheet cells.
+
+Key inputs / values to notice
+- Production start: 200,000 cups (E3); growth D3 = 5% (applied per column).
+- Starting price per cup: $4 (E4); inflation/growth used D4 = 0.08/12 (monthly 0.6667%).
+- Unit usage: lemons = 1 per cup (D6), sugar = 0.2 cups per cup (D5).
+- Online sales share 40% (D10), street share = 60% (D11).
+- Fixed monthly expense examples: GM = 7,500; advertising = 2,500; legal = 50,000; web-hosting = 500.
+- Initial equity D18 = 1,200,000; loan D14 = 1,000,000.
+- Cash from investments: -100,000 per period in Cashflow.
+
+Inter-sheet links / circular flow
+- Income → Cashflow: Income!E33 used as Cash From Operations.
+- Cashflow → Balance Sheet: Cashflow!D13 is net change in cash → Balance Sheet cash (E6).
+- Depreciation → Income/Cashflow: Depreciation!E7 used as depreciation expense in Income (row 31) and added back in Cashflow (row 7).
+- Balance Sheet → Depreciation: Depreciation beginning value draws from Balance Sheet original asset value.
+
+Potential areas to review (brief)
+- Depreciation uses the initial value ($D$6) divided by life for every year (check whether amortization should reduce base each year or use remaining value).
+- Some formulas propagate only the online revenue row into totals (Total row uses SUM(E10:E10) rather than E10:E11) — may be intentional or a minor copy/paste oversight.
+- Several cells hard-code large monthly values (e.g., legal $50k) — verify if those are monthly or annual.
+
+If you want, I can:
+- Produce a dependency map (which cells feed which) or
+- Check / correct the two potential formula issues noted (COGS/revenue sum ranges and depreciation allocation).

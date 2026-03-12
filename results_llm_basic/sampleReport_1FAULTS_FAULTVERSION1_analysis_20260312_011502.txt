@@ -1,0 +1,58 @@
+I reviewed the workbook and found several incorrect formulas and a few obvious labels/typos. Below are the problems, why they’re wrong, and the simple fixes (with explanations). I kept each item short and easy to follow.
+
+1) Sheet: OP_EXP (Schedules of Project Operating Expenses)
+- Error: L46 =SUM(L33:L44)
+- Why: The J-total uses rows 33:43 (J33:J43). L46 includes row 44 which is outside the intended range and likely blank or a different subtotal.
+- Fix: Change L46 to =SUM(L33:L43)
+- Explanation: Totals for Operating & Maintenance must sum the same row range in both year columns.
+
+2) Sheet: Bal Sht (Balance Sheets)
+- Error A: J36 =SUM(J23:J35) and L36 =SUM(L23:L35)
+- Why: TOTAL ASSETS should include the NET INVESTMENT IN REAL ESTATE (row 17) plus TOTAL OTHER ASSETS (row 34). Summing J23:J35 skips the main investment figure and mis-sums ranges.
+- Fix: Replace with either =J17+J34 or =SUM(J17:J34) (and similarly for 2001: =L17+L34 or =SUM(L17:L34))
+- Explanation: Total assets = Net investment in real estate + Total other assets.
+
+- Error B: J52 =SUM(J51:J51)
+- Why: This just repeats/sums a single cell and looks incorrect for a Partners’ Equity subtotal. Likely intended to sum a column range of equity line-items.
+- Fix: Replace with the correct range for partners’ equity lines (example: if partners’ equity lines are J51:J51 is wrong — use the actual equity rows; if only one equity line exists, use =J51; if several, use =SUM(J??:J??)). Confirm which rows contain the equity components and point the sum there.
+- Explanation: A subtotal should sum all equity component rows, not duplicate a single cell.
+
+3) Sheet: Income (Statements of Operations)
+- Error: L14 =5
+- Why: Cell L14 should be TOTAL RENTAL INCOME for 2001 = L10 + L13. A literal 5 is wrong and breaks downstream totals.
+- Fix: Change L14 to =L10+L13
+- Explanation: Totals must be calculated from component cells, not hard-coded numbers.
+
+4) Sheet: Stkhold.Equity (Statements of Partners’ Equity)
+- Error A: Header reads "YEARS ENDED DECEMBER 31, 2001 AND 2001"
+- Why: Typo — year repeated.
+- Fix: Change header to "2002 AND 2001" (or the correct years).
+- Explanation: Correct labeling avoids confusion.
+
+- Error B: O17 and O21 IF formulas compare inconsistent ranges (example: O17 =IF(SUM(K17:M17)=SUM(O9:O15), SUM(O9:O15),"off") and O21 compares mismatched groupings)
+- Why: The IFs compare sums from column groups that are not comparable (row vs column totals) and likely use the wrong references.
+- Fix: Determine intended check. Typical validation: confirm column subtotals equal the total column (e.g., IF(SUM(K9:K15)=O9,"OK","off") or to ensure row totals match column totals use consistent ranges. Adjust the ranges so left and right sides of the comparison are sums of the same items (same dimension).
+- Example fix (if intent was to check O-column totals match sum of K–M columns): O17 =IF(SUM(K17:M17)=O17, O17, "off") — but better: remove circular refs and use an audit cell: =IF(SUM(K17:M17)=SUM(O17), "OK", "off")
+- Explanation: IF tests must compare like-for-like ranges; currently they compare inconsistent sums so they will always be wrong.
+
+5) Sheet: Cash Flows (Statement of Cash Flows)
+- Error: L45 =SUM(L37:L44)
+- Why: J45 =SUM(J37:J42). The L45 range extends to row 44; mismatch likely unintended.
+- Fix: Change L45 to =SUM(L37:L42)
+- Explanation: Investing activities subtotal should sum the same rows in both year columns.
+
+6) Minor / general items to check (not necessarily formula errors but likely problems)
+- Several totals across sheets use inconsistent ranges between the J (2002) and L (2001) columns (e.g., some J formulas end at row 42 while L versions end at row 44). Make sure every subtotal uses the exact same row range in both year columns.
+- Spelling: "CASH AND CASH EQUIVILANTS" (typo) — consider fixing to "EQUIVALENTS".
+- Verify any hard-coded numbers (like L14 =5) — they should be formulas.
+
+How to apply fixes quickly
+- Use Find (Ctrl+F) for formulas that include L44, L42, or similar inconsistent end rows and correct them to match the matching J-column formula.
+- For each subtotal compare the J and L formulas side-by-side and make them identical ranges (except where intentionally different).
+- For balance sheet totals, replace any SUM(range) that doesn’t reflect the actual logical components (e.g., use =J17+J34 for TOTAL ASSETS).
+
+If you want, I can:
+- Provide the exact corrected formulas for every affected cell (I spotted the main ones above), or
+- Produce a short macro / step-by-step to find and fix inconsistent ranges across J and L columns.
+
+Which would you prefer?

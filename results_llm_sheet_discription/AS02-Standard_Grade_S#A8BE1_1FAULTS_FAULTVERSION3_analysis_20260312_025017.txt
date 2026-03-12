@@ -1,0 +1,33 @@
+I checked the workbook and found a few real errors that will produce wrong totals / % change or confusing results. Short summary, cause, impact and fix for each:
+
+1) SG1 — subtotal for 2002 is wrong
+- Problem: F53 is =COUNT(F7:F51). COUNT returns the number of numeric cells, NOT the sum of entries. Because of this the 2002 subtotal (F53) and the percent-change in G53 are wrong.
+- Fix: change F53 to =SUM(F7:F51)
+- Why this fixes it: SUM adds the entry values (the intended total). Once F53 is the correct total, G53 = (F53–E53)/E53 will compute the true 2001→2002 change.
+
+2) SG1 — text hyphen(s) in numeric column(s)
+- Problem: cells such as F44 contain "-" (a text hyphen) rather than 0 or blank. Text is ignored by SUM but counted differently by COUNT, and it can confuse downstream calculations or make COUNT-based formulas give unexpected results.
+- Fix: replace "-" with either 0 (if you mean zero entries) or leave the cell blank (if "not applicable"). Do a Find/Replace (replace "–" or "-" with blank or 0) in the numeric columns.
+- Why: SUM will then consistently add numbers; COUNT will behave predictably if you still need it.
+
+3) SG4a / SG4b — percentage formulas: use absolute references for clarity
+- Problem: the percentage row formulas use $B52 (only column locked) or similar relative references. They may work in place but are fragile if copied/moved.
+- Fix: use fully absolute references, e.g. in SG4a row 53 use:
+  - B53: =B52/$B$52 (this will display 1 or 100%)
+  - D53: =D52/$B$52, E53: =E52/$B$52, etc.
+- Why: $B$52 always points to the male (or female) total when you copy formulas, avoiding accidental reference shifts.
+
+4) Data-consistency check (potential data error) — HG1 (English) big drop
+- Symptom: HG1 row for English shows 1998..2001 large (e.g. 34,160 → 12,827) but 2002 = 469. That is an unusually large fall and looks like a data/input error (or misaligned columns).
+- Action / Fix: verify source data for Higher Grade English 2001 and 2002. Compare HG1 F8 (2002 = 469) to HG3 B29 (entries = 469). If HG3 is the authoritative row for 2002 then HG1 is consistent — but if 2001/2000 numbers look wrong, cross-check the original data import or row alignment. Correct whichever cell(s) were mis-entered.
+- Why: extreme jumps often indicate copy/paste or column-shift errors; validating against the detailed HG3 table will identify the correct values.
+
+Optional tidy/formatting suggestions (make the workbook easier to read and less error-prone)
+- Format all percentage columns with Percentage format (1 decimal) so values like 0.524 appear as 52.4%.
+- Replace all "-" placeholders in numeric columns with blank or 0 as appropriate.
+- Where you use totals repeatedly as denominators, use named ranges (e.g. Total_SG_Entries) or fully absolute references ($B$51) to avoid copy/paste mistakes.
+
+If you want, I can:
+- give the exact cells with hyphens to replace (I can list them), and/or
+- produce the single-line fixes to paste (e.g. change F53 to =SUM(F7:F51) and show the corrected G53 value), or
+- scan for any other COUNT-used-in-place-of-SUM occurrences across the workbook. Which would you like next?

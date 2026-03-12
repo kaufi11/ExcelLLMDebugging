@@ -1,0 +1,42 @@
+Summary — I found three kinds of errors: wrong ranges in the summary rows, a few bad / typo formula values, and ambiguous formulas using division without parentheses. Fixes and short explanations below.
+
+1) Wrong ranges in MAX / MIN summary cells
+- Faulty: B69 =MAX(B33:B68), C69 =MAX(C33:C68), D69 =MAX(D33:D68)
+  - Fix: use =MAX(B2:B68), =MAX(C2:C68), =MAX(D2:D68)
+  - Why: your data runs from row 2 to row 68; the current formulas ignore rows 2–32 so the reported maxima are wrong.
+
+- Faulty: N69 =MAX(N17:N68), Q69 =MAX(Q17:Q68)
+  - Fix: =MAX(N2:N68), =MAX(Q2:Q68)
+  - Why: inconsistent start rows — include the full data set (row 2) not just from 17.
+
+- Faulty: N70 =MIN(N17:N69), Q70 =MIN(Q17:Q69)
+  - Fix: =MIN(N2:N68), =MIN(Q2:Q68)
+  - Why: they currently include the summary row(s) (N69/Q69) or start at row 17 — summaries must use the raw-data rows only.
+
+- Recommendation: make all summary formulas use the same consistent data range (B2:B68, C2:C68, D2:D68, G2:G68, N2:N68, Q2:Q68).
+
+2) Typos / impossible values
+- Faulty: N19 =466+4
+  - Fix: correct to the intended value (probably =16+4 if following the pattern). Example: =16+4 → 20
+  - Why: 466 is inconsistent with other N scores and looks like a typing error.
+
+- Faulty / suspicious: A16 =98227577 and A68 =99650185
+  - Fix: verify and correct the Student ID values (these look like extra-digit entries). Replace with the correct 7-digit IDs used elsewhere (or pull from original source).
+  - Why: almost all other IDs are ~2xxxxxx; these two are orders of magnitude larger and likely data-entry mistakes.
+
+3) Ambiguous arithmetic (operator precedence) in N column formulas
+- Examples: N10 =17+5/2, N15 =18+5/2, N28 =17+5/2, N34 =17/2+2, many “+5/2” or “+5/2” patterns.
+  - Problem: Excel applies division before addition. =17+5/2 computes 17 + (5/2) = 19.5. If you intended the average (17+5)/2 you must use parentheses.
+  - Fix: clarify intent. If you want the mean of two parts, use =(17+5)/2. If you intend 17 + (5/2) then leave as-is but document it.
+  - Quick action: review each N cell with “/2” or “/something” and add parentheses where needed.
+
+4) General best-practice suggestions (quick)
+- Don’t include summary rows in the data ranges (e.g., don’t let MIN/MAX include the row that itself contains MIN/MAX).
+- Use named ranges (for example Scores_HW1 = B2:B68) to avoid typing-range mistakes.
+- Use consistent formulas copied down (so you only need to fix the one template row, not many).
+
+If you want, I can:
+- Give a corrected list of every summary cell formula ready to paste, or
+- Produce a corrected sheet (or an export of corrected formulas) if you upload the file.
+
+Which would you prefer?

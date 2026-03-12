@@ -1,0 +1,37 @@
+Summary — I found several concrete formula errors and some inconsistencies. Short fixes and why:
+
+1) Pricing sheet — layoff cost uses a constant instead of the cell
+- Faulty cell: Pricing!C15
+- Current formula: =519*Sheet1!$B$20
+- Why wrong: It multiplies the layoff unit cost by the constant 519 instead of the number of laid-off workers in C5, so the layoff cost is wrong.
+- Fix: =C5*Sheet1!$B$20
+- Explanation: Cost of layoff = (# laid off in this period) * (layoff cost/worker on Sheet1).
+
+2) Sheet3 (and Sheet2) — Total Revenue formula wrong on at least one sheet
+- Faulty cell: Sheet3 C24
+- Current formula: =SUM(J5:J10)*31
+- Why wrong: That sums demand and multiplies by 31 — it does NOT use the period prices.
+- Fix: =SUMPRODUCT(J5:J10,K5:K10)
+- Explanation: Revenue = sum over periods of (Demand * Price). SUMPRODUCT multiplies each period’s demand (J) by its price (K) and sums.
+
+3) Overtime cost formulas reference the wrong parameter cells (typos/offsets)
+- Faulty examples (Sheet2): E16 =+E6*Sheet1!B24, E17 =+E7*Sheet1!B25, E18 =+E8*Sheet1!B26, etc.
+- Why wrong: Sheet1 stores overtime cost/hour in a single cell (Sheet1!$B$23). those other references point to wrong/blank cells and produce incorrect numbers.
+- Fix: change all overtime-cost formulas to use the correct parameter: =E# * Sheet1!$B$23 (for each period row).
+- Explanation: All overtime cost rows must multiply overtime hours for that period by the single overtime-rate cell on Sheet1.
+
+4) Total cost ranges inconsistent (some sheets omit material cost)
+- Faulty examples: Pricing sheet C22 =SUM(B15:I20) (includes material) but Sheet2 C22 =SUM(B15:H20) (excludes material)
+- Why wrong: Totals become inconsistent across sheets and omit material cost on Sheet2.
+- Fix: Make the same range on every cost-sheet and ensure the Material column exists and is included. Prefer: =SUM(B15:I20) (if column I is Material).
+- Explanation: Total Cost must sum the same set of per-period cost columns on every sheet.
+
+5) General inconsistencies and recommended cleanups
+- Problem: Several formulas contain typos (wrong constant, off-by column references like B25/B26/B27). These are brittle and likely came from copy/paste with relative references.
+- Fixes / best practice:
+  - Replace parameter cell references with named ranges (e.g., HireCost, LayoffCost, OT_Cost, HoursPerUnit). That prevents accidental offsets when copying formulas.
+  - Use consistent absolute references (Sheet1!$B$23) for all parameter lookups.
+  - Use SUMPRODUCT for revenue (demand*price) and consistent SUM ranges for costs.
+  - After fixing, fill down formulas rather than manually editing each row.
+
+If you want, I can give a small step-by-step: (A) change Pricing!C15 to =C5*Sheet1!$B$20, (B) change Sheet3!C24 to =SUMPRODUCT(J5:J10,K5:K10), (C) replace every overtime-cost formula to =Erow*Sheet1!$B$23, (D) standardize Total Cost ranges to include materials. I can also produce the exact list of every cell to change if you want.

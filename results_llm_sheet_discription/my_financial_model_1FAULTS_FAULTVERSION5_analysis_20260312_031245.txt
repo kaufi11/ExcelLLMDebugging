@@ -1,0 +1,38 @@
+Findings — main errors, causes and fixes (short & clear)
+
+1) Total revenue only counts online sales (big error)
+- Problem: E12 (and every column’s Total row12) is =SUM(E10:E10) — it sums only Online Sales (row10) and omits Street Sales (row11).
+- Fix: Change E12 to =SUM(E10:E11) and copy across to F12:P12.
+- Why: Total revenue must include both channels. Right now Gross Profit, Net Profit, Cashflow and retained earnings are all understated.
+
+2) Long‑term asset Original Value is incorrectly linked to a liability (big error)
+- Problem: Balance Sheet D8 = D14 (D14 is the Lear Jet loan). That makes your asset original cost equal to the loan amount, so Depreciation and asset balances are wrong and the balance sheet will not represent real assets.
+- Fix: Replace D8 with the correct asset-cost input. Options:
+  - If the asset purchase is the Cashflow investment of 100,000, use: D8 = ABS(Cashflow!D9) (or =-Cashflow!D9).
+  - Or enter the actual original asset cost as a constant (e.g., D8 = 100000).
+- Why: Depreciation!D6 reads Balance Sheet D8. If D8 points to a loan cell, depreciation becomes nonsense and assets ≠ liabilities+equity will be incorrect.
+
+3) Sugar price formulas reference the wrong inflation cell (medium)
+- Problem: Row 8 (sugar price) formulas use $D$7 as the inflation driver (F8 = E8*(1+$D$7)) but the sugar inflation rate appears intended to be in D8 (or you may want the same rate as D4).
+- Fix: If sugar inflation is in D8, change F8 (and subsequent columns) to =E8*(1+$D$8). If you intended to use the same price-inflation as lemonade price, use $D$4.
+- Why: Wrong driver makes price escalation inconsistent and confusing; if D7 and D8 differ later this will cause incorrect cost forecasts.
+
+4) Loan balance updated by investment cashflows (suspicious / likely wrong)
+- Problem: Balance Sheet E14 = D14 + Cashflow!E9. Cashflow!E9 is Cash From Investments (negative outflows), not necessarily loan movement. This will change the loan balance when investments occur (probably unintended).
+- Fix: If you intend loan balance to change by financing flows, link to Cashflow financing row: E14 = D14 + Cashflow!E11 (or to the specific financing item you use). If loan is fixed, set E14 = D14 (static).
+- Why: Liabilities should change only by borrowings/repayments, not by investment purchases (which affect assets and cash).
+
+Quick checklist to apply (copy/paste formulas)
+- Revenue totals: E12 → =SUM(E10:E11) ; copy across F12:P12.
+- Asset original value: D8 → =ABS(Cashflow!D9)  (or enter the correct amount).
+- Sugar inflation ref: F8 → =E8*(1+$D$8) ; copy across G8:P8 (or use $D$4).
+- Loan update (if you want loan to change only by financing flows): E14 → =D14 + Cashflow!E11  (or leave E14 = D14).
+
+What to expect after fixes
+- Totals, gross profit, net profit and cash flows will increase to include street sales.
+- Depreciation and long‑term asset balances will reflect the true asset cost.
+- Balance sheet will be much more accurate and will stand a better chance of reconciling (Assets = Liabilities + Equity) once you correct the loan update formula as needed.
+
+If you want, I can:
+- Provide an exact list of every cell to change so you can paste directly, or
+- Produce a short reconciliation test (show before/after numbers) to confirm the fixes. Which would you prefer?

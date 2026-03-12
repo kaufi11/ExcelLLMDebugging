@@ -1,0 +1,17 @@
+Findings (short):
+
+1) Faulty cell: Table 59 → C15
+- Error: Sign/typo error (formula =-Data!L7)
+- Explanation: The leading minus sign inverts Alabama’s percent receiving for Public Two-Year colleges, showing -77 instead of 77 (and any dependent calculations will be wrong).
+- Fix: Replace the formula with =Data!L7 (or =+Data!L7).
+
+2) Potential data-format issues (recommendation)
+- Problem: The Data sheet uses "—" (em dash) and text "NA" in many numeric cells (e.g. Data!Y7, Data!AC7, many others). When Tables pull these cells they become text and can cause #DIV/0, #VALUE, or wrong results in any arithmetic/percentage formulas.
+- Fix: Standardize missing values (use blank or NA() or leave true Excel blanks). Or wrap imports with checks, e.g. =IFERROR(VALUE(Data!Y7),NA()) or =IF(OR(Data!Y7="—",Data!Y7="NA"),NA(),Data!Y7).
+
+Quick steps to fix:
+1. Edit Table59!C15 and set formula to =Data!L7.
+2. Do a workbook-wide search for "=-Data!" (or for formulas starting with =-) to catch other accidental negatives.
+3. Replace em dashes and "NA" text in numeric columns with blanks or use consistent Excel NA() so calculations behave correctly.
+
+That will correct the wrong negative percent and reduce errors from non-numeric “missing” values.

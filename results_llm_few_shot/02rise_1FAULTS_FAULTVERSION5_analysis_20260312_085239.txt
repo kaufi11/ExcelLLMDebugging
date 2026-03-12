@@ -1,0 +1,39 @@
+I inspected the workbook and found the concrete formula mistakes (plus a couple of bad practices). Short, clear fixes below.
+
+1) Wrong hard-coded number in Total row (mechanical error)
+- Faulty cell: AU49
+- Problem: AU49 contains =SUM(609*$E$48) — the constant 609 was entered instead of referring to the participant cell (AU48). This produces a wrong cost for that company/class.
+- Fix: replace with =AU48*$E$48
+- Why: the formula should multiply the participant count in AU48 by the class RISE cost in E48. Using the literal 609 breaks calculation and prevents updates when participants change.
+
+2) A total-of-participants cell was overwritten with a value (data entry error)
+- Faulty cell: BK261
+- Problem: BK261 contains the value 12 instead of the formula that sums participants across the company columns for that class.
+- Fix: replace with the correct formula: =SUM(F261:BG261)
+- Why: BK cells are used elsewhere (student days, totals). A hard-coded BK value gives wrong derived results (BL261 etc) and won’t update when participant columns change.
+
+3) Wrong formula pattern in BL261 (result depends on the BK error)
+- Faulty cell: BL261
+- Problem: currently BL261 =SUM(C261*BK261). While SUM around a single product is harmless, because BK261 is wrong BL261 is wrong too.
+- Fix: after fixing BK261, set BL261 = C261 * BK261 (or keep =SUM(C261*BK261) if you prefer; simpler is =C261*BK261).
+- Why: BL is "number of student days" = class length (C261) × number participants (BK261). Use direct multiplication for clarity.
+
+4) Several instances of accidental constants or wrong cell used (search & fix)
+- What to do: search the sheet for obvious numeric literals inside SUM() multiplications like SUM(609*$E$48) or any SUM(<number>*$E$row). Replace with <cell>*$E$row (example: replace 609 with the proper participant cell). The AU49 case above is one example; there may be others from manual edits.
+- Why: constants in place of cell references cause broken totals and won't change when the underlying data changes.
+
+5) Unnecessary SUM() wrappers (style / maintainability)
+- Observation: many formulas use SUM() around a single arithmetic expression, e.g. =SUM(F3*$E$3) or =SUM(C3*BK3). These work but are confusing.
+- Recommendation: replace with the plain arithmetic expression (e.g. =F3*$E$3, =C3*BK3). This makes formulas clearer and easier to debug.
+- Why: removes confusion and reduces chance of accidental range mistakes.
+
+Quick steps to fix and validate
+1. Fix AU49 to =AU48*$E$48.
+2. Replace BK261 with =SUM(F261:BG261).
+3. Recalculate (F9 / F10/etc) and check dependent totals (BL261, BO…).
+4. Use Find (Ctrl+F) for the pattern "SUM(" followed by a numeric literal (e.g. "SUM(609") and correct any similar mistakes.
+5. Optional: remove SUM() wrappers around single expressions for clarity.
+
+If you want I can:
+- Scan the sheet for other cells that use a literal number inside SUM(product) and give you a full list, or
+- Provide a short VBA macro to find and report suspicious formulas (SUM with a numeric literal or SUM(a*b) where a or b is not a cell reference). Which would you prefer?

@@ -1,0 +1,54 @@
+Overview
+- Workbook contains two sheets: "Calculations" (main fee calculator) and "Definitions" (sheet exists but contents not provided).
+- Purpose: compute a permit fee based on a points system (points × fee-per-point), with adjustments for small business and special-case “other actions.”
+
+Layout (Calculations sheet)
+- Top area: title (A1–A2), permit/site label (A4), Fee $/point label in B5 and fee value in C5 = 315. Total Fee displayed at F5 via FORMULA =IF(C43="N/A",C42,C43).
+- Column A: descriptions of permitting actions, instructions and section headings.
+- Column B: user inputs (e.g., # units, X flags for presence, small-business mark).
+- Column C: calculated points for each action (formulas shown below).
+- Columns E–G: list of non‑applicable regulation identifiers/examples (NMAC parts, NSPS, NESHAP references) used for reference.
+
+Key point formulas and rules
+- Emission Units (C9): =IF(B9<>"",IF(B9<5,5,IF(B9>15,15,B9)),0)
+  - If B9 is entered, points = number of units bounded to a minimum 5 and maximum 15; otherwise 0.
+- Fugitive Emissions (C11): =IF(B11<>"",5,0) — 5 points if indicated.
+- Non-attainment Area (C12): =IF(B12<>"",75,0) — 75 points if indicated.
+- Modeling Review (C13): =IF(B13<>"",15,0) — 15 points if indicated.
+- Air Toxics / Levels:
+  - Level 1 (C16): =IF(B16<>"",8,0)
+  - Level II (C17 not shown as formula) — listed as label only.
+- BACT (C18): =IF(B18<>"",60,0)
+- Health Assessment (C19): =IF(B19<>"",100,0)
+- Applicable Regulations:
+  - 20 NMAC 2.X (C22): =IF(B22<>"",(3*B22),0) — 3 points per listed NMAC reg.
+  - NSPS (C23): =IF(B23<>"",(5*B23),0) — 5 points per NSPS.
+  - NESHAPs (C24): =IF(B24<>"",(5*B24),0) — 5 points per NESHAP.
+- Case-by-case MACT (C27): =IF(B27<>"",100,0)
+- PSD options:
+  - PSD Netting only (C30): =IF(B31="",(IF(B30<>"",20,0)),"") — 20 points if B30 set and B31 blank.
+  - PSD review including netting (C31): =IF(B31<>"",75,0)
+- Other Actions:
+  - General Permit (C34): =7 (flat 7 points)
+  - Streamlined (# of Sites) (C35): =IF(B35<>"",(B35*10),0) — 10 points per site
+  - TOTAL OTHER ACTIONS (C36): =SUM(C34:C35)
+- Total Points (C41): =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+  - If any "other actions" present, total points = C36; otherwise sum points for individual actions C9:C31.
+- Fee calculations:
+  - Fee (C42): =C41*C5 (points × $315)
+  - Half fee for small business (C43): =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))
+    - Logic: if General Permit flag (B34) present → half-fee is "N/A"; else if small-business box (B38) marked → half fee = C42/2; otherwise "N/A".
+  - Final Total Fee (F5): =IF(C43="N/A",C42,C43) — displays half-fee when applicable, otherwise full fee.
+
+Notes/instructions
+- A47–A48: user guidance to insert units, regs, and an "X" for applicable items.
+- A49: revision date rev. 02/06/01.
+- Definitions sheet exists to document terms (not provided here).
+
+Key constants/values
+- Fee per point: 315 (C5)
+- Min points for emission units when any units entered: 5
+- Max points for emission units: 15
+- Selected action point values: Fugitive 5; Modeling 15; Non-attainment 75; BACT 60; Health Assessment 100; Level 1 = 8; Case-by-case MACT = 100; General Permit = 7; Streamlined = 10 per site.
+
+If you want, I can (a) map each input cell needed for a clean input form, (b) validate or simplify any formulas, or (c) produce a short instruction row-by-row for users.

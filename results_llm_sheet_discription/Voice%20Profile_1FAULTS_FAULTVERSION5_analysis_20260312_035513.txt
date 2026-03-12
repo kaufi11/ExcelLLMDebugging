@@ -1,0 +1,60 @@
+Summary: I found a few clear formula errors and a set of inconsistent formulas (weighted averages and totals that ignore the 3rd data column). Below are the problems, the fixes (exact replacement formulas) and short explanations.
+
+1) Example sheet — wrong reference for "LONG DIST. CALLS (TO MOBILES)" cost
+- Problem: Example!B9 = B33 (B33 is number of calls), so the cost/sub‑total is wrong.
+- Fix: Replace in Example!B9:
+  =B32
+- Why: B32 is the monthly cost for long‑distance‑to‑mobiles. Using B33 (calls) instead of B32 mixes units and produces wrong totals.
+
+2) FINANCIAL DATA & ANALYSIS — wrong cell in a weighted‑average test (typo)
+- Problem: I22 = IF(C2+E20<>0, ((C20*C22)+(E20*E22))/(C20+E20),"") — the IF test references C2 by mistake.
+- Fix: Replace I22 with (and better: include all three data columns as below):
+  =IF((C20+E20+G20)<>0, ((C20*C22)+(E20*E22)+(G20*G22))/(C20+E20+G20), "")
+- Why: C2 is unrelated; also the weighted average should use all three data columns (C, E, G) so the result correctly weights all sources.
+
+3) FINANCIAL DATA & ANALYSIS — totals for "NUMBER OF HANDSETS" only reference G
+- Problems:
+  - I10 = G10  (should be sum of sources)
+  - I11 = G11
+- Fixes:
+  - Replace I10 with:
+    =C10+E10+G10
+  - Replace I11 with:
+    =C11+E11+G11
+- Why: Totals elsewhere sum C+E+G. Limiting to G omits other source data and gives incorrect totals.
+
+4) FINANCIAL DATA & ANALYSIS — weighted averages and durations omit the 3rd column (G)
+- Problem: Several weighted average formulas only combine C and E (for example I16, I34, I61). That ignores any data entered in G and gives incorrect weighted averages when G is used.
+- Fix: Use the general 3‑column weighted average pattern. Replace these cells with formulas like the examples below:
+
+  - I16 (AVE. DURATION OF CALLS for local):
+    =IF((C14+E14+G14)<>0, ((C14*C16)+(E14*E16)+(G14*G16))/(C14+E14+G14), "")
+
+  - I22 (LONG DISTANCE average duration) — see fix in (2):
+    =IF((C20+E20+G20)<>0, ((C20*C22)+(E20*E22)+(G20*G22))/(C20+E20+G20), "")
+
+  - I34 (LONG DISTANCE TO MOBILES ave duration):
+    =IF((C32+E32+G32)<>0, ((C32*C34)+(E32*E34)+(G32*G34))/(C32+E32+G32), "")
+
+  - I61 (INBOUND 1800 ave call length):
+    =IF((C59+E59+G59)<>0, ((C61*C59)+(E61*E59)+(G61*G59))/(C59+E59+G59), "")
+
+- Why: A weighted average must multiply each source's average by its number of calls and divide by total calls across all sources. Including G ensures all entered data are counted.
+
+5) Inconsistent single‑column references for some "average length" or other fields
+- Symptom: Some I‑cells refer to a single source column (e.g., I52 = C52, I67 = E67). This is inconsistent with the rest of the sheet and will produce incorrect totals if data are entered in other source columns.
+- Recommendation/Fix: Decide on a consistent rule:
+  - If there can be only one source for that metric, use the primary column (C) and document that in comments; OR
+  - Preferably compute a weighted average across C/E/G (as shown above) so the TOTAL column (I) always reflects all source data.
+- Example replacement for I67 (if it is an average call length for the 1300 service):
+  =IF((C65+E65+G65)<>0, ((C67*C65)+(E67*E65)+(G67*G65))/(C65+E65+G65), "")
+
+How to apply fixes
+- Edit each cell, paste the corrected formula and press Enter.
+- After fixing, do a quick validation:
+  - Enter small known numbers in C/E/G for one section and confirm I (TOTAL) and averages compute as expected.
+  - Check subtotal rows that sum child rows (e.g., local = long distance + mobile + etc.) to ensure consistent references.
+
+If you want, I can:
+- Provide a short list of every cell to change (full addresses) and the exact formula to paste, or
+- Produce a corrected workbook (if you upload the file).

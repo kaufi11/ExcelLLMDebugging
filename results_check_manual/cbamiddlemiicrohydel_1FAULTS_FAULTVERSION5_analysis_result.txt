@@ -1,0 +1,69 @@
+I reviewed the workbook formulas on both sheets and found a few clear formula errors/inconsistencies and some suspicious/ambiguous calculations that should be checked. Summary first, then details and recommended fixes.
+
+Summary — main issues
+- Inconsistent discount-factor (DF) sequences used for Costs (row 19) vs Benefits (row 31). Row 19 contains an anomalous factor in I19 (uses 249/249.2492) which breaks the geometric 1/(1+0.12)^n progression used everywhere else. This directly affects present-value of costs (row 20 / C20) and thus B/C and NPV.
+- Several "lump-sum" items (scrap value and environmental clean-up) in column AA (2020) are computed using only G5 and G6 (cells in year 2000) rather than using the full intended base (ambiguous — likely wrong range). Specifically AA17 and AA29 use only G5 and G6.
+- In the household sheet some cells divide by rounded discount factors (0.797, 0.712, 0.797 etc.) rather than using the more precise discount factors defined elsewhere; this is inconsistent and can produce small differences.
+- Minor: many SUM formulas include wide ranges (G:AA) that are mostly empty in early/later columns — not an error per se but worth checking that the intended year columns are included.
+
+Detailed findings, with recommended fixes
+
+1) Discount-factor inconsistency (critical)
+- Cells involved:
+  - Costs: row 19 (G19:AA19). Formulas mostly use successive multiplication by (1/1.12) except I19:
+    - H19 = =G19*(1/1.12) — correct (0.892857142857143)
+    - I19 = =H19*(249/249.2492) — this is anomalous (gives ~0.891964). It does NOT apply the (1/1.12) discount and breaks the chain.
+    - J19 onward resume multiplying previous cell by (1/1.12).
+  - Benefits: row 31 (G31:AA31) uses a clean geometric discount: H31 = G31*(1/1.12), I31 = H31*(1/1.12), etc. (this is consistent).
+
+- Why it's a problem: Costs and Benefits should use the same discount timing convention. The wrong I19 keeps the year-2002 costs almost undiscouted relative to the correct 1/(1.12^2) factor, so PV(costs) is inflated for that year. That affects:
+  - I20 (=I18*I19) and the total present value of costs C20 (=SUM(G20:AA20) and C36/G36).
+  - B/C ratio and NPV (C38/C39 etc) are therefore distorted.
+
+- Suggested correction:
+  - Replace I19 formula with =H19*(1/1.12) (or better use relative references: for each cell from H19 onward use =previous_cell/(1+$rate$) or calculate via =1/(1+$rate$)^(n) with a single rate cell).
+  - Alternatively make all DF rows compute using a single cell for rate and POWER function (e.g., for column corresponding to year t: =1/(1+$B$rate)^(t - baseYear)) so costs and benefits can both reference same DF.
+
+- Approximate effect if corrected:
+  - Current I19 ≈ 0.891964; correct 1/(1.12^2) ≈ 0.7971938776. Using the correct factor reduces the present value of year-2002 costs I20 from 186,682 → ~166,892 (approx -19,790). Thus total PV of costs (C20) would fall by ~19.8k and NPV would increase by similar amount. (This is a quick approximation — recompute after you fix the DF row.)
+
+2) Suspicious single-year references for scrap/environmental cleanup
+- Cells:
+  - AA17 (year 2020): =0.1*G5+0.1*G6
+  - AA29 (year 2020): =0.02*G5+0.02*G6
+- Issue: both formulas take percentages of G5 and G6 (the values in column G/year 2000) only. The labels say "cost of environmental clean up in year 2020" and "scrap value (2% of total cost of the project)". If "total cost of the project" or the base for scrap/cleanup is meant to be the full initial construction cost (sum of contributions) you should ensure the formula references the intended cells:
+  - If intended = 10% (or 2%) of the initial (year-2000) construction contributions only, use a clearer formula: =0.1*(G5+G6) or =0.02*(G5+G6). (This is algebraically the same as the current formula, but clearer.)
+  - If intended = 10% (or 2%) of the entire project cost across all years (e.g., SUM of G5:some cell or SUM of all construction rows across all years), change to =0.1*SUM(...) or =0.02*SUM(...).
+- Recommendation: clarify which base you want (G5+G6 vs SUM of contributions across years) and update the formula accordingly.
+
+3) Inconsistent rounding / approximate discount factors used in household sheet (minor)
+- Examples:
+  - AE3 = =2500/0.797 (uses rounded 0.797)
+  - AE8 = =4200/0.712
+  - AE10 = =5000/0.712
+- Issue: these use rounded/approximate discount factors rather than the more precise DF available in the DF rows (row31 or row19). This causes small inconsistencies. Use a single DF reference (or named cell for discount factor) and reference the precise DF rather than ad-hoc constants.
+- Recommendation: replace these denominators with a reference to the DF for the correct year (e.g., =2500/$I$31 if AE3 is discounting to year corresponding to I31) or use =2500/(1+$rate$)^(n).
+
+4) SUM ranges including empty years (informational)
+- Many totals use =SUM(Gx:AAx). That is fine but be sure that columns G..AA map to your intended years (they appear to be 2000..2020). Just confirm that nothing intended outside that range was left out or included erroneously.
+
+5) Miscellaneous/semantic checks
+- Row 30 G30 = SUM(G23:G29) returns 0 because all the benefit items begin in H (2001) — this is okay if you intend no benefits in year 2000. Just verify timing assumptions.
+- There are several places where year-specific inputs are entered in non-uniform columns (e.g., some items first appear in Q, some in H). Confirm the intended timing for each cost/benefit — inconsistent timing + the DF inconsistency can lead to significant PV impacts.
+
+Actionable fixes (concrete)
+- Fix discount factors:
+  - Replace I19 with =H19*(1/1.12) (and verify J19..AA19 are consistent). Or generate DF row with formula =1/(1+$rate$)^(columnIndex - baseIndex) with $rate in a single cell.
+  - Ensure row19 (costs) and row31 (benefits) use exactly the same discounting method (same base year, same rate, same timing convention).
+- Clarify/adjust scrap & cleanup formulas:
+  - If based on total initial construction contributions: change AA29 to =0.02*(G5+G6) or =0.02*SUM(G5:G6) (makes intent explicit).
+  - If based on sum of full project costs across years: change to =0.02*SUM(G5:AA6) or whichever range represents the full capital cost.
+  - For AA17 analogous change for 10% cleanup.
+- Replace ad-hoc DF constants in household sheet with references to the DF row or an explicit discount-rate cell and POWER function.
+- Recompute PV totals, B/C ratio and NPV after the corrections. Expect PV(cost) to drop and NPV to increase by roughly the I20 difference (~19.8k) from the single DF error; the exact change depends on whether there are any other anomalies.
+
+If you want, I can:
+- Provide the corrected formulas (exact Excel formula text) for the cells I flagged (I19, AA17, AA29, AE3/AE8/AE10 etc).
+- Recompute the PV, B/C and NPV with the corrected DF and show the changed results.
+
+Which would you prefer?

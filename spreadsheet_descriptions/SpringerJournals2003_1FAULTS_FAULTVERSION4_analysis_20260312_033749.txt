@@ -1,0 +1,46 @@
+Spreadsheet summary (Sheet: "Tabelle1")
+
+Structure and layout
+- Single worksheet: Tabelle1. Data runs from row 1 (headers) through row ~404 (journal records); summary totals in row 407.
+- Column headers (row 1):
+  - A: Title (journal name)
+  - B: ISSN print
+  - C: ISSN electronic
+  - D: Publisher / distribution code
+  - E: Subs. Rate / Euro € (unit price per subscription)
+  - F: Subs. (quantity / number of subscriptions) — input column
+  - G: TOTAL EURO (expected = E * F)
+  - H: Postage charge (per-item postage or note)
+
+Contents and patterns
+- Rows 2:404 list ~403 journals with identifying ISSNs, publisher codes and numeric subscription rates in column E. Many E values are integers; some are decimals (often long fractional results).
+- Column F is the subscription quantity for each journal (appears to be the primary input for calculations). In the provided extract F values are not shown explicitly for each row but are referenced by G formulas.
+- Column G is generally a formula multiplying rate by quantity (Gn = En * Fn). In the sheet these are shown as "FORMULA =E#*F#" for most rows (e.g., G2 = E2*F2).
+- Column H contains postage charges or remarks (numeric or text like "incl.").
+
+Key formulas and totals
+- Per-row totals: G2:G404 mostly use Gn = En * Fn.
+  - Exceptions / anomalies worth noting: a few cells deviate (example G25 is shown as "FORMULA =2" instead of E25*F25; some E values are 0 so G will be 0).
+- Aggregate totals (row 407):
+  - D407: label "TOTAL:"
+  - F407: =SUM(F2:F404) — total number of subscriptions
+  - G407: =SUM(G2:G404) — total revenue in Euro
+
+Data quality / issues to check
+- Ensure column F (subscription counts) is populated for each row; per-row total in G depends on it.
+- Some per-row cells show nonstandard entries (G25 = 2) or zero rates (E154, E296 = 0) — verify intentionally zero.
+- Some C (electronic ISSN) entries are missing for a few journals (e.g., rows where C is blank).
+- Consider applying consistent number/currency formatting to columns E, G and H for clarity.
+- Long decimal rates likely originate from currency conversions or prorations — consider rounding to 2 decimals if appropriate.
+
+Examples / notable values
+- Highest single rate examples: E373 = 1752 (European Physical Journal D), E372 = 5250 (EPJ C), E143 = 5100 (Experimental Brain Research).
+- Some large postage entries: H143 = 158.6; some entries show "incl." in postage (H137, H307, H363).
+
+Overall purpose
+- Master list of journals with pricing and postage information; calculates per-journal revenue (E * F) and aggregates total subscriptions and total revenue.
+
+If you want, I can:
+- Validate formulas and flag all nonstandard G cells,
+- Compute the total of F and G given F values,
+- Normalize number formatting or round rates to 2 decimals.

@@ -1,0 +1,24 @@
+I checked the workbook description and found two clear mistakes (plus a general recommendation to scan for similar copy/paste errors). Short, actionable fixes below.
+
+1) Wrong hard‑coded row number in Table 1 (row numbering)
+- Where: Sheet "Table 1.0 I & E - Annex D", cell B57.
+- Problem: B57 contains =525+1 (hard‑coded 526) instead of continuing the sequential row numbering. This breaks the row numbering sequence and is a likely copy/paste typo.
+- Fix: Replace the formula with a proper relative reference:
+  =B56+1
+- Why: keeps the numbering automatic and robust if rows are inserted/deleted.
+
+2) Incorrect variance % formula for Total Funds in Balance Sheet
+- Where: Sheet "Table 2.0 BS - Annex E", cell K69.
+- Problem: K69 is set to =K49 (it copies the percentage from Total Net Assets) instead of calculating the % variance for Total Funds. This will show the wrong % and hide the true variance for Total Funds.
+- Fix: Replace with the same pattern used elsewhere (protects divide‑by‑zero):
+  =IF(H69=0,"N/A",(J69/H69)*100)
+- Why: computes the variance % for Total Funds properly (J69 = I69 − H69) and returns "N/A" if the original value is zero.
+
+Quick extra checks (recommended)
+- Search for other cells that have been accidentally hard‑coded (e.g., formulas like =525+1 or =525 etc.). Common places: the B (numbering) column and K (variance %) column—these are often copied incorrectly.
+- After fixing, check the reconciliation cells flagged “THESE CELLS MUST BE ZERO” (Table 2 H74/I74 and Table 3 H25..T25/T49). If non‑zero, trace back the inputs (cash, investments, overdrafts, bursary balances) to find mismatches.
+- If any balance‑sheet or cashflow lines were meant to be linked across sheets, verify the sheet references (no missing or wrong sheet-qualified references).
+
+If you want, I can:
+- give the exact cell addresses of any other suspicious formulas I find if you paste them, or
+- run a quick pattern search list of cells that contain constants (e.g., "+1", hard numbers) so you can inspect them. Which would you prefer?

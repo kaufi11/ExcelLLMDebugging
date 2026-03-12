@@ -1,0 +1,33 @@
+Summary — main errors found and how to fix them (short & simple)
+
+1) H9 (Total revenues for the Three Months Ended, 1999) is wrong
+- Problem: H9 is hard-coded to 0. It should total the two revenue lines H7 and H8.
+- Fix: in H9 enter: =SUM(H7:H8)
+- Why: prevents understating revenues and downstream miscalculations (operating income, pre-tax, net income, EPS).
+
+2) Inconsistent SUM range on Balance Sheet total current assets (G13 vs I13)
+- Problem: G13 uses =SUM(G7:G12) while I13 uses =SUM(I7:I11). Row 12 is not a visible current-asset row in the extract, so G13 may be including an unintended cell (or I13 is missing a cell).
+- Fix: make both totals sum the same explicit rows. If current assets are rows 7–11, change G13 to:
+  =SUM(G7:G11)
+  and keep I13 =SUM(I7:I11)
+  OR if row 12 is a real current-asset line, add the same row to the June column and use =SUM(G7:G12) / =SUM(I7:I12).
+- Why: inconsistent ranges cause mismatched totals and can break the Assets = Liabilities + Equity check.
+
+3) Hard-coded / inconsistent Pro Forma Net Income and EPS cells (columns H and L)
+- Problem: Some pro‑forma Net Income and EPS cells are constants (e.g., H46/H52 show 0.05; L44/L50 are hard-coded negative values) instead of formulas. That leads to numbers that don't update if underlying items change.
+- Fix: replace hard-coded values with formulas that reference the pro‑forma Net Income and the appropriate share count. Examples:
+  - For EPS in column H (replace hard-coded 0.05): =H44/32703  (or use the correct pro‑forma diluted shares cell if you have one)
+  - For EPS in column L: =L44/32761  (or use the correct share-cell)
+  - For L44 / L50 if they should be computed instead of constants, rebuild them as formulas that add back/remove the specified charges from reported Net Income (example pattern):
+    =Reported_Net_Income + Writeoffs_to_add_back + R&D_charge_to_add_back + Goodwill_amortization_to_add_back - Other_adjustments
+- Why: formulas keep Pro Forma consistent and auditable; hard-coded values cause silent errors.
+
+Notes & quick checks to run after fixes
+- After fixing H9 and G13 range, recalc and verify:
+  - P&L: F20/H20/J20/L20 etc. change consistently (operating income → net income → EPS).
+  - Balance Sheet: G22 (Total assets) equals G38 (Total liabilities & equity). If they still mismatch, inspect any accidental values in hidden rows/cells (e.g., row 12).
+- Check for other hard-coded totals elsewhere (look for numbers that should be =SUM(...) or =A-B but are values).
+
+If you want, I can:
+- Provide the exact formulas for every affected cell (H9, G13, H46/H52/L46/L52, L44/L50), or
+- Recompute the corrected totals and EPS values and return the corrected numbers. Which would you like?

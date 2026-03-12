@@ -1,0 +1,33 @@
+I checked the sheet. I found the likely functional errors, why they happen, and simple fixes.
+
+Problems and fixes (short)
+
+1) I14 has a typo — wrong constant
+- Problem: I14 is =F14+447. All other "Total" cells use =Fxx+Hxx, so 447 is almost certainly a typo.
+- Fix: change I14 to =F14+H14
+- Why: I is supposed to be the sum of Core (F) + Support (H). Using 447 will give a wrong total and will corrupt downstream sums/ratios.
+
+2) J4 uses a prefixed UDF that can give #NAME? or fail on other machines
+- Problem: J4 contains =_xludf.NETWORKDAYS(C4,F4). The _xludf. prefix means this is calling an add‑in/XLL user function; if that add‑in is not installed/loaded the formula will error.
+- Fix: replace with the standard built‑in function:
+  - =NETWORKDAYS(C4,F4)
+  - or, if you want to ignore time parts: =NETWORKDAYS(INT(C4),INT(F4))
+  - or (if you need custom weekend definition): =NETWORKDAYS.INTL(C4,F4,1)
+- Why: NETWORKDAYS is native in modern Excel (or in Analysis ToolPak for older Excel). Using the built‑in version removes the dependence on a particular XLL/UDF.
+
+3) Potential date/text issue for NETWORKDAYS
+- Problem: C4/F4 show datetimes ("2004-08-01 00:00:00"). If those are text (not true Excel dates) NETWORKDAYS will give wrong results or an error.
+- Fix: ensure C4 and F4 are real Excel dates (Format as Date/time or convert using =VALUE(...) or =DATEVALUE(...)). Or wrap INT() in NETWORKDAYS as above to strip times.
+
+4) Make your total‑percent formulas robust (recommended improvement)
+- Observation: many percent formulas reference I$39 or $I39 inconsistently. That works as written but is fragile if you copy formulas.
+- Recommendation: use an absolute reference to the grand total: $I$39. Example stable formula for J13:
+  - =IF($I$39>0,I13/$I$39,0)
+- Why: $I$39 locks both column and row so copying the formula anywhere always divides by the grand total cell.
+
+Quick summary of exact corrections to apply now
+- In I14: change =F14+447 to =F14+H14
+- In J4: change =_xludf.NETWORKDAYS(C4,F4) to =NETWORKDAYS(C4,F4) (or =NETWORKDAYS(INT(C4),INT(F4)) if you want to ignore time)
+- Optionally replace denominator references with $I$39 in all IF(...)/division formulas for safety.
+
+If you want, I can give a short macro or a Find/Replace list to change all the denominator references to $I$39 and scan for other accidental numeric constants.

@@ -1,0 +1,46 @@
+Spreadsheet overview (concise)
+
+Sheets: Rate, Ap1, Ap2, Ap3, Summary.
+
+1) Rate (master data / weights)
+- Header: C3 = Requisition #: "M34933"; C4 = Job Title: "DATABASE ADMINISTRATOR"; C5 = Department: "VICE PROVOST FOR RESEARCH".
+- Proficiency/Experience question list in columns G11:G20 (text descriptions of required skills).
+- Rating values in E11:E20 (all 100 in the data you provided).
+- E22: Total rating formula =SUM(E11:E20) (gives 1000 with current values).
+- Key legend/definitions in A25:B31 and G25:H31 (explain None/Low/Medium/High and experience ranges).
+
+2) Ap1 / Ap2 / Ap3 (applicant scorecards — three parallel sheets)
+- Header fields pull from Rate: D3 = Rate!C3, D4 = Rate!C4, D5 = Rate!C5.
+- Column B (rows like B16:B20 and B29:B33) link each question to the Rate sheet, e.g. B16 = Rate!G11, B17 = Rate!G12, etc. (top group = proficiency; bottom group = experience).
+- Column K contains the selected rating key (numeric choice – e.g. 2,3,4 or 0–5 depending on the sheet).
+- Column L contains calculated score contributions using IF formulas:
+  - Proficiency scoring (L16:L20): Lx = IF(Kx=2, Rate!Ex*0.33, IF(Kx=3, Rate!Ex*0.66, IF(Kx=4, Rate!Ex*1, 0))) where Ex maps to the corresponding Rate!E11:E15.
+  - Experience scoring (L29:L33): Lx = IF(Kx=2, Rate!Ex*0.25, IF(Kx=3, Rate!Ex*0.5, IF(Kx=4, Rate!Ex*0.75, IF(Kx=5, Rate!Ex*1, 0)))) where Ex maps to Rate!E16:E20.
+- The numeric K choices differ by applicant sheet (Ap1, Ap2, Ap3) — these are the selected levels used to compute each L value.
+
+Important issues / inconsistencies to review (found in the formulas you provided)
+- Several Lxx formulas reference the wrong Rate!E cell:
+  - On Ap1: L32 uses Rate!E17 (should likely be Rate!E19); L33 uses Rate!E18 (should likely be Rate!E20).
+  - On Ap2: L32 uses Rate!E17 (likely should be Rate!E19).
+  - On Ap3: L31 uses Rate!E18 (should likely be Rate!E19) — check mapping across all sheets.
+- On Ap3 L20 formula is incorrect logically: uses IF(K20<>2, Rate!E15*0.33, IF(K20<>3, ...)) with "<>" instead of "=" which will not behave as intended.
+- Some K defaults are zero on Ap3 (e.g. K31 = 0), producing zero scores — verify intended default selections.
+- On Ap2/A3 some L32 and L33 formulas appear to reuse Rate!E17/E18 rather than E19/E20 — likely copy/paste errors.
+
+3) Summary (roll-up)
+- Pulls each applicant's computed L values into columns B:K:
+  - Ap1 row (A8): B8 = 'Ap1'!L16, C8 = 'Ap1'!L17, D8 = 'Ap1'!L18, E8 = 'Ap1'!L19, F8 = 'Ap1'!L20, G8 = 'Ap1'!L29, H8 = 'Ap1'!L30, I8 = 'Ap1'!L31, J8 = 'Ap1'!L32, K8 = 'Ap1'!L33.
+- L8 (and L9/L10) compute row totals: =SUM(B8:K8) etc.
+- Header row maps columns 1–10 (B7:K7) to question positions; L column is Total.
+
+Summary of scoring logic
+- Each proficiency item contributes Rate!E11:E15 multiplied by a proficiency factor (0, 0.33, 0.66, or 1) based on K = 2/3/4.
+- Each experience item contributes Rate!E16:E20 multiplied by an experience factor (0, 0.25, 0.5, 0.75, 1) based on K = 2..5.
+- Summary aggregates the per-item scores across applicants.
+
+Recommendation (quick)
+- Fix the incorrect cell references in L32/L33 (and any similar cells) so Experience items map to Rate!E16:E20 consistently.
+- Correct the IF logic on Ap3 L20 (use "=" not "<>").
+- Verify intended default K values on each Ap sheet.
+
+If you want, I can produce a corrected mapping table of each Ap sheet cell → intended Rate!E cell and provide corrected formulas to paste in.

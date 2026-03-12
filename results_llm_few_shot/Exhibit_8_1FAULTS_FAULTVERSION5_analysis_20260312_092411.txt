@@ -1,0 +1,46 @@
+Here are the clear errors I found and simple fixes. Short explanations only.
+
+1) Sheet "NAIC increase" — D6
+- Error: Wrong denominator (uses 728).  
+- Why: It should compute year-over-year change in C (previous row), not divide by a magic number.  
+- Fix: = (C6 - C5) / C5
+
+2) Sheet "NAIC increase" — E7 (and dependent F8)
+- Error: E7 currently references E8 (a future year). That makes the 2001 value derived from 2002 and breaks the year-to-year growth (F8).  
+- Why: Totals should be entered/derived from that year’s components, not from the next year.  
+- Fix: Replace E7 with the correct 2001 total (manual value or a formula based on 2001 components). Example if total = single+group: =G7+H7. After that F8 = (E8 - E7) / E7 will be correct.
+
+3) Sheet "NAIC increase" — E16, E17, E18 (group premium $ amounts)
+- Errors: hard-coded percentages and one wrong percentage for 2003:
+  - E16 uses 0.46*C7 (hard-coded)
+  - E17 uses 0.43*C8 (hard-coded)
+  - E18 uses 0.46*C9 (WRONG percent; should be 0.35)
+- Why: Hard-coding makes the sheet error-prone; E18 uses the 2001 percent instead of 2003’s.  
+- Fix (use the percent column cells):  
+  - E16 = D16 * C7  
+  - E17 = D17 * C8  
+  - E18 = D18 * C9
+
+4) Sheet "NAIC increase" — G16, G17, G18 (amount of paid % of database fee)
+- Potential problem: These cells multiply the percent by the total database fee. They are OK logically if E7/E8/E9 are the total database fees — but because E7 was wrong (see #2) these G-cells will be wrong.  
+- Fix: After fixing E7, use explicit references:  
+  - G16 = F16 * E7  
+  - G17 = F17 * E8  
+  - G18 = F18 * E9
+
+5) Sheet "Consumer Price Index" — R21
+- Error: R21 = (Q21 - Q12) / Q12 — this compares 2001 annual index to 1992 rather than the intended baseline.  
+- Why: Likely the intent was to compare to 1991 (or to previous year). Q12 is 1992.  
+- Fix: If you want change vs 1991: = (Q21 - Q11) / Q11. If you intended previous year (2000→2001): = (Q21 - Q20) / Q20. Pick the right baseline.
+
+6) Sheet "Consumer Price Index" — S21
+- Error: S21 = (M21 - M12) / M12 — compares Dec 2001 to Dec 1992 instead of Dec-to-previous-year.  
+- Why: Inconsistent with the other year-over-year Dec% formulas which use the prior year.  
+- Fix: For Dec YoY change use: = (M21 - M20) / M20
+
+General recommendations
+- Replace hard-coded percentages with references to the cells that hold those percentages (use D16, D17, D18 etc.).  
+- Avoid forward references (a year pointing to a later year's total). Enter or compute each year from that year's components.  
+- After making the fixes, recalc and check dependent growth percentages (F-column and G-column) to confirm results.
+
+If you want, I can write exact corrected formulas for every affected cell and produce a small proof table showing before/after values — tell me which you want fixed first.

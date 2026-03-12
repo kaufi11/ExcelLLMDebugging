@@ -1,0 +1,28 @@
+Findings — errors
+1. Q4 Homework H5 (Evans) uses =COUNT(B5:G5) instead of =SUM(...). COUNT returns 6 (number of numeric cells), not the total points.
+2. Q4 Summary F3:F12 (Weighted Score) all use the D column twice — e.g. =B4*0.3 + C4*0.1 + D4*0.4 + D4*0.2 — so the Homework column (E) is ignored and D is double-counted.
+3. (Optional but recommended) Q4 Summary G4:G12 percent uses /(300) hard-coded: =(F4/300)*100. That works now but is brittle if total possible changes.
+
+Quick fixes (copy these exactly into the indicated cells and fill down)
+- In sheet "Q4 Homework", cell H5:
+  Replace =COUNT(B5:G5) with
+  =SUM(B5:G5)
+
+- In sheet "Q4 Summary", cells F3:F12:
+  Replace the current formula (which repeats D#) with either
+  =B#*0.3 + C#*0.1 + D#*0.4 + E#*0.2
+  (replace # with the row number and copy down)
+  Better (uses the weight row so it updates if weights change):
+  =B#*$B$2 + C#*$C$2 + D#*$D$2 + E#*$E$2
+
+- In sheet "Q4 Summary", cells G3:G12 (recommended):
+  Replace =(F#/300)*100 with the more robust
+  =(F#/$F$3)*100
+  (copy down). This divides by the weighted "Points Possible" total in F3 so it won't break if totals change.
+
+Why these fixes work (short)
+- SUM adds numeric scores; COUNT only counts how many numeric cells.
+- Changing the last D# to E# ensures Homework (column E) is included with its 0.2 weight instead of double-counting the Projects (column D).
+- Using $F$3 (or the weight-row references) avoids hard-coded totals and makes the sheet maintainable.
+
+If you want, I can give the exact corrected formulas for every affected cell and show how the corrected totals and final grades change.

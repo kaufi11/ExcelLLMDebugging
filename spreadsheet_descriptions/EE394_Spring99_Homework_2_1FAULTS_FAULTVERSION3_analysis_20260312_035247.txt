@@ -1,0 +1,64 @@
+Summary of workbook
+
+Sheets
+- Sheet1: Main calculation sheet (title in A1: "EE394, Spring 1999, Homework #2").
+- Sheet2, Sheet3: present but empty (no data/formulas shown).
+
+Overall layout (Sheet1)
+- A-column (A4:A35+) lists parameter labels and intermediate results (geometry, material, system specs, derived quantities).
+- B-column contains inputs and derived scalar values (constants used throughout) — key cells:
+  - B4 Outer rad./inner rad. = 2.7
+  - B5 Relative permittivity = 2.5
+  - B6 VR (kV rms) = 100
+  - B7 Load S (MVA) = 10
+  - B8 Load pf (pu, lagging) = 0.9
+  - B9 Frequency (Hz) = 60
+  - B10 Increment (km) = 50
+  - B12..B18, B19..B27, B28..B35: derived electrical parameters (see below).
+- Row 3 (C3:N3) contains repeated column headers for a distance sweep: C = z - km, D = d - km, E = cos(β·d), F = sin(β·d), G..N are Real/Imag/magnitude/angle for VS and IS etc.
+
+Key derived scalar formulas (column B)
+- B12: C (F/m) = 2·π·ε0·εr / ln(B4)  (uses B5 and B4)
+- B13: L (H/m) = 2·1e-7 · ln(B4)
+- B14: Z0 (Ω) = SQRT(B13/B12)
+- B15: Beta (rad/m) = 2·π·B9·SQRT(B13*B12)
+- B16: Wavelength (km) = 1 / (B9 * SQRT(B13*B12)) / 1000
+- B17,B18: 1/sqrt(LC) and 1/sqrt(μ·ε) (wave speed related)
+- B19: P (MW) = B7 * ABS(B8)
+- B20: Q (MVAr) uses sign depending on pf: IF(B8>0,...)
+- B21: IR magnitude (A rms) = B7*1000/B6
+- B22: IR angle (deg) = -ACOS(B8)*180/PI()
+- B23, B24: real/imag components of IR = B21·cos/sin(B22)
+- B25..B27: load impedance real/imag/magnitude derived from B6,B21,B22
+- B28..B31: phasor decomposition of A and B voltages (real/imag kV)
+- B32..B34: reflection coefficient (Real, Imag, Mag) computed from A/B phasors
+- B35: VSWR = (1 + |ρ|) / (1 - |ρ|)
+
+Distance sweep block (rows 4..54+)
+- Columns C and D:
+  - Cn = =-(ROW()-4)*$B$10  (gives negative z values stepping by -B10)
+  - Dn = =-Cn  (positive distance d in km)
+- Columns E and F: E = COS($B$15*D*1000), F = SIN($B$15*D*1000) — compute cos/sin(β·d) where d converted to meters.
+- Columns G (Real(VS)) and H (Imag(VS)):
+  - G = (B6*1000*E - B14*B24*F)/1000
+  - H = B14*B23*F/1000
+  (these compute the sending-end voltage phasor components as functions of distance)
+- I/J: VS magnitude and angle:
+  - I = SQRT(G^2 + H^2)
+  - J = ATAN2(G,H)*180/PI()  (angle in degrees)
+- K/L: Real(IS), Imag(IS):
+  - K = B23*E
+  - L = B6*1000/B14*F + B24*E
+- M/N: IS magnitude and angle (SQRT and ATAN2)
+- The same formulas (C..N) are repeated down the rows to compute VS/IS at each distance step (rows 4 through ~54).
+
+Notes on patterns/intent
+- Column B holds global inputs and computed line parameters (L, C, Z0, β, wavelength).
+- The table to the right (C:N) is a distance sweep using B10 increments (50 km by default) to compute phasors (VS and IS) along the transmission line using cosine/sine of β·d and using the characteristic impedance and load/current phasors.
+- Angles are expressed in degrees via ATAN2(...)*180/PI(). Magnitudes use SQRT sums of squares.
+- Reflection coefficient and VSWR are computed from the A/B terminal phasors (B28..B34, B35).
+
+If you want, I can:
+- Provide a compact cell map of the most important formulas (for copying),
+- Verify units/consistency or test values for selected rows,
+- Or produce a cleaned-up version (named ranges, fewer repeated formulas).

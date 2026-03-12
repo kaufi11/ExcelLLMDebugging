@@ -1,0 +1,26 @@
+Summary of errors
+1) Cell D8 (Urban — Functionally deficient — 1992) contains the value 6. This is clearly wrong compared with surrounding years and breaks the totals that depend on it (D6 and D12 and any dependent totals).  
+2) Inconsistent formula patterns / hard-coded totals: many later-year cells (J:N) are hard-coded values instead of being computed from component rows, and some totals use different reference patterns (e.g., L12 = SUM(L13:L14) while other columns use row6+row9). This inconsistency makes the sheet fragile and can hide or produce mismatches if any component changes.
+
+Why these are problems
+- The wrong value in D8 causes the Urban-deficient total for 1992 (D6) and the All-deficient total (D12) to be incorrect.  
+- Mixing literal sums, hard-coded totals and different summary formulas increases risk of errors and makes it hard to trace/repair mistakes.
+
+How to fix (short steps)
+1) Fix D8:
+   - Replace the value 6 with the correct sum for 1992 (the six component counts for urban functional deficiency). If the six components are present elsewhere in the workbook, enter their sum as the formula (example pattern used elsewhere): =component1+component2+...+component6
+   - If you don’t have the components, get the correct D8 value from your source and enter it (or from a reliable column total).
+
+2) Make totals consistent and robust:
+   - For totals like TOTAL bridges (row 3), urban/rural deficient totals (rows 6 and 9), and All deficient (row 12) use direct cell references to the component rows, not literal arithmetic. Example: set D3 = D4 + D5, D6 = D7 + D8, D9 = D10 + D11, D12 = D6 + D9. Then copy the formulas across columns.
+   - Replace SUM(L13:L14) in L12 with =L6+L9 (or vice versa) so every column uses the same logic — consistency avoids disagreement if one set of intermediate rows is changed.
+
+3) Replace manual literal sums (like B4 = 24435+11890+...) with SUM(range) if those six components are in distinct cells, or with references to those component cells. This makes maintenance and tracing easier.
+
+How this fixes things
+- Correcting D8 restores correct 1992 urban deficient and dependent totals.  
+- Using consistent formulas that reference the component cells ensures totals always update when component numbers change and makes it easy to trace errors with Excel’s Trace Precedents/Dependents.
+
+If you want, I can:
+- Give the exact formula to put in D8 if you paste the six component 1992 values (or confirm if they exist elsewhere), or  
+- Provide the precise set of replacement formulas to copy across the sheet to standardize totals.

@@ -1,0 +1,37 @@
+Summary of the problem
+- The Errors sheet stores Ending Inventory as negative numbers (B11, D11, F11 = -150,000 etc.) and then uses SUM(B10:B11) to compute COGS and uses -B11 to get Year‑2 beginning inventory. That works numerically but is error‑prone and causes confusing double negatives (and makes future edits easy to break). This is the likely source of mistakes and maintenance risk.
+
+Why it's a problem (simple)
+- Using negative inventory values forces you to negate that cell elsewhere (e.g. B27 = -B11). If anyone changes the sign or a formula, you can get wrong signs/double negatives and wrong COGS/beginning inventory.
+- It reduces readability: ending inventory should normally be entered as a positive amount and subtracted from Goods Available for Sale.
+
+Recommended fix (quick and safe)
+Option A — Recommended (store ending inventory as positive):
+1. Change ending inventory cells to positive amounts:
+   - B11 = 150000 (instead of -150000)
+   - D11 = 125000 (instead of -125000)
+   - F11 = 175000 (instead of -175000)
+2. Change the COGS formulas to subtract ending inventory (clear intent):
+   - B12: =B10 - B11
+   - D12: =D10 - D11
+   - F12: =F10 - F11
+3. Change Year‑2 beginning inventory to directly reference prior ending (no sign flip):
+   - B27: =B11
+   - D27: =D11
+   - F27: =F11
+4. Change Year‑2 COGS formulas similarly:
+   - B31: =B29 - B30
+   - D31: =D29 - D30
+   - F31: =F29 - F30
+
+Why this fixes it
+- You now record inventories in a normal (positive) way and explicitly subtract ending inventory from Goods Available for Sale to get COGS. No need to negate values elsewhere, so there is far less risk of sign errors. The arithmetic results will remain the same, but the sheet is clearer and less fragile.
+
+Option B — If you prefer to keep the current negative convention
+- Keep ending inventory negative, but make the convention explicit in a comment and ensure all references that need the positive beginning use =-EndingInventory (as currently done). This is acceptable but not recommended.
+
+Minor notes to check
+- Some label cells are formulas referencing text labels (e.g. D25 = +D6). That's harmless but not needed; consider entering text directly.
+- Verify any other sheets that reference these ending inventory cells; if you change sign convention (Option A) update those references (remove any unary minus that was converting sign).
+
+If you want, I can give the exact step edits (copy‑paste formulas) or update the sheet and show the post‑fix numbers. Which would you prefer?

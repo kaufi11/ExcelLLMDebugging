@@ -1,0 +1,74 @@
+Summary — what’s wrong (short):
+- Week 4 (column E) cells E7:E11 contain AVERAGE formulas instead of the actual Week‑4 hours. Because of that:
+  - Total Hours (column F) for rows 7–11 use SUM(B:D) and so omit Week‑4.
+  - Overtime (column G) formulas are inconsistent/wrong (some use only B, some sum only 3 weeks).
+- Overtime / Gross-pay logic is inconsistent and incorrect:
+  - G6–G8 use MAX(Bx-40,0) (only Week1).
+  - Some G cells (G9–G11) sum only B:D (missing E).
+  - Gross pay (column C) uses (F + G) * rate which double-counts overtime. C18 mistakenly divides by the rate instead of multiplying.
+- A couple of misc. errors:
+  - D17 is hard-coded 28.96 (should be =C17*0.15 like the others).
+  - D20 contains an invalid character (ƒ) — should be =C20*0.15.
+- Missing Week‑4 totals row: add E13 = SUM(E6:E11).
+
+What to fix (exact, copy‑paste formulas)
+
+1) Put correct Week‑4 hours into E7:E11 (enter the real numbers). If you do not have numbers and need formulas, remove the AVERAGE formulas — E is a data entry column, not an average.
+
+2) Fix Total Hours (F6:F11) to include Week‑4:
+- F6 (already correct): =SUM(B6:E6)
+- F7: =SUM(B7:E7)
+- F8: =SUM(B8:E8)
+- F9: =SUM(B9:E9)
+- F10: =SUM(B10:E10)
+- F11: =SUM(B11:E11)
+
+3) Make overtime calculation consistent. Two options — pick one and apply to all rows:
+
+Option A — weekly overtime (common payroll rule: overtime applied each week):
+- In G6 and copy down to G11:
+  =MAX(B6-40,0)+MAX(C6-40,0)+MAX(D6-40,0)+MAX(E6-40,0)
+
+Option B — monthly overtime (if you want overtime only on the monthly total):
+- In G6 and copy down:
+  =MAX(F6-40,0)
+
+(Choose A if your policy is weekly overtime; choose B only if overtime is computed from the monthly total.)
+
+4) Correct Gross Pay (column C) — pay regular hours at rate and overtime at 1.5× rate.
+Since F = total hours and G = overtime hours (subset of F), use either:
+- Simpler compact formula:
+  =B17*(F6 + 0.5*G6)
+- Or explicit:
+  =(F6-G6)*B17 + G6*B17*1.5
+
+Apply to each employee row (replace row numbers accordingly). Example for row 7:
+- C18: =B18*(F7 + 0.5*G7)
+
+5) Fix taxes cells and other broken formulas:
+- D17: =C17*0.15
+- D18: =C18*0.15 (already correct)
+- D19: =C19*0.15
+- D20: =C20*0.15 (replace the ƒ)
+- D21: =C21*0.15
+- D22: =C22*0.15
+
+6) Net Pay (column E) is fine — keep =Cxx-Dxx.
+
+7) Totals & Week‑4 totals:
+- Add E13: =SUM(E6:E11)
+- Check F13 is =SUM(F6:F11) (already present)
+- C24, D24, E24 formulas are OK once C17:C22 and D17:D22 are corrected.
+
+Short explanation of the gross/overtime correction:
+- Your sheet used (F + G)*Rate. If F = total hours and G = overtime hours, that pays overtime at double the hourly rate (it counts overtime hours twice at base rate). Standard overtime pay is 1.5× for overtime hours, so correct gross = (regular hours)*rate + (overtime hours)*1.5*rate. That simplifies to Rate*(F + 0.5*G) because regular hours = F - G.
+
+Quick checklist to apply:
+- Replace E7:E11 with real week‑4 values.
+- Update all F formulas to SUM across B:E.
+- Make all G formulas consistent (pick Option A or B).
+- Replace all C formulas to B*(F + 0.5*G).
+- Fix D17 and D20 to =C*0.15.
+- Add E13 =SUM(E6:E11).
+
+If you want, tell me which overtime rule you use (weekly or monthly) and I will provide a ready‑to‑paste formula range for all affected cells.

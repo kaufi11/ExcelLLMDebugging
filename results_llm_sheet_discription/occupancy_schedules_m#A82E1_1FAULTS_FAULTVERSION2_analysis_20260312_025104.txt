@@ -1,0 +1,32 @@
+Summary — I found two types of errors. Fix both to get correct latent-per-person numbers and correct hourly schedules.
+
+1) Wrong formula used for "Latent load per person" (many sheets)
+- Problem: the latent-per-person formulas multiply the latent gains (Occupancy!F22,F23) by the sensible-gain cells (Occupancy!F19,F20) and divide by (F19+F20). That is incorrect — the weights must be the summed schedule totals (Occupancy!F38 and Occupancy!F39), same approach as the sensible-per-person calculation.
+- Where: appears in the header formulas on multiple sheets (examples: Occ L0 F10, Occ L1-WD F10, Occ L1-DU F10, Occ L2-WD-DU F11, Occ L3 top, etc.). You can search for the pattern (Occupancy!F22*Occupancy!F19 or denominator Occupancy!F19+Occupancy!F20) to find all occurrences.
+- Why it’s wrong: it effectively weights latent gains by the sensible-gain numbers instead of by the relative hours each area (living vs bedroom) contributes — so the computed latent BTU/person/hr will be wrong.
+- Fix (exact corrected formula):
+  Replace any formula of the form:
+    =(Occupancy!F22*Occupancy!F19 + Occupancy!F23*Occupancy!F20) / (Occupancy!F19 + Occupancy!F20)
+  with:
+    =(Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- How to apply: use Excel Find (search for "Occupancy!F22*Occupancy!F19" or "Occupancy!F19+Occupancy!F20") and edit each cell; or use Find/Replace to swap F19→F38 and F20→F39 in those latent formulas only (do not change sensible formulas).
+
+2) Accidental negative signs in one hourly aggregation cell
+- Problem: Occ L2-WD-DU, cell F27 has an unintended leading minus:
+    =-'Occ L3-WD-DU-LR'!J27-'Occ L3-WD-DU-LR'!K27
+  All sibling cells sum the two L3 columns with +, so this one negative makes that hour negative (and breaks totals).
+- Why it’s wrong: it subtracts the source columns instead of summing them; occupancy fractions become negative.
+- Fix (exact corrected formula):
+    ='Occ L3-WD-DU-LR'!J27 + 'Occ L3-WD-DU-LR'!K27
+- How to apply: edit Occ L2-WD-DU!F27 and change the minus signs to plus. Also quick check: scan other Occ L2 / L1 / L0 hour formulas for any leading "-" that should be "+".
+
+Validation after fixes
+- After correcting:
+  - Recalculate and ensure Occupancy!F38 = SUM('Occ L1-LR'!C16:C39) and F39 = SUM('Occ L1-LR'!D16:D39) are > 0.
+  - Confirm sensible and latent per-person numbers make sense (sensible: Occ L0 F9 already correct; latent: Occ L0 F10 should now match the same weighting approach).
+  - Confirm no hourly cell is negative. Use conditional formatting (cell value < 0) or filter to find negatives.
+  - Check Totals: Occ L0 C41 = SUM(C16:C39) should be the expected hours/person (non-zero, no negative contributions).
+
+If you want, I can:
+- Give a short list of all affected cells (I can produce a Find report).
+- Provide an automated Find/Replace formula list you can paste into Excel to fix all occurrences.

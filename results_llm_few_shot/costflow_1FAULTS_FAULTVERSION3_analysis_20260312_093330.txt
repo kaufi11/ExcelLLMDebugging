@@ -1,0 +1,51 @@
+Summary: the workbook has two recurring problems that create many wrong numbers:
+1) inconsistent sign convention for inventory (some Ending Inventory cells are entered as negative while other formulas expect positive), and
+2) incorrect / missing formulas that don’t follow the normal identity: Goods Available for Sale = Beginning + Purchases; Ending = Goods Available - Units Sold; COGS = Goods Available - Ending.
+
+I’ll call out the clear faulty cells, explain why they fail, and give simple corrected formulas and a short explanation.
+
+1) Faulty cell: I11 (sheet "Valuing Ending Inventory")  
+- Error: Wrong sign / wrong formula. It currently shows =-I10-SUM(C17:C18).  
+- Why: That formula produces a negative number and double-counts the sign. C17:C18 hold sales as negative numbers, so you should add them to GAFS (I10) — not subtract and flip sign.  
+- Fix: =I10 + SUM(C17:C18)  
+- Explanation: Goods available minus the units sold (sales are negative), so adding the negative sale values reduces the GAFS to give Ending Inventory units.
+
+2) Faulty cell: I12 (sheet "Valuing Ending Inventory")  
+- Error: Wrong aggregation. It currently uses =SUM(I10:I11) which adds GAFS and Ending (wrong).  
+- Why: COGS (units sold) should be the difference between GAFS and Ending Inventory, not the sum. With inconsistent signs that sum is wrong.  
+- Fix (preferred, clear): =I10 - I11  
+- Alternative (if sales are recorded as negatives): =-SUM(C17:C18)  (gives positive units sold)  
+- Explanation: COGS units = Goods Available – Ending Inventory (or simply total units sold).
+
+3) Faulty cell: K11 and K12 (sheet "Valuing Ending Inventory")  
+- Error: K11 is blank (?) and K12 is missing. Cost-side equivalents are not computed.  
+- Why: You must compute ending inventory cost (K11) and then COGS cost (K12) from totals. Leaving them blank or wrong breaks all downstream averages and extended costs.  
+- Fix:  
+  - K11 (Ending inventory cost) = K10 + SUM(E17:E18)  (if E17:E18 are negative costs of goods sold for sales)  
+  - K12 (COGS cost) = K10 - K11  
+  - Alternative approach (clearer): compute Ending cost by multiplying ending units by unit cost (if unit cost known): =I11 * (K10 / I10)  (weighted average unit cost)  
+- Explanation: Cost totals must mirror the unit calculations: total cost available minus ending cost = cost of goods sold. Pick the approach consistent with how you track sales costs (periodic vs perpetual).
+
+4) Root cause and recommended global fix (very important)  
+- Problem: The sheet mixes negative values for “sales” and also stores “ending inventory” as negative in some places. That forces many formulas to include negation (−) and creates errors.  
+- Recommendation (simple, robust): use one consistent sign rule:
+  - Store inventory quantities and costs as positive amounts.
+  - Store sales/units sold as positive quantities in a separate “Units Sold” column (or keep them negative but use formulas that explicitly negate them when needed).  
+  - Then use clear formulas:
+    - GAFS_units = Beginning_units + Purchases_units
+    - Ending_units = GAFS_units − Units_Sold
+    - COGS_units = Units_Sold (or = GAFS_units − Ending_units)
+    - GAFS_cost = Beginning_cost + Purchases_cost
+    - Ending_cost = Ending_units * unit_cost (or GAFS_cost − COGS_cost)
+- Why: consistent signs simplify formulas and remove fragile double-negations.
+
+5) Minor cleanups (many small formula problems)  
+- Avoid formulas like =SUM(range) where range accidentally includes the result cell (self-referential). Check any SUM that references a column that includes the current row.  
+- Remove unnecessary leading + signs (cosmetic only).  
+- Fill any cells labeled “?” (K11, K12, etc.) with the appropriate formulas above.
+
+If you want, I can:
+- apply these exact corrected formulas to the sheet and show the corrected numbers, or
+- produce a cleaned mini-template (Goods Available → Ending → COGS) with consistent sign conventions you can paste into your workbook.
+
+Which would you prefer?

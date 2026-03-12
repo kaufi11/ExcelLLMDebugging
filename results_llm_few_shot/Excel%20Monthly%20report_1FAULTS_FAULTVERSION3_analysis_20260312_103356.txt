@@ -1,0 +1,39 @@
+Summary — main problems
+- Many cells in the daily rows (rows 9:39) contain wrongly copied formulas that point to the previous column (e.g. F9 =SUM(E9), G9 =SUM(F9), …). That chains values across columns instead of storing each category’s data.  
+- Several formulas sum a single wrong cell (e.g. E9 =SUM(E42)) — either the range is wrong or SUM is wrapping a single cell.  
+- Totals row (row 40) is chained wrongly: F40 =SUM(E40), G40 =SUM(F40), … so totals are not summing their own columns.  
+- One wrong function: H19 =COUNT(G19) — COUNT on a single cell in another column is almost certainly wrong.
+
+Why it’s wrong
+- Copy/paste or fill-right of formulas created relative references to the previous column, so category columns are feeding off each other instead of showing their own data.  
+- Totals must sum down their own column (e.g. F9:F39), not sum the previous column’s total.  
+- COUNT on one cell gives 0 or 1, not a column total.
+
+Fix (brief, actionable)
+1) Clear bad formulas in the daily category cells (rows 9–39, columns E:M). Those cells should contain the actual daily numbers (entered manually) or the correct calculation for that category — not =SUM(previous column). If they must be calculated from another area, change to the correct range (example below).
+
+2) Fix totals in row 40 so each total sums its own column. Replace the row‑40 formulas with:
+- C40 =SUM(C9:C39) (already correct)
+- D40 =SUM(D9:D39) (already correct)
+- E40 =SUM(E9:E39)
+- F40 =SUM(F9:F39)
+- G40 =SUM(G9:G39)
+- H40 =SUM(H9:H39)
+- I40 =SUM(I9:I39)
+- J40 =SUM(J9:J39)
+- K40 =SUM(K9:K39)
+- L40 =SUM(L9:L39)
+- M40 =SUM(M9:M39)
+
+3) Fix any single-cell SUMs and wrong references:
+- Replace things like E9 =SUM(E42) with the intended formula. If E9 should be a data entry, delete the formula. If E9 should aggregate a range, use the correct range, e.g. =SUM(E42:E100) (replace 100 with the real end row).
+- Replace H19 =COUNT(G19) with the intended formula. If it should be the H column daily value, enter the number or formula for that day. If it was meant to count/total the H column, use =SUM(H9:H39) or =COUNT(H9:H39) depending on whether you want the sum or a count of numeric entries.
+
+Short examples (before → after)
+- Before: F9 =SUM(E9) → After: (enter the F9 daily number) OR if it should sum detail rows: =SUM(F42:F60) (use actual range)  
+- Before: F40 =SUM(E40) → After: =SUM(F9:F39)  
+- Before: H19 =COUNT(G19) → After (if sum needed): =SUM(H9:H39) OR (if daily cell): enter the correct daily value in H19
+
+If you want, tell me:
+- Do the day/category cells (E9:M39) come from another detail area? If yes, tell me the source range and I’ll write exact formulas.  
+- Or, upload a screenshot/CSV of a few rows and I’ll give a precise fix you can paste.

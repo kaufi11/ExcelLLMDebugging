@@ -1,0 +1,39 @@
+I reviewed the formulas in Sheet2 and checked them for obvious errors and inconsistencies. Most formulas are consistent (quarter totals = sums of product columns, cumulative totals = sum or addition of quarterly totals). I found a small number of likely errors or inconsistencies that you should review/clean up.
+
+High‑priority / likely mistakes
+- O32 — formula is =526+J32
+  - All other rows use the pattern Oxx = Exx + Jxx. O32 uses the literal constant 526 rather than referencing E32. This looks like a typo; I expect the formula should be =E32+J32 (or some cell reference), not a hard-coded 526.
+
+Inconsistent use of hard-coded numeric addition (non-reference arithmetic)
+- Several cells contain formulas that add two numeric constants rather than referencing other cells. That is inconsistent with the rest of the sheet and could be an accidental paste of values into the formula bar:
+  - C75 = 44762024+2009667
+  - D75 = 6179061+352427
+  - H75 = 53720988+807225
+  - I75 = 6478500+101700
+  - C76 = 36494065+3034096
+  - D76 = 3332810+1360963
+  - H76 = 38795986+1217827
+  - I76 = 4295068+692239
+  - (These appear where other rows use plain cell references or single‑cell values. If such sums were intended, consider converting them into SUM() over the appropriate referenced cells or replace them with direct references for traceability.)
+
+References to (apparently) missing columns/cells / potential misalignment
+- Some formulas reference columns in the rightmost summary block (AE / AF / AG / AH / AI ...). For a number of rows the AG column value is not present in the JSON fragment (for example row 6 shows AE6, AF6 and AH6 but AG6 is not present in the provided list), yet formulas like AK6 = AG6 + Y6 exist.
+  - If AG (or other referenced columns) were accidentally deleted, shifted, or left blank, that can silently produce zeros and incorrect totals. Verify that columns AE:AL align with the correct product columns for every row (no shifted columns).
+  - Action: scan for formulas that reference AGxx and ensure AGxx actually holds the intended product value (LPG column?) for that row.
+
+Style / consistency notes (not strictly formula errors but worth fixing)
+- Many total formulas use SUM(range) (e.g., =SUM(C6:F6)) while some cumulative totals use direct addition (C + H). Both are OK, but the file sometimes mixes direct arithmetic with SUM or with hard-coded arithmetic (see the “hard-coded” items above). For maintainability and auditability I recommend consistent use of cell references (not embedded numeric constants).
+- There are negative values in some cells (e.g., J9 = -31560, T9 = -9600). These are data values rather than formula errors, but flag them for review if negatives are unexpected.
+
+Suggested checks to run across the workbook
+1. Search for formulas that contain numeric literals (regex idea: look for formulas matching =\s*\d) — these are candidates for accidental hard-coded arithmetic (O32 and the C75/D75/H75/I75 etc cases).
+2. Search for formulas in the pattern Oxx that are not =Exx+Jxx (because the column O formula pattern is very regular elsewhere).
+3. Verify that columns AE:AL (the rightmost summary block) are correctly populated and not shifted left/right; ensure formulas like AIx = AE x + W x are referencing intended source columns.
+4. Check rows where formulas reference AGxx (AKxx = AGxx + Yxx) to confirm AGxx exists and is the right field.
+
+If you want, I can:
+- produce a list of every cell whose formula contains a numeric literal (so you can inspect all hard-coded arithmetic),
+- scan for formulas in column O that deviate from the =E+J pattern,
+- or open and check alignment of the AE:AL right-hand block (highlight rows where AG or other columns are blank but referenced).
+
+Tell me which of the above (or any other) checks you want done and I will run them and return the exact cell list and suggested corrections.

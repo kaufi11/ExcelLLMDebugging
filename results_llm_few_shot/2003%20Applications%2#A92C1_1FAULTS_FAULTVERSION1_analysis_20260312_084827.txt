@@ -1,0 +1,37 @@
+I checked the workbook. Found the main mistakes, why they’re wrong, and how to fix them. Short and clear.
+
+1) Municipal!F5
+- Fault: wrong cell reference (points to E6).
+- Error type: reference/copy-paste error.
+- Fix: change formula to =E5
+- Why: F5 should recommend Hatboro’s requested amount (E5). It currently shows Hatfield’s value.
+
+2) County!E13 (Total Requested)
+- Fault: double‑counts Rehab amounts.
+- Error type: aggregation/double-counting error.
+- Why: County!E11 = Rehab!E8 (Rehab subtotal) but those same Rehab rows are already included inside Non-Profit total (Non Profit!E22). SUM(E9:E12) therefore adds Rehab twice.
+- Fix: exclude the Rehab subtotal from the grand total. Replace E13 with:
+  =SUM(E9,E10,E12)
+- Or, if you prefer a range: =E9+E10+E12
+- Why: that sums Municipal, Non‑Profit (including rehab) and County without adding Rehab again.
+
+3) AHTF!F14
+- Fault: range omits F2.
+- Error type: range/omission error.
+- Fix: change =SUM(F3:F13) to =SUM(F2:F13)
+- Why: F2 (Canus Corporation recommend) is a valid recommended amount and must be included in the AHTF recommended total.
+
+4) AHTF!E16 and AHTF!F16
+- Fault: hard-coded constant (2432890) used in formula.
+- Error type: hard-coded value / maintainability risk (and possible wrong source).
+- Fix: replace the constant with the proper cell reference that contains the base amount you intend to take 15% of. For example, if the match should be 15% of Total HOME Funding Requested (cell AHTF!E19 or HOME!E11), use:
+  =E19*0.15
+  (or =HOME!E11*0.15)
+- Why: hard-coded numbers break when totals change. Use a reference so the match updates automatically and is traceable. Confirm which total (E19 or E20 or HOME!E11) is the intended base, then point the formula to that cell.
+
+Extra check suggestions (quick)
+- Scan columns F across sheets for mistaken copy/paste references (F5 example repeats E6).
+- Watch for text in numeric ranges (e.g., AHTF!F10 is text “Pending Feasibility Study” — SUM will ignore it; if you want it counted, replace with a number or handle separately).
+- After fixes, recalc totals and review Grand Total (County E13) to ensure totals match expected budget roll‑ups.
+
+If you want, I can produce the exact formulas to paste into the workbook and verify totals after applying them. Which cell should E16/F16 reference for the 15% match (E19, E20, HOME!E11 or another)?

@@ -1,0 +1,23 @@
+Found 3 clear errors (easy fixes):
+
+1) Wrong operator in Hardware Gross Profit % (H14)
+- Problem: H14 contains =H13*H5 (multiplication). It should be a percentage (gross profit divided by revenue).
+- Fix: Replace H14 with =H13/H5
+- Why: Gross profit % = gross profit ÷ revenue. Multiplying gives a meaningless huge number and breaks any dependent % calculations.
+
+2) Hard-coded totals in Total Gross Profit row (E19 and F19)
+- Problem: E19 and F19 are numbers entered manually instead of formulas. D19 and J19 use formulas (=D13+D15+D17 and =J13+J15+J17), so E19/F19 are inconsistent and won't update if component lines change. F19 also disagrees by 2 with the sum of its components.
+- Fix: Replace
+  - E19 with =E13+E15+E17
+  - F19 with =F13+F15+F17
+- Why: Using formulas keeps the totals correct and self-updating. The manual 164028 (F19) is likely a typo; the correct sum is 164030 and the formula will fix it.
+
+3) Recommendation: scan for other hard-coded totals
+- Problem: Any manually-entered totals break consistency and automatic updates.
+- Fix: Convert any totals that are values into formulas summing their components (use SUM or explicit addition like above). Then verify dependent % cells update correctly.
+
+Quick test after fixes:
+- H14 should be ~0.326 (H13/H5) not a huge number.
+- E19 and F19 should equal the sum of their three gross-profit components (E13+E15+E17, F13+F15+F17).
+
+If you want, I can give a one-click macro or a short checklist to find other hard-coded totals automatically.

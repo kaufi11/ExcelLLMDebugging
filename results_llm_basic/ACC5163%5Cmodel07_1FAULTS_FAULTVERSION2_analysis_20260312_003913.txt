@@ -1,0 +1,35 @@
+I reviewed the MODEL07 worksheet you pasted. I found one definite formula error and two likely/important problems that will cause wrong numbers or break macros if not fixed. Short, clear explanations and fixes follow.
+
+1) Hard-coded value in Add’l P‑I‑C (definite error)
+- What’s wrong: cell F71 contains the constant 1 (F71 = 1). That is not a valid accounting calculation — every other equity line uses a formula to compute the “new basis”.
+- Why it’s wrong: F71 should calculate the new Add’l Paid‑in Capital balance the same way other “new basis” cells do (old balance + Dr − Cr). A constant “1” will make totals and proofs wrong.
+- Fix: replace the 1 with the correct formula, matching the pattern used elsewhere. For example:
+  F71 → =C71 - D71 + E71
+- Explanation: That makes the cell compute New Basis = Old Basis (C71) + Dr (D71) − Cr (E71), consistent with other balance lines.
+
+2) Potential sheet-reference problems for push‑down → consolidation links (likely bug)
+- What’s happening: consolidation input cells (e.g., C105 = ($F$54), C106 = ($F$55), etc.) reference push‑down-area cells by plain absolute references like $F$54. If the push‑down area is on a different worksheet (the macro descriptions imply a separate push‑down worksheet or at least distinct blocks), those references will point to the current sheet instead of the intended push‑down sheet.
+- Consequence: consolidation will pull blanks/wrong numbers (or create circular refs) if the push‑down data lives on a different worksheet.
+- Fix: make explicit cross-sheet references to the push‑down sheet (replace e.g. =($F$54) with ='PUSH‑DOWN'!$F$54 or the actual sheet name). If the push‑down is on the same sheet, leave as-is — but confirm the macros expect the same sheet layout.
+- Explanation: explicit sheet names remove ambiguity and ensure consolidation always reads the correct cells even if worksheets are separated or renamed.
+
+3) Basic elimination entry column placement / totals check (possible logic/sign error)
+- What to check: the basic elimination entry area posts Dr amounts in C90–C93 and the Investment in Sub. as D94 (= $B$85). Confirm whether Investment in Subsidiary should be on the credit side (D94) or the debit side (C94) given how the rest of the worksheet sums totals (C95 and D95). If the Investment belongs on the debit side but is in D94 (credit), the totals and the proof will be off.
+- How to verify/fix:
+  - Verify the intended orientation: are C90–C93 the debit lines and D94 the single credit? Or are C90–C93 being used as debits and Investment should appear as a debit in C94? Check the instructor/example or the macro P output.
+  - If placed incorrectly, move the investment amount to the correct column (or change sign/formula). For example, if Investment must be a debit, change D94 → blank and put =($B$85) in C94. If investment is credit, keep D94 but ensure all other eliminations have the correct signs so C95 = D95.
+- Explanation: the basic elimination must balance (sum of Drs = sum of Crs). A mis‑placed amount will make the consolidation worksheets fail the proof rows (D76/E76 and D134/E134).
+
+Quick checklist you can use in the file
+- Replace F71 = 1 with =C71 - D71 + E71.
+- Search for any other hard-coded constants in the “New Basis” rows (should all follow same formula pattern).
+- Confirm whether push‑down cells reside on the same worksheet. If not, change references like =($F$54) to ='PUSH‑DOWN'!$F$54 (or the actual sheet name).
+- After those fixes, run the macros and check the proof lines:
+  - Push‑down proof: D76 = E76
+  - Consolidation proof: D134 = E134
+  If those don’t match, trace which elimination or push‑down posting is on the wrong side or has wrong sign.
+
+If you want, tell me:
+- whether the push‑down data is on a different sheet (name), and
+- the intended debit/credit orientation of the basic elimination entry,
+and I’ll give exact formulas to paste (or a short macro check list) and confirm the proofs.

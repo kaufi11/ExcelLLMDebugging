@@ -1,0 +1,36 @@
+Summary — I found three clear errors. Short fixes and explanations below.
+
+1) Wrong weighting in the “Latent load per person” formulas (logical error)
+- Where it appears: Occupancy sheet F10 and the same formula copied onto Occ L0, Occ L1-WD, Occ L1-DU, Occ L1-LR, Occ L2-* sheets (they use the same pattern).
+- Bad formula example: =+(Occupancy!F22*Occupancy!F19+Occupancy!F23*Occupancy!F20)/(Occupancy!F19+Occupancy!F20)
+- Why it’s wrong: that multiplies the latent gain constants by the sensible-gain cells (F19/F20) and divides by F19+F20. The sensible/latent per-person values should be weighted by the schedule sums (Occupancy!F38 and Occupancy!F39), not by F19/F20.
+- Fix (correct formula): =+(Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- Explanation: this weights the latent gains (F22, F23) by the living-area and bedroom schedule totals (F38,F39), consistent with how sensible load per person (F9) is calculated.
+
+2) Broken sheet references due to missing/incorrect sheet names (mechanical/#REF problem)
+- Symptom: formulas like +'OccL2-WD-DU'!C16 (no space) or +'OccL2-DU-LR'!... when the actual sheet name is 'Occ L2-WD-DU' or 'Occ L2-DU-LR' (with spaces). Excel will return #REF or wrong links.
+- Where it appears: many formulas throughout Occ L0, Occ L1-*, Occ L2-* and Occ L1-LR sheets (look for references starting "OccL2" without the space).
+- Fix: make sheet names and references consistent. Two options:
+  - Rename the actual sheet tabs to match the references (remove the space), OR
+  - Update the formulas to use the correct sheet name with spaces and quotes, e.g.:
+    - Change +'OccL2-WD-DU'!C16  to  ='Occ L2-WD-DU'!C16
+- Quick method: Use Find & Replace on formulas (Ctrl+H) to replace OccL2- with 'Occ L2- (or vice versa) depending which naming you prefer. Always include the single quotes if the sheet name contains spaces.
+
+3) Hard-coded value(s) replacing formulas (data/consistency error)
+- Example: Occ L2-WD-LR (and/or Occ L2-DU-LR) cell E22 is set to 7 instead of the intended formula (other rows follow a pattern of sourced formulas).
+- Why it’s wrong: breaks automatic updates and consistency across hourly rows (likely overstates occupancy).
+- Fix (restore formula pattern): replace the hard number with the matching formula used on other rows. For example, if E16 uses:
+  =+'Occ L3-WD-DU-LR'!E16*Occupancy!$F$35 + 'Occ L3-WD-DU-LR'!J16*Occupancy!$F$36
+  then E22 should be:
+  =+'Occ L3-WD-DU-LR'!E22*Occupancy!$F$35 + 'Occ L3-WD-DU-LR'!J22*Occupancy!$F$36
+- Explanation: keep the same formula pattern down the column so the row uses the correct detailed inputs and weighting.
+
+How to proceed (recommended quick checklist)
+1. Fix the latent-load formula on Occupancy!F10 and any sheet copies — replace with the corrected formula above.
+2. Do a global search for "OccL2" (no space) and fix those formula references (add the space or rename tabs). Also search for other sheet-name typos (OccL3 vs Occ L3, OccL1 etc).
+3. Find hard-coded numbers in the hourly tables (search for obvious outliers like "7" where neighbors are decimals) and restore the consistent formula pattern (copy-paste a correct row and adjust row numbers).
+4. After changes: use Trace Dependents/Precedents and recalc (F9) to verify no #REF and that totals look sensible. Optionally add a comment in the corrected cells explaining the fix.
+
+If you want, I can produce:
+- exact Find/Replace strings to fix the sheet-name problem, and
+- a short list of every cell (full addresses) that uses the incorrect latent formula so you can replace them in one pass. Which would you prefer?

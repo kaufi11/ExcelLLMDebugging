@@ -1,0 +1,35 @@
+Found 4 issues (plus one recommended improvement). Short fixes and plain explanations:
+
+1) Q4 Homework — H5
+- Error: H5 =COUNT(B5:G5) — counts numeric cells (returns 6) instead of summing points.
+- Fix: replace with =SUM(B5:G5)
+- Why: COUNT returns number of numeric cells; SUM adds the scores (what you want).
+
+2) Q4 Summary — F3 (Points Possible weighted total)
+- Error: F3 =B3*0.3+C3*0+D3*0.4+E3*0.2 — the quiz weight is 0 instead of 0.1.
+- Fix: replace with a formula that uses the weight cells (robust): =SUMPRODUCT(B3:E3,$B$2:$E$2) or =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+- Why: Hardcoded 0 caused the weighted points possible to be wrong (270 vs expected 300). Using the weight cells avoids manual mistakes.
+
+3) Q4 Summary — student weighted-score formulas (F4:F12)
+- Problem: they hardcode weights (e.g. B4*0.3+C4*0.1+...), which is error-prone.
+- Recommended fix: use the same SUMPRODUCT pattern so copying is safe:
+  e.g. put in F4 and copy down: =SUMPRODUCT(B4:E4,$B$2:$E$2)
+- Why: If weights change you only update row2; SUMPRODUCT uses those cells automatically.
+
+4) Q4 Summary — G4:G12 percentage denominator
+- Issue (consistency): G4 = (F4/300)*100 uses a hardcoded 300 while the true weighted max is in F3.
+- Fix: use the computed weighted max: =F4/$F$3*100 (use $F$3 absolute) or =F4/ SUMPRODUCT(B3:E3,$B$2:$E$2)*100
+- Why: If weights or points possible change, the percent stays correct.
+
+5) Year Summary — Grade IF formula (recommended improvement)
+- Current: nested IFs end with IF(H2<101,"A") without a final else; not best practice.
+- Better formula: =IF(H2<60,"F",IF(H2<70,"D",IF(H2<80,"C",IF(H2<90,"B","A"))))
+- Why: ensures scores >=90 get "A" cleanly and avoids returning FALSE for unexpected values.
+
+Summary of immediate actions:
+- Change H5 to =SUM(...)
+- Fix F3 to use SUMPRODUCT(...) or reference the weight cells
+- Replace F4:F12 with =SUMPRODUCT(Bx:Ex,$B$2:$E$2) and change G4:G12 to =Fx/$F$3*100
+- Optional: clean up grade IF formulas in Year Summary as shown.
+
+If you want, I can give the exact formulas for every affected cell ready to paste.

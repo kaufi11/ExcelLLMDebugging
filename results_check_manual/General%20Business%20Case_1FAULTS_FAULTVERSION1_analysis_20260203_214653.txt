@@ -1,0 +1,46 @@
+Summary of key errors I found and exactly how to fix them (short and clear)
+
+1) Many variance formulas on STMT OF OPERATIONS are reversed (wrong sign)
+- Problem: The Variance column is supposed to be Actual minus Forecast (Actual = column A, Forecast = column C). But many variance cells use =C#-A# (Forecast - Actual) instead of =A#-C#. That flips the sign of every variance.
+- Affected examples (non‑exhaustive): E7, E9, E17:E41, E43, E48, E49, E52 (and others in column E that show =C#-A#).
+- Fix: Change every variance formula in column E to =Arow - Crow (for example)
+  - E7 should be =A7 - C7
+  - E9 should be =A9 - C9
+  - E17 should be =A17 - C17
+  - etc.
+- Why: Variance = Actual − Forecast. Using Forecast − Actual gives the opposite sign and misleads any variance analysis.
+
+Quick way to fix: Use Find (Ctrl+F) to find formulas that contain “=C” and “-A” in column E and replace with the reversed form, or select column E and set formula pattern =A#-C# consistently.
+
+2) One obvious typo in STMT OF OPERATIONS forecast column formula
+- Problem cell: C10 shows =C8-26
+  - Excel will treat 26 as the number 26 (or a wrong cell reference) — this is almost certainly a typo.
+- Correct formula: C10 should be =C8 - C9
+- Why: C10 is Gross Profit (Forecast) = Forecast Net Sales (C8) minus Forecast Cost of Goods Sold (C9). The current formula subtracts literal 26, which will produce a wrong forecast gross profit.
+
+3) SUMMARY is pulling values from the BALANCE SHEET Market Value column (J) instead of the “End of Current Month” column (F)
+- Problem: SUMMARY is supposed to show End of Current Month (column F on SUMMARY). But the formulas point to BALANCE SHEET column J (which in your BALANCE SHEET is Market Value), not the current-month column. This will show market values rather than the balance-sheet month-end numbers the SUMMARY expects.
+- Affected cells on SUMMARY (examples):
+  - F15 currently ='BALANCE SHEET'!J15 → should be ='BALANCE SHEET'!F15
+  - F16 currently ='BALANCE SHEET'!J37 → should be ='BALANCE SHEET'!F37
+  - F17 currently ='BALANCE SHEET'!J65 → should be ='BALANCE SHEET'!F65
+  - F18 currently ='BALANCE SHEET'!J73 → should be ='BALANCE SHEET'!F73
+  - F27 currently ='BALANCE SHEET'!J9 → should be ='BALANCE SHEET'!F9
+  - F28 currently ='BALANCE SHEET'!J67 → should be ='BALANCE SHEET'!F67
+- Fix: Edit each SUMMARY formula to reference the correct BALANCE SHEET column (F for End of Current Month, H for Prior Month, J for As of Petition Filing) depending on which SUMMARY column you are filling.
+- Why: Columns J in BALANCE SHEET are Market Values — not the month-end numbers SUMMARY is meant to show. Using the wrong column gives wrong totals and mismatches.
+
+4) General consistency recommendation / how to avoid this in future
+- Standardize column roles and use named ranges:
+  - Actual = column A, Forecast = column C, Variance = column E (set variance formula once and copy down: =A#-C#).
+  - Balance sheet: use consistent columns (F = End Current, H = Prior, J = Petition Filing). When referencing from SUMMARY, always point to the same BALANCE SHEET column.
+- Use Find/Replace to fix patterns quickly:
+  - Find: "=C" followed by "-" and "A" in column E to locate reversed variance formulas and flip them.
+  - Find and correct the literal "26" in C10 to "C9".
+- After fixes: recalculate and verify totals (check that net profit, cash balances, and assets = liabilities + equity).
+
+If you want, I can:
+- Provide an exact list of every cell in STMT OF OPERATIONS that must change from =C#-A# to =A#-C# (I can generate that and the corrected formulas), and
+- Produce the corrected formulas for all SUMMARY references to BALANCE SHEET (F/H/J mapping) so you can copy-paste.
+
+Which would you prefer?

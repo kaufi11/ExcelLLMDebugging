@@ -1,0 +1,22 @@
+I checked the workbook text and found two clear errors plus one small clean‑up suggestion. Short, simple fixes below.
+
+1) Wrong line‑number formula in annex e (column B)
+- Error: B31 contains FORMULA =B29+775. All other row numbers are generated as previous+1; this +775 is almost certainly a typo.
+- Impact: the auto line numbering from that point is wrong. Any user or formula that expects sequential line numbers will be confused and automated generation of line numbers breaks.
+- Fix: change B31 to =B29+1 (or =B30+1 if you prefer strictly sequential). That restores the normal +1 increment.
+- Why it works: it returns the B‑column to the consistent previous+1 pattern used everywhere else.
+
+2) Incorrect variance % formula for Total Funds in annex f (cell K68)
+- Error: K68 is set to =K48. Instead of calculating the % variance for Total Funds it just copies the % for Total Net Assets.
+- Impact: if H68 (Original Total Funds) and H48 (Original Total Net Assets) differ for any reason, K68 will be wrong. It’s fragile and inconsistent with every other % cell.
+- Fix: change K68 to the standard pattern used across the workbook:
+  IF(H68=0,"N/A",(J68/H68)*100)
+- Why it works: this computes the actual variance % for Total Funds (J68 / H68) and matches the defensive divide‑by‑zero check used everywhere else.
+
+3) (Minor suggestion) Make Annex I underlying surplus sum explicit
+- Current: H27 = SUM(H10:H26). That works if only the desired numeric rows are between H10 and H26, but can accidentally include blank or label cells.
+- Suggestion: replace with an explicit sum of the rows you intend to add back, e.g.
+  =H11 + H14 + H17 + H20
+- Why: clearer, safer and easier to audit.
+
+If you want, I can produce the exact formulas ready to paste or give a short macro to correct all instances automatically.

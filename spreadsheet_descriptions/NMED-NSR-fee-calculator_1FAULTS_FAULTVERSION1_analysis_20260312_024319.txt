@@ -1,0 +1,53 @@
+Summary of workbook
+- Sheets: 
+  - Calculations — main Points-Based Fee Calculator (detailed below).
+  - Definitions — present but no contents shown in your extract.
+
+Calculations sheet — layout and purpose
+- Title/metadata: A1 (“Points-Based Fee Calculator”), A2 (reg citation). A4 prompts for Permit Number & Site Name.
+- Key input columns:
+  - Column A: Permitting actions / descriptors (e.g., Emission Units, Fugitive Emissions, PSD, BACT, etc.).
+  - Column B: user inputs — either a count (e.g., # of units or # of regs) or an “x”/symbol to indicate presence/requirement.
+  - Column C: calculated Total Points for each action (formulas shown).
+  - Columns E–G: list of non‑applicable regulations / citations (NMAC parts, NSPS, NESHAP text).
+
+- Fee settings and outputs:
+  - B5 label “Fee ($/point)”; C5 = 315 (dollar rate per point).
+  - E5 labeled “Total Fee”. F5 contains: =IF(C43="N/A",C42,C43) — selects either C42 (full fee) or C43 (half fee / N/A logic) to display final fee.
+  - A41 Total Points: C41 formula =IF(OR(C34>0,C35>0),C36,COUNT(C9:C31)) — uses TOTAL OTHER ACTIONS if any “other actions” present, otherwise counts point cells C9:C31.
+  - A42 Fee: C42 = C41 * C5 (total fee = points × $/point).
+  - A43 Half fee for small business: C43 = IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A")) — returns half fee if small business box (B38) is marked and B34 (general permit) is blank; otherwise “N/A”.
+
+- Important per-line scoring rules (selected):
+  - Emission Units (A9): C9 = IF(B9<>"",IF(B9<5,5,IF(B9>15,15,B9)),0) — minimum 5, maximum 15, equals B9 if between 5–15.
+  - Fugitive Emissions (A11): C11 = IF(B11<>"",5,0).
+  - Non-attainment Area (A12): C12 = IF(B12<>"",75,0).
+  - Modeling Review (A13): C13 = IF(B13<>"",15,0).
+  - Air Toxics / Health Assessment (A19): C19 = IF(B19<>"",100,0).
+  - Level 1 (A16): C16 = IF(B16<>"",8,0).
+  - BACT (A18): C18 = IF(B18<>"",60,0).
+  - Applicable regulations (A22–A24):
+    - 20 NMAC 2.X: C22 = IF(B22<>"",(3*B22),0) — 3 points per reg.
+    - NSPS: C23 = IF(B23<>"",(5*B23),0) — 5 points per NSPS.
+    - NESHAPs: C24 = IF(B24<>"",(5*B24),0) — 5 points per NESHAP.
+  - Case-by-case MACT (A27): C27 = IF(B27<>"",100,0).
+  - PSD / PSD netting:
+    - PSD Netting (no other analysis) A30: C30 = IF(B31="",(IF(B30<>"",20,0)),"") — gives 20 if B30 indicated and B31 blank.
+    - PSD review including netting A31: C31 = IF(B31<>"",75,0).
+  - Other actions:
+    - General Permit A34: C34 = IF(B35="",(IF(B34<>"",10,0)),"") — returns 10 when B34 indicated and B35 blank.
+    - Streamlined sites A35: C35 = IF(B35<>"",(B35*10),0) — 10 points per site.
+    - Total Other Actions A36 = SUM(C34:C35).
+
+- User instructions and notes:
+  - A47–A48: prompts to insert numbers of units/regs and mark “X” for applicable fee points.
+  - A38–A39: small business indicator — put “x” in B38 to qualify for half fee (subject to B34 general permit exclusion).
+
+Observations / potential issues
+- Final fee display logic is split between C42/C43 and F5. F5 uses =IF(C43="N/A",C42,C43) to choose between full and half fee, so ensure F5 is where the visible “Total Fee” output is intended.
+- Some formulas return blank ("") in conditional cases (e.g., C30, C34) — this can affect COUNT-based totals; C41 uses COUNT(C9:C31) which counts numeric cells only (blank cells are ignored), consistent with design.
+
+If you want, I can:
+- Produce a cleaned-up version of formulas (consolidate final fee cell).
+- Add data validation for B-column inputs (numeric vs. “x”).
+- Create a printable summary / dashboard showing inputs, points breakdown, and final fee.

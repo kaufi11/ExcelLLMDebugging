@@ -1,0 +1,54 @@
+Sheet name: TAS — Staff Time Allocation Schedule (University of Glasgow)
+
+Purpose and overall layout
+- Single main worksheet used to capture staff time by activity and funding category, allocate hours across Departments/Faculties and produce totals and percentage shares.
+- Top header (A1:A2) contains the university title and schedule name. Rows A42–A53 contain user guidance and retention notes.
+
+Key input cells
+- Period Covered: C4 = 2004-08-01 00:00:00, F4 = 2004-09-30 00:00:00 (date/time). J4 uses =_xludf.NETWORKDAYS(C4,F4) to compute working days between these dates.
+- Department selection: C5 = "ACCOUNTING AND FINANCE". Staff number input at C7 is blank.
+- Hour inputs: Core hours in column F (e.g. F13, F17...), Support hours in column H (same rows). Users are expected to enter hours into these F/H cells.
+
+Main data area and categories
+- Column A: Activity labels (e.g. Teaching row13, Research row17, Other row32).
+- Column B: Funding/category types (e.g. "Publicly Funded", "Own / Institutional Funded", "Research Councils", etc.).
+- Columns F (CORE) and H (SUPPORT): user-entered hour values.
+- Column I (TOTAL): per-row totals with formula pattern Ixx = Fxx + Hxx (e.g. I13 = F13+H13). Exception: I14 is noted as I14 = F14 + 447 (appears to be a hard-coded add).
+- Column J: per-row proportion of the grand total with formula IF(I$39>0,Ixx/I$39,0) (e.g. J13 = IF(I$39>0,I13/I$39,0)). I$39 is the grand total Total-hours cell.
+
+Subtotals and totals
+- Subgroup subtotals:
+  - Row 15 aggregates rows 13–14: F15 = SUM(F13:F14); H15 = SUM(H13:H14); I15 = SUM(I13:I14); J15 = IF(I$39>0,I15/I$39,0).
+  - Row 30 aggregates rows 17–29: F30 = SUM(F17:F29); H30 = SUM(H17:H29); I30 = SUM(I17:I29); J30 = IF(I$39>0,I30/I$39,0).
+  - Row 37 aggregates rows 32–36: F37 = SUM(F32:F36); H37 = SUM(H32:H36); I37 = SUM(I32:I36); J37 = IF(I$39>0,I37/I$39,0).
+- Grand totals (row 39):
+  - F39 = F15 + F30 + F37
+  - H39 = H15 + H30 + H37
+  - I39 = I15 + I30 + I37  (grand total hours)
+  - J39 = IF(I$39>0,I39/I$39,0)  (always 1 or 100% depending format)
+- Row 40 shows normalized shares (e.g. F40 = IF($I39>0,F39/$I39,0); same for H40 and I40).
+
+Department–code–faculty mapping table
+- A two/three-column lookup table spans columns R:T, rows 7:136 (R7:R136 department names, S7:S136 department codes, T7:T136 faculty / unit names).
+- Cell C6 uses =VLOOKUP(C5,R7:T136,3,FALSE) to return the Faculty for the Department entered in C5.
+- Codes include numeric values and X-prefixed codes (e.g. X01, X20A, EXT).
+
+Other notable items
+- Many J-column formulas follow the consistent pattern IF(I$39>0,Ixx/I$39,0) to avoid division by zero.
+- Some S cells list X39 or other code values that correspond to resource-unit codes; these are textual/lookup values, not calculations.
+- Explanatory text and numbered points (A44–A49) describe how the data will be used (transparency review, management info, sharing, future integration, retention period).
+
+Potential anomalies to note (observed)
+- I14 = F14 + 447 is unusual compared with Ixx = Fxx + Hxx pattern — may be intentional or a formula error.
+- Some department code entries repeat or use placeholders (e.g. X39 appears both as a code and as a referenced code in other rows).
+
+Summary of key formulas (examples)
+- Days: J4 = _xludf.NETWORKDAYS(C4,F4)
+- Faculty lookup: C6 = VLOOKUP(C5,R7:T136,3,FALSE)
+- Row total: I13 = F13 + H13
+- Row percent: J13 = IF(I$39>0,I13/I$39,0)
+- Subtotals: F15 = SUM(F13:F14) (similarly H15, I15)
+- Grand totals: F39 = F15+F30+F37; I39 = I15+I30+I37
+- Normalized shares: F40 = IF($I39>0,F39/$I39,0)
+
+If you want, I can: (a) produce a compact map of which rows correspond to which activity/funding categories, (b) flag any inconsistent formulas/cells for correction (e.g. I14), or (c) create a short checklist for validating data entry.

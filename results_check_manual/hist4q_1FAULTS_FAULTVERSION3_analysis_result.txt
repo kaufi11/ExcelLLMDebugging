@@ -1,0 +1,37 @@
+I scanned the workbook formulas and found the following formula errors / inconsistencies and potential issues to review.
+
+1) Clear formula bug (probably a typo)
+- Sheet "1", cell H12
+  - Current formula: =SUM(H10:H11)
+  - Inconsistent with the other columns C12–R12 which all use SUM(X9:X11).
+  - Likely correct formula: =SUM(H9:H11)
+  - Impact: H12 omits the H9 component, so subsequent totals that use H12 (e.g., H15 =SUM(H12:H14)) are probably understated.
+
+2) Inconsistent IF return values (presentation / potential downstream effects)
+- Some ratio formulas return the text "-  " when denominator is zero, others return an empty string "".
+  - Example (sheet "1"): C20 =IF(C$17=0,"-  ",C19/C$17) (returns the string "-  " on zero)
+  - Example (sheet "2"): C11 =IF(C9=0,"",C10/C9) (returns "")
+- Issue: inconsistent text placeholders (different strings) may be harmless visually but can lead to inconsistent behaviour if these cells are used in further calculations, charts or exported (text vs blank). Consider standardizing (e.g., return NA(), "" or 0 consistently, or keep a single text like "-").
+
+3) Single-column manual adjustment (possible data / omission check)
+- Sheet "1", row 34: the only non-empty value is G34 = 3692 (other columns in row 34 are blank).
+  - C35..R35 are calculated as SUM(previous row(s)), e.g. C35 =SUM(C33:C34). Because most C34..R34 are blank, only G35 effectively includes an extra adjustment.
+  - This may be intentional (a one-off adjustment affecting only that column), but it's worth confirming that this isolated entry is correct and not a misplaced value.
+
+4) Mixed absolute/relative styles (cosmetic / maintainability)
+- Some formulas use absolute row references with $ (e.g. IF(C$17=0, ...)) and others use IF(C17=0,...). Not erroneous, but inconsistent. Also the format of the "missing" placeholder varies ("-  " vs ""), noted above.
+
+Other checks
+- I verified the main SUM and arithmetic formulas elsewhere — they are consistent (same ranges) except for the H12 issue above.
+- No #REF!, #VALUE! or other Excel error values were present in the exported values/formulas.
+
+Recommended actions
+1. Fix H12 to =SUM(H9:H11) (sheet "1") unless there is a documented reason H9 is intentionally excluded.
+2. Standardize the IF-denominator-zero behavior across sheets (choose one: blank "", a consistent text placeholder, NA(), or 0) depending on how downstream formulas/charts should treat those cells.
+3. Verify G34 (sheet "1" row 34) is intentionally placed in only column G.
+4. Optionally scan for any other single-column manual adjustments like G34 and confirm they are deliberate.
+
+If you want, I can:
+- produce a list of all cells that use IF(...=0,"-  ",...) versus IF(...=0,"",...) so you can standardize them,
+- produce a one-click fix suggestion for H12 (and optionally apply it),
+- or run additional checks (e.g., detect any formulas that depend on cells that could contain text placeholders).

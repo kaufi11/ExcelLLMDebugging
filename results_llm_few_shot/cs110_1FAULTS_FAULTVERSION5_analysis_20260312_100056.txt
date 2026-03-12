@@ -1,0 +1,27 @@
+Summary of the problems I found (short & clear), and how to fix them.
+
+1) Faulty cells: Sheet SecA!J10, SecB!J10, SecC!J10
+- Error type: Range typo / mechanical
+- What’s wrong: Formula uses =SUM(R10:AF10) but your data stops at column AE. AF is the wrong end column (it may be blank now or may pick up unintended data later).
+- Fix: Change to =SUM(R10:AE10)
+- Why: keeps the sum consistent with all other rows (they use R:AE) and prevents accidental inclusion of extra column AF.
+
+2) Faulty cells: SecA..SecC — I14:I50 (each student Total Points)
+- Error type: Logical (extra credit incorrectly capped)
+- What’s wrong: Formula =MIN(500,SUM(Jx:Mx,Px:Qx)) includes P and Q (extra credit) inside the MIN(500,...) cap. That means extra credit can be lost if SUM(J:M,P:Q) exceeds 500.
+- Fix (recommended): Use
+  =MIN(500,SUM(J14:M14)) + SUM(P14:Q14)
+  and copy down for each student row (adjust row numbers).
+- Why: This caps the normal 0–500 points, then adds extra credit on top. If you want extra credit to also be capped differently, change the +SUM(...) part accordingly.
+
+3) Faulty cell: SecA!J47 (and check similar rows)
+- Error type: Inconsistency / possible manual override
+- What’s wrong: J47 is hard-coded as 6 while other J rows use =SUM(Rx:AE x). That may be intentional, but likely an accidental hard entry.
+- Fix: If it should follow the same pattern, change to =SUM(R47:AE47)
+- Why: consistency and to avoid mismatches if assignment columns change.
+
+Quick fixes across the workbook
+- Use Find (Ctrl+F) for "SUM(R" and for ":AF" to find and correct any other accidental AF references.
+- Replace the I-column formulas in one row with the corrected formula and drag down to overwrite all student rows.
+
+If you want, I can produce the exact formulas for all affected rows (I14:I50 and J10/J47) or a one-line Find/Replace plan to fix them all at once. Which would you prefer?

@@ -1,0 +1,27 @@
+Short summary of the problems I found and simple fixes.
+
+1) Broken/duplicated ID sequence (critical)
+- Error: A54 contains =A53 - 1 instead of incrementing. That makes A54 duplicate earlier numbers and causes A55 onward to repeat IDs (you end up with duplicate IDs 51/52 etc.).
+- Why it’s bad: ID should be unique and sequential; duplicate IDs break lookups/sorts and cause confusion.
+- Quick fix (recommended): change A54 to =A53 + 1, then fill (drag) that same formula down through A63.
+- Robust alternative: replace the whole column A with a formula that always produces a proper sequence:
+  - If you want row-based: put in A2: =ROW()-1 and copy down (this auto-stays correct if you insert/delete rows).
+  - In Excel 365 you can also use: =SEQUENCE(ROWS(A2:A63),1,1,1).
+- After fixing: check for duplicate values in column A (Home → Conditional Formatting → Highlight Duplicate Values) to be sure sequence is unique.
+
+2) Missing header for column I (layout / data-mapping)
+- Error: Column I has no header but is used for secondary address lines in many rows.
+- Fix: Put a clear header in I1 (e.g., "Address Line 2" or "Address (cont.)"). This prevents misalignment when filtering/sorting and makes the sheet self-documenting.
+
+3) Data quality issues (recommendations)
+- "?" in Email cells: these are placeholders for missing emails. Find them with Ctrl+F and either fill with the correct address or clear the cell. You can filter column E for "?" to locate quickly.
+- Duplicate person entries (example: Joseph A. Paradiso appears twice): run a duplicate check on column B (names) and consolidate or annotate duplicates as needed.
+  - Use Data → Remove Duplicates (make a copy first) or use Conditional Formatting to highlight repeats.
+- Inconsistent phone/fax formats: standardize formatting (choose an international format, or Text) or normalize with formulas/Power Query. Example normalization approach: remove punctuation with =TEXTJOIN("",TRUE,IFERROR(MID(SUBSTITUTE(SUBSTITUTE(N28,"(",""),")",""),SEQUENCE(LEN(SUBSTITUTE(SUBSTITUTE(N28,"(",""),")",""))),1),"")) — or simply use Find/Replace to remove characters and then reformat.
+
+4) Prevent future errors
+- Lock the numbering column formula: use a single, stable formula like =ROW()-1 so accidental edits are less likely.
+- Protect the header row or the entire column A (Review → Protect Sheet) once fixed to avoid accidental changes.
+- Implement Data Validation on Email (custom rule with ISNUMBER(SEARCH("@",E2))) to catch obvious missing/invalid emails.
+
+If you want, I can give the exact formula to paste into A2 for your preferred approach (ROW()-1, SEQUENCE, or the fill-down rule) and step-by-step instructions to standardize phones or find/merge duplicates. Which one would you like next?

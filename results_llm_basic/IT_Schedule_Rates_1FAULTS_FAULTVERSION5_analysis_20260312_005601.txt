@@ -1,0 +1,27 @@
+Summary of the error
+- On sheet "EER SITE" the only formula typo I can see is in row 21 (Functional Analyst, Senior):
+  - G21 is =F21/1.04 (division) but it should be multiplying by the 4% escalation. Because of that the value falls in year 5 and H21 (which uses G21) is also wrong.
+
+Why it's wrong (simple)
+- /1.04 reduces the rate instead of increasing it by 4% (you want growth, not shrinkage). All later cells that rely on that wrong value become wrong too.
+
+How to fix (quick)
+1. Change G21 to:
+   =F21*1.04
+   (or better: =F21*(1+$C21) if you want to reference the escalation cell C21)
+2. H21 will then calculate correctly (because it references G21).
+
+Better, more robust pattern (prevents this bug in future)
+- Use the escalation cell in the row and anchor the column when copying across. Example for row 21:
+  - D21 = B21*(1+$C21)
+  - E21 = D21*(1+$C21)
+  - copy E21 → F21 → G21 → H21
+  - Or compute directly: H21 = B21*(1+$C21)^5  (if you prefer one-shot calculation for year 6)
+
+How to check for other similar mistakes
+- Use Find (Ctrl+F) and search in formulas for "/1.04" or "/1." to catch accidental division-by-escalation typos.
+- Or use Formula Auditing → Trace Precedents/Dependents on suspicious rows.
+
+If you want, I can:
+- Give the exact revised formulas for the entire sheet so you can paste them,
+- Or scan the workbook (if you upload it) and correct any other similar mistakes automatically.

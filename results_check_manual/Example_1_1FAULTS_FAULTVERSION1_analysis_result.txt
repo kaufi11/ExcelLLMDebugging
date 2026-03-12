@@ -1,0 +1,27 @@
+I inspected all formulas on the three sheets and found two definite formula errors/inconsistencies plus a couple of suggestions to make the workbook more robust.
+
+1) Incorrect SUM range (Q4 Homework)
+- Cell: Q4 Homework!H5
+- Current formula: =SUM(B5:F5)
+- Problem: It omits column G (Personal Shield). All other student totals H3,H4,H6..H11 use =SUM(Bx:Gx). H5 therefore under-reports Evans' total.
+- Fix: change to =SUM(B5:G5)
+- Current value 202 (wrong). Corrected value will be 273 (81+21+25+25+50+71).
+
+Note: Q4 Summary cell E6 links to Q4 Homework!H5, so fixing H5 will update Q4 Summary!E6 and any downstream calculations (Evans' weighted score and percentages, and Year Summary averages/final).
+
+2) Wrong multiplier in Points Possible weighted sum (Q4 Summary)
+- Cell: Q4 Summary!F3 ("Points Possible" weighted total)
+- Current formula: =B3*0.3+C3*0+D3*0.4+E3*0.2
+- Problem: C3 is multiplied by 0 instead of the weight 0.1 (C2 = 0.1). This makes the "weighted points possible" equal 270 instead of the expected 300.
+- Fix: change to =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+  - Better (more maintainable): =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+- Current value 270 (wrong). Corrected value will be 300.
+
+Other notes / recommendations
+- Several formulas hard-code the weight numbers (0.3, 0.1, 0.4, 0.2). To avoid future mismatches use the weight cells (B2:E2) with absolute references, e.g. =B4*$B$2 + C4*$C$2 + D4*$D$2 + E4*$E$2. That would prevent errors like the one in F3 if weights are edited.
+- The nested IF grade formula in Year Summary (e.g. I2) works but could be simplified with LOOKUP or IFS for readability; it's not an error.
+- Trailing spaces in some names (e.g. "Catalini ") may cause problems if you later match names across sheets by text; not a formula error but worth noting.
+
+If you want, I can:
+- Provide the exact corrected formulas for every affected cell,
+- Apply the corrections and show the recalculated values that cascade through Q4 Summary and Year Summary.

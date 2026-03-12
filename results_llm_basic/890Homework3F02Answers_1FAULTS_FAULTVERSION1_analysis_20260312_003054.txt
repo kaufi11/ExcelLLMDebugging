@@ -1,0 +1,36 @@
+I checked the workbook and found the main formula errors (plus one methodological issue). Short summary, then exact fixes and brief explanations.
+
+Errors and fixes
+
+1) Q1 — typo in one discounted-CF cell
+- Problem: Cell G5 uses the wrong rate cell. It contains:
+  =$G$2/(1+$K5)^$G$1
+  (Column K is empty/wrong).
+- Fix: Change G5 to reference the rate in column J for that row:
+  =$G$2/(1+$J5)^$G$1
+- Why it matters: that single bad reference returns either an error or a wrong discount factor for that row, so the row total in B5 and any NPV/graph using that row will be wrong.
+
+2) Q2 — inconsistent references to loan & interest in the second (with-depreciation) debt block
+- Problem: In the WITH DEPRECIATION -> Debt Scenario block the yearly interest rows (D67:E67:F67:G67) are using the earlier block’s cells ($C$17 and $C$18) instead of the local loan & interest values for this block. Example (wrong):
+  =-$C$17*$C$18
+- Fix: Point them to the loan principal and interest-rate cells defined for this block. In your sheet those are C75 (loan principal) and C61 (interest rate). Correct formula:
+  =-$C$75*$C$61
+  (apply similarly to E67:F67:G67)
+- Why it matters: Using values from the wrong area gives incorrect interest charges, which cascades into taxable income, taxes, cash flows to equity and DCF results.
+
+3) IRR / interpretation (methodological)
+- Problem: For cash flows that change sign more than once (your pattern: negative, positive, positive, negative) IRR can be ambiguous (multiple roots). Excel’s IRR function returns one root based on its numerical search (and a guess if provided).
+- Fix / recommendation:
+  - Use the NPV rule to decide accept/reject (compute NPV at your firm’s discount rate) — NPV is unambiguous.
+  - If you need a rate measure, use MIRR (modified IRR) which avoids multiple-root ambiguity:
+    =MIRR(range, finance_rate, reinvest_rate)
+    Example: =MIRR(D2:G2, 0.06, 0.06)
+  - Or find all roots by plotting NPV(rate) over a wide rate range (which you partly built) and look for sign changes (or use Goal Seek starting from different guesses).
+
+Other quick checks (no immediate fix needed but watch out)
+- When copying discount formulas down rows, locking only the column for the rate ($J4 vs $J$4) is OK if you want the row number to change. Just be consistent so the cell refers to J5, J6, etc as intended.
+- Your NPV grid (separate sheet) uses NPV(rate,C3:E3)+B3 which is correct (NPV takes t=1..n values; add t=0 separately). Good practice.
+
+If you want, I can:
+- Give a small VBA-free checklist to scan the workbook for similar wrong-column typos (e.g., K instead of J).
+- Produce corrected formulas for each affected cell and/or update the file (if you upload it).

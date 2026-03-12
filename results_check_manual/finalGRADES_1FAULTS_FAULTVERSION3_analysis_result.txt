@@ -1,0 +1,59 @@
+I inspected the formulas in all three sheets and found one clear formula error and several inconsistencies / fragile designs that are likely to produce wrong results or confusion. Summary first, then details and recommended fixes.
+
+High‑priority error
+- Writing Assng.!G19 is wrong:
+  - Formula is =D19-E19-F19 (produces -396 and -0.792%) but it should be a sum like every other student: =D19+E19+F19. This is a clear typo/operator error and explains the negative TOTAL and % for Aquaman.
+
+Other problems / inconsistencies (may be data or formula design issues)
+- Missing input cells used in sums (can mask data entry problems)
+  - Several TOTAL cells use =D# + E# + F# even when one of D/E/F is missing. Excel treats blanks as zero, so the formula returns a number but it may hide missing data. Examples:
+    - Writing Assng.: G14 uses D14 (which is blank) but formula still evaluates (E14+F14 = 428). G45 evaluates to D45 only (E45 and F45 blank) => very low TOTAL.
+    - Writing Assng.: G32 uses D32 (blank) + E32 + F32; blank treated as 0.
+  - Recommendation: flag missing inputs (conditional formatting) or use ISBLANK checks to highlight rows with missing components.
+
+- Homework sheet — inconsistent denominators for averages (L column)
+  - L formulas alternate between =N#/7 and =N#/8 across different rows. Yet the N# formulas always sum D:K (i.e. up to 8 items, where column K is marked OPTIONAL). The divisor is therefore inconsistent across rows and appears to be applied manually rather than by rule.
+  - Because K is optional, the divisor should be chosen by rule (e.g. average of the 7 required items, unless the optional is to be included). The current mixture of /7 and /8 is error‑prone and nontransparent.
+  - Recommendation: replace manual divisors with a formula that counts non‑blank required columns or conditionally includes the optional score. For example:
+    - To average required columns D..J (7 items): =AVERAGE(D# : J#) — but be careful with blanks.
+    - To include optional K only if it improves the average: compute avg_required = AVERAGEIF(D# : J#, "<>") and then compare AVG with including K, e.g.
+      =LET(rAvg, AVERAGE(D#:J#), withOpt, AVERAGE(IF(K#="",NA(),K#), D#:J#), IF( (withOpt>rAvg), withOpt, rAvg))
+    - Or use COUNT to divide by the number of nonblank required cells so denominators are automatic.
+
+- Quizes & Exams sheet — summary row denominators inconsistent
+  - D47..K47 are averages computed by dividing SUM(range) by a fixed number. D47..G47 divide by 41 (SUM(D6:D46)/41) while H47..K47 divide by 40 (SUM(H6:H46)/40). This is inconsistent and brittle:
+    - If some columns have missing entries the correct approach is to use AVERAGE or SUM/COUNT of nonblank cells (or COUNT(range) instead of hardcoding 40/41).
+  - Recommendation: use =AVERAGE(range) or =SUM(range)/COUNT(range) so the denominator matches actual number of nonblank items.
+
+- Homework sheet — optional score handling not implemented consistently
+  - There is a note ("Optional *" and at K47 an explanatory note) but the L cell formulas do not implement the rule "optional score included only if higher than previous average". Instead the sheet uses manual divisors (/7 or /8) and different choices per student. This leads to inconsistent treatment of column K across students.
+  - Recommendation: implement the optional logic with a formula that compares avg_required vs avg_including_optional and picks the higher (see example under Homework above).
+
+- Many formulas assume blanks = 0 (implicit)
+  - N# in Homework are explicit sums D#..K#, so blanks = 0. Weighted average formulas in Quizes & Exams (K#) multiply blank values by weights (again treated as 0). These behaviors are OK if blank = 0 is intended, but they can hide missing data. Consider using explicit tests (e.g., treat blank as NA or highlight blanks) so missing grades are visible.
+
+Other smaller issues / observations
+- Writing Assng. J19 (Aquaman grade) still shows "A" even though the % is negative — this is a consequence of G19 error. Fixing G19 should correct the % and grade.
+- There are multiple rows across sheets where one or more component columns are empty (e.g., many Homework rows missing E/F/I/K in places). Decide whether blanks should be 0 or flagged — current formulas treat them as 0.
+- Quizes & Exams K formulas: the weightings sum to 100 correctly, so those formulas are fine in structure — the main problem is missing data and hardcoded denominators in summary rows.
+
+Concrete fixes to apply
+1. Fix the obvious typo:
+   - Writing Assng.!G19: change =D19-E19-F19  →  =D19+E19+F19
+
+2. Replace hardcoded divisors with robust formulas:
+   - Homework L#: compute average of required items with COUNT or AVERAGE, and implement optional inclusion conditionally. Example (pseudo‑formula to adapt):
+     - avg_required = AVERAGE(D# : J#)
+     - avg_with_optional = AVERAGE(D# : K#)  (or compute as (SUM(D#:J#)+K#)/(COUNT(D#:J#)+1) if K nonblank)
+     - L# = IF( AND(K#<>"", avg_with_optional > avg_required), avg_with_optional, avg_required)
+   - Quizes & Exams D47..K47: replace SUM(...)/fixed with AVERAGE(range) or SUM(range)/COUNT(range).
+
+3. Highlight missing inputs:
+   - Add conditional formatting to highlight any empty D/E/F (Writing) or D..K (Homework) cells for each student so missing items are not silently treated as zeros.
+
+If you want, I can:
+- produce the exact replacement formulas (for Excel) for the optional‑inclusion logic and for the summary averages,
+- produce a list of all rows where any required component is blank,
+- or produce a corrected copy of the workbook with the G19 fix and the averaged formulas replaced.
+
+Which follow‑up would you like?

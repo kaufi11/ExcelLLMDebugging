@@ -1,0 +1,58 @@
+I inspected the formulas and the data shown on Sheet1 and found several formula / data inconsistencies and one clear formula error. Summary first, then details and suggested fixes.
+
+Summary of problems found
+- Four zero values are present in the range A8:A37 (they are not listed in the JSON excerpt). Those zeros drive the results in the AVERAGE, MODE, MEDIAN and quartile work. If the zeros are unintended (placeholders for missing data) this is the main source of incorrect statistics.
+- F9 (mode) =MODE(A8:A37) returns 0 because those zero entries are the most frequent values. If zeros are actually errors, the mode result is misleading.
+- F8 (mean) and F14 (median) are consistent with a 30‑value set that includes four zeros. If those zeros are wrong, the correct mean/median are different.
+- The quartile calculations / text assume n = 30 (the zeros force n=30). If the zeros are removed the quartile answers should change.
+- C110 (z-score for Mission 73li) has a formula error: it uses + instead of −, giving an impossible z-score (about 10.26). It should be =(B110-$B$125)/$B$128.
+- D79 uses a hard-coded numerator (8.672) rather than referencing the stdev cell (D75 or D78). Not a fatal error, but inconsistent / brittle.
+
+Detailed findings, cell-by-cell with corrections
+
+1) Hidden / unexpected zeros in A8:A37 (impacting mean, mode, median, quartiles)
+- Evidence: F8 =AVERAGE(A8:A37) shows 46 and F9 =MODE(A8:A37) shows 0, and F14 =MEDIAN(A8:A37) gives 48.95. Those values match the dataset if there are four zeros in A8:A37 (sum of nonzero values = 1380; 1380/30 = 46; sorted list with 4 zeros yields median (15th+16th)/2 = (45+52.9)/2 = 48.95; zeros repeated give mode = 0).
+- Problem: The printed list of nonzero A-values in the JSON contains 26 numbers; the worksheet calculations indicate 30 observations (4 zeros). The workbook therefore either contains 4 explicit zeros (probably at A9, A16, A23, A33) or the author intended 30 observations and the four zeros are real. If the zeros are placeholders for missing data they should be blanks, not zeros.
+- Suggested actions:
+  - If zeros are placeholders/mistakes: clear the zero cells (make them blank). Then re-evaluate:
+    - Correct mean (AVERAGE ignoring blanks) = 1380 / 26 ≈ 53.076923
+    - Correct median = MEDIAN(nonzero list) = (53.3 + 56.6) / 2 = 54.95
+    - MODE would return #N/A (no repeated value) — in older Excel MODE returns error if no mode; MODE.SNGL returns #N/A as well.
+    - Quartiles should be recalculated (use QUARTILE.INC or QUARTILE.EXC consistently). For example, using the standard 0.25*(n+1) interpolation for n=26 gives Q1 ≈ 15.425 and Q3 ≈ 82.625 (depending on method); Excel QUARTILE.INC will produce the exact values Excel uses.
+  - If zeros are genuine observations, leave as-is but note that they dominate the mode (0) and lower the mean & median. Document that zeros are real measurements.
+
+2) Mode cell (F9)
+- Current formula: =MODE(A8:A37) and displayed value 0.
+- If zeros are unintended, this 0 is wrong. If zeros are intended, 0 may be the correct mode.
+- Suggested formula to ignore zeros when zeros represent missing values:
+  - Use an array formula that computes the mode of nonzero values: =MODE(IF(A8:A37<>0,A8:A37)) (entered as array in older Excel) or in newer Excel wrap with FILTER: =MODE(FILTER(A8:A37,A8:A37<>0)).
+- Or simply remove/blank the zero cells if they are placeholders.
+
+3) Median cell (F14)
+- Current formula: =MEDIAN(A8:A37) showing 48.95 — this is consistent with 30 values including four zeros.
+- If zeros are wrong, remove them and MEDIAN(A8:A37) will update to 54.95.
+- Recommendation: decide whether zeros should be blank; if yes blank them, or compute MEDIAN of nonzero values: =MEDIAN(IF(A8:A37<>0,A8:A37)) (array) or =MEDIAN(FILTER(A8:A37,A8:A37<>0)) in newer Excel.
+
+4) Quartile computations and text (D25..D30 and E29/E30)
+- The text uses i = (25/100)*30 = 7.5 and rounds up to the 8th value → Q1 = 7, and Q3 computed similarly = 70.4. Those results match the workbook numbers only because there are four zeros making n=30.
+- If zeros are incorrect, the n is actually 26 and the quartile positions and values are different. Use Excel's QUARTILE.INC or QUARTILE.EXC to avoid manual position errors:
+  - Example: =QUARTILE.INC(A8:A37,1) and =QUARTILE.INC(A8:A37,3) (or filter out zeros first).
+
+5) Z-score formula error (C110)
+- Problem cell: C110 shows 10.2579933127568 and formula given is =(B110+$B$125)/$B$128
+- This is wrong: it adds the mean instead of subtracting it, producing an absurd z-score.
+- Fix: change to =(B110 - $B$125) / $B$128
+- After correction C110 should be about (4.33 - 3.993) / 0.811367 ≈ 0.41 (consistent with other entries around 0.4).
+
+6) Hard-coded numerator in coefficient of variation (D79)
+- Current formula text: "=(8.672/178)*100". That uses a rounded/stated numerator instead of referencing the Std. Dev. cell (D75) or the computed D75 value.
+- Recommendation: Use cell references to avoid drift when values change, e.g. =(D75/D78)*100 where D75 = STDEV(A71:A76) and D78 = AVERAGE(A71:A76) (or whichever cells contain the stdev and mean). (Note: if D75 is the stdev cell, use that address.)
+
+Other notes / recommendations
+- Decide on how to treat missing data: blanks (preferred) vs zeros. If zeros are intended measurements, document them. If they are placeholders, clear them to blanks and recalc — this will change mean, median, mode, Q1/Q3 significantly.
+- To compute statistics that exclude zeros (if zeros represent missing), use FILTER or AVERAGEIF, MEDIAN(IF(...)) array formulas, or remove zeros manually.
+- Use QUARTILE.INC or PERCENTILE.INC for quartiles/percentiles rather than manual index rounding for more reproducible results.
+
+If you want I can:
+- Recompute the correct mean/median/mode/quartiles for the A8:A37 range under both interpretations (including zeros and excluding zeros) and give the exact formulas to use.
+- Provide the corrected C110 cell and any changed values you want to see updated.

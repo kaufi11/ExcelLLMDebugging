@@ -1,0 +1,52 @@
+Summary of workbook (concise)
+
+Sheets
+- MasterMethod_Checks
+  - Purpose: test Master Theorem cases for recurrence with parameters a, b and function f(n).
+  - Key inputs:
+    - A4/B4: a = 3
+    - A5/B5: b = 3
+    - A6/B6: Critical Exponent (CE) = LOG(B4,B5) → Excel computes log_b(a) (here LOG(3,3)=1)
+    - A7/B7: constant c = 0.5
+    - D6: reminder text: "If CASE 3, Remember to check regularity conditions"
+  - Table (rows 10–41):
+    - Column A: n (1..30, starting at row 11 with 0 at A11)
+    - Column B: f(n) = A#/2 (n/2) — formula: =A11/2 etc. (exception noted below)
+    - Column C: n^CE — formula: =A#^$B$6
+    - Column D: f(n)/n^CE — =B#/C#
+    - Column E: c * n^CE — =$B$7*C#
+    - Column F: Big-Oh test (f(n) <= c*n^CE) — =IF(B#<=E#,"TRUE","FALSE")
+    - Column G: Big-Omega test (c*n^CE <= f(n)) — =IF(E#<=B#,"TRUE","FALSE")
+    - Column H: "Theta Term" shown as =LOG(A#,2) (log2(n))
+  - Notes / issues:
+    - CE computed with LOG(B4,B5) is correct for log_b(a) in Excel.
+    - Row 19 (B19) uses =A19*2 (multiplication) instead of =A19/2 — likely a typo causing inconsistent f(n) at n=8.
+    - Columns F/G show equality checks; H shows log2(n) but does not combine with n^CE (so Theta column may not reflect standard master-case expression).
+
+- SubstitutionMethod_Checks
+  - Purpose: substitution method checks to verify T(n) ∈ Θ(asymptotic_fcn) using constants c1, c2 and n0.
+  - Key inputs:
+    - A4/B4: constant c1 = 0.5
+    - A5/B5: constant c2 = 3
+    - A6: n0 >= (placeholder)
+  - Asymptotic function used in checks:
+    - Base asymptotic fcn = n * LOG(LOG(n,2),2) i.e. n * log2(log2 n)
+    - Column B: c1 * asymptotic_fcn → =$B$4*A#*LOG(LOG(A#,2),2)
+    - Column C: c2 * asymptotic_fcn → =$B$5*A#*LOG(LOG(A#,2),2)
+  - T(n) and tests:
+    - Column D: T(n) entries generally = 5*1 + A#/LOG(A#,2) (i.e., 5 + n / log2 n)
+      - Several D cells later reference other D cells like =5*$D$11 + A#/LOG(A#,2) (e.g., D19 onward referencing $D$11/$D$12/etc.) — this is unusual and likely erroneous (circular or unintended absolute references).
+    - Column E: Big-Omega test c1*asymptotic_fcn <= T(n) → IF(B#<=D#,"TRUE","FALSE")
+    - Column F: Big-Oh test T(n) <= c2*asymptotic_fcn → IF(D#<=C#,"TRUE","FALSE")
+    - Column G: Theta()? combined test → IF(E#="TRUE",IF(F#="TRUE","True","False"),"False")
+  - Notes / issues:
+    - Asymptotic function uses nested LOG(LOG(n,2),2) (log2(log2 n)).
+    - D-column references to $D$11 / $D$12 / $D$13 / $D$14 / $D$15 create inconsistent T(n) values and may be mistakes or unintended absolute references.
+    - G column correctly combines the two boolean tests to decide Theta membership when E & F are both true.
+
+Overall layout and behavior
+- Both sheets are structured as parameter inputs at top-left and a row-by-row numeric check table beneath (n increasing down rows).
+- MasterMethod_Checks focuses on comparing f(n) and c*n^CE for Big-Oh/Big-Omega (for Master Theorem classification). CE is computed from a and b.
+- SubstitutionMethod_Checks compares an explicit T(n) against c1/c2 scaled versions of an asymptotic function (n·log2(log2 n)) and reports whether T(n) meets both bounds (Theta).
+- Repeated formulas use absolute references ($) for CE and constants so changes to a, b, c, c1, c2 propagate.
+- Watchouts: formula typos/inconsistent references (B19 in MasterMethod, and many absolute D references in SubstitutionMethod) — these should be fixed to get reliable test results.

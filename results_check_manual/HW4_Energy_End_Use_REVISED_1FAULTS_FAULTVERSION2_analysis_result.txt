@@ -1,0 +1,68 @@
+I inspected the formulas in all four sheets and checked consistency between corresponding cells. Below are the formula errors, likely faults, and other inconsistencies I found (organized by severity / likelihood of being an actual problem), plus suggested fixes.
+
+1) Clear formula fault (probably the intentionally broken cell)
+- Sheet: Johnson - Base
+- Cell: E23 (floor UA)
+- Problem: E23 is hard-coded as =6 instead of being calculated from area and R-value. Other sheets use E23 = C23/D23 (which yields 78.9473684210526). Because E23 is 6 the TOTAL (UA) in E26 = 2026 (sum(E19:E25)). In the other/expected case E26 = 2098.94736842105.
+- Impact: Understates floor UA and therefore underestimates heating loads, fuel and cost downstream.
+- Suggested fix: change E23 to =C23/D23 (or otherwise compute from inputs) so totals match the other sheets.
+
+2) Missing area input for walls (likely oversight)
+- Sheets: all (Johnson - Base, Johnson - More Efficient, Your Home - Base, Your Home - More Efficient)
+- Cells: C22 (walls area) is blank/missing; E22 formula is =C22/D22 and therefore returns 0 because C22 is empty (0).
+- Impact: Walls contribute zero UA in every sheet; if walls should exist this is incorrect and will underestimate total UA/E26 and all dependent calculations.
+- Suggested fix: populate C22 (walls area) or remove the row if walls are intentionally excluded.
+
+3) Emissions-factor layout / blanks (possible data-entry / clarity issue)
+- Sheets: all
+- Cells: C93 and C94 (emission factors for nuclear, hydro/renewable) are blank while E93 and E94 store the percent-of-grid values. C100 formula uses C90*E90/100 + C91*E91/100 + C92*E92/100 + C93*E93/100 + C94*E94/100
+- Effect: Blank C93/C94 are treated as zero in the weighted average => nuclear and hydro are assumed to have 0 lb CO2/kWh (may be intended, but ambiguous).
+- Suggested fix: enter explicit zero values for emission factors that are zero (C93=0, C94=0) or fill with the correct numbers so the formula is explicit and easier to audit.
+
+4) Input-format dependency in conditional formulas (potential user error)
+- Sheets: all
+- Cells/logic: D38 = IF(C13<1, D37/100000, 0) and F38 = IF(C13=G34, D37/F9, 0)
+- Problem: these IFs assume furnace efficiency C13 is entered as a fractional value (<1 for combustion systems, =1 for electric). If a user instead enters "60" (i.e., percent rather than 0.6) the IF tests fail: D38 would return 0 and D37 would have divided by 60 (leading to a wildly incorrect result), or worse D37 = D36/C13 would divide by 60 instead of 0.6 and produce a far-too-small fuel requirement.
+- Impact: brittle to different input conventions; easy to get wrong results.
+- Suggested fixes:
+  - Enforce/clarify that efficiencies must be entered as decimals (0.6).
+  - Or change formulas to tolerate either format (e.g., normalize inputs: =IF(C13>1, C13/100, C13) and use that normalized value in computations).
+  - Add input validation (e.g., IF(C13=0,NA()) or an error message) to avoid divide-by-zero.
+
+5) No guard against zero/blank furnace efficiency (divide-by-zero risk)
+- Sheets: all
+- Cell: D37 = D36/(C13)
+- Problem: if C13 is 0 or blank then D37 will produce a #DIV/0! error. There is no protective IF around that division.
+- Suggested fix: protect the division: =IF(C13<>0, D36/C13, NA()) or similar.
+
+6) Inconsistent/hard-coded values vs. formula in a few places
+- Example: Johnson - Base E23 is hard-coded (see item 1). Also some other cells appear hard-coded in certain sheets where other sheets use formulas:
+  - Check for any other cells that use "=<literal>" rather than a formula — the main one I found was E23 in Johnson - Base.
+- Suggested fix: make inputs and calculated cells consistently formula-driven where appropriate.
+
+7) Labels / copy-paste issues (not a formula error but confusing)
+- Sheets: "Your Home - Base" and "Your Home - More Efficient"
+- Issue: labels still read "JOHNSON HOUSE CO2 EMISSIONS" etc. This is a labeling inconsistency (won't affect calculations but can confuse reviewers).
+- Suggested fix: update text labels to match sheet purpose.
+
+8) Use of constants directly in formulas (maintainability)
+- Examples:
+  - D38 divides by 100000 inside the formula to convert Btu to therms; C51 divides by 100000 too.
+  - C51 uses (C49*30*8.34*70)/(C50*100000) — 30, 8.34, 70, 100000 are constants embedded in formula.
+- Suggestion: move conversion constants (Btu/therm = 100000, lb-water-per-gallon = 8.34, days-per-month = 30, Btu/kWh = 3414) into a single conversions area (you already have some conversions in E5:F9) and reference those cells. This reduces risk of inconsistency or typos and makes formulas easier to audit.
+
+9) Miscellaneous: formulas that depend on other layout conventions
+- C21 uses formula =(C6+C6+C5)*C7 to compute non-south window area. That duplicates C6 twice — it may be intended (two walls of width C6), but it's unusual and should be documented. It is consistent across sheets, but verify semantic correctness.
+
+Summary of highest-priority items to correct
+1) Fix E23 on Johnson - Base (change from =6 to =C23/D23) — this is an explicit inconsistency/fault.
+2) Populate walls area C22 if walls are present (so E22 is not zero).
+3) Fill explicit zeros for emission factors (C93, C94) or otherwise document intended values.
+4) Make efficiency inputs/logic robust to percent vs fraction and add guards to avoid divide-by-zero.
+
+If you want, I can:
+- produce a small patch (list of exact formulas to replace), or
+- produce corrected cell formulas for the faulty cells (E23, C22 placeholder example, change to normalized efficiency), or
+- generate a version of the workbook with these fixes applied.
+
+Which would you like me to do next?

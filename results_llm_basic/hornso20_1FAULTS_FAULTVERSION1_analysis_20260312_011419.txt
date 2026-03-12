@@ -1,0 +1,33 @@
+I checked the three workbooks and found the main errors and simple fixes. Short explanations and exact fixes are below.
+
+1) Sheet E20‑9
+- Error: In the second copy C11 is hard‑coded to 5 (C11 = 5). That is wrong — indirect hourly rate should be total indirect costs ÷ direct labor hours.
+- Fix: Replace C11 with the formula used in the first sheet:
+  C11 = SUM(C4:C6) / C2
+- Why: Indirect cost hourly rate must be computed from the indirect-cost totals (office rent + support salaries + utilities) divided by total direct labor hours. Hard‑coding “5” gives a nonsense allocation and cascades wrong values to the allocation rate, predicted job cost, markup and total bid.
+
+2) Sheet P20‑3B (job cost record)
+- Error: Overhead amount I10 is calculating from the grand total of direct labor (F14) instead of the direct labor for that line (F10). (I10 = +F14*H10)
+- Fix: Change I10 to use the row’s direct labor amount:
+  I10 = F10 * H10
+- Why: Manufacturing overhead applied to this job/date should be based on that row’s direct labor cost (F10), not the sum of all labor (F14). Using F14 misallocates overhead and inflates I10.
+
+3) Sheet P20‑1B (summary / journal entries)
+- Symptom / error: Several journal‑entry amounts and formulas are placed in the wrong columns (they are shifted one column to the right). Because the worksheet uses three cost columns (WIP cost in column C, Finished Goods cost in column E, COGS cost in column G), many posted amounts are in the adjacent column (D, F, H) instead of C, E, G. Examples:
+  - F14 contains the “Finished Goods Inventory” formula (should be in column E).
+  - G15 references F14 (propagates the shift).
+  - F18, G19, F22, G23 and other posting lines appear shifted similarly.
+- Fix: Move the posted amounts/formulas one column left into the correct cost columns (C for WIP costs, E for Finished Goods costs, G for COGS) or rewrite the formulas so they write to/read from the proper columns. Concretely, any line labelled “Finished Goods Inventory” should place its cost value in column E (not F); any “Work In Process” amounts belong in column C; COGS amounts belong in column G.
+- Why: Having the amounts in the wrong columns breaks the subtotals and the journal transfer logic (transferring costs from WIP → Finished Goods → COGS). Totals and postings become incorrect because SUM ranges and later references expect the amounts in C, E and G.
+
+Quick checklist to fix P20‑1B:
+- Identify each journal line where the debit or credit is in the wrong column (look for labels vs. column of the amount).
+- Move the single cell (value or formula) one column left so the amount sits under the correct "Cost" column for that account.
+- After moving, check the SUM formulas (C6, C10, G6, G12 etc.) still reference the intended ranges (they likely will once columns are corrected).
+- Recalculate totals to confirm debits = credits and transferred balances match.
+
+If you want, I can:
+- Give the exact cell-by-cell corrections for P20‑1B (I can list which cells to change/move), or
+- Provide an updated small worksheet snippet with corrected formulas.
+
+Which would you prefer?

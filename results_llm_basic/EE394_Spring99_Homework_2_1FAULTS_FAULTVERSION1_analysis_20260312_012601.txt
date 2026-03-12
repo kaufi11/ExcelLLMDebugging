@@ -1,0 +1,27 @@
+I checked Sheet1. Two clear errors (repeated many places) and the fixes are below.
+
+1) ATAN2 argument order is reversed (systematic)
+- Problem: You use ATAN2(real, imag) (e.g. ATAN2(G4,H4), ATAN2(K4,L4), ATAN2(B28,B29), etc.). In Excel to get the phase of a complex number you must pass (imag, real) — i.e. ATAN2(imag_part, real_part). Using the wrong order gives a wrong angle (often off by ±90° or sign-flipped).
+- Fix: Swap the two arguments everywhere you compute an angle. Examples:
+  - J4 (currently) =ATAN2(G4,H4)*180/PI()
+    → Correct: =ATAN2(H4,G4)*180/PI()
+  - N4 (currently) =ATAN2(K4,L4)*180/PI()
+    → Correct: =ATAN2(L4,K4)*180/PI()
+  - B32 (RhoV real part currently) contains ATAN2(B28,B29)-ATAN2(B30,B31)
+    → Correct the angle difference: ATAN2(B29,B28)-ATAN2(B31,B30)
+  - B33: same swap inside the SIN( ... ) argument.
+- Scope: Apply this swap to every ATAN2 in the sheet (all J- and N- columns and the rhoV angle expressions) so imag is first, real second.
+
+Why this fixes it: Excel’s ATAN2 expects the “y” (imaginary) coordinate first and the “x” (real) coordinate second when you want the complex-number phase. Supplying them reversed computes the wrong quadrant/angle.
+
+2) One hard-coded / inconsistent cell
+- Problem: D50 is hard-coded as -285 instead of following the pattern Dn = -Cn (all other rows use D = -C).
+- Fix: Replace D50 with =-C50 (or = -C50 *or* = - (-(ROW()-4)*$B$10) to match the pattern).
+- Why: Keeps the distance table consistent and avoids a single out-of-place distance.
+
+Quick checklist to correct sheet
+- Do a find for ATAN2( and inspect each occurrence; if the first argument is a real-value cell and second is imag, swap them.
+- Replace D50 with =-C50.
+- After edits, spot-check a few angles (e.g. J4, N4, B32/B33) against a hand-calculation or =DEGREES(ATAN2(imag,real)) to confirm.
+
+If you want, I can give an exact list of cells to change (bulk) or produce the corrected formulas for the main range (rows 4–54).

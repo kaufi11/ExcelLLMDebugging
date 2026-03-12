@@ -1,0 +1,27 @@
+Summary — I found two types of problems in your sheet:
+
+1) Many “FORMULA =…” cells are actually text, not real formulas
+- Example cells (non-exhaustive): E15, H15, G18, B19, C19, D19, E19, F19, H19, B20, G20, B21, G21, C22, H22, C23, B25, G25, C26, B27, etc. In your dump the formulas are shown as the literal string "FORMULA =ROUNDUP(...)" (or similar) instead of starting with =.
+- Why it’s wrong: Excel treats those cells as text, so none of those calculations are executed — derived stats are wrong/outdated.
+- Fix (quick): remove the leading text "FORMULA " so the cell starts with =.
+  - Easiest method: Edit → Replace on the sheet: Find =FORMULA = (or "FORMULA =" if there's a space) and Replace with just = (or remove the "FORMULA " prefix). Do this only on the affected sheet.
+  - Also make sure each cell’s Number Format is set to General (not Text). After Replace, press F2→Enter in a few cells or recalc (Ctrl+Alt+F9) to force re-evaluation.
+- Why this fixes it: cells begin with = so Excel evaluates them as formulas and updates the derived values (HP, damage, lookups, etc.).
+
+2) One obvious mistaken formula / stray text
+- Cell C23 (Movement Rates) =SUM(B16:B17,532)
+  - Problem: That looks suspicious — SUM(B16:B17,532) returns Strength + Agility + 532. I think 532 is not intended as an extra literal in a SUM argument or the operator is wrong (maybe you wanted to add or divide instead).
+  - Also D23 shows a leading quote: " Running (Base) — stray quote may be accidental text.
+- Suggested fixes:
+  - If you intended to add a base of 532: replace formula with =B16 + B17 + 532 or =SUM(B16:B17) + 532
+  - If you intended to divide by 532 (common when normalizing): use =(B16 + B17) / 532
+  - Remove the stray leading double-quote in D23 (edit the cell to remove the initial ").
+- Why: Using a clear arithmetic expression removes ambiguity and matches Excel conventions; removing stray quotes ensures the cell content is what you intended (text vs formula).
+
+Extra checks to run after fixes
+- Recalculate the sheet (Ctrl+Alt+F9) and verify derived values (Basic Hits E15, Hit Points H19, Base HTH H22, Healing G20, Carrying Capacity C22, Movement C23) now update.
+- If any HLOOKUPs still return #N/A or wrong values, confirm the lookup tables’ first row is numeric and sorted ascending (HLOOKUP with TRUE requires sorted keys).
+
+If you want, I can:
+- Give the exact Find/Replace string(s) to run safely (so you don’t replace anything else), and
+- Recompute the expected numeric outputs (HP, HTH damage, carrying capacity, etc.) after you confirm you want me to assume the fixes above.

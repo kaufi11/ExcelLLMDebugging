@@ -1,0 +1,47 @@
+I reviewed both sheets and found a few real/formula errors and one important logic/inconsistency. Short fixes and explanations below.
+
+1) Mezzanine sheet — Average area per desk ignores common area (logical error)
+- Problem: C7 = C5 / C8 uses total area / number of desks. If you have a % common area (C6) that should be excluded from desk area, C7 is wrong.
+- Fix: Replace C7 with:
+  =(C5*(1-C6))/C8
+- Why: That gives the usable area per desk (total area less common area, divided by desks). Use this if “% Common Area” is intended to reduce desk space.
+
+2) Mezzanine sheet — Monthly conversion typo for Services (only one explicit typo found)
+- Problem: L14 = $J14/265 — 265 is wrong (should be months).
+- Fix: Replace L14 with:
+  =J14/12
+- Why: All other monthly conversions divide the annual per-desk value by 12. 265 is a typo and gives a meaningless monthly number.
+
+(Quick check: scan other L-column formulas — most are J##/12. Fix any other accidental non‑12 divisors the same way.)
+
+3) Mezzanine sheet — Inconsistent use of SUM*0.9 (TOTAL CHARGE) vs actual costs (important logic bug)
+- Problem: C37 = SUM(C12:C35)*0.9 applies a 10% reduction to the total of the cost lines. Later, in Results, Operating Costs (F78) is set to C$37 (the discounted number). Meanwhile F37 (used for revenues) adds SUMPRODUCT(C12:C35,F12:F35) to that discounted base. This mixes “discounted revenue” and “raw costs” inconsistently and will give incorrect operating-cost / revenue / profit numbers depending on intention.
+- Two possible intended behaviours and fixes:
+  a) If C12:C35 are costs and you want Operating Costs = actual sum of cost lines, and Revenue = cost + markups:
+     - Set C37 to: =SUM(C12:C35)  (remove *0.9)
+     - Set F37 (total revenue) to: =C37 + SUMPRODUCT(C12:C35,F12:F35)
+     - Rationale: separate raw costs (C37) from markups (SUMPRODUCT) and compute revenue cleanly.
+  b) If you intended to apply a 10% discount to the final revenue total (i.e. revenue is 90% of marked-up total):
+     - Leave C37 as =SUM(C12:C35) (raw costs)
+     - Set F37 to: =(C37 + SUMPRODUCT(C12:C35,F12:F35))*0.9
+     - Rationale: apply the 10% discount to the full marked-up revenue, not to the raw cost base.
+- Why: be consistent — don’t mix a discounted subtotal in the place where you later treat it as a cost. Pick (a) or (b) and apply consistently across results.
+
+4) Rules of thumb sheet — Setup amortisation sign/format and presentation
+- Problem: B29 = PMT(B28,B27,-1*B26,0,0) uses -1*B26; PMT sign conventions often lead to confusion (PMT can return negative value if you supply positive pv). This can make B29 negative and then B32 (profit) appears larger/smaller depending on sign.
+- Fix (to ensure B29 is shown as a positive annual cost per sq ft):
+  - Use: =-PMT(B28,B27,B26,0,0)  (or =ABS(PMT(B28,B27,B26,0,0)))
+- Why: PMT returns a negative payment for a positive pv (Excel treats outflows as negative). Using -PMT makes the cell show a positive annual payment amount (clearer when subtracting it from profit).
+
+5) Minor check — monthly and per-desk formulas consistency
+- Action: scan L12:L37 and M12:M37 and ensure all monthly cells use /12 and all per-desk columns use $C$8 as denominator consistently. Fix any accidental references like the L14 one above.
+
+Summary of recommended immediate edits (copy/paste exact formulas):
+- C7 -> =(C5*(1-C6))/C8
+- L14 -> =J14/12
+- C37 -> =SUM(C12:C35)  (if you choose version (a) above) and F37 -> =C37 + SUMPRODUCT(C12:C35,F12:F35)
+  OR
+  C37 -> =SUM(C12:C35) and F37 -> =(C37 + SUMPRODUCT(C12:C35,F12:F35))*0.9  (if you want to discount final revenue)
+- B29 (Rules) -> =-PMT(B28,B27,B26,0,0)
+
+If you want, I can produce a corrected list of all formulas (full pass) or apply a consistent choice for the discount logic and update the workbook formulas accordingly.

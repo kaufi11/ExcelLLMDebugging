@@ -1,0 +1,32 @@
+Summary of error
+- On sheet "EER SITE", row 21 (Functional Analyst, Senior) the cell G21 has a wrong multiplier:
+  - G21 = F21 * 1.56935229331187 (incorrect)
+  - It should be G21 = F21 * 1.04 (consistent 4% year-over-year escalation).
+
+Why this is wrong
+- All other rows apply a 4% escalation each year (multiply by 1.04 from the previous year). G21 uses an invalid factor (~1.569), so year 2005–2006 (G) and the following year H become much larger than they should be.
+
+Numeric impact (approximate)
+- B21 = 62.91
+- Correct progression: D = 65.4464, E = 68.0643, F = 70.7868, G(correct) ≈ 73.6183, H(correct) ≈ 76.4630
+- With the wrong factor, G ≈ 111.08 and H ≈ 115.52 — clearly wrong.
+
+How to fix (quick)
+1. On EER SITE, change cell G21 to:
+   =F21*1.04
+2. Leave H21 as =G21*1.04 (it will update automatically once G21 is fixed).
+
+How to prevent this and easier maintenance
+- Use a single, copyable formula that references the escalation percent (column C). Example put this in D6 and copy across/right and down:
+  - In D6: =B6*(1+$C6)^(COLUMN()-3)
+  Explanation: COLUMN()-3 gives exponent 1 for column D, 2 for E, etc., so each column is B * (1+escalation)^n.
+- Or, simpler and very clear: in D6 use =B6*(1+$C6) and in E6 use =D6*(1+$C6) then copy E6 across; or set D6 =B6*(1+$C6) and then fill right with relative references if $C6 is used correctly where needed.
+
+How to check for other problems
+- Add a check column or conditional formatting to flag any year-over-year change that is not about 4%:
+  - Example helper formula in a column next to H: =IF(ABS((D6/B6)-1 - $C6)>0.0001,"Check","OK")
+  - Or for any column compare current to previous: =IF(ABS((G6/F6)-1 - $C6)>0.0001,"Check","OK")
+
+If you want, I can:
+- Produce the exact corrected value for every affected cell in that row or
+- Give the exact steps (with keystrokes) to paste the robust formula across the whole table.

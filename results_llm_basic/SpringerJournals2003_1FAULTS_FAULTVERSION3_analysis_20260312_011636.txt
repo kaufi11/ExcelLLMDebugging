@@ -1,0 +1,66 @@
+Summary of the problem
+- Column G cells are not real formulas. Many G cells show the literal text "FORMULA =E2*F2" (or other text like "FORMULA =2") instead of an actual Excel formula (=E2*F2). Because they are text, Excel does not calculate them.
+- Column F (Subs.) appears empty or contains text in many rows. Even if G had formulas, E*F would be zero or error if F is blank or stored as text.
+- As a result G407 (=SUM(G2:G404)) and F407 (=SUM(F2:F404)) return wrong totals (or zero) because their source cells are not numeric formulas/values.
+
+Why this happens
+- The formulas were exported/entered as plain text (with the prefix "FORMULA ") or some G cells were hard-coded. Excel ignores such strings when summing.
+- Some numeric values in column F/E may also be text (import rounding) so multiplications fail even if formulas are corrected.
+
+What to do (quick, safe fixes)
+
+Manual (no code)
+1. Fix column G formulas
+   - Select column G.
+   - Use Find & Replace (Ctrl+H):
+     Find what: FORMULA =
+     Replace with: =
+     Click Replace All.
+   - This will convert cells that are text like "FORMULA =E2*F2" into real formulas (=E2*F2). If some cells still show text, double‑click one and press Enter to force Excel to evaluate.
+
+2. Make sure F (Subs.) are numeric
+   - Select column F.
+   - Home → Number group: set format to General or Number.
+   - If numbers are stored as text (left-aligned, with apostrophes or green error triangle), convert them:
+     - Option A: Enter 1 in any empty cell, copy it, select column F, Paste Special → Multiply → OK.
+     - Option B: Use Data → Text to Columns → Finish (this converts many text numbers to numbers).
+   - Check a few sample F cells: =ISNUMBER(F2) should return TRUE.
+
+3. Repair any hard-coded G cells
+   - If some G cells contain a pure number (e.g. "2") but should be =E*F, replace those manually by entering =Erow*Frow (e.g. in G21 enter =E21*F21) and fill down.
+
+4. Recalculate totals
+   - After converting column G to real formulas and ensuring F is numeric, G407 =SUM(G2:G404) and F407 =SUM(F2:F404) will produce correct totals.
+   - Press Ctrl+Alt+F9 to force a full recalculation if needed.
+
+Automatic (VBA) — one-click fix
+Paste this macro into a module and run it (will convert text formulas that start with "FORMULA =" and force numeric conversion in column F):
+
+Sub FixFormulasAndNumbers()
+    Dim r As Range, c As Range
+    Application.ScreenUpdating = False
+    ' Convert G cells that start with "FORMULA =" to real formulas
+    For Each r In Range("G2:G404")
+        If Len(r.Value) > 0 Then
+            If LCase(Left(r.Value, 9)) = "formula =" Then
+                r.Formula = Replace(r.Value, "FORMULA =", "=", , , vbTextCompare)
+            End If
+        End If
+    Next r
+    ' Convert numbers stored as text in column F to numeric
+    On Error Resume Next
+    Range("F2:F404").Value = Evaluate("IF(F2:F404="""","""",--F2:F404)")
+    On Error GoTo 0
+    Application.CalculateFull
+    Application.ScreenUpdating = True
+    MsgBox "Done: formulas converted and column F coerced to numbers."
+End Sub
+
+Extra checks
+- After fixes verify: a few random rows G = E * F (e.g. put =E2*F2 in a new cell and compare).
+- If there are cells with non-standard decimal or thousand separators (commas vs dots), convert them consistently before numeric conversion.
+- Make sure G407 and F407 ranges include all your data rows (they currently use 2:404 — adjust if your data length changes).
+
+If you want, I can:
+- Give you a one-row example of the Find/Replace and the Excel UI steps with screenshots, or
+- Produce a corrected CSV/text version of the sheet (if you paste the problematic rows).

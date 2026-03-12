@@ -1,0 +1,27 @@
+Found 3 clear, fixable errors. Short explanation and solution for each.
+
+1) Fault: C122 (Cash (applied to) / generated from operations) is a hard-coded value (-26908).
+- Why it's wrong: This cell should calculate the sum of cash received and cash paid. Hard-coding means it won't update if source cells change.
+- Fix: replace the hard number with a formula:
+  =C120 + C121
+- Explanation: C120 is cash received from members and C121 is cash paid to suppliers/employees; their sum is the cash from operations.
+
+2) Fault: C121 (Cash paid to suppliers and employees) contains a manual arithmetic expression (-26907-7561074) instead of referencing source cells.
+- Why it's wrong: Using constants breaks traceability and makes the workbook fragile (off-by-one or sign errors are easy). Also it hides where the components come from.
+- Fix: replace the manual calculation with a formula that references the actual payment lines (example):
+  = -SUM(<range_of_payment_items>)
+  or if there is a single total cell, use:
+  = -<cell_with_total_payments>
+- Explanation: Always reference the source(s). If you keep payments as separate rows, SUM them and negate the result (payments are cash outflows).
+
+3) Fault: Non-numeric “-” entries used in numeric cells (example: C39 shows "-" for Bank overdraft).
+- Why it's wrong: A text dash is not a number. SUM and other arithmetic treat it as text (ignored) and this can hide missing data or produce wrong totals.
+- Fix: Replace text dashes with 0 or leave the cell blank (better: 0 if you mean zero) and use number formatting to show a dash visually if desired.
+- Explanation: Totals must add numeric zeros, not text. If you want to display a dash for zero, use a number format (e.g. ;;;"-") or a custom format, not a typed dash.
+
+Optional quick checks (recommended):
+- Make C122 and C121 consistent with E-column equivalents (E122 uses =E120+E121). Mirror the same formulas across columns.
+- Replace any other hard-coded sums (e.g. “476555.8+3116.33”) with SUM() or cell references to avoid human arithmetic errors.
+- After fixing formulas, recalc sheet and verify C117 (Net cash inflow from operating activities) and C144 (Net increase in cash) tie through to C147 (cash at year end) and C531/C532 totals.
+
+If you want, I can give the exact formulas to paste for C121 (if you tell me which rows contain the payment components) and then re-check the cash flow totals for you.

@@ -1,0 +1,34 @@
+I reviewed the workbook and found the key formula errors (they look like copy/paste / inconsistent-reference mistakes). Short fixes with explanations below.
+
+1) Wrong-year references in environmental cleanup and scrap-value (likely copy/paste)
+- Faulty cells: AA17 and AA29
+- Problem: Both use G5/G6 (year 2000) instead of the 2020 column (AA). That means the 2020 values are being calculated from 2000 amounts.
+- Fix:
+  - AA17 → =0.1*AA5 + 0.1*AA6
+  - AA29 → =0.02*(AA5 + AA6)   (or =0.02*SUM(AA5:AA6) if you prefer)
+- Why: AA17 and AA29 are in the 2020 column and should reference 2020 amounts (AA5, AA6), not the 2000 column (G5/G6).
+
+2) Incorrect discount-factor step in one column (weird factor 438/438.4382)
+- Faulty cells: X19 and X31 (and any other places where the same anomalous factor appears)
+- Problem: X19 (and X31) use a strange multiplier *(438/438.4382) instead of the standard 1/(1+0.12). That breaks the chain of discount factors from year to year.
+- Fix:
+  - X19 → =W19*(1/1.12)
+  - X31 → =W31*(1/1.12)
+  - Then ensure Y19 = X19*(1/1.12), Z19 = Y19*(1/1.12) etc (and same for the row-31 chain).
+- Why: Discount factors must be consistently 1/(1+0.12) every year. The 438/438.4382 looks like a stray number introduced by mistake.
+
+3) Possible copy/paste / range errors — general places to check
+- Symptom: Several row formulas were filled across many columns. One or two columns contain wrong references (AA17/AA29 and X19/X31 are examples).
+- Fix / recommendation:
+  - Inspect any formula that you filled across columns for an incorrect absolute reference (e.g., references to column G when they should be relative).
+  - Use consistent formula-fill: write the correct formula in the first column, then fill-right (Excel will adjust column references). If you must keep a fixed cell, use $ to lock it correctly.
+  - Or define named ranges (e.g., Construction_AKRSP_2000) to avoid accidental column mismatches.
+
+Quick checklist you can run in Excel (fast ways to find similar errors)
+- Use Find to search for hard-coded column G references (e.g. "G5" or "G6") inside formulas in later-year columns (H:AA) — these are likely copy-paste mistakes.
+- Use Formula Auditing → Trace Precedents on suspicious cells (AA17, AA29, X19) to see where they pull from.
+- Recalculate and check totals after fixes to confirm NPV / B/C changes.
+
+If you want, I can:
+- give the exact corrected formulas for any other specific cells you point out, or
+- produce a short macro that scans for formula references to earlier-year columns (G..) inside later-year columns (H:AA) and lists them.

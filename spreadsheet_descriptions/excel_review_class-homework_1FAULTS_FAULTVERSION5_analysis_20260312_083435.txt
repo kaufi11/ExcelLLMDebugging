@@ -1,0 +1,35 @@
+Summary of workbook (3 sheets)
+
+1) Sheet: Q'back (Quarterback Efficiency)
+- Title: B2 = "Quarterback Efficiency".
+- Headers in row 4: A=Quarterback, B=School, C=Attempts, D=Completions, E=Interceptions, F=Yards, G=TD, H=Completion %, I=Touchdown %, J=Interception %, K=Yards/Attempt, L=Points.
+- Data rows: 5–11 (players Bryant, Burchette, Durant, Gaither, Garrard, MacPherson, Rivers) with attempts, completions, INTs, yards, TDs entered (C5:C11, D5:D11, etc.).
+- Implemented formulas (per row, e.g. row 6):
+  - Hn = Dn/Cn*100 (completion %; cell H5 is an exception—see below).
+  - In = Gn/Cn*100 (touchdown %).
+  - Jn = En/Cn*100 (interception %).
+  - Kn = Fn/Cn (yards per attempt).
+  - Ln = Kn*8.4 + Hn + In*3.3 - Jn*2 (composite "Points" metric).
+- Notable issue: H5 (Bryant) is entered as =D5/845*100 (uses constant 845) instead of D5/C5*100 — likely a typo/bug that will produce an incorrect completion % and thus affect L5.
+- Data types: percentages in H–J are expressed as percent values (formulas multiply by 100); K is numeric yards/attempt; L mixes those values into a composite score.
+
+2) Sheet: drug bust
+- Columns: A=Year (1970–2000 in A3:A33), B=ADULT arrest counts, C=JUVENILE arrest counts.
+- Column E contains metadata and notes: E3 filename, E4 data source, E5 author, E6 contact, E7 date of version, and E9 dataset title ("Estimated arrests for drug abuse violations by age group, 1970–2000").
+- Key values: adult arrests rise from 322,300 (1970) to ~1,375,600 (2000); juvenile arrests vary (e.g., peak ~211,100 in 1996). This sheet is a clean time series suitable for charts/trend analysis.
+- No formulas shown — raw data plus descriptive metadata.
+
+3) Sheet: lookup
+- Headers in row 3: A=Student, B–E = four course scores (Child Management 101, Psychology of seniors, Brewing Science, Taxidermy 200), F="Total /400", G="Average / 100", H="Letter Grade".
+- Student rows: A4:A9 with scores in B4:E9.
+- Grade mapping table in rows 11–18: F11="Points", G11="Letter". F12:F18 contain point thresholds (45,50,55,60,65,70,75) with corresponding letters in G12:G18 (F→A).
+- Expected / common formulas (not explicitly present but implied):
+  - Fx = SUM(Bx:E x) to produce Total (/400).
+  - Gx = Fx/4 to produce Average (/100).
+  - Hx = VLOOKUP(Gx, $F$12:$G$18, 2, TRUE) or LOOKUP(Gx, $F$12:$F$18, $G$12:$G$18) to map average to letter using the threshold table.
+- Notes: grade thresholds must be sorted ascending for an approximate (TRUE) VLOOKUP or LOOKUP to work. No explicit formulas provided for student totals/averages in the input — add the above if you want the calculations automated.
+
+Overall layout and remarks
+- Q'back is a calculated efficiency table mixing raw counting stats and percentage/ratio metrics; check H5 bug and confirm whether percentages should be input as % (Excel-format) or raw numbers.
+- drug bust is a clean chronological dataset with useful metadata in column E — ready for time series charts.
+- lookup is a gradebook layout with an embedded points→letter mapping; implement SUM/AVERAGE and a lookup (VLOOKUP/LOOKUP) to auto-populate totals, averages and letter grades.

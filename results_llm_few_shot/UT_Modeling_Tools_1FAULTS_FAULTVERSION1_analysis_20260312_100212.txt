@@ -1,0 +1,43 @@
+I inspected the workbook and found a small set of clear, repeatable formula mistakes that will materially change results. I list each error (sheet + cell), say why it’s wrong in plain language, and give the exact correction and a short explanation.
+
+1) Sheet "DRAM cost side" — D21 (var profit wafer)
+- Error: wrong price cell used.
+- Problem: D21 uses D31 (price AFTER adding a fab) instead of the baseline price (D13). That makes the “baseline profit/wafer” calculate with the wrong price.
+- Fix: change formula in D21 to:
+  =+D13*D9*D10 - D16 - (D9)*D17
+- Why: baseline profit should use baseline price (D13) not post‑add price (D31). The rest of the column already uses the baseline price pattern.
+
+2) Sheet "fisher" — Laspeyres / Paasche indexes (row 37 and row 38), column D (2002) — and analogous mis-ranged formulas in column H
+- Error: mismatched ranges and a stray extra factor in the Paasche formula (D38). D37 uses C24:C27 and D31:D34 (only 4 rows) while the dataset has 5 product rows (C24:C28 / D31:D35). D38 also contains an extra *(1/(1-D28)) factor that is not used in other columns.
+- Problem: using incorrect ranges omits one product (biasing the index). the extra factor in D38 produces an incorrect result.
+- Fixes:
+  - Replace D37 with:
+    =SUMPRODUCT(C24:C28, D31:D35)
+  - Replace D38 with the same Paasche pattern used in other columns:
+    =1/(D24*(1/D31) + D25*(1/D32) + D26*(1/D33) + D27*(1/D34) + D28*(1/D35))
+  - Make the same range corrections in column H where you see G25:G28 / H32:H35 (ensure H37 uses H24:H28 and H31:H35 consistently).
+- Why: both Laspeyres and Paasche require the full consistent set of products (all five rows). Use the same summation pattern as in the working columns (E–G) so the Fisher index is computed from consistent components.
+
+3) Sheet "DRAM cost side" — A13..H13 (baseline P predicted) — inconsistent sign in G13
+- Error: G13 formula is written as =-(G11-fisher!G49)/-fisher!G50 while the other columns use the pattern +(E11-fisher!E49)/-fisher!E50.
+- Problem: the double negatives are inconsistent and make it hard to verify sign logic; may evaluate to a sign opposite to intended.
+- Fix: standardize to the same pattern used elsewhere; e.g. change G13 to:
+  =(G11 - fisher!G49) / -fisher!G50
+- Why: this matches the other columns (clear numerator minus baseline, divided by negative slope). Pick the sign convention used in the majority of columns and apply it everywhere for clarity and correctness.
+
+4) Sheet "fisher" — D37..D39 and dependency consistency (general)
+- Error: several SUMPRODUCT and Paasche formulas across columns D and H use inconsistent row ranges (some use 4 rows, some 5). This propagates to chained fisher index (D39 etc).
+- Problem: inconsistent component formulas produce inconsistent chained indexes and downstream price/functionality numbers.
+- Fix: scan Laspeyres (row 37) and Paasche (row 38) in every column and make all of them use the same row ranges: product rows C24:C28 (64M..1G) and price-relative rows D31:D35 (or equivalent for each column). Then recompute D39 = SQRT(D37*D38) etc.
+- Why: Fisher index = geometric mean of Laspeyres and Paasche; both must be computed from the same consistent item set.
+
+Notes / How to implement quickly
+- Search for SUMPRODUCT or manually-check row 37/38/39 across the fisher sheet and correct any columns that do not reference the full product block (rows 24:28 and the matching price-relative block rows 31:35).
+- Replace D21 in DRAM cost side with the corrected baseline formula above.
+- Standardize sign conventions: look for formulas with double negatives (e.g. =-(…)/-…) and make them explicit ( (…)/… ) so logic is clear and consistent.
+
+If you want I can:
+- Produce the exact cell-by-cell replacement list for every affected column (D–H) in the fisher sheet so you can copy/paste the corrected formulas.
+- Run through the downstream sheets (Capacity & Price, Static RoI) after these fixes and flag any further #DIV/0 or mismatches that appear once the fisher numbers are corrected.
+
+Which would you prefer?

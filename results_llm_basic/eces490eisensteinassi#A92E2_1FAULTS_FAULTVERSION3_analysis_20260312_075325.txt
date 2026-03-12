@@ -1,0 +1,26 @@
+I checked the sheet. There is one clear formula error and a couple of small improvements to make the workbook robust.
+
+1) Wrong formula (actual error)
+- Cell G19 has: =E19/F19
+- This is wrong. It divides probability by information; the entropy contribution should be probability × information.
+- Fix: change G19 to =E19*F19
+
+Why: entropy per symbol = p * I(p) where I(p) = −log2(p). Using p / I(p) gives a meaningless value and makes the total entropy in G46 incorrect.
+
+2) Quick checks and small fixes (recommendations)
+- Replace explicit summed cells with SUM ranges so future edits are safe:
+  - Replace C13 = C7+C8+C9+C10+C11 with =SUM(C7:C11)
+  - (You already use =SUM(C19:C44) and =SUM(G19:G44) — good.)
+- Replace the repeated "Max H(A)" formula with the simpler equivalent if you prefer readability:
+  - =-LOG(1/26,2)  (same result as 26*((1/26)*-LOG((1/26),2)))
+
+3) Cleaner alternative (one-cell entropy calculation)
+- Instead of the per-row columns, compute entropy directly with SUMPRODUCT:
+  - For the A-column distribution: =SUMPRODUCT(A19:A44, -LOG(A19:A44, 2))
+  - For the E-column distribution: =SUMPRODUCT(E19:E44, -LOG(E19:E44, 2))
+- This avoids per-row helpers and prevents the type of G19 error.
+
+4) Sanity checks
+- Make sure each probability column sums to 1 (use =SUM(A19:A44) and =SUM(E19:E44)). If they don’t sum to 1, entropy values will be meaningless.
+
+If you want, I can give the corrected entropy numeric results or a single corrected formula to paste into the sheet.

@@ -1,0 +1,63 @@
+I reviewed the formulas on sheet "Homework4 Estimating Reliabilit" and found several formula errors, missing data and a few inconsistencies (wrong hard‑coded constants / label typos). Below I list the issues I found, explain why each is a problem, and give a recommended fix.
+
+1) Wrong operator (typo) in Problem 1 — cross‑product cell uses division
+- Cell: H5
+- Current formula: =D5/F5
+- Error: Should be the product (D5 * F5) for the covariance term. Using division produces a wrong term and corrupts H8 (the sum) and the subsequent correlation B11.
+- Fix: change to =D5*F5.
+
+2) Missing / blank correlation in Problem 4 (Time 1): affects many averages
+- Cell missing (blank): D40 (correlation Q3 vs Q4 for Time 1)
+- Effect: D40 is referenced in many places (D43, B44, B46, C46, D46, etc.). Because it's blank, it is treated as 0 in arithmetic, which makes the inter‑item averages and “if item deleted” calculations incorrect.
+- Fix: enter the correct Q3–Q4 correlation into D40 (or fill the corresponding symmetric cell and update formulas to reference a single canonical cell). If the matrix is stored in triangle form, ensure the missing cell is filled or the averaging formulas reference the present triangle correctly.
+
+3) KR21 cell missing k/(k−1) factor (inconsistent with the corrected KR21)
+- Cell: B104
+- Current formula: =1-((B102*(5-B102))/(5*B103))
+- Error: This omits the usual (k/(k−1)) multiplier used in KR21 (k=5). The corrected version appears in F104.
+- Fix: change B104 to include factor (5/(5-1)) or otherwise make B104 and F104 consistent. For example:
+  = (5/(5-1))*(1-((B102*(5-B102))/(5*B103)))
+  (This would match F104.)
+
+4) Inconsistency in variance used for KR21 vs KR20
+- Observations:
+  - KR21 section used B103 which was computed as sample variance: B103 = (C100 - (B101/5))/4 (division by n−1).
+  - KR20 section used B124 computed as population variance: B124 = (C121 - (B122/5))/5 (division by n).
+- Why this matters: KR formulas require the variance of total scores; you should be consistent whether you use sample variance (n−1) or population variance (n). Using different denominators between KR21 and KR20 leads to inconsistent numeric comparisons and can produce unintuitive negative values.
+- Recommendation: decide whether to use sample variance (n−1) or population variance (n) for both procedures and make variance calculations consistent. Typically you use the observed variance (sample variance) — i.e., divide by (n−1).
+
+5) Missing data / notation inconsistencies in Problem 4 (Time 1) triangular correlation matrix
+- Many pairwise correlations are present only in one triangle of the matrix; the averaging formulas reference a fixed set of 10 unique cells (e.g., B38, B39, B40, B41, C39, C40, C41, D40, D41, E41). If any of those (D40 in particular) are blank, the mean rij and derived alphas are wrong.
+- Recommendation: either fill the full symmetric matrix or (preferably) use formulas that aggregate the upper (or lower) triangle explicitly (e.g., use INDEX/ROW logic or a definied range that contains all unique pairs). At minimum fill D40.
+
+6) Minor header/label typos and inconsistencies (not numeric but potentially confusing)
+- Cell G22 header: " (x3-mne)sqrd" — "x3" looks wrong; probably should be "(xe-mne)sqrd" (or consistent naming).
+- A102 text "Averag Student Score" — typo.
+- Consider replacing hard‑coded mean constants (e.g., B5-2.93333) with references to the computed mean cells (B9, C9, B27, C27, etc.) to avoid rounding / hard‑coding inconsistencies.
+
+7) Problem 1: hard‑coded means rather than cell references
+- Examples: D5 uses =B5-2.93333 (hard code). D6 and D7 also hard‑code the same constant.
+- Issue: small rounding differences and lack of traceability if mean cell changes.
+- Recommendation: use =B5-$B$9 (or similar absolute reference) and =C5-$C$9, so the sheet updates correctly if means change.
+
+8) Check: KR20 formula sign / negative results
+- Cell: B125 = (5/(5-1))*(1-((J113)/B124))
+- This is the usual KR20 form (k/(k−1) * (1 − Σ p_i q_i / σ^2)), but with Σp*q (J113) > σ^2 (B124) the formula becomes negative. This might be a correct diagnostic result (very poor item set) but together with the variance inconsistency (point 4) it merits double‑checking the intended variance denominator and inputs.
+- Recommendation: after making the variance denominator consistent, verify whether KR20 still gives a plausible value.
+
+9) Problem 1: one more specific effect from H5 error
+- Because H5 was division, H8 and B11 (rxx') are computed from incorrect cross‑product sum. After fixing H5 to multiplication, recheck B11; it will change.
+
+Summary of concrete fixes I recommend, in order:
+1. Change H5 to =D5*F5.
+2. Enter the missing Time‑1 Q3–Q4 correlation into D40 (or mirror the correct symmetric cell).
+3. Use cell references for means rather than hard‑coded numeric constants (e.g., D5 = B5 - $B$9).
+4. Make KR21 formula consistent: change B104 to include k/(k−1) (or remove F104 if not needed); ensure KR21 and KR20 use the same variance convention (preferably sample variance).
+5. Fix label typos (G22, A102) and consider checking all triangular matrix placements to ensure each unique pair belongs in the specific cell set used by averaging formulas.
+
+If you want, I can:
+- produce exact replacement formulas for each affected cell,
+- update the workbook and return the corrected values,
+- or scan for any other blank cells referenced elsewhere and produce a list.
+
+Which would you prefer?

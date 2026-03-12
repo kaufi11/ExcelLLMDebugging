@@ -1,0 +1,45 @@
+I reviewed the 2003 quarter sheets and found several clear formula/data errors and a couple of places that will produce misleading results. Below are the problems, the fixes, and short explanations.
+
+1) Q4 2003 — H11 (Accounts receivable securitization % change)
+- Problem: H11 is hard-coded as 0 but should show percent change from F11 (-100) to D11 (-25).
+- Fix: replace the 0 with the percent-change formula:
+  =IF(F11=0,"n/a",(D11-F11)/F11*100)
+- Explanation: Using (D11-F11)/F11*100 gives the percent change. Because F11 is negative, the sign may look unintuitive (from -100 to -25 gives -75%), so include "n/a" guard for zeros.
+
+2) Q3 2003-4 Qtr — L11 (Accounts receivable securitization prior-year twelve months)
+- Problem: L11 contains the odd literal formula "= -80+40" (result = -40). That is not a proper reference to source data and is likely wrong.
+- Fix: Replace the arithmetic with a proper reference to the correct prior-year total (or the sum of the appropriate quarterly cells). Example:
+  =SUM(<cells for prior-year quarters>)  or  =<source cell with the prior-year 12‑month value>
+- Explanation: Manual arithmetic like -80+40 is error-prone. Use direct references or SUM of the underlying quarters so it updates correctly.
+
+3) Q2 2003 — H9 (Cash flows from operations % change)
+- Problem: H9 formula uses "*397" instead of "*100" -> produces nonsense percent (typo).
+- Fix: change to
+  =IF(F9=0,"n/a",(D9-F9)/F9*100)
+- Explanation: The multiplier should be 100 to convert to percent; include a guard to avoid #DIV/0!.
+
+4) Q1 2003 — H9 and H12 (percent-change divisions)
+- Problem: F9 = 0 and F12 = 0 so formulas =(D-F)/F*100 will produce #DIV/0! errors.
+- Fix: use a guard to avoid division by zero, e.g.
+  =IF(F9=0,"n/a",(D9-F9)/F9*100)
+  =IF(F12=0,"n/a",(D12-F12)/F12*100)
+- Explanation: If prior period value is zero you cannot compute a conventional percent change. Use "n/a" or other messaging, or show absolute change instead.
+
+5) General note about percent-change when prior value is negative
+- Problem: Several percent-change cells use a negative prior-period value (e.g., F11 or F12 negative). That produces mathematically-correct but often misleading percent changes (sign flips).
+- Recommendation: If you want a clearer measure when the denominator can be negative, use:
+  - absolute-base percent: =(D-F)/ABS(F)*100  (makes magnitude clear), or
+  - show absolute change instead: =D-F  and label it.
+- Explanation: Percent change from a negative base is ambiguous for interpretation; pick the method that matches your disclosure practice.
+
+6) Verification items (check these manually)
+- J11 values across sheets (e.g., Q3-4 J11 = -50) — confirm these are correct and not copied/pasted incorrectly.
+- Free cash flow totals: D14/F14 etc. are SUMs of the rows (which include negative capex entries). Those formulas are correct if the underlying row signs are intentional.
+
+Summary of recommended corrective actions
+- Replace mistaken literal values and typos with correct formulas (see fixes above).
+- Add IF guards (IF(Fx=0,"n/a",...)) to avoid #DIV/0 errors.
+- Replace ad-hoc arithmetic (like -80+40) with direct references or SUMs.
+- Decide how to present percent changes when prior-period values are negative (use ABS or show absolute change).
+
+If you want, I can give exact corrected formulas for every affected cell (copy-paste ready) — tell me which sheet(s) you want fixed first.

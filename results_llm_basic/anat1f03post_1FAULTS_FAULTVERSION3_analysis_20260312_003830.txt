@@ -1,0 +1,22 @@
+Summary of errors I found and how to fix them
+
+1) Missing Pract.4 score on row 55
+- Problem: G55 is blank but I55 uses =SUM(D55:G55). That treats Pract.4 as zero and gives the student a too-low total and class %.  
+- Fix: Enter the correct Pract.4 score into G55.  
+- If the student actually had no Pract.4, change I55 to sum only the existing columns: =SUM(D55:F55) and consider how you want to treat missing scores.
+
+2) Wrong average range for Pract.3 mean (F56)
+- Problem: F56 =AVERAGE(F36:F54) — it omits row 55, so the section mean for Pract.3 is calculated from one fewer student.  
+- Fix: Change F56 to include row 55: =AVERAGE(F36:F55)
+
+3) Inconsistent grade cutoffs (>= vs > and percent notation)
+- Problem: Section 1 grade formulas (K6:K25) use >=89.9% etc; section 2 (K36:K55) uses >89.9% etc; the MEAN row K26/K56 use > as well. This inconsistency can change the grade for anybody exactly on the boundary (for example 89.90%). Also using “89.9%” is confusing — better to use decimal thresholds (0.90 = 90%).  
+- Fix: Make all grade formulas identical and clearer. Example (copy down for every K cell):
+  =IF(J6>=0.90,"A",IF(J6>=0.80,"B",IF(J6>=0.70,"C",IF(J6>=0.60,"D","F"))))
+  (Replace J6 with the appropriate row when copied.)
+
+Extra tips
+- If you want the % cutoffs to be 89.9% instead of 90.0%, use >=0.899 in every formula to be explicit. But standard practice is to use 0.90/0.80/0.70/0.60.  
+- After fixing G55 and F56, recalculate or copy formulas down so I55, J55, K55 and the section means update correctly.
+
+If you want, I can give you the exact formulas to paste into each faulty cell (I55, F56, and a corrected K formula) or produce a corrected copy of the sheet.

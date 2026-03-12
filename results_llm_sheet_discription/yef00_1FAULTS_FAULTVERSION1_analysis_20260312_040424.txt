@@ -1,0 +1,37 @@
+Findings (short)
+1. Critical error: FTEE sheet, cell F14 is =E14*600 but should be =E14/600. This makes NCC’s non‑credit FTEE enormous and inflates all totals and percent‑of‑total FTEE values across the workbook.
+2. Minor data-entry artifacts: several cells have a stray “+1” or odd numeric additions that add 1 (or combine numbers) and slightly distort totals. Examples:
+   - Revenues!C9 = 9432730+111410104 (odd addition — verify intent)
+   - Revenues!C11 = 141577402+1
+   - General State Financial Aid!B21 = 3684419+1
+   - FTEE!E27 = SUM(E11:E26)+1
+
+Why these are wrong
+- F14: Non‑credit FTEE is computed by dividing contact hours by 600. Multiplying by 600 produces a number ~600 times too large (e.g., E14 = 366,167 → wrong F14 = 219,700,200 vs correct ≈ 610.28).
+- The “+1” additions artificially increase values/totals by 1 and will slightly change any dependent percentages and totals. The combined-number entries (like C9) may be intentional to add two subcomponents, but they look inconsistent.
+
+Fixes (how-to)
+1. Correct the F14 formula
+   - Go to sheet “FTEE Calculation”, cell F14.
+   - Replace =E14*600 with =E14/600 (or =E14/600 with no leading +).
+   - Press Enter. Excel will recalc F14, F27, H14, H27 and all dependent percent columns.
+
+2. Remove unintended “+1” and check odd additions
+   - Edit Revenues!C11 and General State Financial Aid!B21 (and any other cells you find with “+1”) to remove the +1 so the cell contains the actual value (e.g., =141577402 → or simply 141577402).
+   - Edit FTEE!E27 to =SUM(E11:E26) (remove +1).
+   - Inspect Revenues!C9 (9432730+111410104): if those are two separate source amounts that should be summed, use =SUM(9432730,111410104) or place the components in separate rows and sum them; otherwise replace with the intended single value.
+
+3. Recalculate / verify
+   - Ensure Calculation Options = Automatic (Formulas → Calculation Options → Automatic).
+   - Check FTEE total H27 and percent column I — they should now reflect correct totals.
+   - Check General State Financial Aid % of Total FTEE (sheet Table 25, column D) — these will change because they are normalized by the corrected H27.
+
+Brief effect of the main fix
+- Example magnitude: with E14 = 366,167:
+  - Wrong F14 (current) = 366,167 * 600 = 219,700,200
+  - Correct F14 = 366,167 / 600 ≈ 610.28
+  - H14 (total FTEE for NCC) goes from ~219,701,174 to ~1,584.15 — a massive change that brings statewide totals and percentages back to realistic values.
+
+If you want, I can:
+- Provide the corrected totals and updated percent columns after applying these fixes, or
+- Give you a short macro or Find/Replace steps to locate and fix all “+1” occurrences. Which do you prefer?

@@ -1,0 +1,46 @@
+I checked the workbook and found several clear errors (wrong ranges, bad formatting, and text where numbers are needed). Short fixes and explanations below.
+
+1) Sheet "university" — Two‑Year Colleges totals use wrong row ranges
+- Faulty cells: C15, D15, E15, F15, G15, H15, I15, J15, K15
+- Error type: Wrong SUM ranges (they include the four‑year college rows 5:8)
+- Why it’s wrong: Totals should sum only the 2‑year rows (rows 12–14), but formulas use rows 5–14.
+- Fix (example for C15): =SUM(C12:C14) — apply same pattern to D15: =SUM(D12:D14) ... K15: =SUM(K12:K14)
+
+2) Sheet "Student‑teacher" — F56 omits last row
+- Faulty cell: F56
+- Error type: Off‑by‑one in SUM range
+- Why it’s wrong: F56 =SUM(F45:F54) misses row F55 (teachers for Marietta). That makes the total too small.
+- Fix: =SUM(F45:F55)
+
+3) Sheet "Teachers adv degrees" — percentage cells shown as decimals (and some calculated totals are fractional)
+- Faulty cells: B21:B31, D21:D31, F21:F31, H21:H31, J21:J31, L21:L31 (and similar)
+- Error type: Formatting / presentation (and possibly wrong unit)
+- Why it’s wrong: Values like 0.4690338563 are percentages stored as decimals (should display 46.90%), and some "Total No." cells show fractional numbers (should be whole people).
+- Fix:
+  - If the decimals represent proportions, format the cells as Percentage (Home → Number → Percentage) and set 1–2 decimal places.
+  - If totals are computed from percent×population and must be whole people, wrap those formulas in ROUND(...,0). Example: =ROUND(TotalTeachers * Percent, 0)
+
+4) Sheet "Student‑teacher" — ratio columns stored as text like "16-1"
+- Faulty cells: many D7:J37, G26 etc (cells showing "16-1", "17-1", etc.)
+- Error type: Text values instead of numeric ratios
+- Why it’s wrong: Because they’re text you cannot calculate with them (e.g., to compute averages or totals).
+- Fix:
+  - Keep an underlying numeric ratio column: e.g., in D7 use =B7/C7 (Attendance ÷ Teachers) to get numeric ratio per teacher.
+  - If you want the "x-1" display, use a display formula: =TEXT(ROUND(B7/C7,1),"0.0")&"-1"
+  - Use the numeric column for totals/averages and only use the text formula for presentation.
+
+5) General: missing data marked “**”
+- Faulty cells: many (e.g., A14–A17 student‑teacher, Public Grads B12–B15, SAT B5,B7 etc.)
+- Error type: Missing data
+- Why it’s wrong: SUMs that include those ranges may be wrong or inconsistent; some totals may have been adjusted to exclude those rows.
+- Fix: Either fill the real values or ensure totals use explicit ranges that exclude unavailable rows. Document any exclusions in a note so totals are understandable.
+
+Quick checklist to apply immediately
+- Correct the SUM ranges in "university" and F56 in "Student‑teacher".
+- Format the percentage cells as Percent (or multiply by 100 if those decimals are meant to be percent values).
+- Replace text ratio fields with numeric formulas and use TEXT only for display if needed.
+- Use ROUND for any counts so you don’t show fractions of people.
+
+If you want, I can:
+- Give exact corrected formulas for every faulty cell (I spotted the main ones above).
+- Produce a short macro or conditional formatting rules to highlight other suspicious cells (text in numeric columns, very small/large values, or formulas referencing wrong ranges).

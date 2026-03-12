@@ -1,0 +1,79 @@
+I inspected every formula in the sheet you provided and checked unit conversions and formula logic. Below is a concise list of definite errors / likely mistakes, plus suggested fixes and the corrected numbers where appropriate.
+
+Summary of definite errors (must fix)
+1) Cell E133 — wrong nm→m conversion
+   - Current formula: =C133*0.00000001
+   - Problem: multiplies by 1e-8; 1 nm = 1e-9 m. This is off by factor 10.
+   - Fix: use =C133*0.000000001 (or =C133/1e9)
+   - Current value (wrong): 4.23E-06
+   - Correct value: 4.23E-07
+
+   Consequences: E134, E135 and downstream values are affected by the factor 10 error (see next item).
+
+2) Cells E134, E135, C136 — unit-conversion / scaling inconsistencies (two errors cancel in final)
+   - E134 = 1.22*(E133/E131)
+     - With E133 fixed to 4.23E-07, E134 should be 2.15025E-07 (was 2.15025E-06).
+   - E135 = E134*E132
+     - With corrected E134, E135 = 0.022147575 (meters). (Was 0.22147575.)
+   - C136 = =E135*10
+     - Problem: to convert meters → cm you must multiply by 100, not 10.
+     - Currently the workbook had E133 wrong by 10× and C136 multiplied by 10 (instead of 100). Those two mistakes cancel and produced the correct-looking C136 numeric value, but the intermediate cells and unit logic are wrong.
+   - Fixes:
+     - Correct E133 (see #1)
+     - Change C136 formula to =E135*100 (or =E135*100 to get cm)
+   - Corrected numbers:
+     - E134 = 2.15025E-07
+     - E135 = 0.022147575 (m)
+     - C136 = 2.2147575 (cm)
+
+Likely / probable mistakes (you should verify intent)
+3) Cell E45 — suspicious conversion factor (/720)
+   - Current formula: =C45/720
+   - C45 is labeled "Above y (cm)" and contains 0.405. If C45 is in cm and you want meters, the correct conversion is /100 => 0.00405 m.
+   - Current value (0.0005625) corresponds to 0.5625 mm or 0.05625 cm — there is no obvious reason to divide by 720 here.
+   - Recommendation: replace with =C45/100 if you want meters; or document what 720 means if intended. Re-check downstream cell C47 which uses E45 (angle calculation).
+
+4) Cell C47 (and the expression in it) depends on E45 being in meters
+   - Formula: =POWER(COS(PI()*E45*E42/E44/E43),2)
+   - Units: E42, E44, E43 appear to be in meters; E45 must be in meters as well for the argument of the trig function to be dimensionless. Because E45 currently is wrong (see #3), C47 will be wrong.
+   - After fixing E45, re-evaluate C47.
+
+5) Cell C95 — odd numeric factors (check intended formula)
+   - Current formula: =(0.5*C92)/(2*C91)
+   - This is algebraically equal to C92/(4*C91) (i.e. lambda/(4n)). That may be intended, but the use of 0.5 and 2 is redundant/confusing. If the intended minimum thickness is lambda/(4n) then rewrite as =C92/(4*C91) to make intent explicit.
+
+6) Cell C26 uses mixed conversions but gives correct numeric result — consider clarifying
+   - Formula: =(C23*C24)/C22/1000
+   - It works numerically for y (mm) because of the order of magnitudes, but the mixture of nm, m and mm in a single expression is fragile and could be clearer:
+     - Recommended explicit form (produce mm): =(C23/1e6)*C24/C22
+       (Explanation: C23 nm → mm by /1e6; then multiply by L (m) / d(mm).)
+   - Not a hard error, but consider standardizing unit conversions (always convert to SI internally).
+
+7) Cell E114 vs C115 — different but similar-looking expressions; check intended meaning
+   - E114 formula: =(2*(E113/(E111/E112))) which is equivalent to =2*E113*E112/E111
+   - C115 formula: =2*E111*E113/E112*1000 which is equivalent to =(2*E111*E113/E112)*1000
+   - These two expressions are not the same (one has lambda in numerator, the other in denominator). That may be intentional (they compute different quantities), but the similarity warrants double-checking that you intended both. Also add parentheses to C115 for readability: = (2*E111*E113/E112)*1000.
+
+8) Cell C175 — possible physics/formula mistake
+   - Formula: =DEGREES(ATAN((C171/C172)))
+   - C171 and C172 are refractive indices for glass and water. Usually for refraction/critical angle one uses arcsin (ASIN) with ratio of indices (Snell's law), not arctan. For example, the angle whose sine equals n2/n1 is ASIN(n2/n1). Using ATAN(n1/n2) gives a different value. Verify whether you intended:
+     - incident angle = DEGREES(ASIN(C172/C171))  (if you're solving sinθ = n2/n1)
+   - If ATAN is intended, add a comment documenting why.
+
+Minor style / clarity suggestions (not errors but helpful)
+- Use consistent unit-conversion style (either *1e-9 or /POWER(10,9), avoid mixing literal zeroes and POWER()) — increases readability and reduces risk of factor-of-ten errors.
+- Add parentheses in long expressions for clarity, e.g. C115 -> =(2*E111*E113/E112)*1000.
+- Consider adding unit comments in a dedicated column and converting all internal calculations to SI (m, rad) and only convert for display.
+
+Recap of the fixes I recommend you make immediately
+1. Change E133 to =C133*0.000000001 (or =C133/1e9).
+2. After (1), change C136 to =E135*100 (to convert m→cm). Verify E135 remains =E134*E132.
+3. Change E45 to =C45/100 if C45 is in cm and you want meters. Then re-check C47.
+4. Review C175: consider replacing ATAN with ASIN if the physics demands it (DEGREES(ASIN(C172/C171))).
+5. Clean up ambiguous formulas (C95, C26, E114/C115) for clarity.
+
+If you want I can:
+- Produce a second pass and write the exact corrected formulas into the workbook,
+- Or compute and return a full table of "current formula → corrected formula → current value → corrected value" for every affected cell.
+
+Which of those would you like me to do next?

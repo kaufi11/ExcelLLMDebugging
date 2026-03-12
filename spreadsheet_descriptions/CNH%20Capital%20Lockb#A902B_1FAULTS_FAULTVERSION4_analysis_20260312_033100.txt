@@ -1,0 +1,52 @@
+Sheet name: "CNH Capital Homework #2"
+
+Overall layout
+- Single sheet with inputs on the left, calculated cost tables in the middle, and the facility-location model (decision variables, assignment matrix, objective and constraints) at the bottom-right.
+- Two candidate lockbox locations are in columns B (Pennsylvania) and C (California). Labels are in column A.
+
+Key input blocks (cells shown as reference = value)
+- Annual lockbox operating costs (A3–A7)
+  - Fixed: B5 = 20,000 (PA), C5 = 30,000 (CA)
+  - Check processing charge (per check): B6 = 0.2, C6 = 0.3
+  - Clearing & processing float (days): B7 = 1.5, C7 = 1.0
+- Average days of mail float between origin regions and lockboxes (A9–A13)
+  - Rows for East coast, West coast, Midwest; columns B & C contain mail days (e.g., B11 East→PA = 2.3, C11 East→CA = 3)
+- Check origination data (A15–A19)
+  - Column B labeled "average daily" (B17..B19) and column C labeled "yearly checks" (C17..C19)
+  - Example values: East coast B17=20,000,000; C17=2,500,000; West B18=30,000,000/C18=3,500,000; Midwest B19=24,000,000/C19=4,500,000
+- Cost of capital (A21): C21 = 0.085
+
+Calculated section (A23–A47)
+- Total days float (A25–A29)
+  - Total days = clearing & processing float (location) + mail float
+  - Examples: B27 formula = B$7 + B11 (PA total days for East), C27 = C$7 + C11 etc.
+- Opportunity cost of float (A31–A35)
+  - Formula pattern used: = $C$21 * (checks) * (total days)
+  - Example: B33 = $C$21 * $B17 * B27 (East→PA). Note: formulas mix B17 vs C17 (see issues below).
+- Check processing charge (A37–A41)
+  - Example: B39 = $C17 * B$6 (processing cost = yearly checks * per-check processing). C39 uses $C17 as well.
+- Combined opportunity + processing cost (A43–A47)
+  - Example: B45 = B33 + B39; C45 = C33 + C39; similarly for other regions.
+
+Model (A49–A61)
+- Decision: open lock box j (B53:C53). Defaults: B53=1, C53=1 (both open).
+- Assignment variables B57:C59 specify which origin region is assigned to which lockbox (rows = East/West/Midwest; columns = PA/CA). Sample assignment:
+  - East: B57=1, C57=0 (assigned to PA)
+  - West: B58=0, C58=1 (assigned to CA)
+  - Midwest: B59=0, C59=1 (assigned to CA)
+- Objective function (H52): H52 formula = SUMPRODUCT(B5:C5, B53:C53) + SUMPRODUCT(B45:C47, B57:C59)
+  - First term = sum of fixed costs for open boxes; second = sum of assignment costs (opportunity + processing) for assigned region→box pairs.
+- Constraints / checks:
+  - Row sums: D57..D59 = SUM(B57:C57) etc; RHS in E57..E59 = 1 (each region assigned to exactly one box).
+  - Column capacity: B61 = 3 * B53 and C61 = 3 * C53 (each open box can accept up to 3 regions).
+  - Column sums B60 = SUM(B57:B59), C60 = SUM(C57:C59).
+
+Notable formula issues / inconsistencies (should be checked/corrected)
+- Mixed use of B17 vs C17 in opportunity and processing formulas:
+  - Opportunity cost formulas reference $B17 (e.g., B33 = $C$21*$B17*B27) while processing-charge formulas reference $C17 (e.g., B39 = $C17*B$6). The model needs consistent use of either daily or yearly counts (likely C17..C19 = yearly checks should be used uniformly).
+- C35 formula: = $C$21 * $B20 * C29 — $B20 does not exist; likely intended $B19 or $C19.
+- Some absolute references (mix of $) may make copying inconsistent; verify intended anchors.
+- Verify units: if B17 is "average daily" and C17 is "yearly checks", opportunity cost should use annual check volume (or convert daily to annual consistently) before multiplying by days and cost of capital.
+
+Summary
+- The sheet is a two-location facility-location/assignment model: inputs (costs, mail float, check volumes, cost of capital) → compute per-region-per-location annual opportunity and processing costs → define binary open variables and assignments → objective sums fixed + assignment costs. The objective cell is H52; main decision cells are B53:C53 (open) and B57:C59 (assignments). There are a few cell-reference errors and inconsistencies in whether annual or daily check counts are used that should be corrected for accurate results.

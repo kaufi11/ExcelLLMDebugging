@@ -1,0 +1,59 @@
+Sheet name
+- "CNH Capital Homework #2" — single worksheet with model, inputs, calculated data, and a small integer (facility location) optimization.
+
+Top / input blocks
+- Title cell A1 and section headings in A3, A9, A15, A21, A23.
+- Annual lockbox operating costs (A4:A7 / B4:C7):
+  - Fixed costs: Pennsylvania B5 = 20,000; California C5 = 30,000.
+  - Check processing charge per check: B6 = 0.20; C6 = 0.30.
+  - Clearing & processing float (days): B7 = 1.5; C7 = 1.0.
+- Average days of mail float between regions (A9 / B10:C13):
+  - Columns B = Pennsylvania lockbox, C = California lockbox.
+  - Rows for origin regions East, West, Midwest (e.g., East→PA = 2.3, East→CA = 3, etc.).
+- Check origination data (A15:A19 / B16:C19):
+  - Two columns headed "average daily" (B) and "yearly checks" (C).
+  - East: B17 = 20,000,000; C17 = 2,500,000. West: B18 = 30,000,000; C18 = 3,500,000. Midwest: B19 = 24,000,000; C19 = 4,500,000.
+  - Note: headings/values appear inconsistent (see anomalies below).
+- Cost of capital: C21 = 0.085.
+
+Calculated data block (A25:A47)
+- Total days float per origin→lockbox (rows 27–29):
+  - Pennsylvania column formulas: B27 = B$7+B11, B28 = B$7+B12, B29 = B$7+B13 (i.e., clearing float + mail float).
+  - California column analogous: C27 = C$7+C11, etc.
+- Opportunity cost of float (rows 33–35):
+  - Pennsylvania column examples: B33 formula =$C$21*$B17*B27 (cost of capital * checks * total days float).
+  - California column analogous: C33 =$C$21*$B17*C27, etc.
+  - Note: C35 is hard-coded as =4 (inconsistent with others).
+- Check processing charge (rows 39–41):
+  - B39 formula =$C17*B$6 and C39 =$C17*C$6 etc. (uses the value in column C for check counts).
+- Combined opportunity + processing costs (rows 45–47):
+  - B45 = B33+B39, C45 = C33+C39, etc.
+
+Decision/model block (A49:A61 and H52)
+- Decision variables:
+  - Open lockbox j: B53 (PA) = 1, C53 (CA) = 1 (binary open/closed).
+  - Assignments region i → lockbox j: B57:C59 matrix with 1/0 entries (East assigned to PA, West→CA, Midwest→CA).
+- Row sums and RHS:
+  - D57:D59 compute SUM across lockboxes for each region; E57:E59 = 1 enforce one assignment per region.
+  - Column sums B60/C60 compute number of regions assigned to each lockbox.
+  - Capacity coupling RHS: B61 = 3*B53, C61 = 3*C53 (if a lockbox is opened it can accept up to 3 regions).
+- Objective function (cell H52):
+  - H52 = SUMPRODUCT(B5:C5,B53:C53) + SUMPRODUCT(B45:C47,B57:C59).
+    - First term = sum of fixed costs for opened lockboxes.
+    - Second term = sum over regions and lockboxes of (opportunity+processing cost) × assignment.
+
+Key values and current solution
+- Fixed costs: PA 20,000; CA 30,000.
+- Processing cost per check: PA $0.20; CA $0.30.
+- Cost of capital: 8.5%.
+- Current decision: both lockboxes opened (B53=C53=1); assignments: East→PA, West→CA, Midwest→CA. Objective value computed in H52 based on those settings.
+
+Notable inconsistencies / potential errors to review
+- The "average daily" vs "yearly checks" headings look swapped relative to the numeric values in columns B and C. Verify whether B17:B19 or C17:C19 are the intended check counts used in calculations.
+- Many formulas in the Pennsylvania column (e.g., B33, B39, B34, B40, B41) reference $C17/$C18/$C19 (column C) for check counts instead of the Pennsylvania column values (B17:B19). This likely causes incorrect magnitudes.
+- C35 is set to =4 rather than following the formula pattern — probably an error.
+- Review absolute/relative references ($) for consistency when copying formulas across columns.
+
+If you want, I can:
+- Map each formula to the intended economic quantity (show one example calculation).
+- Propose corrected formulas and a corrected layout for the check-count headings and references.

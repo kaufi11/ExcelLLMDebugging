@@ -1,0 +1,24 @@
+Summary: I found two clear formula errors in the Mezzanine model that will materially distort the per‑sq ft and total charge numbers (and therefore profits, breakeven and NPV). Both are simple fixes.
+
+1) H14 (Services per sq ft) is wrong
+- Problem: H14 is written as =$C14*$C$5 (multiplication).
+- Effect: this inflates the "per sq ft" value for Services by a factor of Total Area, which feeds into H29/H37 and other per‑sqft totals and breaks the per‑sqft analysis.
+- Fix: change H14 to divide, not multiply:
+  - Correct formula: =$C14/$C$5
+- Why this fixes it: each H‑cell is meant to be the item cost per sq ft = (annual item cost) / (total area). Using division restores consistent unit conversion.
+
+2) C37 and consequently F37 are incorrect (unintended 0.9 multiplier)
+- Problem: C37 is =SUM(C12:C35)*0.9. That arbitrary *0.9 reduces total annual costs by 10% and causes downstream totals to be wrong. F37 then uses C37 + SUMPRODUCT(C12:C35,F12:F35), so the final total charge is computed from the reduced base sum rather than the true sum. In short: costs and charges are under/incorrectly reported.
+- Fix:
+  - Change C37 to: =SUM(C12:C35)
+  - (Optional / more robust) change F37 to directly calculate marked‑up total:
+    - =SUMPRODUCT(C12:C35,1+F12:F35)
+    - or keep F37 = C37 + SUMPRODUCT(C12:C35,F12:F35) once C37 is corrected.
+- Why this fixes it: C37 should be the raw sum of line item annual costs. F37 should add the per‑line markups to that raw sum. Removing the accidental 0.9 returns the correct base cost and correct total charge after markups.
+
+Quick checklist after fixing:
+- Update H14 and C37 (and optionally replace F37 with the SUMPRODUCT version).
+- Recalculate the workbook (F9 / F9 or recalc) so H29, H37, F78, F79, F80, F85 etc update correctly.
+- Spot‑check Services per‑sq ft (H14), Basic TOT (H29) and TOTAL CHARGE (F37) to ensure numbers look reasonable.
+
+If you want, I can produce the exact corrected formulas and a short sanity check example (with numbers) to show before/after values.

@@ -1,0 +1,56 @@
+I inspected the formulas in every sheet you provided and found a few clear formula errors / inconsistencies and some suspicious (but not syntactically wrong) constructions that you should review. Summary first, then details and suggested fixes.
+
+Summary of problems found
+- One clear incorrect formula: FTEE Calculation!C14 is wrong (uses 302/24 rather than B14/24). This produces a grossly incorrect FTEE for NCC-04 and propagates incorrect shares and totals.
+- Several cells use hard-coded arithmetic (e.g. "9432730+111410104") or add "+1" inside formulas. These are inconsistent and may hide manual adjustments that should be documented or removed.
+- Column header/subheader misalignment in the "General State Financial Aid" sheet (row 6 vs row 7) — the labels for column D appear inconsistent with the actual values.
+- Minor issues: many SUM ranges include a blank row (e.g. SUM(...:B14) when B14 is blank) and many formulas use a leading "+". These are not errors per se but worth noting.
+
+Detailed findings, with suggested corrections
+
+1) FTEE Calculation!C14 — incorrect formula (definite error)
+- Current formula: =302/24
+- Why it's wrong: every other Credit-to-FTEE conversion in this table uses the pattern =B#/24 (credit hours divided by 24). Row 14’s B14 contains 23373 credit hours, but the formula uses 302 instead of B14.
+- Effect: C14 evaluates to 12.5833333 (302/24). The correct value should be 23373/24 = 973.875. This error cascades into D14, G14, H14 and the overall totals in row 27 and the percent shares (I11:I27).
+- Suggested correction: change C14 to =B14/24.
+- Approximate impact if corrected: H14 increases from 622.8616667 to 1,584.1533333 (difference = +961.2916667). H27 increases accordingly (H27 currently 74,618.15 → about 75,579.44), and all row percent shares that use $H$27 (I11:I27) will change.
+
+2) Several uses of ad-hoc arithmetic or "+1" inside cells (inconsistent/manual tweaks)
+- Examples found:
+  - Revenues by Source!C9 = 9432730+111410104 instead of referencing cells or entering the sum directly.
+  - Revenues by Source!C11 = 141577402+1
+  - General State Financial Aid!B21 = 3684419+1
+  - General State Financial Aid!C11 = 141577402+1 (same as Revenues)
+  - FTEE Calculation!E27 = SUM(E11:E26)+1
+- Why these are suspicious: the "+1" or splitting of a sum into a literal addition is a manual adjustment and may have been inserted to force totals to match published numbers. These hidden increments make auditing difficult and can be accidentally doubled or lost if the referenced data changes.
+- Recommendation: Replace these with direct references or plain sums. If the +1 (or similar) is intentional (to match an external published total), add a comment near the cell explaining why the adjustment is necessary. Example fixes:
+  - If C9 is meant to be the sum of two source cells, use =<cell1>+<cell2> or direct sum cell references.
+  - Change E27 to =SUM(E11:E26) (remove the +1) unless the +1 is specifically required; if required, document it with an Excel comment.
+
+3) Header / label inconsistency: General State Financial Aid sheet
+- Row 6: B6="General State", C6="Total % of General", D6="% of Total FTEE"
+- Row 7: B7="General Financial Aid", C7="State Financial Aid", D7="Fiscal Year 1998 #"
+- Problem: D6 states "% of Total FTEE" while D7 labels the column "Fiscal Year 1998 #". The values in column D9:D23 are decimals (e.g. 0.050867) consistent with percentages rather than counts. This indicates the header/subheader rows are misaligned or inconsistent.
+- Recommendation: Review and fix the two-row header so column labels match the column contents. For example, if D is "% of Total FTEE" move/rename the row-7 label to reflect that. If D is counts, convert the values or rename the header appropriately.
+
+4) SUM ranges include blank trailing rows (non-critical but confusing)
+- Examples: Revenues by Source!B15 uses =SUM(B9:B14) but B14 is blank; Expenditures by Function!B19 = SUM(B9:B18) while B18 is blank; FTEE Calculation totals often sum to row 26 but data only to 25.
+- These are not formula errors (blank cells treated as 0) but are slightly sloppy and can become sources of accidental error if rows are inserted later. Consider making the ranges explicitly match the data rows (SUM(B9:B13) etc) or use structured/defined ranges.
+
+5) Cosmetic / conventional items
+- Many formulas use the leading "+", e.g. "=+C9/$C$15". That is harmless (Excel permits it) but unconventional. You may wish to remove the leading "+" for clarity.
+- No division-by-zero errors were detected with the present data; all denominators used are nonzero.
+
+Suggested immediate action list
+1. Fix FTEE Calculation!C14 to =B14/24. Recalculate and review D14, G14, H14 and the totals row 27 and percentages I11:I27.
+2. Remove or document all manual "+1" adjustments:
+   - General State Financial Aid!B21, Revenues!C11, Revenues!C9 (or convert to cell references), FTEE Calculation!E27, etc.
+3. Correct header labels in General State Financial Aid (row 6 / row 7).
+4. Optionally tighten SUM ranges to exact data row ranges to avoid confusion and remove leading "+" signs where you want consistent style.
+5. After applying these fixes, re-check totals (C15, C19, C15, C27 etc.) and % columns to ensure they still add to 1 (or to expected published totals).
+
+If you want, I can:
+- produce the corrected formulas for the affected cells and compute the new totals/percentages,
+- or open the workbook and apply these fixes and return a corrected file (if you provide write access/permission).
+
+Which would you prefer?

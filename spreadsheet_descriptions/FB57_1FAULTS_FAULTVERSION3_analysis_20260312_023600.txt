@@ -1,0 +1,62 @@
+Summary of workbook structure and contents (concise)
+
+Overall layout / conventions (applies across sheets)
+- Time series across columns: funding years in B:R (1982‑83 through 2000‑01) and a parallel block of recipients in S:AI for the same years. Rows 10–62 list states (Alabama → District of Columbia), row 5 = United States totals, row 6 = SREB states aggregate, row 8 = SREB % of U.S., rows 64+ contain footnotes/sources.
+- Funding values recorded in thousands (label B2 “Funding (000s)”). Many funding cells are formulas (some arithmetic adjustments applied to base values). Recipient counts are listed in the S:AI block; some recipient cells are computed with ROUND() while others are numeric.
+- Per‑recipient sheets calculate average award = (funding * 1000) / recipients (i.e., funding in dollars divided by number of recipients). Those formulas reference the corresponding funding and recipient cells on the program sheets.
+- Repeated structure for three campus‑based programs: College Work‑Study (CWS), Perkins Loans, and Supplemental Educational Opportunity Grants (SEOG). Each has:
+  - Program sheet (e.g., "College Work-Study", "Perkins Loans", "SEOG"): funding (B:R) and recipients (S:AI).
+  - A per‑recipient sheet (e.g., "CWS per-recipient", "Perkins per-recipient", "SEOG per-recipient"): computes per‑recipient averages by state and for aggregates.
+- Aggregations:
+  - Row 6 sums state rows for SREB states using SUM(range), per year.
+  - Row 8 computes percent of U.S. = (SREB / U.S.)*100.
+  - Many state rows use ROUND() or direct numbers; some mid‑period estimates use interpolation ((N-L)/2)+L.
+- Cross‑sheet references: per‑recipient sheets reference program sheets (e.g., ('College Work-Study'!B5*1000)/'College Work-Study'!S5). The TABLE sheet pulls selected totals and computes percent changes and SREB shares.
+
+Sheet-by-sheet (key details)
+1) Sheet: College Work-Study
+- Row 5 = U.S. funding totals (formulas that combine base numbers and multiple subtractions), columns B:R funding (000s). Row 5 S:AI = U.S. recipients for each year.
+- Rows 10–62 = state funding by year; many values are ROUND(), some hard numbers.
+- Row 6 = SUM of states for SREB subset; row 8 = SREB % of U.S.
+- P5/Q5/R5 are SUM(P10:P62) etc. (sums of later years).
+
+2) Sheet: CWS per-recipient
+- Computes average award per recipient for CWS: formula pattern =('College Work-Study'!<funding cell>*1000)/'College Work-Study'!<recipients cell>.
+- Mirrors the state list and years of the program sheet; rows 3–4 show U.S. and SREB averages.
+
+3) Sheet: Perkins Loans
+- Same structure as CWS: row 5 U.S. funding (formulas), rows 10–62 states, row 6 SREB sums, row 8 SREB % of U.S. Recipient block at S:AI.
+- Some years use SUM(P10:P62) etc.
+
+4) Sheet: Perkins per-recipient
+- Same per‑recipient calculation pattern referencing 'Perkins Loans' funding and recipient cells.
+
+5) Sheet: SEOG
+- Same organization: funding (B:R) in thousands, recipients (S:AI), row 5 U.S., row 6 SREB, row 8 percents.
+- P/Q/R totals formed with SUM ranges and many state rows contain ROUND() or direct numeric per‑state values.
+
+6) Sheet: SEOG per-recipient
+- Per‑recipient computations referencing SEOG funding and recipient cells; layout mirrors the SEOG sheet.
+
+7) Sheet: TABLE
+- Consolidated comparisons and indicators. Pulls 2000‑01 totals (R5 from program sheets) and computes percent change vs 1995‑96 (columns M and R used for baseline and comparison).
+- Shows per‑recipient averages for 2000‑01 and percent change vs mid period using the per‑recipient sheets.
+- Includes SREB share calculations (percentage of national total) and many row‑level comparisons per state.
+
+Key formulas / mechanics (high level)
+- Funding per recipient (per‑recipient sheets): (Funding_in_thousands * 1000) / Recipients.
+- Aggregate SREB = SUM(state rows for SREB list).
+- Percent of U.S. = (SREB or state total / U.S. total) * 100.
+- Percent changes in TABLE = ((value_R - value_M)/value_M)*100 (where M ≈ 1995‑96 and R ≈ 2000‑01).
+- Some mid‑period values estimated by interpolation: ((N - L) / 2) + L (used frequently).
+
+Notable observations / potential issues to check
+- Consistency of SUM ranges: some sums use P10:P62, others P10:P60—verify intended state range (most state lists go to row 62 but some per-program totals use up to 60).
+- A likely typo: CWS per-recipient cell for Louisiana (sheet "CWS per-recipient" C14) uses ('College Work-Study'!C16*1880)/... instead of *1000 (1880 looks erroneous).
+- Many funding row5 formulas include large constants with chained subtractions (e.g., 635073450/1000-13962.235-...) — verify whether these are intended adjustments and that unit conversions are consistent.
+- Numerous hard‑coded numbers mixed with formulas and rounding—watch for manual overwrites that may break dynamic updates.
+
+If you want, I can:
+- produce a compact mapping (e.g., list of exact key cells: U.S. funding row5 per program and recipients row5),
+- scan for formula inconsistencies and list all suspicious formulas (1880, different SUM ranges, hard-coded constants),
+- or convert the per‑recipient formulas to a consistent named‑range approach for easier maintenance.

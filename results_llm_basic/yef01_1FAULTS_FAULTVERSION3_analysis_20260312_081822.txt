@@ -1,0 +1,72 @@
+I reviewed the workbook and found multiple formula errors and "quick-fix" hacks that cause wrong totals, negative values, and fragile results. Below I list the problems (by sheet and cell), why each is wrong, and the simple fix + short explanation.
+
+Keep this short fixes-first list handy while you edit the file.
+
+1) FTEE Calculation sheet — negative non-credit FTEE
+- Problem: F14 contains =-E14/600 (negative sign).
+- Why wrong: non-credit FTEE is becoming negative, pulling totals and percentages down.
+- Fix: change to =E14/600
+- Explanation: remove the stray unary minus so non-credit FTEE is positive.
+
+2) FTEE Calculation sheet — many tiny manual adjustments (bad practice)
+- Problem cells: H12, H13, H15, H16, H22, H26 have formulas like =C12+F12+0.01 (or similar). I20/I21 subtract 0.000001. Totals C28/F28/H28/I28 have +0.02, +0.03, -0.02, +0.000002 respectively.
+- Why wrong: someone added/subtracted tiny constants to force percentage totals to equal 100%. These distort the true data and make the workbook non-auditable.
+- Fixes (replace with exact formulas):
+  - H12 → =C12+F12
+  - H13 → =C13+F13
+  - H15 → =C15+F15
+  - H16 → =C16+F16
+  - H22 → =C22+F22
+  - H26 → =C26+F26
+  - I20 → =H20/$H$28
+  - I21 → =H21/$H$28
+  - C28 → =SUM(C12:C27)
+  - F28 → =SUM(F12:F27)
+  - H28 → =SUM(H12:H27)
+  - I28 → =SUM(I12:I27)
+- Explanation: remove the ad-hoc offsets and compute totals from raw (unmodified) numbers. If you need nicely rounded percentages for display, use ROUND when displaying, not by changing the underlying totals.
+
+3) FTEE Calculation — absolute references and percent formulas
+- Problem: some percent formulas use relative references and/or non-anchored totals (e.g., I12 uses $H$28 in some but not all rows).
+- Fix: ensure all percent formulas reference the total with an absolute reference $H$28 (e.g., I12 → =H12/$H$28 and copy down).
+- Explanation: using $H$28 keeps the denominator fixed when copying formulas.
+
+4) Expenditures by Function sheet — incorrect SUM ranges
+- Problem: B20 =SUM(B10:B19) and C20 =SUM(C10:C19) but data is B10:B18 / C10:C18 (row 19 doesn't exist in your listing).
+- Why wrong: the sum may include an extra blank or an unintended row.
+- Fix: change to =SUM(B10:B18) and =SUM(C10:C18) (or adjust the range to exactly match your data rows).
+- Explanation: SUM ranges must exactly cover the actual data rows to avoid missing or double-counting.
+
+5) Expenditures by Category sheet — inconsistent ranges and manual tweak
+- Problem: B16 =SUM(B10:B15) and C16 =SUM(C10:C15) while category rows are B10:B14 / C10:C14; also B12 had =ROUND((C12/$C$16),4)-0.0001 (manual -0.0001 tweak).
+- Fix:
+  - Set totals to =SUM(B10:B14) and =SUM(C10:C14).
+  - Replace B12 with =ROUND(C12/$C$16,4) (and make B10:B14 use the same ROUND pattern).
+- Explanation: remove the -0.0001 fudge, and use consistent ROUND for all category percent cells. If the rounded percent column does not add exactly to 1.0000, show a separate "Rounding difference" cell (1 - SUM(rounded%) ), don't change raw numbers.
+
+6) Revenues by Source sheet — suspicious hard-coded math and strange -1
+- Problem: C10 =9595817+116896967 (hard-coded arithmetic in the formula) and C12 =147577404-1 (subtracting 1).
+- Why wrong: hard-coded values make the sheet hard to audit; subtracting 1 looks like a manual hack.
+- Fix:
+  - Replace C10 with references to the component cells (for example =C? + C? ), or, if those two numbers are the whole tuition components, place them in cells and use =SUM(range). Do not embed raw constants in formulas.
+  - Replace C12 with the correct number or a reference (remove the -1), e.g. =147577404 or better =<cell with that number>.
+- Explanation: always keep source numbers in cells and use SUM or cell references. Do not use "-1" to force rounding or totals.
+
+7) General State Financial Aid sheet — use absolute total reference
+- Problem: C10:C24 formulas are shown as =+B10/$B$26 (good) but double-check that every percent uses $B$26 (absolute) so copying works correctly.
+- Fix: ensure all C10:C24 formulas use $B$26 (e.g., =B10/$B$26) so the denominator is fixed.
+- Explanation: prevents errors when copying formulas.
+
+8) Cosmetic / clean-up items
+- Remove unnecessary leading plus signs in formulas (e.g., =+C10/$C$16 → =C10/$C$16). They don't break anything but clutter.
+- Use consistent rounding for displayed percentages (use ROUND(cell/total,n) only for display). Keep calculations stored with full precision and round only for presentation.
+
+Quick checklist to correct the workbook now
+1. Fix the obvious negative: change F14 =E14/600.
+2. Remove all +0.01, -0.000001, +0.02 etc. Recompute totals as SUM of raw values.
+3. Replace hard-coded arithmetic or "-1" with clear cell references or correct values.
+4. Fix SUM ranges to exactly cover data rows.
+5. Make percent formulas use absolute references to totals ($H$28, $C$16, $B$26, etc).
+6. If you want printed percentages to sum to 100.00, compute unrounded percentages from raw numbers, ROUND them only for display, and add a one-cell "rounding difference" rather than changing underlying data.
+
+If you want, I can produce the exact corrected formulas for each cell (I can paste a list you can copy/paste) — tell me whether you want full cell-by-cell replacements or I should produce a corrected file.

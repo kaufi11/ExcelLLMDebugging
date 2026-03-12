@@ -1,0 +1,84 @@
+I inspected the formulas you provided for Sheet1. There are multiple formula mistakes and inconsistent patterns that will produce incorrect results (mostly because many cells copy a neighboring value instead of summing the intended range). Summary of the problems and recommended fixes:
+
+Main problems (patterns)
+- Many cells use chained single-cell SUM references across the row, so a single wrong reference propagates across the entire row/column. Example chain: F9 = SUM(E9), G9 = SUM(F9), H9 = SUM(G9) … This makes every cell equal the left-most referenced value rather than its own value or column sum.
+- Several formulas reference the wrong row/cell (e.g. E9 references E42).
+- Totals row repeats the same chaining mistake (F40 = SUM(E40), G40 = SUM(F40), …) so column totals will all equal E40 rather than SUM of their own column.
+- A few single-item oddities (SUM of a constant).
+
+Detailed list of suspicious/incorrect formulas and suggested corrections
+
+1) Row 9
+- E9: =SUM(E42)
+  - Problem: references E42 (outside used range) — likely wrong. If E9 should be an entered value, remove formula and put the value. If E9 should sum a range, change to the correct range (e.g. =SUM(E9:E42) would be self-referential; likely not desired).
+  - Suggestion: Enter the intended value in E9 or use correct source-range reference.
+
+- F9: =SUM(E9)
+- G9: =SUM(F9)
+- H9: =SUM(G9)
+- I9: =SUM(H9)
+- J9: =SUM(I9)
+- K9: =SUM(J9)
+- L9: =SUM(K9)
+- M9: =SUM(L9)
+  - Problem: these just copy the value that E9 eventually resolves to (through the chain). They do not represent independent inputs or correct column sums.
+  - Suggestion: If F9..M9 are data entries, replace formulas with actual values (manual entry). If they are supposed to be computed from sub-items, use the appropriate formula (for example, if each of C9..M9 are computed totals then use those formulas). If these cells should be independent counts, remove the SUM references entirely.
+
+2) Rows 10 through 39 (repeated pattern)
+- Example row 10:
+  - F10 = SUM(E10)
+  - G10 = SUM(F10)
+  - H10 = SUM(G10)
+  - … L10 = SUM(K10), M10 = SUM(L10)
+  - Problem: same chaining issue — every cell in the row just mirrors the left neighbor (and ultimately E10).
+  - Suggestion: either enter the correct data directly, or change to the appropriate calculation. If you intended to compute column values from other cells, reference the correct source. If you intended each column total to be summed in the totals row, keep these as data inputs (no chaining).
+
+3) Row 19
+- G19 = SUM(5)
+  - Problem: SUM(5) will just return 5 — odd use of SUM and inconsistent with surrounding formula patterns.
+  - Suggestion: Replace with the literal 5 (enter 5), or with a reference to the actual source cell (e.g. =E19 or =someCell) as required.
+
+4) Totals row (row 40)
+- C40 = SUM(C9:C39) — OK.
+- D40 = SUM(D9:D39) — OK.
+- E40 = SUM(E9:E39) — OK.
+- F40 = SUM(E40)
+- G40 = SUM(F40)
+- H40 = SUM(G40)
+- I40 = SUM(H40)
+- J40 = SUM(I40)
+- K40 = SUM(J40)
+- L40 = SUM(K40)
+- M40 = SUM(L40)
+  - Problem: F40..M40 chain back to E40, so every total cell will duplicate E40 rather than give the sum for its own column.
+  - Suggestion: use correct column sums:
+    - F40 = SUM(F9:F39)
+    - G40 = SUM(G9:G39)
+    - H40 = SUM(H9:H39)
+    - I40 = SUM(I9:I39)
+    - J40 = SUM(J9:J39)
+    - K40 = SUM(K9:K39)
+    - L40 = SUM(L9:L39)
+    - M40 = SUM(M9:M39)
+
+Other recommended fixes / improvements
+- If C9..C39 are intended to show the total per day, add per-row totals:
+  - C9 = SUM(D9:M9) and copy down to C39. That makes C40 = SUM(C9:C39) meaningful.
+- Avoid using SUM on a single cell or constant where direct reference or a constant is clearer (e.g., use =5 instead of =SUM(5), or =E9 instead of =SUM(E9)).
+- Remove unnecessary SUM wrappers that reference only one cell (they are harmless but confusing).
+- Verify any cell that references cells outside the visible data area (e.g. E42) — confirm whether that was intended.
+
+Quick checklist you can follow to correct the sheet
+1. Replace each chained row formula (F# = SUM(E#), G# = SUM(F#) …) with either:
+   - actual input values (if they are raw counts), or
+   - correct formulas referencing real source ranges, or
+   - remove the formulas if they were unintended.
+2. Replace totals row formulas F40..M40 with the SUM of their own column ranges (F9:F39, etc.).
+3. Fix E9 (and any other cell that references E42 or other unexpected cells).
+4. Replace SUM(5) with 5 or the correct reference.
+
+If you want, I can:
+- prepare the exact corrected formulas for every affected cell (I can output a list with exact replacement formulas for F9:M39, C9:C39, and F40:M40), or
+- apply a specific intended logic (for example: treat D..M as entered data and C per-row = SUM(D:M) and totals as column sums).
+
+Tell me which approach you want and I will generate the exact replacement formulas.

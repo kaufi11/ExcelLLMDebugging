@@ -1,0 +1,46 @@
+Summary of the problem
+- The sheet is returning a number-of-cells (COUNT) instead of the total points, and several formulas return text ("") instead of numeric 0. These cause the Total Points and Fee to be wrong or inconsistent.
+
+Main errors (short)
+1. Total Points (C41) uses COUNT instead of SUM:
+   - Current: =IF(OR(C34>0,C35>0),C36,COUNT(C9:C31))
+   - COUNT returns how many numeric cells are present, not the sum of the point values.
+
+2. Some point cells return text ("") in some branches (C30, C34). Text breaks numeric aggregation and can confuse logic:
+   - C30: =IF(B31="",(IF(B30<>"",20,0)),"") — returns "" when B31<>"".
+   - C34: =IF(B35="",(IF(B34<>"",10,0)),"") — returns "" when B35<>"".
+   Text "" is non-numeric and may not be handled consistently by other formulas.
+
+3. Fee-display formula (F5) depends on C43 being exactly "N/A". That works but is brittle if C43 returns other non-numeric text. Safer to explicitly test for a numeric half-fee.
+
+Fixes (copy/paste formulas) and short explanation
+1. Replace C41 with SUM so it totals points:
+   - New C41:
+     =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+   - Explanation: SUM adds all point values; the IF still uses C36 when other-actions apply.
+
+2. Make C30 and C34 always return numbers (0 when not applicable). Replace with:
+   - New C30:
+     =IF(B31<>"",0,IF(B30<>"",20,0))
+   - New C34:
+     =IF(B35<>"",0,IF(B34<>"",10,0))
+   - Explanation: return 0 instead of "" so all point cells stay numeric and SUM works reliably.
+
+3. Make the fee-display cell robust (F5). Use ISNUMBER on C43:
+   - New F5:
+     =IF(ISNUMBER(C43),C43,C42)
+   - Explanation: if C43 contains a numeric half-fee use it, otherwise show the full fee C42. This avoids relying on the exact text "N/A".
+
+Optional improvement for C43 (half-fee logic)
+- If you want C43 to be numeric or 0 instead of "N/A", consider:
+  =IF(B34<>"",0,IF(B38<>"",C42/2,0))
+  then make F5 =MAX(C42,C43) or IF(C43>0,C43,C42). But not required if you keep "N/A" labeling and use the ISNUMBER test above.
+
+Notes / quick checklist
+- After making these changes, test several scenarios:
+  - No "other actions": points should be SUM(C9:C31).
+  - With other actions: C36 should be used.
+  - Small business (B38 marked) should produce half fee in C43 and F5 should show half fee.
+- Make all points cells return numeric 0 when not applicable (consistent pattern IF(...,value,0)).
+
+If you want, I can produce a cleaned list of all corrected formulas for C9:C43 (so everything consistently returns numbers).

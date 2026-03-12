@@ -1,0 +1,71 @@
+Summary of workbook (concise)
+
+Sheets
+- CBA — cost‑benefit analysis across a 20‑year horizon (columns G:AA = years 2000–2020). Left columns (A–F) contain S# and description. Bottom area contains discount factors, present values, B/C ratio and NPV. Right/middle contains Assumptions and Sensitivity tests.
+- Individ. Hh. Analysis — household‑level survey/data for 11 households: impacts on activities, fuels before/after, quantities, appliance ownership, wiring costs and village aggregations/averages.
+
+CBA sheet — structure & key rows
+- Header: E2:F2 Description, G2–AA2 = years 2000..2020.
+- Costs (rows 4–17): items include AKRSP & community construction contributions (rows 5–6), O&M (row 8), connection costs (row 9), household wiring (row 10), tube lights (11), tubelight unit replacement (12), energy‑saving bulbs (13), recycling transport/labour (14), equipment (washing machines, butter churners) and cleanup (row 17).
+  - Annual totals row: G18:AA18 computed by SUM of rows G5:G17 .. AA5:AA17.
+  - Construction items in year 2000 are calculated by inflating historical payments:
+    - G5 = 240000 / 0.4825 (AKRSP contribution in 2000 prices)
+    - G6 = 21780 / 0.4825 (community)
+  - O&M per year: repeated formula in H8: 55200 - (1200*12) - (600*12) + (500*12); same for most years. Year 2010 (Q8) adds sensitivity/damage items: +10000+25000+(500*5)+50000+5000.
+  - Scrap/environmental items:
+    - AA17 (env. cleanup in 2020) = 0.1*G5 + 0.1*G6
+    - AA29 (scrap value, 2% of project) = 0.02*G5 + 0.02*G6
+- Benefits (rows 23–29): kerosene savings, battery savings, handicrafts profits, time value saved (washing, butter churning), scrap resale (10% of bulb/tube values). Each benefit row sums across years (SUM(G23:AA23) etc).
+  - Example formulas repeated across years:
+    - Kerosene saving per year H23 = (164 - 26) * 30 * 13
+    - Battery saving H24 = (7.44 - 0.78) * 12 * 30 * 18
+    - Handicraft profit H25 = 300 * 12 * 30
+    - Time‑savings are expressed as ((people * hours * weeks)/8)*60 (value in Rs).
+    - Tube lights: H11 = 5.67 * 30 * 50 * 6 (units * households * price * replacements)
+- Discounting & present value:
+  - Discount factor rows (G19:AA19 and G31:AA31) start at 1 in G19/G31 and iterate by multiplying previous cell by (1/1.12) — i.e., DF = 1/(1.12)^n. (Note: one cell (R19) contains an anomalous formula in the provided spec — check recursion consistency.)
+  - Present value of costs row (G20:AA20) = G18*G19 etc. Present value of benefits row (G32:AA32) = G30*G31 etc.
+  - Totals: C20 = SUM(G20:AA20), C32 = SUM(G32:AA32). C35 copies present value of benefits; C36 copies present value of costs.
+  - Outputs: B/C ratio C38 = C35 / C36; NPV C39 = C35 - C36.
+
+Key parameters / assumptions (from Assumptions area)
+- Analysis period: 20 years (noted in sheet header).
+- Discount rate: 12%.
+- Households = 30 (used repeatedly).
+- Historical contributions: AKRSP Rs 240,000 in 1993 (inflated to 2000 by /0.4825), community Rs 21,780 similarly adjusted.
+- O&M baseline Rs 55,200 p.a. (breakdown in notes).
+- Connection charge per household = Rs 500 (half connected in year 1, half in year 2).
+- Wiring cost per household Rs 4,297; assumed done in first two years (some wiring replacement sensitivities later).
+- Tube lights per household = 5.67; tube price Rs 50, replaced 6 times/year.
+- Energy‑saving bulbs per household = 4.22; bulb price Rs 15, replaced monthly (spec uses monthly replacement as 1 per month).
+- Kerosene: before 164 L/yr per hh; after 26 L/yr; price Rs 13/L (or Rs 50 per gallon used later); conversion 1 gallon = 4.54596 L.
+- Batteries: before 7.44 pairs/month, after 0.78 pairs/month; price Rs 18/pair.
+- Time value used Rs 60/day in time‑savings calculations.
+- Washing machines = 11 hh; butter churners = 20 hh; unit values: washing machine Rs 3,000; churner Rs 700.
+- Recycling scrap value = 10% of bulb/tube value; transport labour = (500*2)+(60*2) per year in recycling cost.
+- Sensitivity shocks listed (rows ~A80–A85): headworks damage Rs 10,000 (year 10); major flood channel damage Rs 25,000; replace 5 poles Rs 500 each; refurbishment year 7 turbine/generator Rs 50,000; penstock pipe replacement Rs 5,000 after year 10; 25% houses rewire at (4297*30) in year 10.
+
+Individ. Hh. Analysis — structure & key formulas
+- Columns A–AP capture household id, impacts on male/female workload, activities now done, education impact, fuels used before/after, quantities (T:X monthly values), bill size (AB), number of tubes/bulbs, wiring cost & year (AE/AF), appliances owned, and whether electricity is more economical.
+- Rows 3–11 = individual households with many cell formulas:
+  - Kerosene conversions use 4.54596 factor (gallons ↔ liters): e.g., T3 = 4 * 4.54596.
+  - Battery cost W cells often = number pairs * 18.
+  - Wiring historical costs are adjusted to 2000 prices: AE3 = 2500 / 0.797, AE7 = 4800 / 0.797, AE8 = 4200 / 0.712, AE10 = 5000 / 0.712, etc.
+- Row 13 computes village averages for key quantities using AVERAGE of household rows (e.g., T13 = AVERAGE(T3:T11), AC13 = AVERAGE(AC3:AC11)).
+- Lower block aggregates to village totals, unit values and savings:
+  - Uses 31 households (C37, C63 multipliers use 31), price assumptions: kerosene value per gallon Rs 50 (C42), battery Rs 18, firewood Rs 70 per maund, gas Rs 35/kg.
+  - Computes average consumption before/after, village totals, monetary values and savings (C40–C44, C53–C57, C66–C70, etc).
+  - Electricity bills: AB13 used for average monthly bill and multiplied to get annual village bill.
+
+Outputs & where to look
+- Final economic indicators: NPV (C39 / G39 for yearly breakdown), B/C ratio (C38 / G38), present value totals in rows 20 (costs) and 32 (benefits).
+- Check sensitivity scenarios: added amounts are embedded in Q8 (year ~2010) and sensitivity list for later manual changes.
+
+Potential issues to verify (quick checks)
+- Discount factor recursion: main pattern is multiply prior DF by (1/1.12); one referenced cell (R19) uses Q19/(1/1.12) — verify that cell's formula for consistency.
+- Year mapping: columns G:AA are labeled 2000–2020; ensure cost/benefit timing aligns with those years (e.g., construction likely only in 2000).
+- Some wiring/price inflation factors differ by household (0.797 vs 0.712) — verify source years.
+
+If you want, I can:
+- Produce a compact map (rows × columns) or flowchart of the CBA sheet,
+- Extract key numeric results (present values, NPV, B/C) if you provide the workbook values or confirm you want me to compute using the formulas.

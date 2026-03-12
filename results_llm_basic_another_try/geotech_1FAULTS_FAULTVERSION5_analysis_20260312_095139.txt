@@ -1,0 +1,63 @@
+Errors found:
+
+1. **Inconsistent Summation in input-output Sheet (I52 and J52):**
+   - I52 formula: `=SUM(I5+I9+I10+I21+I31+I38+I42+I43+I44+I46+I45)`
+   - J52 formula: `=SUM(J5+J10+J9+J21+J31+J38+J42+J43+J44+J45+J46)`
+   - Issue: Using `SUM()` with addition inside is redundant and can cause errors. `SUM()` expects a range or list of numbers, not an expression with `+`.
+   - Also, the order of cells in J52 is inconsistent (e.g., J9 after J10).
+
+2. **Inconsistent or Missing Data in 'Data Analysis' Sheet:**
+   - Some formulas in 'Data Analysis' refer to cells in 'input-output' sheet columns D and F for "x" marks to determine inclusion.
+   - Some columns (like column F in 'input-output') have missing "x" marks for some rows, which might cause missing data in 'Data Analysis'.
+   - For example, in 'Data Analysis' row 3, CP3 formula: `=IF(D2="x","CE 1030", "(no CE 1030 )")` depends on D2 in 'Data Analysis' which is linked to 'input-output'!D10.
+   - If 'input-output'!D10 is empty or inconsistent, the output will be wrong.
+
+3. **Formula in 'Data Analysis' CM5 (and similar) uses many IF conditions with `>=4` but the logic is repeated manually for many columns:**
+   - This is error-prone and hard to maintain.
+   - Also, the formula uses `SUM(IF(...)+IF(...)+...)` which is not efficient or scalable.
+
+4. **In 'input-output' Sheet, in K column (Comparison), formulas like `=IF(I5>J5,"Over","Under")` do not consider the case when I5 = J5 (equal).**
+   - This may be intentional but could be an oversight.
+
+5. **In 'Data Analysis' Sheet, some formulas like CE35 have a hardcoded value `CH35=2` which is inconsistent with other cells that have formulas.**
+   - This can cause errors if the data changes.
+
+Solutions:
+
+1. **Fix I52 and J52 formulas:**
+   - Replace `=SUM(I5+I9+...)` with `=SUM(I5,I9,I10,I21,I31,I38,I42,I43,I44,I46,I45)`
+   - Similarly for J52.
+   - Explanation: `SUM()` takes a list of arguments or a range, so separate cells by commas, not plus signs.
+
+2. **Ensure Consistent "x" Marks in 'input-output' Sheet:**
+   - Verify all relevant cells in columns D, F, etc., have correct "x" marks to reflect course inclusion.
+   - Explanation: The 'Data Analysis' formulas depend on these marks to include courses.
+
+3. **Simplify and Improve IF conditions in 'Data Analysis' CM columns:**
+   - Use array formulas or SUMPRODUCT to sum only values >=4.
+   - Example: Replace long `SUM(IF(...>=4,...))` with:
+     ```
+     =SUMPRODUCT((AU5:CI5>=4)*AU5:CI5)
+     ```
+   - Explanation: This is shorter, easier to maintain, and less error-prone.
+
+4. **Update Comparison formulas in K column to handle equality if needed:**
+   - For example:
+     ```
+     =IF(I5>J5,"Over",IF(I5=J5,"Equal","Under"))
+     ```
+   - Explanation: This clarifies the case when values are equal.
+
+5. **Replace hardcoded values with formulas or consistent data:**
+   - For example, in CH35, replace `2` with a formula or ensure it matches the logic of other cells.
+   - Explanation: Hardcoded values can cause inconsistencies when data updates.
+
+Summary:
+
+- Use correct syntax in SUM formulas (use commas, not plus signs).
+- Ensure all "x" marks are correctly placed for data inclusion.
+- Simplify complex IF summations with SUMPRODUCT.
+- Handle equal cases explicitly in comparisons.
+- Avoid hardcoded values; use formulas for consistency.
+
+These fixes will improve accuracy, maintainability, and correctness of the sheet.

@@ -1,0 +1,24 @@
+Problems found
+- Cell A34 has the wrong formula: =-A33-1. That negates A33 then subtracts 1, so it produces a negative number (and all subsequent IDs become wrong).
+- Because A34 is wrong, every cell that references A34 (A35, A36, …) also produces incorrect numbers.
+- A314 is manually set to 1 (intentional reset). If you want one continuous sequence you must change that.
+
+Quick fix (fast, minimal change)
+1. Put this correct formula into A34:
+   =A33+1
+2. Copy A34 down through the rest of the numeric block (drag the fill handle or paste) until the next intentional break (e.g. through A313 or to where numbering should continue).
+
+Why this fixes it
+- =A33+1 increments the previous ID by 1 as intended. Removing the erroneous minus restores the ascending sequence and fixes all dependent cells.
+
+Better, robust approach (auto-skip headers)
+- Replace column-A formulas with a formula that only numbers rows that have course text in column B and picks the last number above. Example for row 5 (then copy down):
+  =IF($B5="","",MAX($A$1:A4)+1)
+- This leaves header rows blank automatically and always continues the sequence from the last numeric ID above, so layout changes won’t break numbering.
+
+If you want a single continuous sequence across the whole sheet
+- Change A314 (currently 1) to =A313+1 (after you fix A34 and recalc) so numbering doesn’t restart.
+
+Small notes
+- =+A33+1 works identically to =A33+1; prefer =A33+1 (cleaner).
+- There are some spelling typos in column B (not affecting numbering).

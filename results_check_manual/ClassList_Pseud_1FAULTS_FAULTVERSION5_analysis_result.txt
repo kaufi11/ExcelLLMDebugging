@@ -1,0 +1,54 @@
+I inspected the workbook formulas and found several places with inconsistent or likely-erroneous formulas and a few cells containing text where a numeric formula would be expected. Below I list the issues I found, explain why each is suspicious, and give a recommended fix.
+
+1) Homework sheet — inconsistent SUM range in row 5
+- Cell: Homework!L5 (=SUM(C5:K5))
+- Problem: All other student totals in column L use =SUM(Bn:Kn) (include HW1 in column B). L5 excludes column B (HW1). That makes L5 inconsistent with L4, L6:L42.
+- Recommendation: If HW1 (column B) should be included, change L5 to =SUM(B5:K5). If B5 intentionally excluded, document why (otherwise this is likely a typo).
+
+2) Mid-term sheet — total-possible and student total ranges exclude column B (inconsistency vs other sheets)
+- Cells: Mid-term!L5 (Total possible) and essentially every student total in Mid-term uses =SUM(Cn:Kn) (e.g. L6 =SUM(C6:K6), L7 =SUM(C7:K7), …).
+- Problem: On the Homework and Final sheets totals include column B, whereas in Mid-term the totals intentionally exclude B. That may be intentional (there are two “Question 1” subcolumns B and C in the header) but it is inconsistent and could cause confusion if column B should have been included.
+- Recommendation: Verify whether column B answers are part of the Mid-term total. If they should be included, change L5 and all student Ln to =SUM(Bn:Kn). If column B is intentionally a non-counted column, add a comment header note explaining it.
+
+3) Mid-term sheet — stray text in average label cell
+- Cell: Mid-term!B46 contains the literal text "average(C4:C42)" rather than a formula.
+- Problem: This looks like a mistaken text entry where a formula such as =AVERAGE(C4:C42) was intended (or it is a label but placed in a column of numeric averages).
+- Recommendation: If you want the numeric average, replace with =AVERAGE(C4:C42). If this is only a label, move it to a label cell and keep actual averages in cells C46:O46 (which already contain AVERAGE formulas).
+
+4) Final sheet — incorrect SUM range on one Total
+- Cell: Final!I7 is =SUM(B7:H7)
+- Problem: The Final sheet defines question columns B through G (Q1..Q6), so totals should be =SUM(Bn:Gn). I7 includes column H (one column too many).
+- Recommendation: Change Final!I7 to =SUM(B7:G7) so it matches the other rows.
+
+5) Final Grades sheet — some Total (column F) cells are text rather than SUM formulas
+- Cells: Final Grades!F4, F14, F16, F22 (these have text values like "F" rather than numeric totals); other F-cells correctly use =SUM(Bn:E n).
+- Problem: Column F is the numeric "Total" (sum of Papers, Mid-term, Term, Final). Some rows contain text (letter grade or "F") or other manual values instead of calculating the sum. This breaks consistency and prevents reliable numeric operations on Totals (sorting, thresholds, stats).
+- Recommendation: If the Total should always be numeric, restore the formula =SUM(Bn:E n) for those rows (and put manual letter grades in the Note column G, or a separate column). If totals are intentionally overridden for Honor Code/Pending students, document/flag them clearly (and consider keeping the numeric sum in a helper column).
+
+6) General: many numeric columns contain text markers ("HC", "P", "x") which affect SUM results
+- Examples: Homework entries such as "HC" (Honor Code), "P" (pending), "x" (not received) are typed into numeric cells (several sheets).
+- Problem: SUM ignores text, so totals are computed from the present numeric pieces only. This is often intended, but if you need to treat "HC"/"P"/"x" as zeros or handle them specially, the current approach may lead to unexpected totals.
+- Recommendation: If desired, replace these markers with numeric placeholders (e.g., 0) and use a separate column for status, or use formulas that explicitly treat text markers as zero (e.g., =SUMIF(range,"<>HC",range) or use VALUE/IFERROR constructs) or keep consistent documentation of how they are handled.
+
+7) Final sheet & Mid-term — occasional inconsistent SUM endpoints
+- Observations:
+  - Final: all totals use =SUM(Bn:Gn) except the single I7 =SUM(B7:H7) noted above.
+  - Mid-term: totals use =SUM(Cn:Kn) throughout (consistent within the sheet), but this differs from pattern on Homework/Final.
+- Recommendation: Ensure the intended columns are consistently included in totals across sheets, and document any deviations (e.g., a non-counted column B on Mid-term).
+
+8) Miscellaneous / housekeeping items
+- Some rows have blank cells in the middle of the summed ranges (e.g., Homework row 12 missing E12 and G12). SUM handles blanks fine, but verify that blanks are intended and not accidental deletions.
+- In Final Grades there are large blocks of threshold numbers in column K and elsewhere — verify those are not intended to be referenced by formulas (they are static here).
+- Consider using named ranges for score columns (HomeworkScores, MidtermScores, etc.) to reduce risk of off-by-one range typos.
+
+Summary of recommended concrete fixes
+- Homework!L5: change to =SUM(B5:K5) if B5 should be included.
+- Mid-term: confirm whether B column should count; either leave as-is (if intentional) or change L5 and all L6:L44 to include B (i.e., =SUM(Bn:Kn)).
+- Mid-term!B46: replace text with a formula or move as label.
+- Final!I7: change =SUM(B7:H7) to =SUM(B7:G7).
+- Final Grades: restore =SUM(Bn:En) for rows F4, F14, F16, F22 (or move letter-grade text out of column F into column G/another column).
+- Optionally: standardize handling of "HC", "P", "x" markers (separate status column or convert to 0 for sums).
+
+If you want, I can:
+- produce a corrected copy of the workbook with these changes applied,
+- or give a detailed list of every formula that deviates from the pattern (=SUM(B:K) or =SUM(B:G), depending on sheet), so you can review each deviation. Which would you prefer?

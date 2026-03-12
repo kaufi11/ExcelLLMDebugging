@@ -1,0 +1,36 @@
+I reviewed the formulas and values on the "CNH Capital Homework #2" sheet. Overall the model structure (objective = fixed costs for opened lockboxes + assignment costs; assignment constraints) looks correct, but I found a few errors/possible inconsistencies you should check and fix.
+
+Summary of issues and recommendations
+
+1) Hard-coded / wrong formula in C29
+- Current: C29 contains the literal value 5 and the stored formula is "=5".
+- Problem: B29 is computed as B$7 + B13 (1.5 + 3.5 = 5). C29 should mirror that logic for the California column (C$7 + C13), but it is hard-coded to 5. Given C7 = 1 and C13 = 3.2, C29 should be 4.2.
+- Fix: change C29 to =C$7 + C13 (or =C$7 + C13 with appropriate anchoring). This will also change downstream values (e.g., C35, C34) that depend on C29.
+
+2) Potential unit/column-usage confusion (average daily vs yearly counts)
+- Observation: The sheet uses column B (B17:B19) for "average daily" figures and column C (C17:C19) for "yearly checks" (this is consistent with the header at B16/C16). Opportunity-cost formulas (B33:C35) multiply cost-of-capital by the B-column values (average daily) and by days float; check-processing costs (B39:C41) multiply the C-column values (yearly checks) by the per-check charge. That is consistent IF the model intends to:
+  - compute opportunity cost from average daily dollars × days float,
+  - compute processing charges from yearly counts × charge per check.
+- Action: confirm that "average daily" entries (B17:B19) are daily dollar volumes (or daily number of checks) and that "yearly checks" (C17:C19) are yearly counts. If either set uses different units (e.g., both are counts, or both are dollar amounts), the mixed usage will produce incorrect numbers. If this was unintentional, change formulas so both components use consistent units.
+
+3) Absolute-reference consistency (minor / maintainability)
+- Some formulas lock columns only (e.g., $C17) while others lock both row and column ($C$21). Example: B39 uses $C17*B$6. That is OK for the current layout (locks to column C but allows the row index to change when copied down), but if you copy formulas across columns/blocks you may want to use $C$17 or consistent anchoring for clarity.
+- Recommendation: standardize absolute references where appropriate (e.g., use $C$17 if you want a fixed cell), or document intent.
+
+4) Verify C35 and other dependent cells after fixing C29
+- Because C29 is wrong now, formulas that use C29 are incorrect:
+  - C35 = $C$21 * $B19 * C29 (currently computes using C29 = 5). After fixing C29 to 4.2, C35 should update to the correct opportunity cost for Midwest -> California.
+  - Similarly C34/C33 etc. should be checked for correctness after the C29 fix.
+
+5) Check labeling clarity
+- The header row (B16 "average daily", C16 "yearly checks") can be a source of confusion. Consider:
+  - adding units (e.g., "$ per day", "checks per year") or
+  - using distinct named ranges so formulas clearly indicate intent (e.g., AvgDailyAmount_East, YearlyChecks_East).
+
+Other checks
+- Objective cell H52 formula looks correct: =SUMPRODUCT(B5:C5,B53:C53) + SUMPRODUCT(B45:C47,B57:C59). It correctly sums open-lockbox fixed costs and assignment costs.
+- Assignment constraints (D57:D59, B60:C60, B61:C61) look consistent with the intended capacity constraints and assignments.
+
+If you want, I can:
+- propose the exact corrected formulas and update values (e.g., show the corrected C29 and recalculated C35/C47 and final objective), or
+- produce a short list of the cells to change (with exact formulas) so you can paste them into the workbook. Which would you prefer?

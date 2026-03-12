@@ -1,0 +1,56 @@
+Errors found:
+
+1. **Inconsistent formula in Data Analysis sheet cell AU32**:
+   - Formula: `=IF(D$2="x",345,0)`
+   - Issue: The value 345 is hardcoded, unlike other similar formulas which use the cell value from the same row (e.g., `=IF(D$2="x",D32,0)`).
+   - This likely causes incorrect summation and skews totals.
+
+2. **Inconsistent summation in input-output sheet cells I52 and J52**:
+   - Formulas: `=SUM(I5+I9+I10+I21+I31+I38+I42+I43+I44+I46+I45)` and `=SUM(J5+J10+J9+J21+J31+J38+J42+J43+J44+J45+J46)`
+   - Issue: `SUM()` is used with individual cell additions inside, which is unnecessary and can cause confusion.
+   - Also, the order of cells in the sums is inconsistent (e.g., I9 and I10 are not in order).
+   - This is not an error per se but a poor practice.
+
+3. **Inconsistent use of "x" in formulas referencing 'input-output'!$I$48**:
+   - Some formulas check `I48="Y"` (uppercase), others `I48="y"` (lowercase).
+   - This can cause logical errors if the input is lowercase or uppercase.
+   - Example: `=IF('input-output'!$I$48="Y",...)` but input in I48 is "y".
+
+4. **In Data Analysis sheet, some formulas use `SUM(IF(...))` with many repeated IFs**:
+   - This is inefficient and hard to maintain.
+   - Not an error but can be improved with array formulas or SUMPRODUCT.
+
+5. **In input-output sheet, cell I3 formula is `='Data Analysis'!B1` but B1 is "Outcome Total" (text)**:
+   - This will return text in a cell expected to have numeric data.
+   - Potential mismatch or error in referencing.
+
+Solutions:
+
+1. **Fix AU32 formula**:
+   - Change `=IF(D$2="x",345,0)` to `=IF(D$2="x",D32,0)`
+   - Explanation: This aligns with other similar formulas, dynamically referencing the correct cell value.
+
+2. **Simplify sums in I52 and J52**:
+   - Replace `=SUM(I5+I9+I10+...)` with `=SUM(I5,I9,I10,...)`
+   - Explanation: SUM accepts multiple arguments; no need to add inside SUM.
+
+3. **Standardize case check for I48**:
+   - Use `=IF(UPPER('input-output'!$I$48)="Y",...)` in all formulas.
+   - Explanation: This makes the check case-insensitive, avoiding logical errors.
+
+4. **Improve summation formulas with array functions** (optional):
+   - Use `SUMPRODUCT` or array formulas to replace multiple IFs.
+   - Explanation: Cleaner and more efficient formulas.
+
+5. **Check and correct I3 formula**:
+   - Confirm if `='Data Analysis'!B1` is intended; if numeric data is needed, change to appropriate cell.
+   - Explanation: Avoid referencing text in numeric context.
+
+Summary:
+
+- Correct AU32 formula to dynamic reference.
+- Simplify SUM formulas in input-output sheet.
+- Make I48 case-insensitive in IF conditions.
+- Verify I3 cell reference for correct data type.
+
+These fixes will resolve errors and improve formula reliability.

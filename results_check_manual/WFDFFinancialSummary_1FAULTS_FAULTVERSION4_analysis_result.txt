@@ -1,0 +1,61 @@
+I reviewed the formulas and values in the workbook (all three sheets you supplied). Below are the formula errors, inconsistencies and suspicious items I found, with short explanations and suggested corrections.
+
+Summary of the important problems
+- Wrong function used in Income total for 2001 (major): cell I15 contains =COUNT(I6:I13) but should be a SUM. Because of that I15 (income 2001), I30 (net income 2001), I33 (ending cash 2001) and any downstream references (Balance Sheet net income, equity, etc.) are incorrect.
+- Reconciliations between Ending Cash (row 33) and the breakdown Checking / Money Market / Loan (rows 35–37) are inconsistent for several years:
+  - C39 = 0 (OK)
+  - E39 ≈ -0.0005948 and G39 ≈ -0.0005948 (tiny rounding differences)
+  - I39, K39, M39 = -14,325.4505947955 (large mismatch)
+  The large mismatches indicate missing / misentered values (Loan to Event Organizer row 37 is blank), and some account cells are manual/rounded rather than linked to the exact ending balance.
+- Balance Sheet uses E2/F2/G2/H2 in totals formulas (e.g. E7 = ROUND(E2+E6,5)). Those E2..H2 cells are not shown in your extract — verify whether they intentionally hold values. If they are blank/zero, using E2 here is confusing / unnecessary.
+
+Details, cause and fixes
+
+1) I15 uses COUNT instead of SUM (fix immediately)
+- Current: I15 = COUNT(I6:I13) (value shown = 7)
+- Problem: COUNT counts numeric cells, it does not sum receipts. This directly makes I30 (Net Income 2001) wrong and cascades into Balance Sheet and Ending Cash for 2001.
+- Fix: replace with
+  I15 = SUM(I6:I13)
+  After that I30 should recompute correctly as I15 - I27 and downstream references will update.
+
+2) Checking / Money Market / Loan reconciliation mismatch (Difference row A39)
+- Symptom:
+  - C39 = 0 (C33 equals SUM(C35:C37))
+  - E39 and G39 small negative (~-0.000595): caused by manual rounded values in E35/G35 etc (entered as rounded numbers) while E33/G33 contain higher precision; replace manual rounded values with linked formulas or round consistently.
+  - I39, K39, M39 = -14,325.4505947955 (large and identical). This shows that for years 2001, 2002, 2003 the sum of Checking (row 35) + Money Market (row 36) + Loan (row 37) does NOT equal Ending Cash (row 33).
+- Likely cause: row 37 (Loan to Event Organizer) is blank for those years; also checking / money market entries for those years appear to be manually typed rather than linked to Ending Cash or to a proper allocation.
+- Fix options:
+  - If you want the breakdown to reconcile to the Ending Cash value, put a value (with appropriate sign) in row 37 for each year equal to:
+    = (Ending Cash row33) - (Checking row35) - (MoneyMarket row36)
+    e.g. in I37 enter: =I33 - I35 - I36
+    (or compute the loan externally and enter it).
+  - Alternatively, make Checking or Money Market values formulas that derive from Ending Cash and the other balances (i.e., ensure SUM(C35:C37) equals C33).
+  - Also avoid manual rounding in B35/B36 etc: link those cells to the exact ending values where appropriate (e.g. E35 = E33) or use ROUND consistently.
+
+3) Rounding / manual values causing tiny differences
+- Example: E33 = 69161.8194052045 but E35 set to 69161.82 (hard typed). This produces E39 ≈ -0.0005948.
+- Fix: replace hard-coded rounded entries with exact links (e.g. E35 = E33) or use consistent ROUND formulas to the same precision everywhere (preferably 2 decimals for currency).
+
+4) Balance Sheet oddities (verify)
+- E7 formula uses E2 and E6: E7 = ROUND(E2+E6,5). E2 is not shown in the extract. Same for F7, G7, H7 using F2,G2,H2.
+  - If E2..H2 are intended to hold a non‑current asset or another item, that is fine — but it’s not obvious from content shown. If those cells are empty/unused, change E7 to ROUND(E6,5) (or SUM the correct range).
+- Check references in Balance Sheet to 'Financial summary'!K35 and K36 (they exist and are used for 2002 values); keep consistent linking across columns.
+
+5) Minor / style inconsistencies (not formula errors but worth cleaning)
+- Some cells contain an explicit constant with an equals sign (e.g. I19 formula shown "=8238.33"). This is harmless but inconsistent: consider replacing with the constant 8238.33 (no formula) or linking to the source.
+- K21 uses an arithmetic expression (=8821.24-118.52) — it's fine, but inconsistent style; could be replaced with final numeric value or a link to the source amounts.
+- Some totals use different ranges (e.g. SUM(C6:C13) vs SUM(C6:C42) in other sheets) — these appear consistent for the different lists, but verify the intended ranges are correct for each context.
+
+Quick checklist you can run and actions to take
+- Change I15 to =SUM(I6:I13).
+- Recompute and check I30, I33 and Balance Sheet net income and equity cells that reference 'Financial summary'!I30.
+- For each year column where Difference (row 39) ≠ 0:
+  - Inspect C35..C37 (checking, money market, loan). Make these cells either:
+    - linked to source (for example Checking = Ending balance - other buckets), or
+    - set Loan (row 37) to = Ending - SUM(Checking, MoneyMarket) to force reconciliation.
+- Replace manually typed rounded account balances (E35,G35,...) with exact formulas (e.g. E35 = E33) or apply consistent rounding to the same precision everywhere.
+- Inspect Balance Sheet cells E2..H2: either include the intended amounts or remove them from E7/F7 etc if they were not intended to be part of TOTAL ASSETS.
+
+If you want, I can:
+- produce the exact corrected formulas for each affected cell (I can list the changed formulas and their target cells), or
+- apply the changes and return a corrected workbook (if you provide write access to the file).

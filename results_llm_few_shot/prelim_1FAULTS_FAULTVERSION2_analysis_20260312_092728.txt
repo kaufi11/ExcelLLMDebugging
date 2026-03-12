@@ -1,0 +1,26 @@
+Summary of the main problems, why they matter, and how to fix them — short and clear.
+
+1) Wrong increment in the event numbering (major)
+- Faulty cell: program!A24
+- Error: formula is =A22+829. That jumps the sequence from 11 to 840 (and every subsequent A-cell gets huge numbers).
+- Why it breaks things: every subsequent row that uses A24 as the base becomes wrong; the printed day/event numbers no longer match the schedule.
+- Fix: replace with =A22+1
+- Better (robust) option so blanks don’t propagate errors: use =IF(A22="","",A22+1) and fill/copy down.
+
+2) Inconsistent manual override later in the column
+- Faulty cell(s): program!A41 (set to 26 manually) while earlier rows use formulas.
+- Why it matters: manual 26 conflicts with the automated sequence (or with the erroneous 840+ sequence). Keeps numbering inconsistent.
+- Fix: make A41 follow the sequence (e.g. =A39+1) or renumber the whole column consistently (use the robust formula above and fill down).
+
+3) Time AM/PM/text issues (minor, but can confuse)
+- Examples: schedule!A26 shows “10.15 - 12.20 AM” — should be “PM” (midday). Some time strings mix formats.
+- Why: incorrect AM/PM is misleading for attendees.
+- Fix: correct the text to “10:15 - 12:20 PM” or, better, store start/end as real Excel times (e.g. C26 = 10:15, D26 = 12:20) and format the cells with a time format. That avoids AM/PM text mistakes.
+
+Optional improvement (recommended)
+- Instead of many +1 formulas, use a single stable formula you can fill down:
+  - If first event cell (A12) = 1, in A13 put =IF(A12="","",A12+1) and copy down.
+  - Or use position-based numbering: in A12 put 1 and in A13 put =IF(ROW()<=11,"",ROW()-11) adjusted to your start row, then copy down.
+- This prevents accidental large jumps from a stray edit and keeps blank rows blank.
+
+If you want, I can give the exact formulas ready to paste for A12:A41 (or re-number the whole column) and correct the time cells. Which would you prefer?

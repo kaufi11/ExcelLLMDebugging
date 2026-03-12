@@ -1,0 +1,54 @@
+Summary of the problems
+1) Week 4 column (E7:E12) contains =AVERAGE(Bx:Dx). Week 4 should be a data entry cell (a week 4 hours value), not an average. Because E is an average, the row totals (F) and any downstream totals are wrong (you are double-counting/using incorrect data).  
+2) Weekly Totals / ranges are inconsistent. Some SUMs reference row 13 instead of row 12 (e.g. B15, C15, G15). This can hide errors and makes the sheet inconsistent.  
+3) "Max Hours" row: G16 uses MIN(G7:G12) while every other column uses MAX(...). That is wrong for the label "Max Hours".  
+4) Overtime (G7:G12) is static (manual). It should be calculated from weekly hours (hours over 40 per week summed across the four weeks).  
+5) Gross Pay formulas (C20:C25) use (F+G)*Rate. That either double‑counts overtime or pays overtime at the regular rate. Overtime should be paid at a higher rate (commonly time‑and‑a‑half) or at least the overtime premium must be added properly.
+
+Fixes and corrected formulas (easy copy/paste)
+
+A. Week 4 (E7:E12)
+- Remove =AVERAGE(B7:D7) etc. Put the actual Week 4 hours in E7:E12 (manual entry).
+- If you want an average column, add a new column (e.g. H) and use =AVERAGE(B7:E7) there.
+
+B. Overtime per employee (G7 and fill down to G12)
+- Replace manual values with a formula that sums overtime each week (hours above 40):
+  =MAX(0,B7-40)+MAX(0,C7-40)+MAX(0,D7-40)+MAX(0,E7-40)
+  or, if you prefer a single-array style:
+  =SUMPRODUCT((B7:E7>40)*(B7:E7-40))
+
+C. Total hours per employee (F7:F12) — keep as:
+- =SUM(B7:E7)
+  (This is correct once E contains real week 4 hours.)
+
+D. Weekly total row (row 15) — make all ranges consistent (rows 7:12):
+- B15: =SUM(B7:B12)
+- C15: =SUM(C7:C12)
+- D15: =SUM(D7:D12)
+- E15: =SUM(E7:E12)
+- F15: =SUM(F7:F12)
+- G15: =SUM(G7:G12)
+
+E. Max Hours row (row 16) — use MAX consistently:
+- B16: =MAX(B7:B12)
+- C16: =MAX(C7:C12)
+- D16: =MAX(D7:D12)
+- E16: =MAX(E7:E12)
+- F16: =MAX(F7:F12)
+- G16: =MAX(G7:G12)   <- fix from MIN to MAX
+
+F. Gross pay (C20:C25) — pay overtime correctly
+Assuming F is total hours including overtime and G is overtime hours (sum of hours over 40), and overtime is paid at 1.5× rate, use either:
+- C20: =F7*$B$20 + G7*$B$20*0.5
+  (Explanation: F*rate pays straight time for all hours; overtime premium is extra 0.5*rate for each overtime hour.)
+Or equivalently:
+- C20: =(F7-G7)*$B$20 + G7*$B$20*1.5
+Copy down for each employee (use absolute reference for the rate column if needed).
+
+Short explanation of why these fixes work
+- E must be actual week 4 hours. AVERAGE(B:D) in E was replacing real data and corrupting totals.  
+- Overtime should be calculated per week and summed (overtime is hours over 40 in each week). The MAX(...-40) approach isolates hours over 40 and SUMs them.  
+- Weekly totals and min/max must use consistent row ranges so aggregates reflect the same employee set.  
+- Gross pay must account for the overtime premium (time-and-a-half). If total hours already include overtime, the extra pay due for overtime is +0.5 × rate × overtime hours (so F*rate + G*0.5*rate is correct).
+
+If you want, I can give the exact formulas filled down for every cell, or prepare a corrected example sheet. Which would you prefer?

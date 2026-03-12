@@ -1,0 +1,37 @@
+Errors found:
+
+1. In Summary sheet, cell E25 (Total Revenues for 2003-04) has formula `=COUNT(H9:H24)` instead of `=SUM(H9:H24)`. This causes incorrect total revenue calculation for that year.
+
+2. In Summary sheet, cells B6 (Carry Forward) in each fund sheet (e.g., 1003!D6, 1043!D6, etc.) use circular references like `=+E6+D72-D25-D35`. This references the same cell in the same sheet (E6) and other totals that depend on the current cell, causing circular dependency and incorrect carry forward calculation.
+
+3. In fund sheet 1198, cell D33 (Non-Mandatory Transfers Out for 1999-2000) has a zero instead of a negative number, but in E33 it has a negative number (-11160965). This inconsistency may cause errors in net transfers.
+
+4. Negative values in some expenditure lines (e.g., 1166!D65, D65: -15282267.47) may be valid but should be checked for correctness.
+
+Solutions:
+
+1. Fix Summary!E25 formula: Change from `=COUNT(H9:H24)` to `=SUM(H9:H24)` to correctly sum revenues.
+
+2. Resolve circular references in carry forward (B6) cells in each fund sheet:
+
+   - Instead of referencing E6 (next year's carry forward), use a fixed starting balance or a different approach.
+
+   - For example, set Carry Forward (B6) as a fixed input or calculate it without circular references.
+
+   - Alternatively, enable iterative calculation in Excel and set proper iteration limits, but better to redesign formulas to avoid circularity.
+
+3. Check and correct transfer values in fund sheets for consistency, especially negative signs in Non-Mandatory Transfers Out.
+
+4. Review negative expenditure values to confirm if they are intended adjustments or errors.
+
+Explanation:
+
+- Using COUNT instead of SUM in revenue totals leads to wrong totals because COUNT counts numbers of cells with numbers, not their sum.
+
+- Circular references cause Excel to repeatedly recalculate without converging, leading to errors or warnings.
+
+- Transfers should have consistent signs to correctly calculate net transfers.
+
+- Negative expenditures might represent refunds or adjustments but should be verified.
+
+Summary: Correct the SUM formula in Summary!E25, fix circular references in carry forward calculations by redesigning formulas or using fixed inputs, and verify transfer and expenditure signs for consistency.

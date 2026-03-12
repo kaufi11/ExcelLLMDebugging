@@ -1,0 +1,44 @@
+I reviewed Sheet2 and found a few clear errors plus a few structural problems that will cause wrong totals. Short fixes below.
+
+1) Obvious mechanical error (fix this first)
+- Faulty cell: O32
+- Error: hard‑coded number used instead of cell reference. O32 = 526 + J32
+- Why wrong: should add the LPG value for Q1 (E32), not the literal 526. If E32 changes, O32 won't update.
+- Repair formula: =E32 + J32
+- Test: change E32 by +1 and confirm O32 increases by +1.
+
+2) Hard-coded additions inside “formula” cells (fragile / inconsistent)
+- Examples: C75 = 44762024+2009667, D75 = 6179061+352427, H75 = 53720988+807225, C76/D76/H76, etc.
+- Why wrong: these embed constants instead of referencing the source cells (or using a SUM of quarter columns). This prevents automatic recalculation if the source figures move/are corrected.
+- Fix: Replace with references to the actual source cells (or use =SUM(range) across the quarters). E.g. if those two numbers are intended to be two source cells (say C75_A and C75_B), use =C75_A + C75_B or =SUM(C75_A:C75_B). If they are meant to be Q1 totals, use =SUM(Cx:Fx) pattern consistent with other rows.
+- Tip: Use Fill/Copy of the standard formula pattern (e.g., =SUM(Cn:Fn), =SUM(Hn:Kn), cumulative =Cn+Hn) so all rows stay consistent.
+
+3) Text in numeric columns (will break sums)
+- Examples: AB16 = "XX", AB83 = "X" (and possibly others)
+- Why wrong: these are text in columns that look numeric/ID — Excel will ignore them in SUM but they may be mistaken for numbers or cause validation issues.
+- Fix: Move notes like "XX" or "X" to a notes column or convert to a numeric code. If they must stay, ensure they are not inside ranges that other formulas sum.
+
+4) Blank or missing product cells referenced by cumulative formulas
+- Example pattern: many rows have E (LPG) or J (Q2 LPG) blank but cumulative formulas (O = E+J etc) still reference them.
+- Why a problem: blanks are treated as zero; if the data was accidentally left out, totals will be understated.
+- Fix: Populate the missing product cells where data exists, or mark truly missing with 0 (numeric) rather than text. To detect blanks use: =COUNT(Cn:Fn) vs expected count or an ISBLANK check.
+
+5) Inconsistent references across columns for quarterly/annual totals
+- Pattern: Totals and cumulative columns follow a consistent pattern (G = SUM C:F, L = SUM H:K, M = C+H, Q = G+L, etc.). A few rows deviate (see #1 and #2 above).
+- Fix: Standardize formulas by copying a correct row down (use absolute references for headers only where needed). Use a sample correct row (e.g., row 6 or row 15 pattern) and Fill Down.
+
+6) How to find other similar errors quickly
+- Search for literal numbers inside formulas (Find: “+” and look for formulas with numeric constants, or use the Formulas > Show Formulas view).
+- Use Data Validation/Filter to find non‑numeric entries in numeric columns: Formula =ISNUMBER(cell) or filter the column for text.
+- Use Trace Precedents / Dependents to ensure totals link to the expected source cells.
+
+Summary of immediate actions I recommend
+1. Fix O32 to =E32+J32.
+2. Replace hard‑coded additions (e.g., C75, D75, H75, C76, etc.) with proper cell references or SUM formulas.
+3. Remove or relocate text entries in numeric columns (e.g., AB16 = "XX").
+4. Fill any truly missing product cells (E, J, T, etc.) with the correct numeric values or 0 (not text).
+5. Standardize formulas by copying a known-correct row pattern across the table, then recalc and spot-check totals (Grand Total row).
+
+If you want, I can:
+- Give the exact corrected formulas for any specific rows you name, or
+- Provide a small macro or step list to standardize formulas across all rows. Which would you prefer?

@@ -1,0 +1,56 @@
+I inspected Sheet A and found a few formula issues that are functional (can cause wrong or fragile results) and a couple of best-practice problems that make the workbook brittle. Short answers + fixes below.
+
+1) Hard‑coded summary numbers (big risk)
+- Problem: several summary/check cells contain fixed numbers instead of linking to the calculated cells. Examples:
+  - H281 (CAPITAL) = 3368575.78 (constant)
+  - H282 (PROFIT/LOSS) = 235932.79 (constant)
+  - H285 / H286 (ASSETS / LIABILITIES‑CAPITAL) = 3855164.52 (constants)
+  These will go out of sync as the underlying detail changes and defeat the automatic reconciliation.
+- Fix: replace constants with direct links to the calculated totals:
+  - H281 -> =D281
+  - H282 -> =D278
+  - H285 -> =D178
+  - H286 -> =D283
+  After this H287 (H285-H286) will continue to show zero and always stay correct.
+
+2) Incorrect / sloppy SUM ranges (fragile, can include blanks or miss rows)
+- Problems I found:
+  - D18 (Total current assets) uses SUM(D8:D17). D8 appears to be a header row — better to sum only the numeric lines.
+  - D199 (TOTAL PAYABLES) uses SUM(D182:D198) — row 182 isn't used; the payable detail starts at row 183 so row 182 is likely a header and shouldn’t be included.
+  - C and E columns have the same pattern in a few totals.
+- Fix: tighten the ranges to the explicit numeric ranges:
+  - D18 -> =SUM(D9:D16)  (or =D9+D10+D11+... if you prefer explicit cells)
+  - D199 -> =SUM(D183:D198)
+  - Update the corresponding C and E totals similarly (C18, E18, C199, E199).
+- Why: prevents accidental inclusion of non‑numeric text or missing a detail row if layout shifts.
+
+3) Duplicate/indirect property totals: make one canonical subtotal
+- Problem: property and equipment totals are computed more than once using different routes:
+  - D30 is computed from D25/D26/D28 (each of which reference the detailed rows D155:D161), and D162 is SUM(D155:D161). This works now but is fragile/difficult to audit (double indirection).
+- Fix (pick one canonical route):
+  - Option A (recommended): set D30 = D162 (i.e. one subtotal cell references the detailed SUM), and keep D162 = SUM(D155:D161). Then keep net property D34 = D30 + D32 (or better D34 = D162 + D170).
+  - Or make D34 explicitly =D162 + D170 so it’s obvious net = gross + accumulated depreciation.
+- Why: one clear chain reduces chance of double counting or missed rows and simplifies audits.
+
+4) Readability / sign clarity for "Less accumulated depreciation"
+- Problem: accumulated depreciation items are stored as negative numbers and then added (e.g. D34 = D30 + D32). That works, but it’s easy to misread/accidentally reverse signs.
+- Fix (optional, for clarity): write D34 = D30 - ABS(D32) or D34 = D30 + D32 but add a comment to D32 that it’s negative. This is only a clarity improvement.
+
+5) Minor (non‑functional) issues
+- Typos in labels (e.g., “Due rom officers and employeess”, “Curent liabilities”). Fix for presentation only.
+
+Quick checklist of exact changes to make now
+- Replace constants:
+  - H281 :=D281
+  - H282 :=D278
+  - H285 :=D178
+  - H286 :=D283
+- Fix SUM ranges:
+  - D18 :=SUM(D9:D16) (and C18/E18 similarly)
+  - D199 :=SUM(D183:D198) (and C199/E199 similarly)
+- Standardize property totals:
+  - D30 :=D162  (or D34 := D162 + D170)
+- Optional clarity:
+  - D34 :=D162 + D170 or D30 - ABS(D32) — pick whichever reads clearer to users.
+
+If you want, I can produce a short list of every cell that currently contains a hard-coded value that should be a formula (so you can replace them), or I can give an updated, cleaned version of the key formulas (copy/paste ready). Which would you prefer?

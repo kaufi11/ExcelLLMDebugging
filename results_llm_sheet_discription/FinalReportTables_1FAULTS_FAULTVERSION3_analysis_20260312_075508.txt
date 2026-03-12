@@ -1,0 +1,38 @@
+Summary of the errors I found (short) and simple fixes:
+
+1) Wrong hard-coded value in Table G.2 (Production — partner 4)
+- Error: Table G.2 cell F14 contains =4 (a constant). That gives partner 4 a production cost of 4 EUR instead of the actual aggregated amount.
+- Fix: Replace the =4 with the same SUMIF pattern used for the other partners. Example formula for column F:
+  =SUMIF('Table G.6'!$C$5:$C$39,F$4,'Table G.6'!$H$5:$H$39)
+- Why: This pulls production costs for partner 4 from Table G.6 like the other partners.
+
+2) Totals exclude Staff Costs (Table G.2 totals and Table G.1 total)
+- Error A (Table G.2 TOTAL row): B26 (and C26:V26) currently =SUM(B17,B25) / =SUM(C17,C25) — these sums include Operating (B17) and Subcontracting (B25) but omit Staff Costs (row 5). So the per‑partner totals and the Total column are missing staff costs.
+- Fix A (Table G.2): Change TOTAL formulas to include Staff sub‑total (row 5). Example:
+  B26 -> =SUM(B5,B17,B25)
+  C26 -> =SUM(C5,C17,C25)
+  and copy that pattern across to V26.
+- Why: That makes TOTAL = Staff + Operating + Subcontracting for each partner and the overall Total column.
+
+- Error B (Table G.1 TOTAL D21): D21 is =SUM(D12,D20), i.e. it sums only Operating and Subcontracting realised expenditure and omits Staff Costs (D5).
+- Fix B (Table G.1): Change D21 to:
+  =SUM(D5,D12,D20)
+  (so it matches how B21 and C21 include row 5)
+- Why: Table G.1 TOTAL must include actuals for Staff Costs as well as Operating and Subcontracting.
+
+3) Fragile / confusing formulas in Table G.8 (per‑row SUMIF)
+- Issue: I5..N54 use SUMIF with single‑cell ranges like SUMIF($E5,$I$4,$H5). That works in Excel but is unconventional and harder to maintain/understand.
+- Fix (recommended): Replace the per‑row SUMIF with an IF that explicitly returns the row value or zero, then sum the column. Example in I5:
+  =IF($E5=I$4,$H5,0)
+  Copy I5 down to I54 and use B2 style SUM on the column (or keep the existing column totals).
+  Or, even simpler, create one summary cell per package using a single column SUMIF:
+  In the package summary cell (e.g. a header total cell): =SUMIF($E$5:$E$54,I$4,$H$5:$H$54)
+- Why: clearer, less error‑prone and easier to audit.
+
+Notes & quick checks
+- After fixing F14 and the TOTAL formulas, re-check Table G.1 D‑column values (they pull from Table G.2 B column). Totals should now match Contractual/Grant comparisons.
+- Make sure the Staff Costs input source (row 5) actually contains numbers or a pull from the correct source table — if staff costs are entered elsewhere, ensure they feed into Table G.2 row 5 (B5/C5/D5) before changing totals.
+
+If you want, I can:
+- give the exact cell-by-cell replacement formulas for all C26:V26 and for F14,
+- or produce a small macro/text patch you can paste to fix all cells at once.

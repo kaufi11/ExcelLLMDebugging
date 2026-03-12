@@ -1,0 +1,31 @@
+I reviewed the three sheets and found the problems and fixes. Short, clear steps below.
+
+1) Sheet E20-9 — error
+- Problem: In the second copy you omitted Utilities (C6) when computing the indirect hourly rate.
+  - Wrong formula (cell C11): =SUM(C4:C5)/C2
+  - Why it’s wrong: Indirect costs are Office rent + Support staff salaries + Utilities. Excluding C6 understates indirect cost/hour and all downstream calculations.
+- Fix: change C11 to include C6:
+  - Correct formula (cell C11): =SUM(C4:C6)/C2
+- Explanation: This gives the correct indirect cost per direct-labor hour. The allocation rate (C12) and job cost C14 then use the correct overhead amount.
+
+2) Sheet P20-3B — two formula errors (overhead calculation and total cost)
+- Error A (wrong row reference for overhead):
+  - Wrong formula (I10): =+F14*H10
+  - Why it’s wrong: F14 is the TOTAL direct labor (sum of F10:F12). Overhead for the row must use that row’s direct labor amount, not the total — using F14 massively overstates the overhead for row 10.
+  - Fix: use the row’s direct-labor amount:
+    - Correct formula (I10): =F10 * H10
+  - Explanation: Manufacturing overhead applied for a given entry = that entry’s direct-labor amount × overhead rate.
+
+- Error B (total cost does not sum all overhead entries):
+  - Wrong formula (I14): =+I10+F14+D14
+  - Why it’s wrong: That adds only I10 (overhead from row 10) instead of all overheads (I10:I12). So Total Cost is too small.
+  - Fix: sum all overheads, plus direct materials and direct labor totals:
+    - Correct formula (I14): =D14 + F14 + SUM(I10:I12)
+    - (Alternative equivalent): =SUM(D14, F14, I10:I12)
+  - Explanation: Total cost = total direct materials (D14) + total direct labor (F14) + total manufacturing overhead (sum of I10:I12).
+
+Optional quick check (after fixes)
+- E20-9: C10 = 2,240,000/16,000 = 140; C11 = (350,000+860,000+246,000)/16,000 = 91; C14 = (140+91)*220 = 50,820.
+- P20-3B: ensure I10 = F10*H10 etc., and I14 = D14+F14+SUM(I10:I12) to get the correct total.
+
+If you want, I can provide the exact corrected formulas pasted into each cell, or check any other sheet cells you suspect.

@@ -1,0 +1,48 @@
+Errors found and solutions:
+
+1. **Incorrect use of SUM for single cell arithmetic:**
+   - Example: In Year 1, cell C6 has `=SUM(B55)`. SUM is unnecessary and misleading here because B55 is a single cell.
+   - Similarly, in Year 1, cells B15, C15, etc. use `=SUM(B6+B14)` which is incorrect syntax. SUM expects a range or multiple arguments separated by commas, not an addition inside parentheses.
+   
+   **Solution:** Replace `=SUM(B55)` with `=B55` and replace `=SUM(B6+B14)` with `=B6+B14`. This applies to all similar formulas where SUM is used incorrectly for simple addition or referencing a single cell.
+
+2. **Inconsistent or wrong cell references in Year 2 sheet:**
+   - In Year 2, cell B6 formula is `'Year 1'!N55` which is correct (starting cash from Year 1 end).
+   - But cells C6 to N6 use `=B55`, `=SUM(C55)`, `=SUM(D55)` etc., which are referencing the same sheet (Year 2) but with inconsistent use of SUM and wrong references.
+   
+   **Solution:** For the cash on hand in Year 2, each month should reference the previous month's "CASH POSITION END OF MONTH" from Year 2, not use SUM. For example:
+   - C6 should be `=B55` (Year 2 B55)
+   - D6 should be `=C55`
+   - E6 should be `=D55`
+   - And so on, without SUM.
+   
+3. **In Year 2, missing or incorrect formulas for payroll expenses:**
+   - Cell A20 in Year 2 has label "Payroll Expenses (Direct Labor)" but the formula is in O22 and P22, not O20 and P20.
+   
+   **Solution:** Correct the formula placement to match the row label. Move or fix formulas so that Payroll Expenses (Direct Labor) row formulas are in row 20, not 22.
+
+4. **Division by zero or circular references risk in % of Sales columns:**
+   - Many formulas like `=+O9/O57` or `=+O17/O$57` assume O57 (total sales) is not zero.
+   - If O57 is zero, this causes #DIV/0! errors.
+   
+   **Solution:** Use IFERROR or IF to avoid division by zero, e.g. `=IF(O57=0,0,O9/O57)`.
+
+5. **Inconsistent use of "+" sign in formulas:**
+   - Formulas like `=+O9/O57` have unnecessary "+" sign.
+   
+   **Solution:** Remove "+" sign; use `=O9/O57`.
+
+6. **In Variance Analysis sheets, formulas like `=SUM(B15-B54)` are incorrect:**
+   - SUM is used with subtraction inside parentheses, which is not correct.
+   
+   **Solution:** Replace `=SUM(B15-B54)` with `=B15-B54`.
+
+Summary:
+- Remove unnecessary SUM for single cell references or simple arithmetic.
+- Fix references in Year 2 cash on hand row to correctly link previous month's ending cash.
+- Correct misplaced formulas for payroll expenses in Year 2.
+- Add error handling for division by zero in % of sales calculations.
+- Remove unnecessary "+" signs in formulas.
+- Fix SUM usage in variance sheets where subtraction is used.
+
+These fixes will correct formula errors and improve accuracy and clarity.

@@ -1,0 +1,84 @@
+Summary of workbook structure and key contents
+
+Overview
+- Workbook contains 6 sheets focused on store sales, business balance, cash flow planning and margin analysis. Many sheets prompt the user to "Fill in the blue areas" — input cells are expected; totals and KPI cells are calculated.
+
+Sheet-by-sheet summary
+
+1) Store Mgr Sales Worksheet
+- Layout: A1 title, A2 month line. Rows A4:A41 list daily rows (many repeated weekdays for a month). Columns B–Q are daily metrics:
+  - B: Actual, C: Plan, D: Sales LY, E: Sales Prior,
+  - F–H: Avg Transaction (TY/Plan/LY),
+  - I–K: IPT (TY/Plan/LY),
+  - L–M: Conversion (TY/LY),
+  - N–O: Weather (TY/LY), P: Holidays, Q: Comments.
+- Purpose: daily data capture for a month. No formulas were provided in this sheet in the spec.
+
+2) Balance of Business
+- Title in A1. Column headers in row 4: Department/Class (A), Sales $ (B), % to total (C), Margin $ (D), % to total (E), Markdown $ (F), % to total (G), GMROII (H), % to total (I), Space (J), % to total (K), Variance Sales to Margin (L).
+- Rows 5–14: department rows with base values in B,D,F,H,J and formulas for percent columns referencing row 15 totals.
+  - Example patterns: C5 = B5/B$15 (each department sales % = department sales ÷ total sales in B$15). Similarly E# = D#/D$15, G# = F#/F$15, I# = H#/H$15, K# = J#/J$15.
+  - L# = C# - E# (variance between sales % and margin %).
+  - Note: C11 is a fixed ratio formula =450/B$15 (hard-coded numerator).
+- Totals in row 15:
+  - A15: "Total", B15 = SUM(B5:B14), D15 = SUM(D5:D14), F15 = SUM(F5:F14), H15 = SUM(H5:H14), J15 = SUM(J5:J14).
+- Purpose: department-level P&L percentages vs totals; highlights variance between sales % and margin %.
+
+3) CashFlow (6-month cash flow budget planner)
+- Header with date/prepared-by. Columns arranged in 6 repeating month blocks: Month 1 in C/D, Month 2 in E/F, … Month 6 in M/N. Each month has Budget (odd columns) and Actual (even columns).
+- Sections:
+  - Cash In (Sales, Other income/loans, etc.). Line A total cash received on row 13: e.g., C13 = SUM(C9:C12) and similarly across months.
+  - Cash Out: fixed expense list on rows 18–34 (Suppliers, Rent, Payroll, etc.). Line B total cash paid out row 35: C35 = SUM(C18:C34), etc.
+  - Monthly cash flow summary:
+    - Line C (surplus/deficit) row 38: C38 = C13 - C35 (per month).
+    - Line D Cash on Hand row 39 (user input), Line E Cash available row 40: C40 = C39 + C38 (carry-forward formula). Row 41 mirrors end-of-month balances (= row 40).
+- Purpose: plan and track cash inflows/outflows and month-to-month cash available; standard rolling cash-on-hand logic.
+
+4) Maintained Margin Worksheet
+- Title and example vs your numbers layout.
+- Example columns show Net Sales, Markdowns, Allowances, Employee Discounts, Shrink Reserve and Inventory to be accounted for (C9 = 16650).
+- Key formulas:
+  - C11 = Cost of Goods Sold (example 9174).
+  - D9 = SUM(D4:D8) (user "Yours" inventory to be accounted for).
+  - D11 = D9 * D10 (COGS = inventory × cost %).
+  - D14 = D12 - D13 (Maintained margin = Net sales - COGS).
+  - D15 = D14 / D12 (MM %).
+- Purpose: calculate maintained margin and maintained margin % from inventory and cost %.
+
+5) Maintained Margin Report
+- Monthly maintained margin report, two columns COST (D) and SELLING (F).
+- Key items:
+  - Beginning Inventory (D5/F5), Receipts (D6/F6), Mark-ups (F7); Inventory to be accounted for D8 = SUM(D5:D7), F8 = SUM(F5:F7).
+  - Net Sales: E16 = SUM(E14:E15) (gross sales minus returns).
+  - Inventory reductions (sales, allowances, markdowns, employee discounts, shrink) summed in F25 = SUM(F19:F24).
+  - Cost of goods sold derivation: E30 = 9174 (example), E28/E29 show inventory at selling and % cost (100%-MU).
+  - Closing inventory: D39 = D36 - D37; F39 = F36 - F38.
+  - Maintained margin example: C32/D32/E32 show Net Sales - COGS = 5,826 and MM% = 0.388.
+- Purpose: reconciles inventory, COGS and maintained margin; mirrors worksheets used in retail inventory accounting.
+
+6) Formulas
+- Collection of common KPI formulas (instructions to fill blue areas).
+- Examples (cell references from sheet):
+  - Average Transaction: D5 = C5/C6 (Sales ÷ Number of Transactions).
+  - Items per ticket: D8 = C8/C9 (Total items sold ÷ Total transactions).
+  - Conversion rate: D11 = C11/C12 (Total transactions ÷ Total traffic).
+  - GMROII: D14 = C14/C15 (Maintained margin dollars ÷ Avg inventory at cost).
+  - Sales per sq ft: D17 = C17/C18 (Sales ÷ Selling area).
+  - Turnover: D20 = C20/C21 (Sales ÷ Avg inventory).
+  - Selling cost ratio, Return on Net Assets, Quick Ratio etc. all presented as value ÷ base with formulas shown.
+- Purpose: KPI reference sheet with formula templates for store performance metrics.
+
+Key relationships and dependencies
+- Balance of Business percentages rely on row 15 totals (B$15, D$15, F$15, H$15, J$15).
+- CashFlow uses per-month SUM ranges for inflows (rows 9–12) and outflows (rows 18–34) and computes surplus (Row 38) and rolling cash available (Row 40).
+- Maintained Margin sheets interrelate inventory-to-be-accounted, cost% and COGS to produce maintained margin and MM%.
+- Formulas sheet centralizes common KPI computations used elsewhere (e.g., GMROII, turnover, conversion).
+
+Notes / recommendations
+- Many cells expect user input (indicated by "Fill in the blue area"). Validate that totals (row 15 in Balance of Business, row 13/35 in CashFlow, inventory fields in Maintained Margin) are populated to enable correct % and KPI calculations.
+- Check the hard-coded value C11 = 450/B$15 in Balance of Business if that numerator should be dynamic.
+
+If you want, I can:
+- Map exact input cells (blue areas) by sheet,
+- Audit formulas for circular references or broken links,
+- Produce a one-page data-entry checklist for this workbook.

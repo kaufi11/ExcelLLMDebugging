@@ -1,0 +1,29 @@
+Summary of the error(s)
+- Cell O95 contains a hard-coded value 7 instead of a formula. It should show the underspend (revised allocation minus 12-month total) like the other rows.
+- Because O95 is a constant, the ESI subtotal (O99) and any downstream totals that include O99 will be incorrect by +7.
+- Minor: many cells use non‑standard formulas such as =SUM(D12-M12) or =SUM(C12+C26+...). These work, but are confusing and risk mistakes. Use plain subtraction (=D12-M12) and proper SUM syntax (=SUM(C12,C26,...) or a range) for clarity.
+
+Why this is a problem
+- Hard-coded numbers break automatic updates: if monthly figures (F:L) or revised allocation (D95) change, O95 won't update.
+- The wrong O95 value propagates into O99 and any totals that include it, producing incorrect underspend/variance totals.
+
+How to fix it (simple steps)
+1. Fix the immediate error:
+   - Select O95, delete 7 and enter: =D95-M95
+   - Press Enter. O95 will now show the correct underspend (and update automatically when D95 or the monthly totals change).
+
+2. Improve reliability and clarity (recommended):
+   - Replace formulas of the form =SUM(Dx-Mx) with =Dx-Mx (e.g., change =SUM(D12-M12) to =D12-M12).
+   - Replace =SUM(C12+C26+C31+...) with either =SUM(C12,C26,C31,...) or with a contiguous range if possible. This avoids confusing uses of SUM().
+   - Check for any other hard-coded numbers in totals: Home ribbon → Find & Select → Go To Special → Constants (tick Numbers) to locate constants that should be formulas. Fix as needed.
+
+How to check totals after fix
+- Turn on Show Formulas (Ctrl+`) to review all formulas quickly.
+- Or use ISFORMULA on suspicious cells (e.g., in a spare column put =ISFORMULA(O95)) to identify constants.
+
+Short example of corrected formulas
+- O95: =D95-M95
+- O12 (instead of =SUM(D12-M12)): =D12-M12
+- C72 (instead of =SUM(C12+C26+...)): =SUM(C12,C26,C31,C38,C56,C62,C70) or better create a contiguous totals area and use ranges.
+
+If you want, I can list every cell in column O that currently uses constants (not formulas) and provide the exact corrected formula for each.

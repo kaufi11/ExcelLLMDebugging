@@ -1,0 +1,45 @@
+Errors found in the "Seq Production Costs" sheet:
+
+1. **Cell B23 formula error:**
+   - Formula: `=B21+D21+G21`
+   - Problem: B21 and D21 are totals for Shotgun and Finished categories, but G21 is a count (`=COUNT(G19:G20)`), not a sum of costs.
+   - This causes the total cost in B23 to be incorrect because it adds a count instead of a cost.
+
+2. **Percentage calculations in columns C, E, H:**
+   - Formulas like `=B13/$B$21` in C13 assume $B$21 is never zero.
+   - If $B$21 or $D$21 or $G$21 is zero, these will cause division by zero errors.
+
+3. **Inconsistent use of $G$21 in percentage formulas:**
+   - In G21, formula is `=COUNT(G19:G20)` which returns a number of non-empty cells, not a total cost.
+   - Percentages in H column (e.g., H13: `=G13/$G$21`) are dividing by a count, not a cost, causing incorrect percentage results.
+
+---
+
+**Solutions:**
+
+1. **Fix B23 formula:**
+   - Change `=B21+D21+G21` to `=B21+D21+G19`
+   - Explanation: G19 is the sum of "Other Activities" costs; G21 is a count, not a cost. Use G19 to add the total cost of Other Activities.
+
+2. **Fix G21 formula:**
+   - Change `=COUNT(G19:G20)` to `=SUM(G19:G20)`
+   - Explanation: G21 should represent the grand total cost for Other Activities including indirect costs, not a count.
+
+3. **Fix percentage formulas in H column:**
+   - Since G21 is now a sum, the formulas like `=G13/$G$21` will correctly calculate percentages.
+
+4. **Add error handling for division by zero:**
+   - Wrap percentage formulas with IF to avoid errors, e.g.:
+     - `=IF($B$21=0, 0, B13/$B$21)`
+   - This prevents #DIV/0! errors if totals are zero.
+
+---
+
+**Summary:**
+
+- Replace `B23: =B21+D21+G21` with `=B21+D21+G19`
+- Replace `G21: =COUNT(G19:G20)` with `=SUM(G19:G20)`
+- Ensure percentage formulas in columns C, E, H divide by sums, not counts.
+- Add IF checks to avoid division by zero errors.
+
+These changes will correct total cost calculations and percentage displays.

@@ -1,0 +1,55 @@
+Summary of workbook structure and key contents
+
+Overall
+- Purpose: 11-year (2002–2013) financial model for "My Lemonade Business" with monthly-column layout by year (columns E–P). Inputs are flagged (note B36: "Inputs are in blue").
+- Flow: Income → Cashflow → Balance Sheet; Depreciation supports Income/Cashflow/Balance Sheet. A simplified "simple income" sheet and a "RoadMap" document model relationships.
+
+Sheet: Income (primary P&L / driver)
+- Key inputs (row D): growth rate D3 = 0.05 (5%); monthly price inflation D4 = 0.08/12; sugar/lemon usage and prices D5=0.2 cups sugar per cup, D6=1 lemon per cup, D7/D8 = 0.08/12 (price inflation reference).
+- Volumes/prices: E3 initial cups = 200,000; E4 price per cup = 4; E7 lemon price = 0.55; E8 sugar price = 0.375. Future columns propagate via year-over-year formulas (e.g., F3 = E3*(1+$D$3), F4 = E4*(1+$D$4), etc.).
+- Revenue: Online share D10 = 0.4; E10 = $D$10 * E3 * E4; Street sales use D11 = 1 - D10; monthly totals in row 12 (sum of channel revenues) and annualized in row 13 (=monthly*12).
+- COGS: quantities (rows 5–6) = volume * per-unit usage; costs = quantity * price (rows 15–16), total COGS row 17.
+- Gross profit monthly row 19 = revenue (row12) - COGS (row17); annualized row 20 = row19*12.
+- Fixed costs: rows 22–28 (GM salary E22=7,500; Credit card services E23=75; Web-hosting uses D24=500 referenced across; Advertising E25 = 2,500; Insurance E26=250; Benefits E27 = E22*0.25; Legal one-off E28 = 50,000).
+- Depreciation: row 31 pulls Depreciation!E7 etc.
+- Net profit monthly row 33 = gross profit - fixed costs (row29) - depreciation (row31); annualized row 34 = row33*12.
+
+Sheet: Depreciation
+- Links Balance Sheet to compute asset depreciation.
+- Original value pulled from Balance Sheet (D6 = 'Balance Sheet'!D8). Useful life in D7 = 7.
+- Period depreciation E7 = IF(E6>0, $D$6 / $D$7, 0) (straight-line). End-of-period value E8 = E6 - E7. Total accumulated depreciation cumulative in row 11.
+
+Sheet: Cashflow
+- Header dates pulled from Income sheet.
+- Cash from operations row 6 = Income!E33 etc (monthly net profit flows).
+- Depreciation row 7 = Depreciation!E7 etc (non-cash add-back).
+- Cash from investments row 9 shows repeated -100,000 cash outflows.
+- Cash from financing row 11 references Balance Sheet E18 (initial investment).
+- Net change in cash row 13 = SUM(operating + investing + financing rows).
+
+Sheet: Balance Sheet
+- Title and year headers link back to Income.
+- Current assets: Cash row 6 starts with Cashflow!D13 then carried forward cumulatively by adding each period's Cashflow!Exx (E6 = previous + Cashflow!E13 etc).
+- Long-term assets: Original value C8 = D8 = formula referencing D14 (see note below). Accumulated depreciation row 9 pulls Depreciation cumulative; balance-sheet asset value row 10 uses Depreciation!E8 etc.
+- Liabilities: loan (Lear Jet Finance Co.) initial D14 = 1,000,000; increases by Cashflow financing rows each period.
+- Equity: initial investment D18 = 1,200,000; Retained earnings row 19 accumulates Income!monthly net profits (E19 = Income!E33; F19 = Income!F33 + E19 etc). Totals reconcile Assets = Liabilities + Equity (rows 20–22).
+
+Sheet: simple income
+- Mini monthly P&L example (month columns with dates). Revenue E4=1,000 replicated across months; COGS lemons and sugar E7=500 / E8=250; gross profit row 11; small fixed consultant E13=25; net profit row 15 and annualized row 16.
+
+Sheet: RoadMap
+- Visual mapping of how Income, Cashflow, Balance Sheet, Depreciation and items interrelate (labels and flow diagram). Useful reference only.
+
+Notable mechanics and potential issues (brief)
+- Model is column-forward: initial values in column E propagate to subsequent columns with relative references.
+- Depreciation is straight-line: original asset value ÷ 7 used each period and accumulated.
+- Some odd/mismatched links that may need review:
+  - Balance Sheet C8/D8 source and Depreciation initial value references: Balance Sheet D8 = D14 (which is a liability amount), so long-term asset original value may be mis-linked to the loan cell.
+  - Sugar price inflation formulas (rows 4 and 8) use inconsistent absolute references ($D$4 vs $D$7) — double-check intended inflation driver.
+  - Many SUM formulas are redundant (e.g., E12 = SUM(E10:E10)) — they work but are verbose.
+  - Advertising and some fixed-cost rows copy forward in a staggered way (E25..P25 use relative references rather than constants), so check whether year-to-year values are intended to be identical or roll forward.
+
+If you want, I can:
+- Diagram key cell flows,
+- Flag and correct the inconsistent references, or
+- Produce a cleaned/annotated version highlighting inputs (blue) and assumptions.

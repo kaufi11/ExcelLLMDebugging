@@ -1,0 +1,18 @@
+Summary of the main error
+- Faulty cell: 1856!H25 (Total Revenues on sheet 1856, column H)
+- Error type: Wrong aggregate function (mechanical / formula error)
+- What’s wrong: H25 currently contains =COUNT(H9:H24). COUNT returns the number of numeric/non-blank cells, not the sum of values. So Total Revenues for column H on sheet 1856 is a count, not the monetary total.
+- Effect: That wrong total propagates up into the sheet-level totals and into the Summary sheet (you use 3D SUMs like =SUM('1003':'1856'!H25) and other formulas that reference the sheet-level totals). As a result column H totals (Carry Forward, Total Revenues, Total Net Resources, Ending Balance, etc.) are incorrect.
+
+Fix (quick)
+- Replace the formula in 1856!H25 with:
+  =SUM(H9:H24)
+
+Why this fixes it (short)
+- SUM(H9:H24) adds the revenue amounts in H9:H24 (monetary totals). COUNT(H9:H24) was only returning the count of entries, so the total dollars were lost and downstream cells that aggregate these totals became wrong. Changing to SUM restores the correct numeric total and makes all dependent totals recalculate correctly.
+
+Extra checks (recommended, 1–2 minutes)
+- Use Find (Ctrl+F) to search for "=COUNT(" across the workbook to see if any other totals were accidentally made with COUNT instead of SUM; correct those to SUM where they should be adding amounts.
+- After fixing, force recalculation (Ctrl+Alt+F9) to update all 3D SUM results.
+
+If you want, I can scan the workbook text you gave for any other COUNT→SUM candidates and list them — or produce the exact list of Summary cells that will update once 1856!H25 is fixed.

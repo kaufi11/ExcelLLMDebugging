@@ -1,0 +1,32 @@
+Errors found:
+
+1. **MasterMethod_Checks Sheet:**
+   - In column B (f(n)) for row 19 (n=8), the formula is `=A19*2` instead of `=A19/2` like other rows. This inconsistency likely causes incorrect values.
+   - In rows 11 and 12, the formula in H (Theta Term) is `=LOG(A11,2)` and `=LOG(A12,2)` but for n=0 (row 11), `LOG(0,2)` is undefined and will cause an error.
+   
+2. **SubstitutionMethod_Checks Sheet:**
+   - In rows 10 to 18, the formulas for B and C columns are missing multiplication by `A10` in C10 (should be consistent with others). Specifically, C10 formula is `=$B$5*LOG(LOG(A10,2),2)` but it should be `=$B$5*A10*LOG(LOG(A10,2),2)` to match the pattern.
+   - In rows 19 to 30, the formula for D column references `$D$11`, `$D$12`, etc., which are cells inside the same column and row range, likely causing circular references or incorrect values.
+   - In row 10 (n=1), the formula `=5*1 + A10/LOG(A10,2)` has `LOG(1,2)` which is 0, causing division by zero error.
+
+---
+
+**Solutions:**
+
+1. **MasterMethod_Checks Sheet:**
+   - Change B19 formula from `=A19*2` to `=A19/2` to keep consistency.
+   - For row 11 (n=0), avoid `LOG(0,2)` by either starting n from 1 or using `IF(A11=0,"",LOG(A11,2))` to prevent errors.
+
+2. **SubstitutionMethod_Checks Sheet:**
+   - Fix C10 formula to `=$B$5*A10*LOG(LOG(A10,2),2)` to match others.
+   - Check and correct D column formulas to avoid circular references. Use fixed constants or correct references outside the D column.
+   - For n=1 (row 10), avoid division by zero by adding an IF condition: `=5*1 + IF(LOG(A10,2)=0,0,A10/LOG(A10,2))` or start n from 2.
+
+---
+
+**Explanation:**
+
+- Consistent formulas ensure correct calculations.
+- Logarithm of 0 or 1 in base 2 causes errors or division by zero.
+- Circular references cause Excel to fail or give wrong results.
+- Using IF conditions or adjusting starting values prevents errors in log and division operations.

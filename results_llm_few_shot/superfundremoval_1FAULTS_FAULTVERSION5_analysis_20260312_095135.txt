@@ -1,0 +1,23 @@
+Summary of errors found (short, with fixes)
+
+1) Faulty cell: G21
+- Problem: Formula uses division instead of multiplication: =IF(C21="yes",(1/F21),IF(C21="no",(0/F21),""))
+- Effect: Produces a very large incorrect weighted score when C21 = "Yes" (and is inconsistent with every other weighted-score formula).
+- Fix: Use the same pattern as the other weighted-score cells:
+  =IF(C21="yes",1*F21,IF(C21="no",0*F21,""))
+- Explanation: The weighted score should be 1×weight when answer = Yes, 0×weight when No. The current formula divides by the weight instead.
+
+2) Potential (common) problem: Section weight-check formulas (F12, F24, F36, F56)
+- Problem: They test equality to 100% exactly: e.g. =IF(SUM(F6:F10)<>100%,"ERROR","100%")
+  Floating‑point rounding can make a perfectly correct-looking set of decimals sum to 0.9999999 or 1.0000001 and return "ERROR".
+- Fix (robust): Round the sum or use a tolerance. Examples:
+  =IF(ROUND(SUM(F6:F10),3)<>1,"ERROR","100%")
+  or
+  =IF(ABS(SUM(F6:F10)-1)>0.00001,"ERROR","100%")
+- Explanation: Rounding or using ABS avoids false "ERROR" messages caused by tiny binary rounding differences.
+
+Optional suggestions (brief)
+- Make the "100%" result numeric 1 instead of text "100%" if you plan to use it in further calculations (e.g. return 1 or 1.0 rather than the string "100%").
+- Keep the IF text comparisons consistent (they are case-insensitive in Excel so "Yes" vs "yes" is fine).
+
+If you want, I can give the exact corrected formulas for every faulty cell and update the sheet for you.

@@ -1,0 +1,49 @@
+Summary: I found several formula errors caused by bad copy/paste / wrong sheet references and missing cost columns. Fixes are short — replace a few formulas and include material cost where it was omitted.
+
+Errors and fixes (short and clear)
+
+1) pricing sheet — Layoff cost for period 1 is wrong (C15 = 1)
+- Error: C15 is hard‑coded as 1 instead of computing layoff cost.
+- Fix: change C15 to =C5 * Sheet1!$B$20
+- Why: layoff cost should be (# laid off in period 1) * layoff cost/worker on Sheet1.
+
+2) Sheet2 — Overtime cost formulas point to wrong cells on Sheet1
+- Error: E16..E20 reference Sheet1!B24, B25, B26, B27, B28 (shifted) instead of the overtime cost cell.
+- Fix: replace each with the correct reference:
+  - E16 = E6 * Sheet1!$B$23
+  - E17 = E7 * Sheet1!$B$23
+  - E18 = E8 * Sheet1!$B$23
+  - E19 = E9 * Sheet1!$B$23
+  - E20 = E10 * Sheet1!$B$23
+- Why: overtime cost/ hour is in Sheet1!$B$23; relative moves produced wrong offsets.
+
+3) Sheet3 — Many cost formulas reference Sheet2 instead of Sheet3
+- Error: hiring/layoff (and possibly other per‑period cost rows) use Sheet2!B5 (and similar) instead of the current sheet’s cells (Sheet3!B5 etc.). Example: B15 = +Sheet1!$B$19*Sheet2!B5.
+- Fix: change all these to use local sheet cells. Example corrections:
+  - B15 = Sheet1!$B$19 * B5
+  - B16 = Sheet1!$B$19 * B6
+  - …and so on for B17..B20 (hiring)
+  - C15 = C5 * Sheet1!$B$20, C16 = C6 * Sheet1!$B$20, etc. (layoff)
+  - Also check any other formulas that reference Sheet2 and replace with the same‑sheet reference.
+- Why: copy/paste introduced inter‑sheet references; costs must be computed from the decision variables on the same sheet.
+
+4) Sheet2 — Material cost missing from period cost block / Total Cost
+- Error: the period cost block on Sheet2 includes B:H but no material cost column (I). Total Cost sums only B15:H20, so material cost (production * material unit cost) is not included.
+- Fix:
+  - Add an I15:I20 formula: I15 = I5 * Sheet1!$B$16 (and copy down).
+  - Change total: C22 = SUM(B15:I20)
+- Why: material cost is a real cost component and must be included in the total.
+
+5) Sheet3 — Inconsistent revenue formula (possible)
+- Observation: Sheet3 C24 = SUM(J5:J10) * 31 (uses a fixed price 31). pricing sheet uses SUMPRODUCT(J5:J10,K5:K10).
+- Action: decide which is intended:
+  - If price is per period (column K), use: C24 = SUMPRODUCT(J5:J10, K5:K10)
+  - If price is constant 31, put that constant in a parameter cell (Sheet1) and use =SUM(J5:J10) * Sheet1!$B$xx for clarity.
+- Why: consistency prevents hidden assumptions.
+
+Quick troubleshooting tips
+- Use absolute references for parameter cells (Sheet1!$B$23 etc.) — you already mostly do this for Sheet1 but check the ones that were missing $.
+- After copying formulas across rows/sheets, scan for any references that point to other sheets (Sheet2!, Sheet1!B24, Sheet1!B25…) — those are likely mistakes.
+- To find bad references quickly: Home → Find (Ctrl+F) search for "Sheet2!" or "Sheet1!B2" style offsets.
+
+If you want, I can give the exact corrected formulas for every affected cell (I can list them row by row) or produce a patch list you can paste into the workbook. Which do you prefer?

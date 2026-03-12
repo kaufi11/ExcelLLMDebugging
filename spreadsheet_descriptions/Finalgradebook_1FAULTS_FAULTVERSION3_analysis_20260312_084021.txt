@@ -1,0 +1,53 @@
+Summary of workbook (concise)
+
+Overall layout
+- Three sheets: Sheet1 (Gradebook & summary), Sheet2 (Homework scores), Sheet3 (Tests scores and normalization).
+- Final numeric grade is computed on a 100-point scale in Sheet1 column I and converted to a letter via a VLOOKUP using the translation table in K5:L17.
+
+Sheet1 (Master gradebook)
+- Header row: A: Students, C: Homework, D: Tests, E: Midterm, F: Final, G: Participation, I: Final Grade (Number), J: Final Grade (Letter).
+- Homework (C3:C17) are linked to Sheet2 P5:P19 (student homework averages).
+- Tests (D3:D17) are linked to Sheet3 P4:P18 (student test averages expressed as decimals 0–1).
+- Midterm (E) / Final (F) / Participation (G) are stored as decimals (e.g. 0.88).
+- Final numeric grade formula (I3:I17): =(C*0.125)+(D*25)+(E*25)+(F*25)+(G*12.5)
+  - Interpretation: Homework (0–100) * 0.125 = up to 12.5 points; Tests/Midterm/Final (0–1) * 25 = up to 25 points each; Participation (0–1) * 12.5 = up to 12.5 points. Total = 100.
+- Letter grade (J3:J17): =VLOOKUP(I#, $K$5:$L$17, 2, TRUE) — approximate match against the translation table in K5:L17 (K contains numeric cutoffs from 0 up to 96, L contains letter grades).
+- Class stats rows:
+  - High Grade (row 19): MAX across student rows for each column.
+  - Low Grade (row 20): MIN (some ranges are inconsistent — see issues).
+  - Class Average (row 21): intended to be AVERAGE (some cells currently incorrect — see issues).
+
+Sheet2 (Homework worksheet)
+- Header row: A Students; C:L Homework 1–10 (scores 0–100); N: Highest, O: Lowest, P: Student Average.
+- Per-student formulas:
+  - N#: =MAX(C#:L#)
+  - O#: =MIN(C#:L#)
+  - P#: =AVERAGE(C#:L#)
+- Sheet-level summary rows (21–23) compute max/min/average per homework column (C21..L23).
+
+Sheet3 (Tests worksheet)
+- Header row: A Students; test raw points in C, E, G, I, K (Test1..Test5 Points); D/F/H/J/L are Test Percentages (normalized).
+- Total possible points row (A2): C2=100, E2=110, G2=90, I2=95, K2=120; curve scale row (A24): D24=100, F24=110, H24=90, J24=95, L24=120.
+- Per-student test percentage formulas (D#, F#, H#, J#, L#): =Points / $<column>$24 (e.g. =C4/$D$24).
+- Student max/min/avg across test percentages:
+  - N#: =MAX(D#,F#,H#,J#,L#)
+  - O#: =MIN(D#,F#,H#,J#,L#)
+  - P#: =AVERAGE(D#,F#,H#,J#,L#) — intended to produce a 0–1 test average, which Sheet1 pulls into Tests column.
+
+Key values / tables
+- Grade translation table (Sheet1 K5:L17): K5=0 → L5=F; thresholds up to K17=96 → L17=A+.
+- Curve/total points (Sheet3 row 24): D24=100, F24=110, H24=90, J24=95, L24=120.
+
+Issues / recommended fixes (important, concise)
+1. Typo in Sheet1 I15: formula contains (15*25) — should be (F15*25).
+2. Several Sheet3 P# average formulas reference out-of-range cells (e.g. P4 uses L40, P5 uses L41, etc.) — should be AVERAGE(D4,F4,H4,J4,L4) for each corresponding row.
+3. Some class summary formulas on Sheet1 and Sheet3 use incorrect functions or inconsistent ranges:
+   - Sheet1 C21 shows =MAX(C5:C19) but should be =AVERAGE(C3:C17) (or appropriate student range).
+   - Sheet1 C20 uses MIN(C4:C18) (inconsistent with student rows starting at C3).
+   - Review all summary row ranges for off-by-one errors to match student row set (rows 3–17 for students on Sheet1).
+4. Spelling inconsistencies in headers: "Sudents" (Sheet1), "Studnets" (Sheet3) — cosmetic.
+5. Confirm VLOOKUP lookup_range K5:K17 is sorted ascending (it appears so) for approximate TRUE lookup.
+
+If you want, I can:
+- Provide corrected formulas for the specific cells above.
+- Produce a cleaned checklist of every incorrect range/typo to update.

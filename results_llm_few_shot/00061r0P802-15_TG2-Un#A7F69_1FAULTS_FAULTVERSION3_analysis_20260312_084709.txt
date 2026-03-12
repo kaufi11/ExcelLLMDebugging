@@ -1,0 +1,21 @@
+Summary of the problem
+- Faulty cell: A54 (and therefore A55:A63 etc. that depend on A54).
+- What went wrong: A54 contains =A53-1 (it subtracts 1) instead of continuing the increment. That makes A54 = 51 (a duplicate), then A55 = A54+1 = 52 (duplicate of A53), etc. The row numbering sequence is broken and duplicated from A54 downward.
+
+Fixes (pick one)
+1) Minimal fix (recommended)
+- Change A54 to: =A53+1
+- Then copy/fill that formula down from A54 to the last row (A55, A56 …) to restore the correct sequential numbers.
+
+2) More robust fix (prevents future breakage)
+- Put this in A2 and copy down, or put once and fill down:
+  =ROW()-1
+  (This auto-numbers rows so inserting/deleting rows keeps correct sequence.)
+- Or in modern Excel use SEQUENCE if you want a single-array fill:
+  =SEQUENCE(n,1,1,1) where n = number of rows needed.
+
+Why this fixes it (short)
+- The list was intended to be a simple +1 sequence. A54 subtracted 1, so all subsequent numbers were shifted/duplicated. Changing A54 to add 1 (or using ROW()/SEQUENCE) restores a consistent increment and removes duplicates.
+
+Additional notes (quick)
+- There are some missing data cells (emails marked “?”) and some addresses split across columns inconsistently — these are data quality issues, not formula errors. If you want, I can list missing fields or normalize columns.

@@ -1,0 +1,42 @@
+I inspected every formula in Sheet1 and found a few clear errors/inconsistencies plus a few places where values are left blank (which Excel treats as zero) and where hard‑coding makes the sheet fragile. Summary and recommended fixes below.
+
+1) Wrong constant used in D16
+- Current: D16 = 716 - C16 (returns 695.28)
+- Problem: 716 looks like a mistyped constant. Everywhere else the period net saving is computed as Income minus Consumption (B - C). D16 should follow that pattern.
+- Fix: replace with
+  D16 = B16 - C16
+
+2) Wrong initial assets / hard-coded initial asset in E16
+- Current: E16 = 1*(1.05) + D16 (returns 696.33)
+- Problems:
+  - The hard-coded multiplier 1 is almost certainly incorrect. Comments in the sheet say “With initial assets of $1,000 …” so the initial assets should be 1000 (or referenced to a cell containing initial assets), not 1.
+  - The formula hard-codes the interest rate (1.05) instead of using a single referenced rate cell, which makes maintenance error-prone.
+- Fix(es):
+  - If initial assets = 1000, use e.g.
+    E16 = 1000*(1 + $H$1) + D16
+    (where H1 contains the interest rate 0.05)
+  - Or, if you want to keep the current pattern of “previous accumulated assets grow at interest then add saving,” define an explicit initial-asset cell (say G1 = 1000) and write:
+    E16 = G1*(1 + $H$1) + D16
+  - At minimum correct the immediate error to:
+    E16 = 1000*(1+0.05) + D16
+    (or use cell refs instead of literal 1000 and 0.05)
+
+3) Propagation of the D16 / E16 errors
+- Because E17:E20 are computed from E16, the wrong D16 and E16 cause the entire “#1b” accumulated-assets column to be incorrect. Fixing D16 and E16 will fix the downstream values.
+
+4) Blank income cells in retirement years (B9 and B20)
+- B9 and B20 are blank but formulas use B9 and B20 (D9 = B9 - C9; D20 = B20 - C20). Excel treats blank as zero so the sheet currently produces negative values representing withdrawals (which may be intended).
+- Recommendation: If the intention is “no income in retirement,” explicitly put 0 in B9 and B20 (or link them to an “income in retirement” cell). This avoids confusion and makes model assumptions explicit.
+
+5) Minor consistency / maintainability suggestions
+- E5 is set to =D5 (which is OK if initial assets start at zero). For consistency with later rows, you could make E5 = InitialAssets*(1+rate)+D5 with InitialAssets = 0 (or reference a single initial-asset cell).
+- The interest rate (0.05) is hard-coded repeatedly (E6, E7, E8, E9, E17, E18, ...). Put the interest rate in one cell (e.g., H1 = 0.05) and use (1 + $H$1) throughout. This prevents errors if the rate must change.
+- Consumption column references are chained (C6 = C5, C7 = C6, …). That is fine if consumption is constant by design, but note it will carry any accidental change forward. Consider referencing a single “consumption” cell if you mean a fixed consumption level.
+
+Recap of concrete formula corrections to apply immediately
+- D16: change to =B16 - C16
+- E16: change to =1000*(1+0.05) + D16  (or better: =G1*(1+$H$1)+D16 with G1=initial assets, H1=interest rate)
+- Fill B9 and B20 with 0 (if intended) instead of leaving blank
+- Replace every literal 0.05 usage with a reference to a single interest-rate cell
+
+If you want, I can produce the exact corrected workbook (or a patch of changed cells) and propagate correct values down the columns.

@@ -1,0 +1,36 @@
+I looked through both sheets and found a few real errors (and some minor/usability issues). Short summary with exact fixes and simple explanations:
+
+1) STEP 1 — Missing row in Giving total
+- Problem: Cell E33 =SUM(E29:E30) — there are three input rows (E29:E31). One giving row (E31) is left out, so the TOTAL in E33 and downstream totals will be too small.
+- Fix: Change E33 to =SUM(E29:E31)
+- Why: includes all three giving rows so totals are correct.
+
+2) STEP 1 — Odd single-cell SUM (minor)
+- Problem: Cell E43 =SUM(E42). This works (it returns E42) but is unnecessary and inconsistent.
+- Fix (optional): Replace with =E42 or, if you intended to include the label row as well, =SUM(E41:E42)
+- Why: clearer and avoids confusion.
+
+3) STEP 2 — SAVING percent uses wrong cell
+- Problem: Cell F10 (percent for "SAVING (10%)") is =H8/H6 (which divides Giving by Earnings).
+- Fix: Change F10 to =H10/H6
+- Why: percent for SAVING must be H10 (the saving dollar amount) divided by Earnings (H6). Using H8 mislabels giving as saving and breaks all percent calculations downstream.
+
+4) STEP 2 — Tax amount hard-coded (causes wrong percents)
+- Problem: Cell H14 is hard-coded as 4. H14 is supposed to be the TAX W/H & PAYMENTS dollar amount (15–25% category). With H14 =4 the F14 percent is meaningless and H16 (ENJOYING = H6-H8-H10-H12-H14) is wrong.
+- Fix: Set H14 to pull the tax-withheld total from Step 1. Use:
+  H14 ='STEP 1 OF 2'!G22
+- Why: G22 on Step 1 is the sum of tax withheld from jobs (SUM(G11:G20)). Linking that ensures the TAX category in Step 2 reflects the Step 1 data and the percent F14 (=H14/H6) becomes correct.
+
+5) SUM(...) used around arithmetic (style / potential confusion)
+- Problem: Formulas like I33 =SUM(G32+I32) and M33 =SUM(K32+M32) use SUM around an arithmetic expression. They work, but are non‑standard and can confuse users.
+- Fix (optional, readability): Replace with I33 =G32+I32 and M33 =K32+M32 or I33 =SUM(G32,I32)
+- Why: clearer and matches common Excel practice.
+
+Quick checklist to implement:
+- Change STEP 1 E33 → =SUM(E29:E31)
+- (Optional) Change STEP 1 E43 → =E42 or =SUM(E41:E42)
+- Change STEP 2 F10 → =H10/H6
+- Change STEP 2 H14 → ='STEP 1 OF 2'!G22
+- (Optional) Replace SUM(G32+I32) style formulas with G32+I32 (or SUM(G32,I32)) wherever you prefer clarity.
+
+If you want, I can produce the exact list of corrected formulas for every affected cell (copy-paste ready), or show how these fixes change the final totals so you can verify. Which would you prefer?

@@ -1,0 +1,44 @@
+Summary of errors (short)
+1. Wrong multiplier in Q2 percent-change: cell Q2!H9 uses *397 instead of *100.
+2. Division-by-zero risk / #DIV/0! errors: many H% formulas divide by F (2002) where F = 0 (e.g., Q1 F9, F12; other quarters). Those will error.
+3. Manual / inconsistent entries instead of formulas:
+   - Q3 2003-4 Qtr!L11 contains =-80+40 (should be a single number).
+   - Several H11 cells (and possibly others) are hard-coded 0 instead of using the same %‑change formula as other rows.
+4. Potentially confusing sign behavior: the percent-change formula (= (D-F)/F*100) gives counterintuitive signs when F is negative (e.g., receivables securitization). Decide whether you want change relative to F or relative magnitude.
+
+Fixes and exact formulas (easy to apply)
+1. Fix the multiplier typo (Q2 H9):
+   Replace =+((D9-F9)/F9)*397 with:
+   =IFERROR((D9-F9)/F9*100,"")
+   Explanation: corrects *397 → *100 and wraps in IFERROR so divide-by-zero returns blank instead of #DIV/0!.
+
+2. Replace all raw percent-change formulas of the form =+((D#-F#)/F#)*100 with a safe version:
+   Option A — preserve original sign behavior:
+     =IFERROR((D#-F#)/F#*100,"")
+   Option B — explicitly show "N/A" when prior year is zero:
+     =IF(F#=0,"N/A",(D#-F#)/F#*100)
+   Apply across all H cells (rows 9, 12, 14, etc.).
+   Explanation: prevents #DIV/0! and standardizes percent-change output.
+
+3. Fix manual arithmetic in Q3 2003-4 Qtr L11:
+   Replace =-80+40 with the numeric result -40 (or with the intended source cell value).
+   Explanation: avoids unnecessary formula and potential copy/paste errors.
+
+4. Standardize H11 (and similar) to use percent-change formula:
+   If you want percent change in magnitude when F is negative, use:
+     =IF(F11=0,"N/A",(D11-F11)/ABS(F11)*100)
+   If you want the algebraic percent change (current formula style), use Option A above:
+     =IFERROR((D11-F11)/F11*100,"")
+   Explanation: choose ABS(F) if you want improvement (less negative) to show as positive %.
+
+Other small checks
+- Verify J6/J7 headers to ensure the J column actually matches the period shown (Six/Nine/Twelve months). Not a formula error but worth checking for consistency.
+- Free cash flow rows (SUM of 9:12) are correct given the signed numbers.
+
+How to apply quickly
+- Use Find/Replace for the bad pattern "*397" → "*100" or edit the single cell.
+- Select the H column range and paste the IFERROR formula once, then fill down / across.
+- Replace the =-80+40 cell with -40.
+- Set calculation mode to Automatic and review any remaining "N/A" or blanks.
+
+If you want, I can produce the exact replacement formulas for each affected cell in the workbook (sheet + cell) or give a macro to automate the fixes. Which would you prefer?

@@ -1,0 +1,38 @@
+Summary — what’s wrong
+- Many cells show the literal text "FORMULA =..." instead of an active formula (for example D1 is "FORMULA =TODAY()"). That prevents Excel from calculating values.
+- Column B is intended to be a simple running index (B12 = 1, B13 = B12+1, etc.) but several B-cells contain wrong or hard-coded formulas that break the sequence. Notable examples:
+  - B26 is =602+1 (hard-coded 603) — most likely a typo; should continue the sequence.
+  - B40 =+B53+1, B47 =+B54+1, B53 =+B38+1, B97 =+B221+1, etc. — those B formulas reference cells that are below them or in unrelated blocks, causing jumps or wrong numbers.
+- Because of the above, the numbering in column B is inconsistent and some formulas may not evaluate or may produce unexpected values.
+
+Why this happened
+- The sheet appears to have been exported or edited so formulas were stored as text prefixed with "FORMULA =". Also some manual edits (like entering 602) or bad copy/paste changed row references so the increment chain is broken.
+
+How to fix (quick, safe steps)
+1. Backup the workbook (save a copy) before changes.
+2. Convert textual formulas into real formulas:
+   - Use Find & Replace (Ctrl+H).
+   - Find what: FORMULA =
+   - Replace with: =
+   - Scope: Sheet (or Workbook if this problem is on multiple sheets).
+   - Click Replace All.
+   - This will turn text like "FORMULA =+B12+1" into "=+B12+1" which Excel will evaluate.
+   - Confirm formulas now evaluate (you can toggle Show Formulas with Ctrl+` to verify).
+3. Fix the running index in column B (recommended approach — rebuild the sequence):
+   - Put 1 in B12 (if not present).
+   - In B13 enter: =B12+1
+   - Drag (or double‑click the fill handle) down the column through the last row that needs numbering. This will overwrite any corrupted B formulas with the correct sequential formula.
+   - Alternatively, select the whole B range and use Fill Down (Ctrl+D) after entering the correct formula in the first cell of the range.
+4. Correct any remaining hard-coded outliers (example B26):
+   - After step 3 B26 will be corrected automatically if you filled the column. If you prefer manual, change B26 from =602+1 to =B25+1.
+5. Check for circular references:
+   - After fixes Excel will warn if a circular reference exists. If it does, note the cells in the circular reference and change them so each B cell references the previous row only.
+6. Spot-check other columns that showed "FORMULA =" (e.g., D1) to confirm DATE and other formulas now calculated.
+
+Why this solution works (short)
+- Replacing "FORMULA =" with "=" converts literal text into proper Excel formulas so Excel can evaluate them.
+- Rebuilding the sequence in column B ensures every row’s number is based on the previous row (Bn = Bn-1 + 1), removing accidental jumps and references to cells below (which caused wrong outputs).
+
+If you want, I can:
+- Provide the exact Find/Replace parameters for the whole workbook safely, or
+- Produce a small macro to convert "FORMULA =" text to active formulas and rebuild column B automatically. Which would you prefer?

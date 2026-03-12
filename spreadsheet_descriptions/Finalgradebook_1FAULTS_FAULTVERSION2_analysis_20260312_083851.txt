@@ -1,0 +1,55 @@
+Summary of workbook (concise)
+
+Overall
+- Three sheets: Sheet1 (Gradebook summary), Sheet2 (Homework worksheet), Sheet3 (Tests worksheet).
+- Each student has row-level component data (homework, tests, midterm, final, participation) and summary rows for High/Low/Class Average.
+- Final numeric grades are converted to letter grades via a lookup table on Sheet1 (columns K:L).
+
+Sheet1 — Grade summary (layout & key formulas)
+- Columns:
+  - A: Students (A3:A17)
+  - C: Homework (C3:C17) — each cell = Sheet2!P# (student homework average from Sheet2)
+  - D: Tests (D3:D17) — each cell = Sheet3!P# (student test average from Sheet3, stored as decimal)
+  - E: Midterm (E3:E17) — decimals (e.g., 0.88)
+  - F: Final (F3:F17) — decimals
+  - G: Participation (G3:G17) — decimals
+  - I: Final Grade: Number (I3:I17) — formula: =(C*0.125)+(D*25)+(E*25)+(F*25)+(G*12.5)
+    - Interpretation: homework is on 0–100 and multiplied by 0.125 (12.5 points). tests/midterm/final/participation are stored as decimals (0–1) and multiplied by 25 or 12.5 to yield points out of 100.
+  - J: Final Grade: Letter (J3:J17) — formula: =VLOOKUP(I#, $K$5:$L$17, 2, TRUE())
+    - Lookup table in K5:L17 maps numeric thresholds to letter grades (e.g., K5=0 → F, K6=59.5 → D-, ... K17=96 → A+).
+- Summary rows: High Grade, Low Grade, Class Average present (various MAX/MIN/AVERAGE formulas).
+
+Sheet2 — Homework worksheet (layout & formulas)
+- Header row indicates Homework 1..10 in C3:L3; P3 is Student's Average; N/O are student max/min.
+- For each student row (C5:L19) are raw homework scores (0–100).
+- N#: =MAX(C#:L#), O#: =MIN(C#:L#), P#: =AVERAGE(C#:L#).
+- Sheet-level summary rows for Highest/Lowest/Class Average across students (rows 21–23 with MAX/MIN/AVERAGE).
+
+Sheet3 — Tests worksheet (layout & formulas)
+- Columns: test raw points in C/E/G/I/K (Test 1..5 Points). Percent columns D/F/H/J/L compute fraction of "Curve Scale" totals.
+  - Example: D# = C# / $D$24 (D24 = 100 from Curve Scale row 24).
+- P# is Student's Average of the test percentages (should be AVERAGE(D#,F#,H#,J#,L#)).
+- N/O are per-student highest/lowest test percentage.
+- Curve Scale (row 24): D24=100, F24=110, H24=90, J24=95, L24=120 (used as denominators for percent conversion).
+- Sheet-level summary rows for Highest/Lowest/Class Average (rows 20–22).
+
+Key values / weights
+- Homework weight: 12.5% (homework average in 0–100, multiplied by 0.125).
+- Tests: 25% (test averages stored as decimals, multiplied by 25 to produce points).
+- Midterm: 25% (decimal × 25).
+- Final: 25% (decimal × 25).
+- Participation: 12.5% (decimal × 12.5).
+- Curve scale per test: 100, 110, 90, 95, 120.
+
+Notable issues and inconsistencies (observed)
+- Mixed data scales: homework averages are 0–100; tests/midterm/final/participation are 0–1 decimals. The final-grade formula accounts for this, but it’s a mixed convention and easy to misinterpret.
+- Several apparent formula/cell-reference errors/typos:
+  - Sheet3 P# average formulas reference cells like L40, L41, L42, etc. (likely should be L4, L5, L6...). This will produce incorrect averages if those referenced cells are blank/incorrect.
+  - Sheet3 row14: F14 formula shown as =331/$F$24 (331 appears wrong; expected =E14/$F$24).
+  - Sheet1 summary formulas have inconsistent ranges (e.g., C21 uses MAX instead of AVERAGE per label; C20 uses MIN(C4:C18) while student data is C3:C17 — off-by-one ranges).
+  - Some headers have typos: "Sudents", "Studnets".
+- VLOOKUP table (K5:L17) appears to contain thresholds and letters; ensure it is sorted ascending by threshold for TRUE (approximate) lookup to work correctly (it appears sorted but verify).
+
+If you want, I can:
+- Fix the incorrect references and typos and give corrected formulas (e.g., standardize test percent averages, correct P# formulas, fix F14, align summary ranges), or
+- Produce a cleaned version of the grade formulas with unified percent scales (recommended: store all components as 0–1 or 0–100 consistently).

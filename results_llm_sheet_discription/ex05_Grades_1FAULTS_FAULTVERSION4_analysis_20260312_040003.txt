@@ -1,0 +1,31 @@
+Findings (short)
+- Error: Exams!G19 contains =SUM(E19:F19) — it omits Exam 1 (D19). All other Exam totals use =SUM(D#:F#).
+- Impact: Mittelstadt's exam total is 143 instead of the correct 214 — a 71‑point shortfall, which will lower that student's overall total/percent/letter.
+
+Fix 1 — quick correction
+- Edit Exams!G19 and change formula to:
+  =SUM(D19:F19)
+- Press Enter. Verify G6:G28 are consistent; if any other cell differs, correct similarly.
+
+Fix 2 — make totals consistent (recommended)
+- Put the correct formula in G6:
+  =SUM(D6:F6)
+- Then drag/fill G6 down through G28 so every row uses the same pattern. This prevents one‑off mistakes.
+
+Fix 3 — link Summary to source sheets (recommended)
+- Instead of entering category totals manually on Summary, pull them from the assessment sheets by student ID. Example formulas for row 6 (copy down):
+  - D6 (Homework total): =VLOOKUP($A6,Homework!$A:$H,8,FALSE)
+  - E6 (Projects total): =VLOOKUP($A6,Projects!$A:$G,7,FALSE)
+  - F6 (Quizzes total): =VLOOKUP($A6,Quizzes!$A:$J,10,FALSE)
+  - G6 (Exams total): =VLOOKUP($A6,Exams!$A:$G,7,FALSE)
+- Then H6 =SUM(D6:G6)
+- Percent (I6) = H6 / $H$30  (format as %) — H30 is the overall points possible.
+- Letter (J6) — use a lookup table or IFs, e.g. =IF(I6>=0.9,"A",IF(I6>=0.8,"B",IF(I6>=0.7,"C",IF(I6>=0.6,"D","F"))))
+
+Prevention tips (short)
+- Fill down formulas instead of typing individually.
+- Turn assessment ranges into Excel Tables and use structured references (keeps formulas consistent when adding/removing rows).
+- Use Show Formulas (Ctrl+`) or Formula Auditing to spot inconsistent formulas.
+- Use MATCH/INDEX instead of VLOOKUP if you may reorder columns, or use VLOOKUP with exact match as shown.
+
+If you want, I can give the exact formulas for all Summary rows, or create a small formula to scan the workbook and list any inconsistent SUM ranges automatically. Which would you prefer?

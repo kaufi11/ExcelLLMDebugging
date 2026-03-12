@@ -1,0 +1,28 @@
+Findings — clear error
+- Faulty cell: O95 (should be a formula like the other "underspend" cells).
+- Current value: 7 (hard-coded).
+- Why it's wrong: every other underspend cell is Dxx − Mxx. For row 95 D95 = 3 and M95 (SUM of the monthly entries) = 3, so the correct underspend is 0. The hard-coded 7 gives a wrong total and will not update if the inputs change.
+
+Fix (exact)
+- Change O95 to:
+  =D95-M95
+
+Other issues (quick, easy fixes)
+1) Inconsistent/odd use of SUM:
+   - Many cells use SUM around an arithmetic expression, e.g. =SUM(D12-M12) or =SUM(C12+C26+...). These return the correct numeric result now, but:
+     - they're confusing to read,
+     - they make copying or editing more error-prone,
+     - they can hide mistakes when arguments include text.
+   - Replace with either plain arithmetic or proper SUM argument lists:
+     - Use =D12-M12 (not =SUM(D12-M12))
+     - For adding scattered cells use =SUM(C12,C26,C31,...) rather than =SUM(C12+C26+...).
+
+2) Hard-coded values
+   - O95 is the only obvious hard-code. Scan for any other numbers entered where a formula should be (especially in columns O and M). Hard-coding breaks live updates.
+
+Why these fixes matter (short)
+- Using direct arithmetic (=D95-M95) and proper SUM ranges makes the sheet easier to audit, prevents wrong results when values change, and avoids accidental static numbers (hard-coding).
+
+If you want I can:
+- Provide a filtered list of every cell using SUM incorrectly, or
+- Show the corrected formulas for the key totals (C72, D72, M72, O72, etc.).

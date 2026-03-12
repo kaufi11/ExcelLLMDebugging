@@ -1,0 +1,21 @@
+I found two clear formula errors. Short fixes and why they matter:
+
+1) Faulty cell: O14
+- Wrong formula: =L14‑M14‑N14
+- Error type: Typo / arithmetic operator error
+- Why it’s wrong: All other O rows sum three component scores (L+M+N). O14 subtracts, giving a wrong (much smaller or negative) value that breaks P14 and all totals that use O14.
+- Fix: replace with =L14+M14+N14
+
+2) Faulty cell: AF33 (Totals row)
+- Current formula: =SUM(Z33:AD33)
+- Error type: Range-selection / structural fragility
+- Why it’s risky/wrong: SUM(Z33:AD33) sweeps across AA33 and AC33 (percent/ratio columns) in addition to the intended raw scores (Z33, AB33, AD33). If AA33 or AC33 are nonblank in the future, AF33 will be contaminated and every % that uses AF33 as denominator (AG%) will be wrong.
+- Fix (safer): =Z33+AB33+AD33
+- Explanation: explicitly sums only the three intended test components, preventing accidental inclusion of percentage columns.
+
+What to do after fixing:
+- Recalculate / press F9 (or let Excel auto-recalc).
+- Check row 14 (P14, S14, AI14, AJ14) and the AG% / AJ% columns across the sheet — they will update to correct values.
+- Scan for similar typos (a plus changed to minus or wrong range) — e.g., search for “+” vs “-” in O:O and for SUM over mixed ranges like SUM(X:Z) that might include percent columns.
+
+If you want, I can list every affected downstream cell (which %s/averages will change) or provide the exact corrected formulas for the whole sheet.

@@ -1,0 +1,22 @@
+Summary of errors
+- Faulty cell: A63 — it contains the hard-coded value 5 instead of continuing the sequential formula used elsewhere. This breaks the numbering sequence from that row onward.
+- Minor: inconsistent usage of =+ (cosmetic only; Excel accepts it) — not an error.
+
+Why A63 is a problem
+- All A-column cells are supposed to be sequential IDs built from the previous row (e.g. =A4+1). A63 =5 resets the chain, so every subsequent number is wrong/shifted.
+
+Quick fix (recommended)
+1. Replace A63 with this formula:
+   =A62+1
+2. Fill (drag) that formula down column A for all rows below to restore the continuous sequence.
+
+What this does: each row takes the prior row's number and adds 1, restoring the intended sequential IDs.
+
+Optional more robust approach (skip numbering for blank rows)
+If you want numbers only when column B has a course (and leave headers/empty rows blank), use:
+- In the first numbered row (A4): =IF(TRIM(B4)="","",1)
+- In A5 and copy down: =IF(TRIM(B5)="","",MAX($A$4:A4)+1)
+
+This will produce incremental IDs only for rows where column B contains text (so headers or truly blank rows stay blank).
+
+If you want, tell me how many rows you want fixed and I can give the exact range to fill or the single fill command to run.

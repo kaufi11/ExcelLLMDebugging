@@ -1,0 +1,42 @@
+Short answer — main errors I see and how to fix them
+
+1) Hard‑coded value in G25
+- Problem: G25 contains the constant 2 instead of the expected formula E25*F25. That cell will not update when the subscription count (F25) or rate (E25) change.
+- Fix: Enter the correct formula in G25:
+  =E25*F25
+  Then copy/fill that formula down the G column for all rows (drag the fill handle or double‑click it).
+
+Why: Per‑row totals must be computed from rate × quantity. Hard codes break that.
+
+2) Possible other non‑formula (constant) cells in column G
+- Problem: There may be other G cells accidentally overwritten with constants (so totals and the grand sum are wrong).
+- How to find them: Select column G → Home → Find & Select → Go To Special → Constants. Any hits are rows where G is not a formula.
+- Fix: For each constant found either re‑enter =Erow*Frow or copy the correct formula from a neighboring G cell.
+
+Why: SUM(G2:G404) only works if every G cell is a formula/result; constants can be outdated.
+
+3) Totals row uses fixed ranges (maintenance risk)
+- Current formulas: F407 =SUM(F2:F404) and G407 =SUM(G2:G404). Those are correct for the present data, but if you add or remove journal rows you must remember to adjust the ranges.
+- Better options:
+  - Convert the data to an Excel Table (select the whole range incl. headers, Ctrl+T). Then the totals auto‑extend and you can use structured refs or the Table total row.
+  - Or use a safe dynamic formula, e.g. (if column A always has titles):
+    F407 =SUM(F2:INDEX(F:F,COUNTA(A:A)))
+    G407 =SUM(G2:INDEX(G:G,COUNTA(A:A)))
+  - Simpler short term: expand the SUM ranges to a larger row limit (e.g. F2:F1000) if you expect <1000 rows.
+
+Why: prevents missing new rows from not being included in totals.
+
+4) Number formatting / rounding
+- Problem: Column E contains long decimals and columns E/G/H are not consistently formatted as currency/2 decimals.
+- Fix: Format columns E and G as Currency (Euro) with 2 decimals (Home → Number Format → Currency or Number → Decimal Places = 2). Optionally wrap per‑row total with ROUND if you must force stored rounding:
+  =ROUND(E2*F2, 2)
+
+Why: improves readability and prevents tiny floating‑point artifacts.
+
+Summary of quick actions you can perform now
+1. Fix G25: replace with =E25*F25.  
+2. Select column G → Find & Select → Go To Special → Constants → correct any constants by entering =Erow*Frow or copying formula down.  
+3. Convert range to an Excel Table (Ctrl+T) so formulas and totals auto‑expand.  
+4. Apply Currency/2‑decimals format to E and G (and H if required).
+
+If you want, I can (a) list every row where G is a constant instead of a formula, (b) give you the exact dynamic SUM formulas for your sheet, or (c) show step‑by‑step screenshots (or a small macro) to copy the correct formula down. Which would you prefer?

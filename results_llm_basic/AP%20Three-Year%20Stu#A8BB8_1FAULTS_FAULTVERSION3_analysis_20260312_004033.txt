@@ -1,0 +1,36 @@
+I reviewed the workbook and found a few clear, fixable formula errors and some inconsistent practices that will cause wrong totals or make the sheet hard to maintain.
+
+Summary of the actual errors and fixes (short and actionable)
+
+1) Wrong range in F10
+- Problem: F10 is =SUM(F6:F9) — it omits row 5 (F5 = 1).
+- Effect: F10 is 1 too small.
+- Fix: Change F10 to =SUM(F5:F9).
+
+2) Hard‑coded total in I10
+- Problem: I10 contains the value 19 (hard‑coded) instead of summing the rows (I5:I9).
+- Effect: the cell will not update if any I5:I9 changes.
+- Fix: Replace the number with the formula =SUM(I5:I9).
+
+3) Incorrect/partial sum in E11
+- Problem: E11 =SUM(E5:E7) but row 11 looks like it should be a total across the same 5 rows used elsewhere.
+- Effect: E11 ignores E8 and E9, producing a wrong subtotal.
+- Fix: If the intent is the same as other totals, change E11 to =SUM(E5:E9).
+
+4) Inconsistent use of formulas vs manual values in “Total Exams” rows
+- Problem: Some “Total Exams” cells are hard‑typed numbers (e.g., C44 = 84, D44 = 73) while neighboring totals use SUM formulas (e.g., E44 =SUM(E39:E43)).
+- Effect: Manual numbers can become incorrect if source rows change; inconsistency makes auditing harder.
+- Fix: Replace hard‑coded totals with formulas like =SUM(C39:C43), =SUM(D39:D43), etc., and fill across the range so every subject column totals the same set of rows.
+
+Why these happened (short)
+- Likely a manual edit or a bad copy/paste/drag operation changed ranges or replaced formulas with constants. That leads to omitted rows or hard‑coded totals that won’t update.
+
+General recommended cleanup (short)
+- Make the data area a proper Excel Table, or at least standardize the total formulas and then copy them across all subject columns (e.g., set C10 =SUM(C5:C9) and drag/fill across to AL10).
+- Use consistent ranges for each “Total Exams” row (e.g., always rows 5:9 for the top school block, rows 39:43 for Davidson, etc.).
+- After changes, verify by spot-checking a few columns (compare SUM of detailed rows vs the total cell).
+- Optional: add conditional formatting to highlight totals that are constants (use ISFORMULA) so you can spot non‑formula totals quickly.
+
+If you want, I can:
+- Give the exact set of formulas to paste for each total row (row 10, row 44, row 36, row 62, etc.), or
+- Provide a single macro to find cells where a total should be a SUM but isn’t (e.g., check cells labeled “Total Exams” that are not formulas).

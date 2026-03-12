@@ -1,0 +1,31 @@
+Summary of the problem
+- The sheet uses a lot of incremental numbering formulas in column B like =+B12+1, but many of those formulas point at the wrong row (forward or far-away rows) instead of the previous row. That causes out‑of‑order, duplicated or jumped numbers. Examples:
+  - B40 =+B53+1 — this adds 1 to a later cell (B53) instead of B39 (previous item), so B40 will be wrong or will change when B53 changes.
+  - B47 =+B54+1 — same forward-reference problem.
+  - B97 =+B221+1 — jumps to far-away row B221; likely incorrect.
+  - B232 =+B106+1 — non-sequential/backward jumps that break the numbering flow.
+
+Why this is wrong (short)
+- Numbering should be based on the previous row in the same list/section. Points to a later or unrelated cell will produce wrong numbers, break the sequence, and are fragile when you insert/delete rows.
+- The prefix + in =+B12+1 is harmless (Excel ignores the leading +) but unnecessary and confusing.
+
+Fix (short, safe, and easy to maintain)
+1. Replace the broken formulas with a relative, previous‑row reference that only numbers when the row has content. Use a formula like:
+   - In the first numbered row (example B12) keep the starting value (e.g. 1).
+   - In the next row (example B13) use:
+     =IF($C13="","",B12+1)
+   - Then copy B13 down the column.
+   Explanation: this says “if there is no item name in column C of this row then leave blank, otherwise add 1 to the previous row’s number.” It keeps numbering sequential and adapts to inserts/deletes.
+
+2. Optional cleanup:
+   - Remove the unnecessary leading + (make =B12+1 instead of =+B12+1) for clarity.
+   - If you want a pure automatic sequence regardless of column C, you can use:
+     =IF(ROW()=ROW($B$12),1,IF($CROW()="","",OFFSET(B12,ROW()-ROW($B$12)-1,0)+1))
+     (but the simple previous-row IF is easier and recommended.)
+
+What to check after you fix
+- Copy the corrected formula down through all rows in column B.
+- Look at the previously wrong cells (B40, B47, B97, B232, etc.) — they should now show the correct sequential numbers or be blank if their C cell is empty.
+- If you have multiple sections where numbering restarts, make sure each section’s first number is explicitly set (e.g. 1) and the following rows use the IF(previous+1) pattern.
+
+If you want, I can give you the exact formula for your sheet and a short step‑by‑step to replace all current broken formulas safely. Which approach do you prefer: automatic sequential numbering based on column C, or always-number-every-row?

@@ -1,0 +1,42 @@
+I checked the Occupancy workbook and found two types of clear errors (plus one recommendation). Short summary, locations and fixes below.
+
+1) Wrong weighting in the “Latent load per person” formulas (unit/denominator error)
+- Where it appears:
+  - Sheet "Occ L0" cell F10
+  - Sheet "Occ L1-WD" cell F10
+  - Sheet "Occ L1-DU" cell F10
+  - Sheet "Occ L2-WD-DU" cell F11
+  - (Possibly other summary sheets that tried to average latent gains the same way)
+- What’s wrong:
+  - Those formulas weight latent gains using Occupancy!F19 and Occupancy!F20 in the denominator (and numerator), i.e. they divide by the sensible-per-person numbers instead of weighting by the schedule sums (F38/F39). That mixes incompatible units and gives a wrong average.
+- Example wrong formula:
+  =+(Occupancy!F22*Occupancy!F19 + Occupancy!F23*Occupancy!F20) / (Occupancy!F19 + Occupancy!F20)
+- Correct formula:
+  = (Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- Why this fixes it:
+  - F22/F23 = latent BTU/person/hr (living/bedroom). F38/F39 = the schedule totals for living/bedroom (weights). To produce a weighted-average latent BTU/person you must weight by schedule totals (F38/F39), not by sensible-per-person numbers (F19/F20). This keeps units consistent and yields the intended average.
+
+2) Accidental negative signs in one hourly aggregation (typo producing negative occupancy)
+- Where it appears:
+  - Sheet "Occ L2-WD-DU" cell D25
+- What’s wrong:
+  - Formula uses leading minus signs:
+    = -'Occ L3-WD-DU-LR'!E25 - 'Occ L3-WD-DU-LR'!F25
+  - That will return a negative value when it should be adding the two source columns.
+- Correct formula:
+  = 'Occ L3-WD-DU-LR'!E25 + 'Occ L3-WD-DU-LR'!F25
+- Why this fixes it:
+  - The cell is supposed to sum the two detailed columns; the stray negative signs invert the sign and break schedule fractions/values.
+
+3) Recommendation: check sheet-name consistency (spaces) and any other similar copy/paste errors
+- I noticed formulas referencing sheets with slightly different naming styles (e.g. 'OccL2-WD-DU' vs 'Occ L2-WD-DU'). If you rename sheets or have mixed names Excel will produce #REF errors. Confirm all sheet-name text in formulas matches the actual tab names.
+- Also scan the other hourly sum/copy formulas for accidental minus signs or wrong cell references (these mistakes often come from copying formulas across many cells).
+
+How to apply fixes quickly
+- Replace the latent-average formulas with the corrected formula shown above (use Find/Replace on the portion that uses F19+F20 if consistent).
+- Replace D25 on "Occ L2-WD-DU" with the simple sum formula (copy from adjacent rows that are correct).
+- After changes, check totals: the summary cells that should be weighted averages (F9/F10 on the summary sheets) should now make sense and not produce unit-mismatches. Also check any Day-schedule text outputs to ensure no #REF.
+
+If you want, I can:
+- Provide the exact Find/Replace strings for bulk fixing, or
+- Produce a short macro to correct all the instances automatically. Which would you prefer?

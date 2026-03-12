@@ -1,0 +1,32 @@
+Summary of errors I found
+1) Wrong operator in O11 (Row 11 Overall %):
+- O11 uses multiplication instead of division:
+  Current: =(SUM(B11:F11)+SUM(G11:M11)+N11)*(COUNT(B11:F11)*100+COUNT(G11:J11)*15+COUNT(K11:M11)*30+COUNT(N11)*150)*100
+- This produces a massively wrong overall percent and wrong letter grade in P11.
+
+2) Grade-count formulas (rows 49–53) can mis-count blanks as low scores:
+- COUNTIF with comparisons like "<90" or "<60" treats empty cells as 0 for the numeric comparison, so blank cells get counted in the lower-grade bins (inflates B/C/D/F counts).
+- Examples: B50 uses COUNTIF(...,"<90")-COUNTIF(...,"<80"); B53 uses COUNTIF(...,"<60"). These include blanks.
+
+Quick fixes (exact formulas to paste)
+
+1) Fix O11 (make it consistent with the other Overall formulas):
+Replace O11 with:
+=(SUM(B11:F11)+SUM(G11:M11)+N11)/(COUNT(B11:F11)*100+COUNT(G11:J11)*15+COUNT(K11:M11)*30+COUNT(N11)*150)*100
+
+2) Replace the COUNTIF-based grade-band formulas with COUNTIFS (this excludes blanks and is more reliable). Examples for column B:
+- # of A's (>=90): =COUNTIF(B$4:B$46,">=90")  [this is OK as is]
+- # of B's (80–89.999): =COUNTIFS(B$4:B$46,">=80",B$4:B$46,"<90")
+- # of C's (70–79.999): =COUNTIFS(B$4:B$46,">=70",B$4:B$46,"<80")
+- # of D's (60–69.999): =COUNTIFS(B$4:B$46,">=60",B$4:B$46,"<70")
+- # of F's (<60): =COUNTIFS(B$4:B$46,"<60",B$4:B$46,"<>")  (the "<>" excludes blanks)
+
+Apply the same pattern to columns C–F and to N (Final) and O (Overall) using their thresholds (for Final use absolute points, e.g. A: >=135, B: >=120 and <135, etc.).
+
+Extra suggestions
+- Search for other O-column formulas that differ from the standard pattern (use Excel Find for "*COUNT(" or look for any O cell with a "*" near the middle). Fix any that mistakenly use * instead of /.
+- Decide whether you want blanks to be ignored (current COUNT approach) or treated as zeros (fixed denominator). If you want blanks treated as zeros, replace COUNT(...) with the constant number of possible items (e.g., 5 exams = 5*100, 5 homeworks 15*4+30*3, etc.) so every student is compared to the same total possible points.
+
+If you want, I can:
+- Give all corrected COUNTIFS formulas for every column (B–F, G–M, N, O) ready to paste.
+- Scan the O4:O46 formulas and list any that differ from the standard correct formula.

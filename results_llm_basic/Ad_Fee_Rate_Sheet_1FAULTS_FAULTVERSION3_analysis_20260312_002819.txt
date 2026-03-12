@@ -1,0 +1,32 @@
+Summary of errors
+- Many formulas show #REF! (e.g. O39, P39, Q39, R39, K40, N40, O40, S40, S44, P45, P50, P51, P53, etc.). #REF! means those formulas point to cells or ranges that were deleted or moved.
+- A couple of suspicious formulas likely wrong even without #REF!: S45 = SUM(S44:S44) (oddly only sums S44) and lots of single‑cell SUMs/odd references that make the sheet fragile.
+- Because those base references are broken, percent allocations and totals (P-columns and S-columns) are calculating incorrectly or not at all, so E62 / E31 reconciliation will be wrong.
+
+Why it happened (short)
+- Someone deleted or moved the cell(s) that contained the “base” dollar amounts the allocation formulas multiplied by. The formulas were not updated, producing #REF! errors. Excel cannot recover the deleted references automatically.
+
+How to fix it (short steps)
+1. Find all #REF! occurrences:
+   - Press Ctrl+F, search for “#REF!” and go through each cell.
+2. Identify the intended base cell for each formula:
+   - Example: the row that allocates 69,500 (Cost Consultant) uses K39:L39:M39… where K39 is calculated as 69500*0.6811 etc. Other rows that show #REF! are missing that same “base” value. Determine whether the formulas should reference 69500, 65,500, E62, D21, or another cell.
+   - Use Trace Precedents (Formulas → Trace Precedents) on a working cell (for example K39) to see the original structure and find the correct source.
+3. Replace each #REF! in the formula with the correct reference or a constant:
+   - Example fixes (apply only if these are the intended bases in your sheet):
+     - O39 currently =#REF!*0.0547 → change to =69500*0.0547 (or better = $K$39*0.0547 if K39 contains your 69,500 base).
+     - K40, N40, O40 currently =#REF!*... → change to reference the correct discipline base (for example = $K$37*0.713 or = $E$62*0.713) depending on design intent.
+     - P45 currently =(O45/100)*#REF! → change #REF! to the overall amount that O45% should be applied to (for example = (O45/100)*$E$62).
+     - P50 / P51: change =(O50/100)*#REF! and =(O51/100)*#REF! to use the correct total cell instead of #REF!.
+     - P53 = P52-#REF! → replace #REF! with the correct cell (probably a subtotal cell you deleted).
+     - S44 = #REF! → replace with the correct result cell (or formula) that was deleted.
+   - If you’re not sure which cell to use, identify one working allocation row (K39..R39) and mirror its structure; the same “base” cell is usually used throughout the allocation rows.
+4. After replacing references, recalc and verify:
+   - Check E62 (SUM E36:E57) equals E31 (Total Basic Services / Contract Amount). If not, find which discipline cell is incorrect.
+5. Prevent future breaks:
+   - Use a single named cell for the “base” fee(s) (Formulas → Define Name) and update formulas to use that name (e.g., =BaseFee*0.0547). Deleting rows will not break named references as easily.
+   - Avoid deleting rows/columns that store base values or use protected sheets.
+
+If you want, I can:
+- Tell exactly which cell each broken formula should point to if you confirm which cell currently holds the main discipline total (for example: 69500, 65500, $E$62, $D$21, etc.), or
+- Provide corrected formulas for each flagged cell once you tell me which single cell is the intended base for those multiplications.

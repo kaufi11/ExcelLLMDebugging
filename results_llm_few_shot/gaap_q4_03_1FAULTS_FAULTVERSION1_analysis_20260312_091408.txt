@@ -1,0 +1,45 @@
+Summary — found 5 problems. Short fixes and explanations below.
+
+1) Problem: Divide-by-zero risk / wrong results when base = 0
+- Where: Q1!H9 and Q1!H12 (and any Change cells that divide by F-values that can be 0)
+- Why: Formula =((D9-F9)/F9)*100 will give #DIV/0! when F9 or F12 = 0.
+- Fix: Use an IF to avoid dividing by zero. Example:
+  =IF(F9=0,"",((D9-F9)/F9)*100)
+- Explanation: This leaves the cell blank (or you can show "n/a") when the base is 0 instead of error.
+
+2) Problem: Hard-coded zeros instead of percent-change formulas
+- Where: H11 on Q4, Q3 2003-4 Qtr and Q3 sheets (they show 0)
+- Why: These are hard-coded 0 but should show percent change from prior period.
+- Fix: Replace the 0 with the same Change formula pattern:
+  =IF(F11=0,"",((D11-F11)/F11)*100)
+- Explanation: This calculates the percent change and also avoids divide-by-zero.
+
+3) Problem: Inconsistent negative sign in percent-change
+- Where: Q2!H9
+- Why: The formula shown is =-((D9-F9)/F9)*100 which flips the sign compared with all other Change formulas.
+- Fix: Use the consistent formula:
+  =IF(F9=0,"",((D9-F9)/F9)*100)
+- Explanation: Keeps sign consistent (positive means increase versus prior year).
+
+4) Problem: Manual arithmetic used instead of a value/reference
+- Where: Q3 2003-4 Qtr!L11 (shows =-80+40)
+- Why: A manual expression is fragile and likely incorrect; it’s unclear which source cells those constants came from.
+- Fix: Replace with the correct source or a direct reference. Example (if those two numbers are in cells X and Y):
+  =X+Y
+  Or replace with the final correct value (entered explicitly) if appropriate.
+- Explanation: Always reference the source cells so changes upstream update this cell automatically — avoids hidden errors.
+
+5) (General) Potential presentation/consistency issue with negative bases
+- Where: Percent-change formulas across sheets where prior-period value (F…) is negative (e.g., accounts receivable securitization).
+- Why: Percent change using ((D-F)/F)*100 gives a sign that can be counterintuitive when F is negative.
+- Recommendation: Decide and apply one convention:
+  - Keep ((D-F)/F)*100 (mathematically correct), or
+  - Use change relative to absolute prior value: =IF(F=0,"",((D-F)/ABS(F))*100) if you want a positive improvement to show positive percent.
+- Explanation: Choose the convention that matches your reporting preference and apply consistently.
+
+Quick checklist to fix the workbook
+- Replace hard-coded 0s and manual arithmetic with formulas referencing source cells.
+- Wrap all percent-change formulas with IF(F=0,"",...) or IFERROR to avoid #DIV/0!.
+- Standardize the percent-change sign rule (use ABS(F) only if you want improvement always positive).
+
+If you want, I can give the exact corrected formulas pasted into each cell of the workbook — tell me whether you prefer to (a) treat negative prior values as normal percent change, or (b) treat “improvement” as always positive (use ABS).

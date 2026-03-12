@@ -1,0 +1,45 @@
+I reviewed the formulas in Sheet1 and found a few clear formula errors / inconsistencies. Summary first, then specific cells and suggested fixes.
+
+Summary of problems found
+- Incorrect ordering of arguments to ATAN2 throughout the sheet. Excel's ATAN2 syntax is ATAN2(x_num, y_num) where x_num is the x‑coordinate (real) and y_num is the y‑coordinate (imag)? — IMPORTANT CLARIFICATION: Excel's ATAN2 requires ATAN2(x_num, y_num) where x_num is the x value and y_num is the y value. To compute the phase angle of a complex number (real = Re, imag = Im) you must pass ATAN2(Im, Re) — i.e. ATAN2(imag_part, real_part). In this workbook most ATAN2 calls use ATAN2(Real, Imag) (swapped). That produces incorrect angle results.
+- A single outlier mismatching the standard G-column formula pattern (division used instead of multiplication): cell G43.
+
+Detailed items and recommended corrections
+
+1) ATAN2 argument order (many cells)
+- Problem: Many cells use ATAN2(G#,H#)*180/PI() (and ATAN2(K#,L#)*180/PI()) where G# is Real(...) and H# is Imag(...). For complex-phase you should use ATAN2(imag, real) => ATAN2(H#,G#).
+- Occurrence (non‑exhaustive list — the pattern is repeated across the sheet):
+  - Column J (VS angle) formulas: J4, J5, J6, … J54 use ATAN2(G#,H#)*180/PI().
+    - Example: J4 currently =ATAN2(G4,H4)*180/PI()
+    - Fix: =ATAN2(H4,G4)*180/PI()
+  - Column N (IS angle) formulas: N4, N5, N6, … N54 use ATAN2(K#,L#)*180/PI().
+    - Example: N4 currently =ATAN2(K4,L4)*180/PI()
+    - Fix: =ATAN2(L4,K4)*180/PI()
+  - Other angle computations with ATAN2 used similarly:
+    - B32 currently =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*COS(ATAN2(B28,B29)-ATAN2(B30,B31))
+    - B33 currently =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*SIN(ATAN2(B28,B29)-ATAN2(B30,B31))
+    - Fixes:
+      - B32: =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*COS(ATAN2(B29,B28)-ATAN2(B31,B30))
+      - B33: =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*SIN(ATAN2(B29,B28)-ATAN2(B31,B30))
+
+Reason: if Re = a and Im = b, the complex argument is atan2(b,a). The sheet is consistently sending (a,b) instead of (b,a), so all reported angles will be shifted by +/−90° or have wrong quadrants.
+
+2) Single formula typo / inconsistent pattern: G43
+- Problem: G43 formula does not follow the pattern used by other rows. Most G# cells use:
+    =($B$6*1000*E# - $B$14*$B$24*F#) / 1000
+  But G43 is:
+    =($B$6/1000/E43 - $B$14/$B$24/F43)/1000
+  That is division by E43/F43 instead of multiplication, and inconsistent unit scaling.
+- Current (G43): =($B$6/1000/E43-$B$14/$B$24/F43)/1000
+- Suggested correction (to match other rows): =($B$6*1000*E43 - $B$14*$B$24*F43) / 1000
+
+3) Notes / sanity checks
+- After fixing ATAN2 argument order, re-check J and N column outputs (angles) — many values will change substantially (signs and magnitudes).
+- The ATAN2 changes also affect B32/B33 (RhoV real/imag), and any other cells that used ATAN2 with swapped args.
+- I did not find other apparent copy/paste typos besides G43; the rest of the unit conversions and multipliers look consistent (the various *1000 and /1000 usage appears intentional for kV/A units).
+- Check B12/B13 references (LN(B4)) — these appear to be using the outer/inner radius ratio in B4 (2.7). If B4 is changed to another cell or renamed, LN reference should be updated/anchored.
+
+If you want, I can:
+- Produce a list of every cell that uses ATAN2 in the sheet so you can mass-replace the argument order.
+- Generate exact corrected formulas for every affected cell (J4:J54, N4:N54, B32,B33 and G43).
+- Optionally provide a corrected workbook copy with the fixes applied.

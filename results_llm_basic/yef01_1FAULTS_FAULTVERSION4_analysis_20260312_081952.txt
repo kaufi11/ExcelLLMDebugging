@@ -1,0 +1,69 @@
+I reviewed the four sheets you listed. I found several real formula mistakes and a few suspicious “manual tweaks” that will produce wrong totals or inconsistent percentages. Below are the problems (short) and exact fixes (very short, copy/paste formulas). I also show why the error matters.
+
+1) Revenues by Source — wrong subtraction
+- Error: C12 =147577404-1 (the “-1” is almost certainly a mistake).
+- Effect: Total (C16) and all percent calculations that use C16 (B10:B16) are wrong by 1 dollar.
+- Fix: remove the “-1”. Use:
+  C12: =147577404
+  (or if C12 should be a sum of components, use =SUM(...components...))
+- Why: Totals must equal the true sum; stray +/-1 corrupts percentages.
+
+2) Expenditures by Category — artificial tweak and range issue
+- Error A: B12 formula uses “…)-0.0001” — a tiny manual subtraction to force a rounding result.
+- Effect: Percentages are inconsistent and hard to trust; manual tiny adjustments hide underlying rounding problems.
+- Fix A: Remove the -0.0001 and use ROUND consistently only for display. For 4 decimal percent the formula should be:
+  B12: =ROUND(C12/$C$16,4)
+- Error B: B16 =SUM(B10:B15) and C16 =SUM(C10:C15) but row 15 appears missing or blank (range likely wrong).
+- Fix B: Make the SUM ranges match the actual data rows. If your data rows are 10–14, use:
+  B16: =SUM(B10:B14)
+  C16: =SUM(C10:C14)
+- Why: Use ROUND for presentation; don’t fudge raw formulas. Sum ranges should match populated rows.
+
+3) FTEE Calculation — several incorrect references and pasted values
+This sheet has the biggest problems: wrong cell references, some cells containing pasted static numbers instead of formulas, and inconsistent tiny adjustments (+0.01, -0.02, +0.000002). Fix these systematically:
+
+- General corrected logic (apply to every college row x, e.g. row 12 for NICC-01):
+  Cx (Credit FTEE) = Bx / 24
+  Fx (Non-credit FTEE) = Ex / 600
+  Hx (Total FTEE for college) = Cx + Fx     (add +0.01 only if you have a documented rounding rule; better: do not add)
+  Dx (% of college from credit) = Cx / Hx
+  Gx (% of college from non-credit) = Fx / Hx
+  Ix (College % of total FTEE) = Hx / $H$28
+
+- Exact fixes for concrete errors you have shown:
+  - H14 is wrong: currently H14 =+C15+F14 (off by one). Replace with:
+    H14: =C14 + F14
+  - Replace all Gx formulas that are correct as =Fxx/Hxx (keep these).
+  - Replace all D x cells that are currently static numbers (like 0.036029 etc) with:
+    Dx: =C x / H x
+  - Replace any G/H/I total-row odd adjustments (e.g. +0.02, -0.02, +0.000002) by proper SUMs:
+    B28: =SUM(B12:B26)
+    C28: =SUM(C12:C26)
+    E28: =SUM(E12:E26)
+    F28: =SUM(F12:F26)
+    H28: =SUM(H12:H26)
+    I28: =SUM(I12:I26)   (or use =1 if you want to force total 100% but SUM of Ix is appropriate)
+  - Remove the small manual adjustments in total formulas (no +0.02, -0.02, etc). If you need to display rounded values add ROUND around the displayed formula not manual tiny corrections.
+
+- Example (NICC-01 row 12) — copy/paste:
+  C12: =B12/24
+  F12: =E12/600
+  H12: =C12+F12
+  D12: =IF(H12=0,0,C12/H12)
+  G12: =IF(H12=0,0,F12/H12)
+  I12: =H12/$H$28
+
+- Why: Off-by-one references (C15 instead of C14) and pasted numbers break the chain: totals, college percent splits and the final % of total (I column) become invalid. Remove ad‑hoc adjustments and use consistent formulas + IF() to avoid divide-by-zero.
+
+4) Minor consistency/rounding suggestions (applies to all sheets)
+- Don’t hide rounding issues by adding or subtracting tiny constants. Use ROUND where you format or display percentages:
+  e.g. =ROUND(C10/$C$16,4)
+- Use absolute references consistently for totals ($C$16, $H$28).
+- Check SUM ranges – make sure you sum exactly the rows with data (no extra blank row references).
+- After fixing formulas, recalc and check that subtotals match the reported totals and that percentages sum to ~1 (or 100% after formatting).
+
+If you want, I can:
+- produce a corrected list of exact formulas for every affected cell (I can map every row 12–26 and show corrected formulas), or
+- take a screenshot or paste your actual formulas for the rows you want me to correct and I will return the corrected formulas.
+
+Which would you like next: full corrected formula map for the FTEE sheet, or just corrections applied to Revenues and Expenditures sheets?

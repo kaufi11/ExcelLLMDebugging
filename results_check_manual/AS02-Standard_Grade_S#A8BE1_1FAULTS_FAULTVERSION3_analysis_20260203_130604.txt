@@ -1,0 +1,31 @@
+Fehler (kurz):
+1. In Sheet SG1 ist die Zwischensumme für 2002 falsch berechnet: F53 steht auf COUNT statt SUM -> Gesamtsummen und Prozent‑Änderungen (G53, F63, G63) sind dadurch falsch.  
+2. Einige Zellen enthalten das Text‑Zeichen "-" (z.B. F44). Das verhindert korrekte Summen, weil "-" kein Zahlwert ist.  
+3. Divisionen können #DIV/0 erzeugen, wenn die Bezugszelle 0 oder leer ist (z.B. Prozent‑Änderungen).
+
+Lösungen (einfach, direkt umsetzbar) mit deutschen Formeln:
+
+A) Korrigieren der Zwischensumme 2002 (SG1):
+- Ersetze die falsche Formel in F53 durch:
+  =SUMME(F7:F51)
+
+B) Prozent‑Änderung robust machen (keine Division durch 0):
+- Ersetze G53 durch:
+  =WENN(E53=0;"";(F53-E53)/E53)
+- Ersetze G63 durch:
+  =WENN(E63=0;"";(F63-E63)/E63)
+
+C) Gesamttotal 2002 (SG1) sicherstellen:
+- Falls F63 von F53 abhängt, prüfe/ersetze F63 mit:
+  =SUMME(F53:F61)
+  (nachdem F53 korrigiert ist, ist F63 dann korrekt)
+
+D) "-" als Platzhalter entfernen / in Zahlen umwandeln:
+- Suche/Ersetze (Strg+H): ersetze alle Zellen mit "-" durch 0 oder lasse sie leer (je nach gewünschtem Verhalten). Alternativ kannst du Summen so bauen, dass Text ignoriert wird (SUMME macht das bereits), aber für konsistente Zahlenwerte ist Ersetzen empfehlenswert.
+
+Kurz erklärt:
+- COUNT zählt nur Zellen mit Zahlen (Anzahl), SUMME addiert die Zahlen — bei Summen muss SUMME verwendet werden.  
+- Die WENN‑Abfrage verhindert Fehler, wenn der Nenner 0 ist (anstatt #DIV/0 wird leer zurückgegeben).  
+- Textwerte wie "-" sind keine Zahlen und verfälschen Auswertungen / sehen oft wie fehlende Werte aus – besser als 0 oder leer halten.
+
+Wenn du willst, passe ich die konkreten Zellen in SG1 für dich an und prüfe, ob noch weitere COUNT statt SUMME vorkommen.

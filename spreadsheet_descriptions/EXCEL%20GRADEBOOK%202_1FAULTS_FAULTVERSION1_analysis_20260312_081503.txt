@@ -1,0 +1,31 @@
+Summary of workbook
+- Sheets: Sheet1 (populated), Sheet2 (empty), Sheet3 (empty).
+
+Sheet1 — layout and key values
+- Row 1: headers for categories and weights. Category weights are stored in C1 = 0.2 (Homework), K1 = 0.15 (Classwork), S1 = 0.25 (Quizzes), Z1 = 0.4 (Tests).
+- Columns (grouping):
+  - A: Student names (A2:A6).
+  - Homework: B:G (6 scores), H = Homework Total (SUM B:G), I = Homework Average that drops the lowest ((SUM(B:G)-MIN(B:G))/(COUNT(B:G)-1)).
+  - Classwork: J:O (6 scores), P = Classwork Total (SUM J:O), Q = Classwork Average that drops the lowest (same pattern as I).
+  - Quizzes: R:V (5 scores), W = Quiz Total (SUM R:V), X = Quiz Average that drops the lowest (same pattern as I/Q except one anomaly noted below).
+  - Tests: Y, AA, AB (3 scores), AC = Test Total (SUM Y:AB), AD = Test Average (AVERAGE(Y:AB)) — tests use a normal average (no drop).
+  - AE = Final Grade computed as weighted sum: (HomeworkAverage*C$1) + (ClassworkAverage*K$1) + (QuizAverage*S$1) + (TestAverage*Z$1). The formulas use row-anchored weight references (e.g., C$1) so they copy down correctly.
+
+Formulas and patterns
+- Totals: H/P/W/AC use SUM of their respective score ranges.
+- Category averages: I/Q/X generally use the pattern (SUM(range)-MIN(range))/(COUNT(range)-1) to drop the lowest score.
+- Tests average AD uses AVERAGE(range) (no lowest-score drop).
+- Final grade AE = I*C$1 + Q*K$1 + X*S$1 + AD*Z$1 (weights anchored to row 1).
+
+Notable items / issues
+- Weights are placed in interleaved columns (C1, K1, S1, Z1) rather than next to each category header — this is fine but can be slightly confusing when scanning columns.
+- Row 7 contains assignment/homework notes under many score columns (B7, D7, etc.).
+- An inconsistency/likely error: cell X5 uses = (SUM(R5:V5)+MIN(R5:V5))/(COUNT(R5:V5)+1) which differs from the other students’ quiz-average formula (it appears to add the MIN and increment the count instead of dropping the lowest). That should be corrected to match the other X formulas: =(SUM(R5:V5)-MIN(R5:V5))/(COUNT(R5:V5)-1).
+
+Rows present
+- Student data rows: 2–6 (Alderson, Brown, King, Reed, Vincent) with raw scores and calculated totals/averages/final grade.
+
+If you want, I can:
+- Correct the X5 formula.
+- Add conditional formatting for final grades.
+- Convert the weight cells to a compact weight table and update formulas to reference named ranges for clarity.

@@ -1,0 +1,30 @@
+Overview
+- Workbook contains three sheets; only Sheet1 is populated (Sheet2 and Sheet3 empty).
+- Sheet1 is a gradebook with student rows (rows 2–6) and an assignments/notes row (row 7). Column A = student names.
+
+Layout and key columns (Sheet1)
+- Homework: scores in B:G, weight in C1 = 0.2, total in H, average-with-lowest-drop in I.
+  - Hn = SUM(Bn:Gn)
+  - In = (SUM(Bn:Gn) - MIN(Bn:Gn)) / (COUNT(Bn:Gn) - 1)  (drops lowest homework)
+- Classwork: scores in J:O, weight in K1 = 0.15, total in P, average-with-lowest-drop in Q.
+  - Pn = SUM(Jn:On)
+  - Qn = (SUM(Jn:On) - MIN(Jn:On)) / (COUNT(Jn:On) - 1)  (drops lowest classwork)
+  - Note: Q5 is entered as =(COUNT(J5:O5)-MIN(J5:O5))/(COUNT(J5:O5)-1) which looks like a typo — it should use SUM(...) in the numerator.
+- Quizzes: scores in R:V, weight in S1 = 0.25, total in W, average-with-lowest-drop in X.
+  - Wn = SUM(Rn:Vn)
+  - Xn = (SUM(Rn:Vn) - MIN(Rn:Vn)) / (COUNT(Rn:Vn) - 1)  (drops lowest quiz)
+- Tests: scores in Y:AB, weight in Z1 = 0.4, total in AC, average in AD.
+  - ACn = SUM(Yn:ABn)
+  - ADn = AVERAGE(Yn:ABn)  (tests are averaged with no drop)
+- Final grade: column AE
+  - AEn = (In * C$1) + (Qn * K$1) + (Xn * S$1) + (ADn * Z$1)
+  - Uses absolute row-locked references to the weight cells in row 1.
+
+Students and sample data
+- Rows 2–6: five students (Alderson, Brown, King, Reed, Vincent) with individual scores filled for each category; totals and averages computed by the formulas above.
+- Row 7: assignment notes / homework directions populated under many of the score columns (e.g., B7, D7, J7, etc.).
+
+Notes / recommendations
+- Consistent pattern: each category has 6 items, a total column, and an average that drops the lowest score except for Tests (AD uses AVERAGE).
+- Fix Q5 formula to use SUM in the numerator.
+- Weights (C1, K1, S1, Z1) are centralized so final-grade formulas can be copied down and will update if weights change.

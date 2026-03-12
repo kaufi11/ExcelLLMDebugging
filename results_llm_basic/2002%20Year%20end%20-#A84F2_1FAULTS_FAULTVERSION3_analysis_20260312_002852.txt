@@ -1,0 +1,38 @@
+I reviewed the workbook and found a few real problems that can produce wrong totals, hard-to-find mistakes and broken links. Below are the issues (short) and exactly what to change and why.
+
+1) Text hyphen "-" used where numbers should be (causes SUMs to ignore the item)
+- Examples: Financial Statements!C39 (Bank overdraft shows "-"), several other cells show "-" for “nil” (C267, C39 etc).
+- Problem: "-" is text so SUM treats it as zero; if someone expects a numeric zero or a negative number the totals / signs are wrong or confusing.
+- Fix: replace "-" with 0 (or with a true negative number if appropriate). Example: Financial Statements!C39 → 0 (or =0). If you need to keep the dash visually, use a custom number format to show “-” for zero.
+
+2) Manual arithmetic injected into cells instead of using proper references (error‑prone and breaks tracing)
+- Examples: Financial Statements!E79 contains =476555.8+3116.33, E87 =103735.39+26083.05+11314.95, E93 and E95 and E98 similar.
+- Problem: these are hard‑coded sums of numbers instead of summing the item cells. If any underlying item changes the totals won’t update and auditing is hard.
+- Fix: change those cells to SUM ranges that reference the item rows. Example replace E79 (manually added numbers) with =SUM(E80:E91) if E80:E91 are the component lines (or the exact range of components). Do this consistently for all manual additions.
+
+3) Inconsistent sign conventions / confusing negatives
+- Examples: some disposals/proceeds are entered as negatives (E280 = -16647) and elsewhere they do =+E280 which propagates the negative; other places use "-" text. Cash paid to suppliers (C121) is entered as =-26907-7561074 — works but is non‑transparent.
+- Problem: inconsistent signs make cash flow and reconciliation formulas hard to audit and can invert items accidentally.
+- Fix: adopt one convention: receipts positive, payments negative. Use SUM and explicit unary minus for whole groups. Eg set Cash paid to suppliers = -SUM(range_of_payments) rather than hardcoding numbers. Convert E280 to a positive proceeds number if it's a receipt and adjust dependent formulas accordingly.
+
+4) Hard-coded values instead of links to the source cells in summary sheets
+- Example: Five Year Review!C15 is the 2002 subscriptions value typed in instead of = 'Financial Statements'!C54 (it may currently be the number not a formula).
+- Problem: summary page will not update if underlying financial statements change.
+- Fix: replace hard-coded numbers on the Five Year Review with direct references to the Financial Statements sheet, e.g. Five Year Review!C15 → = 'Financial Statements'!C54; Five Year Review!C16 → = 'Financial Statements'!C61 etc.
+
+5) A few formulas use explicit + or leading plus signs or odd constructs (not an error per se but confusing)
+- Examples: =+C330, =+C61+C54+C71, =+C280 etc.
+- Suggestion: remove the leading + and use standard formulas like =C330 or =C61+C54+C71 for readability. This reduces confusion when auditing.
+
+Quick prioritized action list (do these first)
+1. Replace text "-" with numeric 0 where appropriate (Bank overdraft C39, disposals C267 etc).
+2. Replace manual arithmetic cells with SUM references to the component rows (E79, E87, E93, E95, E98, E468, etc).
+3. Standardize sign convention (receipts +, payments -) and update dependent formulas (cash flow & notes).
+4. Replace hard-coded summary values with links to the Financial Statements (Five Year Review).
+5. Optional: remove leading plus signs for clarity.
+
+If you want, I can:
+- produce exact replacement formulas for each cell you list or
+- prepare a corrected copy of the sheet (point me to which cells you want fixed first).
+
+Which would you prefer?

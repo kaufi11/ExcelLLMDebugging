@@ -1,0 +1,28 @@
+Findings
+- One clear formula error: cell I21 contains =H21*38. It should be =H21*C21.
+  - Effect: I21 yields 38 instead of the correct weighted score 3 (H21=1 * C21=3). That overstates Oracle’s weighted total by 35 points.
+- Minor consistency issue: some weighted-score cells were entered as hard values instead of formulas (for example R8 and R9 show correct numbers but not a formula). Hard-coded values are risk points for future errors.
+
+Why it’s wrong
+- The pattern for each vendor’s weighted score is: WeightedScore = (VendorScore) * (CategoryWeight). For the Oracle column that is I = H * C. Using 38 instead of C21 breaks that pattern and produces the wrong subtotal.
+
+Fix (quick)
+1. Select I21 and replace the formula with:
+   =H21*C21
+2. Press Enter. Excel will recalc I44 (the Oracle WS sum) and any dependent totals.
+3. (Optional but recommended) For safety, copy the formula pattern down the Oracle weighted-score column: select I8, then drag/fill I8:I43 so each row uses Hrow*Crow.
+
+Immediate result (what changes)
+- I21 becomes 3 instead of 38 (1 * 3).
+- Oracle’s total weighted score is reduced by 35 points. Based on the totals you showed (Oracle overall = 142), the corrected Oracle overall becomes 142 − 35 = 107.
+- All sums and overall totals that reference I44 will update automatically after the fix.
+
+Recommendations to avoid similar errors
+- Make all weighted-score cells formulas (I8:I43, L8:L43, O8:O43, R8:R43). Do not enter numbers manually.
+- To enforce the pattern, enter I8 = H8*C8, then fill down I8:I43. Repeat for the other vendors (L = K*C, O = N*C, R = Q*C).
+- Use Find (Ctrl+F) to search for numeric constants inside formulas (e.g., search for "*38" or any number used in a formula) to catch other accidental constants.
+- After fixes, verify I44, L44, O44, R44 and overall totals (the summary cells) to confirm they match expected results.
+
+If you want, I can:
+- Give the exact corrected Excel formulas for the four vendor columns and for copying them down, or
+- Recompute all final totals for you and show the corrected overall table.

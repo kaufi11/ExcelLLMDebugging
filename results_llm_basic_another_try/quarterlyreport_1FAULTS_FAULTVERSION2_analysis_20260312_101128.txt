@@ -1,0 +1,49 @@
+Errors found:
+
+1. In Detail sheet, row 42 (Subtotal Salaries/Wages), the sum range in formula `=SUM(D36:D41)` includes rows with no data (D36 and D39-D40 are blank). This results in an incorrect subtotal.
+
+2. In Detail sheet, row 46 (Subtotal Salaries/Wages), formula `=SUM(D43:D45)` is correct, but row 41 (Other) has no value in D41, so subtotal might be off if data is missing.
+
+3. In Detail sheet, row 47 (Total Salaries/Wages), formula `=SUM(D46,D42,D35)` sums three subtotals, but row 42 subtotal includes empty rows, so total may be inaccurate.
+
+4. In Summary sheet, row 9 (Financial Aid), formula `=SUM(Detail!F9:F11)` sums from F9 to F11, but F11 is "Subtotal tuition" row, not financial aid. This mixes categories and causes wrong totals.
+
+5. In Summary sheet, row 10 (Subtotal net tuition), formula `=SUM(Detail!F10:F17)` sums from F10 ("Tuition - Summer") to F17 ("Student fees"), mixing tuition and fees, causing incorrect subtotal.
+
+6. In RCM Report sheet, cell F14 (University Fund allocation), formula is `=2` which seems incorrect (should link to Detail!F20).
+
+7. In RCM Report sheet, row 27 (Fringe Benefits), formula in H27 is `=H24*0.35+H25*0.084` but H24 and H25 are expenditures with fringe rates applied elsewhere, this may cause double counting or inconsistency.
+
+8. In Detail sheet, row 63 (Net Change in fund balance), formula is `=SUM(D25-D61)`. SUM is unnecessary and misleading for a single subtraction; should be `=D25-D61`.
+
+9. Similarly, in Summary and RCM Report sheets, net change formulas use `SUM()` around subtraction, which is incorrect.
+
+Solutions:
+
+1. Adjust subtotal formulas to sum only rows with data. For example, in Detail!D42, change `=SUM(D36:D41)` to sum only rows with values (e.g., `=SUM(D37,D38,D41)` or fill missing rows with zeros).
+
+2. Ensure all data rows have values or are excluded from subtotal ranges to avoid incorrect sums.
+
+3. In Summary!D9, change formula from `=SUM(Detail!F9:F11)` to `=-Detail!F15` to correctly reflect financial aid subtotal (matching Detail sheet logic).
+
+4. In Summary!F10, change formula from `=SUM(Detail!F10:F17)` to `=Detail!F16` (Total Net Tuition) to avoid mixing tuition and fees.
+
+5. In RCM Report!F14, replace `=2` with `=Detail!F20` to correctly link University Fund allocation.
+
+6. In RCM Report!H27, verify fringe benefit calculation logic; better to sum fringe benefits from Detail or Summary sheet rather than manual calculation to avoid errors.
+
+7. Remove unnecessary SUM() around subtraction formulas in all sheets for net change in fund balance (e.g., change `=SUM(D25-D61)` to `=D25-D61`).
+
+Explanation:
+
+- Summing ranges that include blank or unrelated rows causes incorrect totals. Always sum only relevant data rows.
+
+- Mixing categories (tuition and fees) in subtotals leads to inflated or wrong numbers.
+
+- Direct cell references ensure clarity and accuracy rather than summing over ranges that include subtotals or unrelated data.
+
+- Using SUM() around a single subtraction is redundant and may confuse Excel or users.
+
+- Correct linking between sheets ensures consistency and reduces manual errors.
+
+Implement these fixes to correct errors and improve accuracy.

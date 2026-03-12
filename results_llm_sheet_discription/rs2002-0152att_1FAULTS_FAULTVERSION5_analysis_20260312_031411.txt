@@ -1,0 +1,31 @@
+Summary of errors
+- Column I (cumulative total) is inconsistent across sheets: some cells add Requested Funds (column G) instead of Awarded/Approved Funds (column H). That makes the running total wrong (it should track actual awarded funds).
+- A clear typo: on the CALFED Watershed sheet cell I31 is "=I30+923" (923 is wrong). It should add the awarded amount H31.
+- On the Watershed Protection sheet the first cumulative cell I7 uses =G7 (Requested) instead of H7 (Awarded), and subsequent I cells then continue adding G values in many rows — so that whole running total is based on requested amounts, not awarded.
+- Minor rounding/truncation: some G values include cents (e.g., 311,280.25) while H is rounded (311,280). Decide whether to keep cents consistently.
+
+Why this is a problem
+- The purpose of column I is to track actual spending against the program funding limit. Using G or fixed numbers (923) gives incorrect cumulative totals and wrong remaining-balance notes.
+
+Simple fix (recommended & robust)
+1) Replace the current formulas in column I with a correct running-sum of the Awarded column (H).
+   - Put this formula in the first award row (row 7 in these sheets):
+     =SUM($H$7:H7)
+   - Fill (drag) that formula down the column to the last row.
+   This approach always sums actual awarded funds up to that row and avoids propagation errors.
+2) Alternatively (less robust), set I7 = H7 and I8 = I7+H8, then fill down.
+3) Fix the obvious typo: change I31 (CALFED Watershed) from =I30+923 to =I30+H31 (or let the SUM formula replace it).
+4) Make rounding consistent: if cents matter, keep two-decimal values in H (and G); or round both to whole dollars so totals match expected displays.
+
+How to do it quickly in Excel
+- Select I7, type =SUM($H$7:H7), press Enter.
+- Select I7 again and drag the fill handle down to the last data row for that sheet.
+- Repeat for each sheet.
+- Verify final I(last row) equals the total awarded and compare to the sheet funding limit to confirm remaining balance.
+
+What you get after the fix
+- Column I will reliably show cumulative awarded funds (not requested), typo errors are removed, and remaining-balance notes will reflect the true amount left for the next project.
+
+If you want, I can:
+- List the specific cells on each sheet that currently deviate from the correct pattern, or
+- Calculate corrected final totals and remaining balances per sheet after applying the fix.

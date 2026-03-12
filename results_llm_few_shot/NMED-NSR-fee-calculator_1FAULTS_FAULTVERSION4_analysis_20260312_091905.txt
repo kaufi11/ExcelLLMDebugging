@@ -1,0 +1,23 @@
+Summary — key errors found and fixes (short and simple)
+
+1) Faulty cell: C22
+- Error: Wrong default value. Formula =IF(B22<>"",(3*B22),278) returns 278 when B22 is blank (very likely a typo).
+- Fix: Use 0 (or blank) as the default. Correct formula: =IF(B22<>"",3*B22,0)
+- Why: If no number of regs is entered you should count 0 points, not 278.
+
+2) Faulty cell: C30 (PSD Netting)
+- Error: Wrong test cell and returns text for the other branch. Current: =IF(B31="",(IF(B30<>"",20,0)),"")
+- Fix: Test the PSD Netting input (B30) directly and return numeric 0 when not present. Correct formula: =IF(B30<>"",20,0)
+- Why: The old formula depended on B31 and sometimes returned "" (text) which is confusing and can break logic.
+
+3) Faulty cell: C34 (General Permit)
+- Error: Wrong test cell and returns text for the other branch. Current: =IF(B35="",(IF(B34<>"",10,0)),"")
+- Fix: Test the general permit input (B34) directly and return numeric 0 when not present. Correct formula: =IF(B34<>"",10,0)
+- Why: The previous formula used B35 in the outer IF and sometimes returned "" (text) instead of 0.
+
+Notes / small recommendations
+- Avoid returning "" for numeric points. Use 0 instead. Text blanks are ignored by SUM and can make downstream logic harder to read/debug.
+- Check C41 logic: =IF(OR(C34>0,C35>0),C36,SUM(C9:C31)) — this is OK if you want "other actions" total to replace the standard sum. If you intended to add both sets, revise accordingly.
+- C43/C42/F5 behaviour (half-fee vs full-fee) looks intentional — no change suggested unless you want different small-business/general-permit rules.
+
+If you want, I can update all formulas in the sheet exactly (I can list replacements for every cell) or test combinations to confirm totals.

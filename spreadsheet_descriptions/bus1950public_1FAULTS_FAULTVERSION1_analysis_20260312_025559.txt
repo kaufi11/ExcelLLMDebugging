@@ -1,0 +1,49 @@
+Summary — workbook structure and contents (concise)
+
+Overall purpose
+- A multi-section gradebook. Each sheet is a class/section (M Noon, M 1 p.m., M 2 p.m., W 1 p.m., W 2 p.m., F Noon, F 1 p.m.). Columns B–N contain assignment/quiz/test scores; column O is the student total; column P is the letter grade.
+
+Sheet layout (common to all sheets)
+- Row 3: Subject/assignment short headers (e.g., C3 "Windows Quiz", D3 "Web", E3 "Word Quiz", G3 "Word", H/I3 "PowerPoint", J/K/M3 Excel-related, N3 "Excel").
+- Row 4: Expanded assignment descriptors (e.g., B4 "Letter", C4 "on Sam", D4 assignment labels, etc.). Many D4/E4/F4 entries are linked to 'M Noon'!D4/E4/F4.
+- Row 5: Date ranges for each assignment (B5:N5); F5 is shown as a date/time serial (2004-02-11 00:00:00).
+- Rows 6–36 (approx): Student rows. Column A = ID (many are numeric or formulas that evaluate to negatives), columns B–N = scores (numeric, some decimals), column O = TOTAL, column P = GRADE.
+- Rows 38–41: class-level summary row(s):
+  - Row 38: target/maximum points per assignment (B38:N38) and O38 = SUM(B38:N38) (class total maximum).
+  - Row 39: AVERAGE formulas per assignment (e.g., B39 = AVERAGE(B6:B37) or variants depending on sheet).
+  - Row 40: MAX formulas per assignment (MAX(B6:B37) or sheet-specific ranges).
+  - Row 41: COUNT formulas per assignment (COUNT(B6:B37) etc.) — some sheets have the numeric count filled manually for certain columns.
+
+Key formulas and logic
+- Student total: O# = SUM(B# : N#) (e.g., O6 = SUM(B6:N6)).
+- Letter grade: P# = IF(O# > O$38*0.9,"A",
+                    IF(O# > O$38*0.8,"B",
+                    IF(O# > O$38*0.7,"C",
+                    IF(O# > O$38*0.6,"D","F"))))
+  - Note: In several sheets the grade IF references another sheet’s O$38 (e.g., 'F Noon'!O$38 or 'M Noon'!O$38) — cross-sheet thresholds inconsistent in places.
+- Summary formulas:
+  - Assignment averages: B39 = AVERAGE(B6:B37) (ranges vary by sheet).
+  - Assignment maxima: B40 = MAX(B6:B37).
+  - Counts: B41 = COUNT(B6:B37) (again ranges vary; some counts are hard-coded).
+
+Links and cross-sheet consistency
+- Many header/descriptor cells in other sheets are linked to 'M Noon' (e.g., D3, E3, D4, E4, F4, O4).
+- Some grade thresholds reference a different sheet’s O$38 (inconsistent cross-sheet references).
+- Row ranges used in AVERAGE/MAX/COUNT differ between sheets (e.g., some use B6:B37, others B6:B30, B6:B23, B7:B30, etc.), so summary metrics are computed over different student counts per sheet.
+
+Notable data patterns and anomalies
+- Column A contains some formula expressions that evaluate to negative numbers (e.g., A6 = 356-78-4365 → -6939). Those appear to be ID computations; many IDs are negative or raw formulas.
+- Scores include integers and decimals (some decimals like 4.95, 7.92, 9.9).
+- Row 38 contains the “max” per assignment; O38 = SUM(B38:N38) defines the class full-point total used by grade IF formulas.
+- Some student rows have missing cells (blank entries) — SUM will ignore blanks.
+- Several sheets’ summary/count ranges are inconsistent; a few counts are hard-coded (e.g., C41 = 28 on M Noon).
+
+Quick checklist / places to review (if you want changes)
+- Standardize summary ranges (make all sheets use the same student row range for AVERAGE/MAX/COUNT).
+- Standardize grade threshold reference to the sheet’s own O$38 (unless intentional cross-sheet comparison).
+- Check column A formulas (ID values) that evaluate to negative numbers—replace with proper IDs if needed.
+- Verify date cells (F5) are intended as datetime serials.
+
+If you want, I can:
+- Produce a cleaned version checklist (exact cells to change) or
+- Provide a formula-normalization patch (example formulas to paste) to standardize summaries and grades across sheets.

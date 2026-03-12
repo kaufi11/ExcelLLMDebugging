@@ -1,0 +1,35 @@
+Summary of the problems
+1) Wrong cell reference in C4 — it uses B3, which is empty, so C4 returns wrong values.
+2) A4’s IF logic (=IF($F$3<3,A3,C3)) deliberately chooses the smaller of the two hand positions for the first slice. That means which hand is represented by the first pie-slice changes when minutes become a larger percentage than hours — so the slice color appears to “switch.”
+3) (Minor) comparing decimals with = (A3=C3) is fragile; equality almost never happens with fractional values.
+
+Quick fixes (copy/paste these formulas)
+- C3 (minutes fraction) — keep:
+  =C2/60
+
+- A3 (hour fraction) — keep:
+  =(A2 + C3)/12
+
+- A4 (first slice: earlier hand) — make explicit:
+  =MIN(A3,C3)
+
+- C4 (gap between the two hands) — correct the bad reference (use ABS so it does not depend on sign):
+  =MAX(ABS(C3 - A3), 0.01)
+
+- E4 (remaining slice) — keep:
+  =1 - A4 - C4
+
+- F3 (comparison flag) — optional simplification (if you still need it):
+  =IF(A3<C3,1,IF(A3=C3,2,3))
+  (or use =SIGN(C3-A3) if you prefer -1/0/1 semantics)
+
+Why this fixes it (short)
+- C4 originally used B3 (empty). Replacing that with ABS(C3-A3) corrects the arithmetic: C4 is now the absolute difference between minute and hour positions.
+- A4 = MIN(A3,C3) explicitly defines the first slice as the earlier of the two hands and C4 as the gap between them; E4 completes the partition so the three slices always sum to 1.
+- The “color switch” happens because the chart’s first slice changes from hour to minute when the ordering of A3 and C3 flips. Using MIN makes the data consistent (first slice = the earlier hand). If you want the hour hand to always keep the same color even when its slice is not the first slice, you must do one of:
+  - Manually assign fixed colours to the chart slices and turn off “Vary colors by slice”, or
+  - Create helper columns that force the chart’s series order so the hour-hand value is always in the same series position (more advanced).
+
+If you want, I can:
+- Give the exact helper-column formulas and show how to arrange the pie chart data so the hour-hand slice never changes color, or
+- Fix the small floating-point equality test in F3.

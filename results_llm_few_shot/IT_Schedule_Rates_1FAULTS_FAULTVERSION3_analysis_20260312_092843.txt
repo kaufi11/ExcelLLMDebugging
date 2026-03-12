@@ -1,0 +1,23 @@
+Summary — main error found
+- Sheet: EER SITE — Faulty cell: D21 (Functional Analyst, Senior).
+  - Problem: formula uses =B21*1.9640015287385 (wrong multiplier) instead of a 4% escalation.
+  - Effect: that row is massively overstated from Year 2 onward.
+
+Quick fix (single cell)
+- Replace D21 with either:
+  - =B21*1.04
+  - or (better) =B21*(1+$C21)
+- Then copy D21 across to E21:F21:G21:H21 (or fill right).
+
+Why the fix works (short)
+- The sheet is applying a 4% annual escalation. The correct Year‑2 value is base * 1.04. The current multiplier (1.964...) is a typo or a pasted compounded factor and produces the wrong Year‑2 amount.
+- Using =B21*(1+$C21) ties the calculation to the escalation cell (C21 = 0.04) so future edits to the escalation will update automatically.
+
+Suggested improvements to avoid future errors
+1. Standardize formulas:
+   - Put D6 formula =B6*(1+$C6) and fill down for all rows, then fill right (E =previous*(1+$C#)). This prevents manual entry mistakes.
+2. Audit check:
+   - Use Find (Ctrl+F) to search for "*1." in formulas or search for numeric multipliers ≠ 1.04 to catch other typos.
+   - Or add a check column with =IF(ROUND(D6,2)=ROUND(B6*(1+$C6),2),"OK","Check") to flag mismatches.
+
+If you want, I can give the exact step-by-step to correct and standardize all rows automatically.

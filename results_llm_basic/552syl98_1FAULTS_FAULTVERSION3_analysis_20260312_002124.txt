@@ -1,0 +1,32 @@
+Short summary of the problem
+- Many date formulas in column B reference the wrong prior cell (often using +7 from a Wednesday instead of from the correct Monday/previous class). That causes dates to drift and the schedule to be wrong.  
+- The leading + in formulas (e.g. =+B16+2) is not an error — it's just redundant.  
+- B60 contains a text placeholder ("? April/May") instead of a real date (not an Excel date).
+
+Concrete examples of wrong formulas
+- B18 =B16+7 — this adds 7 days to the Wednesday (B16) and gives the wrong Monday. It should be based on the previous Friday or previous Monday depending on the pattern.  
+- The same pattern of incorrect +7 references repeats at many later rows (B21, B24, B27, B30, B33, B36, B39, etc.)
+
+Correct rule (if class meets Mon/Wed/Fri)
+- The correct day-to-day step is: Monday → +2 days → Wednesday → +2 days → Friday → +3 days → next Monday (repeat).  
+- So each row should add either +2 or +3 depending on whether the previous date was a Friday.
+
+Simple fix you can apply (one formula to fill down)
+1. Put the correct start date in B12 (already is 1998-01-12).  
+2. In B13 enter (and then copy/fill down the entire column):
+   =IF(WEEKDAY(B12,2)=5, B12+3, B12+2)
+   Explanation: WEEKDAY(...,2) returns 1=Mon ... 5=Fri. If the previous date is Friday add 3 days, otherwise add 2 days.
+
+Alternate compact pattern formula (if you prefer a repeating +2,+2,+3 sequence)
+- In B13 (and fill down):
+  =B12 + CHOOSE(MOD(ROW()-12,3)+1, 2, 2, 3)
+  Explanation: this adds 2, 2, then 3 repeatedly.
+
+Other tidy-up notes
+- You can remove leading plus signs (=+...) if you want consistent style — they don't cause errors.  
+- Replace the placeholder in B60 ("? April/May") with the actual exam date (an Excel date) so that formulas and prints are consistent.  
+- The many repeated URL entries in row 6/7 are not formula errors but may be accidental duplication — check if you intended them.
+
+If you want, I can:
+- Produce a corrected list of dates for column B and paste it here, or
+- Give a version of the sheet where I replace all B formulas with the WEEKDAY formula and correct B60 if you provide the final exam date.

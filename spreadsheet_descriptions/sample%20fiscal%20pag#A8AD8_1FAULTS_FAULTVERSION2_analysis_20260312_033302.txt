@@ -1,0 +1,57 @@
+High-level overview
+- Workbook contains a 1-page Summary plus five fund detail sheets: 1003, 1043, 1166, 1198, 1856. All sheets use the same layout/template and fiscal columns (D–I) for years: D=1999-00, E=2000-01, F=2001-02, G=2002-03 (Period 14), H=2003-04 (Projected), I=2004-05 (Budget). Report date is on each sheet (F65/F76 = 2003-09-22).
+
+Overall structure (common to all sheets)
+- Header rows: title (A1), sheet type (F1), fund descriptor in C3, column year labels in D4:I4.
+- Sections:
+  1) RESOURCES (rows A5–A26): a) Carry Forward (row B6), b) Revenues by revenue class and Total Revenues (rows C9–C25), c) Transfers (rows C28–C35) and Net Transfers (C35), d) TOTAL NET RESOURCES (row B37).
+  2) EXPENDITURES (rows A39–A61): grouped by Function Type (C30–C42) and by Object Class (C56–C71), with totals (C53 and C72).
+  3) ENDING BALANCE (row A74 / A63 Summary) = TOTAL NET RESOURCES – TOTAL EXPENDITURES.
+- Templates are consistent so the Summary sheet aggregates individual fund sheets.
+
+Key formulas / inter-sheet linking
+- Summary aggregates all fund sheets using 3D ranges '1003:1856'!:
+  - Carry forward in Summary: D6 = SUM('1003:1856'!D6) (and likewise for E6:I6).
+  - Revenues by fund in Summary are pulled from each fund sheet Total Revenues row (e.g. Summary D9 = '1003'!D25, D10 = '1043'!D25, etc.).
+  - Transfers and transfer subtotals in Summary use SUM('1003:1856'!D28:D34) etc.
+  - Summary total revenues, net transfers, total net resources, total expenditures and ending balance are computed with straightforward SUM or arithmetic formulas:
+    - Revenues: D14 = SUM(D9:D13)
+    - Net Transfers: D24 = SUM(D17:D23)
+    - Total Net Resources: D26 = D24 + D14 + D6
+    - Total Expenditures (by function): D42 = SUM(D30:D41)
+    - Total Expenditures (by object class): D61 = SUM(D45:D60)
+    - Ending Balance: D63 = D26 - D61
+- Per-fund carry forward uses prior-year relationships:
+  - Example 1003 D6 = +E6 + D72 - D25 - D35 (carry forward = prior carry forward + prior-year total expenditures - prior-year total revenues - prior-year net transfers).
+- Per-fund totals:
+  - Total Revenues: C25: D25 = SUM(D9:D24)
+  - Net Transfers: C35: D35 = SUM(D28:D34)
+  - Total Net Resources: D37 = D35 + D25 + D6
+  - Total Expenditures (object class) D72 = SUM(D56:D71)
+  - Ending Balance D74 = D37 - D72
+
+Notable / key numeric values (selected)
+- Fund 1003 (general operations):
+  - Carry forward (G6 / Period 14): 21,451,645.94
+  - Revenues (G25): 46,194.68 (mostly external sales and internal sales lines small)
+  - Large expenditures in 2002-03: Operation & Maint. of Plant (G47) = 90,388,870.91; Utilities (G66) = 51,056,431.93; Repairs, Maintenance & Supplies (G65) = -16,370,339.64 (negative outlier).
+- Fund 1043 (indirect cost recovery / passthrough):
+  - Indirect Cost Recovery (D13..G13): large amounts (e.g. D13 17,149,795; G13 22,073,880).
+  - Central Allocations (C28) mirror those values and Central Allocations Out (C29) are negatives (passthrough).
+  - Effect: transfers net to near zero (fund is a flow-through).
+- Fund 1166 (facilities management):
+  - Very large internal sales and utilities: internal sales G15 = 62,729,573.53; utilities G66 = 38,004,212.79 (and large negative repairs/maintenance D65 etc).
+  - Net transfers show large non-mandatory movements (D32..G32 and D33..G33).
+- Fund 1198 and 1856:
+  - Smaller/miscellaneous funds; 1198 shows G25 computed with COUNT in H25 (oddity) and modest revenues/transfers; 1856 small balances (G6 = 21,200).
+- Many sheets contain negative amounts in Repairs/Maintenance and Transfers rows — watch for sign conventions and passthrough entries.
+
+Potential issues / checks to consider
+- Sign consistency: several large negative values (repairs/maintenance rows) and matching positive offsets in other funds; verify intent (expense vs contra entries).
+- 1198 H25 uses COUNT(H9:H24) (likely an error — should be SUM).
+- Carry forward formula depends on prior-year rows (E6, D72, D25, D35); if any of those are missing or mis-typed, carry-forward will be wrong.
+- The Summary relies on the contiguous fund sheet order '1003:1856' — inserting/removing sheets in that block will change the 3D SUMs.
+
+If you want, I can:
+- Compute the Summary numeric totals (aggregate the provided fund numbers) and report total net resources, total expenditures and ending balance by year, or
+- Point to and fix the likely formula error in sheet 1198 (H25).

@@ -1,0 +1,38 @@
+Summary of the problems I found (short & clear) and how to fix them.
+
+1) Total LOE — Grand total missing an option column
+- Problem: B70 =SUM(B68:H68) — this only sums through Opt.6 (H68). It omits Opt.7 (I68).
+- Fix: change to =SUM(B68:I68)
+
+2) T&M Type — Grand total formula omits Opt.7 and uses a contiguous range that includes non‑total cells
+- Problem: B62 =SUM(B60:T60) ends at column T (Opt.6) and misses W60 (Opt.7). Also that contiguous range includes rate/price columns between totals (unsafe).
+- Fix: sum the actual total cells only:
+  =SUM(B60,E60,H60,K60,N60,Q60,T60,W60)
+
+3) Hard-coded value instead of cell reference (fragile / inconsistent)
+- Problem: T&M sheet E36 is =600+(600*0.02) (literal 600). If B36 (Base Pd) changes the formula won’t update.
+- Fix: reference the base cell:
+  =B36*(1+0.02)  (or =B36+B36*0.02)
+
+4) Inconsistent escalation factor for Option 4 (typo risk)
+- Problem: many Option‑4 formulas use *0.023 while most other option escalations use *0.02. Also some rows use 0.02 for Option‑4 — this is inconsistent.
+- Fix: decide correct escalation for Option‑4 (likely 2% = 0.02). Then make Option‑4 formulas consistent, e.g.:
+  N5 = K5*(1+0.02)
+  (Replace *0.023 with *0.02 everywhere if 2% is intended.)
+
+5) Missing/unclear Grand Totals on other sheets
+- Problem: Fixed Price sheet shows “Grand Total” label but no Grand Total formula shown; Cost Type sheet shows Grand Total label absent of a formula in your listing.
+- Fix: add explicit Grand Total formulas that add the period totals only. Examples:
+  - Fixed Price Grand Total (if period totals in E59,H59,K59,N59,Q59,T59,W59):
+    =SUM(E59,H59,K59,N59,Q59,T59,W59)
+  - Cost Type Grand Total (if period totals in E61,H61,K61,N61,Q61,T61,W61):
+    =SUM(E61,H61,K61,N61,Q61,T61,W61)
+
+Best practice (recommended)
+- Put your escalation percentage in one named cell (e.g., EscalationRate in Z1 = 0.02) and use formulas like:
+  =previous*(1+EscalationRate)
+  This avoids typos (0.023 vs 0.02) and makes updates simple.
+
+If you want, I can:
+- Provide the exact Find/Replace or VBA steps to correct all occurrences across sheets, or
+- Give the single-cell formulas to paste to fix all problematic cells. Which would you prefer?

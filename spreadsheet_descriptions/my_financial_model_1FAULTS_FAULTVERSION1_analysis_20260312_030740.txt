@@ -1,0 +1,100 @@
+High-level summary — workbook models a lemonade business over years (columns E:P). Key inputs are in column D; calculations roll forward across years. Main sheets: Income, Balance Sheet, Cashflow, Depreciation, simple income, RoadMap.
+
+1) Income (primary P&L / monthly model)
+- Columns: E:P = years 2002–2013 (header in row 2). Column D contains key input rates and constants.
+- Key inputs (column D):
+  - Growth in cups (D3) = 0.05 (5% per period)
+  - Price inflation (D4) = 0.08/12 (8% annual / monthly cell)
+  - Sugar per cup (D5) = 0.2 cups
+  - Lemons per cup (D6) = 1
+  - Lemon price inflation (D7) = 0.08/12
+  - Sugar price inflation (D8) = 0.08/12
+  - Online sales share (D10) = 0.4; Street share (D11) = 1 - D10
+- Volumes & prices:
+  - E3 = 200,000 cups; subsequent years multiply prior year by (1 + $D$3).
+  - E4 = $4.00 per cup; subsequent years grow by (1 + $D$4).
+  - E7 (lemon $0.55) and E8 (sugar $0.375) grow by (1 + inflation) across years.
+- Revenue:
+  - Online revenue = $D$10 * cups * price (e.g., E10 = $D$10*E3*E4). Street revenue uses D11.
+  - Totals (monthly) in row 12; annualized in row 13 = monthly * 12.
+- COGS:
+  - Lemons (row 15) = lemons per cup * cups * lemon price (E15 = E6*E7).
+  - Sugar (row 16) = sugar per cup * cups * sugar price (E16 = E8*E5).
+  - Totals in row 17.
+- Gross profit (row 19) = Revenue (row12) - COGS (row17); annualized in row 20.
+- Fixed costs (rows 22–28): manager ($7,500), credit card ($75), web-hosting ($500 in D24 used across years), advertising ($2,500) with some copy-formula propagation, insurance ($250), benefits = E22*0.25, legal = $50,000. Row 29 sums fixed costs.
+- Depreciation (row 31) pulled from Depreciation!E7:P7.
+- Net profit (row 33) = gross profit - fixed costs - depreciation. Annualized in row 34.
+- Notes: Several SUM formulas sum a single cell (e.g., SUM(E10:E10)); many columns copy formulas across.
+
+2) Balance Sheet
+- Title links to Income!B1.
+- Year headers mirror Income.
+- Assets:
+  - Cash (row 6) starts from Cashflow!D13 and then accumulates net changes: F6 = E6 + Cashflow!E13, etc.
+  - Lemon inventory set to zero (row7).
+  - Long-term asset original value (row8) references D14 (loan?) / propagates across years; balance sheet value pulls Depreciation!E8:P8.
+  - Accumulated depreciation (row9) accumulates Depreciation!E7 onward.
+  - Total assets (row11) = cash + inventory + balance sheet value.
+- Liabilities:
+  - Current liability (Lear Jet Finance Co.) initial D14 = 1,000,000 then updated by Cashflow!x references (row14); total liabilities = row15.
+- Equity:
+  - Initial investment D18 = 1,200,000 (E18 onward).
+  - Retained earnings (row19) cumulative: E19 = Income!E33; subsequent years add current income to prior retained earnings.
+  - Total equity = SUM(row17:row19).
+- Balance check: Equity + Liabilities computed and compared to total assets.
+- Note: Some formulas in liabilities (e.g., F14 = 6) look anomalous — likely errors or placeholder values.
+
+3) Cashflow
+- Header links to Income title.
+- Year headers pulled from Income.
+- Cash from operations = Income!E33:P33 (row 6).
+- Depreciation (row 7) = Depreciation!E7:P7 (non-cash addback).
+- Cash from investments (row 9) = -100,000 (appears repeated for first several years).
+- Cash from financing (row 11) pulls Balance Sheet E18 (initial equity) in D11.
+- Net change in cash (row 13) = SUM of cashflow rows (D6:D12 etc). These net changes feed Balance Sheet cash (Balance Sheet row6 uses Cashflow!D13 etc).
+
+4) Depreciation
+- Header links to Income.
+- Pulls asset info from Balance Sheet for "Value at Beginning" (D6 = Balance Sheet D8).
+- Depreciable life D7 = 7 (years).
+- Annual depreciation (row 7) = IF(value at beginning > 0, $D$6 / $D$7, 0). So straight-line depreciation based on the beginning value and 7-year life.
+- Value at end (row 8) = beginning - depreciation.
+- Total accumulated depreciation (row 11) sums year-to-date depreciation (cumulative across columns).
+- Depreciation values are used back in Income (E31:P31), Cashflow (row 7), and Balance Sheet (E9:P9 as accumulated depreciation and E10:P10 as net book value).
+
+5) simple income (alternate monthly schedule)
+- Monthly dates across E:P (actual date values).
+- Simpler P&L: fixed revenue E4 = 1,000 each month; COGS lemons 500, sugar 250; gross = revenue - COGS; fixed consultant cost ($25) -> net profit monthly and annualized.
+
+6) RoadMap
+- Visual/text map of flows between Income, Cashflow, Balance Sheet, Depreciation and key line items (Revenue, Expenses, Assets, Liabilities, Equity). Helpful diagram of workbook dependencies.
+
+Data flow / dependencies
+- Income drives Cashflow (cash from operations) and Retained Earnings in Balance Sheet.
+- Depreciation sheet derives from Balance Sheet long-term asset values and feeds back to Income, Cashflow and Balance Sheet (accumulated).
+- Cashflow net changes feed Balance Sheet cash and update loan/equity positions.
+- Balance Sheet sources initial investment and loan amounts; these feed cashflow financing lines.
+
+Key numeric starting values (examples)
+- Initial cups: 200,000 (E3)
+- Price per cup: $4.00 (E4)
+- Monthly cups growth: 5% (D3)
+- Inflation input used as 8%/12 in several places (D4, D7, D8)
+- Online sales share: 40% (D10)
+- Initial lemon price: $0.55 (E7); sugar $0.375 (E8)
+- Fixed costs: manager $7,500; advertising $2,500; legal $50,000; web-hosting $500; credit card $75.
+
+Potential issues / notes to check
+- Several formulas appear inconsistent or have likely typos:
+  - Sugar price growth cells (F8 onward) reference $D$7 instead of $D$8 in the spec.
+  - Some formulas copy across incorrectly (e.g., K10 uses K3*K4 missing $D$10 factor; some SUM ranges sum a single cell).
+  - F14 in Balance Sheet is shown as "=6" which is likely wrong; liabilities propagation uses Cashflow! references but some initial values look odd.
+  - Advertising propagation (rows 25) uses chained offsets (I25 = F25 etc) which may misalign intended years.
+  - Depreciation references and Balance Sheet original value chain are convoluted — verify D6/D8/D14 sources.
+- Recommend a quick validation: recalc totals (assets vs equity+liabilities), scan for hard-coded numbers in middle columns, and fix inconsistent absolute references.
+
+If you want, I can:
+- produce a clean diagram of cell dependencies,
+- list all input cells (single place) for easy scenario edits,
+- or identify & correct the likely formula errors with exact corrected formulas. Which would you prefer?

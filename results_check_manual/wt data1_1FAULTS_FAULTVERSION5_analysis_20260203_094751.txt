@@ -1,0 +1,26 @@
+Found two problems.
+
+1) Wrong formulas in column M (rows 3:43)
+- Problem: M cells should detect "^ex and ^det" for the H/I pair (i.e. NOT(Hx) AND Ix="no"). Instead the formulas use NOT(Kx) and compare Lx="no" (e.g. M3 =IF(AND(NOT(K3),L3="no"),1,0)). That is wrong because K and L are other derived columns (K is "ex and ^det", L is numeric 1/0) so the logic & comparisons are incorrect.
+- Cause: bad relative references from copying formulas (offset into K/L instead of H/I) and comparing a numeric cell to text "no".
+
+Fix:
+- Replace the formula in M3 with:
+  =IF(AND(NOT(H3),I3="no"),1,0)
+- Fill / copy this corrected formula down M3:M43.
+
+Why this works: M is the "^ex and ^det" column for the H/I pair, so it must test H being FALSE (NOT(Hx)) and I being "no". The corrected formula checks those exact source cells.
+
+2) Wrong range in H44
+- Problem: H44 =COUNTIF(H3:H42,TRUE) — it only counts to row 42 while every other summary row uses rows 3:43.
+- Fix: Change H44 to:
+  =COUNTIF(H3:H43,TRUE)
+
+Why: summary row should include the same set of rows (3–43) as the other columns.
+
+Optional cleanup (not required but cleaner)
+- Instead of many IF(AND(...),1,0) you can use -- to coerce TRUE/FALSE to 1/0. Example for D3:
+  =--(AND(B3,C3="yes"))
+  This shortens formulas and reduces copying errors.
+
+If you want, I can give the exact corrected formula for every affected M cell or provide a single fill-down macro/step-by-step to fix them.

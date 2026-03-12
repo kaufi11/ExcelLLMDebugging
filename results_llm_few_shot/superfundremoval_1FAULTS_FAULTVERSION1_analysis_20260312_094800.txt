@@ -1,0 +1,24 @@
+Summary — main error
+- Faulty cell: G21 (Section II, row 21).
+- Error type: Hard-coded value / formula mistake.
+- What’s wrong: G21 contains =1 (a fixed 1) instead of calculating the weighted score (it should multiply the "Yes/No" result by the weight in F21). That makes the Section II weighted total (G24) too large.
+
+Fix to paste into G21
+- Replace =1 with:
+  =IF(C21="yes",(1*F21),IF(C21="no",(0*F21),""))
+
+Why this fixes it
+- The IF follows the same logic used in the other weighted-score cells: return F21 when answer = Yes, 0 when No, blank for N/A. This keeps G21 on the same 0..F21 scale and makes SUM(G16:G22) a correct weighted total.
+
+Short additional recommendations (optional)
+1) Make the total-weight checks robust:
+   - Current checks like =IF(SUM(F6:F10)<>100%,"ERROR","100%") return text "100%". Better to check against 1 and return a numeric percent:
+     =IF(ROUND(SUM(F6:F10),4)<>1,"ERROR",1)
+     then format the cell as Percentage.
+   - Rounding avoids tiny floating-point rounding errors.
+
+2) Guard against stray spaces/case in answer cells:
+   - If some answers have extra spaces or varied capitalization, use TRIM+LOWER in the IF:
+     =IF(LOWER(TRIM(C21))="yes",F21,IF(LOWER(TRIM(C21))="no",0,""))
+
+If you want, I can (a) give corrected formulas for all G-cells in one go, or (b) produce a cleaned version of the sheet showing the fixes.

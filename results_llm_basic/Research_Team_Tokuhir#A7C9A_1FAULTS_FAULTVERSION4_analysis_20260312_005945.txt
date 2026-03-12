@@ -1,0 +1,28 @@
+Summary of errors
+- A22 is wrong: it has =A21-1 (decrements) so the sequence repeats/gets out of order (you get a duplicate "16").
+- A28 is wrong: it uses =A26+1 (skips A27) so numbering jumps relative to the row above.
+- A40 is a manual value (35) and does not follow the formula sequence (it should be 33 if sequence were correct).
+- There is also a blank row (A27), which likely caused the A28 copy mistake.
+
+Quick fixes (minimal steps)
+1. Fix the incorrect formulas:
+   - Change A22 to =A21+1
+   - If A27 should exist, insert row 27 (or restore its data). Then change A28 to =A27+1 (or, if you keep A27 blank, change A28 to =A27+1 after inserting the row).
+2. Replace the manual A40 with the formula =A39+1 (or fill the corrected formulas down from the row above).
+3. After correcting A22 and A28, select the corrected cell (for example A22) and drag the fill handle down through A40 to propagate a consistent sequence.
+
+Safer, more robust solution (prevents future mistakes)
+- Put 1 in A3.
+- In A4 enter:
+  =IF(TRIM($B4)="","",A3+1)
+  then copy (fill) that formula down the column.
+  Explanation: this always adds 1 to the number above only when the row contains a name in column B. That prevents stray blanks and accidental minus signs from breaking the sequence.
+
+Alternative (Excel 365 dynamic):
+- If you have a contiguous block of names in B3:B40, you can use SEQUENCE to generate numbers automatically, e.g. in A3:
+  =SEQUENCE(COUNTA($B$3:$B$1000),1,1,1)
+
+Why these fixes work (short)
+- The numbering is intended to be A[n] = A[n-1] + 1. The minus sign at A22 violated that rule, and A28 referenced the wrong previous row. Restoring the +1 pattern (or using the IF + reference-above formula) ensures a correct, automatic incremental list and prevents manual-entry errors like the 35 at A40.
+
+If you want, I can give the exact formulas to paste down column A for your sheet and show the corrected final numbers.

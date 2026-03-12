@@ -1,0 +1,64 @@
+I checked the workbook and found several real errors (wrong links, wrong ranges and some hard‑coded constants). Short list of faults + exact fixes and why they fix the problem.
+
+1) Balance Sheet — Checking/Savings cells are not linked consistently
+- Problem: E4, F4, G4 are hard‑coded numbers while H4 points to 'Financial summary'!K35. That makes years inconsistent and causes numbers to drift.
+- Fix (make them all pull from Financial summary row 35 for the matching year):
+  - E4 → ='Financial summary'!E35
+  - F4 → ='Financial summary'!G35
+  - G4 → ='Financial summary'!I35
+  - (H4 is already ='Financial summary'!K35)
+- Why: keeps Balance Sheet values synchronized with the Financial summary checking account values for each year.
+
+2) Balance Sheet — TOTAL ASSETS is using the wrong cell (row 2)
+- Problem: E7/F7/G7/H7 use E2+E6 etc (e.g. =ROUND(E2+E6,5)). Row 2 appears to be a header/year cell, not an assets amount.
+- Fix (if there are no other asset categories to add): change to
+  - E7 → =ROUND(E6,5)
+  - F7 → =ROUND(F6,5)
+  - G7 → =ROUND(G6,5)
+  - H7 → =ROUND(H6,5)
+- Or, if you do have non‑current assets, replace E2/F2/G2/H2 with the correct non‑current‑assets cell(s): =ROUND(E6 + <NonCurrentAssetsCell>,5).
+- Why: TOTAL ASSETS must sum real asset amounts, not a text/year cell.
+
+3) Balance Sheet — Total Equity sums wrong rows
+- Problem: E14 etc use SUM(E10:E13) (starts at row 10, which is the header row) instead of summing the equity components.
+- Fix:
+  - E14 → =ROUND(SUM(E11:E13),5)
+  - F14 → =ROUND(SUM(F11:F13),5)
+  - G14 → =ROUND(SUM(G11:G13),5)
+  - H14 → =ROUND(SUM(H11:H13),5)
+- Why: ensures Total Equity sums Opening Balance, Retained Earnings and Net Income only.
+
+4) Stork - 2002 Expenditures — Receipts / Expenditures totals are swapped
+- Problem: The sheet labels and formulas are reversed:
+  - D59 (labelled "Receipts") = C55 (which is the Expenditures total on this sheet)
+  - D60 (labelled "Expenditures") = 'Stork - 2002 Receipts'!C43 (which is the Receipts total)
+- Fix: swap the references:
+  - D59 → ='Stork - 2002 Receipts'!C43
+  - D60 → =C55
+  - D61 remains =D59-D60
+- Why: makes Receipts pull from the Receipts sheet and Expenditures use the local Expenditures total so the net calculation is correct.
+
+5) Stork - 2002 Expenditures — congress subtotal uses a brittle expression
+- Problem: H58 = H45+H44+H33 is fragile and omits any future rows.
+- Fix: use a range SUM to be robust:
+  - H58 → =SUM(H33:H45)   (or use H55 if H55 is the intended total column)
+- Why: easier to maintain and less likely to miss items when rows are added.
+
+6) Financial summary — some hard‑coded additions and stray text
+- Problem example: K21 = 8821.24+118.52 (hard coded) and some stray text in L13 (“a”) and a few stray numbers in adjacent columns (footnote markers). Hard‑coding numbers breaks traceability.
+- Fix: replace hard coded additions with direct cell references or SUM of the source range, e.g.:
+  - K21 → =SUM(<cells that contain 8821.24 and 118.52>) or =SUM(H33:H46) depending on your layout
+- Why: keeps values auditable and updates automatically if the source entries change.
+
+7) Optional cleanup / consistency checks
+- Check any cells that currently hard‑code totals (e.g. “=8821.24+118.52”) and change to SUM of the rows/cells that actually hold the components.
+- Verify Financial summary C35 currently =C33 (checking = total ending cash). If you have multiple cash accounts, C35 should be the checking balance only (not simply equal to total ending cash); otherwise the reconciliation difference (C39) may always show zero. If you have a separate checking balance cell, point C35 at that cell instead of =C33.
+
+Summary of the most urgent fixes to apply now:
+- Link Balance Sheet E4/F4/G4 to 'Financial summary'!E35/G35/I35.
+- Correct TOTAL ASSETS formulas to use actual asset cells (or just E6).
+- Fix Total Equity ranges to SUM(E11:E13) etc.
+- Swap D59/D60 on "Stork - 2002 Expenditures" so receipts come from the Receipts sheet and expenditures from the Expenditures totals.
+- Replace hard‑coded additions with SUM(cell ranges).
+
+If you want, I can give an exact list of every changed cell in the workbook and produce the exact formula for each (I can also mark them in a copy). Which option do you prefer?

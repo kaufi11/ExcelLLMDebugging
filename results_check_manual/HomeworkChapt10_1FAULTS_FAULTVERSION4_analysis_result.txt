@@ -1,0 +1,48 @@
+I inspected the formulas on Sheet1 and found several formula errors / inconsistencies and a couple of likely logic issues. Summary first, then specific cells and recommended corrections.
+
+Summary of problems
+- Cell E16 contains a wrong hard-coded numeric expression (365*(365.05)+D16) that produces an enormous and clearly incorrect accumulated-assets value. It breaks the recurrence used for E17:E20.
+- Cells B9 and B20 are missing (blank) but are referenced by D9 and D20. That makes D9 and D20 evaluate as 0 - Consumption (giving negative savings) instead of the expected Income − Consumption if Income should be 25.
+- Slight inconsistency in how E5 is initialized: E5 = D5 (no interest applied). That is not necessarily an error, but it should be deliberate (initial assets = 0). If you intended initial assets ≠ 0, the formula must change.
+
+Detailed issues and suggested fixes
+
+1) Cell E16 (value 133247.53, formula =365*(365.05)+D16)
+- Problem: This formula is almost certainly wrong. It multiplies 365 by 365.05 and then adds D16, producing ~133,247.53. Everything else in the E column uses the recurrence E(t) = E(t-1)*(1+0.05) + D(t). E16 should follow that same recurrence, referencing the beginning-of-period assets (initial assets) rather than the numeric expression currently present.
+- Likely intended alternatives (choose appropriate one for your model):
+  - If initial accumulated assets at the start of period 1 are 0: set E16 = D16 (or =E15*(1+0.05)+D16 if E15 = 0).
+    Formula: =D16
+  - If you intended initial assets in a separate cell (say you want initial assets = 1000 as your comment mentions): put the initial asset value in a dedicated cell (e.g., E15 or a named cell) and use the recurrence:
+    Formula (if initial assets in E15): =E15*(1+0.05)+D16
+    Or if initial assets are 1000 and you want to hard-code it: =1000*(1+0.05)+D16  (-> 1054.28 for D16 = 4.28)
+- After correcting E16, E17:E20 (which already use =E16*(1+0.05)+D17 etc.) will produce consistent results.
+
+2) Cells B9 and B20 (missing incomes)
+- Problem: B9 and B20 are blank but D9 and D20 formulas are =B9-C9 and =B20-C20. Because B9 and B20 are empty, D9 and D20 evaluate effectively as 0 − Consumption (negative). In the first table you had income 25 in rows 5–8; row 9 appears to be intended as the 5th period and likely should have income 25 as well (or explicitly 0 if retirement).
+- Fixes:
+  - If income in period 5 should be 25, set B9 = 25 and B20 = 25.
+  - If income is indeed 0 in the last period, leave blank but consider placing a zero explicitly (B9 = 0, B20 = 0) to avoid confusion, and update any explanatory note.
+
+3) Initialization of E5 (E5 = D5)
+- Observation: E5 is set to =D5 (no interest applied in the first period). That is OK if initial assets at the start of period 1 are zero. If you intended the accumulated-assets recurrence to apply uniformly for all periods, you might want a consistent pattern:
+  - If initial assets are 0: E5 = D5 is correct.
+  - If initial assets are nonzero and stored in some cell (say E4 or E0), change E5 to =InitialAssets*(1+0.05)+D5 or place the initial assets in the row above and use the same recurrence as later rows.
+
+4) Chained consumption formulas (C6..C20 = previous C)
+- Observation: C6..C9 and C17..C20 are set to =Cprevious. This is fine if consumption is constant across periods; no error technically. Just be aware it’s duplicating the value rather than using a constant cell or named value. For maintainability you may prefer to put the consumption level in one cell and reference it everywhere.
+
+Suggested exact corrections you can paste into the sheet
+- If initial assets = 0 and income = 25 every period:
+  - Put B9 = 25 and B20 = 25.
+  - Change E16 to =D16 (or better: insert a row with initial assets above period 1 and use =E15*(1+0.05)+D16).
+- If initial assets = 1000 and income = 25 each period:
+  - Put initial assets in a dedicated cell (example put 1000 in E15).
+  - Set E16 = E15*(1+0.05)+D16
+  - Fill E17..E20 are already =E(previous)*(1+0.05)+D(current) and will update.
+
+One-line checklist to fix now
+- Replace E16 formula with the recurrence referencing the actual initial-assets cell (or with =D16 if initial assets = 0).
+- Enter the intended income values into B9 and B20 (e.g., 25) or explicitly put 0 if income is zero in that period.
+- Optionally, centralize the consumption amount into a single cell and reference it to avoid repetitive =Cprevious formulas.
+
+If you tell me whether the model should assume initial assets = 0, 1,000, or some other number and whether period 5 income should be 25 or 0, I can give the exact corrected formulas (and the numeric updated results for E16:E20).

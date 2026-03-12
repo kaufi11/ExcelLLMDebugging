@@ -1,0 +1,37 @@
+I checked the workbook description and found the main formula errors and a couple of robustness issues. Short, clear list with fixes:
+
+1) Clear bug in Q1 — typo in F5
+- Problem: F5 contains a malformed formula: =$F$2/(83+$J5)^$F$83 (obviously wrong references "83" and $F$83).
+- Consequence: that single discounted cash‑flow is wrong, so the row sum (NPV at that rate) and any plot using that row are incorrect.
+- Fix: replace with the correct pattern used elsewhere:
+  = $F$2 / (1 + $J5) ^ $F$1
+  (i.e. F5 should be =$F$2/(1+$J5)^$F$1). Then fill/copy the correct formula across D5:G5 (and down other rows if needed).
+- Why it works: it matches the intended discounting: cashflow at period in row 1 divided by (1+rate)^period.
+
+2) Inconsistent/fragile cell references in Q2 (debt / depreciation blocks)
+- Problem: some blocks reuse the same input cell addresses (e.g. interest/loan in different sections) or reference the wrong parameter cell (example: the "with depreciation / debt" block uses -$C$17*$C$18 for interest though that block defines loan in C58/C61). That makes the model fragile and error‑prone if you edit one block.
+- Consequence: changing one set of inputs may not update all blocks; easy to get inconsistent results.
+- Fix (two options):
+  a) Use named ranges for key inputs (Loan, InterestRate, TaxRate, WACC). Then formulas use names (Loan, InterestRate) so every block points to the same variable.
+  b) Or make each block reference its local input cells consistently (change D67 etc to use $C$58 and $C$61 in that block).
+- Why it works: consistent named references or consistent local references prevent accidental cross‑block linking and make maintenance easier.
+
+3) IRR ambiguity (not a formula bug but important)
+- Problem: project cash flows change sign multiple times (e.g. -85, 120, 100, -140). IRR can have multiple solutions or produce a misleading single root (Excel returns one root based on its search/guess).
+- Consequence: IRR-based accept/reject decisions may be wrong.
+- Fix / Recommendation:
+  - Use the NPV rule (plot NPV vs rate or use NPV at your cost of capital) — already done in workbook.
+  - Or use MIRR for a unique measure: =MIRR(range, finance_rate, reinvest_rate).
+  - If you must find multiple IRRs, scan NPV over a range of rates (as you already do) and locate all sign changes; use Goal Seek starting from different guesses to pick up multiple roots.
+
+4) (Optional) Q3 valuation with negative average earnings
+- Problem: C34 (3‑yr average earnings) includes a negative number (2001), so dividing to get perpetuity can be misleading (negative perpetuity value).
+- Suggestion: explicitly document or normalize earnings (use operating earnings, use median, or exclude one‑off years) before using P/E or perpetuity formulas.
+
+How to apply the main fix quickly
+- Fix F5 first: edit F5 to =$F$2/(1+$J5)^$F$1 and copy across/down for the affected rows (D5:G5). Then refresh the NPV rows/graph.
+- Make key inputs named (Formulas → Define Name) for Loan, InterestRate, TaxRate, WACC to prevent the cross‑block reference problem.
+
+If you want, I can:
+- Give the exact Excel named‑range names and example formulas for replacing the problematic links; or
+- Produce the corrected formula block for all Q1 discount rows so you can paste it into the sheet.

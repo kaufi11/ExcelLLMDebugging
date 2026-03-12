@@ -1,0 +1,67 @@
+Good — I checked the workbook extract and found the main errors, why they are wrong, and simple fixes you can make. Short and direct.
+
+1) Wrong cell used for Rice N removed (World 1996)
+- Error: E19 = 710*(C19/100)
+- Why wrong: "710" is not the rice production cell; the formula must use the rice production value (E8).
+- Fix: change E19 to =E8*(C19/100)
+- Explanation: N removed = production × %N. Use the production cell, not a literal 710.
+
+2) "N savings per 1% increase in NUE" formula is incorrect / ambiguous
+- Error (example, World 1996): E32 = (E4*(0.343) - E28)
+- Why wrong: That computes the difference between a 34.3% target removal and current fertilizer removal — not "savings per 1% increase". The workbook mixes three different numbers (0.343, 0.426, 0.295) across sheets without explanation.
+- Two possible intended calculations and the correct formulas:
+  a) If you want the extra N removed (or saved) for each 1 percentage-point increase in NUE: Savings (mT per 1%) = Total cereal fertilizer applied × 0.01
+     - Formula: =E4 * 0.01
+     - Explanation: one percentage point of applied fertilizer equals 1% of the cereal fertilizer applied.
+  b) If you want the total change required to reach a specific target NUE (e.g., 34.3%): Required change (mT) = E4 * target_NUE_decimal - current_fertilizer_removed
+     - Formula example: =E4 * 0.343 - E28
+     - Explanation: this gives the total difference between target and current removal, not "per 1%".
+- Fix: decide which you mean. If you really want "per 1%", replace formulas like E32 with =E4*0.01. If you mean "to reach target", create a named cell Target_NUE and use =E4*Target_NUE - E28.
+
+3) Inconsistent target fractions across sheets (0.343, 0.426, 0.295)
+- Error: Different unexplained decimals used in different sheets.
+- Why wrong: inconsistent assumptions produce inconsistent savings results.
+- Fix: Put a single parameter cell (e.g., cell X1 named Target_NUE_decimal) on each sheet or a common parameters sheet and reference it (e.g., =E4*Parameters!Target_NUE). Document what it means (e.g., "Target share of applied N removed in cereals (decimal)").
+- Explanation: makes assumptions explicit and easily changed.
+
+4) Wrong magnitude for the "67" multiplier (likely a decimal place error)
+- Error examples: G33 = E33 * 67 (World 1996) and other cells multiply dollar values by 67.
+- Why wrong: multiplying dollars by 67 is unlikely intended. The workbook contains a 0.67 factor elsewhere (loss fraction), so "67" is probably a misplaced decimal (should be 0.67 or 67% used correctly).
+- Fix: Check intended meaning. If you want 67% of the dollar value, use =E33 * 0.67. Replace any "*67" with "*0.67" if the intention is 67%.
+- Explanation: a missing decimal point causes results ×100 too large.
+
+5) Cells showing literal text instead of evaluated formula (example I33)
+- Error: I33 contains text "49743804*0.343 - 16,572,232" rather than a computed result.
+- Why wrong: the cell holds text, not a formula (maybe leading apostrophe or was entered as text).
+- Fix: Replace the text with a proper formula (e.g., =E4*0.343 - E28 or =49743804*0.343 - 16572232) or delete the text and put the evaluated number.
+- Explanation: formulas must begin with = and use proper cell references.
+
+6) Stale/hard-coded label numbers that don't match sheet inputs
+- Error examples: Repeated text "0.60 * 82,906,340 = 49,743,804 MT in cereals" appears on Developed and Developing sheets where the E1 values differ.
+- Why wrong: labels were not updated and are confusing.
+- Fix: change label to dynamic formula cells, e.g., put in a cell: =0.6*E1 and format/display result. Or update the text to match the sheet inputs.
+- Explanation: keep labels linked to inputs to avoid mismatch.
+
+7) General unit / parameter clarity
+- Recommendation: create a small "Parameters" area on each sheet or one global sheet that defines:
+  - Cereal_share = 0.60
+  - Soil_fraction = 0.5
+  - Target_NUE (decimal)
+  - Price_per_MT_N (1998, 2001, 2002)
+  - Gas_conversion_fraction (e.g., 0.67)
+  Then replace hard-coded numbers in formulas with references to those parameter cells.
+- Explanation: makes auditing and fixing formulas much easier.
+
+Quick list of exact formula fixes to apply now (World 1996 examples)
+- E19: change to =E8*(C19/100)
+- E28: currently =E25*(1-0.5) — OK but can be =E25*0.5 for clarity
+- If you want "per 1% increase": E32 := =E4*0.01
+- If you want "to reach given target": create cell (say Z1) with 0.343 and use E32 := =E4*Z1 - E28
+- G33: if meant 67% use =E33*0.67 (not =E33*67)
+- Remove/replace textual formulas like I33 with proper formulas.
+
+If you want, I can:
+- Produce the corrected formulas for one sheet (World 1996) and list cell-by-cell replacements, OR
+- Create a small parameter table and rewrite all the savings formulas consistently across the four sheets.
+
+Which do you prefer?

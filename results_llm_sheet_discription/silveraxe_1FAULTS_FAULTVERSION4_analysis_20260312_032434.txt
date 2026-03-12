@@ -1,0 +1,21 @@
+I reviewed the sheet and found two real issues (plus one small usability suggestion). Short, clear fixes below.
+
+1) Hit Points not rounded correctly
+- Problem: H19 = (F19*E15)+0.49 leaves HP as a fractional number (example shows 46.186). Adding 0.49 does not actually round the value.
+- Fix: Replace with a proper rounding function. Example:
+  - =ROUND(F19*E15,0)
+  or (if you prefer rounding .5 up)
+  - =INT(F19*E15+0.5)
+- Why: HP should be an integer. ROUND (or INT+0.5) gives the intended nearest-whole-number result.
+
+2) Base HTH Damage lookup uses carrying capacity instead of weight (likely wrong)
+- Problem: H22 = HLOOKUP(C22,R2:AG4,3,TRUE) uses C22 (carrying capacity) as the lookup_value against the R2 weight thresholds. The R2 thresholds are weight-size cutoffs, so looking up carrying capacity (C22) is probably a mismatch and can give incorrect HTH damage classification.
+- Fix: If HTH damage should be based on character weight, change to:
+  - =HLOOKUP(B15,R2:AG4,3,TRUE)
+  If HTH damage is intentionally based on carrying capacity, keep as-is — but document that choice.
+- Why: The table in R2:AG4 is keyed by weight thresholds (columns in row 2). To use it you must feed it the weight (B15).
+
+Small suggestion (not an error)
+- Many HLOOKUPs use approximate (TRUE). That requires the top lookup row to be sorted ascending (it is now). Consider documenting the lookup table ranges or switching to INDEX/MATCH for clarity and robustness.
+
+If you want, I can give the exact updated formulas placed into the sheet (with any formatting/rounding preference).

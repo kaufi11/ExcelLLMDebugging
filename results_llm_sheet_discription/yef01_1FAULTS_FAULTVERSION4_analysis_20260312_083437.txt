@@ -1,0 +1,67 @@
+Summary of the problems I found (short, specific) and how to fix them:
+
+1) Revenues by Source — accidental subtraction and wrong total range
+- Error(s):
+  - C12 = 147577404 - 1 → reduces the state aid total by 1 (likely a stray “-1”).
+  - C16 uses =SUM(C10:C15) but C10–C14 are the only shown revenue rows (C15 is not shown). B16 similarly sums B10:B15. If C15 is blank/missing, the denominator C16 will be wrong and all percent-of-total results in column B will be incorrect.
+- Fix:
+  - Remove the stray subtraction: change C12 to =147577404 (or the correct source cell reference).
+  - Make the total range match the actual revenue rows. If the listed rows are C10:C14, change C16 to =SUM(C10:C14) and change B16 to =SUM(B10:B14). If there actually is a C15 row, confirm its value and keep C16 = SUM(C10:C15).
+- Why this fixes it:
+  - Removing “-1” restores the true dollar amount.
+  - Summing the correct range makes C16 the real total so all percentage formulas (=Cxx/$C$16) compute correctly.
+
+2) Expenditures by Category — ad-hoc rounding tweak
+- Error:
+  - B12 (Materials, Supplies & Travel) is computed as =ROUND((C12/$C$16),4) - 0.0001 — a manual offset to force totals to match. This is a hack that distorts actual percentages.
+- Fix:
+  - Remove the subtraction. Use consistent rounding/display only: B12 = ROUND(C12/$C$16,4).
+  - If you need the printed percentages to total exactly 1 (or 100%), either:
+    - Leave the underlying unrounded values and format with rounding for display; or
+    - Compute every percent with ROUND(...,4) and set the last percent cell formula to =1 - SUM(other rounded percents) so the last item absorbs rounding difference.
+- Why this fixes it:
+  - Prevents small data distortion and keeps arithmetic traceable. If totals must sum exactly to 1 after rounding, assign the residual to one chosen cell instead of arbitrarily subtracting from a middle cell.
+
+3) FTEE Calculation sheet — wrong cell reference(s) and many manual “fixes”
+- Error(s):
+  - H14 uses C15 (H14: =+C15+F14) — that’s a row-misreference; it should sum that row’s credit and noncredit FTEE (C14 + F14).
+  - Many rows include arbitrary tiny adjustments (+0.01 on some H rows; C28 or F28 with +0.02/+0.03; H28 with -0.02; I28 with +0.000002; some I rows with -0.000001). These are manual hacks to force totals to match and mask upstream formula problems.
+  - Some D or other percent formulas reference Hxx or other cells that could be empty or incorrect (check any Dxx that uses /Hxx for intended meaning).
+- Fix (step-by-step):
+  - Correct the misreference: H14 → =C14+F14.
+  - Remove all ad-hoc constants. Use the pure arithmetic:
+    - Cxx (credit FTEE) = Bxx / 24
+    - Fxx (non-credit FTEE) = Exx / 600
+    - Hxx (total FTEE per college) = Cxx + Fxx  (no +0.01)
+    - C28 = SUM(C12:C27)
+    - F28 = SUM(F12:F27)
+    - H28 = SUM(H12:H27)
+    - Ixx (percent of total) = Hxx / $H$28
+    - I28 can be =SUM(I12:I27) or =1 (for completeness); if you want printed percentages rounded to n decimals and to sum to exactly 1, compute rounded Ixx for display and set the last I row to =1 - SUM(others_rounded).
+  - Verify no formula divides by zero (Hxx should not be zero before computing ratios).
+- Why this fixes it:
+  - Removes opaque manual adjustments that hide errors and makes every row derived consistently from source hours. Percentages and totals will be reproducible and auditable. If the printed/rounded percents must sum to 100%, use the controlled residual method only on one cell (usually the last).
+
+4) General recommendation about rounding and display
+- Problem: Many sheets alter numbers to make printed totals match (tiny additions/subtractions). That corrupts data.
+- Recommendation:
+  - Keep raw calculations unmodified (no tiny +/− constants).
+  - Use ROUND(...) only for display or a dedicated column for "RoundedPct" and keep the unrounded values for totals.
+  - If you want displayed percentages to sum to exactly 100% after rounding, compute rounded values for display and set the last displayed cell to =100% - SUM(previous_displayed_percents).
+
+Quick checklist of exact formula changes to implement now
+- Revenues:
+  - C12: change =147577404-1 → =147577404
+  - C16: change =SUM(C10:C15) → =SUM(C10:C14) (or confirm C15 exists and include it)
+  - B16: change =SUM(B10:B15) → =SUM(B10:B14) (or match C16 range)
+- Expenditures by Category:
+  - B12: change =ROUND((C12/$C$16),4)-0.0001 → =ROUND(C12/$C$16,4)
+  - If totals must sum exactly, make last percent cell =1 - SUM(other rounded percents.
+- FTEE:
+  - H14: change =+C15+F14 → =C14+F14
+  - Remove +0.01, +0.02, +0.03, -0.02, +0.000002, -0.000001 from all Hxx, C28, F28, H28, I28 formulas.
+  - Recalculate totals: C28 =SUM(C12:C27); F28 =SUM(F12:F27); H28 =SUM(H12:H27)
+  - Percent: Ixx = Hxx / $H$28 (and I28 = SUM(I12:I27) or =1)
+  - If desired, display percents rounded: DisplayPct = ROUND(Ixx,4) and make last displayed pct = 1 - SUM(other DisplayPct).
+
+If you want, I can produce a corrected list of every cell formula in the workbook (or a corrected workbook) and a version where rounding is handled cleanly so printed percentages sum to 100% without altering underlying numbers. Which would you prefer?

@@ -1,0 +1,24 @@
+I found two definite formula errors and one likely (logical) issue. Short fixes and why:
+
+1) Wrong sign in Earnings from Operations (one cell)
+- Faulty cell: Select Financial Data!H14
+- Error: Formula uses H12+H13 but every other column uses “Earnings = (Gross margin) – (Other operating (income) and expenses)”. H13 is negative (income), so the correct operation is subtraction (same pattern as other columns).
+- Fix: change H14 to =H12-H13
+- Why: Keeps the sign consistent with other columns and correctly removes (adds back when negative) the “Other operating” item.
+
+2) Off‑by‑one in Net Earnings (all years)
+- Faulty cells: Select Financial Data!B25:K25
+- Error: Formula =SUM(B20:B24) — this starts one row too high and therefore excludes “Earnings before Extraordinary Item…” (row 21) and includes a wrong cell.
+- Fix: change each to =SUM(B21:B24) (and C25 =SUM(C21:C24), etc.)
+- Why: Net Earnings should sum the results starting at the “Earnings before Extraordinary Item…” row, not the blank/previous row.
+
+3) Potential double‑count (check, not definite)
+- Area: Cost of operations (Select Financial Data row 11)
+- Risk: B11 uses =SUM(B9:B10). If the “Cost of sales, other costs and expenses” figure in B9 already includes “Freight and delivery costs” (B10), summing them double‑counts freight.
+- Action: Verify source definitions. If B9 already includes freight, set B11 = B9 (not SUM). If B9 excludes freight, keep =SUM(B9:B10).
+
+Quick recommended safeguards
+- Use labels and named ranges (or structured rows) so subtotal formulas reference named items (less chance of off‑by‑one).
+- Copy formulas across columns and spot‑check relative row references after inserting/removing rows.
+
+If you want, I can give the exact formulas to paste for all affected cells and scan the workbook for other off‑by‑one / sign mistakes.

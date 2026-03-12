@@ -1,0 +1,43 @@
+Summary — main errors found
+1) Many cells show the literal text "FORMULA =..." instead of an evaluated formula (Pages 2–6 and elsewhere). Example: A83, B83, A154, A204, A274, A314…  
+   - Effect: those cells are plain text so they do not update when the source cells change.
+
+2) A broken increment in the A‑122 numbering sequence: C34 is "FORMULA =C33-1" (subtracts 1) while every other step adds 1.  
+   - Effect: that value will be wrong (the sequence will go down by 1 at that row).
+
+3) Several places use a plain word "sum" (or other text) where a SUM formula is expected (examples: F27, I262, others).  
+   - Effect: totals are not calculated; totals won’t update.
+
+Why this happened (common causes)
+- Someone pasted formula text (including the word FORMULA) or pasted formulas as text.  
+- Cells may have Text format or leading apostrophes so Excel treats the entry as text.  
+- A manual edit changed a + to a − in one cell.
+
+How to fix (simple steps)
+1) Convert "FORMULA =..." text into real formulas across the workbook
+   - Use Find & Replace:
+     - Find: FORMULA =  
+     - Replace with: =  
+     - Scope: select the affected sheets/range or whole workbook.
+     - Click Replace All.  
+   - After replacing, if cells still show text, select them, change format to General, press F2 then Enter (or double‑click and Enter) to force re‑evaluation.
+   - If there are leading apostrophes (’), remove them (Find ' and replace with nothing) or retype as needed.
+
+2) Fix the sequence error in A‑122 (C34)
+   - Edit C34 and change the formula to:
+     =C33+1
+   - That restores the consistent +1 increment.
+
+3) Replace plain "sum" text with actual SUM formulas
+   - Identify where a total is intended (e.g., F27, I262, any cell labeled "sum").
+   - Enter an appropriate SUM formula, for example:
+     =SUM(range_of_items)
+   - Example: if F27 should total B19:B26 use =SUM(B19:B26). (Replace the range with the actual rows for that section.)
+
+Quick verification
+- After fixes, change one source value in a section and confirm totals/header formulas update.  
+- Use Formula Auditing (Formulas → Show Formulas or Trace Dependents) to confirm formulas are active and pointing to the right cells.
+
+If you want, I can:
+- Provide the exact Replace All string for your workbook, or
+- Show a short list of the exact cells that contain "FORMULA =" or the word "sum" so you can fix only those. Which do you prefer?

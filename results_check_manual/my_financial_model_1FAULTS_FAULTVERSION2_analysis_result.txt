@@ -1,0 +1,64 @@
+I inspected the workbook formulas on each sheet and found a number of formula errors and inconsistencies (some cause wrong results, others are likely just copy/paste/reference mistakes that happen to give the same numeric result). Below I list each issue I found, explain why it is a problem, show the current formula, suggest a corrected formula (where appropriate), and note the likely impact.
+
+High‑priority (actual calculation errors)
+1) Income!G3 — wrong multiplier (typo: 45 instead of 1)
+   - Current formula: =F3*(45+$D$3)
+   - Problem: that multiplies by ~45.05 instead of 1.05, producing an enormous and incorrect jump in Cups Produced starting in column G. The value shown (9,460,500) confirms the mistake.
+   - Suggested fix: =F3*(1+$D$3)
+   - Impact: this propagates into sugar/lemons/COGS/revenue/cashflow and makes all subsequent projections (from column G onward) grossly inflated.
+
+Medium priority (likely incorrect/ inconsistent references — may not change numbers now)
+2) Income!F8 (and the sugar price column formulas) reference the wrong inflation cell ($D$7 instead of $D$8)
+   - Example current formula (F8): =E8*(1+$D$7)
+   - Problem: semantically inconsistent: the sugar price row has its own D8 inflation cell (D8 = 0.08/12). The formulas in row 8 use $D$7 (the lemon price inflation cell). In this workbook D7 and D8 currently hold the same numeric value (0.0066666...), so results are numerically identical, but the reference is wrong logically and will break if either inflation assumption is changed independently.
+   - Suggested fix: use $D$8 (or a single canonical inflation input cell) — e.g. F8: =E8*(1+$D$8)
+   - Impact: avoids silent errors if inflation inputs differ later.
+
+3) Income!G4..P4 / Income!F4 onward price inflation references are consistent (use D4) but note there are multiple inflation input cells (D4, D7, D8) that all currently contain identical values. Consider centralizing inflation inputs to avoid confusion.
+
+Lower priority (inconsistent copy/paste references, no numeric error now but fragile)
+4) Income!Row 25 (Advertising and Marketing) — inconsistent chained references
+   - Some cells are hard-coded, some reference different earlier columns (I25 =F25, J25 =G25, K25 =H25, L25 =I25 ...).
+   - Current formulas create a non-uniform chain (I25 references F25 rather than H25). Because all values are 2500, numbers are fine, but the pattern is inconsistent and fragile.
+   - Suggested: make the chain consistent, for example set F25 =E25, G25 =F25, H25 =G25, I25 =H25, etc., or simply copy E25 across.
+
+5) Income!Row 8 (Sugar price) and Row 7 (Lemon price) both have D# inflation cells (D7 and D8) equal to same formula (=0.08/12). Consolidate inflation inputs to a single cell (or clearly name them) to avoid future mismatch.
+
+Balance Sheet / Depreciation / Cashflow inconsistencies and questionable references
+6) Balance Sheet!D8 (Long Term Assets — Original Value) references D14 (loan amount)
+   - Current formula: =D14
+   - Problem: D8 (original asset value) should be an asset input, not derived from the Lear Jet Finance loan amount (D14). This is suspicious/illogical (asset original value equals loan principal). It may be a mistaken reference/copy.
+   - Suggested fix: make D8 an explicit input (e.g. enter 1000000 directly or reference a proper asset input cell), or if intended to be linked, document why the asset equals that loan.
+   - Impact: feeds into Depreciation and the Balance Sheet; could produce incorrect asset/depreciation schedules.
+
+7) Balance Sheet!Row 7 (Lemon Inventory) uses F7 =E7, etc., but E7 does not appear to be defined on Balance Sheet sheet (so E7 is blank/zero). Likely missing a link to Income!E5/E6 or other sheet.
+   - Current: F7 =E7, G7 =F7 ...
+   - Problem: Inventory shown as zero likely because link is missing; if intended to pull from Income (or from some calculations), it should reference the correct cell (e.g., =Income!E6 or Income!E5 depending on desired metric).
+   - Suggested: set F7 = Income!E6 (or appropriate Income cell) so inventory reflects production numbers.
+   - Impact: Total assets will be understated if inventory should be >0.
+
+8) Balance Sheet!Row 9 (Accumulated Depreciation) and Row 10 (Balance Sheet Value) formulas reference Depreciation! cells — that is appropriate — but some later columns (L9..P9, L10..P10) are set to 1,000,000 or 0 because Depreciation sheet has hit fully-depreciated values. Verify that the depreciation horizon/logic matches expected schedule. (Not an error by itself, but double-check business logic.)
+
+9) Balance Sheet!Row 20 (Total Equity) uses SUM(E17:E19) but E17 is not defined on the Balance Sheet (E17 is blank). The SUM will still compute (E18+E19). This is not a fatal error but a fragile pattern. Suggest consistently summing explicit equity components.
+
+10) Cashflow!D13..O13 Net Change in Cash formulas use SUM(D6:D12), SUM(E6:E12) etc. The ranges include rows that may be blank in later years (D12 etc.). They work, but ensure rows included are intentional (Operations + Depreciation + Investments + Financing rows).
+
+Depreciation sheet minor irregularities
+11) Depreciation!F6, G6 etc — formulas are IF(X8>0,X8,0). These use the previous column's "Value at End of Period" (E8 etc.) as the beginning value for the next period; this is OK logically (carry-forward) but referencing the "end" cell of a prior column can be a bit confusing. It's not an error, but you might prefer F6 = E8 (no IF) for clarity unless you purposely want the zeroing behavior.
+12) Depreciation!E11..P11 (Total Depreciation): J11, K11 are chained correctly but there is an inconsistency around L11/M11: M11 = 0 (formula =M7) rather than the consistent cumulative pattern (should be some =L11+M7). There is no L11 in the rows list — likely L11 is missing. This looks like a copy/paste omission:
+   - Current: K11 = J11+K7 ; M11 = =M7 ; N11 = =N7 etc.
+   - Suggested: ensure cumulative sum is continuous: L11 = K11+L7; M11 = L11+M7; etc.
+   - Impact: Total Depreciation cumulative values for later periods may be incorrect/missing.
+
+Other comments / recommendations
+- There are multiple similar input cells for monthly inflation: D4, D7, D8 all contain =0.08/12. Consider consolidating to a single named input (e.g., "MonthlyInflation") and have all rows reference that single cell to avoid accidental divergence.
+- Many places use one-off SUM ranges like =SUM(E10:E10) instead of simply referencing E10. This is harmless but unusual and could be simplified.
+- Several places rely on blank cells (SUM including blanks) — not an error but make formulas explicit to reduce confusion.
+- I recommend correcting the typos above (especially Income!G3) first, then re-check the model outputs (COGS, Revenue, Cashflow, Retained Earnings, Balance Sheet totals). The G3 error will cascade through many sheets.
+
+If you want, I can:
+- Produce a short "fix list" with exact corrected formulas ready to paste into the workbook.
+- Run a dependency trace (show exactly which cells will change when I fix Income!G3).
+- Apply the corrections and produce recalculated totals (if you want me to modify the file).
+
+Which would you prefer?

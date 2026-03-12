@@ -1,0 +1,25 @@
+I examined the formulas on Sheet1. There is one clear formula error and a couple of minor inconsistencies / best-practice issues. Summary and recommendations below.
+
+1) Clear formula error
+- Cell: F19
+- Current formula: =200/12
+- Why it's wrong: column F is "bulb cost (fluor)" and elsewhere the cost is computed as 200*12 = $2400 (initial purchase of 200 fluorescent bulbs at $12 each). The formula in F19 divides 200 by 12 (producing 16.6667) which is clearly a typo.
+- Correct formula: =200*12 (or copy F18)
+- Correct value: 2400
+- Effect: H19 (total cost for fluorescent at 2000 hours) is currently 328.6667 because it uses the wrong F19; with F19 corrected H19 becomes 2712 (2400 + 312).
+
+2) Missing/blank formulas (inconsistency)
+- Cells: D17 and G17 are blank (they contain no formula; their values are treated as zero in C17+D17 and F17+G17).
+- For consistency it is better to use the same formula pattern in row 17 as in other rows (even if A17 = 0):
+  - D17 should be =200*60*A17*0.06/1000
+  - G17 should be =200*13*A17*0.06/1000
+- This is not an error if A17 is zero, but it is inconsistent with the rest of the rows.
+
+3) Other observations / recommendations (not errors but improvements)
+- Many constants are repeated inline (200, 0.88, 12, 60, 13, 0.06, 1820). For reliability and maintainability you should put these constants in dedicated cells (e.g., number of bulbs, bulb prices, watts, electricity cost, hours/year) and use absolute references. That avoids manual typos (like F19) and makes updates easier.
+- Column headers: "time" appears twice (A15 and B15). That is harmless but could be clarified.
+- The cumulative logic for incandescent bulbs assumes an initial purchase at time 0 (C17 = 176) and adds 176 every 1000 hours; for fluorescents the initial purchase is 2400 and no replacement until 10000 hours — this logic appears intentional and consistent (aside from the F19 typo).
+
+If you want, I can:
+- produce a corrected version of the sheet (fix F19, fill D17 and G17) and show the corrected numbers, or
+- convert repeated numeric literals into named cells/absolute references and update formulas accordingly. Which would you prefer?

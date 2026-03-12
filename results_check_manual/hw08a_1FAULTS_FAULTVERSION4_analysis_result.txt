@@ -1,0 +1,38 @@
+I inspected the formulas and values in Sheet1. I found one clear formula error and one related inconsistency (fluorescent bulb cumulative cost not being updated at the 10,000‑hr lifetime). Details and suggested fixes are below.
+
+1) Incorrect formula (typo) — cell F19
+- Current formula: =200/12
+- Current value shown: 16.6667
+- Why it’s wrong: column F is "fluor bulb cost (cumulative)". All other F rows (and row 17 initial) use 200*12 = 2400 (initial purchase of 200 fluorescent bulbs at $12 each). The formula in F19 is a stray / incorrect expression that produces a tiny number and makes H19 (total for fluorescents) incorrect (H19 = F19 + G19 becomes ~328.67 instead of ~2712).
+- Fix: replace with either the constant used elsewhere (=200*12) or, better, use a general cumulative formula (see suggestion below).
+- After fixing F19, H19 should be recomputed (expected H19 = 2400 + 312 = 2712).
+
+2) Conceptual inconsistency — fluorescent bulb cumulative cost not incremented at 10,000 hours
+- Current behavior: F is constant = 2400 for all rows (except the erroneous F19). That represents the initial purchase only. For incandescents you added 176 every 1000 hr (cumulative replacements). For fairness/consistency the fluorescent bulb column should likewise add replacement cost at each 10,000‑hr lifetime.
+- Example: at A27 = 10,000 the fluorescent bulb cumulative cost should be 2400 (initial) + 2400 (replacement at 10,000 hr) = 4800. Currently F27 = 2400.
+- Suggested robust formula (per row) to compute cumulative fluorescent bulb cost from hours in column A:
+  - Fn = 200 * 12 * (1 + INT( A_n / 10000 ))
+  - e.g., in row 19: =200*12*(1+INT(A19/10000)) → 2400*(1+0) = 2400 (no replacement yet)
+  - in row 27: =200*12*(1+INT(A27/10000)) → 2400*(1+1) = 4800 (one replacement at 10,000 hr)
+- Alternative, incremental approach (if you prefer to accumulate from previous row):
+  - Fn = F(n-1) + 200*12 * ( INT(A_n/10000) - INT(A_(n-1)/10000) )
+  - This adds a 2400 step only when the integer count of 10,000‑hr lifetimes increases.
+
+3) Optional consistency/simplification suggestions
+- For incandescents (column C) you are adding 176 every 1000 hours with Cn = C(n-1)+176 which works. A compact formula equivalent is:
+  - Cn = 200 * 0.88 * (1 + INT( A_n / 1000 ))
+- Electricity columns (D and G) are correct logically:
+  - Dn = 200 * 60 * A_n * 0.06 / 1000  (incandescent electricity cost over A hours)
+  - Gn = 200 * 13 * A_n * 0.06 / 1000  (fluorescent electricity cost)
+  - These can be written more compactly as =200*60*A/1000*0.06 etc. but current formulas are fine.
+- Totals E and H should be recomputed after fixing F19 and (if applied) the cumulative fluorescent formula.
+
+Summary of actions to correct sheet
+- Correct F19 formula (remove the erroneous =200/12).
+- Implement a cumulative fluorescent bulb formula such as =200*12*(1+INT(A19/10000)) in each F row (replace row index appropriately).
+- Recalculate H19 (and any downstream totals) after the fix; verify F27 becomes 4800 at A27=10000.
+
+If you want, I can:
+- Give the exact corrected formulas for each F row (replace A# with the actual cell address per row)
+- Provide revised values for the affected rows (H19, H27, etc.)
+- Or provide a small macro/formula block to auto-fill the whole F column correctly.

@@ -1,0 +1,52 @@
+Summary — workbook structure and purpose
+- Workbook implements a timing/error budget for two modes (Fast-80 and Fast-160). Sheet1 is the active sheet with inputs, split/error components, compensations and derived setup/hold windows. Sheet2 and Sheet3 are present but contain no described content.
+
+Layout and main areas (Sheet1)
+- Column A: descriptive items (nominals, error sources, notes, totals).
+- Columns B (Fast-80) and C (Fast-160): primary numeric inputs per item and many calculated totals.
+- Column D: comments/notes for many rows.
+- Columns J, K, L: “Setup” / “Setup” / “Hold” breakdowns — per-item contributions typically shown as half-cycle adjustments (most J/K/L formulas are Cx/2 or Cx).
+- Columns N–R and P–Q: derived timing calculations and two device/method columns (P = Method 1 / Device, Q = Method 2 / Device). These compute transmitter/receiver assertion periods, setup/hold margins and net times.
+
+Key nominal values / inputs (top of sheet)
+- REQ(ACK) period: Fast-80 B4 = 25 ns; Fast-160 C4 = 12.5 ns.
+- Data transfer period: B5 = 12.5 ns; C5 = 6.25 ns.
+- Ideal setup/hold: B6 = 6.25 ns; C6 = 3.125 ns.
+- Many per-item input values: driver/receiver asymmetry, noise, crosstalk, chip skew, cable skew, ISI, etc. (examples: B11 data driver asymmetry = 0.5; C17 crosstalk = 0.7; B29/C29 cable skew = 2.5; C31 ISI = 4).
+
+Calculated aggregations and important outputs
+- Non-compensatable totals: B25 = SUM(B9:B24), C25 = SUM(C9:C24). J/K/L have analogous sums.
+- Compensatable totals: B35 = SUM(B27:B34), C35 = SUM(C27:C34).
+- Compensation total (Fast-160): C38 = SUM(C36:C37).
+- Total error inputs: B39 = B25+B35, C39 = C25+C35.
+- Post-compensation error: B40 = B39-B38, C40 = C39-C38.
+- Minimum data valid window (data time – net error): B41 = B5-B40, C41 = C5-C40.
+- Setup/Hold derived cells (J41/K41/L41) compute minimum setup/hold using J/K/L ideal values minus the post-compensation errors (and with +/- shifts for Fast-160).
+
+Representative formulas / calculation patterns
+- Many J/K/L cells are simply half or whole values of the C (Fast-160) column: e.g., J9/K9/L9 = $C9/2.
+- Transmit/receive derived formulas in P/Q use combinations of nominal periods and summed error contributions:
+  - P12 (Trnsmt Asrtn prd) = +C5 - C9 - C12 - C15 - C21
+  - P10 (Receive Asrtn prd) = +P12 - C16 - C17
+  - P13 (Trnsmt Hld Time) = L6 - $L9 - $L11 - $L12 - $L15 - $L21 - $L27 - ($L30/2)
+  - N17 / P17 (Net hold time) are complex expressions referencing many J-cells and P/Q intermediates.
+- Some constants used directly: P24 = 14.8 - 3.125 (TR ATN Setup), and R21 uses Q21 + 5.4 - 0.4.
+
+Inputs vs. derived cells
+- Primary editable inputs are in columns B and C (rows 9–24 non-compensatable, 27–34 compensatable, plus C36/C37 compensation values).
+- J/K/L columns present the split contributions used in device-method calculations; P and Q columns are higher-level device timing computations that aggregate many J/K/L and C values.
+
+Notable issues / anomalies to check
+- K13 formula is listed as =$C13/951 — likely a typo (probably should be /2).
+- Several formulas mix absolute ($) and relative references heavily; review if copy/paste intended behavior is correct.
+- Some formulas use C-column values in J/K/L areas (e.g., J27 = $C27) — consistent with using Fast-160 as base for setup/hold breakdowns, but confirm intent.
+- Complex net-time formulas (N17/P17/etc.) reference many J-cells; changing a single input cascades widely — good to keep trace precedents when editing.
+
+Notes and assumptions
+- Top notes (A2, A43–A46) state assumptions: half-cycle adjustments, that terms can be halved except skew, and specific modeling assumptions about ISI and strobe placement.
+- Comments identify double-counting risks for certain rows (e.g., D12, D14, D18).
+
+If you want, I can:
+- Produce a dependency map (which cells feed a selected output).
+- Fix the K13 typo and validate formula consistency.
+- Extract the final setup/hold margins for Fast-80 and Fast-160 into a concise table. Which would you prefer?

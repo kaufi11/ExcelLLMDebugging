@@ -1,0 +1,77 @@
+High-level summary
+- Multi-sheet financial / capacity / price model for DRAM/LEM chips covering 2001–2006 (columns for years normally in C:H).  
+- Purpose: calibrate demand (functionality-adjusted), compute industry capacity and price responses, calculate variable costs and capex for different node/ die‑size vintages, then run ROI/IRR for new‑build and upgrade scenarios (entrant vs incumbent Cournot case).
+
+Sheets and key contents (concise)
+
+1) fisher (Demand price index & base demand)
+- Contains detailed device mix (64M–1Gbit) by year, ASPs by device, computes ASP/256M‑equiv and chained Fisher price indices (Laspeyres/Paasche → Fisher → chained P).
+- Produces functionality per chip, Q (256M equiv) and linear demand parameters (Q = a − bP) using assumed elasticity (A47 = −1.5).
+- Key formulas: SUMPRODUCT for revenue, SQRT for Fisher index, chained index in D40:H40, slope b = −elasticity * Q/P (rows C50:H50).
+- Feeds price/functionality indices (fisher!C40 etc.) to LEM Demand Calibration and other sheets.
+
+2) LEM Demand Calibration
+- Uses an external semico revenue & unit forecast (row 3–4) and fisher indices to compute functionality ($/2001) and per‑chip function metrics.
+- Calibrates linear demand curve constants (a and b in rows 15–16) with elasticity −1.5.
+- Key outputs: calibrated a, b per year and functionality/chip (used by Capacity&Price).
+
+3) LEM cost side
+- Detailed capacity, yields, throughput-learning, un‑yielded dice, effective yielded die/wafer, variable cost per wafer and per yielded die, and equipment/building capex by vintage/node and die size.
+- Rows grouped by vintage/node (0.25, 0.18, 0.13, 0.09, 0.065) and wafer diameter (200/300 mm) with repeated columns for 2001–2006.
+- Computes Effective wafer starts/year (D18..I18), throughput learning multipliers (D64..I73), effective yielded die/wafer (D76..I85), Variable cost/wafer and per‑die (D88..I109).
+- Capex: new equip and upgrades ($M per fab and per K wafer starts) and building capex (C229..C249 converted per node factor). Many formula links: equipment costs divided by (20*node_factor) to get $M per K starts (D136..).
+- Provides the cost inputs used by Capacity&Price and ROI sheets.
+
+4) DRAM cost side
+- Simpler cost-side worksheet (industry capacity profile, effective wafer starts, average die/wafer, A&T yield, overhead rate C15=0.36).
+- Computes baseline units produced (mil units), predicted price/ P (via fisher links), per‑wafer variable profit, cap cost/start, undiscounted profit/wafer, and 20K fab cash flow.
+- Cash flow / IRR for entrant and Cournot incumbent cases (uses IRR(C39:H39,0.15) and IRR(C51:H51,0.15)).
+- Key constants: baseline industry monthly wafer starts (C4..H4 = 1000 K/month), discount factor for announced vs effective capacity F7 = 0.6, 20K fab equivalency (row A5 formula = C4/20 etc).
+
+5) Capacity&Price Calculation
+- Aggregates economic capacity by vintage/node by pulling 'LEM cost side' capacity (C3:C12) and effective yields (LEM cost side D76..).
+- Computes baseline units produced (C15..C24) and functionality produced ($2001) (C27..C36) using LEM Demand Calibration functionality per chip.
+- Uses inverse demand (P = (Q − a)/−b) to compute P/chip and P/function, compares to variable cost to determine economic capacity: IF(var cost per chip > price → set capacity to 0) (rows C55:C64).
+- Outputs: Total economic capacity (C65), retirement‑eligible capacity (C68:C77), and functions to produce additional output for new fabs/upgrades (C81..).
+- Price and production after adding 20K starts: recalculates new prices (C104..C114) and price‑per‑chip cases for upgrade/new fab scenarios.
+
+6) Static RoI calc '02
+- Brings cost and demand outputs together to calculate cash flows and IRRs for a wide set of scenarios (new fab entrant, Cournot incumbent, upgrade 1/2).
+- Rows compute K building and equipment costs (from LEM cost side), delta revenues and delta variable costs from capacity & price outputs, net cash flows and IRR over 6 years using IRR(range,0.15).
+- Produces IRR for many combinations by vintage/node (C59, C61, C63, etc. and L59, N59 for incumbent case).
+
+7) $ per bit (support sheet)
+- Duplicate/parallel calculations to fisher but expressed per‑bit indices and revenues; used for cross‑checks and alternative indexing. Same structure as fisher: device mix, ASP, total rev, ASP/256M equiv, and linear demand calibration.
+
+Model flow (how sheets connect)
+- Demand baseline and price indices computed in fisher (and $ per bit) → LEM Demand Calibration uses semico forecast + fisher indices to get functionality price and linear demand parameters.  
+- LEM cost side computes physical capacity, yields, variable costs, capex and effective cost per K starts.  
+- Capacity&Price pulls LEM cost side and LEM Demand Calibration to compute economic capacity, price responses, retirement eligible capacity, and the effect of adding/upgrading fabs on output and price.  
+- Static RoI calc and DRAM cost side compute cash flows and IRRs for new‑build entrants and incumbent (Cournot) cases using the price & cost outputs.
+
+Key formulas, functions, and constants
+- Elasticity-based slope: b = −elasticity * Q / P (fisher C50..), demand linearization Q = a − bP (a computed as Q + bP).
+- Inverse demand for price after capacity shifts: P = −(Q − a)/b or P = (Q − a)/−b (used across Capacity&Price and DRAM cost side).
+- IF to determine economic capacity: IF(var cost per chip > price, 0, baseline capacity).
+- Capex/unit conversions: dividing total equip or building $ by (20 * node_factor) to get $M per K wafer starts.
+- Cashflow aggregation and IRR: IRR(range,0.15) used repeatedly (Static RoI, DRAM cost side).
+- SUMPRODUCT used to compute revenue from device mix and ASPs (fisher and $ per bit).
+
+Important inputs / constants to watch
+- Assumed elasticity = −1.5 (common across sheets).  
+- Overhead SG&A = 0.36 (C15 / C47).  
+- Discount factor for announced→effective capacity = 0.6 (F7 / F39).  
+- Baseline industry wafer starts = 1000 K/month per column in DRAM cost and equivalent in other sheets.  
+- 20K fab definition frequently used (C29 / C61 = 20 K starts/mo), many per‑fab conversions use factor 20 (20K starts/month baseline) and 12 months.
+
+Primary outputs delivered by the model
+- Year‑by‑year: price per chip (P/chip), price per unit functionality (P/function), baseline and post‑build production by vintage (bil units), total economic capacity and retirement eligible capacity, delta revenues/variable costs for adding/upgrading fabs.  
+- Scenario financials: net cash flows for entrant versus incumbent cases and multiple upgrade/new‑build permutations, with IRR evaluations (IRR(...) shown in many cells).
+
+Notes / caveats
+- The workbook is heavily linked: many cells pull from fisher! and 'LEM cost side' — changing base inputs (device ASPs, elasticity, overhead, yields, node factors) propagates through prices, economic capacity flags, and IRR outputs.  
+- Several near‑duplicate sheets (fisher vs $ per bit) perform equivalent index calculations in alternate units; LEM cost side is the detailed engineering/cost engine while DRAM cost side is a simpler comparator.  
+
+If you want, I can:
+- Extract the main IRR results into one concise table, or
+- Trace a single scenario end‑to‑end (which cells/rows produce the final IRR) step‑by‑step. Which would you prefer?

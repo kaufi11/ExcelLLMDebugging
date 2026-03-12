@@ -1,0 +1,71 @@
+I reviewed the workbook formulas and checked consistency across the sheets. I found several actual formula errors and a number of inconsistencies (hard-coded values where formulas would be expected) that cause incorrect results or tiny balancing differences. Below I list the problems (by sheet and cell), explain the effect, and give recommended fixes.
+
+1) Incorrect sign in Net Income for 2002 (major error)
+- Sheet: Financial summary
+- Cell: K30
+- Current formula/value: =K15+K27 (result 63,305.63)
+- Problem: All other years use Net = Total Income - Total Expense (e.g. C30 = C15 - C27). K30 is adding instead of subtracting.
+- Effect: K30 is wrong and this error propagates to K33 (Ending Cash), K35 (Checking if derived from K33), subsequent totals and the Balance Sheet (H13, H14, H15, etc).
+- Recommended fix: Change K30 to =K15-K27
+
+2) Swapped references for Receipts / Expenditures summary (major logic error)
+- Sheet: Stork - 2002 Expenditures
+- Cells:
+  - D59 currently =C55 (labelled "Receipts" but points at the Expenditures total from this sheet)
+  - D60 currently ='Stork - 2002 Receipts'!C43 (labelled "Expenditures" but points at the Receipts sheet total)
+  - D61 =D59-D60 → gives -1,842.87 (sign reversed)
+- Problem: The two totals are referenced in the wrong places, so the "Net as of 7/3/03" is negative and inverted.
+- Effect: The reported net is the opposite sign of what it should be.
+- Recommended fix:
+  - D59 (Receipts) should reference the receipts total: ='Stork - 2002 Receipts'!C43
+  - D60 (Expenditures) should reference this sheet's expenditures total: =C55
+  - D61 then correctly remains =D59-D60
+
+3) Inconsistent use of hard-coded values vs formulas for account breakdowns → small balance differences
+- Sheet: Financial summary
+- Cells: row 35 (Checking Account) and row 36 (Money Market)
+  - C35 = =C33 (good)
+  - E35, G35, I35, K35, M35 etc are stored as static values (no formula), while C35 uses a formula
+  - E36/G36/I36/K36/M36 similarly sometimes static
+- Problem: Some checking/money-market cells are hard-coded instead of being derived from the Ending Cash (row 33) or from underlying sub-account sums. Because some values are rounded (e.g. E35 = 69161.82 while E33 = 69161.819405...), the Difference row (row 39) shows tiny nonzero amounts:
+  - E39, G39, I39 show ≈ -0.0005948
+- Effect: Tiny rounding/balancing diffs and maintainability problems (sheet won't automatically update if row 33 changes).
+- Recommended fix:
+  - Make the component cells reference the ending balance (e.g. E35 = E33 - SUM(E36:E37) or E35 = E33 if checking = ending). Be consistent: either enter the breakdown as formulas that sum to row 33, or derive row 33 from the component sums.
+  - If you want exact zero in row 39, use consistent formulas (not mixed manual rounded values).
+
+4) Balance Sheet hard-coded / inconsistent amounts
+- Sheet: Balance Sheet
+- Cell: G4 (Total Checking/Savings at Dec 31, '01)
+- Current value: 12,323.99 (hard-coded)
+- Problem: 'Financial summary'!I35 is 12,823.99 (difference of 500). G4 should reference the Financial summary checking/savings for the same date or be computed consistently from the components.
+- Effect: Dec 31, 2001 totals on the Balance Sheet do not match the Financial summary (inconsistency of 500).
+- Recommended fix:
+  - Replace hard-coded G4 with ='Financial summary'!I35 (or recompute from the component cells on the Balance Sheet).
+  - Review why there is a 500 difference (it may reflect an intended exclusion/inclusion — check the underlying transaction that created the 500). If the 500 was intentionally excluded, add a comment and document the adjustment.
+
+5) Propagation of the K30 error into Balance Sheet totals
+- Sheet: Balance Sheet
+- Cells impacted: H13 = 'Financial summary'!K30 (Net Income), H14, H15, H7
+- Problem: Because Financial summary K30 is wrong (see #1), Balance Sheet totals that reference it are also incorrect.
+- Recommended fix: After fixing K30 to K15-K27, verify H13, H14 and H15 recalculate to correct totals.
+
+6) Minor formula oddities / suggestions
+- Sheet: Balance Sheet E7, F7, G7, H7 use ROUND(E2+E6,5). E2/F2/etc are blank (0). It's harmless but odd — consider simplifying to ROUND(E6,5) unless E2 is expected to contain a value.
+- Many SUM ranges include an initial row that is blank (e.g. SUM(C6:C13) for Total Income). That's fine but verify row ranges intentionally include all intended rows.
+- Some numeric cells have many decimal places (e.g. C12 interest 232.909541511772) while others are two decimals. Decide on consistent rounding/display — not an error but can be a source of confusion.
+
+Summary of action items (concrete changes)
+1. In Financial summary, change K30 formula to =K15-K27.
+2. In Stork - 2002 Expenditures:
+   - Set D59 to ='Stork - 2002 Receipts'!C43
+   - Set D60 to =C55
+   - Keep D61 = D59 - D60
+3. On Financial summary, convert hard-coded account breakdown cells (E35, G35, I35, K35, M35 and/or corresponding M36 etc) to formulas that guarantee SUM(C35:C37) = C33 (and analogously for other columns), or derive row 33 from the component sums — but be consistent.
+4. In Balance Sheet, change G4 to reference the matching cell in Financial summary (for Dec 31, '01): ='Financial summary'!I35 (and check the 500 discrepancy).
+5. After those fixes, recalculate and verify that all Difference rows (row 39 on Financial summary) show zero (or acceptably zero within rounding policy) and that Balance Sheet totals match Total Assets = Total Liabilities & Equity.
+
+If you want, I can:
+- provide the exact corrected formulas for each affected cell,
+- produce a short patch (list of each cell and corrected formula) you can paste into Excel,
+- or run the corrections and re-evaluate the workbook (if you upload or allow edits).

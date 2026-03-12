@@ -1,0 +1,61 @@
+I inspected the formulas you provided for Sheet1 and found several formula errors and inconsistencies. Summary first, then a short recommended fix for each issue.
+
+Summary of issues (by cell / row)
+- Wrong operator (division instead of multiplication)
+  - V5: formula is =U5/Q5/C5 but should follow the pattern =U5*Q5*C5.
+- Cells where expected formulas are missing / were replaced by values
+  - X50 and X51 contain static values (3) and have no formula. All other X cells use a formula: =IF(Wn="passed",TRUNC(Vn*3/10,2),"").
+- Cells showing time values due to formatting (should be numeric fractions)
+  - Q57, Q58, Q59, Q60, Q61: formula is =1/Cn (correct formula) but the displayed values are "04:48:00" — these are numeric 0.2 values formatted as Time. (Same formula pattern appears elsewhere and is formatted as numbers.)
+- Rows with missing input cells causing U/V results of zero or unexpected blanks
+  - Rows 29–33 (and a few other rows, e.g. 30–33, 32–33): many of the M..P and R..T and/or Q cells are empty. U uses =(SUM(Mn:Pn)+SUM(Rn:Tn))*10/7 so if M..P and R..T are blank, U becomes 0. V then uses U*Q*C and becomes 0 (or blank depending on Q/C). Example: U29 = 0, V29 = 0 (Q29 appears missing). Row 31: U31 > 0 but Q31 is missing so V31 = 0.
+- Inconsistent Q cell representations
+  - Some Q cells are literal decimals, some are fractional formulas (=1/3, =1/5, =1/6) — that's fine semantically, but Q57..Q61 use =1/Cn and are formatted as Time causing confusion (see above).
+- Inconsistent use of IF outputs (empty string) vs explicit "failed" text
+  - Wn formulas use =IF(Vn>5.5,"passed","") — returning "" for not passed. That's not an error, but it can lead to downstream cells treating the value as text/blank; be aware this is intentional but inconsistent with other conventions that might use e.g. "failed" or FALSE.
+
+Why these matter
+- V5 using division instead of multiplication changes the computed individual project mark for that student and will distort any totals/allocations.
+- X50/X51 being static breaks consistency and will not recalculate automatically if input values change.
+- Q57..Q61 formatted as Time makes these appear incorrect to users and will confuse manual review; further formulas referencing those cells may still work (value is numeric) but presentation is wrong and may cause copy/paste issues.
+- Rows with missing Q or M..P / R..T cause U or V to be zero/blank unexpectedly — could reflect incomplete grading input, but formula logic produces zeros rather than e.g. NA or a visible error/warning.
+
+Exact recommendations / fixes
+1. Fix the operator error
+   - Change V5 from =U5/Q5/C5 to =U5*Q5*C5 so it matches the pattern used in other rows.
+
+2. Restore missing X formulas
+   - Replace X50 and X51 (and any other X cells that were manually entered) with the standard formula:
+     - =IF(W50="passed",TRUNC(V50*3/10,2),"")
+     - =IF(W51="passed",TRUNC(V51*3/10,2),"")
+   - (Adapt row numbers as needed.)
+
+3. Correct formatting for Q57–Q61 (and any other Q cells showing time)
+   - Set the Number Format for those Q cells to Number (or General) with appropriate decimal places instead of Time. The underlying formula =1/Cn is fine; the cell format is wrong.
+
+4. Populate missing Q / M..P / R..T inputs or guard formulas
+   - For rows where Q, or the M..P/R..T components are blank, either:
+     - Enter the missing inputs (preferred, if data is actually missing), or
+     - Make formulas guard against blanks so the result is clearer. Example changes:
+       - Un: keep as is but consider wrapping with IF to flag missing inputs: =IF(COUNTA(Mn:Pn,Rn:Tn)=0,"MISSING GRADES",(SUM(Mn:Pn)+SUM(Rn:Tn))*10/7)
+       - Vn: =IF(OR(Un="",Qn="",Cn=""),"",Un*Qn*Cn)  (or show an error text if preferred)
+   - This prevents silent zeros when inputs are missing.
+
+5. Standardize Q formulas/format
+   - Where you use =1/Cn, consider using a numeric result or consistent fraction formula and ensure number format is numeric. For readability, you can set Qn to =1/Cn but format as Number to show 0.2 etc.
+
+6. Review IF outputs
+   - Wn returns "" for not passed. If you want explicit labeling, change =IF(Vn>5.5,"passed","failed") or similar. Also check downstream cells expecting "" vs text.
+
+Quick list of cells to inspect/fix immediately
+- V5 (formula) — change division to multiplication
+- X50, X51 — restore formula
+- Q57, Q58, Q59, Q60, Q61 — change cell format from Time to Number/General
+- Rows with U=0 where you expect a grade: check M..P and R..T and Q inputs for rows 29–33, 30–33, 32–33, 31, 32, 33, etc.
+- Optionally standardize Q cells that currently use formulas like =1/6, =1/3 — these are OK but check cell formatting.
+
+If you want I can:
+- Produce an edited copy of the workbook with those fixes applied (specify if you want me to correct formulas and formatting automatically),
+- Or provide the exact cell-by-cell change list in Excel formula syntax to paste in.
+
+Would you like me to apply these corrections automatically and return a corrected workbook or just provide a patch list you can apply yourself?

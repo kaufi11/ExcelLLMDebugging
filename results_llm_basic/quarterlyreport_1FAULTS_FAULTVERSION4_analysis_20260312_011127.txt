@@ -1,0 +1,61 @@
+I reviewed the three sheets and found several formula errors that cause wrong totals (mainly overstated net tuition and incorrect beginning balances). Below are the problems, why they cause wrong numbers, and exact fixes you can apply. Short and clear.
+
+1) Main cause — Financial aid sign flipped in Summary and RCM (net tuition wrong)
+- Problem: Detail financial-aid rows (Detail!D13:D14) are negative, so Detail!D15 (subtotal financial aid) is already negative. Summary and RCM negate that subtotal (e.g. Summary D9 = -Detail!D15 or RCM D9 = -SUM(Detail!D13:D14)). That turns a negative into a positive and makes Net Tuition too large.
+- Effect: Summary D10 (subtotal net tuition) = gross tuition + positive financial aid → inflated number. Same issue appears in RCM.
+- Fix (pick one consistent approach):
+  - Better: Pull the Detail subtotals exactly (no extra minus). Example corrections on the Summary sheet:
+    - Summary D8 (Tuition) → =Detail!D11  (or keep =SUM(Detail!D8:D10))
+    - Summary D9 (Financial Aid) → =Detail!D15  (NOT -Detail!D15)
+    - Summary D10 (Subtotal net tuition) → =Detail!D16  (or =D8+D9)
+  - Apply the same correction to every column (E, F, G, …): use Detail!<same-row-subtotal> rather than negating or referencing wrong ranges.
+  - On the RCM sheet do the same: use Detail!D15 (which is negative) rather than -SUM(...).
+
+2) Many Summary formulas reference the wrong Detail ranges (causes wrong or blank numbers)
+- Examples:
+  - Summary F9 is =SUM(Detail!F9:F11) — wrong rows. Financial aid subtotals are in Detail!F15 (subtotal row) not F9:F11.
+  - Summary F10 =SUM(Detail!F10:F17) — wrong block.
+- Fix: Replace these ad-hoc range formulas with direct links to the Detail subtotal cells (safer and clearer). For instance:
+  - Summary F8 = Detail!F11
+  - Summary F9 = Detail!F15
+  - Summary F10 = Detail!F16
+  - Repeat for all columns and rows that summarize tuition/financial aid (use Detail!<row> of the subtotal you want).
+
+3) One weird hard-coded value in Summary
+- Problem: Summary A14 (University Fund allocation) J14: =6 — that looks like a typo/hard-coded mistake.
+- Fix: Replace with the intended link, e.g.
+  - Summary J14 → =Detail!J20
+
+4) Beginning fund balances are linked to the wrong prior column (carryforward errors)
+- Problem: In Detail and Summary the "Beginning fund balance" for some columns points to the wrong previous ending cell (examples: in Detail F64 = D65; K64 = D65; N64 = K65). This mis-carries balances between columns/years.
+- Why it matters: Beginning balance should be last period's ending balance in the adjacent previous column. Wrong references move numbers to the wrong year/column.
+- Fix: Standardize the rule: for every column after D, Beginning(row64/37) = previous column's Current/Projected (row65/38). Example changes on Detail:
+  - E64 = D65  (already correct)
+  - F64 = E65  (change from =D65)
+  - G64 = F65
+  - H64 = G65
+  - I64 = H65
+  - J64 = I65
+  - K64 = J65  (change from =D65)
+  - L64 = K65
+  - M64 = L65
+  - N64 = M65  (change from =K65)
+- Apply the same pattern in Summary:
+  - E37 = D38 (ok), F37 = E38 (change from D38), G37 = F38, etc.
+
+5) Minor / cosmetic: unnecessary SUM(...) around single arithmetic
+- Examples: D63 = SUM(D25-D61) or D36 = SUM(D19-D34). SUM around a single subtraction is harmless but unnecessary.
+- Fix: Replace with plain arithmetic for clarity, e.g. D63 = D25 - D61. (Optional — does not change results.)
+
+How to implement quickly (recommended approach)
+- On Summary and RCM, replace fragile formulas that try to reconstruct subtotals from many ranges with direct links to the Detail subtotal rows:
+  - Use Detail!D11, Detail!D15, Detail!D16 for tuition/financial aid/net tuition (and corresponding columns E, F, …).
+  - Use Detail!D17, D18, D19, D20, D21, D22, D23, D24, etc. for the other lines.
+- Fix the beginning balance carryforwards by setting each column’s beginning = the previous column’s ending (row 65 or 38 depending on sheet).
+- Search the workbook for instances of "-Detail!<subtotal>" where Detail subtotal is already negative; remove the leading minus.
+
+If you want, I can:
+- Produce the exact replacement formulas for every affected cell (Summary and RCM) — tell me whether you want formulas for all columns (D→N) and I’ll list them.
+- Or produce a short macro to mass-fix beginning-balance links and the most common wrong patterns.
+
+Which would you prefer?

@@ -1,0 +1,35 @@
+I reviewed the formulas in Sheet1. There is one clear formula error that causes many totals/percentages to be wrong, plus a few minor inconsistencies/typos. Summary and recommended fixes below.
+
+1) Main formula error (causes many downstream wrong results)
+- Cell: F7
+- Current formula: =SUM(B7:D7)
+- Problem: This sums only Q1–Q3 sales and omits Q4 (E7). As a result the "Total-2002" sales total is incorrect and every cell that divides by or references F7 (averages, %-Sales in column G, etc.) will be wrong.
+- Correct formula: =SUM(B7:E7)
+- Expected corrected value for F7: 153000 (20000 + 31500 + 44000 + 57500)
+
+Cells that will change once F7 is fixed (examples of corrected values):
+- F5 (average ASP/unit) — formula uses F7/F4; corrected value = 153000 / 7000 = 21.8571428571 (currently 13.642857...)
+- G7 =F7/$F$7 — will remain 1 (153000/153000)
+- G8 =F8/$F$7 — corrected = 62000 / 153000 ≈ 0.4052287582 (currently ~0.6492)
+- G9 =F9/$F$7 — corrected = 91000 / 153000 ≈ 0.5947712418 (currently ~0.9529)
+- G10 =F10/$F$7 — corrected = 9180 / 153000 = 0.06 (currently ~0.09613)
+- G11 =2400 / 153000 ≈ 0.01568627 (was ~0.02513)
+- G12 =1200 / 153000 ≈ 0.00784314 (was ~0.012565)
+- G13 =3060 / 153000 = 0.02 (was ~0.03204)
+- G14 =15840 / 153000 ≈ 0.10352941 (was ~0.16586)
+- G15 =75160 / 153000 ≈ 0.49175817 (was ~0.78702)
+- G16 =21044.8 / 153000 ≈ 0.13756405 (was ~0.22036)
+- G17 =54115.2 / 153000 ≈ 0.35314878 (was ~0.56665)
+
+2) Inconsistencies / minor issues to consider
+- Because F7 is wrong, many aggregates that should satisfy identities do not hold now. Example: F9 (Gross Margin = SUM(B9:E9) = 91,000) does not equal F7 − F8 because F7 excludes Q4.
+- Labels: A8 has a typo "Cost fo Goods Sold" → should be "Cost of Goods Sold".
+- Labels include inconsistent leading spaces (e.g., " ASP/Unit", " CGS/Unit", "  Adv Expense"). Not a formula error but may cause issues if you rely on exact label matching.
+
+3) Suggested immediate fix
+- Replace F7 with: =SUM(B7:E7)
+- After that, check any other cells that intentionally referenced F7 (averages/percent formulas) — they should update automatically and then the totals/ratios will be consistent.
+
+If you want, I can:
+- provide a corrected copy of the sheet (with F7 fixed and optionally cleanup of labels), or
+- recalculate all impacted G-column percentages and post the corrected values.

@@ -1,0 +1,62 @@
+Overview: workbook is a small DB and reporting system (Italian) for GEV service records. Main purpose: enter services, store them in a master table, compute per-service metrics and produce monthly/annual summaries by single GEV and by group.
+
+Sheets (summary of role, layout and key formulas/links)
+
+- Home
+  - Intro / title (F3: dbGEV; F4: Sistema di gestione dei Gruppi GEV).
+  - Notes about macros and version (C19, C21) and author/contact (C22, J22).
+  - Quick summary counts: "N° servizi presenti nel database:" in G21 = calcoli!B60 (total services), "N° gev:" in I21 = calcoli!B61 (count of GEV).
+  - Group name shown via parametri!I8 (F21/D6 links back to SetPar).
+
+- immissione dati (data entry form)
+  - Structured input areas: 1) Dati Servizio (date, start/stop time, type), 2) GEV partecipanti (up to 5), 3) Sanzioni e segnalazioni (checkbox-like cells), 4) Autovettura (km).
+  - Validation/warning: F16 = IF(calcoli!F15>calcoli!E15,"","Attenzione: orario fine servizio inferiore ora inizio!") — warns if end time earlier than start.
+
+- db (master data)
+  - Main table columns A: numero RL, B: g (GEV id), C: mese, D: anno, E: ora in, F: ora fi, G: h serv, H: h tot, I: tipo servizio, J–N: gev 1..5, O–Z: sanz/segn flags, AA: gev macc, AB: km, AC: tip serv agg, AD–AE duplicates/indices.
+  - Additional helper/filtered columns in AF:AM and AM:TEMP areas for reporting/filters (AJ–BL used as temporary/filter outputs).
+  - This is the authoritative dataset used by calcoli and reports.
+
+- calcoli (calculation / selection engine)
+  - Central processing sheet: reads immissione dati and parametri, computes derived values and builds temporary filtered records for reports.
+  - Key formulas:
+    - A15 = 'immissione dati'!D6 (copies service number).
+    - E11/F11 use INDEX(parametri!B8:B55, …) to map time slots.
+    - G15 = (HOUR(F15-E15)*60+MINUTE(F15-E15))/60 — computes service duration in hours from times.
+    - H15 = G15 * H11 — scales hours by number of GEV present.
+    - AC15 = IF(OR(I15=1,I15=2),1,IF(OR(I15=4,I15=6),2,IF(OR(I15=10,I15=12),4,3))) — maps tipo servizio to aggregated type.
+    - BM16 = CONCATENATE(...) — builds display string for service (used in lookup/removal).
+  - Filtering controls (selection toggles): AD16..AG16 etc. produce AI16 gate; many IF($AI16, ..,"") style formulas populate reporting rows only if filter passes.
+  - Temporary sums used by reports: COUNT / SUM over db helper columns (e.g., A27..A29 and A33..A45).
+  - Totals: B60 = COUNTA(db!A3:A4) (total services); B61 = COUNTA(parametri!A1:A4)-1 (number of GEV).
+
+- visualizza_singolo (single GEV report)
+  - Shows monthly and annual stats for a single GEV: monthly counts (n° serv), hours (h), sanctions (n° sanz), plus charts placeholders.
+  - Uses calcoli sums (via db filtered fields) to fill month cells. Sample static values shown (only March has values in provided extract).
+
+- visualizza_gruppo (group-level report)
+  - Aggregated monthly table by service categories (Vigilanza, Scuole, Attività particolari, Riunioni) with n/h/km columns per category and total columns.
+  - Monthly row formulas compute totals across categories:
+    - e.g., P7 = C7+F7+I7+L7 (n total); Q7 = D7+G7+J7+M7 (h total); R7 = E7+H7+K7+N7 (km total).
+  - Annual totals computed with SUM over months (row 20).
+
+- SetPar (parameter entry UI)
+  - Interface to set group name (E5 used by parametri!I8) and to add/remove GEV names.
+
+- parametri (lookup tables / master lists)
+  - Time slots (B8:B55), service codes and descriptions (C8:C20), day/month/year lists (D/E/F), aggregated types (G8:G11).
+  - I8 = SetPar!E5 links the group name into parametri and onward to Home/other sheets.
+
+- Help
+  - Instructions and usage notes (in Italian). Mentions removing sheet protection via Tools → Protection, and to set group/GEV names before use.
+
+Other important points / behavior
+- Workbook relies on formulas linking immissione dati → calcoli → db → visualizations. The calcoli sheet acts as a filter/engine that authorizes rows (AI16) and pushes values into the reporting area.
+- Many reporting cells are formulas (SUM/COUNT/INDEX) rather than raw data; totals update from db helper columns.
+- Removal and selection controls exist on calcoli (Rimozione GEV/servizio) with lookups to parametri and db strings (BM column).
+- Macros: Home warns that macros may be required; some actions (buttons, add/remove) likely implemented with macros not visible in the extract.
+- No password protection by default (Help note).
+
+If you want, I can:
+- Map each db column to the exact reporting cell/formula that uses it.
+- Create a one-page diagram of data flow (immissione dati → calcoli → db → visualizza_*).

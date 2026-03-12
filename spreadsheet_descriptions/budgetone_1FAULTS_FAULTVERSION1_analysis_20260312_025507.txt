@@ -1,0 +1,48 @@
+Summary — workbook
+- Sheets: Sheet1 (populated), Sheet2 (empty), Sheet3 (empty).
+
+Sheet1 — header
+- A1: "Owain Matthews"; C1: "OM Teddy Bears".
+- Main table starts at row 3: columns A = line items, B–E = 1st–4th quarter, F = Year Total (labelled Total-2002), G = %-Sales.
+
+Layout and key rows (A3:A17)
+- Row 3: headings (Item, 1st Qtr, 2nd Qtr, 3rd Qtr, 4th Qtr, Total-2002, %-Sales).
+- Row 4 (Units Sold): B4=1,000; C4=1,500; D4=2,000; E4=2,500; F4 = SUM(B4:E4) → 7,000.
+- Row 5 (ASP/Unit): B5=20; C5=21; D5=22; E5=23; F5 = F7 / F4 (year‑average ASP computed as total revenue ÷ total units).
+- Row 6 (CGS/Unit): B6=7; C6=8; D6=9; E6=10; F6 = F8 / F4 (year‑average COGS/unit).
+- Row 7 (Sales Revenue): B7 = B5*145 (note: hard-coded 145 used in B7), C7 = C5*C4, D7 = D5*D4, E7 = E5*E4, F7 = SUM(B7:E7). G7 = F7 / $F$7 (gives 100%).
+- Row 8 (Cost of Goods Sold): B8 = B6*B4, C8 = C6*C4, D8 = D6*D4, E8 = E6*E4, F8 = SUM(B8:E8). G8 = F8 / $F$7.
+- Row 9 (Gross Margin): quarter = Sales − COGS; F9 = SUM(B9:E9); G9 = F9 / $F$7.
+- Rows 10–13 (Operating expenses): Advertising = 6% * Sales; Rent = 200*3 per quarter; Utilities = 100*3 per quarter; Misc = 2% * Sales. Each quarter computed; totals in column F; %-Sales = Fxx / $F$7.
+- Row 14 (Total Operating Costs): sum of rows 10–13 by quarter; F14 = SUM(B14:E14); G14 = F14 / $F$7.
+- Row 15 (Operating Income): Gross Margin − Total Operating Costs, totals in F15; G15 = F15 / $F$7.
+- Row 16 (Taxes): =IF(Operating Income>0, Operating Income*28%, 0) per quarter; F16 = SUM(B16:E16); G16 = F16 / $F$7.
+- Row 17 (Net Income): Operating Income − Taxes per quarter; F17 = SUM(B17:E17); G17 = F17 / $F$7.
+
+Key calculated totals (Sheet1 column F)
+- Total units (F4): 7,000
+- Total Sales Revenue (F7): 135,900
+- Total COGS (F8): 62,000
+- Gross Margin (F9): 73,900
+- Total Operating Costs (F14): 14,472
+- Operating Income (F15): 59,428
+- Taxes (F16): 18,104.80
+- Net Income (F17): 41,323.20
+
+Percent-of-sales examples (col G, relative to F7)
+- COGS: ~45.6% (62,000 / 135,900)
+- Advertising: 6.0% (by design)
+- Misc: 2.0% (by design)
+- Operating Income: ~43.7%
+- Taxes: ~13.3%
+- Net Income: ~30.4%
+
+Notes / potential issues to review
+- B7 uses B5*145 (145 appears hard‑coded) instead of expected B5*B4 (ASP × units). This makes B7 inconsistent with other quarter formulas and affects F7 and dependent calculations (F5, F6, % columns).
+- G7 formula F7/$F$7 returns 1 (100%) — likely intended to show quarter revenue as a % of total (e.g., B7/$F$7), but currently shows the total divided by itself.
+- F5 and F6 (averages) depend on F7 and F8 — they will reflect any upstream formula issues.
+- All % columns G use F# / $F$7 (each line’s total ÷ total sales), which is consistent if intended as percent of annual sales.
+
+If you want, I can:
+- Correct the likely formula errors (e.g., change B7 to B5*B4 and fix G7 to B7/$F$7).
+- Convert all %-Sales cells to formatted percentages and round numbers.

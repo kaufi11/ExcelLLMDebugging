@@ -1,0 +1,35 @@
+Findings — the real errors
+1) P&L — H9 is wrong
+- Cell H9 contains =SUM(H7:H7). It only sums Software licenses and omits Maintenance (H8). Result: all downstream H‑column results (H20, H27, H33, EPS, etc.) are wrong.
+
+2) P&L — J17 uses a literal arithmetic expression instead of cell references
+- J17 =12615-5000 (gives 7,615). That works arithmetically but is brittle and unclear — if the source values change the formula won't update. (F17 uses 2615 and H17 is 0 — different periods can legitimately differ, so the problem is maintainability/traceability rather than a numeric error.)
+
+3) Balance Sheet — inconsistent SUM ranges (potential source of future errors)
+- G13 =SUM(G7:G12) while I13 =SUM(I7:I11). G12 is empty/not shown. If G12 should be a row of data, it's missing; if it should be excluded, make G13 match I13 (SUM(G7:G11). Right now it happens to balance because G12 is blank, but the inconsistent ranges are risky.
+
+Recommended fixes (exact actions)
+1) Fix the H9 typo
+- Replace H9 with =SUM(H7:H8)
+- Why: includes both revenue lines so Total revenues is correct and all dependent calculations update.
+
+2) Replace hard-coded arithmetic with references
+- Change J17 from =12615-5000 to use the source cells (for example =J? - J? where J? are the cells that hold 12,615 and 5,000). If those two amounts are not stored on the sheet, put them in clearly labeled cells and reference them.
+- Why: keeps the model dynamic and auditable. If the 12,615 or 5,000 change, J17 will recalc automatically.
+
+3) Make SUM ranges consistent on the Balance Sheet
+- Either add the missing row/cell G12 with the intended value, or change G13 to =SUM(G7:G11) so it matches I13.
+- Why: avoids accidental omissions/over‑summing later and makes the layout consistent across columns.
+
+What will change after fixes (brief)
+- After H9 =SUM(H7:H8): H9 becomes 62,484 (29,318 + 33,166). H20 = H9 - H18 = 1,150 (instead of the large incorrect loss). H27, H33 and EPS in the H column will recalc correctly (H27 = 2,114; H33 = 1,329; diluted EPS ≈ 0.045).
+- Replacing J17 with references preserves the current numeric result but prevents future errors if underlying inputs change.
+- Fixing the G13 range or adding G12 eliminates ambiguity; the Balance Sheet already balances numerically, but this makes the logic explicit.
+
+Quick checklist to run after you change formulas
+- Recalculate the workbook and confirm:
+  - P&L totals for each period: Total revenues, Total costs, Operating income, Pre-tax, Net income.
+  - EPS numbers use correct numerator and correct share counts (F37/F40 etc.).
+  - Balance Sheet: Total assets (G22) = Total liabilities & equity (G38) for each period.
+
+If you want, I can (a) give the corrected formulas for every affected cell, or (b) show the recalculated H‑column numbers after the H9 fix. Which do you prefer?

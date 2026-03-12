@@ -1,0 +1,23 @@
+Short list of errors found
+1. Q4 Homework H5 (Evans total) uses =COUNT(B5:G5) instead of SUM. That returns 6 (the count of numeric cells) instead of Evans' total points (~273). This wrong H5 value flows into Q4 Summary E6 and all downstream calculations.
+2. Q4 Summary F3:F12 (weighted score) all use the projects column twice. Their formula is B*0.3 + C*0.1 + D*0.4 + D*0.2 — the last term should reference the Homework column (E), not Projects (D). So homework is ignored and projects are double-counted.
+
+How to fix (exact steps and formulas)
+1. Fix Evans total:
+   - Change Q4 Homework H5 to: =SUM(B5:G5)
+   - Then copy/fill this SUM formula to H3:H11 (if you want consistency).
+
+2. Fix weighted-score formulas in Q4 Summary:
+   - Replace the incorrect formula in F3 with: =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+   - Copy/FILL that corrected formula down F4:F12.
+   - Alternate (safer) single formula to use and fill down: =SUMPRODUCT(B3:E3,$B$2:$E$2) — this uses the weights from B2:E2 and avoids typing errors.
+
+Why these fixes work (short)
+- SUM(B5:G5) adds all homework components to give the correct total points; COUNT only counted how many numeric cells existed.
+- Changing the last D*0.2 to E*0.2 correctly applies the homework weight (0.2) to the homework points. SUMPRODUCT is recommended because it multiplies each category by its weight automatically and prevents a column-reference typo.
+
+Quick check after fixing
+- Q4 Homework H5 should be ~273 (81+21+25+25+50+71 = 273).
+- Q4 Summary F6 (Evans weighted) will use 273*0.2 for the homework portion instead of 6*0.2, giving the correct weighted total and therefore correct percentages and final grades downstream.
+
+If you want, I can give the exact corrected F3:F12 formulas filled out or provide the single SUMPRODUCT formula for the whole column.

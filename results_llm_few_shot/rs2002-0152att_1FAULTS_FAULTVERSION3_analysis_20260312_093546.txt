@@ -1,0 +1,28 @@
+Summary — what's wrong
+- Many cumulative-total cells (column I) are adding the wrong column. They use Project Funds Requested (column G) or even hard-coded numbers instead of the Awarded/Approved Funds (column H). Example: in the Watershed Protection sheet I7 = G7 (should use H7). That makes the running totals wrong and the "Funding limit" available amounts incorrect.
+- There is at least one hard-coded formula: in Coastal NPS-Reg 1,2,3 the cell I43 uses =953+H43 (wrong). It should reference the prior cumulative cell or start the cumulative correctly instead of adding a literal 953.
+
+Why this is wrong (short)
+- The column I header is "Cumulative Total Project Funds Awarded" — you must cumulate Awarded Funds (H). Using G (requested) or constants inflates/changes the running total.
+
+How to fix (simple steps)
+1. For each table, identify the first data row for the cumulative column (the row that should start the running total).
+2. Put this formula in that first cumulative cell:
+   - Option A (simple): =Hn  (where n is that first row number)
+   - Option B (robust): =SUM($H$first:Hn) and copy down (explained below)
+3. For the rows below, use one of these and fill/copy down:
+   - Option A: =I(previous row) + H(current row)  e.g. I8 = I7 + H8
+   - Option B (single formula to copy): =SUM($H$first:Hcurrent) e.g. in I8 use =SUM($H$7:H8), copy down — this always sums the Awarded column from the first row to the current row.
+4. Replace any formulas that reference G (or contain constants like 953) so all I cells refer only to H (via the patterns above).
+
+Concrete examples from your sheet
+- Watershed Protection sheet:
+  - Change I7 from =G7 to =H7 (or =SUM($H$7:H7)).
+  - Change I8 from =I7+G8 to =I7+H8 (or in I8 use =SUM($H$7:H8)) and copy down the column.
+- Coastal NPS-Reg 1,2,3 sheet:
+  - Change I43 from =953+H43 to =H43 (if that row starts a new cumulative) or =I42+H43 (if it continues the previous block). Better: use =SUM($H$43:H43) and copy down as needed.
+
+Extra tip
+- Use the SUM($H$start:Hcurrent) pattern and copy down. That avoids accidental mixed references and is easy to audit — every cumulative cell is summing column H only.
+
+If you want, I can give the exact corrected formulas for each problematic cell range (I can list each table and the formula to paste). Which sheet(s) do you want me to produce the corrected formulas for?

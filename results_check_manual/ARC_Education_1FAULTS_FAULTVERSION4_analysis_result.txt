@@ -1,0 +1,84 @@
+I inspected the workbook you provided and checked every cell that contains a formula or that looks inconsistent with neighboring data. Below I list the formula errors I found and a set of recommended fixes and notes about inconsistent data (units/formatting) that should be corrected or verified.
+
+Summary of confirmed formula errors
+- Sheet "university"
+  - Problem: the two‑year "Total" row (A15) contains several SUM formulas whose ranges include the four‑year colleges. As a result C15:D15:...:K15 are aggregating the wrong rows and produce incorrect totals.
+  - Offending formulas (as found):
+    - C15 =SUM(C5:C14)
+    - D15 =SUM(D5:D14)
+    - E15 =SUM(E5:E14)
+    - F15 =SUM(F5:F14)
+    - G15 =SUM(G5:G14)
+    - H15 =SUM(H5:H14)
+    - I15 =SUM(I5:I14)
+    - J15 =SUM(J5:J14)
+    - K15 =SUM(K5:K14)
+  - Why wrong: row 5–8 are four‑year colleges; rows 12–14 are the two‑year college rows to be summed. The formulas above sum both groups (and any other rows in the range), producing inflated totals such as C15 = 20482 which is clearly not the sum of the three two‑year rows (C12:C14).
+  - Recommended correction (replace each formula to sum only rows 12–14):
+    - C15 -> =SUM(C12:C14)
+    - D15 -> =SUM(D12:D14)
+    - E15 -> =SUM(E12:E14)
+    - F15 -> =SUM(F12:F14)
+    - G15 -> =SUM(G12:G14)
+    - H15 -> =SUM(H12:H14)
+    - I15 -> =SUM(I12:I14)
+    - J15 -> =SUM(J12:J14)
+    - K15 -> =SUM(K12:K14)
+  - Note: B15 =SUM(B12:B14) is already correct.
+
+Other notable formula / data inconsistencies and issues (no direct formula errors but you should verify)
+- Sheet "Teachers adv degrees"
+  - Inconsistent representation of "Percent":
+    - The first block (columns B–L in rows 6–16) contains percentages in percentage form (e.g., 50.9, 46.6, 62.7 — i.e., percentages expressed as numbers like 50.9 not 0.509).
+    - A later block (rows 21–31) shows what appear to be the same "Percent" data but as decimals (e.g., B21 = 0.4690338, B22 = 0.4539). Those decimals look like the percent divided by 100. This is an inconsistency in representation/scale (percent vs proportion). Pick one representation and standardize (either show 46.9% or 0.469) and apply consistent number formatting.
+  - Non‑integer "Total No." values where you would expect integers:
+    - In the later block many "Total No." entries are fractional numbers (e.g., A13 row entries such as G13 = 1995.8, M13 = 1901.6, etc.). Counts of people (Total No.) should be integers. These fractional values suggest a formula or scaling error upstream (e.g., someone divided by 100 or by another factor and left decimals). Verify source data and correct by rounding to integers if appropriate.
+  - Recommendation: Decide on a single percent representation (percent-format numbers 0–100 or proportions 0–1) and fix the cells or formatting. Investigate why “Total No.” contains decimals and correct the calculation/source.
+
+- Sheet "State test" (Reading & Math blocks)
+  - Inconsistent units/scales across years:
+    - Columns B–C (e.g., B7, C7) contain values in the ~200 range (these look like average scaled test scores).
+    - Columns D–K (starting at D7 etc) contain values typically in the 30–75 range (these look like percentages or different scaled outputs). The metric appears to change between columns C and D.
+    - This is an important data inconsistency: either different tests/scales were used in different years or the values are inconsistently entered. Treating them as the same numeric measure is likely incorrect.
+  - Strange cell content:
+    - A13 (Rockdale) H13 = "60?" — question mark is present in the cell. That is not numeric and should be cleaned or clarified.
+  - Recommendation: Confirm from source whether the metric changes mid-table (e.g., raw score vs percent meeting standard) and either convert to a common scale or clearly separate and label the columns to reflect differing measures.
+
+- Sheet "Teachers adv degrees" (again)
+  - There are duplicated blocks covering overlapping years, and rows in the second block use proportions while the first block uses percent values. Make sure the two blocks are intended to be separate and, if so, label them; otherwise unify.
+
+- Sheet "Student-teacher"
+  - No direct formula errors were found in the two SUM formulas present:
+    - K37 =SUM(K26:K36)
+    - L37 =SUM(L26:L36)
+    - These ranges appear consistent with the block above them.
+  - Minor: many missing values are represented by "**". SUM ignores text, so totals that are live formulas will not include those systems. That may be intended, but be aware it affects totals. (Not a formula error, just something to be aware of.)
+
+- Sheet "Public Grads"
+  - Totals in row A16 use SUM and will ignore "**" values — this is typical, but check whether the absence of those values is intended. No incorrect formulas found.
+
+- Sheet "university" (quick additional checks)
+  - Four‑year totals row A9 formulas appear correct:
+    - B9 =SUM(B5:B8), C9 =SUM(C5:C8), ... K9 =SUM(K5:K8)
+  - Two‑year section header row A11 is OK. Only the two‑year total row A15 had the incorrect SUM ranges described above.
+
+- Sheet "Drop-out"
+  - No formula errors. Note: the title says "Dropout Rate Per 1.000 Students" — that punctuation may be a typo (should likely read "per 1,000 students" or "per 1.000" depending on locale). The numbers in the table are small decimals/integers; confirm intended denominator (per 1,000 vs percent).
+
+- Sheet "SAT"
+  - No formula errors. Missing data marked "**" — OK but make sure consumers of the sheet know how missing values are handled.
+
+Actionable fixes I recommend you apply now
+1. Fix the formulas in sheet "university" row 15 by changing C15:K15 to sum only rows 12–14 (formulas listed above).
+2. Standardize percent representation in "Teachers adv degrees":
+   - Either convert the decimal proportions (e.g., 0.469033856317093) to percent format (multiply by 100 or apply formatting) OR convert the older percent format (50.9) into proportions (divide by 100), but keep a single consistent representation and apply the proper number formatting.
+3. Investigate and correct fractional counts in "Teachers adv degrees" (Total No. should be integers).
+4. Verify the metric/units in "State test" (Reading & Math): determine whether D:K are a different metric than B:C and either convert to a common scale or relabel these columns to avoid misinterpretation. Remove the "60?" text in H13 or replace with the correct numeric value.
+5. Scan other totals that are manually entered (no formula) for consistency. Example: some "TOTAL" rows in "Student-teacher" are hard-coded values rather than SUM formulas — consider using SUM where possible to prevent manual errors.
+
+If you want I can:
+- Produce the exact corrected workbook XML/JSON patches for changing the formulas in "university".
+- Convert "Teachers adv degrees" percent/proportion columns to a single consistent representation for a chosen year span (I can standardize by multiplying decimals by 100 and formatting as percent).
+- Flag all cells with non‑numeric characters in numeric columns (e.g., the "60?").
+
+Tell me which corrections you want me to produce (automatic formula fixes and/or conversions), and I’ll give the exact formulas or create the corrected cell changes.

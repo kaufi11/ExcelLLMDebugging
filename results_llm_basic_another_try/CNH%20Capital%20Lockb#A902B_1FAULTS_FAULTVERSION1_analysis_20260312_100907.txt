@@ -1,0 +1,50 @@
+### Errors found:
+
+1. **Check processing charge formulas:**
+   - Cell **B39**: `=$C17*B$6`  
+     - `$C17` is yearly checks for East coast (California), but column B is Pennsylvania. It should use Pennsylvania's yearly checks in **B17**.
+   - Cell **C39**: `=$C17*C$6` is correct (California yearly checks and California cost).
+   - Cell **B40**: `=$C18*B$6` same error, should be **B18** for Pennsylvania.
+   - Cell **C40**: correct.
+   - Cell **B41**: `=$C19*B$6` same error, should be **B19** for Pennsylvania.
+   - Cell **C41**: `=$C20*C$6` references **C20**, which is empty or unrelated; should be **C19**.
+
+2. **Objective function formula in H52:**
+   - `=SUMPRODUCT(B5:C5,B53:C53)+SUMPRODUCT(B45:C47,B57:C59)`  
+     - `SUMPRODUCT(B5:C5,B53:C53)` multiplies fixed costs by open lockbox variables (correct).
+     - `SUMPRODUCT(B45:C47,B57:C59)` multiplies opportunity and check processing costs by assignment variables, but ranges are mismatched:
+       - `B45:C47` is 3 rows x 2 columns.
+       - `B57:C59` is 3 rows x 2 columns.
+     - This is correct in size, but the model might expect element-wise multiplication by region and lockbox assignment.
+
+### Solutions:
+
+1. **Fix check processing charge formulas:**
+
+| Cell | Correct formula                         | Explanation                          |
+|-------|---------------------------------------|------------------------------------|
+| B39   | `=$B17*B$6`                          | Use Pennsylvania yearly checks (B17) with Pennsylvania cost (B6) |
+| C39   | `=$C17*C$6`                          | Correct as is                     |
+| B40   | `=$B18*B$6`                          | Use Pennsylvania yearly checks (B18) |
+| C40   | `=$C18*C$6`                          | Correct as is                     |
+| B41   | `=$B19*B$6`                          | Use Pennsylvania yearly checks (B19) |
+| C41   | `=$C19*C$6`                          | Use California yearly checks (C19) |
+
+2. **Objective function formula:**
+   - The formula is correct if the cost matrix (B45:C47) aligns with assignment matrix (B57:C59).
+   - Just ensure that the assignment variables (B53:C53) and (B57:C59) are consistent (1 or 0).
+   - No change needed here if data is consistent.
+
+---
+
+### Explanation:
+
+- The check processing charge should multiply the **yearly checks** for each region and lockbox location by the **per-check processing cost** of that lockbox location.
+- Using `$C17` (California yearly checks) in Pennsylvania columns is wrong; it mixes regions.
+- Fixing references ensures correct cost calculation.
+- The objective function sums fixed costs for open lockboxes and the total opportunity plus processing costs weighted by assignment variables, which is correct.
+
+---
+
+**Summary:**  
+Correct the check processing charge formulas to use the proper yearly checks for each lockbox location (column) and region (row). The objective function formula is fine.

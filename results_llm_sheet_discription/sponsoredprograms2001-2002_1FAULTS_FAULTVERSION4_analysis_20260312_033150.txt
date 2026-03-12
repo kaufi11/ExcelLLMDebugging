@@ -1,0 +1,36 @@
+Summary of the problems I found (short & simple), with fixes and explanations:
+
+1) Error: H15 omits one row (off‑by‑one range)
+- Problem: H15 is =SUM(H7:H13) but every other column total (B15:G15, E15 etc.) sums rows 7–14. Row 14 (Advanced Manufacturing Center) is left out of the H total.
+- Fix: Change H15 to =SUM(H7:H14).
+- Effect/why: This adds H14 (2,139,490) into the FY02 grand total. Current H15 = 27,067,922; corrected H15 = 29,207,412. This is a true total-consistency bug.
+
+2) Problem: Formulas use hard-coded numeric constants (fragile / error-prone)
+- Example: B10 = 1672298-748584 and C10 = 2824612-1091293.
+- Why it's bad: If the source totals change, these will not update. It’s also unclear which cells those constants relate to.
+- Fix: Replace numeric literals with cell references. For example, if the 1,672,298 total is in cell B? (replace B? with the actual cell), use:
+  - B10 = B? - B9
+  - C10 = C? - C9
+  (Or better: compute Other Sponsors directly from source detail ranges or from named cells.)
+- Effect/why: Maintains automatic recalculation and reduces mistakes.
+
+3) Potential inconsistency: FY01 (column E) per-row formulas vs. actual quarter data
+- Problem: Rows E7:E14 are shown as formulas (pre-calculated totals). Make sure each E cell actually sums that fiscal year’s quarter/month columns (e.g., =SUM(whatever quarter columns for FY01)) rather than using a hard-coded number.
+- Fix: If FY01 total is composed of quarterly columns (for instance columns B–F if those are quarters), set E7 = SUM(range_of_quarters_for_row7). If only Q4 (F) is present and other quarters are missing, verify source data and enter the missing quarters or calculate E cells from their true components.
+- Effect/why: Ensures each FY01 total is correct and auditable.
+
+4) Minor / cosmetic: column header typo
+- Problem: "4rd Qtr." is written; should be "4th Qtr."
+- Fix: Edit header text to "4th Qtr."
+- Effect/why: Improves clarity; not a calculation error.
+
+Suggested quick checklist to correct & validate:
+1. Change H15 to =SUM(H7:H14). Re-check the new total (should be 29,207,412).
+2. Replace hard-coded arithmetic in B10/C10 with references to the source cells (or recompute as SUM of detailed rows).
+3. Audit E7:E14 formulas — ensure they sum the actual FY01 quarter columns (not hard-coded), or document why they are inputs.
+4. Fix the header typo (“4rd” → “4th”).
+5. Do a reconciliation: verify that row15 totals in each column equal the sum of the detail rows (7–14). If any mismatch remains, trace which detail row has wrong source values.
+
+If you want, I can:
+- Give the exact cell formula text to paste for each fix (I already gave H15); or
+- Reconstruct the correct totals for columns B–H if you want me to compute them from the numbers shown. Which would you like next?

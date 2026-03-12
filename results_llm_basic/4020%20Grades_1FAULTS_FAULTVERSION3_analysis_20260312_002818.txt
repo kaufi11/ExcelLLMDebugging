@@ -1,0 +1,34 @@
+Short summary of the problems I found
+- Row L5 contains clear typos: plus signs were accidentally replaced by minuses and the subtractions inside the grouped terms are wrong. That row will produce incorrect (very different) totals.
+- Many L formulas look consistent with each other, but they use suspicious denominators (for example 12.5/1000, 12.5/1700, 70/4000). Those look like an extra zero was inserted. If the intent was to use percentages (12.5% and 70%) the formula should use 12.5/100 and 70/100 (or 12.5% and 70%), not /1000 or /4000.
+- Several rows have missing data (blank B, C, E, F or G cells). Blank cells are treated as zero by Excel — that can be OK but you should check whether blanks mean “0” or “not entered” (if “not entered” you should fill them or flag them).
+
+What I recommend (fixes + explanation)
+1) Fix the typo in L5
+- Replace the incorrect minus-operators with the same correct plus-operators used in the other rows. Example corrected pattern (for row 5):
+  =(B5/100) + (2*C5+2*E5+H5)*12.5/1000 + (D5+F5+G5)*12.5/1700 + (I5+J5)*70/4000
+  — but see (2) below about the likely real correction to the denominators.
+
+2) Correct the denominator/percentage mistakes (very likely)
+- If your intent was to apply percentage weights (e.g. questionnaires small percent, homeworks 12.5%, pop‑quizzes 12.5%, midterm 70%), use percent notation or divide by 100, not 1000/4000. For example a clear, consistent formula using percent weights is:
+  = (B2/5)*5 + (2*C2+2*E2+H2)*12.5% + (D2+F2+G2)*12.5% + (I2+J2)*70%
+  Explanation: (B2/5)*5 scales a 0–5 questionnaire to the 0–5 points (or you can directly use B2 if survey max = weight in points). The other terms multiply the raw points by the intended percentage (12.5% or 70%). Using 12.5% or 12.5/100 makes the math explicit — 12.5/100 = 0.125. The formulas you showed (12.5/1000 etc.) are 10× smaller, so students’ totals would be drastically too small.
+
+3) Standardize and copy the fixed formula down
+- Put the corrected formula in L2, then drag or fill down to all rows so every student uses exactly the same expression.
+- Example uniform formula (replace weighting if your syllabus uses different maxima; this assumes B is out of 5 and the three groups have 12.5%, 12.5% and 70% weights):
+  = (B2/5)*5 + (2*C2+2*E2+H2)*12.5% + (D2+F2+G2)*12.5% + (I2+J2)*70%
+
+4) Handle blanks explicitly (optional but recommended)
+- If blank cells mean “not entered” and you want to show a warning rather than assume 0, wrap in IF or IFERROR. Example:
+  =IF(COUNT(B2:J2) < expected_count, "MISSING", <your-calc>)
+  Or to treat blanks as 0 but avoid errors:
+  =IFERROR( (B2/5)*5 + (2*IF(C2="",0,C2)+2*IF(E2="",0,E2)+IF(H2="",0,H2))*12.5% + ... , "")
+
+Quick checklist to implement now
+1. Fix L5 to match other rows (replace minus signs).  
+2. Decide the intended percentage weights. If they are 12.5% and 70% use 12.5% and 70% (or /100), not /1000 or /4000.  
+3. Place one correct formula in L2 and Fill Down.  
+4. Scan column B, C, E, F, G, etc. and fill missing values or flag them.
+
+If you tell me the exact intended weights and the maximum points for each column (e.g., homework points max per column, midterm max points), I will give you the exact corrected formula you should paste into L2 and then fill down.

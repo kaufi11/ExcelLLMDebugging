@@ -1,0 +1,25 @@
+I reviewed the formulas in both sheets and found one clear formula error plus a few minor inconsistencies / style issues worth addressing.
+
+1) Actual formula error (causes cascading incorrect values)
+- Cell: Sheet1!D12
+- Current formula: =1-D11
+- Why it's wrong: every other cell in column D that increments the class count uses =1+previous_cell. D12 uses subtraction instead of addition, producing -2 and causing D13, D14, ... to continue from an incorrect base.
+- Suggested fix: change D12 to =1+D11
+- Impact: fixing D12 will correct the chain of values in column D that follow it (D13, D14, etc.), unless any of those cells were intentionally overwritten later.
+
+2) Potentially intentional but worth confirming
+- Cells that manually jump the sequence:
+  - Sheet1!D50 uses =1+D48 instead of =1+D49. This appears deliberate because row 49 is a holiday/no class. If the intent was to increment from the last actual class day (row 48), this is correct. If you expected the increment to reference the immediately prior row regardless of holiday rows, review this.
+- There are several rows where the weekly "start" (e.g., rows 14, 24, 29, 34, 39, 44, 49, 54, 59) have dates entered manually rather than derived; that's fine but just be aware mixing manual and formula-derived dates can mask errors.
+
+3) Minor style / consistency notes (not errors)
+- Many formulas use a leading plus sign, e.g. "=+B2*C2" (Sheet2). This works fine but is redundant; "=B2*C2" is standard.
+- Sheet1!J65 sums J8:J64: that's correct given your data, but it includes row 8 (likely blank) and excludes J65 itself. If you intended to sum only the explicit point entries starting at J10 you might prefer SUM(J10:J64) or SUM(J9:J64). This is not an error, just something to check for clarity.
+- Sheet2: D23 =SUM(D2:D22) and D24 =+Sheet1!J65; those two totals match (D25 = D23-D24 = 0). Everything there is consistent.
+
+Summary of recommended immediate change
+- Update Sheet1!D12 from =1-D11 to =1+D11, then review column D from D12 downward to confirm values are now as intended.
+
+If you want, I can:
+- Provide a list of all cells in column D that depend (directly or indirectly) on D12 so you can inspect the propagated changes, or
+- Produce a corrected version of the workbook with D12 fixed and the dependent values recalculated.

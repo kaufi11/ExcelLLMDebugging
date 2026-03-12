@@ -1,0 +1,29 @@
+Summary — I found two clear errors that will cause wrong/blank header values and wrong sequences in the A‑122 index. Both are easy to fix.
+
+1) Header propagation uses wrong (same‑sheet) references
+- What’s wrong: Many header cells on Pages 2–6 show formulas like =A$9, =B$9, =G$9, =H$9, =I$9 etc. Those formulas refer to row 9 on the same sheet, not to the master header on Page 1. If row 9 on those sheets is empty (or differs), the propagated header cells will be blank or inconsistent.
+- Why it matters: Version, policy and guide labels won’t be reliably copied across sheets (leading to inconsistent metadata or blank headers).
+- Fix: Point those formulas to the master header cells on the Page 1 sheet (or use a named range). Example:
+  - Change =A$9 on Page2 to ='Page 1'!$A$9
+  - Change =B$9 to ='Page 1'!$B$9, =G$9 to ='Page 1'!$G$9, etc.
+  - Better: define names on the master sheet (e.g., Name cell A9 Version) and use =Version on every sheet.
+- Quick test: After change, edit the master header (Page 1 A9) and confirm the same change appears immediately on all pages.
+
+2) Sequence formulas on A‑122 are inconsistent (produce wrong numbers)
+- What’s wrong: Column A in A‑122 uses inconsistent formulas (e.g., A6 = A5+1 OK, but A7 = A6-1 which returns 1 again). That breaks the intended numeric sequence.
+- Why it matters: Paragraph numbers (or any sequential index) become incorrect or oscillate instead of incrementing.
+- Fix options (pick one):
+  1. Use a consistent increment formula and fill down:
+     - A6 = A5+1, A7 = A6+1, A8 = A7+1, etc. Then drag down.
+  2. Or use a single formula based on row number (more robust):
+     - Put in A5 (first entry) the starting number (e.g., 1) and in A6 use:
+       =A$5 + (ROW()-ROW($A$5))
+       then fill down. (Or simpler: =ROW()-4 if your first number is in row 5 and starts at 1.)
+- Also check Column C where similar "+1" formulas are used — apply the same consistent approach there.
+- Quick test: After fixing, verify the column reads 1,2,3,4,... without repeats.
+
+Extra quick recommendations
+- Replace repeated hard‑coded sheet references with named ranges (Version, Policy, Templates) so future maintenance is easier.
+- Do a quick scan for other cells using =I12 or =H12 on multiple sheets — ensure they point to the intended master cell (if they should be master values, change to 'Page 1'!I$12, etc).
+
+If you want, I can give the exact Find/Replace (list of cells and replacement formulas) to apply across the workbook or produce the named‑range setup steps. Which would you prefer?

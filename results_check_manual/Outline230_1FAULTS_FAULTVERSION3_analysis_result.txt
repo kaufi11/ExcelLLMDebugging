@@ -1,0 +1,41 @@
+I reviewed the workbook formulas and their results. Summary of issues, likely causes and recommended fixes:
+
+1) Wrong sign / broken day-count sequence in column D (class/session counter)
+- Problem cell: Sheet1!D42
+  - Current formula: =1-D41
+  - Current value: -32 (should have continued +1 from D41 = 33 → 34)
+  - Cause: minus instead of plus. This breaks the incremental sequence and causes negative numbers in subsequent rows (which keep adding 1 to the negative value).
+  - Fix: change to =1+D41 (or clearer: =D41+1).
+
+- Follow-on effect:
+  - D43:D63 (and other subsequent D cells that reference the previous D) pick up the wrong sign and stay negative. After fixing D42, recompute (they should become positive incremental values again). If any rows were intentionally negative, verify them after the fix.
+
+2) Potential missing increment in last D row
+- Cell: Sheet1!D63 has no formula/value (final rows show dates but no D63). If you need D63 to continue the session counter, add the formula =1+D62 (or =D62+1).
+
+3) Redundant or inconsistent "TOTAL POSSIBLE" entries
+- Sheet1:
+  - J65 has formula =SUM(J8:J64) and result 700.
+  - J67 is a manual value 700 repeating "TOTAL POSSIBLE".
+  - J68 =+J67-J65 produces 0 because they match.
+- Consideration/fix:
+  - Keep one authoritative total (preferably the formula cell). Either remove the manual duplicate J67 or make J67 reference J65 (=J65) so there's only one source of truth. Using two separate totals invites divergence if one is edited.
+
+4) SUM range in J65 includes header / blank J8
+- J65 formula =SUM(J8:J64) works, but including J8 (likely a header or blank) is a minor inconsistency. For clarity use =SUM(J10:J64) (or the exact range containing points) if J10 is the top of numeric data. Not an error, just tidy.
+
+5) Minor style / consistency points (not errors)
+- Many formulas use =1+Cell (e.g., =1+C9) — this works, but =Cell+1 is clearer/readable to most users.
+- Several formulas use the redundant unary plus (e.g., =+B2*C2). That is harmless but unnecessary; =B2*C2 is standard.
+- Sheet2 has D10:D15 formulas =+B10*C10 etc but the source cells are blank, yielding 0. That’s expected if those rows are placeholders — just verify whether blanks were intentional.
+
+6) Sheet2 cross-check
+- D23 =SUM(D2:D22) = 700 and D24 =+Sheet1!J65 = 700; D25 =+D23-D24 = 0. These are consistent provided you want the two totals to match. If you adopt a single authoritative total on Sheet1, consider having D23 refer to Sheet1 instead of summing locally, or vice versa.
+
+Recommended immediate actions
+- Correct Sheet1!D42 to =D41+1 (or =1+D41).
+- After that correction, verify D43:D63 (they are formula-driven) to ensure the sequence is now correct.
+- Decide which cell should be the authoritative "TOTAL POSSIBLE" (J65 or J67) and remove/replace the duplicate to avoid accidental divergence.
+- (Optional) Standardize formula style: use Cell+1 for date increments and remove redundant unary plus signs for readability.
+
+If you want, I can produce the exact list of cells that will change values after fixing D42 (so you can verify before/after), or provide a corrected workbook with those edits applied.

@@ -1,0 +1,29 @@
+Findings (short)
+1) Formula error: Select Financial Data!H12 is incorrect — it uses H8 + H11 but should be a subtraction. This breaks all earnings and downstream numbers in column H (1997).  
+2) Data inconsistency between sheets: Net Sales and Freight numbers on Select Financial Data (e.g., Select!B6 = 1,537,869) do not match Statements of Earnings (Statements!B7 = 1,500,686) — causes mismatched totals and EPS if both sheets are intended to report the same source.  
+3) Poor/ambiguous SUM range: Select Financial Data!B25 uses SUM(B20:B24) while the earnings-before-extraordinary value is in B21. Using B20 (a label or blank row) is sloppy and can hide off-by-one mistakes.
+
+What to fix and how (exact)
+1) Fix H12 sign
+- Change Select Financial Data!H12 from:
+  =H8+H11
+  to:
+  =H8-H11
+- Why: H12 is "Earnings before operations" (Total revenues minus Cost of operations). The plus sign made that subtotal meaningless and propagated wrong values to H14, H18, H21, H25, EPS and any other dependent cells.
+
+2) Reconcile Net Sales (and other inconsistent data)
+- Decide which sheet is the authoritative source (Statements of Earnings usually contains the detailed numbers). Then either:
+  a) Link Select Financial Data Net Sales and Freight to Statements of Earnings: e.g. set Select!B6 = Statements!B7 and Select!B7 = Statements!B8 (copy across columns), OR
+  b) Update Statements of Earnings to use the Select sheet numbers if that sheet is authoritative.
+- Why: Two different numeric inputs produce inconsistent totals, ratios and EPS. Using one source prevents divergence and makes formulas reliable.
+
+3) Correct ambiguous SUM ranges
+- Change Select Financial Data!B25 from =SUM(B20:B24) to =SUM(B21:B24). Do the same for C25:K25 (use the row that actually contains "Earnings before extraordinary item" plus the subsequent items).  
+- Also review other SUM ranges that might include label/blank rows (use exactly the numeric rows).  
+- Why: Summing over a blank/label row can hide row-shift errors when rows are inserted or labels moved.
+
+Small additional checks / notes
+- The Cash Flow sheet links beginning-of-year cash as B42 = C44, C42 = D44 ... K42 = 2084. That is correct for the column ordering used (B = 2003, C = 2002 … K = 1994) provided the anchor K42 remains fixed. If you later reorder columns, break the chain or delete the anchor, you will get circular references or wrong beginning balances — consider using an explicit link to the prior year end (or put years in chronological left-to-right order) for clarity.
+- After making the corrections, recalculate the workbook and spot-check these rows: Earnings from Operations, Earnings before taxes, Net Earnings, EPS and Cash and Cash Equivalents end-of-year for the affected years.
+
+If you want, I can give the exact list of cell formulas to change (for all years) and a quick validation checklist to run after fixes.

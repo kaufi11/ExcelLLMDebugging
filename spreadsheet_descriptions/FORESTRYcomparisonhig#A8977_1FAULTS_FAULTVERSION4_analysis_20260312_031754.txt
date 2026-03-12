@@ -1,0 +1,46 @@
+Summary of workbook structure and key contents
+
+Sheets (purpose + notable items)
+- Title page — metadata/header for the file:
+  - Row 1 headers: SUBJECT, THEME, ORDER, TITLE, SHORT TITLE, SHORT SOURCE, DATALOCN, DIM, FILENAME, METATAGS, CHART, CHANGES.
+  - Row 2 contains values (Environment / Forestry / order 400; file name FORESTRYcomparisonhighforestarea.xls; change note in L2).
+  - Rows A5:C30 define the species list and numeric codes (named table for species → code mapping). Example entries: "Conifer - Corsican pine" → code 1 … "Total High Forest" → code 25.
+
+- DATA (raw numeric data):
+  - Columns D:G hold the table: Tree Species (D4:D29), 1980 Census Woodland Area (E4:E29), 1995 Inventory Woodland Area (F4:F29), Change (%) (G4:G29).
+  - Individual values provided for each species (e.g. Sitka spruce E11=326,318; F11=526,543; G11=61).
+  - E26 and F26 use formulas: E26 = SUM(E16:E25), F26 = SUM(F16:F25).
+  - Totals: E27 = 807,927; F27 = 1,115,934; G27 = 38. Total High Forest: E29 = 823,316; F29 = 1,139,331; G29 = 38.
+  - Units per metadata: "Thousands of hectares; percentage" (SOURCE DETAILS sheet).
+
+- DATA TEXT (presentation sheet that references DATA):
+  - Repeats headers and species (D4:D29) and uses formulas to pull and format DATA values.
+  - Column C contains FORMULA =VLOOKUP(D#, sort0, 2, FALSE) to map species to numeric code (sort0 is a named range pointing to the species-code table on Title page).
+  - Columns E–G use TEXT(DATA!E#, "#,##0") / TEXT(DATA!F#, "#,##0") / TEXT(DATA!G#, "#,##0") to display numbers with thousands separators.
+  - Note: C13 uses VLOOKUP(D14, ...) (and C14 also references D14) — a likely off-by-one / reference error (C13 should probably use D13).
+
+- FOOTNOTE
+  - Explanatory footnotes about scope and comparability of 1980 and 1995 datasets (10.5% reduction note, exclusions for Isles and small woodlands).
+
+- SOURCE DETAILS (metadata)
+  - Key metadata rows: SOURCE (Forestry Commission), WEBSITE, CONTACT ADDRESS, TELEPHONE, EMAIL, DESCRIPTION, GEOGRAPHIC COVERAGE, MEASURE, UNITS, START/END YEAR (1980–1995), LAST UPDATED (November 2001).
+
+- COMMENTARY
+  - Background, trends, and references summarizing interpretation (e.g. high forest increased ~39%; notable species increases).
+
+- LINKS
+  - External URLs to Forestry Commission reports and the Forestry Commission homepage.
+
+Key formulas and mechanics
+- VLOOKUP on DATA TEXT C-column: =VLOOKUP(Dn, sort0, 2, FALSE) — maps species name to code from Title page mapping.
+- Presentation formatting on DATA TEXT: =TEXT(DATA!E#, "#,##0") (same for F and G) — pulls values from DATA and formats as text with thousands separators.
+- Aggregation in DATA: E26 = SUM(E16:E25), F26 = SUM(F16:F25).
+- Most percent-change values in DATA (column G) are hard-coded numbers (e.g. 61, -28, 557) rather than calculated formulas.
+
+Potential issues / things to check
+- Off-by-one VLOOKUP references in DATA TEXT: C13 and C14 both reference D14 — correct to unique row references.
+- Named range sort0 is expected to reference the species/code table on Title page (A5:C30); confirm range definition and column order match VLOOKUP call (VLOOKUP(...,sort0,2, FALSE) expects the code in the 2nd column of sort0).
+- Units: SOURCE DETAILS state "Thousands of hectares"; raw numbers in DATA appear to be full-hectare values — verify whether values are already scaled or need dividing by 1,000 for reporting.
+
+Overall layout
+- Metadata/title at top (Title page), a raw DATA sheet with numeric values and subtotals, a DATA TEXT sheet for formatted presentation (uses VLOOKUP + TEXT to produce printable table), plus supporting sheets for footnotes, sources, commentary and links.

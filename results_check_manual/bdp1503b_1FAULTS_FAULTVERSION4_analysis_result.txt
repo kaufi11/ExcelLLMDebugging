@@ -1,0 +1,30 @@
+I checked every formula in Sheet1 and compared totals/derived cells with their inputs. Overall the sheet is consistent (the subtotals and grand totals evaluate correctly against the provided input values). I found no calculation errors in the totals — they all match the underlying numbers — but I did identify a few formula-style inconsistencies and a likely error to correct or review:
+
+1) Likely error / inconsistent hard-coded value
+- Cell G19 contains the literal formula "=3" rather than computing remaining allocation as the other rows do. Given C19 = 2 and E19 is blank (treated as 0), the expected remaining would be 2 (C19-E19). Either:
+  - G19 should be =C19-E19 (or =SUM(C19-E19) to match the sheet style), or
+  - If 3 is correct, verify that C19 or E19 are wrong/omitted (e.g., E19 might be intended to be -1).
+This is the only place where the remaining amount is hard-coded and inconsistent with the pattern.
+
+2) Many formulas use SUM() in a non-idiomatic way
+- Several single-expression arithmetic formulas are written with SUM() around an arithmetic expression, e.g. =SUM(C10-E10), =SUM(C13-E13). This works (Excel evaluates the arithmetic and SUM returns the value), but it is inconsistent and unnecessary. Prefer plain subtraction (=C10-E10) for clarity.
+- Conversely, some subtotals use SUM with explicit additions instead of ranges, e.g. C61 =SUM(C10+C24+C30+...), E61 and G61 similarly. That works but is inconsistent with the more typical =SUM(C10,C24,C30,...) or using contiguous ranges where appropriate.
+
+3) Cells referencing blank "actual" (E) cells
+- Many "Remaining" (G) formulas subtract an E cell that is blank. Excel treats blank as zero, so numerically this is fine, but it may indicate missing data you intended to enter. The G cells that subtract blank E cells (i.e., where E is absent in your input) include:
+  G17, G18, G21, G22, G27, G28, G29, G35, G40, G41, G42, G43, G44, G49, G50, G56, G69, G77, G79, G80
+  (E27–E29, E40–E44, E49–E50, E56, E69, E77, E79–E80 are among the blank E entries.)
+- If blanks are intentional (meaning zero actuals), no change needed. If blanks indicate omitted data, you should populate those E cells and verify the G results.
+
+4) Style / consistency recommendations (not errors, but will reduce confusion)
+- Standardize formulas: use =C?-E? for simple subtraction; use =SUM(range) for contiguous subtotal ranges; use =SUM(cell1,cell2,cell3) rather than SUM(cell1+cell2+...) (both work, but the latter is less clear).
+- Replace any hard-coded remaining values (like G19) with formulaic calculations to avoid divergence if inputs change.
+
+Summary
+- No subtotal/grand-total arithmetic errors were found: all subtotals and totals match the provided C/E/G values.
+- The main actionable item is G19 (hard-coded "=3") which is inconsistent with C19 and the rest of the sheet — please correct or verify.
+- Also consider cleaning up formula style and verify any intentionally blank E cells.
+
+If you want, I can:
+- Produce an updated version with G19 fixed and formulas normalized (replace SUM(Cx-Ey) with Cx-Ey, convert SUM(C10+C24+...) to SUM(C10,C24,...) or ranges).
+- Or generate a short script/list of cells to review/populate for the blank E entries.

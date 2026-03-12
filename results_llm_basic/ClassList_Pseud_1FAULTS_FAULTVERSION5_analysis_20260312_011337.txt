@@ -1,0 +1,60 @@
+Summary of the problems I found (short) and how to fix each one:
+
+1) Many cells show the literal text "FORMULA =SUM(...)" (or "FORMULA =AVERAGE(...)") instead of evaluating the formula.
+- Why it’s wrong: Excel treats that as text, not a formula, so totals/averages are not calculated.
+- Fix: Replace the text with a real formula. Easiest: Edit one such cell so the cell begins with = (no leading "FORMULA "), ensure the cell format is General, press Enter. To fix many at once: Edit → Find & Replace: find "FORMULA =" and replace with "=". Then select the affected cells, set Format → General and press F2 then Enter (or use Text→Convert to Number trick) so Excel evaluates the formulas.
+- Explanation: Excel needs a leading equals sign "=" and the cell must not be formatted as Text for formulas to run.
+
+2) Inconsistent SUM ranges (some rows omit column B or include an extra column)
+- Examples:
+  - Homework L5 is shown as =SUM(C5:K5) but the rest use =SUM(B#:K#). This omits the HW1 score in B5.
+  - Final sheet I7 is =SUM(B7:H7) — it includes column H when the final exam totals use B:G. That will include the wrong column (or a blank).
+- Fixes (exact replacements):
+  - Homework L5 → =SUM(B5:K5)
+  - Check every Homework total L4:L42 and ensure they are =SUM(B#:K#) (replace any =SUM(C#:K#) with =SUM(B#:K#)).
+  - Final I7 → =SUM(B7:G7)
+  - Check Final totals I4:I42 are all =SUM(B#:G#) and correct any occurrences that use H or other columns.
+- Explanation: Totals must include the same columns for every row; omitted or extra columns give incorrect totals.
+
+3) Some Average formulas are wrong / missing leading = or wrong ranges
+- Examples:
+  - Mid-term sheet B46 is shown as average(C4:C42) (no "=" and wrong range/column).
+  - Many averages reference rows C6:C44 etc; check all header/average rows for consistent ranges.
+- Fix:
+  - Put the proper formulas with "=" and the correct ranges. For example, to average column B scores (rows 6–44) use:
+    =AVERAGE(B6:B44)
+  - Correct the other column averages similarly (e.g. =AVERAGE(C6:C44), etc.)
+- Explanation: Missing "=" prevents evaluation; wrong row ranges give wrong averages.
+
+4) Text flags (HC, P, x, letter grades) are placed in numeric columns
+- Problems:
+  - In Final Grades sheet some rows put the letter "F" (or P/HC) in the Total column (column F) instead of in the Note column (G). Example: F4 = "F" (should be numeric total).
+  - In Homework or Mid-term numeric columns contain HC, P or "x". SUM ignores these text values, producing totals that look wrong unless intended.
+- Fix:
+  - Move any text flags out of numeric columns into the Note column (G) or the dedicated flag column. Restore the numeric total formulas in numeric columns, e.g. in Final Grades F4 should be =SUM(B4:E4).
+  - If "x" means 0, replace "x" with 0 (numeric) or handle it with a formula (e.g. in totals use SUMPRODUCT or N() wrappers), but best practice: keep only numbers in score cells and put flags in separate cells.
+- Explanation: SUM and other numeric functions ignore text; having text in numeric columns breaks calculations and hides problems.
+
+5) Misaligned headers / duplicated labels (minor, but can cause confusion)
+- Example: Mid-term header shows "Question 1" in both B3 and C3 — check headers to ensure columns align with the correct question/point values.
+- Fix: Correct the header row labels so column names match the values beneath them.
+
+How to check for other similar errors quickly
+- Toggle formula view with Ctrl+` to see which cells contain formulas vs. text.
+- Use Find (Ctrl+F) to search for "FORMULA " to locate other textified formulas.
+- Use Go To Special → Constants → Text to find cells that contain text in numeric areas.
+- Use ISNUMBER or ISTEXT on suspicious cells to find non-numeric entries where numbers are expected.
+
+Concrete next steps I recommend you do now (quick checklist)
+1. Find & Replace "FORMULA =" → "=" across the workbook.
+2. Set affected cells to General format and press F2→Enter to evaluate formulas.
+3. Correct the specific totals I noted:
+   - Homework L5 → =SUM(B5:K5)
+   - Final I7 → =SUM(B7:G7)
+   - Final Grades F4 (and any other F cells containing "F"/"P"/"HC") → change back to =SUM(B4:E4) (and move the "F"/"P"/"HC" into the Note column).
+4. Replace any "x" (if you want it as zero) with 0, or keep as flag but outside score columns.
+5. Recompute averages with proper ranges and ensure "=" is used.
+
+If you want, I can:
+- give a short script of exact Find/Replace steps (or VBA) to fix all "FORMULA =" occurrences automatically, and
+- scan the workbook for any cells in numeric columns that are text and give you a list of exactly which rows/columns to fix. Which would you like me to do?

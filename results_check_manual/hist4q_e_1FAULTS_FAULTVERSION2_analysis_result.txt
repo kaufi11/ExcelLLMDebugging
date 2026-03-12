@@ -1,0 +1,39 @@
+I inspected the workbook formulas. I found one clear formula error that produces a cascade of incorrect values in column H (the 2001 — 2nd quarter column).
+
+Summary of the problem
+- Cell H12 contains =COUNT(H9:H11) while all other columns use =SUM(... ) in that position (e.g. C12 uses =SUM(C9:C11), G12 uses =SUM(G9:G11), etc.).
+- Because COUNT returns 3 (there are 3 numeric cells in H9:H11), H12 = 3 instead of the expected sum (247,326 + 272,577 + 49,971 = 569,874). That single incorrect formula is the root cause.
+- Any cell that depends on H12 or on H15/H17 (which in turn use H12) is therefore incorrect.
+
+Cells affected (not exhaustive, but the main dependent results):
+- H12 (incorrect formula)
+- H15 =SUM(H12:H14) → incorrect total-of-net-sales for column H
+- H17 =H15 → Net Sales
+- H19 =H17-H18 → Gross profit
+- H20 =IF(H$17=0,"-  ",H19/H$17) → % of sales
+- H22 =H19-H21 → Operating profit
+- H23 =IF(H$17=0,"-  ",H22/H$17) → % of sales
+- H29 =H22+H28 → Income before taxes (depends on H22)
+- H30 =IF(H$17=0,"-  ",H29/H$17)
+- H33 =H29-SUM(H31:H32)
+- H35 =SUM(H33:H34)
+- H36 =IF(H$17=0,"-  ",H35/H$17)
+- Any other formulas that reference H15, H17, H12 or downstream cells in column H will also be affected.
+
+Why it looks inconsistent
+- On the Segment/Consolidated sheet (sheet "2") the column H totals are calculated correctly (using SUM). Those correct consolidated totals (e.g. H37 = 759,277) do not match the incorrect totals on sheet "1" column H (e.g. H15 = 189,406) because of the COUNT error in H12.
+
+Recommended fix
+- Replace the formula in H12 with the correct aggregation:
+  - Change H12 from =COUNT(H9:H11) to =SUM(H9:H11)
+- After that change, the dependent cells in column H should update to match the other columns and the sheet "2" consolidated values.
+
+Other notes
+- I checked for other COUNT vs SUM mistakes and did not find other COUNT formulas in the same pattern; H12 appears to be an isolated copy/paste or editing error.
+- There are some stylistic differences in IF/formatting between sheets (e.g. IF(...,"-  ",...) on sheet 1 vs IF(...,"",...) on sheet 2) — this is not an error, just a formatting/display choice.
+- G34 contains the only nonblank "Cumulative effect..." value (3692) which is intentionally applied to column G; other columns are blank there — the SUM(C33:C34) pattern in many columns is fine.
+
+If you want, I can:
+- Provide a list of every cell (full addresses) that will change once H12 is fixed,
+- Create a single patch file / command to update H12 automatically,
+- Or scan for other potential anomalies beyond the COUNT/SUM issue.

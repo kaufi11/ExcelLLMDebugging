@@ -1,0 +1,37 @@
+Summary of errors (short)
+- Seven‑Year sheet — Income From Operations (row 31) is wrong/ hard‑coded. D31 (38,222) does not equal Total Gross Profit (D19) minus Total Operating Expenses (D28). That cell (and likely the other year cells in row 31) should be formulas, not manual numbers.
+- Nine‑Quarter sheet — Hardware Gross Profit % in H14 is a typo: it multiplies instead of dividing. H14 = +H13*H5 should be H14 = H13 / H5.
+- Minor inconsistency: some percent rows (e.g. H31 in Nine‑Quarter) are hard‑coded numbers while their neighbors are formulas. This creates inconsistent results if source numbers change.
+
+Why these are errors (brief)
+- Income From Operations = Total Gross Profit − Total Operating Expenses. A hard-coded value can be stale/wrong when component rows change.
+- Gross profit % must be Gross Profit ÷ Revenue. Multiplying gives nonsense.
+
+Exact fixes (copy/paste these into Excel)
+1) Fix Seven‑Year Income From Operations (row 31)
+- Put this formula in D31:
+  =D19 - D28
+- Then copy D31 across E31:J31 (or drag fill) so each year is calculated the same way.
+
+2) Fix Nine‑Quarter Hardware Gross Profit % (H14)
+- Replace H14 with:
+  =H13 / H5
+- Then check all Gross Profit % cells (C14:M14) and make sure they use GrossProfit ÷ Revenue pattern. Correct any that don't.
+
+3) Fix hard‑coded percent cells (audit & convert)
+- For any percent/margin row where neighboring cells are formulas but a cell is a number (e.g. H31 = 0.075), replace with the consistent formula:
+  =<row_total_cell> / <total_revenue_cell>
+  e.g. H31 -> =H29 / H8
+- Use Excel’s “Show Formulas” (Ctrl+`) or Go To Special → Constants to find manual numbers that should be formulas.
+
+What will change / what to verify
+- After D31 is fixed you'll see D31 = D19 − D28 = 198,560 − 160,237 = 38,323 (not 38,222). Other years in row 31 will update similarly if they were incorrect.
+- After H14 is fixed the H14 percent will be correct (H13 ÷ H5).
+- Re-check dependent rows (percent change column C, Net Income row, margins) to confirm values update correctly.
+
+Quick recommended check-list
+- Put the three fixes above into the sheet.
+- Use Show Formulas to scan for other inconsistent formulas (look for multiplication where division is expected or any hard-coded totals).
+- Recalculate workbook (F9) and spot‑check totals/margins against the new formulas.
+
+If you want I can list every cell that differs from the standard formula pattern (so you can fix them in one pass).

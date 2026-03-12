@@ -1,0 +1,42 @@
+I reviewed the workbook description and found several clear errors and a structural problem that will produce incorrect totals. Short explanations and fixes below.
+
+1) Municipal — wrong recommend for Hatboro (row 5)
+- Error: F5 is FORMULA =690 while E5 = 147,970. Likely a typo.
+- Fix: Put the correct recommended value or make it mirror the request if appropriate. Example formula: =E5
+- Why: Restores consistency and prevents a huge under‑recommendation and misleading totals.
+
+2) Double‑counting Rehab in the overall total (County sheet totals)
+- Error: County!E13 (Total Requested) =SUM(E9:E12) where:
+  - E9 = Municipal!E22 (Municipal total)
+  - E10 = 'Non Profit'!E22 (Non‑Profit total) — this includes Rehab rows
+  - E11 = Rehab!E8 (Rehab total) — same rehab items again
+  - E12 = County total
+  This causes rehab requests to be counted twice (once inside Non‑Profit total and again as Rehab).
+- Fix (pick one, depending on intended reporting):
+  a) If Rehab is a subset of Non‑Profit and should not be added separately: change Total Requested (County!E13) to exclude Rehab!E8. Example:
+     =E9 + E10 + E12   (or =SUM(E9:E12) - E11)
+  b) If Rehab should be separate (Non‑Profit total must exclude rehab rows): remove Rehab rows from the Non‑Profit sheet or change 'Non Profit'!E22 to sum only non‑rehab rows.
+- Why: Prevents double counting and makes the grand total accurate.
+
+3) AHTF — Recommend total range excludes the first row
+- Error: AHTF!F14 =SUM(F3:F13) — excludes F2 (Canus Corporation). If F2 should be included, the formula is wrong.
+- Fix: Change to =SUM(F2:F13)
+- Why: Ensures the Recommend total includes all recommend rows in the block.
+
+4) AHTF — hard‑coded Continuum of Care match base
+- Error: AHTF!E16 and F16 use =2432890*0.15 (hard‑coded base number). Hard‑coding prevents dynamic updates and is error‑prone.
+- Fix: Replace with a cell reference to the actual base total (e.g., if the 2,432,890 comes from HOME total in E19 use =E19*0.15). Example: =HOME!E11*0.15 (or whatever cell holds the base)
+- Why: Keeps the match calculation correct if the underlying total changes.
+
+5) Text in Recommend cells (breaks numeric consistency)
+- Error: Some Recommend cells contain text (e.g., AHTF!F10 = "Pending Feasibility Study"). Text in numeric columns will be ignored by SUM and may hide missing numeric recommendations.
+- Fix: Move textual notes to a separate "Notes" column (new column G) and keep F numeric or blank. If the recommendation is intentionally pending, leave F blank (or 0) and add note in G.
+- Why: Keeps SUMs accurate and makes it clear where numeric recommendations are missing vs. intentionally absent.
+
+6) General consistency checks (recommendation)
+- Standardize Recommend column:
+  - If recommended = requested by default, use F# =E# across rows.
+  - If no recommendation, leave F blank (not text).
+- After fixes, recalc totals and verify cross‑sheet references (Municipal!E22, 'Non Profit'!E22, Rehab!E8) to ensure each category is counted exactly once.
+
+If you want, I can provide the exact cell formulas to paste into each offending cell (e.g., County!E13 replacement, Municipal!F5, AHTF!F14 and E16), or produce an edited totals reconciliation showing corrected grand totals. Which would you prefer?

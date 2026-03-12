@@ -1,0 +1,41 @@
+Summary of the problems I found (short) and how to fix them
+
+1) Missing header column (I1) → data shifted
+- Problem: The header row jumps from H1 to J1 (no I1). Some rows put a second address line in column I (e.g. I30, I33) but there is no column header for that data. That makes the sheet look misaligned and confusing.
+- Fix: Insert or type a header in I1 (suggestion: "Address 2" or "Address (line 2)"). Then scan rows where there is content in I and confirm it belongs to that header. Move any mis-placed cells so each field is under the correct header (Address lines → H/I, City → J, State/Prov → K, Country → L, Zip → M, Phone → N, Fax → O).
+
+2) Row-number formulas are text, not formulas
+- Problem: Cells show literal text like "FORMULA = A2 + 1" instead of real formulas. Excel won't increment numbers automatically because these are strings.
+- Fix (quick):
+  - Use Find & Replace: Replace "FORMULA = " with "=" (no quotes). That turns "FORMULA = A2 + 1" into "=A2 + 1", which Excel will evaluate as a formula. Or, re-type the correct formula in A3 as =A2+1 and drag-fill down.
+- Explanation: Excel needs an equals sign at the start of the cell to treat the content as a formula. The words "FORMULA =" make it plain text.
+
+3) Wrong formula in A54 (breaks the numbering sequence)
+- Problem: A54 is "FORMULA =A53-1" (subtracts 1), so the numbering sequence will go backwards/duplicate.
+- Fix: Change it to =A53+1 (or convert "FORMULA =A53-1" to "=A53+1" via Find & Replace as above), then fill down for subsequent rows.
+- Explanation: All row numbers should add 1 from the prior row.
+
+4) Inconsistent address column use (some rows use H only, some use H and I)
+- Problem: Some addresses are split into H and I, others use only H. Without header I1 this looked broken; even after adding I1 the data may still be inconsistent.
+- Fix: Decide on a consistent scheme: Address line 1 → H, Address line 2 → I. Move parts of addresses so each line is in the right column. Use Excel filters to find cells in column I and check whether they belong there (Home → Sort & Filter makes this quick).
+- Explanation: Consistent columns let you sort, filter and export reliably.
+
+5) Duplicate or suspicious emails and missing data
+- Problem: Some email fields contain "?" or are duplicated (e.g. joep@media.mit.edu appears for two entries). That may be data-quality issues.
+- Fix: Either leave blank for unknown, add a note like "missing", or verify and correct emails. Use a filter on column E to find "?" and blanks and clean them.
+
+Quick step-by-step checklist to fix the sheet now
+1. In cell I1 type a header (e.g. "Address 2" or "Address (line 2)").
+2. Inspect columns H:I:J:K:L:M:N:O for a few rows to confirm City/State/Country/Zip/Phone/Fax align under the proper headers; move cells if needed.
+3. Convert row-number text to real formulas:
+   - Select column A (from A3 downward).
+   - Find & Replace: Find = FORMULA = (with the trailing space) and Replace with =  (just an equals sign). Or simply Find "FORMULA =" → Replace with "=".
+   - Alternatively, type =A2+1 into A3 and drag-fill down the column.
+4. Fix A54 specifically to =A53+1 (if not already corrected by step 3).
+5. Filter column E (Email) for "?" and blanks, and fix or mark as "missing".
+6. Optional cleanup: remove exact duplicates (Data → Remove Duplicates) after you confirm which rows truly duplicate.
+
+If you want, I can give:
+- The exact header text I recommend for row 1 (complete list),
+- A one-click Find & Replace string to convert all "FORMULA = ..." texts into real formulas,
+- Or a short macro (VBA) to automatically fix the numbering and insert I1 and move cells if you prefer automation. Which would you like?

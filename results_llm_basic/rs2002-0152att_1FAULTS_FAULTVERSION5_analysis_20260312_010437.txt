@@ -1,0 +1,40 @@
+Summary — what’s wrong
+- Several "Cumulative" columns (column I) are adding the wrong column (G = Requested Funds) or using hard-coded numbers instead of the Approved/Awarded Funds (H). The cumulative total must sum Awarded (H), not Requested (G).
+- Specific examples:
+  - Sheet "Watershed Protection": I7 is =G7 (should be =H7). Many I‑cells below use +Gx (requested) instead of +Hx (awarded).
+  - Sheet "CALFED Watershed": I31 is =I30+923 (hard-coded 923) — should reference H31.
+  - Sheet "Coastal NPS-Reg 4,8,9": Row 18 shows a tiny mismatch: G18 = 311,280.25 while H18 = 311,280 (0.25 lost) — likely a truncation/rounding/data entry issue.
+
+Why it’s wrong
+- The cumulative running total must reflect actual awarded funds (column H). Using column G (requested) or fixed numbers produces incorrect cumulative totals and wrong "funding remaining" messages.
+- Hard‑coding numbers prevents automatic updates when Awarded values change.
+- Truncation/rounding causes small but real discrepancies in totals.
+
+How to fix it (quick steps)
+1. Use Awarded (column H) for the cumulative column. Standardize the formula:
+   - First funded row (example row 7): I7 = H7
+   - Subsequent rows: I8 = I7 + H8, then copy I8 down the column.
+2. Replace any hard-coded numbers (like =I30+923) with the proper cell reference (e.g., =I30+H31).
+3. Fix any truncated Awarded values (e.g., set H18 = 311280.25 if that is the approved amount) or decide to round consistently. If you want 2-decimal display and consistent math, use ROUND where needed.
+4. After fixing formulas, copy the corrected I formula down through the entire list for that sheet.
+
+Exact fixes to apply now
+- Watershed Protection sheet:
+  - Change I7 from =G7 to =H7.
+  - Replace each I formula that currently adds Gx with I(previous) + Hx. Example: I8 should be =I7+H8, I9 = I8+H9, etc.
+- CALFED Watershed sheet:
+  - Change I31 from =I30+923 to =I30+H31.
+- Coastal NPS-Reg 4,8,9 sheet:
+  - Confirm G18 vs H18. If the award was 311,280.25, set H18 to 311280.25 (or if H18 is correct, update G18). Then ensure I18 = I17 + H18.
+
+Example (copyable)
+- Put in the top cumulative cell: =H7
+- Put in the next cell and fill down: =I7 + H8
+
+Check everything
+- After making these fixes, scan other sheets for the same pattern (I referencing G, or any hard-coded numbers) and correct them the same way.
+- Verify totals against the stated funding limits.
+
+If you want, I can:
+- Provide the exact list of all cells that currently reference G instead of H (I can parse all sheets and produce the locations),
+- Or give the corrected formulas ready to paste for each sheet. Which would you prefer?

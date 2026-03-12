@@ -1,0 +1,63 @@
+Summary of main problems
+- #REF! errors (broken references) in many formulas — caused by referenced cells being deleted or moved. These produce wrong results or errors where dollar allocations are expected.
+- Several formulas use the wrong base cell for converting percentages to dollar amounts (they multiply by #REF! or a deleted cell).
+- A few odd formulas/sums (e.g., SUM(S44:S44), =+ prefixes) are harmless but confusing.
+
+Faulty cells (examples) and quick fixes
+1) O39, P39, Q39, R39
+   - Error: formulas use #REF!*0.0547 etc.
+   - Cause: the cell that was supposed to provide the base amount was deleted.
+   - Fix: replace #REF! with the correct base. If the base is 69,500 use:
+     O39 = 69500*0.0547
+     P39 = 69500*0.0109
+     Q39 = 69500*0.0065
+     R39 = 69500*0.0065
+   - Explanation: each column should multiply the base fee by the column percent.
+
+2) K40, N40, O40, S40 (and similar K40..O40 entries)
+   - Error: formulas contain #REF!*…
+   - Fix: replace #REF! with the intended base (e.g., the cell that contains the row’s total fee, or a named total). Example:
+     K40 = $E$40 * 0.713    (if E40 holds the row’s total fee)
+     N40 = $E$40 * 0.2297
+     O40 = $E$40 * 0.0573
+     S40 = SUM(K40:R40)
+   - Explanation: maintain consistent base reference (use the row total or a fixed named cell).
+
+3) S44
+   - Error: S44 = #REF!
+   - Fix: S44 should be the sum of the allocation cells in that row:
+     S44 = SUM(K44:R44)
+   - Explanation: the sum cell should add the allocations, not reference a deleted cell.
+
+4) P45, P50, P51, P53 and other Pxx cells referring to #REF!
+   - Error: they multiply by #REF! (missing base).
+   - Fix: decide which total they should be % of (most likely the Total Basic Services $ Amount). Use $E$62 (or $E$31 if that is the official “Total Basic Services / Contract Amount”) as the base:
+     P45 = (O45/100) * $E$62
+     P50 = (O50/100) * $E$62
+     P51 = (O51/100) * $E$62
+     P53 = P52 - SUM(P45:P51)   (if P53 is intended to be “remaining” after allocations)
+   - Explanation: percentages (column O) should be converted to dollars by multiplying by the known total amount. Replace #REF! by the absolute reference to that known total.
+
+5) S39, S40, S41, S44 etc.
+   - Check that every row sum uses SUM(Kx:R x) (or the correct K:R range) — some sums are fine, some reference deleted cells. Example:
+     S39 = SUM(K39:R39)
+
+General recommended fixes and best practices (short)
+- Find all #REF! with Find (Ctrl+F) and replace each with the correct cell reference (the cell that holds the base dollar amount for that calculation). If you’re not sure which cell, likely candidates are:
+  - $E$62 (sum of discipline $ amounts)
+  - $E$31 (Total Basic Services / Contract Amount)
+  - the row’s own total cell (e.g., E39, E40)
+- Use absolute references ($E$62) or a named range (e.g., TotalContract) for the total contract amount so formulas won’t break if you insert/delete rows or columns.
+- Make formulas consistent:
+  - Percentage cell = E36 / $E$62
+  - Dollar allocation = (PercentageCell / 100) * $E$62  OR Dollar allocation = $E$62 * PercentageDecimal
+- Replace odd constructs for clarity:
+  - =+E36/$E$62 → =E36/$E$62 (works the same, but cleaner)
+  - SUM(S44:S44) → S44 or SUM(K44:R44) as appropriate
+- After corrections, verify totals:
+  - E62 should equal E31 (note on sheet). If not, fix source rows so they reconcile.
+  - Percent column sums should be ~100% (F62), and dollar allocations should sum to the contract total.
+
+If you want, I can:
+- Give the exact corrected formulas for every cell containing #REF! if you tell me which cell is the official dollar base (E31 or E62 or a specific row cell), or
+- Produce a cleaned-up version of the problematic block (K36:R59 and P45/P50/P51 area) with corrected formulas.

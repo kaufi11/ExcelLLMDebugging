@@ -1,0 +1,46 @@
+Summary of workbook structure and contents
+
+General layout (Financial summary)
+- Orientation: years run across the sheet in spaced columns: 1998 (col C), 1999 (E), 2000 (G), 2001 (I), 2002 (K), 2003 (M). Main row blocks: Beginning Cash, Income, Expenses, Totals, Net Income/(Loss), Ending Cash/Invested Balance, Account breakdown, Reconciliation difference, Notes.
+- Beginning Cash: C4 = 15,023.53 (1998). For subsequent years beginning balances are linked to the prior year’s Ending Cash (E4 = C33, G4 = E33, I4 = G33, K4 = I33, M4 = K33).
+- Income section: line items include Dues, Special Sponsorship, Sanctioning, Sponsorship, Donations, Interest, Sales and Other. Examples: C9 (Sanctioning 1998) = 12,391.57; E8 (Special Sponsorship 1999) = 55,000; M7 (Dues 2003) = 6,542.
+- Total Income rows: C15, E15, G15, I15, K15, M15 all use SUM over the income rows (e.g., C15 = SUM(C6:C13)).
+- Expenses section: categories include Administration, Bank Fees, Events inc. travel, Member Services, Memberships, Other Fees, Outreach. Example values: C19 Administration 1998 = 2,969.44; C24 Other Fees 1998 = 12,996.64.
+- Total Expenses rows: C27, E27, G27, I27, K27, M27 use SUM over expense rows (e.g., C27 = SUM(C19:C25)).
+- Net Income/(Loss): C30 etc = Total Income − Total Expense (e.g., C30 = C15 − C27).
+- Ending Cash/Investment Balance: C33 = C4 + C30, and same pattern for other years (E33 = E4 + E30, etc.).
+- Account breakdown: Checking Account (C35 links to C33), Money Market (C36), Loan to Event Organizer (C37). Several years’ checking/money market values are hard-coded (e.g., E35 = 69,161.82, G35 = 8,578.49; G36 = 50,064.79).
+- Reconciliation Difference: C39 etc = Ending Cash − SUM(Account balances) (C39 = C33 − SUM(C35:C37)).
+- Notes area: explanatory notes below (rows ~41–51). Important textual note in O4: 07/04/2003 treasurer’s comment that 2001 figures were restated (2001 net loss revised to $4,992.05).
+
+Cross-sheet links and key formulas
+- Many inter-sheet links:
+  - Balance Sheet pulls 2002 checking/savings and money market from Financial summary: Balance Sheet H4 = 'Financial summary'!K35 and H5 = 'Financial summary'!K36.
+  - Balance Sheet Net Income rows reference Financial summary net income for later years: G13 = 'Financial summary'!I30, H13 = 'Financial summary'!K30.
+- Aggregate formulas are standard SUM and simple arithmetic; totals per column use SUM ranges (e.g., C15 = SUM(C6:C13), C27 = SUM(C19:C25), totals on Stork sheets use SUM over the transaction ranges).
+
+Balance Sheet (sheet: Balance Sheet)
+- Columns: Dec 31, ’99 (E), Dec 31, ’00 (F), Dec 31, ’01 (G), Dec 31, ’02 (H).
+- Sections: Assets (Current Assets → Total Checking/Savings, Money Market; Total Current Assets = sum of those), Total Assets = ROUND(E2 + E6,5) (E2 presumably holds non-current assets or other asset component not shown here).
+- Liabilities & Equity: Opening Bal Equity is constant (5481.15). Retained Earnings and Net Income rows present; Net Income for 2001 and 2002 pulled from Financial summary as noted above.
+- Some anomalies: H14 (Total Equity) uses ROUND(COUNT(H10:H13),5) which appears incorrect (COUNT instead of SUM); check that cell.
+
+Stork - 2002 Receipts and Stork - 2002 Expenditures (detailed transaction logs)
+- Purpose: transaction-level receipts and expenditures for 2002 with category columns (Dues, Licensing, Sanctioning, Interest, Donations, Other for Receipts; Administration, Events, Member Services, Dues, Services, Marketing, Special Projects, Other for Expenditures).
+- Receipts sheet: rows list dated deposits/transfers (C6:C42), categorizations in relevant columns (e.g., C39 = 15,000 credited to Sanctioning H39 = 15,000 for WUCC 2002). Totals row C43 = SUM(C6:C42) and category totals use SUM over columns (D43, F43, H43, etc.).
+- Expenditures sheet: dated checks and fees (C6:C54) with amounts distributed to expense columns. Totals row (C55 etc) uses SUM ranges for columns (C55 = SUM(C6:C54), D55 = SUM(D8:D54), etc.).
+- The Expenditures sheet computes a net as-of-7/3/03 by combining certain expense rows (H58 formula = H45+H44+H33) and compares receipts vs expenditures: D59 = C55 (receipts total), D60 = 'Stork - 2002 Receipts'!C43 (expenditures reference to receipts sheet), D61 = D59 − D60 (net).
+- Cross-references: Expenditures sheet explicitly references Receipts totals to compute net (D60).
+
+Notable values and issues to check
+- Beginning cash 1998 = 15,023.53 (C4).
+- Several large one-off items: 1999 Special Sponsorship = 55,000 (E8); 2002 Sanctioning receipts = 15,000 (Stork receipts H39).
+- Restatement: 2001 net loss restated in notes (O4).
+- Potential formula errors/risks:
+  - Balance Sheet H14 uses COUNT instead of SUM (likely wrong).
+  - Some Income/Expense rows include text flags (L13 = "a", L21 = "a") that refer to notes (loan repayment, etc.) — these are not numeric and could affect automated sums if placed in numeric ranges (but current SUM ranges appear numeric-only).
+  - Some expense lines use expressions (e.g., I21: FORMULA =8821.24-118.52) — verify results and that cells are numeric.
+  - Hard-coded account balances for some years (E35, G35, etc.) mixed with formula-driven balances for others could complicate reconciliation.
+
+Overall
+- The workbook is a cash-basis multi-year financial summary with a per-year income/expense summary and roll-forward of beginning/ending cash, a short Balance Sheet drawing cash balances from the summary, and detailed transaction journals for 2002 receipts and expenditures (Stork sheets). Key calculations are basic SUM and cross-year roll-forwards; check the noted formula anomalies (COUNT vs SUM) and the 2001 restatement note.

@@ -1,0 +1,31 @@
+I reviewed the workbook and found several formula errors (wrong cell references / stray constants / copied references that shifted). Below are the concrete problems, the simple fix for each, and a short explanation.
+
+1) Pricing sheet — Layoff cost (period 1)
+- Problem: C15 = 519*Sheet1!$B$20
+- Fix: C15 = C5 * Sheet1!$B$20
+- Why: 519 is a stray constant. Layoff cost must be (# laid off in C5) * (layoff cost/unit on Sheet1).  
+
+2) Sheet2 — Overtime cost rows (cells E16:E20)
+- Problem: the formulas reference Sheet1!B24, B25, B26, ... instead of the overtime rate (Sheet1!B23). This happened because the Sheet1 reference was not locked and moved when filled down.
+- Fix (example for period 2): E16 = E6 * Sheet1!$B$23
+  Repeat for each row: E17 = E7 * Sheet1!$B$23, E18 = E8 * Sheet1!$B$23, etc.
+- Why: Overtime rate is a single parameter (Sheet1!B23). When you copy formulas down you must use an absolute reference (Sheet1!$B$23) so it does not change to B24, B25, ...
+
+3) Sheet3 — Cost formulas referencing Sheet2 instead of local sheet
+- Problem: e.g. B15 = +Sheet1!$B$19 * Sheet2!B5 (and similar B16..B20 referencing Sheet2! rather than Sheet3!)
+- Fix (example for period 1): B15 = Sheet1!$B$19 * B5  (on Sheet3)
+  Repeat for each period: B16 = Sheet1!$B$19 * B6, etc.
+- Why: The cost rows should multiply the parameter on Sheet1 by the decision variable on the same sheet (Sheet3). They incorrectly point to Sheet2 cells.
+
+4) Sheet3 — Total Revenue
+- Problem: C24 = SUM(J5:J10) * 31
+- Fix: If you have a price column on the same sheet use: C24 = SUMPRODUCT(J5:J10, K5:K10)
+  If prices are on a different sheet, use the appropriate reference. Do NOT multiply the sum of demands by 31 unless that is explicitly intended.
+- Why: Revenue = sum(quantity * price) per period. SUM(demands)*31 is incorrect unless every unit price is 31 (which doesn’t appear to be the case).
+
+General recommendations (to prevent more errors)
+- Always use absolute references for parameters on the input sheet (e.g. Sheet1!$B$16, Sheet1!$B$23). That prevents those references from shifting when you copy formulas down.
+- When copying cost formulas down, reference the local decision-variable cell (no sheet name) so it refers to the same row on the same sheet (e.g. =Sheet1!$B$19 * B5).
+- Check any manual numbers (like 519) — they are usually typos or leftover constants.
+
+If you want I can produce the corrected formulas for all affected cells (I will list each cell and the corrected formula so you can paste them in). Which sheet(s) do you want me to fix first?

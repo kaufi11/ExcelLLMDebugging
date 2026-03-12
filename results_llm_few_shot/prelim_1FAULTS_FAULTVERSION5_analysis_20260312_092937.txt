@@ -1,0 +1,25 @@
+Summary of faults
+1) A36 (program sheet) — wrong increment
+   - Current: =A35+676
+   - Problem: typing slip adds 676 so A36 and every A-cell below are wildly incorrect.
+   - Fix: =A35+1
+   - Why: keeps the event numbering sequence consistent; the +676 caused a cascading wrong sequence.
+
+2) A41 (program sheet) — hard‑coded number breaks the sequence
+   - Current: 26 (entered as plain value)
+   - Problem: the rest of column A uses formulas; this manual 26 will not update if rows above change and is inconsistent with the sequence.
+   - Fix: =A39+1
+   - Why: restores the automatic incrementing pattern and prevents future mismatches.
+
+Recommended robustness improvements
+- Replace the whole column A numbering with a consistent formula so you never get single‑cell typos. Example (put in A12 and fill down):
+  - =IF(ROW()=ROW($A$12),1,IF(INDIRECT("A"&ROW()-1)="","",INDIRECT("A"&ROW()-1)+1))
+  (Or simpler if A12 already contains the first number: =IF(A11="","",A11+1) copied down.)
+- Or use a row-based formula to auto-number (put in A12 and fill down): =ROW()-11 (adjust the 11 offset to make A12 = 1). This avoids cumulative +1 chains that are vulnerable to a single bad cell.
+
+Quick action steps
+1. Change A36 to =A35+1.
+2. Change A41 to =A39+1 (or convert it to the consistent formula you choose).
+3. Optionally convert the rest of column A to one consistent auto-number formula.
+
+That will correct the numbering cascade and prevent similar future errors.

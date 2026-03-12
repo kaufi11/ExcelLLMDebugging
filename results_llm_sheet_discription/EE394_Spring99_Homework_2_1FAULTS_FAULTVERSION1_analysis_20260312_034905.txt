@@ -1,0 +1,32 @@
+I reviewed Sheet1 and found two real mistakes plus one common source of confusion (ATAN2). Short fixes and why they matter:
+
+1) Wrong sign for load-reactance (Imag ZL) — cell B26
+- Problem: B26 = B6*1000/B21*SIN(B22*PI()/180) produces a negative imaginary Z for a lagging load. That is incorrect: for a lagging load the impedance angle θ = V∠0 − I∠(negative) = −B22 (positive), so the imaginary part should be sin(−B22) = −sin(B22).
+- Fix: change B26 to either
+  = -B6*1000/B21*SIN(B22*PI()/180)
+  or
+  = B6*1000/B21*SIN(-B22*PI()/180)
+- Why: this yields the correct positive reactive (inductive) sign for a lagging load.
+
+2) Cell D50 overwritten (inconsistent formula)
+- Problem: Every D row is supposed to be =-C(row), but D50 is hard-coded as =-285 (breaks continuity of the sweep). That will produce wrong cos/sin arguments and wrong VS/IS values for row 50 (and any dependent rows).
+- Fix: replace the content of D50 with the proper formula:
+  = -C50
+  (or re-copy the pattern from other D cells, e.g. put =-C4 and fill down)
+- Why: keeps the distance column consistent with the z/d sweep increment (so β·d uses the correct distance).
+
+3) (Not an error but a clarity / reliability tip) ATAN2 argument order and conversion to degrees
+- Issue: Excel's ATAN2 argument order and the *180/PI() conversion can be confusing. The sheet uses ATAN2(real, imag)*180/PI() consistently — this matches the sheet's convention and appears to be working. However it's easy to get wrong or misread later.
+- Recommendation: replace usages like ATAN2(G,H)*180/PI() with DEGREES(ATAN2(G,H)) for readability, or if you prefer the usual math order (atan2(imag,real)) use DEGREES(ATAN2(H,G)). Example:
+  =DEGREES(ATAN2(G,H))  (same as your current formula)
+  OR to use the conventional atan2(imag,real):
+  =DEGREES(ATAN2(H,G))
+- Why: DEGREES() makes intent clearer and prevents unit-conversion mistakes; being explicit about the argument order avoids confusion later.
+
+Extra small suggestions
+- B12 uses 8.854*(0.000000000001) — you can simplify to 8.854E-12 for readability, but it is not an error.
+- If you expect P to be signed (negative for leading pf), consider using B7*B8 instead of B7*ABS(B8); current formula forces P positive.
+
+If you want, I can:
+- Give the corrected numeric results for Z0, β, λ, IR, ρ, VSWR with the current inputs.
+- Create a quick macro or fill-down to repair any other rows that might have accidental overwrites.

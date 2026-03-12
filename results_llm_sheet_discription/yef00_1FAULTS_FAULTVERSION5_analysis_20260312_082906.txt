@@ -1,0 +1,38 @@
+Summary — main errors found
+1) Several cells have manual “+1” adjustments that artificially inflate totals and change percentages:
+   - Revenues sheet: C11 = 141577402+1 (should be 141,577,402).
+   - General State Financial Aid sheet: B21 = 3684419+1 (should be 3,684,419).
+   - FTEE Calculation sheet: E27 = SUM(E11:E26)+1 (should be SUM(E11:E26)).
+   Effect: totals (and any percent-of-total formulas that reference those totals) are wrong by 1, and charts/percent columns show tiny incorrect values.
+
+2) One hard-coded value replaces a formula in FTEE Calculation:
+   - F12 = 4 (literal) while every other non-credit FTEE cell uses E / 600 (e.g., F11 = E11/600). 
+   Effect: total FTEE for that college, the grand total H27 and all percent-of-total shares (I column) are incorrect.
+
+3) Inconsistent component sums (minor usability issue):
+   - Revenues C9 shows =9432730+111410104 rather than a SUM or references to the two component cells, which is error-prone and inconsistent with the rest of the sheet.
+
+What to change (quick fixes you can paste in Excel)
+1) Remove the +1 adjustments:
+   - In Revenues!C11 replace =141577402+1 with =141577402 (or better: reference the actual component cells or use =SUM(component_range) if there are two component cells).
+   - In General State Financial Aid!B21 replace =3684419+1 with =3684419 (or reference actual source cell).
+   - In FTEE Calculation!E27 replace =SUM(E11:E26)+1 with =SUM(E11:E26).
+
+2) Restore the correct formula for non-credit FTEE at NIACC (row 12):
+   - In FTEE Calculation!F12 replace 4 with =E12/600
+
+3) Optional cleanup for clarity and robustness:
+   - Replace ad-hoc arithmetic like =9432730+111410104 in Revenues!C9 with =SUM(cell1,cell2) or a single final value (e.g., =120842834) or put the two components into separate cells and SUM them. This avoids accidental leftover +1s.
+   - Consider using ROUND for percent cells to stable display, e.g. B9 = ROUND(C9/$C$15, 4) (or *100 if you want percent formatting).
+
+Why these fixes work (short explanation)
+- The "+1" additions and the hard-coded 4 are manual edits that distort source totals. Percent formulas divide by those totals, so even a +1 or one wrong FTEE value changes the percent results. Removing the extraneous +1s and restoring the correct formula ensures totals are true sums of their components, so dependent percent calculations will be correct and consistent across sheets.
+- Replacing ad-hoc arithmetic with SUM or referenced cells reduces risk of accidental manual tweaks in future and makes reconciliation easier.
+
+After you fix
+- Recalculate (F9) or ensure automatic recalculation is on. Verify:
+  - General State Financial Aid total B25 = SUM(B9:B23) = 141,577,403 (if that is the true sum) and Revenues C11 equals that same number if they should match.
+  - FTEE grand total H27 = SUM(H11:H26) and I-column shares sum to (approximately) 1 (rounding may cause tiny deviation).
+- If small differences remain due to rounding, handle them with ROUND or include a footnote instead of adding +1 corrections.
+
+If you want, I can give the exact replacement formulas for every affected cell or produce a checklist to search the workbook for other manual edits (search for “+1” or for numeric constants in cells that should contain formulas). Which would you prefer?

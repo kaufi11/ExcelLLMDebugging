@@ -1,0 +1,50 @@
+I reviewed Sheet1. I found the definite formula error(s) and a few inconsistencies that will produce wrong or confusing results. Short, clear fixes and explanations below.
+
+1) Obvious formula typo — Putaway/Picking/Shipping → Improve Shipping Productivity
+- Problem: G86 contains the number 7 instead of a formula. That makes the "Max. Savings" wrong and breaks averages/totals that include G86.
+- Fix: Replace G86 with the correct formula. Consistent with the pattern used elsewhere, use either:
+  - =C86*C87*C88*0.25
+  or (if you want the "Your Savings" percentage cell used)
+  - =C86*C87*C88*C89
+- Why: E86 uses the 16% multiplier for "min", G86 should use 25% for "max". Using the cell C89 for the "Your Savings" or K86 is fine for the user-specific value; but the max cell must not be a hard-coded 7.
+
+2) Incorrect mixing of two percentage factors — Reduce Inventory Costs (E133 / G133)
+- Problem: E133 = C130*0.04*0.18 and G133 = C130*0.06*0.25 multiply two percentages together (4% * 18% etc.). That produces a tiny result and is almost certainly not what was intended. The sheet appears to attempt to show two separate methods (one‑time inventory reduction 4–6% and reduction of carrying cost 18–25%) but those should be separate calculations — not multiplied together in one cell.
+- Fix (recommended restructuring):
+  - Create separate calculations for the two methods:
+    - Method 1 (One‑time inventory reduction)
+      - Min: =C130 * 0.04
+      - Max: =C130 * 0.06
+      - Avg: =(min+max)/2
+      - Your: =C130 * <user_chosen_percent_for_method1>
+    - Method 2 (Reduce carrying cost)
+      - You need the carrying-cost rate (e.g., 0.18 = 18%) in its own cell, e.g. C132.
+      - Min: =C130 * C132 * 0.18
+      - Max: =C130 * C132 * 0.25
+      - Avg: =(min+max)/2
+      - Your: =C130 * C132 * <user_chosen_percent_for_method2>
+- Why: One-time inventory reduction is a percent of inventory value; carrying-cost savings is carrying-cost rate × inventory value × percent reduction in the carrying cost. Keep them separate.
+
+3) Inconsistent "Range of Savings" default cells (potential source of wrong "Your Savings")
+- Problem: Across sections the cell used for "Range of Savings" (the cell that K‑column formulas reference for "Your Savings") is inconsistent: sometimes it contains the min (0.16), sometimes the max (0.25). That leads K-cells to default to different points of the range depending on the section.
+- Fix: Standardize:
+  - For each benefit group create 2 dedicated cells: one for Min% and one for Max%, and a third for "Your %" that the K‑column references.
+  - Change E‑formulas to reference the Min% cell, G‑formulas to reference Max%, and K‑formulas to reference the "Your %" cell.
+  - Example naming/pattern: Min% in cell (e.g. D#), Max% in E#, Your% in F#; then E-row =C*Min%, G-row =C*Max%, K-row =C*Your%.
+- Why: Makes the sheet predictable and avoids accidental use of the wrong default percentage.
+
+4) Potential missing inputs / blank reference cells
+- Problem: Some K formulas reference user input cells that are currently blank (e.g. K104 references C107 which seems blank; many C15, C110 etc are empty). That will produce zeroes or errors in totals.
+- Fix: Either (a) prompt the user to fill those data cells, or (b) wrap calculations in IFERROR/IF blanks to show a clear "enter input" message. Example: =IF(C107="","<enter your %>",C104*C105*C106*C107)
+- Why: Avoids misleading zeros in subtotals and final totals.
+
+Quick checklist of actions to get workbook correct now
+- Fix G86 → =C86*C87*C88*0.25 (or use C89 if you want user-controlled)
+- Split and correct the inventory-cost calculations (separate Method1 and Method2 — remove the multiply-of-two-percent mistake)
+- Standardize Min/Max/Your% input cells and update E/G/K formulas to reference them
+- Fill missing numeric inputs (C15, C110, C107, C130, etc.) or add checks so blanks are obvious
+
+If you want, I can provide the exact corrected formulas for:
+- every affected cell (G86, E133/G133/I133/K133 and related cells),
+- a proposed layout for Min%/Max%/Your% per group,
+and I can produce the precise formulas to paste into the sheet. Which would you prefer?

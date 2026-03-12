@@ -1,0 +1,31 @@
+Summary — I found 3 clear errors. Fixing them will restore correct %s, numbering and the Balance Sheet / reconciliation behavior.
+
+1) Wrong auto‑increment in row numbering (harmless-looking but a typo)
+- Where: Table 1.0 (column B) — B31 is set to =B29+840 (and similar stray "+840" may appear elsewhere).
+- Problem: it should increment by 1 like the other row numbers; the +840 is a typing error in the numbering formula and breaks the automatic sequence (can confuse readers and any copy‑down logic that depends on those B cells).
+- Fix: change B31 to =B29+1 (and search/replace any other Bn formulas that incorrectly use +840 → +1).
+- Why: restores correct row numbering and avoids surprises when rows are referenced or copied.
+
+2) Incorrect Balance Sheet endowments link (big error affecting totals/reconciliation)
+- Where: Table 2.0 BS - Annex E, cells H59 and I59 show: H59 = H15 and I59 = I15.
+- Problem: H15/I15 are “Total Income” from the I&E. Linking Balance Sheet Endowment balance to Total Income is wrong — it inflates Total Funds (H69) and will break reconciliations (H74 won't be zero etc.).
+- Fix: Replace H59 and I59 formulas with the correct endowment balances (manual inputs or the correct source cell). For example:
+  - Clear the formula in H59 and enter the endowment closing balance in £000 (same for I59).
+  - Or, if you have the endowment balance in another sheet/cell (say 'Inputs'!A1), use = 'Inputs'!A1 (replace with your correct address).
+- Why: the Balance Sheet must carry the actual endowment fund balance, not total income. Correcting this fixes Total Funds (H69) and the reconciliation check H74.
+
+3) Wrong % variance formula for Total Funds
+- Where: Table 2.0, cell K69 (Variance % for Total Funds).
+- Problem: K69 is set to =K49 (copies the % for Total Net Assets) instead of calculating its own % based on Total Funds.
+- Fix: replace K69 with a proper percent formula:
+  =IF(H69=0,"N/A",(J69/H69)*100)
+- Why: ensures the percent variance for Total Funds is calculated from J69/H69, not copied from another row.
+
+Quick checklist after fixes
+- Recompute / press F9 to refresh and check reconciliation cells:
+  - Table 2.0 H74 should be 0 (Total Net Assets = Total Funds) once correct numbers are entered.
+  - Table 3.0 T26/T49 (cashflow ↔ balance sheet) should be zero if cash and investment balances are consistent.
+- Search the workbook for any other Bn formulas containing "+840" and fix to "+1".
+- Verify any other cross‑sheet links that were intended (endowments, cash) to ensure they point at the correct source cells.
+
+If you want, I can give the exact sequence of clicks/keystrokes to change each cell or produce a short macro to find & fix all instances of the +840 typo.

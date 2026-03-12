@@ -1,0 +1,56 @@
+Here are the clear errors I found, with short explanations and exact fixes.
+
+1) MasterMethod_Checks — row with n = 0 (A11)
+- Error: Domain / divide-by-zero and log errors (D11 = B11/C11 → 0/0; H11 = LOG(0,2) → #NUM!).
+- Fix: Remove the n=0 row or start n at 1. Or guard formulas so they return blank when n<=0. Example for D11 (and copy down):
+  =IF(A11<=0,"",B11/C11)
+- Why: LOG(0) and division by zero are invalid. Starting at n≥1 or guarding avoids errors.
+
+2) MasterMethod_Checks — H19 (typo)
+- Error: H19 uses LOG(A19,517) (base 517) instead of base 2 → incorrect values.
+- Fix: change to:
+  =LOG(A19,2)
+- Why: All other H rows use base 2; 517 is an accidental typo.
+
+3) MasterMethod_Checks — use of text "TRUE"/"FALSE" in IFs
+- Error: IF(...,"TRUE","FALSE") returns strings, not boolean values; makes nested logic awkward.
+- Fix: return booleans instead:
+  =IF(B11<=E11,TRUE,FALSE)
+- Why: Booleans are cleaner and allow straightforward nesting and filtering.
+
+4) SubstitutionMethod_Checks — C10 inconsistent / missing factor
+- Error: C10 = $B$5*LOG(LOG(A10,2),2) misses multiplication by A10 while other rows have *A#.
+- Fix:
+  = $B$5 * A10 * LOG(LOG(A10,2),2)
+- Why: Column C is "c2 * asymptotic_fcn" and must match the same form as column B.
+
+5) SubstitutionMethod_Checks — many D cells use bad absolute references ($D$11, $D$12, etc.)
+- Error: Some D rows use 5*$D$11, 5*$D$12, etc., probably from bad copy/paste. That references earlier computed values instead of the intended constant.
+- Fix: Make D always compute the same intended T(n). If intended T(n)=5 + n/log(n), use:
+  =5 + A10/LOG(A10,2)
+  and copy down (adjust row numbers).
+- Why: Absolute references to D11/D12 are accidental and give wrong results.
+
+6) SubstitutionMethod_Checks and MasterMethod_Checks — LOG(LOG(n,2),2) and A/LOG(A,2) undefined for small n
+- Error: LOG(LOG(n,2),2) requires inner LOG>0 (so n>2.718…); A/LOG(A,2) divides by LOG(n,2) which is 0 at n=1 and negative for n<1.
+- Fixes:
+  - Start your sample n from a safe value (e.g., n>=3 or n>=4) so expressions are defined.
+  - Or guard formulas, e.g.:
+    =IF(LOG(A10,2)<=0,"", $B$4*A10*LOG(LOG(A10,2),2) )
+    =IF(LOG(A10,2)=0,"", 5 + A10/LOG(A10,2) )
+- Why: These mathematical functions are undefined or invalid for small n; guards prevent errors and misleading outputs.
+
+7) General: prefer numeric booleans and avoid hard-coded constants scattered by bad pasting
+- Recommendation: Replace all IF(...,"TRUE","FALSE") with IF(...,TRUE,FALSE). Replace any stray absolute references (e.g., $D$11) used as constants with the actual constant value or a named cell (e.g., put constant 5 in a named cell Constant_5 and use it).
+- Why: reduces copy/paste bugs and makes maintenance easier.
+
+Quick summary of most-used corrected formulas:
+- Master: CE in B6: =LOG(B4,B5) (keeps as is if a=3,b=3)
+- Master C-row: =A11^$B$6 (OK)
+- Master D-row guard: =IF(A11<=0,"",B11/C11)
+- Master H-row (fix typo): =LOG(A11,2)
+- Substitution C10 (fix): =$B$5*A10*LOG(LOG(A10,2),2)
+- Substitution D-row (fix all): =5 + A10/LOG(A10,2)
+- Use IF(...,TRUE,FALSE) not IF(...,"TRUE","FALSE")
+
+If you want, I can produce a corrected copy of the two sheets (with the guards, consistent formulas and boolean outputs) and show a small sample (n=3..30) so you can paste them in.

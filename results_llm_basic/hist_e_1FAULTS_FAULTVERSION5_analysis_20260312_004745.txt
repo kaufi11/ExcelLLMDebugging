@@ -1,0 +1,28 @@
+I found two problems in the workbook. Short summary, cause and simple fixes below.
+
+1) Wrong sign in Operating profit (1997)
+- Error: Sheet 1, cell H9 (Operating profit for 1997) is =H6+H8. It adds S.G.&A instead of subtracting it.
+- Impact: Income before income taxes (H16), Income before cumulative effect, Net income (H22) and all dependent % rows for 1997 are wrong.
+- Fix: Change H9 to =H6-H8 (i.e. Gross profit minus S.G.&A). After that, recalc (Excel will update) and the dependent rows will correct themselves.
+
+2) Inconsistent treatment of "Corporate and Eliminations" → mismatched consolidated Net Sales across sheets
+- Symptom: Consolidated Net Sales on the Income Statement (Sheet 1 row 4: C4:N4) match the "Total" in Sheet 4 (Sales by Product, row 11) but do NOT match the "Consolidated" in Sheet 5 (segment table, row 33). Sheet 5’s consolidated is SUM(segment rows including the Corporate & Eliminations negative row), so its consolidated figures are different from Sheet 1 / Sheet 4 totals.
+- Reason: One sheet (Sheet 5) includes the Corporate & Eliminations row when computing "Consolidated", while the other sheets (Sheet 1 and Sheet 4) present totals excluding that negative row. This is a consistency / modelling error (either the corporate eliminations were double‑counted/omitted or the wrong aggregation method is used).
+- How to fix (pick one consistent approach):
+  Option A — Consolidated should reflect eliminations (recommended if Corporate row is true intersegment elimination):
+    - In Sheet 1 (Income Statement) replace the hard numbers in row 4 (Net Sales) with direct links to Sheet 5 consolidated row so all sheets come from one source:
+      e.g. in Sheet1 C4 enter =’Sheet5’!C33 (or the exact sheet name reference), copy across.
+    - Or make Sheet 4 total use the same formula as Sheet 5 consolidated (include corporate elimination) so every place shows the post-elimination consolidated number.
+  Option B — Consolidated should exclude the Corporate & Eliminations row:
+    - Change Sheet 5 consolidated formulas (row 33) to exclude the corporate/eliminations row (remove the C26 term) so they match Sheet 1 / Sheet 4:
+      e.g. in Sheet5 C33 replace =SUM(C5,C12,C19,C26) with =SUM(C5,C12,C19) (copy across).
+- After you pick and apply one approach, verify totals match across:
+  - Sheet1 (Income statement) Net Sales = Sheet4 Total = Sheet5 Consolidated (all identical).
+  - Recalculate other dependent totals/ratios.
+
+Notes / quick checklist
+- Fix H9 first (obvious formula typo).
+- Then decide which consolidated definition is correct for your reporting (include or exclude Corporate/Eliminations) and make Sheet 1, 4 and 5 consistent by linking or changing the SUM formulas.
+- Once fixed, refresh/calculation and check % rows and income tax/minority calculations for any further propagation effects.
+
+If you want, I can give the exact cell formulas to paste (with the real sheet names) and a one‑click macro to fix all inconsistent consolidated links. Which approach do you prefer for the Corporate/Eliminations handling (include eliminations in consolidated, or exclude them)?

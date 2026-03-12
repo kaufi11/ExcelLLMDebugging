@@ -1,0 +1,39 @@
+I reviewed the formulas in the workbook (focus: sheet "Q'back") and found the following formula errors/inconsistencies and a few formatting/label issues. Action items and fixes are included.
+
+1) Incorrect multiplier in H5 (Completion %)
+- Cell: Q'back!H5
+- Current formula: =D5/C5*180
+- Problem: All other Completion % cells (H6:H11) use *100. H5's *180 is a clear typo and inflates the completion percent and any downstream calculations that use H5.
+- Fix: Change H5 to =D5/C5*100
+
+2) Downstream consequence: L5 (Points) is wrong because it uses the inflated H5
+- Cell: Q'back!L5
+- Current formula: =K5*8.4+H5+I5*3.3-J5*2
+- After fixing H5 the L5 result will change accordingly. No change to L5 formula needed beyond correcting H5.
+
+3) Minor numeric display / formatting inconsistency for K8 (Yards/Attempt)
+- Cell: Q'back!K8
+- Formula: =F8/C8 (correct)
+- Reported value in the file: 7
+- Mathematical result: 1393 / 199 = 7.005025...
+- Observation: K8 appears rounded/displayed as an integer while other K cells show many decimals. This is likely a number-format setting on K8 (or column K) rather than a formula error.
+- Fix: If you want consistent precision, set a consistent number format for column K (for example, Number with 3 decimal places). No formula change required.
+
+4) Header/label whitespace (cosmetic)
+- Cell: Q'back!G4 contains " TD" (leading space). Not a formula error but inconsistent/cosmetic; you may want to remove the leading space.
+
+5) Suggestion about units/consistency (explain potential confusion)
+- H, I, J are expressed as percentages (0–100) because the formulas multiply by 100. L uses those percentage numbers directly (e.g., +H + I*3.3 - J*2). This is internally consistent, but be aware:
+  - If you intended H, I, J to be fraction values between 0 and 1, then H..J formulas should be changed to omit *100 (e.g., =D5/C5), and the L formula should be adapted accordingly.
+  - If you intend to keep H..J as percentages (0–100), keep the L formula as-is. Just ensure all H..J cells use the same *100 multiplier (H5 fix will align them).
+
+6) General recommendation
+- Use a column-fill/drag or table to copy the intended formula down the columns instead of entering them individually; this prevents typos like the *180 in H5.
+- Optionally, lock the formatting (number of decimal places) for related columns (H:I:J:K:L) so values appear consistently.
+
+Summary of explicit changes to make:
+- Q'back!H5: change to =D5/C5*100
+- (Optional) Q'back!K: set number format to consistent decimal places
+- (Optional) Q'back!G4: remove leading space to read "TD"
+
+If you want, I can generate a short script (VBA / Excel steps) or give step-by-step instructions to batch-correct these and enforce consistent formatting across the sheet.

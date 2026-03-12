@@ -1,0 +1,22 @@
+I found the clear errors and a couple of risky inconsistencies. Short fixes and simple explanations below.
+
+1) Sheet "2002 Report" — C30 (mechanical error)
+- Problem: C30 = G30 * 1000000 (multiplication) — this massively inflates the value. All other rows divide by 1,000,000 to convert pounds → millions.
+- Fix: Change C30 to =G30/1000000
+- Why: G30 is in pounds; you must divide by 1,000,000 to get millions (consistent with other rows).
+
+2) Sheet "2003 Report" — stray values in G20 and H20
+- Problem: G20 = 8.449074 and H20 = 0.6381540899 appear in columns that are otherwise empty for that table and don’t match headers — likely accidental paste.
+- Fix: Remove (clear) G20 and H20, or move them to the correct column if they belong elsewhere.
+- Why: They are outliers that will distort any column-wide calculations or summaries if treated as valid data.
+
+3) Sheet "data" (and "notes") — inconsistent use of formulas vs hard values (risk of stale/incorrect data)
+- Problem: Some rows (e.g., data!C4–C9 use =E#-B#, but rows like data!C10–C12 are static values rather than formulas). Values match now, but if E or B change those rows won’t update.
+- Fix: Replace static C-cells with formulas: e.g. data!C10 = E10 - B10, data!C11 = E11 - B11, etc.
+- Why: Using formulas keeps the sheet consistent and prevents stale numbers if source cells change.
+
+Quick summary of the two repair formulas to apply:
+- 2002 Report!C30 → =G30/1000000
+- data!C10 (and similar static cells) → =E10 - B10 (copy down as needed)
+
+If you want, I can produce a short macro or list of all exact cell edits to apply.

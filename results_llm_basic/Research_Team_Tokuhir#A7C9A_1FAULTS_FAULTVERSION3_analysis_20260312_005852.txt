@@ -1,0 +1,28 @@
+Findings (quick)
+- Cell A6 contains a wrong formula: =A5+821. That produces 824 (and then 825, 826, … down the column) instead of the next sequence number (should be 4). This breaks the numbering for rows A6:A39.
+- Cell A40 is a hard-coded 35 (not a formula). That masks the broken sequence but is inconsistent.
+- Minor/optional: A28 uses =A26+1 (skips A27). This is not an error if A27 is intentionally blank, but it’s inconsistent with the pattern of referencing the cell directly above.
+
+Why it’s wrong
+- The column A is meant to be a simple incrementing index. All increment formulas should add +1 to the previous row. A6’s +821 is almost certainly a typo, so everything below A6 increments from 824 instead of from 4.
+- Hard-coded A40 hides the problem instead of fixing the sequence.
+
+How to fix (easy)
+Option A — Quick single-cell fix
+1. Edit A6 and change the formula to =A5+1.
+2. Verify A7:A39 now show the expected 5, 6, 7, … sequence.
+3. Change A40 to =A39+1 (so it updates if you insert/remove rows).
+
+Option B — Robust fix (auto-fill the whole column)
+1. Put 1 in A3.
+2. Put =A3+1 in A4.
+3. Select A4 and drag the fill handle down through the last row (A40). This ensures all rows use the same pattern.
+
+Better alternative (best practice)
+- Replace the column formulas with =ROW()-2 in A3 and copy down. Explanation: ROW() returns the row number; subtract 2 so row 3 => 1, row 4 => 2, etc. This is immune to broken references and accidental +821 typos.
+
+What to check afterward
+- Scan column A for any other manual numbers or odd formulas (like A28 used A26 — acceptable if intentional).
+- Change any manual values (like A40) to formulas so the index stays consistent when rows are added/removed.
+
+If you want, I can give the exact steps to apply the ROW()-2 formula and fill it down for your sheet.

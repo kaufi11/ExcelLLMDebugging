@@ -1,0 +1,41 @@
+I inspected the two sheets and found two distinct problems: a clear typo in the "Early or Late" sheet that will corrupt the time series from that point onward, and a set of non-functional / descriptive entries in the "Vanguard" sheet where text was entered instead of real formulas.
+
+1) Sheet "Early or Late" — typo in E44
+- Problem: Cell E44 contains the formula
+  =B44+115+D44
+  (it adds the literal 115 instead of the deposit in C44).
+- Why it's wrong: All other rows use End Bal = Beg Bal + Deposit + Earnings (i.e. =B# + C# + D#). The 115 is almost certainly a typing error and produces an incorrect end balance for row 41 (and every subsequent row, because later rows reference this).
+- Fix: Replace E44 with
+  =B44+C44+D44
+- Effect: E44 will change from 112,359.778890848 (value produced by the erroneous 115) to the correct
+  113,244.778890848 (=105,891.300840423 + 1,000 + 6,353.47805042537).
+  This corrected value will cascade to B45 (=E44), E45, etc., so recompute the sheet after fixing E44.
+
+2) Sheet "Vanguard" — descriptive text instead of formulas (rows D15:D21)
+- Problem: Cells D15:D21 contain literal strings that look like formula descriptions rather than real Excel formulas or numeric results. Examples:
+  - D15 has "= Ending Balance - Beginning Balance"
+  - D16 has "= $23,833.35 - $10,000"
+  - D18 has "= (Ending Balance - Beginning Balance) / Beginning Balance"
+  ...and so on.
+- Why it's wrong: Those entries are not referencing cells; Excel will treat those as text (or #NAME? if parsed as a malformed formula), so the intended computations (capital gain, holding-period return) are not actually calculated.
+- Recommended corrected formulas (assuming you want the metrics for the 10-year period shown, where Beginning Balance is cell B4 = 10,000 and Ending Balance is F13 = 23,833.3497411956):
+  - D15 (Capital Gain/(Loss)):
+    =F13 - B4
+    (result ≈ 13,833.3497411956)
+  - D16 (optional: explicit numeric display) you can format, or leave D16 as =D15
+  - D18 (Holding Period Return):
+    =(F13 - B4) / B4
+    (result ≈ 1.38333497411956, which formatted as % ≈ 138.33%)
+- If you intended the beginning balance to be a different cell (for another year), substitute the correct cell addresses. Also consider rounding/formatting to match the presentation you want (e.g. =ROUND((F13-B4)/B4,2) or show percentage).
+
+Other observations (not errors, but notes)
+- Early-or-Late: The early-saver side stops depositing after year 15 (C19 is blank/zero), which matches the Cash Outlay summary (C49 = SUM(C4:C48) = 15,000). The late-saver side starts deposits later (I19 onward) and SUM(I4:I48) = 30,000 — these appear intentional and consistent with the sheet design.
+- Vanguard: deposit column C uses =0*B# (works but unnecessary — simply 0 would be fine).
+
+Summary of actions to correct:
+1. On "Early or Late" change E44 to =B44+C44+D44 and then let dependent cells recalc.
+2. On "Vanguard" replace the descriptive text in D15:D21 with actual formulas referencing the appropriate Beginning and Ending Balance cells (example formulas shown above).
+
+If you want, I can:
+- give a short list of exact cells that will change numerically after fixing E44 (i.e., B45..E48 etc.),
+- or produce the exact formulas and expected rounded numbers for D15:D21 using the workbook values. Which would you prefer?

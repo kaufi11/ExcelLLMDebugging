@@ -1,0 +1,30 @@
+Summary — key errors found
+1) Wrong cell reference
+- Faulty cell: G19
+- Problem: Formula uses D19 ( =SUM(D19-E19) ) but the annual allocation is in C19. This returns a wrong Remaining value.
+- Fix: =C19-E19
+
+2) Misuse of SUM()
+- Many "Remaining" cells use formulas like =SUM(C13-E13). SUM around a single subtraction is unnecessary (though it returns a value) and makes the sheet harder to read and error-prone.
+- Some totals use =SUM(C10+C24+...) (plus signs inside SUM). That works but is inconsistent and confusing.
+
+Recommended clean replacements (short & safe)
+- For each Remaining cell (G10, G13, G14, G15, G16, G17, G18, G19, G20, ...): use
+  =Cxx - Exx
+  Example: G10 -> =C10 - E10 ; G13 -> =C13 - E13 ; G19 -> =C19 - E19
+
+- For subtotal/total rows where you add a group of cells, use SUM with commas or plain addition:
+  C61 -> =SUM(C10,C24,C30,C37,C45,C51,C59)  (or =C10+C24+C30+C37+C45+C51+C59)
+  E61 -> =SUM(E10,E24,E30,E37,E45,E51,E59)
+  G61 -> =SUM(G10,G24,G30,G37,G45,G51,G59)
+
+Why these fixes
+- =Cxx - Exx is explicit and prevents reference-typos (like D19) from being hidden inside a SUM expression.
+- =SUM(cell,cell,...) is the standard, readable way to add noncontiguous cells. Using plus signs inside SUM is redundant and looks like a mistake.
+- Cleaning formulas reduces chance of future errors and makes auditing easier.
+
+Optional extra checks
+- Check blank E cells: Excel treats blanks as 0 in subtraction. If you want to treat blanks differently, wrap with IF or IFERROR.
+- Verify units and data consistency (e.g., note about donations £20,896.08 vs C69 = -8 — ensure same unit/scale).
+
+If you want, I can produce a list of every cell to replace and paste-ready corrected formulas.

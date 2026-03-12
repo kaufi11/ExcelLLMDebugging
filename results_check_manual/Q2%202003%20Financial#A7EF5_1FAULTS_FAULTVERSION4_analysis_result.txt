@@ -1,0 +1,64 @@
+I reviewed the workbook formulas (P&L, P&L Crib, BS, BS Crib, CF) and flagged formula errors and notable inconsistencies. Items are ordered by severity (balance-sheet mismatch first) then by places where formulas/approach are inconsistent or suspicious.
+
+1) Balance sheet does not balance for March 31, 2003 (BS Crib)
+- Cells:
+  - Total Assets (BS Crib, column H): H100 = 9,402
+  - Total Liabilities & Equity (BS Crib, column H): H203 = 8,763
+  - Difference (H204) = H203 - H100 = -639 (non-zero)
+- Why it matters: Assets must equal liabilities + equity. Other date columns in the same sheet balance (their D204, F204, G204, J204 are zero) but the March 31 column is out by 639.
+- Likely causes / where to check:
+  - H100 is calculated as =H50 + H59 + H98 + H79 + H64 (Total Current Assets + PP&E net + Other Assets + Goodwill/Intangibles + Restricted Securities). One of those components appears to be wrong for March 31 (or a corresponding liability/equity item is omitted/incorrect).
+  - Compare each component (H50, H59, H98, H79, H64) to the corresponding totals used to compute liabilities (H150, H169, H176, H178, H197). Reconcile line-by-line to find which asset line(s) should be reduced or which liability/equity line(s) should be increased.
+- Recommendation: trace the March 31 asset sub-totals back to source rows in the crib and reconcile to the BS main sheet. Fix the incorrect source formula or missing liability/equity item so H100 = H203.
+
+2) Inconsistent or missing formulas (P&L sheet)
+- Income tax benefit row:
+  - K39 and O39 are blank (no formula/value), while L39 = 119 and P39 = 119 are populated.
+  - H39 formula = +K39 - O39 returns 0 (because both referenced cells are blank/zero); I39 formula = +L39 - P39 = 119 - 119 = 0.
+  - Inconsistency: some columns store the tax amounts while others are blank; inputs are not uniform across columns.
+- SG&A / non-cash compensation row (P&L, row 23):
+  - K23 = =499+48, L23 = =376+117, O23 = =248+23 (formulas), but P23 is a hard-coded value (253) with no formula.
+  - I23 = =+L23-P23 uses P23 (hard-coded). Inconsistent approach across columns: some columns built from components, others are manual constants.
+- Restructuring & impairment row (P&L row 26):
+  - H26 and I26 formulas reference K26 and O26 (=+K26-O26, =+L26-P26) but K26, L26, O26, P26 are empty (all zero). This is harmless but inconsistent.
+- Recommendation: make tax and SG&A inputs consistent across all periods — either all componentized (sum of parts) or all hard-coded but documented. Remove or explain blank K39/O39 cells; if tax benefit belongs equally across columns, populate formulas or zeros consistently.
+
+3) EPS and small manual adjustments (P&L)
+- Notable manual adjustment:
+  - H51 = =+K69 + 0.01 (EPS "Before X-Item", three months ended column). This adds a 0.01 manual adjustment to K69.
+  - K69 itself is computed as =K61 / K66 (large negative loss divided by shares) so H51 is not purely derived from the underlying loss and share count for that column — a manual fudge.
+- Other EPS lines:
+  - Some EPS cells reference different intermediary cells (N69, R69, etc.) and some EPS cells are hard-coded values (I51 = -0.39, L51 blank, P51 = -0.23).
+- Why it matters: EPS should be reproducible from Net Loss and Weighted Average Shares. Manual additions (like +0.01) or inconsistent references make EPS calculations hard to audit and can produce small but material differences in published EPS.
+- Recommendation: remove arbitrary constants or document why they exist. Recompute EPS consistently as Net Loss / Weighted Average Shares (and show rounding separately, if needed).
+
+4) P&L / P&L Crib: inconsistent use of formulas vs hard-coded values
+- Many rows in P&L and the Crib contain a mixture of:
+  - componentized formulas (e.g., K17 = SUM(K14:K16))
+  - arithmetic formulas (e.g., K23 = =499+48)
+  - single hard-coded values (e.g., P23 = 253)
+- This mixture makes auditing difficult and increases risk of mismatches if one column is updated but others are not.
+- Recommendation: standardize approach: use SUM ranges (or single-source inputs) consistently for the same line across all periods/columns. Replace hard-coded numbers with formulas that derive from the same source detail where possible.
+
+5) BS Crib – March 31 (H column) specific mismatches to BS main
+- The BS main sheet (E column) shows Total Assets for March 31 = 8,763 (E28 = 8,763) and Total Liabilities & Equity E51 = 8,763 (balanced).
+- BS Crib H column (which represents March 31 in the crib) has Total Liabilities & Equity H203 = 8,763 (matches main) but Total Assets H100 = 9,402 (does not match main).
+- This indicates the error is within the BS Crib asset side for March 31 (H100), not in the main BS liabilities side.
+- Recommendation: align BS Crib March 31 asset computations with the BS main totals. Identify which Crib asset line(s) are off and correct formula(s)/inputs.
+
+6) Minor items / suspicious formulas to review
+- Some formulas use text-containing cells (cells with a single space " ") in columns included in arithmetic ranges — not a calculation error but can be confusing.
+- Several cells use the pattern =+K14-O14 (leading +), harmless but inconsistent style.
+- A few negative/odd entries (e.g., D78 = -4, D78 etc. for lease terminations or CPTC values negative) appear intentional but should be confirmed.
+- In CF: some large deferred revenue adjustments (E24 = -348) produce large working capital swings and negative net cash by period — this looks intentional but is worth a sanity check vs source detail.
+
+Summary of recommended actions (prioritized)
+1. Fix the BS Crib March 31 asset side so H100 = H203 (reconcile the 639 difference). Trace back to H50, H59, H98, H79, H64 and source lines.
+2. Standardize how Income Tax Benefit is input across periods (populate K39/O39 or use uniform formulas).
+3. Remove undocumented manual EPS adjustments (e.g., +0.01 in H51) or document and centralize them (prefer adjusting final rounding cell rather than intermediate).
+4. Replace hard-coded values with formulas tied to the detail (P&L / Crib) where appropriate so all columns are computed uniformly.
+5. After corrections, run a full reconciliation between each crib and the main P&L/BS/CF totals (confirm SUMs match and assets = liabilities+equity for all dates).
+
+If you want, I can:
+- trace the March 31 balance-sheet difference row-by-row to identify the exact source line(s) responsible (I will list the contributing rows and the numeric delta for each), or
+- produce a short list of all cells that are hard-coded where their peer columns use formulas (so you can convert them to formulas for consistency). Which would you like first?

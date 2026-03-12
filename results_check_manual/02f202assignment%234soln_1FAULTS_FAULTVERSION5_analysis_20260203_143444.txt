@@ -1,0 +1,57 @@
+I reviewed Sheet1. Below are the main errors I found, why they are wrong, and how to fix them. Short & clear.
+
+1) Missing journal entry (Part A, transaction e)
+- Error: The collection on account for $28,000 is not recorded. (I see the sales allowance and freight entries but not the cash collection.)
+- Fix: Add journal entry
+  - Debit Cash 28,000
+  - Credit Accounts Receivable 28,000
+- Why: That records cash collected from customers and reduces A/R as the transaction requires.
+
+2) Entries mis‑numbered / labels confusing (Part A: e and f swapped)
+- Error: The sales allowance (1700) and freight (5200) lines are labeled under wrong letters. This is a labeling/organization issue.
+- Fix: Relabel so: f = Sales allowance (1700), g = Freight in (5200), and e = Cash collections (28,000).
+- Why: Keeps the journal entries consistent with the original transaction list.
+
+3) Use cell references instead of hard-coded constants (Part A, payment of purchases)
+- Error: Payment entry uses literal 53500 and 0.02 in formulas instead of referencing the cells that hold the purchase and return amounts. This makes the sheet brittle and leads to errors if numbers change.
+- Fix / recommended formulas (example assuming Purchases in D42 and Purchase R&A in C66):
+  - A/P (debit) = D42 - C66
+  - Purchase Discount (credit) = (D42 - C66) * 0.02
+  - Cash (credit) = (D42 - C66) - PurchaseDiscount
+- Why: Keeps calculations correct and dynamic if inputs change.
+
+4) Weighted‑average COGS (Part B) — arithmetic/formula error
+- Error: The weighted average COGS and resulting gross margin are wrong. Sheet shows COGS = 60,735 (incorrect).
+- Correct calculations:
+  - Total units = 1,000 + 3,000 + 4,000 + 2,000 = 10,000
+  - Total cost = 1,000*8 + 3,000*7.8 + 4,000*8.15 + 2,000*8.25 = 80,500
+  - Weighted average per unit = 80,500 / 10,000 = 8.05
+  - Ending inventory (2,500 units) = 2,500 * 8.05 = 20,125
+  - COGS = 80,500 - 20,125 = 60,375 (NOT 60,735)
+  - Sales = 7,500 * 13 = 97,500
+  - Gross margin = 97,500 - 60,375 = 37,125
+- Fix: Replace the wrong cell value with formulas:
+  - avg_unit = TotalCost / TotalUnits  (e.g., =E92/C92)
+  - EI = avg_unit * 2500
+  - COGS = TotalCost - EI
+  - Gross margin = Sales - COGS
+
+5) Small cleanup items / stray cells
+- Error: Several stray helper values (columns K, L, some "FORMULA =2", dates that say 2002) clutter and risk confusion.
+- Fix: Remove or move helper cells into a separate “work” area and make formulas reference the summary cells. Correct any wrong date labels to 2004 for consistency.
+- Why: Cleaner sheet reduces chance of wrong manual copying and makes auditing formulas easier.
+
+Summary of the concrete fixes to enter now
+- Add journal entry for collection (Cash +28,000 / A/R -28,000).
+- Relabel entries so lines match transaction letters.
+- Change purchase-payment formulas to reference the purchase and return cells (A/P = D42 - C66; PurchDisc = A/P * 0.02; Cash = A/P - PurchDisc).
+- Fix weighted average section formulas:
+  - TotalUnits = SUM(C88:C91)
+  - TotalCost = SUM(E88:E91) where E88:E91 = C*D
+  - AvgUnit = TotalCost / TotalUnits
+  - EI = AvgUnit * 2500
+  - COGS = TotalCost - EI
+  - GrossMargin = 7500*13 - COGS
+- Replace the incorrect weighted-average COGS 60,735 with 60,375 and gross margin 37,125.
+
+If you want, I can give exact cell formulas based on the current cell coordinates in your sheet (I can map them one‑by‑one) and supply the corrected numbers inserted into the sheet. Which would you prefer?

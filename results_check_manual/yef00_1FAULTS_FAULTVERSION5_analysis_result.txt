@@ -1,0 +1,59 @@
+I reviewed the formulas in each sheet you supplied and flagged formula errors, questionable hard-coded values, and inconsistent ranges/adjustments that are likely to cause confusion or incorrect results. Summary first, then sheet-by-sheet details and recommended fixes.
+
+Top issues (most important)
+- FTEE Calculation! Cell F12 is hard-coded as =4 instead of calculating non-credit FTEE as E12/600 like every other row. This is almost certainly an error and materially affects the FTEE totals and shares.
+- Several totals include a "+1" adjustment or other artificial increments (e.g., C11 in Revenues, B21 in General State Financial Aid, E27 in FTEE Calculation). These should be documented or removed — they are inconsistent and look like ad-hoc fixes for rounding.
+- Many SUM formulas include a row beyond the last populated item (e.g., SUM(B9:B18) while values exist in B9:B17). That does not break calculation (blank cells are zero) but is an inconsistency that can hide missing rows or future errors and is fragile for maintenance.
+
+Detailed findings by sheet
+
+1) "Revenues by Source"
+- C9 = "=9432730+111410104" (ok mathematically, odd style but not an error).
+- C11 = "=141577402+1" — there is a +1 adjustment in the source amount. This is an unexplained manual offset; either document why it's added (rounding correction?) or remove it.
+- B15 = "=SUM(B9:B14)" and C15 = "=SUM(C9:C14)"
+  - Rows B9..B13/C9..C13 are populated; row 14 appears blank. Including row 14 in the SUM is not wrong (blank = 0) but is inconsistent with the visible categories. Consider changing to SUM(B9:B13)/SUM(C9:C13) or explicitly include the intended categories.
+
+2) "Expenditures by Function"
+- B19 = "=SUM(B9:B18)" and C19 = "=SUM(C9:C18)"
+  - The populated function rows appear to end at row 17. SUM includes row 18 (blank). No calculation error, but inconsistent range. If you intend row 18 to be included later, keep; otherwise tighten the range to B9:B17/C9:C17.
+- No other direct formula errors found here.
+
+3) "Expenditures by Category"
+- B15 = "=SUM(B9:B14)" and C15 = "=SUM(C9:C14)"
+  - Again row 14 is not populated; consider tightening the range to populated rows.
+- Otherwise formulas (percent = Cx/$C$15) are consistent.
+
+4) "General State Financial Aid"
+- Many C9:C23 formulas are =B9/$B$25 which is fine.
+- B21 = "=3684419+1" — another unexplained +1 adjustment (see similarly odd +1s elsewhere). Document or remove.
+- B25 = "=SUM(B9:B23)" and C25 = "=SUM(C9:C23)" D25 = "=SUM(D9:D23)" — ranges are appropriate.
+- No other immediate formula errors.
+
+5) "FTEE Calculation" — main problem area
+- F12 = "=4"
+  - Every other non-credit FTEE cell uses Fxx = E/600 (e.g., F11 = E11/600). F12 is hard-coded as "4" instead of "=E12/600". Given E12 = 1,004,923, F12 should be about 1,674.871666... The hard-coded 4 drastically changes H12 (total FTEE for that college), the college shares in column I, and the total non-credit and grand totals.
+  - Recommendation: change F12 to =E12/600 to match the pattern and correct totals/percentages.
+- E27 = "=SUM(E11:E26)+1"
+  - Another unexplained +1; inconsistent with the rest where totals are simple SUMs. If that +1 is intended as a rounding correction, document it. Otherwise remove.
+- B27 = "=SUM(B11:B26)", C27 = "=SUM(C11:C26)", F27 = "=SUM(F11:F26)", H27 = "=SUM(H11:H26)", I27 = "=SUM(I11:I26)"
+  - The populated rows appear to be 11..25 (not 11..26). SUM ranges include row 26 (likely blank). Not an error per se but inconsistent and fragile. Align SUM ranges to actual populated rows (e.g., B11:B25 etc).
+- D27 = "=+C27/H27" and G27 = "=+F27/H27" depend on correct totals. With F12 and the +1 in E27, these summary percentages may be wrong.
+- Many rows use =+Bxx/24, =+Exx/600, and follow the same pattern — that’s okay, except the single hard-coded F12.
+
+Other general points / stylistic issues
+- Use of "+1" in multiple places (C11 in Revenues, B21 in General State Financial Aid, E27 in FTEE Calculation) is inconsistent and unexplained. If they are rounding or reconciliation adjustments, add a comment next to the cell explaining why.
+- Several formulas are written with a leading '+' (e.g., =+C9/$C$15). That is harmless but unnecessary.
+- SUM ranges that overshoot (include a blank row) are fragile; prefer explicit ranges matching the data (or use structured tables).
+- Hard-coded values where a formula is expected (F12) are the most critical issue to fix.
+
+Suggested fixes (actionable)
+1. Change F12 from =4 to =E12/600.
+2. Review and remove (or document) the +1 adjustments in C11 (Revenues), B21 (General State Financial Aid), and E27 (FTEE Calculation). If they are rounding corrections, replace with a comment cell explaining the correction.
+3. Adjust SUM ranges to exactly match your populated rows (e.g., SUM(B9:B13) if data is B9..B13) to avoid accidental inclusion of blank rows.
+4. After fixing F12 and the +1s, re-evaluate totals in F27/H27/I27 and in any sheet that references these totals (e.g., General State Financial Aid percentages that use total FTEE).
+
+If you want, I can:
+- produce the corrected formulas (exact replacements) and show the recalculated totals and percentages after fixing F12 and removing +1 adjustments, or
+- generate a short annotated cell-list (cell address, current formula, recommended formula/comment) that you can paste into the sheet.
+
+Which would you prefer?

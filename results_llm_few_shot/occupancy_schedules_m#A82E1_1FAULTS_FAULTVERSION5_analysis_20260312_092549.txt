@@ -1,0 +1,46 @@
+Summary — main errors found (short & fixable):
+
+1) Latent-load per person uses the wrong weights (many sheets: Occ L0, Occ L1-WD, Occ L1-DU, Occ L1-LR, OccL2-*, OccL3-*)
+- Fault: formulas multiply latent gains (Occupancy!F22/F23) by the sensible-gain cells (Occupancy!F19/F20) or divide by F19+F20. That mixes unrelated cells — should weight by the schedule sums (F38 & F39) exactly like the sensible-load formula.
+- Example faulty formula (Occ L0 F10): 
+  =+(Occupancy!F22*Occupancy!F19+Occupancy!F23*Occupancy!F20)/(Occupancy!F19+Occupancy!F20)
+- Repair formula (use everywhere the latent-per-person is computed):
+  =(Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- Why: sensible-per-person already weights living vs bedroom schedules using F38/F39. Latent must be weighted the same way, not by the latent values' neighbors.
+
+2) Negative sign typo producing negative occupancy (Occ L1-WD D20)
+- Fault: D20 =-'OccL2-WD-DU'!D20*Occupancy!$F$35-'OccL2-WD-DU'!F20*Occupancy!$F$36 (leading minus signs)
+- Fix: remove the minus signs so the two parts are added:
+  ='Occ L2-WD-DU'!D20*Occupancy!$F$35 + 'Occ L2-WD-DU'!F20*Occupancy!$F$36
+- Why: occupancy fractions must be positive sums; the minus signs were accidental.
+
+3) Inconsistent / incorrect sheet-name references (spaces vs no-spaces)
+- Fault: formulas refer to both 'OccL2-WD-DU' and 'Occ L2-WD-DU' (and similar). If the actual sheet name contains a space, the no-space reference will be a #REF error (and vice versa).
+- Fix: pick the actual sheet name and update formulas to match, or rename sheets to a consistent name (recommendation: no spaces, e.g. Occ_L2_WD_DU) and then update formulas. Always enclose sheet names with spaces in single quotes: ='Occ L2-WD-DU'!C16
+- Why: Excel requires exact sheet name matching.
+
+4) Day-count / fraction mismatch for simulation year 2000 (Occupancy sheet: F26, F28:F31, G28:G31)
+- Faults:
+  - The sheet heading says "For a simulation year of 2000" (leap year) but the day counts F28:F31 sum to 365 (125+57+126+57 = 365).
+  - Cells G28:G31 use /365. If you intend year 2000, denominator should be 366 — or the day counts should be adjusted.
+- Fix (choose one):
+  - If year = 2000 (leap): change F28:F31 so they sum to 366 (add 1 to the appropriate count) and change G formulas to use /366; OR
+  - Better: make a single numeric cell for TotalDays (say F26 = 366) and change G28 to =F28/$F$26 (and same for G29:G31). That avoids hard-coded 365.
+  - Or compute fractions dynamically: set G28 = F28 / SUM($F$28:$F$31) so fractions always reflect sum of entered days.
+- Why: hard-coding /365 is brittle and inconsistent with the declared simulation year.
+
+Extras / minor:
+- Typos: "BTY/hr" (should be BTU/hr) — cosmetic only.
+- Some averaging formulas (e.g. Occ L3 H24 =+(H23+H25)/2) look odd but may be intentional; verify intended pattern.
+
+Actionable checklist you can apply immediately:
+1. Replace all latent-per-person formulas that reference Occupancy!F19/F20 with the corrected formula using Occupancy!F38 & F39 (paste-replace where F10 / F11 / similar appear).
+2. Fix Occ L1-WD D20 to use + not -.
+3. Run Find (Ctrl+F) for "OccL2-" (no space) and for other mismatched sheet-name patterns; correct any references to the real sheet names (or rename sheets consistently and use single quotes if they have spaces).
+4. Decide leap-year handling:
+   - Set Occupancy!F26 = 366 and change G28:G31 to =F28/$F$26 (or use SUM(F28:F31) in denominator).
+5. Scan for any #REF or #VALUE errors after updates.
+
+If you want, I can:
+- Provide a list of exact cell addresses to change (I can enumerate every occurrence of the latent-weight error and every incorrect sheet reference),
+- Or generate the corrected formulas for each sheet and cell. Which would you prefer?

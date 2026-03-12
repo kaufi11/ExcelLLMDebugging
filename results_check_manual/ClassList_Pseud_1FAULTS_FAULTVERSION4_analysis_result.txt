@@ -1,0 +1,48 @@
+I inspected the workbook formulas and found several formula errors / inconsistencies that will produce incorrect totals or make the workbook behavior unreliable. Summary of the problems and recommended fixes:
+
+1) Homework sheet — hard-coded / incorrect total
+- Cell L19 = 2 (hard-coded). All other row totals in column L use =SUM(Bx:Kx); L19 does not.  
+  - Problem: L19 should be =SUM(B19:K19). The numeric parts in row 19 sum to 124 (10+17+19+15+16+17+18+12 = 124) — the value 2 is almost certainly wrong and will distort L44 (average) and any downstream totals/analyses.
+  - Fix: Replace L19 with =SUM(B19:K19).
+
+2) Homework sheet — text placeholders inside numeric ranges
+- Many cells in B:K contain text placeholders ("x", "HC", "P") instead of numbers. SUM ignores text, so totals may omit intentionally-missing scores (this may be desired) but it can confuse reviewers and influence averages (AVERAGE ignores text too).  
+  - Recommendation: If you want missing/flagged entries to behave as 0 for all calculations, replace placeholders with 0 and use a separate column for flags. If placeholders must remain, document that SUM/AVERAGE ignore them.
+
+3) Homework sheet — class averages include the bad hard-coded total
+- Cell L44 =AVERAGE(L4:L42) will be skewed by L19 = 2. After fixing L19, re-check L44.
+
+4) Mid-term sheet — inconsistent use of column B in totals
+- Header row B3 and C3 are both labeled "Question 1" and row 5 shows B5 = 4 and C5 = 4, but L5 (total possible points) is =SUM(C5:K5) — it omits B5. Student totals (column L) are also =SUM(Cx:Kx). That means any marks entered in column B are ignored by the totals. Example:
+  - L5 (Total possible) =SUM(C5:K5) gives 100; if B5 were included the total possible would be 104.
+  - Several student rows have values in column B (e.g., B11, B20, B31, etc.). Those B values are currently not included in the students' L totals.
+  - Fix: Decide whether column B is part of the midterm scoring. If yes, change totals to include it: L5 and all student totals -> =SUM(Bx:Kx). If column B is intentionally not part of the total, move any scores from column B into column C (or make B blank) for consistency.
+
+5) Mid-term sheet — stray text in averages row
+- Cell B46 contains the literal string "average(C4:C42)" rather than a formula. Probably intended as a label, but it is inconsistent with other cells in that row which contain formulas. If intended to be a formula, replace with =AVERAGE(B4:B42) (or appropriate range). If intended as a label, leave as-is but consider moving to a text label cell.
+
+6) Final sheet — inconsistent SUM ranges for totals
+- Most rows compute I# as =SUM(B#:G#) (TOTAL), but I7 (Bluesky) uses =SUM(B7:H7). Including H is inconsistent. If H is always unused, this probably has no numeric effect, but it is inconsistent and may hide errors if H becomes populated.  
+  - Fix: Standardize the total formula across the sheet to one consistent range, e.g. =SUM(Bx:Gx).
+
+7) Final Grades sheet — column F inconsistent type (numeric total vs letter grade)
+- Column F is intended to be the numeric "Total" (=SUM(B:E) on many rows) but several rows have text (letter grade) in F instead of a numeric total. Examples:
+  - F4 = "F" (text), but B4:E4 are numeric (82, 58, 160, 62) — the numeric total would be 362. F4 is not a formula and appears to contain a grade letter instead of the expected numeric sum.
+  - F14 = "F", F16 = "F", F22 = "F" etc. (these rows have text in the "Total" cell).
+  - Problem: mixing numeric totals and letter grades in the same column breaks downstream calculations, sorting, and any macro/report expecting numeric totals.
+  - Fix: Move letter grades to the "Note" column (G) or to a new column. Make column F consistently numeric and set it to =SUM(Bx:E x) where appropriate. If D (Term) or other columns contain non-numeric placeholders ("HC", "P"), ensure your totals are computed in a way that handles those intentionally (e.g. SUM will ignore text; if you prefer 0 substitute 0 or use IFERROR/NUMBERVALUE logic).
+
+8) Final Grades sheet — cells where SUM includes text placeholders as zero
+- Several rows use =SUM(Bx:Ex) even though some of B:E may contain "HC" or "P" (text). SUM will treat those as zero. This might be intended (pending/HC counted as zero) but is worth highlighting: the totals will not show that the row was incomplete/pending. Example: F38 =SUM(B38:E38) where D38 = "P" (pending) — the numeric total will omit the pending part. Consider flagging totals where any input cell is non-numeric.
+
+9) General consistency advice
+- Standardize the ranges used in per-row totals across sheets (e.g., always SUM(Bx:Kx) for Homework, SUM(Bx:Kx) or SUM(Cx:Kx) for mid-term — decide which is correct — and SUM(Bx:Gx) for Final).
+- Avoid placing symbolic flags ("HC", "P", "x") inside numeric ranges that are used by SUM/AVERAGE unless you are aware SUM/AVERAGE ignore text. Use a separate flag column for clarity.
+- Replace hard-coded numeric totals (like L19 = 2) with formulas so totals update automatically when input changes.
+
+If you want, I can:
+- produce a corrected list of exact formulas to paste (for each affected cell),
+- supply a small script (VBA or step-by-step Excel actions) to correct the inconsistent ranges and replace hard-coded totals with formulas,
+- or validate numeric totals (recompute intended correct totals) and list cells where values differ and by how much.
+
+Which follow-up would you like?

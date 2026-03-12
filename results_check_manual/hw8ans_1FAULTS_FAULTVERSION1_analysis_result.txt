@@ -1,0 +1,67 @@
+I inspected both sheets and checked the formulas. I found several clear formula mistakes and a number of inconsistent formula patterns that will produce wrong results (and propagate large errors). Below I list the problems, explain the impact, and give recommended fixes.
+
+1) Wrong formula / typo in D5 (big source of propagated error)
+- Cell: 2003!D5
+- Current formula: =C5/1000
+- Problem: All other D cells are C*1000 (C is g/mol, D is apparently mg/mol). D5 should be C5*1000. As written D5 = 40.08/1000 = 0.04008 which makes E5 = B5/D5 enormous (121 / 0.04008 = 3018.96), which then makes F5, H5, J5 enormous and B20 (ionic strength) extremely large (6039.74). That in turn makes the Debye-Hückel/log gi values nonsensical (huge negative logs and ridiculously small activities).
+- Fix: change 2003!D5 to =C5*1000 (consistent with other rows).
+
+2) Percent / Piper plot formulas inconsistent / incorrect
+- Cell: 2003!I4
+  - Current formula: =SUM(H3:H4)/SUM(H3:H6)
+  - Problem: It sums H3:H4 in the numerator instead of using H4 only. If the intent is "fraction of total cations" for K+, numerator should be H4 not SUM(H3:H4).
+  - Fix: =H4/SUM(H3:H6)
+
+- Cells: 2003!I5 and I6
+  - I5 is =H5/SUM(H3:H6) (correct for Ca).
+  - I6 is =H6/SUM(H3:H6) (correct for Mg).
+
+- Cells: 2003!I7, I9, I10 (anion fractions)
+  - I7 current: =H7/(H7+H9+H10)
+  - I9 current: =H9/(H9+H7+H10)
+  - I10 current: =H10/(H10+H9+H7)
+  - Problem: These denominators exclude H8 (NO3-) and H11 (CO3--), so they are inconsistent and likely wrong. The three anion fraction formulas should use the same denominator (sum of all anion eq. concs). Also the order is inconsistent (not an error per se, but makes auditing hard).
+  - Fix: define a single anion total, e.g. =SUM(H7:H11), and use:
+    - I7 = H7/SUM(H7:H11)
+    - I8 = H8/SUM(H7:H11)  (I8 currently missing)
+    - I9 = H9/SUM(H7:H11)
+    - I10 = H10/SUM(H7:H11)
+    - I11 = H11/SUM(H7:H11)
+
+- Cell: 2003!I8
+  - Currently blank (no percentage formula). Insert formula as above (I8 = H8/SUM(H7:H11)).
+
+3) Ionic strength formula depends on the correct column for mi*zi^2
+- Sheet 2003:
+  - B20 = 0.5*SUM(J3:J13)
+  - J appears to contain mi*zi^2 (Jn = Fn*Gn^2). That is correct in structure — but because of the D5 mistake J5 is enormous, so B20 is wrong. Fixing D5 will correct B20.
+- Sheet2:
+  - B20 = 0.5*SUM(I3:I13)
+  - In Sheet2 the mi*zi^2 values are indeed in column I, so that formula is correct for that sheet.
+- Recommendation: keep the mi*zi^2 column consistent between sheets or document mapped columns. Confirm B20 references the column that actually holds mi*zi^2 in that sheet.
+
+4) NA() values propagate errors into sums and charge balance
+- Cells: 2003!F15 (=NA()), then H15/J15/M15 all become #N/A via multiplication.
+- 2003!E23 formula = C23 + H15 produces #N/A (shown).
+- This will make charge-balance calculations produce #N/A (E22, E23 etc).
+- Recommendation: handle missing OH- with IFNA or wrap sums in IFERROR or use conditional logic. Example: =IF(ISNA(H15), C23, C23+H15) or use AGGREGATE/SUMIF to ignore error cells.
+
+5) Column placement inconsistency between sheets (makes cross-sheet comparison error-prone)
+- In "2003" the log gi is in column K and gi in L.
+- In "Sheet2" log gi is in column J and gi in K.
+- This is not a formula error by itself but increases risk of referencing the wrong column when copying formulas or auditing. Consider standardizing the layout so the same quantities are in the same columns on both sheets.
+
+6) Some rows reference blank G12 (SiO2) — check intent
+- 2003!G12 appears blank (not given) so H12 = F12*G12 returns 0 (ok if SiO2 is neutral), and K12 = -0.51*(G12^2)*SQRT($B$20) evaluates to 0. That yields L12 = 10^0 = 1 and M12 = F12*1 (activity = molality), which may be intended for neutral species. Just confirm that treating SiO2 as neutral by setting z=0 is intended.
+
+7) Minor / cosmetic: inconsistent unit labels
+- Headers show slightly different unit text between sheets (H2 "(meq/L)" vs "(meq/L)?"), not a formula error but worth standardizing.
+
+Summary of highest-priority fixes
+1. Fix 2003!D5 to =C5*1000 (this will remove the huge erroneous Ca concentration and correct ionic strength and downstream activities).
+2. Fix 2003!I4 to =H4/SUM(H3:H6).
+3. Standardize anion percent formulas to use SUM(H7:H11) and add the missing I8 formula.
+4. Deal with NA() in OH row so charge-balance sums are not #N/A (use IFNA/IFERROR or conditional sums).
+5. Consider making the column mapping of mi*zi^2 / log gi / gi identical between sheets to avoid accidental misreferences.
+
+If you want, I can produce the exact corrected formulas and show the corrected numeric results (I can either provide the formulas to paste, or generate a patched workbook if you can accept a modified file).

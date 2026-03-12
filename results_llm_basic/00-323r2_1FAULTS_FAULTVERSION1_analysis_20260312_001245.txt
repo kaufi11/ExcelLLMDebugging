@@ -1,0 +1,36 @@
+I reviewed the workbook and found the main, concrete errors that will give wrong totals and timing windows. Short summary, fixes and why:
+
+1) L30 is wrong (hard-coded)
+- Problem: L30 contains the value 1 while B30 and C30 are 0.4 (Two x trace skew). That is inconsistent and looks like a typo/hard-code.
+- Effect: L30=1 inflates the L-column compensation/penalty totals (L35/L37/L38 etc.), so all L-column downstream results (L39, L40, L41) are wrong.
+- Fix: replace the 1 in L30 with =C30 (or = $C$30 if you want absolute). After that, recalc sheet.
+- Why: all other J/K/L rows get their values from column C (or the source skew cell). L30 must follow the same source to keep sums correct.
+
+2) C31 (ISI of data) value likely incorrect per your note
+- Problem: C31 = 4 but the comment next to it and H31 say "Should be listed as 2" / "(+2 / -1 ns)". The value 4 contradicts the documented worst-case (+2 / -1) and the note.
+- Effect: J31/K31/L31 and any totals including C31 will be wrong (overstated).
+- Fix: confirm intended ISI value and correct C31 to the intended number (probably 2). Then recalc.
+- Why: comments/notes explicitly call out that this should be 2; using 4 doubles the error contribution.
+
+3) Inconsistent and error-prone referencing (recommendation)
+- Problem: many J/K/L cells use formulas like =$C9/2 etc., but some cells use hard-coded values or inconsistent absolute/relative references (for example some formulas use $J$36 while others use J36 or J13). That leads to incorrect results when copying formulas and makes auditing hard.
+- Effect: subtle wrong values or broken copy/paste behavior; hard to tell which column (B or C) was intended for each J/K/L cell.
+- Fix (apply consistently):
+  - Decide whether J/K/L are supposed to come from column B (Fast-80) or C (Fast-160) or both. Then use a consistent reference: e.g. for the Fast-160-based setup column use =$C9/2 (or =$C$9/2), for Fast-80 use =$B9/2.
+  - Use absolute references ($C$9) where a cell must not shift when formulas are copied, and relative references where you want shifting.
+  - Replace hard-coded constants inside formulas (e.g. P24 = 14.8-3.125) with references to cells that contain those source numbers so changes flow automatically.
+- Why: consistent referencing prevents accidental double-counting, wrong column sourcing, and copy errors.
+
+4) A few specific formula oddities to check
+- Rows flagged as “Double counting” (D12, D14, D18) — verify those items are intentionally excluded/included in totals. The comments suggest some terms are doubled or intentionally zeroed; confirm the model intent.
+- P17/P18 and similar long formulas mix absolute and relative references (e.g. $J$36 + $J$37 - J13 - (J30/2)). After fixing L30 and C31, re-evaluate these; make all referenced compensation terms absolute if they are global constants.
+
+Quick checklist to repair and validate
+1. Change L30 → =C30 (or =$C$30) and recalc.
+2. Fix C31 to the value matching your note (likely 2) and recalc.
+3. Do a quick audit: filter J/K/L columns and verify each formula points to the intended source column (B or C). Make references consistent (use $ where needed).
+4. Recompute totals (B39/C39/J39/K39/L39) and the post-compensation windows (B40/C40/J40/K40/L40 and B41/C41…).
+
+If you want, I can:
+- Give the exact formula text to paste for each corrected cell (L30, C31, and a few others), or
+- Return a marked list of all cells whose references are inconsistent (I can scan and list them). Which would you prefer?

@@ -1,0 +1,56 @@
+I inspected all formulas and values you supplied for the "Optimization" worksheet and the generated "Answer Report". I found no catastrophic math errors (the magnetic and electrical formulas are consistent and unit-conversions are mostly handled), but I did find several formula/labeling inconsistencies and a few probable bugs or places that deserve correction or clarification. Summary (by severity):
+
+1) Likely wrong sign in window-area constraint (probable bug)
+- Where: cell C47 (used in constraint A47).
+- Current formula: =(B8+B21)*(B7+B21)
+- Why it's suspicious: A_w (B29) is the total required copper area in the winding window; the available window area should normally be the window dimensions minus the core cross-section. That is typically (w - d)*(h - d) (or a variant using inner window dimensions), not (w + d)*(h + d) which gives an artificially large area.
+- Suggested fix: Replace with =(B8 - B21)*(B7 - B21) (or otherwise confirm the intended geometry and use the correct combination of +/−). After this change the constraint will be a realistic packing check.
+
+2) Answer Report slack value mismatch (inconsistent reporting)
+- Where: Answer Report, row corresponding to A47 (cell G25 shows slack 0.0197078180955294).
+- Why it's wrong: Slack for an <= constraint should be C47 − A47. With the values you gave:
+  - A47 = 0.0102314525604133 (B29)
+  - C47 = 0.360353708260475 (current formula)
+  => expected slack ≈ 0.360353708260475 − 0.0102314525604133 = 0.350122255700062
+  The report shows 0.019707818..., which does not match. This indicates either the Answer Report is mapping constraints to slack values incorrectly or some intermediate values used to compute slack differ from the visible ones.
+- Action: Recompute the report after fixing (1) and verify solver-report mapping of constraints→slack.
+
+3) Equality flagged as "Binding" despite small numerical difference (tolerance issue)
+- Where: Constraint L must meet requirement (A45 / C45).
+- Values: L (B25) = 349.964998614611 vs required L_obj (H11) = 350.
+- The sheet marks this as "Binding" (=), but the two values differ by ≈ 0.035 H. This is small and likely within solver tolerance, but be aware it's not exact equality. If you require exact equality, adjust N or g or set solver tolerance stricter.
+- Action: If exact equality required, change N (B11) to reach 350 H exactly (or accept solver tolerance).
+
+4) Minor: inequality sign differences between worksheet and Answer Report
+- Where: e.g. A49 and A50 show strict "<" in the worksheet but Answer Report shows "<=".
+- Explanation: Solver output may present inequalities as non-strict (<=) for reporting; this is not an error unless strictness matters for your design constraints. No functional error, but note the notation change.
+
+5) Current-density check: which area is intended?
+- Where: B35 = H9 / (PI()*(B14/2000)^2)
+- This computes current density based on one conductor's copper cross-sectional area (correct for conductor current density).
+- Potential confusion: Some users intend to check average current density across the entire winding cross-section (which would use A_w and packing factor). Make sure the intended metric is used:
+  - If you want conductor current density (physically correct for copper temperature limits): keep B35 as-is.
+  - If you want average current density across winding window: use H9 / (B29 / B11) or H9 / (conductor_area_total) as appropriate.
+
+6) Unit/label checks and conversions (notes)
+- B14 is wire diameter in mm; formulas convert correctly:
+  - (B14/2000) used for radius in meters (d(mm)/1000 = m; divide by 2 → /2000). This is fine but easy to misread; consider labeling B14 clearly as "wire_diameter (mm)" (it already is, but double-check users reading formulas).
+- Resistance and mass use Ohm/km and Kg/km, and formulas divide by 1000 correctly (B32 and B33). No error there.
+
+7) Miscellaneous/documentation suggestions
+- mu_o (H8) is given as 1.26E-06 (approximate). If you want more precision use 4*PI()*1e-7 (~1.256637061435917e-6).
+- The unit label for R_g (A^2/(N*m)) is odd but consistent with mu0 in N/A^2 and how you computed it (g/(mu0*A)). It is OK mathematically but might confuse readers — consider using "reluctance (H^-1)" or explicitly show units as 1/H (1/henry).
+- The equality operator cell (B45) contains the string "=" (a display choice). This is not an error but could appear odd.
+
+Recap of recommended concrete fixes
+- Change C47 formula to reflect correct window area (likely):
+  C47 := =(B8 - B21)*(B7 - B21)
+- After that change, regenerate the Answer Report and check slack values — G25 should then equal C47 - A47 ≈ 0.0297... (recompute with the corrected C47).
+- If you need exact equality for L, adjust N or g or relax the solver tolerance.
+
+If you want, I can:
+- Propose the exact corrected formulas for the whole sheet (if you confirm intended geometry for the window area),
+- Recompute the few dependent cells with the corrected C47 and show updated numbers (slack values, binding status), or
+- Search for other possible geometric interpretations and show consequences of each.
+
+Which follow-up would you like?

@@ -1,0 +1,33 @@
+Summary — what’s wrong
+1) On sheet "2002 Report", row for year 97 (A21) has wrong formula in the Air column:
+   - C21 is set to =H21/1000000 (uses the Land raw pounds) instead of =G21/1000000 (Air raw pounds).
+   - As a result C21 and D21 are both using the same H21 value and the Air, air+land totals and any downstream totals/percent changes that use those cells are wrong.
+
+2) On sheet "2003 Report" there are two stray numbers in row 20 (G20 and H20) that do not match the sheet’s layout (all other data is in columns A–F and J–O). They look like accidental helper values and can confuse audits.
+
+Why these are errors
+- Column C in the conversion blocks is supposed to be Air (raw data is in column G). Using H21 (land) puts the wrong value into the Air column and into any SUMs or comparisons that follow (so percent-change and total rows will be incorrect).
+- Stray cells (G20/H20) are outside the defined table and could be unintentionally referenced or misread.
+
+How to fix (simple steps)
+1) Fix the bad formula in 2002 Report:
+   - Edit C21 and change the formula from =H21/1000000 to =G21/1000000.
+   - Verify D21 = H21/1000000 (leave as-is). Verify E21 = SUM(C21:D21).
+   - Or: select a correct row above (for example C20) and drag the formula down to C21 to copy the correct reference pattern.
+
+2) Verify totals affected:
+   - Recalculate R23 and R24 (and any dependent cells). R24 (percent change) = (R11 - R23) / R11 will now reflect the corrected air value.
+   - Check any summary/percent comparisons (Joint Venture/SVEP blocks) that used the bad value.
+
+3) Remove or relocate stray values on 2003 Report:
+   - If G20 and H20 are not needed, delete them.
+   - If they were meant to be in another column (helper calculations), move them next to the data they support and add a comment explaining purpose.
+
+Quick checks to catch similar errors
+- Scan for inconsistent formulas across rows (use a helper column): for each row n check =AND(Bn=Fn/1000000, Cn=Gn/1000000, Dn=Hn/1000000). Any FALSE flags need inspection.
+- Use Excel’s Formula Auditing (Trace Precedents/Dependents) on conversion cells to confirm they point to the correct raw-pound columns G/H.
+
+Result of the fix
+- C21 will reflect the correct Air value (G21) in millions, E21 and any totals/percent comparisons that use those numbers will be corrected automatically. Removing the stray cells prevents accidental misreferences going forward.
+
+If you want, I can list the exact corrected formulas for the affected rows or produce the few cells that will change (old vs corrected numbers).

@@ -1,0 +1,54 @@
+I checked both sheets and found several incorrect formulas that will give wrong totals/percentages. Below are the key errors, why they’re wrong, and the simple fixes.
+
+1) Fault: STEP 1 OF 2 — G22 shows 2 (a hard-coded value)
+   - Error type: Wrong constant / aggregation error
+   - Why: G22 should total the Tax Withheld entries (G11:G20), not be a constant.
+   - Fix: replace with =SUM(G11:G20)
+   - Why fix works: it sums whatever tax values are entered so the tax total updates correctly.
+
+2) Fault: STEP 1 OF 2 — E33 =SUM(E29:E30)
+   - Error type: Omission
+   - Why: it omits row E31 (there are three rows of giving entries).
+   - Fix: =SUM(E29:E31)
+   - Why fix works: includes all giving rows in the subtotal.
+
+3) Fault: STEP 1 OF 2 — I33 =SUM(G32+I32) and M33 =SUM(K32+M32)
+   - Error type: Formula style / potential logic confusion
+   - Why: using SUM() around an expression is unnecessary and confusing; also could mask intended ranges.
+   - Fix: change to I33 = G32 + I32 and M33 = K32 + M32 (or =SUM(G32,I32) / =SUM(K32,M32))
+   - Why fix works: clearer, explicitly adds the two subtotals.
+
+4) Fault: STEP 1 OF 2 — E43 =SUM(E42)
+   - Error type: Omission / wrong range
+   - Why: E43 is supposed to be the total for the “EMERGENCIES” block but only sums a single cell.
+   - Fix: =SUM(E41:E42)
+   - Why fix works: includes both relevant rows in the emergency total.
+
+5) Fault: STEP 1 OF 2 — M43 = M42
+   - Error type: Omission / wrong aggregation
+   - Why: M43 is labeled “PLANS” total but only copies one cell; it should total M41 and M42 (or the intended range).
+   - Fix: =SUM(M41:M42)
+   - Why fix works: correctly totals the plan lines rather than mirroring one cell.
+
+6) Fault: STEP 2 OF 2 — F10 = H8 / H6
+   - Error type: Wrong reference (percentage calculation)
+   - Why: F10 is “SAVING (10%)” but uses H8 (giving) instead of H10 (saving total).
+   - Fix: =H10 / H6
+   - Why fix works: divides the saving amount by earnings to yield the saving percentage.
+
+7) Dependency note: STEP 2 cell F14 (tax %) uses H14 which pulls STEP1!G22 — because G22 was wrong (see #1), tax percentage and any dependents will be incorrect until G22 is fixed.
+   - Action: fix G22 first, then recalc the Step 2 formulas.
+
+8) Overall aggregation impact
+   - Several higher-level totals (M35, M45, M43, M35 etc.) depend on the cells above (E33, I33, M33, E43, M43). After you apply the fixes above, re-check M35, M45 and M43 — they should update to correct totals.
+
+Quick checklist to apply (copy/paste into each cell):
+- STEP 1!G22  → =SUM(G11:G20)
+- STEP 1!E33  → =SUM(E29:E31)
+- STEP 1!I33  → =G32+I32   (or =SUM(G32,I32))
+- STEP 1!M33  → =K32+M32   (or =SUM(K32,M32))
+- STEP 1!E43  → =SUM(E41:E42)
+- STEP 1!M43  → =SUM(M41:M42)
+- STEP 2!F10  → =H10/H6
+
+If you want, I can produce a short list of all dependent cells to recalc or highlight these cells for you.

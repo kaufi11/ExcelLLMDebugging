@@ -1,0 +1,41 @@
+**Errors found:**
+
+1. **Cell F5 formula:** `=IF(C43="N/A",C42,C43)`  
+   - This formula is in the header row (row 5) where it doesn't belong. It seems misplaced and unrelated to the header label "FORMULA".
+
+2. **Cell C30 formula:** `=IF(B31="",(IF(B30<>"",20,0)),"")`  
+   - This formula references B31, but B31 is empty or not used for input. It also returns an empty string `""` if B31 is not empty, which can cause issues in numeric calculations.
+
+3. **Cell C41 formula:** `=IF(OR(C34>0,C35>0),C36,SUM(C9:C31))`  
+   - This formula sums points from C9 to C31, but the range includes some cells with formulas returning text or empty strings (like C30). This can cause errors or incorrect sums.
+
+4. **Cell C43 formula:** `=IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))`  
+   - This formula returns "N/A" as text, which can cause problems if C43 is used in numeric calculations (e.g., F5 formula). Also, it checks B34 (General Permit) for "not empty" to assign "N/A", which may not be the intended logic.
+
+---
+
+**Solutions:**
+
+1. **Remove or move F5 formula:**  
+   - The formula `=IF(C43="N/A",C42,C43)` should not be in the header row. Move it to a relevant cell where the fee calculation is needed or remove it if unnecessary.
+
+2. **Fix C30 formula:**  
+   - Change to: `=IF(AND(B31="",B30<>""),20,0)`  
+   - This returns 20 points only if B31 is empty and B30 is not empty; otherwise, 0. Avoid returning empty string to keep numeric consistency.
+
+3. **Adjust C41 formula:**  
+   - Change to: `=IF(OR(C34>0,C35>0),C36,SUM(C9:C29))`  
+   - Sum only numeric point cells (C9 to C29), excluding C30 and C31 if they may contain non-numeric or conditional values.
+
+4. **Fix C43 formula:**  
+   - Change to: `=IF(B34<>"",C42,IF(B38<>"",C42/2,C42))`  
+   - This returns numeric values only: full fee if B34 is not empty, half fee if small business (B38) is marked, else full fee. Avoid text "N/A" to keep calculations consistent.
+
+---
+
+**Explanation:**
+
+- Formulas returning text like "N/A" in cells expected to hold numbers cause calculation errors or unexpected results.
+- Summing ranges with text or empty strings can cause errors or incorrect totals.
+- Placing formulas in header rows or unrelated cells leads to confusion and errors.
+- Keeping formulas numeric and consistent ensures correct fee calculations.

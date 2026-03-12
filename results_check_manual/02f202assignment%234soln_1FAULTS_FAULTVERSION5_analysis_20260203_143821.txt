@@ -1,0 +1,23 @@
+You're right — E91 is wrong and that breaks the whole Part B cost calculation. Summary and fix:
+
+1) The error
+- E91 currently contains "FORMULA =2". It should be the total cost for the purchase on 12/24: units * unit price (C91 * D91).
+
+2) Why it matters
+- Because E91 feeds E92 (Total GAFS) and all downstream calculations (GAFS = 80,500; FIFO/LIFO/avg COGS and ending inventory). With E91 = 2 the GAFS is understated by 16,498 (16500 − 2) and COGS / ending inventory numbers are wrong.
+
+3) Fix (very short)
+- Replace E91 with: =C91*D91
+- That gives E91 = 2000 * 8.25 = 16,500
+- Confirm E92 (SUM(E88:E91)) becomes 80,500
+
+4) Quick check after fix
+- GAFS = 80,500
+- FIFO ending inventory = 20,575 (2,000 @ 8.25 + 500 @ 8.15) — matches your C81
+- LIFO and weighted-average sections also recalc correctly after E91 is fixed
+
+Optional notes (non-critical)
+- Some labels/dates show 2002 instead of 2004 (cosmetic).
+- Watch for any hard-coded numbers (they make auditing harder); prefer formulas that reference the cells.
+
+If you want, I can give the exact corrected formulas for any other cells that now show wrong values.

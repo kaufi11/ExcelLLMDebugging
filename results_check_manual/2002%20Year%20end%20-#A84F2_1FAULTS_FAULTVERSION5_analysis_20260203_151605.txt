@@ -1,0 +1,55 @@
+I reviewed the two sheets and found a number of incorrect or fragile formulas that can cause wrong totals or make the workbook brittle. Below are the main errors, why they are errors, and simple fixes (with the exact formulas to use). I kept each explanation short and plain.
+
+1) Hard‑coded arithmetic instead of cell references (risk: breaks when source numbers change)
+- Examples:
+  - C121 = -26907-7561074  (Cash paid to suppliers and employees)
+  - E79 = 476555.8+3116.33 (Affiliations and subscriptions)
+  - E87 = 103735.39+26083.05+11314.95 (Printing)
+  - E93, E95, E98 (they use ad‑hoc sums of constants)
+- Problem: those cells use literal numbers instead of summing the component cells. If underlying amounts change, totals stay wrong.
+- Fix: replace hard‑coded arithmetic with SUMs or direct cell references. Examples:
+  - Replace C121 with =C122 - C120  (so Cash paid = cash from ops minus cash received OR whichever logical relationship you use; this keeps numbers linked)
+  - Replace E79 with =SUM( the cells that make up “Affiliations and subscriptions” ) — e.g. =SUM(E??:E??) (use the real component cell addresses)
+  - Replace E87 with =SUM(E??:E??) (refer to the component cells instead of typing their sum)
+- Explanation: Using SUM() or direct cell refs preserves relationships and automatically updates totals.
+
+2) Cells using previous‑year values directly instead of referencing the right cells (fragile / confusing)
+- Example: many reconciliation lines in the cash‑flow section use formulas like =+E18-C18 (opening minus closing). That is OK if intended, but other places hard‑code the resulting number (see C122 / C511). Keep the pattern consistent: compute the change once and reference it everywhere.
+- Fix: keep the working‑capital change formulas in one place (e.g. C507..C510), then use =SUM(C504:C510) for cash from operations (already present). Remove duplicate hard‑coded copies of the resulting figure; reference the cell that holds it (C511) where needed.
+
+3) Inconsistent/unclear use of totals vs components (risk: confusion or circular refs)
+- Example: C29 (Accumulated funds) = +C330 while C330 = SUM(C324:C329). This works now but is confusing because C29 is a line in the balance sheet while C330 is a note subtotal. If later someone edits ranges this can create circular or double‑count errors.
+- Fix (cleaner): Make one place the single source of truth. Either:
+  - Set C29 = SUM(C324,C325,C327,C329) (explicitly list the components that make the accumulated funds closing balance), and remove or repurpose C330; OR
+  - Keep C330 as the computed total and set C29 = C330 — but add a clear comment and do NOT include C29 in the C330 range. Prefer the first option (explicit sum) for clarity.
+- Explanation: explicit component sums reduce accidental double counting and make audit easier.
+
+4) Blank cells shown as “-” can break formulas
+- Example: C39 shows “-” (Bank overdraft) and C529 = +C39. Excel will treat the text “-” as text, which makes formulas that SUM ranges or rely on that cell give errors or wrong results.
+- Fix: replace display “-” with either 0 or leave the cell blank (true blank). If you want to show a dash visually but keep formulas numeric, put 0 in the cell and use a Number Format or a cell with a custom display (Format Cells → Custom) to display zero as “-”.
+- Explanation: formulas expect numbers; text breaks arithmetic.
+
+5) Signs in cash‑flow cells are inconsistent / unclear
+- Examples: C121 and C122 interplay is confusing (see point 1). Also interest paid cells use negative and positive inconsistently.
+- Fix: choose a convention (e.g., receipts positive, payments negative) and apply it everywhere. Then use formulas built from those cells. For example:
+  - Cash from operations: =SUM(C120,C121)  (if payments are negative) OR =C120 + C121
+  - Interest paid cell should be negative if it’s a cash outflow, and interest received positive.
+- Explanation: consistent sign conventions stop sign errors and reconcile totals.
+
+6) Use of constants in note subtotals (example: Note 15)
+- Example: C468 = +C469 - C467 (this is fine), but elsewhere the components are pre‑summed by constants instead of actual component cells (see 15, 16).
+- Fix: where a cell is a subtotal of a series, use =SUM(range) rather than arithmetic on constants.
+
+Checklist of specific immediate fixes to implement now (copy‑paste formulas):
+- Replace C121 with: =C122 - C120
+- Replace any cell that currently contains a sum of numbers typed into the formula with a SUM of the component cells. (Search for formulas that contain literal numbers separated by + or -; convert to cell refs.)
+- Replace “-” text entries in numeric cells (eg C39) with 0 or leave blank and adjust number formats to display a dash.
+- Make C29 explicit (recommended): replace =+C330 with =SUM(C324,C325,C327,C329) — adjust if different components apply.
+- Standardize sign convention: check interest paid (C84/C124), cash paid (C121), etc. Make payments negative and receipts positive and then use SUM() to add.
+
+If you want, I can:
+- produce an exact list of every cell that currently contains literal numbers in a formula (I can scan and list them), and
+- produce the replacement formulas for each affected cell, or
+- give a short macro that converts formula constants to references if the component cells are contiguous.
+
+Which of those would you like me to do next?

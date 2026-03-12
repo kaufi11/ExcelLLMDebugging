@@ -1,0 +1,22 @@
+I checked the workbook and found the main formula problems. Short, clear fixes below.
+
+1) Faulty cell: visualizza_gruppo!P15
+- Problem: formula =C15+F15+I15+833 — the constant 833 is almost certainly a typo (should add the L15 column), so the monthly “TOT” is wrong.
+- Fix: replace with =C15+F15+I15+L15 (or =SUM(C15,F15,I15,L15))
+- Why: totals must sum the four category columns; a hard-coded number breaks accuracy.
+
+2) Faulty cells: visualizza_gruppo!Q7:Q18 (and Q15 shown); also Q8, Q9, ... etc
+- Problem: formulas use a double plus, e.g. =D7++G7+J7+M7 (typo "++").
+- Fix: change to =D7+G7+J7+M7 (or =SUM(D7,G7,J7,M7))
+- Why: "++" is a typo. Excel may accept it as unary + in some cases, but it’s non-standard and risky — correct to a single plus.
+
+3) Faulty cell: calcoli!B29
+- Problem: =SUM(db!AX3:BG4) — this range ends at BG and therefore omits the last two sanction columns (BH and BI, i.e. “segn rifiuti” and “altre segn.”). Also the rectangular range may be OK but the end column is wrong.
+- Fix: change to =SUM(db!AX3:BI4) if you want to sum all sanction-type columns for rows 3–4. If you intend to sum all rows in those columns use =SUM(db!AX:BI).
+- Why: the wrong end column excludes data and undercounts sanctions.
+
+4) Minor/style issues to clean (not causing calculation errors but risky)
+- Many formulas use explicit multi-add instead of SUM(); consider replacing expressions like =C7+F7+I7+L7 with =SUM(C7,F7,I7,L7) for clarity.
+- Several formulas use OR(...) with a plain cell reference as an OR argument (e.g. OR(calcoli!$D$21, ...)). That works only if the cell contains TRUE/FALSE. If those cells can be non-boolean, wrap comparisons explicitly (e.g. calcoli!$D$21=TRUE) to avoid unexpected results.
+
+If you want, I can produce an updated list of exact cells to change and the corrected formulas ready to paste.

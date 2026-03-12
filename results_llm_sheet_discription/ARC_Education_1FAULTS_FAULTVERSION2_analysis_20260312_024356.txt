@@ -1,0 +1,65 @@
+I checked the workbook summary and found several clear data / formula / formatting errors. Below are the problems, why they’re wrong, and simple fixes (with Excel formulas where appropriate). Short and to the point.
+
+1) Student‑Teacher sheet — wrong SUM range (formula error)
+- Problem: Cell F56 uses =SUM(F46:F55) but attendance/teacher blocks for 1997–1998 run B45:B55 / C45:C55 / F45:F55 etc. F56 therefore skips F45.
+- Why it’s wrong: totals exclude one row (row 45), giving a wrong total teachers value.
+- Fix: Replace with =SUM(F45:F55)
+
+2) Student‑Teacher sheet — misplaced decimal / wrong value (data entry)
+- Problem: Cell E15 shows 1.548 (or similar) but the same row H15 shows 1540 and nearby years/rows use thousands. E15 should be 1,548 (attendance) not 1.548.
+- Why it’s wrong: decimal mis-entry (or wrong scale) makes ratios and totals incorrect.
+- Fix: Correct the cell to 1548 (or correct original source). If many rows have the same issue, identify values <100 that should be ~1,000+ and multiply by 1,000 before replacing: =IF(A15="BUFORD"AND E15<100, E15*1000, E15) — but manual correction from source is preferred.
+
+3) Student‑Teacher sheet — ratio cells stored as text (e.g., "16-1")
+- Problem: Ratio columns contain text like "16-1" which prevents calculation or sorting.
+- Why it’s wrong: you can’t easily compute averages or verify ratios if they’re text.
+- Fix (compute ratio numerically & format): use an actual computed ratio, e.g.
+  - Numeric ratio (students per teacher): =B7/C7
+  - Display as "16:1" text if needed: =TEXT(ROUND(B7/C7,1),"0.0") & ":1"
+  Replace the text "16-1" with computed value or use a helper column for numeric ratio.
+
+4) Teachers With Advanced Degrees sheet — inconsistent percent format & non‑integer counts
+- Problems:
+  - Early years show percents as numbers like 50.9 (meaning 50.9%) while later years show decimals like 0.4690… (meaning 46.90%) — inconsistent formatting.
+  - Some “Total No.” cells show non‑integers (e.g., 1995.8), indicating a percent × total calculation without rounding.
+- Why it’s wrong: inconsistent units confuse readers; counts must be whole numbers.
+- Fix:
+  - For percent cells that are decimals (0.469...), format as Percentage (Home → Number → Percentage). That will show 46.90% and match the earlier block.
+  - For total teacher counts computed from percent, round to an integer: =ROUND(percent_cell * total_teachers_base,0)
+    Example: if B21 = 0.4690338563 and C21 should be teachers = ROUND(B21 * total_teachers_in_system,0)
+  - If values were entered as "50.9" but meant 50.9%, convert them to decimals by dividing by 100, or format consistently.
+
+5) University sheet — incorrect SUM ranges in Two‑Year totals
+- Problem: Row 15 (Two Year Colleges total) shows formulas like C15 = SUM(C5:C14) etc. That includes four‑year colleges (rows 5–8) and the whole four‑year block instead of only two‑year rows (12–14).
+- Why it’s wrong: totals are inflated / wrong because they sum the wrong rows.
+- Fix: Change those formulas to only sum the two‑year rows:
+  - C15 = SUM(C12:C14)
+  - D15 = SUM(D12:D14)
+  - …and so on for E15:K15
+
+6) SAT (and State test) sheet — obvious outliers / dropped leading digits
+- Problem examples: some SAT cells are two‑digit numbers like 99 or 100 where neighboring years and state averages are ~900–1000 (e.g., D10 = 99, D11 = 100). State test columns show ~200s in some years and 50–70 in others.
+- Why it’s wrong: likely data-entry or import errors (leading digit(s) dropped or wrong scale/metric used in some year columns).
+- Fix:
+  - Spot outliers with conditional formatting or a quick check: =ABS(cell - previous_year_cell) > 200 then flag.
+  - Manually correct from source. If systematic (e.g., whole column lost a leading "9" or "1"), you can restore by adding 900 or 1000 conditionally, but DO NOT auto‑fix without verifying source.
+  - Example detection formula: =IF(cell<200,"CHECK",cell)
+
+7) General: “**” used for missing data
+- Problem: "**" is text and will be ignored by SUM, AVERAGE, etc. This can make totals look inconsistent.
+- Fix: Replace "**" with blanks or NA() depending on your needs:
+  - Blank for omission: clear cell
+  - If you want functions to show NA: use =NA()
+  - If you need to treat missing as zero (rare): replace with 0 (but only if appropriate)
+
+Quick checklist of actions to apply across the workbook
+- Fix wrong SUM ranges (Student‑teacher F56; university totals C15..K15).
+- Correct obvious data entry typos (E15 = 1548; any SAT cells with 2‑digit values).
+- Standardize percent columns: format decimals as Percentage (or divide by 100 if the block uses 50.9 for 50.9%).
+- Convert text ratios to numeric ratios or compute readable text from numeric ratio, e.g. =ROUND(attendance/teachers,1)&":1".
+- Replace "**" with blanks or NA() so formulas behave predictably.
+- Where counts are computed from percentages, use ROUND(...,0) to force integer teacher counts.
+
+If you want, I can:
+- Provide the exact formula corrections for each erroneous cell (I can list them), or
+- Recalculate and show corrected totals for a sheet you pick (Student‑Teacher or University or Teachers adv degrees). Which sheet do you want fixed first?

@@ -1,0 +1,48 @@
+Summary (short): several scoring formulas on sheets Ap1 / Ap2 / Ap3 point at the wrong Rating cells on the Rate sheet (E11:E20). Ap3 also has one IF written with <> instead of =. Those wrong references make the per-question scores and the Summary totals incorrect. Fix the few bad formulas listed below.
+
+What’s wrong (specific):
+- Ap1
+  - L19 references Rate!E14 but should reference Rate!E16.
+  - L32 references Rate!E17 but should reference Rate!E19.
+  - L33 references Rate!E18 but should reference Rate!E20.
+- Ap2
+  - L32 references Rate!E17 but should reference Rate!E19.
+  - L33 references Rate!E18 but should reference Rate!E20.
+- Ap3
+  - L20 uses IF(K20<>2,...) etc (wrong operator and logic). It should use equality checks (IF(K20=2,...)) like the others.
+  - L32 references Rate!E17 but should reference Rate!E19.
+  - L33 references Rate!E18 but should reference Rate!E20.
+
+Correct formulas (replace the bad ones with these)
+
+- Ap1
+  - L19:
+    =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+  - L32:
+    =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+  - L33:
+    =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+- Ap2
+  - L32:
+    =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+  - L33:
+    =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+- Ap3
+  - L20:
+    =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+  - L32:
+    =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+  - L33:
+    =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Why this fixes it (plain):
+- Each L-cell multiplies the question’s Rating (Rate!E11:E20) by a factor based on the user’s selection (K-cell). Those L formulas were pointing to the wrong Rate!E row (an offset/copy-paste error), or in Ap3 L20 used <> so it never matched correctly. Correcting the Rate!E reference and using equality tests makes each L-cell pick the correct rating and compute the right score. Once corrected, the Summary sheet that sums these L-values will be accurate.
+
+Prevention tip (short):
+- Don’t hard-code matching E-cells by hand. Instead use a lookup so the score looks up the rating for the question text. Example pattern:
+  =IF(K16=2, INDEX(Rate!E:E, MATCH(B16, Rate!G:G, 0))*0.33, IF(K16=3, INDEX(Rate!E:E, MATCH(B16, Rate!G:G, 0))*0.66, IF(K16=4, INDEX(Rate!E:E, MATCH(B16, Rate!G:G, 0))*1, 0))))
+  This automatically finds the right Rate row and prevents offset/copy-paste errors.
+
+If you want, I can generate corrected formulas for every L cell using INDEX/MATCH and return a ready-to-paste list.

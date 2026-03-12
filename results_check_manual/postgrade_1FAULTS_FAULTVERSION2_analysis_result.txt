@@ -1,0 +1,29 @@
+I inspected the formulas you included for sheet "PHYS102-0101" and found one concrete formula error and a few inconsistencies/oddities that you may want to review.
+
+1) Clear formula error / likely typo
+- Cell K47 = 100000 (formula: "=25*40*100")
+  - Problem: This multiplies instead of dividing and produces a grossly incorrect outlier (100,000). Given the pattern elsewhere in column K (many entries are percentages computed like numerator/denominator*100), this looks like a typo — likely intended "=25/40*100" (which would yield 62.5) or some other division, not multiplication.
+  - Effect: K47 inflates the column K average. K105 shows Average(K6:K104) = 1340.203125, which is unrealistic for a homework % column because of this outlier. Fixing K47 to the intended percent will substantially change K105.
+
+2) Items worth reviewing (inconsistencies / style issues)
+- Hard-coded decimals vs fraction formulas
+  - Many percentage cells are computed as numerator/denominator*100 (good). Others are entered as literal decimals (e.g., E9 = 86.6 rather than a fraction) or use formulas like "=93.3" (R64). That is not an error per se, but it is inconsistent and may lead to small rounding differences. Consider standardizing to fraction formulas (e.g., 13/15*100) when appropriate so changes to raw scores propagate automatically.
+- Different approaches to converting raw scores to percent
+  - Some cells use "*2" (e.g., F15 "=34.5*2", F23 "=21.5*2", F99 "=46*2") to scale a half-value; others use explicit division-by-max*100. These are OK if intentional, but they are inconsistent stylistically—verify they reflect the intended scaling (e.g., is F15 supposed to be 34.5 out of 50 scaled to 69?).
+- Several cells include trivial formulas like "=100" (S8, S10, S26, S99, S103 etc.)
+  - These are not errors, but have no extra benefit vs entering the static value 100. Only an issue if you expect those to update from raw inputs later.
+- A few values appear rounded/truncated rather than using the full fraction (e.g., R17 = 93.3 rather than 93.333...). Not an error, just inconsistent precision.
+
+3) Recommended corrective actions
+- Immediate: Fix K47. If the intended calculation is percent of 25 out of 40, change to:
+  - =25/40*100  (result 62.5)
+  - If another raw denominator was intended, change accordingly.
+- After fixing K47, recompute averages; K105 should become comparable to other column averages.
+- (Optional) Standardize how percent conversions are done across the sheet:
+  - Use numerator/denominator*100 consistently, or at least document when "*2" scaling is intentionally used.
+  - Replace hard-coded percent numbers with formulas when they originate from raw sub-scores, so the sheet stays consistent and maintainable.
+- (Optional) Normalize precision (for example use ROUND(...) where needed) to avoid variations like 93.3 vs 93.333...
+
+If you want, I can:
+- Apply a suggested correction (e.g., change K47 to =25/40*100) and show the updated averages, or
+- Scan for any additional outlier values programmatically (e.g., all K values > 100) and list them.

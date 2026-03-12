@@ -1,0 +1,41 @@
+Summary of the problems I found (short and concrete), why they matter, and exactly how to fix them.
+
+1) Wrong multiplier (typo) in a per‑recipient formula
+- Error: CWS per-recipient sheet, cell C14 (Louisiana) uses *1880 instead of *1000:
+  Current: =('College Work-Study'!C16*1880)/'College Work-Study'!T16
+- Why it matters: multiplies funding by 1,880 instead of 1,000 → per‑recipient value is wrong by factor 1.88.
+- Fix: change to the correct multiplier:
+  Corrected: =('College Work-Study'!C16*1000)/'College Work-Study'!T16
+
+2) Inconsistent SUM ranges exclude rows (totals wrong)
+- Error: SEOG sheet (and possibly others) uses SUM(P10:P60) / SUM(Q10:Q60) / SUM(R10:R60) while state rows run through row 62 (District of Columbia at row 62). That excludes row 61–62 from totals.
+- Why it matters: program totals (P5/Q5/R5) underestimate totals because last state rows are omitted.
+- Fix: update sums to include all state rows (10:62). Example replacements on SEOG sheet:
+  P5: =SUM(P10:P62)
+  Q5: =SUM(Q10:Q62)
+  R5: =SUM(R10:R62)
+- Also check other program sheets (CWS, Perkins) for any SUM ranges that don't include the full state block and make them consistent (use :P62 etc).
+
+3) Potential division-by-zero or #DIV/0 in per‑recipient sheets
+- Issue: per‑recipient formulas divide funding*1000 by recipients. If a recipient cell is blank or zero, this returns #DIV/0 or an incorrect result.
+- Why it matters: causes errors and breaks downstream percent‑change formulas.
+- Fix: wrap the formula with a safe test or IFERROR. Example pattern:
+  =IF('Program'!RecipientCell>0, ('Program'!FundingCell*1000)/'Program'!RecipientCell, "")
+  or shorter:
+  =IFERROR(('Program'!FundingCell*1000)/'Program'!RecipientCell, "")
+- Apply that to all per‑recipient formulas (all three per‑recipient sheets).
+
+4) Manual/hard‑coded totals mixed with formulas (inconsistency risk)
+- Observation: some U.S. totals (e.g., College Work‑Study C5 = 590399) are hard-coded while other columns are calculated. That can cause maintenance errors and mismatches after updates.
+- Why it matters: manual overrides may become stale and cause wrong per‑recipient averages or percent shares.
+- Fix: audit row‑5 (U.S. totals) and replace any hard-coded totals with consistent formulas (either sum of states or the original source formula). Use Show Formulas (Ctrl+`) to find manual entries, then convert them to formulas or document why they are fixed numbers.
+
+5) General recommendations to prevent similar errors
+- Use named ranges for FundingYears and Recipients (e.g., Funding_1985_CWS, Recipients_1985_CWS) so references are less error‑prone.
+- Use consistent formulas and copy down/right instead of hand‑typing multipliers or ranges.
+- Run Excel Formula Auditing: Show Formulas, Trace Dependents/Precedents, and use Error Checking to find other anomalies.
+- Do a quick sanity check after fixes: compare program totals (row 5) vs sum(row10:row62) and recalc per‑recipient for obvious outliers.
+
+If you want, I can:
+- produce a short list of exact cells with wrong SUM ranges and the exact replacement formulas for each program sheet, or
+- generate the safe IFERROR-wrapped per‑recipient formula for all affected cells (I can show you the copy/paste pattern). Which would you prefer?

@@ -1,0 +1,45 @@
+I checked the workbook and found several clear errors. Below are the problems, why they matter, and simple fixes you can apply.
+
+1) Wrong cell references in Sheet3 column P (student test averages)
+- Problem: many P-row formulas use the wrong last argument (L40, L41, L42, …) instead of the cell in the same row (L4, L5, L6, …). Example: P4 =AVERAGE(D4,F4,H4,J4,L40) — L40 is wrong.
+- Effect: wrong averages or #DIV/0 / wrong numbers in Sheet1 tests (they feed the final grade).
+- Fix: Put this formula in P4 and fill down:
+  =AVERAGE(D4,F4,H4,J4,L4)
+  Then drag/fill that down through P18 so each row uses its own L-row (P5 -> =AVERAGE(D5,F5,H5,J5,L5), etc).
+
+2) Typo in Sheet1 final grade for Scorpion (row 15)
+- Problem: I15 contains (15*25) instead of (F15*25).
+- Effect: I15 becomes massively wrong (375 added) and final grade wrong.
+- Fix: Replace I15 with:
+  =(C15*0.125)+(D15*25)+(E15*25)+(F15*25)+(G15*12.5)
+
+3) Inconsistent / incorrect summary ranges on Sheet1 (High/Low/Class Average)
+- Problems (examples):
+  - C20 (Low Grade) =MIN(C4:C18) — should include C3 (first student) and not include C18 if students are C3:C17.
+  - C21 (Class Average) =MAX(C5:C19) — wrong function and wrong range.
+- Effect: High/Low/Average values are wrong or from the wrong rows.
+- Fix: Use consistent ranges (C3:C17 for homework, D3:D17 for tests, etc). Example corrected formulas:
+  - C19 (High Grade) =MAX(C3:C17)
+  - C20 (Low Grade) =MIN(C3:C17)
+  - C21 (Class Average) =AVERAGE(C3:C17)
+  Repeat the same pattern for other columns (D19/D20/D21 already look OK — just check each to use D3:D17 etc).
+
+4) VLOOKUP scale / table check (Sheet1 J column)
+- Problem: VLOOKUP uses a numeric table in K5:L17. That mapping only works if Final Grade (I) and the thresholds in column K are on the same scale and K is sorted ascending.
+- Effect: If I values are wrong (see errors above), letters will be wrong; if K is unsorted or uses different scale (0–1 vs 0–100) the lookup will give incorrect letters.
+- Fix: After fixing P and I formulas, verify:
+  - Column I produces 0–100 final numeric grade (or 0–1, but then K thresholds must match that).
+  - K5:K17 are sorted ascending and contain the breakpoints in the same scale as I.
+  - VLOOKUP formula can remain =VLOOKUP(I3,$K$5:$L$17,2,TRUE) (TRUE or omitted).
+
+5) Other formula/consistency checks to run (quick checklist)
+- Sheet3 test percent formulas are fine: Dn = Cn/$D$24 etc (ensure D24, F24, J24, L24 contain correct “Total possible” values).
+- After fixing P column, check Sheet1 C3 references Sheet2 P5 (homework average). Note: Sheet2 P values are in 0–100 scale while Sheet3 P values are decimals (0–1). The author handled this by multiplying tests by 25 and participation by 12.5; keep that scheme OR convert everything to the same scale. If you prefer a cleaner approach:
+  - Convert Sheet3 P values to percentages (multiply by 100), then change Sheet1 I formulas to use weights as decimals (0.125, 0.25, 0.25, 0.25, 0.125). Example uniform formula (if all component cells are 0–100):
+    =C3*0.125 + D3*0.25 + E3*0.25 + F3*0.25 + G3*0.125
+
+Summary of the two immediate fixes to make now
+1. Fix Sheet3 P4 -> P18: change each to =AVERAGE(Dn,Fn,Hn,Jn,Ln) and fill down.
+2. Fix Sheet1 I15: replace (15*25) with (F15*25).
+
+After those, recalc and then correct the summary ranges on Sheet1 (use C3:C17, D3:D17, etc) and verify the VLOOKUP scale. If you want, I can give a short script of all corrected cell formulas (copy/paste) for the affected cells.

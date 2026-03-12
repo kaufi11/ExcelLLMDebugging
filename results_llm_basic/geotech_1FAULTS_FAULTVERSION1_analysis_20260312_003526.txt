@@ -1,0 +1,43 @@
+Summary — main problems I found
+1) Many IF checks that should look at the fixed “selection row” (the row that contains the x’s) are using relative references (D2, E2, etc.) instead of absolute/anchored references (for example D$2 or $D$2). That will give wrong results when those formulas are copied down or sideways.  
+2) The file relies heavily on hard‑coded column-to-cell mappings (Data Analysis row 2 formulas pointing to many different input-output cells). That is fragile: any row/column insert or if a mapping is off by one column the whole sheet misreports courses/weights.  
+3) A few small, fixable issues: inconsistent text outputs and typos (e.g. "Fundamntal", "Courss") and some unnecessarily complex SUM formulas (SUM(I5+I9+...) instead of SUM(I5,I9,...) or a contiguous range).
+
+Why these are errors (short)
+- Relative references (D2) change when copied; the formulas that determine whether a course is selected need to always look at the single “selection row” (the row with the x flags). If they move you will test the wrong cell.  
+- Hard‑coded mappings are easy to misalign and hide mistakes. It’s best to point to a named cell/range or use a single row of inputs, referenced consistently.  
+- Typos and inconsistent outputs are not calculation errors but make the sheet harder to audit and may confuse downstream users.
+
+Concrete examples + fixes
+1) Fix relative references to the selection row
+- Problem example (current): =IF(D2="x",0.5,0)  — when copied it becomes =IF(D3="x",...) etc.  
+- Correct (use row anchor): =IF(D$2="x",0.5,0)  — this always tests row 2’s flag in column D.  
+- Better (use a named range): name the row of x flags SelectedCourses then use =IF(INDEX(SelectedCourses,1,COLUMN(D:D))="x",0.5,0) or simpler if you name the cell for CE1030 e.g. CE1030_Flag then =IF(CE1030_Flag="x",0.5,0).
+
+Apply this change everywhere you see formulas of the form IF(<col>2="x",...). Replace <col>2 with <col>$2 (or $<col>$2 if you prefer) to lock the tests to the single selection row.
+
+2) Reduce fragility of the mapping row (Data Analysis row2)
+- Instead of dozens of direct pointers like AM2 ='input-output'!F10, create a small mapping area or named cells:
+  - Example: in input-output create a single row (call it Flags) where each course’s x is consistently placed (or keep the current row but name each flag cell, e.g. CE1030_Flag referring to input-output!D10).  
+  - Then in Data Analysis refer to the named flags. That way one column insertion or row shift won’t misalign everything.
+- If you cannot rename right now, audit row2 carefully: confirm each column (AM2, AN2, AO2, …) points to the correct input-output cell for that specific course. If you find any off-by-one mapping, correct it.
+
+3) Clean up SUM and text comparisons
+- Replace SUM(I5+I9+I10+...) with SUM(I5,I9,I10,...) or if the items are contiguous use a range (SUM(I5:I10)). This is clearer and avoids accidental concatenation/mis-evaluation if a referenced cell becomes text.
+- If you want to be robust about the Y/N input in I48 use UPPER and TRIM: =IF(UPPER(TRIM('input-output'!$I$48))="Y", ... , ...). (Excel string comparisons are normally case-insensitive but using UPPER(TRIM()) prevents problems from stray spaces.)
+
+4) Cosmetic / audit fixes
+- Fix obvious typos ("Fundamntal" → "Fundamental", "Courss" → "Courses") to reduce confusion.
+- Check outputs which display "-" vs "no CE 1030 " and make them consistent.
+
+One short checklist you can run now
+- In Data Analysis, search for all IF(... something like D2="x" ...) and replace D2 with D$2 (or $D$2). Do this for every column test that should always check the same selection row.  
+- Name the selection flags (or at least verify the row2 mapping is correct).  
+- Convert the long SUM(...+...+...) constructions to SUM(range) or SUM(cell,cell,cell).  
+- Add UPPER(TRIM()) to the I48 check if you have any doubt about input formatting.
+
+If you want, I can
+- Produce a short list of exact cells that currently use plain D2/E2/etc. and the exact replacement (D$2) — I’ll need permission to scan for those patterns in the whole workbook.  
+- Or give a sample corrected formula for one full row (e.g., rewrite CL5 and CM5 and the dependent B5) so you can copy it across.
+
+Which would you prefer?

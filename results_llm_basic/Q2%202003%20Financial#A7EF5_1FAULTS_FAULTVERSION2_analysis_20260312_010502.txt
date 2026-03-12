@@ -1,0 +1,39 @@
+I reviewed the workbook and found several concrete formula errors that will produce wrong numbers. Short descriptions, why they’re wrong, and how to fix each:
+
+1) Cash Flow — wrong function (big error)
+- Where: CF sheet, H14 (Loss from continuing operations for the March 31 column)
+- Problem: H14 uses COUNT(H11:H12) instead of SUM(H11:H12). COUNT returns the number of cells (2) not the numeric total of those rows.
+- Fix: replace COUNT(H11:H12) with SUM(H11:H12).
+- Why: this causes all downstream totals in column H (D34/H34 etc.) to be wrong because an incorrect number flows into the reconciliation.
+
+2) Balance Sheet Crib — inconsistent SUM ranges (will cause column mis-totals)
+- Where: BS Crib sheet, row 59 (property, plant & equipment net) — F59 is FORMULA =SUM(F53:F58) while D59 = SUM(D54:D58).
+- Problem: F59 starts the sum at row 53 instead of row 54 (different range than other columns). That includes an extra cell in column F and makes the F-column total inconsistent with other columns.
+- Fix: change F59 to =SUM(F54:F58) so the same rows are summed in every column.
+- Why: inconsistent ranges across columns create mismatched subtotals and break Total Assets consistency.
+
+3) Balance Sheet Crib — inconsistent “Other assets” summation pattern (possible errors)
+- Where: BS Crib, row 98 (Other assets subtotal)
+- Problem: D98 = SUM(D86:D97) but F98 = SUM(F88:F97)+F86 (and G98/H98/J98 similarly). This creates different inclusion patterns across columns and is fragile/unclear.
+- Fix: Standardize to the same contiguous range in every column, e.g. =SUM(F86:F97) (or adjust ranges intentionally and add a comment). Do the same for G98, H98, J98.
+- Why: inconsistent patterns make mistakes likely and make totals hard to audit.
+
+4) Balance Sheet — missing component in Total Assets for D column
+- Where: BS sheet (or BS Crib) D100 (Total Assets)
+- Problem: D100 = D50 + D59 + D98 + D79 but other columns’ total (F100, G100, H100, J100) also include the restricted-securities subtotal (e.g. F64). D100 omits D64.
+- Fix: Change D100 to include D64 as the other columns do: D100 = D50 + D59 + D98 + D79 + D64 (or match the pattern used in other columns).
+- Why: missing a component makes D100 inconsistent with the sums and will create a discrepancy vs Total Liabilities & Equity.
+
+5) P&L — EPS row references / odd adjustment
+- Where: P&L sheet, H51 (Basic EPS: Discontinued Operations line)
+- Problem: H51 = +K69 + 0.01 — that references K69 (six-month EPS) and adds a hard-coded +0.01. That is likely incorrect for the quarter cell (H column) and the +0.01 “fix” is a manual fudge.
+- Fix: Determine intended source for the quarter EPS (should usually be H69 or the quarter numerator/denominator). Replace H51 with the correct reference (for example =H69) and remove the +0.01 fudge. If rounding led to mismatch, use ROUND() consistently instead of hard-coding.
+- Why: referencing the wrong column and adding a hard-coded adjustment produces wrong EPS and hides the root cause of rounding differences.
+
+Extra suggestion (general):
+- Audit all SUM ranges column-by-column to ensure they start/end on the same rows in every column (many places in the crib sheets use different start rows). Make sums strictly consistent or document why a column is different.
+- Replace stray hard-coded adjustments (like +0.01) with proper formulas (ROUND, or consistent rounding rules) and add comments explaining any intentional one-time adjustments.
+
+If you want, I can:
+- Produce the exact corrected formulas for each affected cell and list every inconsistent SUM I find,
+- Or apply the fixes and send back a redline (list of changed cells and before/after values). Which would you prefer?

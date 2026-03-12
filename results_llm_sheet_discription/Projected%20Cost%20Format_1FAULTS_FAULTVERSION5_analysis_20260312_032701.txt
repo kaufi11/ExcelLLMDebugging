@@ -1,0 +1,43 @@
+Summary of the errors I found and short fixes
+
+1) Wrong function for Other Activities grand total (Sheet: Seq Production Costs)
+- Error: cell G21 contains =COUNT(G19:G20). That returns the count of numeric cells (e.g., 0, 1, or 2) instead of the dollar total for Other Activities.
+- Effect: G21 is not the dollar grand total, so
+  - H13:H18 (percent of Other Activities) divide by the wrong number and show incorrect percentages,
+  - B23 (One Year Total Costs) adds an integer count instead of the dollars from Other Activities, and
+  - any other calculations that use G21 are wrong.
+- Fix: Replace the formula in G21 with a SUM:
+  - G21 → =SUM(G19:G20)
+- Why this fixes it: SUM returns the dollar total (direct + indirect) for Other Activities so percentages and the One Year Total will be correct.
+
+2) Possible divide-by-zero errors on Tech Dev and Bioinformatics sheets
+- Error: B18 on Tech Dev and B18/B31/B44 on Bioinformatics are formulas dividing by B6 (the declared Total funds requested). B6 is currently 0, which causes #DIV/0 errors or wrong results if users leave B6 blank/zero.
+- Effect: visible #DIV/0 or invalid percent results until the total B6 is entered.
+- Fix (two options):
+  - Require users to enter the Total funds requested in B6. (Fastest.)
+  - Or make the formulas safe from division by zero. Example change:
+    - B18 → =IF($B$6=0,"",B17/$B$6)  (returns blank when B6 is zero)
+    - Or → =IF($B$6=0,0,B17/$B$6)  (returns zero when B6 is zero)
+    - Apply same pattern to B31 and B44 on the Bioinformatics sheet.
+- Why: avoids errors and gives clearer output when the total is not yet entered.
+
+3) Minor consistency / display notes (optional)
+- Cells C21, E21 and H21 are set to a literal 1 to show that the subtotal equals 1 (100%). That’s OK but consider formatting as Percentage (100%) or using an explicit formula (=1 or =SUM(...) / SUM(...)) for clarity.
+- Recommendation: Protect gray (formula) cells to prevent accidental overwrites by users.
+
+Quick checklist to implement fixes
+1. Seq Production Costs sheet:
+   - Change G21 to: =SUM(G19:G20)
+   - Verify H13:H18 now show correct percentages (they use G21 as denominator).
+   - Verify B23 now equals B21 + D21 + G21 (dollars).
+
+2. Tech Dev sheet:
+   - Either enter the total in B6 or replace B18 with: =IF($B$6=0,"",B17/$B$6)
+
+3. Bioinformatics sheet:
+   - Either enter the total in B6 or change:
+     - B18 → =IF($B$6=0,"",B17/$B$6)
+     - B31 → =IF($B$6=0,"",B30/$B$6)
+     - B44 → =IF($B$6=0,"",B43/$B$6)
+
+If you want, I can give the exact cell-by-cell replacement formulas for your workbook or make the formulas return 0 instead of blank — tell me which you prefer.

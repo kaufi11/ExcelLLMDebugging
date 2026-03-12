@@ -1,0 +1,23 @@
+I reviewed the workbook. I found one clear formula error plus a couple of potential problems you should protect against. Short answers and fixes below.
+
+1) Wrong hard-coded number in Balance of Business (causes a wrong %)
+- Where: Sheet "Balance of Business", cell C10
+- Problem: formula is =189/B$15 (hard-coded 189) instead of using the B10 value. This returns a wrong percentage and will not update if row 10 sales change.
+- Fix: replace the formula with =B10/B$15
+- Why: you want C10 to be Sales (row 10) divided by the total (row 15). Using the cell reference keeps the value dynamic.
+
+2) Suggested robustness improvements (avoid #DIV/0! and make copying safer)
+- Divide-by-zero protection for the percent columns (C, E, G, I, K): use
+  =IF($B$15=0,"",B5/$B$15)
+  or
+  =IFERROR(B5/$B$15,0)
+  depending on whether you prefer a blank or zero when the total is 0.
+- Make the denominator fully absolute if you copy formulas across columns/rows: use $B$15 (or $D$15 etc as appropriate). Example for column C: =IF($B$15=0,"",B5/$B$15). For column E (percent of D column): =IF($D$15=0,"",D5/$D$15).
+
+3) Quick checklist (other things to verify)
+- Ensure totals row B15, D15, F15, H15, J15 are correctly calculated before percentages; a wrong total will make all %s wrong.
+- Confirm any literal numbers (like the 189) elsewhere were not intentional – replace them with cell references if they should come from table data.
+
+If you want, I can:
+- provide the exact Find/Replace steps to correct C10 and any similar hard-coded values,
+- or scan the whole workbook for other hard-coded constants and replace them with references.

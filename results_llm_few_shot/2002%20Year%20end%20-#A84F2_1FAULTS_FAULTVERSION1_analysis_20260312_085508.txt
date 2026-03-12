@@ -1,0 +1,34 @@
+I reviewed the workbook and found a few clear, material formula errors that will make totals and cash flows wrong. Short summary with fixes and brief explanations:
+
+1) Faulty cell: C92 (Other operating costs — 2002)
+- Error: Wrong formula / omission. C92 is hard-coded =0 while the detail rows C93:C98 contain amounts.
+- Problem: Those costs are excluded from total expenditure, so totals (C100, C102, C327, etc.) are understated.
+- Fix: replace with: =SUM(C93:C98)
+- Why: Other operating costs must be the sum of the detail lines beneath it.
+
+2) Faulty cell: C122 (Cash (applied to) / generated from operations — cash flow)
+- Error: Hard‑coded value (-26908) instead of linking to the reconciliation result (the reconciliation is computed at C511).
+- Problem: The cash flow statement is out of sync with the working‑paper reconciliation.
+- Fix: replace with: =C511
+- Why: C511 is the reconciliation subtotal (SUM of C504:C510). The cash flow line should reference that cell so any changes update the cash flow automatically.
+
+3) Faulty cell: C121 (Cash paid to suppliers and employees)
+- Error: Manual formula using hard‑coded numbers (= -26907-7561074), and it does not link to supporting schedules. Also one of the constants (7561074) differs by 1 from C120 (7561073) — likely a typo.
+- Problem: Manual/hardcoded amounts cause mismatches and are error‑prone.
+- Fix: Replace the hardcode with a proper link to the supporting detail. If you have a payments schedule, use e.g. =-SUM(payments_range). If no schedule, at minimum make it consistent with the source: =-C120 (only if that is intended) or enter the correct figure (e.g. =-7561073).
+- Why: Always drive summary lines from source/detail cells so totals reconcile and typos are avoided.
+
+4) Faulty cells: H54/H63 (and H column copies)
+- Error: H54 and H63 are set to =+E54 and =+E63 respectively (they copy the previous-year column instead of the current-year column or intended amounts).
+- Problem: H54:H69 are then summed into H70 and used elsewhere (I70 uses H70). This likely pulls the wrong year's numbers into derived calculations.
+- Fix: Decide the purpose of the H column. If H should mirror the current-year C column use =C54 (and C63). If it should mirror the E column, keep as is but check downstream uses. Example fix (if H should be C-year): H54: =C54 ; H63: =C63
+- Why: Mixed-year references produce inconsistent subtotals.
+
+5) Secondary consequence — update dependent totals
+- After fixing C92 and C122 (and C121 if you change it), recalc/update these dependent totals:
+  - C100 (=C92+C78), C102 (=C74-C100), C327 (=C102 on notes), C117 (sum of C122:C125), C144 (=C136+C129+C117), C147 (=C144+C145), C23 (total assets), C42 (total equity & liabilities) and any ratios in the 5‑year review that reference those totals.
+- Why: Those totals rely on the corrected lines; one error cascades.
+
+If you want, I can:
+- give an exact list of all cells that will change when we fix C92 and C122, or
+- produce the exact corrected formulas and updated totals (tell me whether H-column should be current-year or prior-year and whether you want C121 linked to a specific payments range).

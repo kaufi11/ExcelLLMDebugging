@@ -1,0 +1,27 @@
+Summary of the errors
+1) Wrong arithmetic in J41. It contains "553-B41" instead of subtracting the Moraine Crest (I41). This yields a wrong ice thickness for row 41.  
+2) Division-by-zero (or #DIV/0!) risk in column F for the early rows (F38, F39, etc.). Those F formulas divide by H of the previous row (H37 = 0 for row 37 seed), or use blank shape/shear values, causing errors. (The iterative formula in F is only valid after the first seeded rows.)
+
+Why these are problems (short)
+- J41: a literal wrong number (553) was used — it should be I41 - B41.  
+- F38/F39: H37 = 0 (seed row) and/or missing C/D values makes E/(Hprev * C) invalid → divide by zero or meaningless result, breaking the iteration.
+
+How to fix (exact formulas you can paste)
+1) Fix J41:
+Replace the contents of J41 with:
+=I41 - B41
+
+2) Prevent the divide-by-zero in column F (recommended general fix for every F row):
+Replace the existing F-formula with a guarded version so it only computes when the divisor is valid. For example, in F40 (and copy down to all F rows) use:
+=IF(H39*C40=0,"",22.1*(E40/(H39*C40))*D40)
+
+Or, if you prefer zeros instead of blanks:
+=IF(H39*C40=0,0,22.1*(E40/(H39*C40))*D40)
+
+If you only want to remove F formulas in the two seed rows, simply clear F37:F39 (leave G37:G39 set to I37:I39 as seeds).
+
+Notes / explanation (short)
+- J formulas compute moraine-derived ice thickness as I - B. Replacing the mistaken literal (553) with I41 fixes that row.  
+- The model is iterative: each F uses H from the previous row. Seed rows (first three) supply known values; the iterative calculation must begin at the row after the seeded rows. Wrapping the F formula with IF prevents division by zero and keeps the sheet stable.
+
+If you want, I can produce the exact formulas for the whole F/G/H/J columns ready to paste (including copy-down rules), or correct the file if you share it.

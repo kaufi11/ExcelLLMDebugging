@@ -1,0 +1,87 @@
+High-level overview — structure, flow, key inputs and formulas
+
+Overall
+- Workbook models a multi-year lemonade business (columns E:P represent years 2002–2013). Many sheets are interlinked: Income → Cashflow, Income → Balance Sheet, Depreciation → Income / Balance Sheet / Cashflow. Inputs are grouped (noted “Inputs are in blue”) and absolute references ($D$...) are used to propagate parameters across years.
+- Calculation flow: production & pricing → revenue (online vs street) → COGS (lemons, sugar) → gross profit → fixed costs + depreciation → net profit → cashflow and balance sheet accumulation.
+
+Sheet-by-sheet summary
+
+1) Income (primary model)
+- Header: title in B1 and years in E2:P2.
+- Stats block (rows 3–8): core inputs and growth drivers:
+  - D3 = 0.05 (growth rate for volumes), E3 = 200,000 (cups produced in first year). Volume for later years driven by formulas that multiply prior year by (1 + $D$3).
+  - D4 = 0.08/12 (used as monthly price inflation factor), E4 = 4 (initial lemonade price per cup). Price escalates across years by (1 + $D$4).
+  - D5 = 0.2 cups sugar per cup, D6 = 1 lemons per cup.
+  - E7 = 0.55 (lemon price) and E8 = 0.375 (sugar price) escalate by the same inflation flag in D7/D8 pattern.
+- Revenue (rows 10–13):
+  - D10 = 0.4 (share online). Revenue = share * cups * price. Street sales use 1 - D10.
+  - Totals in row 12 (monthly) and row 13 annualized = monthly * 12.
+- COGS (rows 15–17):
+  - Lemons = quantity * lemon price; Sugar = cups * sugar per cup * sugar price. Row 17 = sum of COGS.
+- Gross Profit (row 19) = Total revenue (row12) – COGS (row17); row20 annualizes gross profit.
+- Fixed expenses (rows 22–29): list of monthly fixed costs with many repeated across years:
+  - General Manager E22 = 7,500; Credit Card Services monthly 75; Web-hosting reference $D$24 = 500; Advertising 2,500, Insurance 250, Benefits = 25% of manager (E27 = E22*0.25); Legal E28 = 50,000.
+  - Row29 sums fixed costs by year.
+- Depreciation (row 31) pulls Depreciation!E7:P7.
+- Net Profit (row 33 monthly) = Gross Profit – Fixed costs – Depreciation. Row 34 annualized = monthly * 12.
+- Note: many formulas use absolute references ($D$3, $D$4, $D$5, $D$6, etc.) so changing a single input propagates across columns.
+
+2) Balance Sheet
+- Title pulls Income!B1. Years across row4 reference Income!E2:P2.
+- Current assets (cash) in row6: E6 = Cashflow!D13 (starting cash from cashflow); subsequent years add each year’s Cashflow!E13 etc. Lemon inventory rows exist but set to zero.
+- Long-term assets and accumulated depreciation: original value references D14 cell (loan?) and values are drawn from Depreciation sheet (Depreciation!E7 etc.). Balance sheet value for fixed assets (row10) pulls Depreciation!E8:P8.
+- Liabilities: C14 label Lear Jet Finance Co. D14 = 1,000,000 initial; E14 onward adds Cashflow!E9 etc. Total liabilities row sums.
+- Equity:
+  - Initial investment D18 = 1,200,000 (E18 onward propagate).
+  - Retained earnings row19 cumulative: E19 = Income!E33 (first year), F19 = Income!F33 + previous retained earnings, etc.
+  - Total equity row20 = sum of initial investment + retained earnings components.
+- Assets = Liabilities + Equity check in row22 (E22 = E15 + E20).
+
+3) Cashflow
+- Title and year headers reference Income.
+- Cash From Operations (row6) = Income!E33:P33 (net profit monthly).
+- Depreciation row pulls Depreciation!E7:P7.
+- Cash From Investments (row9) has repeated -100,000 outflows (investment purchases).
+- Cash From Financing row11 pulls Balance Sheet !E18 (initial investment / financing).
+- Net Change In Cash (row13) = SUM(D6:D12) per period; E13 onward sums the corresponding columns.
+- Net change values feed the Balance Sheet cash accumulation.
+
+4) Depreciation
+- Title and years drawn from Income.
+- Asset values pull from Balance Sheet original value (Balance Sheet!D8).
+- D7 (useful life) = 7 (years).
+- Depreciation schedule:
+  - Value at Beginning row (E6:P6) linked to Balance Sheet values.
+  - Annual depreciation E7:P7 = IF(value at beginning > 0, $D$6 / $D$7, 0) — fixed straight-line amount based on D6 (original value) divided by life D7, repeated while value at beginning > 0.
+  - Value at End = Value at Beginning – Depreciation.
+  - Total accumulated depreciation built in row11 cumulatively.
+- Depreciation outputs feed Income (row31) and Cashflow.
+
+5) simple income
+- A simplified monthly replica: dates in E2:P2, revenue in row4 (E4 = 1,000 monthly), COGS lemons & sugar preset (E7 = 500, E8 = 250), totals and monthly gross profit (E11) and a single monthly fixed cost (consultant mom E13 = 25). Net profit row E15 = gross profit – fixed cost; E16 annualizes *12.
+
+6) RoadMap
+- Visual / mapping sheet: labels and references showing relationships among Income, Cashflow, Balance Sheet, Depreciation, and primary items (Revenue, Expenses, COGS, Assets, Liabilities, Equity, etc.). It’s a guidance/diagram sheet mapping where numbers flow.
+
+Key constants and starting values (most important)
+- Growth rate (volume): D3 = 0.05
+- Starting cups produced: E3 = 200,000
+- Starting price per cup: E4 = 4
+- Sugar per cup: D5 = 0.2
+- Lemons per cup: D6 = 1
+- Lemon price: E7 = 0.55
+- Sugar price: E8 = 0.375
+- Online sales share: D10 = 0.4
+- Fixed monthly: General Manager 7,500; Web-hosting 500; Advertising 2,500; Legal 50,000; Insurance 250; Benefits = 25% of manager.
+- Initial loan: D14 = 1,000,000. Initial investment: D18 = 1,200,000.
+- Depreciable asset life: D7 = 7; depreciation is straight-line from Depreciation sheet.
+
+Notes on structure and patterns
+- Years are laid out left→right (E:P). Most rows are filled across with simple copy-forward formulas or references to prior columns.
+- Many formulas use absolute references for core inputs (e.g., $D$3, $D$4, $D$5) so model sensitivity is centralized.
+- Inter-sheet links: Income is the primary driver; Cashflow and Balance Sheet accumulate Income results; Depreciation is calculated on Balance Sheet asset values and returned to Income/Cashflow.
+
+If you want, I can:
+- produce a simplified flow diagram of dependencies,
+- extract a short list of the actual numerical results for year 1 (2002) for revenue, COGS, gross profit, fixed expenses, depreciation, net profit, or
+- recommend corrections/cleanups (some formulas look inconsistent, e.g., one volume formula uses *(45+$D$3) which is likely a typo).

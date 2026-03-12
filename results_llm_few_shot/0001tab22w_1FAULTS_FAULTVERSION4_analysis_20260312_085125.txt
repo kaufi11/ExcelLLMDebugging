@@ -1,0 +1,36 @@
+Summary — main errors found
+1) Misaligned data (wrong columns)
+   - Several rows have grade percentages entered in the wrong columns (extra values in F, H, Z, etc.). Your percent formulas in O and AC reference E, G, I, K, M (lower) and S, U, W, Y, AA (upper). If values are entered in adjacent columns (F, H, Z …) they are ignored and the "Other" / remainder is wrong.
+
+   Example: row 18 (Education) contains values in F18 and H18 which shift the pattern; Engineering uses Z22. Those misplaced numbers will make O18/O22 etc. compute incorrect remainders.
+
+   Fix: move the misplaced numbers into the correct columns so each row matches the header layout (Lower: E = A, G = B, I = C, K = D, M = F/WF; Upper: S = A, U = B, W = C, Y = D, AA = F/WF). After moving, re-evaluate O/AC values.
+
+   Quick ways to find/fix:
+   - Select columns F, H, Z, etc. and apply Conditional Formatting to highlight non-empty cells, or use =COUNT(F6,H6,...) helper to flag rows with unexpected entries.
+   - Cut the entries and paste into the proper target column, then clear the wrong cell.
+
+2) Incorrect operator in TOTAL UNIVERSITY Other (O30)
+   - O30 is: =SUM(100+(E30+G30+I30+K30+M30))
+   - Error: uses + instead of -, so it returns >100 (wrong other/remaining percent).
+
+   Fix formula: =100 - SUM(E30,G30,I30,K30,M30)
+
+3) Formulas use SUM(100-(...)) — confusing and error-prone
+   - Many cells use formulas like =SUM(100-(E6+G6+I6+K6+M6)). While Excel will compute this, it is harder to read and invites mistakes (as happened in O30).
+   - Recommended replacement (clearer and safer): =100 - SUM(E6,G6,I6,K6,M6)
+   - For upper-level "Other": =100 - SUM(S6,U6,W6,Y6,AA6)
+   - Apply this consistently to all O and AC rows (and the O31/O32 etc.).
+
+Additional suggestions
+- If rounding causes small negative/positive remainders, use =MAX(0,100 - SUM(...)) so "Other" never shows a negative.
+- Use data validation to restrict percentage entries to numeric and a sensible range (0–100) to avoid stray text like "n/appl" in numeric cells.
+
+One-line repair formulas (examples)
+- Lower Other (row 6): =100 - SUM(E6,G6,I6,K6,M6)
+- Upper Other (row 6): =100 - SUM(S6,U6,W6,Y6,AA6)
+- Total University Other (row 30): =100 - SUM(E30,G30,I30,K30,M30)
+
+If you want, I can:
+- Produce a list of every cell that currently contains entries in unexpected columns (F, H, Z, etc.), or
+- Provide the corrected formulas for every O/AC cell in the sheet. Which would you like?

@@ -1,0 +1,49 @@
+Short summary of the problems I found and clear fixes.
+
+Main errors (highest priority)
+1) Beginning inventory has a stray negative sign (Formulas sheet)
+- Error: C30 = -B7 (gives a negative beginning inventory). This breaks the COGS schedule and everything downstream.
+- Fix: change C30 to =B7 (or =+$B$7). Explanation: beginning inventory for the first forecast month should be the 7/31 inventory (positive), not negative.
+
+2) Operating expense rows and totals are mis‑aligned / mixed across columns
+- Symptoms:
+  - The per‑item operating expense formulas are in columns B (for August) and D (for September) but the totals are in C24 and E24 and use SUM(B21:B24) and SUM(D21:D24).
+  - The label in A24 says "Insurance expense" while C24 actually contains the TOTAL — label and value are mismatched.
+- Consequence: the worksheet is very confusing and easy to break; if you or someone later updates the components in column C they won't be included in the total.
+- Fix (pick one of two consistent approaches):
+  Option A (recommended — align months to columns C and E)
+   - Move the expense item formulas from B21:B24 → C21:C24 (for August) and from D21:D24 → E21:E24 (for September).
+   - Change the totals to sum those columns:
+     - C24 (total operating expenses for August) → =SUM(C21:C24)
+     - E24 (total operating expenses for September) → =SUM(E21:E24)
+   - Remove the old formulas in B21:B24 and D21:D24 (or clear those columns).
+   - Verify C25 and E25 (Operating income) still refer to the total cells (C24/E24).
+   Explanation: keep each month's data in the same column so totals and labels line up.
+
+  Option B (less recommended — keep current layout)
+   - If you want to keep item values in B/D and totals in C/E, at minimum change the A24 label from "Insurance expense" to "Total operating expenses" and ensure the insurance amounts remain in B24 and D24. (This is confusing so I do not recommend it.)
+
+Other inconsistent / suspicious formulas (review these)
+3) Ending inventory references and "next period" sales
+- C33 = ROUND($B$4 + $B$5 * E17, -3) — this uses the next period (E17) which is correct if C is August and E is September. E33 = ROUND($B$4 + $B$5 * B8, -3) uses B8 (October sales). These are OK if B8 truly holds October sales. Just be sure your month-to-column mapping is consistently applied. If you add more months, change references to use the cell that contains the next month’s sales rather than hardcoding B8.
+
+4) Misc. mixed-column references in the collections / disbursements area
+- Examples: F38 = +E38 + C37, F42 = +D42 + B41, F44 = +D44 + B43
+- These mix columns (B/C/D/E) and look wrong (C37, B41, B43 may be blank or labels). Review these formulas and ensure they add “current month” + “prior month” values using the same column pattern you adopt for months (e.g., current month in C or E and prior month in the column to the left).
+
+Quick checklist of the exact corrections I recommend you make now
+1. Change C30 from =-B7 to =B7 (or =+$B$7).
+2. Move per-month operating expense formulas into the same month columns:
+   - C21 = ROUND($B$9 + $B$10 * C17, -3)
+   - C22 = $B$11
+   - C23 = $B$12
+   - C24 = $B$13   (these are the four items for August)
+   - Then make a separate cell for the total, e.g. C25 = SUM(C21:C24), and change the downstream formulas that referenced C24 to now reference C25 (Operating income etc.).
+   - Repeat for September in E21:E25 (E21 uses E17 for commissions).
+   Note: if you prefer minimal change, instead copy B21:B24 → C21:C24 and D21:D24 → E21:E24, then update the total formulas:
+     - C24 = SUM(C21:C24)
+     - E24 = SUM(E21:E24)
+     and leave subsequent formulas as they are.
+3. Review and correct the collections/disbursements formulas (F38, F42, F44 and any similar) so they use the correct cell addresses for current and prior month amounts.
+
+If you want, I can produce an exact corrected formula map (showing every cell that should change) and a minimal change script you can paste in VBA or apply step‑by‑step. Which would you prefer?

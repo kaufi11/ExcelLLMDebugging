@@ -1,0 +1,55 @@
+I inspected the workbook formulas and found several clear formula errors (wrong functions and wrong ranges) that propagate incorrect numbers into the final grades. Summary of the problems and recommended fixes below.
+
+Main problem (causes inflated D values and wrong final grades)
+- Sheet3!P4
+  - Current formula: =SUM(D4,F4,H4,J4,L40)
+  - Problems: uses SUM instead of AVERAGE, and references L40 (out of the student rows) instead of L4.
+  - Effect: P4 becomes ~3.59 (sum of five ~0.9 figures) instead of ~0.9; that wrong number flows to Sheet1 column D via =Sheet3!P4 and inflates final numeric grades.
+  - Fix: change to =AVERAGE(D4,F4,H4,J4,L4)
+
+Systematic offset errors in Sheet3 P column (all student rows)
+- Sheet3!P5..P18
+  - Current pattern: =AVERAGE(D5,F5,H5,J5,L41), =AVERAGE(D6,F6,H6,J6,L42), ..., =AVERAGE(D18,F18,H18,J18,L54)
+  - Problem: the last argument uses L41..L54 (row-offset) instead of the corresponding L5..L18 cells. This produces wrong student average values in column P.
+  - Fixes: update each P row so it averages the five percentage cells in that same row. For example:
+    - P5 => =AVERAGE(D5,F5,H5,J5,L5)
+    - P6 => =AVERAGE(D6,F6,H6,J6,L6)
+    - ...
+    - P18 => =AVERAGE(D18,F18,H18,J18,L18)
+
+Downstream effect
+- Sheet1 column D (Test percentage) is populated from Sheet3 P4:P17. Because P4:P17 are wrong, Sheet1 D3:D17 are wrong and therefore Sheet1 I3:I17 (final numeric grade calculation) and the VLOOKUP letter grades are also wrong (e.g., I3 = 157.255 is a symptom of the incorrect D3 value of ~3.59).
+
+Other inconsistent / incorrect formulas (summary rows on Sheet1)
+- Sheet1!C20
+  - Current formula: =MIN(C4:C18)
+  - Problem: inconsistent range; student rows are C3:C17. Use the same student row range as other summary formulas.
+  - Fix: =MIN(C3:C17)
+
+- Sheet1!C21
+  - Current formula: =MAX(C5:C19)
+  - Problems: wrong function (MAX) and wrong range. This cell is labeled "Class Average" but uses MAX and wrong rows.
+  - Fix: =AVERAGE(C3:C17)
+
+Check other Sheet1 summary formulas for consistent row ranges
+- D21, E21, F21, G21 and I21 currently look like =AVERAGE(...) with D3:D17 etc — these are correct. But verify each summary formula uses the exact student block range C3:C17 (or D3:D17, etc). Replace any occurrences of shifted ranges (C4:C18, C5:C19, etc) with the canonical student-range.
+
+Other notes / minor items
+- VLOOKUP(...,TRUE()) is syntactically valid (TRUE() returns TRUE), but simpler is VLOOKUP(I3,$K$5:$L$17,2,TRUE).
+- There are header text typos (e.g., "Studnets", "Higest Grade") — harmless but may be confusing.
+- After correcting Sheet3 P formulas, re-check Sheet1 summary rows (High/Low/Average) — the incorrect P values likely caused those to show wrong maxima/minima/averages.
+
+Recommended action plan (minimal steps)
+1. Fix Sheet3!P4 as shown above (change SUM(L40) to AVERAGE with L4).
+2. Fix Sheet3!P5:P18 to reference L5:L18 respectively (use =AVERAGE(Dn,Fn,Hn,Jn,Ln) for each n = 5..18).
+3. On Sheet1, correct the class summary formulas so they consistently use the student row block C3:C17 (and D3:D17, etc). In particular change:
+   - Sheet1!C20 => =MIN(C3:C17)
+   - Sheet1!C21 => =AVERAGE(C3:C17)
+   - Review and correct any other summary formulas that use shifted ranges.
+4. Recalculate and verify Sheet1 I3:I17 and J3:J17 (final numeric and letter grades) are now sensible.
+
+If you want, I can:
+- produce the exact corrected formulas for every affected Sheet3 cell P4:P18 and the Sheet1 summary cells, or
+- (if you prefer) output a small script/list of cell -> replacement-formula pairs you can apply.
+
+Which would you like?

@@ -1,0 +1,67 @@
+High-level summary of the workbook (concise):
+
+Sheets (4)
+1) Errors
+- Purpose: Illustrates the effect of an inventory counting error (understated vs overstated ending inventory) on COGS, gross profit, taxes and net income in Year 1 (error year) and Year 2 (correction year).
+- Layout: Column A contains labels/row headers (Beginning Inventory, Purchases, Sales, Expenses, Taxes, Year headers). Columns B = “Correct” (baseline), D = “Understating” scenario, F = “Overstating” scenario. Years are split: Year 1 rows ~A5–A21, Year 2 rows ~A24–A40.
+- Key values:
+  - Beginning inventory = 100,000 (B8/D8/F8)
+  - Purchases Year1 = 500,000 (B9/D9/F9)
+  - Ending inventory (correct) = 150,000 (B11), understated = 125,000 (D11), overstated = 175,000 (F11)
+  - Sales Year1 = 1,000,000; Expenses = 100,000; tax rate = 40%
+- Key formulas:
+  - Goods available = SUM(beginning, purchases) (e.g., B10 = SUM(B8:B9))
+  - COGS = Goods available + (-Ending inventory) (B12 = SUM(B10:B11))
+  - Gross profit = Sales + (–COGS) (B17 = SUM(B15:B16) with B16 = -B12)
+  - Taxes = -Pretax * 0.4 (B20 = -B19*0.4)
+  - Year 2 beginning inventory often pulls the prior-year ending inventory via negative references (e.g., B27 = -B11)
+- Notes: Year 2 purchases differ (600,000). The sheet shows labels D22/F22 and D41/F41 indicating which scenarios produce understated/overstated net income in which year.
+
+2) Valuing Ending Inventory
+- Purpose: Detailed illustrations of inventory valuation methods: weighted average (periodic), FIFO periodic, LIFO periodic, moving average perpetual, FIFO perpetual, LIFO perpetual.
+- Data inputs (common across methods):
+  - Beginning purchases: 1,000 units @ $5 and 6,000 units @ $5.25
+  - Purchases: 5,000 @ $5.50 (1/11) and 5,000 @ $5.75 (1/30)
+  - Sales: -4,000 (1/5) and -7,000 (1/25)
+- Layout: Large multi-block sheet. Each method has its own block with columns for Units, Unit Cost, Extended Cost and running totals. Uses columns A–K in different blocks (Weighted Average blocks at top, then FIFO/LIFO periodic, moving average perpetual, FIFO/LIFO perpetual).
+- Key formulas/patterns:
+  - Extended cost = Units * Unit cost (e.g., E8 = C8 * D8)
+  - Totals via SUM across unit and extended columns (e.g., C10 = SUM(C8:C9), E10 = SUM(E8:E9))
+  - Weighted average unit cost = Total cost / Total units (e.g., J10 = K10 / I10 or similar)
+  - Periodic vs perpetual: periodic calculates ending inventory/COGS after the period using aggregated averages or layer consumption; perpetual recalculates unit cost after each purchase (moving average) or consumes specific layers (perpetual FIFO/LIFO logic via remaining units formulas).
+- Notable references/techniques:
+  - Use of absolute row references (e.g., I$8, K$8) to pull beginning-layer totals into later blocks.
+  - Several intermediate cells compute remaining units per lot (e.g., F37 = C37 + E37).
+- Items to review: a few cells flagged or empty/questioned (e.g., K11 and K12 show “?”), and some cells use formula text with leading + signs (cosmetic but harmless). Some formulas reference cells like E47, E63, E79 to compute ending inventory/COGS across blocks—follow those links when auditing.
+
+3) NetIncome and Cash Flow
+- Purpose: Maps how different inventory methods affect reported Net Income, taxes, cash flows and “holding profit” in ending inventory (future profit when remaining inventory is sold).
+- Layout: Method columns across B–G (Periodic: Weighted Average, FIFO, LIFO; Perpetual: Moving Average, FIFO, LIFO). Top section: Net Sales, COGS (method-specific), Gross Profit, Pretax, Taxes (40%), Net Income. Lower section: Cash Flows (Cash from sales, cash for purchases, cash for taxes → Net cash flow). Further section: Holding Profit (value held in ending inventory if sold later) and GP% calculations.
+- Key values:
+  - Net sales = 110,000 (B20:G20)
+  - COGS examples (method differences): B21 = -60,014.71; C21 = -58,500; D21 = -61,500; E21 = -58,607.14; F21 = -58,500; G21 = -59,000
+  - Cash for purchases constant = -56,250 across methods
+- Key formulas:
+  - Gross profit = Sales + COGS (e.g., B22 = SUM(B20:B21))
+  - Taxes = -GrossProfit * 0.4 (B25 = -B22*0.4)
+  - Net income = Pretax + Taxes (B26 = SUM(B24:B25))
+  - Cash flows: cash from sales = sales; cash for taxes = tax cell; net cash flow = SUM(sales, purchases, taxes)
+  - Holding profit = Future sales (6000*10) + Future COGS (formula referencing prior COGS) to compute future profit embedded in ending inventory
+- Notes: Calculates historical vs future GP% and flags best net / best cash columns.
+
+4) Sheet3
+- Empty or placeholder (no content provided).
+
+General technical notes
+- Common formulas: SUM ranges, multiplication for extended cost, simple arithmetic signs (many cells store negatives explicitly as negative constants or via unary minus), use of absolute row references (e.g., I$8, K$8) to carry beginning-layer values into multiple method blocks.
+- Cross-block linking: several blocks reference computed totals from other areas (e.g., goods available totals feeding weighted-average unit cost; periodic ending inventory feeding next-period beginning balance).
+- Minor issues to check when auditing:
+  - Cells flagged with “?” (K11, K12) — incomplete formulas.
+  - Several formulas include redundant leading + signs (harmless but inconsistent).
+  - Negative/positive conventions: many beginning/ending inventory transfers use negation (e.g., B27 = -B11), so be careful when tracing signs.
+  - Ensure consistency between periodic and perpetual block references (some manual transfers of intermediate results exist).
+
+If you want, I can:
+- Trace any specific formula dependencies,
+- Provide a short audit (identify broken/missing formulas),
+- Or produce a simplified one-page summary of method outcomes (COGS, net income, cash) for presentation.

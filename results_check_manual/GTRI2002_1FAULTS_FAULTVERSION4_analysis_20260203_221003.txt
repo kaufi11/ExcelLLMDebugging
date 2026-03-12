@@ -1,0 +1,27 @@
+I checked the workbook pieces you sent. I found a couple of clear formula/data errors and a few things to verify. Short, actionable fixes below.
+
+1) Wrong conversion (big numeric error)
+- Where: Sheet "2002 Report", cell C18  
+- Problem: C18 has the formula =G18*1000000 but every other C-row is converting pounds to millions by dividing by 1,000,000. Multiplying here produces a massively wrong value and will break any totals that include C18.  
+- Fix: Change C18 to =G18/1000000.  
+- Why: G18 is in pounds; C18 should be millions of pounds (consistent with B11:B etc.). Multiplying mistakenly inflates the value and skews SUMs/percentages that follow.
+
+2) Stray data in wrong columns
+- Where: Sheet "2003 Report", row 20: cells G20 and H20 contain numbers (8.449074 and 0.6381540899) even though those columns are not part of the 2003 layout you described.  
+- Problem: Those stray values likely belong to a different table or sheet (they look like converted numbers) and can corrupt charts, named ranges, or SUMs if ranges include columns G:H.  
+- Fix: Move those two numbers to the correct sheet/columns (or delete them if accidental). If they belong to another table, paste them into the proper cells on that sheet. If they are not needed, clear them.  
+- Why: Keeping data in the wrong column creates invisible errors later when ranges are expanded or charts use whole rows/columns.
+
+3) Other inconsistencies to check (quick audit steps)
+- Search for any other "*1000000" vs "/1000000" inconsistencies: Home → Find (Ctrl+F) search for "*1000000" to locate accidental multiplications.  
+- Show formulas to inspect quickly: Formulas → Show Formulas (or Ctrl+`) and scan columns that convert pounds → millions.  
+- Use Formula Auditing: select a suspect cell → Trace Dependents / Trace Precedents to see which totals are affected.  
+- Look for hard-coded numbers that should be formulas. Example: on sheet "data" some C-cells are formulas =E#-B#, but a few rows are hard-coded numbers — replace hard-coded cells with the formula so future changes recalc correctly.
+
+4) After fixes: verify totals and percentages
+- Recalculate workbook (F9) and check the main totals (Lxx, Rxx, Oxx etc.) that were using the wrong numbers.  
+- Recompute any derived ratios (for example R24 =(R11-R23)/R11) after the correction to C18.
+
+If you want, I can:
+- Give the exact list of cells that will change after fixing C18, or
+- Provide step-by-step Excel commands (with screenshots) to fix and audit the workbook. Which do you prefer?

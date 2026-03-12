@@ -1,0 +1,77 @@
+I reviewed the workbook formulas (Income, Balance Sheet, Cashflow, Depreciation and simple income sheets) and found several formula errors / inconsistencies that will produce incorrect results or are syntactically odd. Below I list the problems I found, with the exact cells affected, why they are wrong, and the suggested fix.
+
+1) Income sheet — "Total" (monthly revenue) is wrong (only includes online sales)
+- Affected cells: Income!E12:P12
+- Problem: Each Total cell uses SUM(X10:X10) (i.e. sums only the Online Sales row) and thus omits Street Sales (row 11). Example: E12 = SUM(E10:E10) instead of summing E10 and E11.
+- Effect: All downstream totals (annualized revenue, gross profit, etc.) that depend on Income!E12:P12 are too low (they ignore the street sales component).
+- Fix: Change each column's Total formula to include both rows 10 and 11. For example:
+  - Income!E12 should be =SUM(E10:E11)
+  - Copy across to F12:P12.
+
+2) Income sheet — Sugar price inflation references the wrong input
+- Affected cells: Income!F8:P8 (F8, G8, H8, …, P8)
+- Problem: The growth formula uses $D$7 (lemon price inflation) instead of $D$8 (sugar price inflation). Example: F8 = E8*(1+$D$7) but should use $D$8.
+- Effect: Sugar prices are growing at the lemon-price inflation rate rather than the sugar inflation rate (D8).
+- Fix: Change formulas to reference $D$8. Example:
+  - F8 = E8*(1+$D$8)
+  - Copy across to G8:P8.
+
+3) Income sheet — many single-cell SUMs (inefficient/likely mistakes)
+- Affected cells: many places where SUM(E10:E10), SUM(E15:E16) is fine but SUM(E10:E10) specifically is problematic as noted above.
+- Note: SUM of a single cell is allowed but usually indicates an incorrect range. Review any SUM(x:x) that uses same start/end to confirm intent. (The primary concrete error here is E12:P12 — see item 1.)
+
+4) Depreciation sheet — missing / misaligned column in Total Depreciation row (possible column shift)
+- Affected area: Depreciation!E11:P11 (specifically, L11 is missing and M11..P11 look odd)
+- Problem: The Total Depreciation row includes K11 then jumps to M11 (L11 is absent). M11 is set to =M7 (not cumulative), etc. This produces a misaligned cumulative depreciation for columns after K.
+- Effect: Any sheet that expects a cumulative total in Depreciation!L11 (or beyond) may get incorrect values or blanks.
+- Fix: Add/restore the missing L11 and make the cumulative formula consistent across columns. Example pattern:
+  - E11 = E7
+  - F11 = E11 + F7
+  - G11 = F11 + G7
+  - ...
+  - L11 = K11 + L7
+  - M11 = L11 + M7
+  - etc.
+  (Make the cumulative pattern consistent across every column.)
+
+5) Balance Sheet — "Original Value" references a liability cell (semantically odd)
+- Affected cell: Balance Sheet!D8 (and related E8..P8 which copy D8)
+- Problem: D8 = =D14 (cell D14 is the Lear Jet Finance Co. loan amount, i.e. a liability). Linking the asset "Original Value" to a liability cell is misleading/incorrect even if both are numerically the same now.
+- Effect: This is a likely semantic / maintenance error: changes to D14 (liability) will change the original long-term asset value.
+- Fix: Put the long-term asset original value in its own explicit input cell (e.g. set D8 to a constant or to a clearly labeled input cell such as an “Inputs” sheet). Do not link asset original value to D14 (a liability) unless that is intentionally desired.
+
+6) Balance Sheet — Lemon Inventory row references a local blank cell
+- Affected cells: Balance Sheet!F7:P7 (F7 = E7, G7 = F7, …)
+- Problem: F7 = E7 but E7 on the Balance Sheet is blank (so F7 ends up zero). Referencing within the same row to a blank column is fragile/unclear.
+- Effect: Inventory shown as zero — maybe intended, but the reference is confusing.
+- Fix: Either put the explicit input for opening inventory in Balance Sheet!E7 or have F7 reference the correct input on another sheet (for example Income!E6 or an Inputs sheet). If inventory is intended to be zero then set the cell explicitly to 0.
+
+7) Cashflow sheet — check Net Change in Cash ranges (and alignment)
+- Affected cells: Cashflow!D13:O13 (Net Change in Cash)
+- Observation: D13 uses =SUM(D6:D12) which does include the typical operation, depreciation, investments, financing rows in D6:D11. That is OK provided the layout lines up.
+- Action: Verify all columns use the same rows for the items being added (operations, depreciation, investments, financing). If you add or remove rows you must update the sum range.
+
+8) simple income sheet — hard-coded sugar value
+- Affected cell: simple income!F8 (=284)
+- Problem: F8 contains a literal "=284" (an odd formula) rather than referencing E8 (=E8) or using the intended growth. Also E8 = 250 while F8=284 with no clear formula.
+- Effect: This sheet is inconsistent and likely not following the intended propagation rule used in other rows.
+- Fix: Replace F8 with =E8 (or the intended formula) so the sugar cost copies forward consistently, or use a growth formula consistent with the rest of the sheet.
+
+9) Miscellaneous / style issues to review
+- Several cells use transitive copies like F22 = E22, G22 = F22, etc. These are functional but fragile; consider using absolute references or fill-right copying where appropriate.
+- Many cells use SUM on a single cell (SUM(E10:E10)). While not an error per se, it often indicates copy/paste mistakes—check intent.
+- Check links between sheets for circular or semantically wrong links (e.g., Balance Sheet D8 linking to D14). Explicit named input cells would improve clarity and reduce accidental cross-dependencies.
+
+Summary of highest-priority fixes
+1. Fix Income!E12:P12 to include both Online and Street Sales (SUM(E10:E11), etc.). This is the single biggest correctness issue — it propagates wrong totals throughout the model.
+2. Fix Income!F8:P8 to reference $D$8 (sugar inflation) rather than $D$7 (lemon inflation).
+3. Fix the Depreciation sheet total row (add missing L11 and make cumulative formulas consistent across columns).
+4. Correct Balance Sheet!D8 to be an explicit asset input (not =D14) or otherwise make that linkage intentional and obvious.
+5. Replace simple income!F8 formula with a proper reference or formula.
+
+If you want, I can:
+- Produce the exact corrected formulas for each affected cell (I gave examples above), and
+- Optionally produce a patch (list of old formula → new formula) you can apply directly, or
+- Open the workbook and make the edits for you and return the corrected workbook.
+
+Which would you prefer?

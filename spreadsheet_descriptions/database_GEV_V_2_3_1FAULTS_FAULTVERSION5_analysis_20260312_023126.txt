@@ -1,0 +1,74 @@
+Ecco una descrizione sintetica, in italiano, della struttura e dei contenuti del file:
+
+Struttura generale e flusso dati
+- Flusso principale: inserimento dati (foglio "immissione dati") → elaborazione temporanea (foglio "calcoli") → archiviazione (foglio "db") → visualizzazioni/ricapitolazioni ("visualizza_singolo", "visualizza_gruppo") → parametri di controllo/modifica ("SetPar", "parametri").
+- Home fornisce info generali, avvisi macro e due conteggi chiave (numero servizi e numero GEV) presi da calcoli!B60 e calcoli!B61.
+
+Foglio: Home
+- Scopo: schermata iniziale con nome gruppo, avvisi e link.
+- Celle chiave: F3 = dbGEV (titolo); F4 descrizione; C19 avviso macro; C21 versione.
+- Statistiche rapide: G21 = calcoli!B60 (N° servizi nel DB), I21 = calcoli!B61 (N° GEV).
+
+Foglio: immissione dati
+- Scopo: maschera di inserimento nuovo servizio.
+- Campi principali: Numero RL, Giorno/Mese/Anno, Ora in / Ora fine, Tipo servizio, Check-list di sanzioni/segna­lazioni (flora, sottobosco, rifiuti, fuochi, ecc.), elenco di fino a 5 GEV e km macchina.
+- Controllo orario: F16 = IF(calcoli!F15>calcoli!E15,"","Attenzione: orario fine servizio inferiore ora inizio!") (segnala orario fine precedente inizio).
+
+Foglio: parametri
+- Contiene liste di riferimento usate altrove: orari (colonna B), codici tipi servizio (colonna C), giorni/mesi/anni (colonne D/E/F), aggregazione tipi servizio (colonna G).
+- I8 contiene il nome del gruppo: I8 = SetPar!E5 (prelevato da SetPar).
+- Serve anche a costruire menu/indici via INDEX in calcoli e altri fogli.
+
+Foglio: SetPar
+- Maschera per inserire/modificare: Nome Gruppo (E5), aggiungi/rimuovi GEV, comandi per rimozione servizi ecc.
+- Valori qui popolano parametri! e il testo di Home.
+
+Foglio: calcoli
+- Motore di elaborazione/filtri e staging dei record prima dell'inserimento.
+- Riceve input da "immissione dati" (A15 = 'immissione dati'!D6 e molte formule che leggono i campi d'immissione).
+- Calcoli principali:
+  - Mappature con INDEX da parametri (es. E11/F11 = INDEX(parametri!B8:B55, ...)).
+  - Durata servizio: G15 = (HOUR(F15-E15)*60+MINUTE(F15-E15))/60 (calcola ore decimali).
+  - Numero partecipanti calcolato in H11 = 5 - COUNT(J15:N15) e usato in H15 = G15*H11 per ore totali.
+  - AC15 assegna tipo servizio aggregato tramite IF/OR su codice tipo.
+  - Righe di selezione/filtri: impostazioni (anno, GEV, mese, tipo servizio) con INDEX e booleani (AD16..AH16); AI16 è flag di inclusione e, se TRUE, copia i valori in colonne AJ..BL (staging).
+  - Riepiloghi temporanei: somme per dati mensili e annuali (SUM/COUNT su intervalli del foglio db).
+  - Contatori finali: B60 = COUNTA(db!A3:A4) (numero servizi), B61 = COUNTA(parametri!A1:A4)-1 (numero GEV), visualizzati in Home.
+
+Foglio: db
+- Tabella master (righe = servizi). Colonne chiave:
+  - A: numero RL; B: g (GEV?); C: mese; D: anno; E: ora in; F: ora fi; G: h serv; H: h tot; I: tipo servizio; J..N: gev1..gev5; O..Z: flag sanz/segna­lazioni (flora, sottobosco, fauna, rifiuti, ...); AB: km; AC: tip serv agg; colonne AD..BL servono come colonne di supporto/filtri/temporanee (MASTER / FILTRI / TEMP).
+- È la sorgente per i riepiloghi mensili/annuali.
+
+Foglio: visualizza_singolo
+- Riepilogo mensile/annuale per singola GEV.
+- Tabella mesi (C8:N11) con n° servizi, ore, n° sanz.
+- Riepiloghi annuali per tipo servizio (colonne D17..F26 e riepiloghi in K15..N24).
+- Contiene grafici (Grafico dei servizi mensili; Grafico dei tipi di servizio).
+
+Foglio: visualizza_gruppo
+- Riepilogo dei servizi aggregati per gruppo per mese e per tipo (vigilanza, scuole, attività particolari, riunioni, TOT).
+- Layout: per ogni mese, colonne divise per tipo (n, h, km); colonne TOT (somma delle categorie).
+- Formule di somma mensili: es. P7 = C7+F7+I7+L7; Q7 = D7+G7+J7+M7; R7 = E7+H7+K7+N7.
+- Riepilogo anno con SUM su righe mensili.
+
+Foglio: Help
+- Istruzioni d'uso, note su protezione fogli e raccomandazioni (compreso indirizzo email dell'autore).
+
+Osservazioni / punti critici riscontrati
+- Alcune formule sembrano avere anomalie di digitazione: es. in visualizza_gruppo Q7..Qn mostrano "D7++G7+J7+M7" (doppio "+") — probabilmente non voluto ma in Excel viene comunque interpretato come "+". In P15 di visualizza_gruppo c'è una costante "833" al posto di L15 (possibile errore di inserimento).
+- Il foglio usa macro (avviso in Home). Assicurarsi di abilitare macro per funzionalità complete (inserimento/rimozione GEV/servizi).
+- I campi di parametri (orari, tipi) sono usati largamente tramite INDEX: modifiche qui cambiano tutto il comportamento di mappatura.
+
+Sintesi rapida
+- Input: "immissione dati" (modulo).
+- Configurazione: "SetPar" + "parametri".
+- Elaborazione/check & staging: "calcoli".
+- Archiviazione: "db" (tabella master + colonne ausiliarie per filtri).
+- Output/visualizzazione: "visualizza_singolo" e "visualizza_gruppo" + Home per statistiche rapide.
+- Le formule principali sono INDEX(parametri!...), calcolo durata oraria in calcoli (G15) e numeri/ somme con SUM/COUNT per riepiloghi; numero servizi/GEV mostrati su Home tramite calcoli!B60/B61.
+
+Se vuoi, posso:
+- fornire una mappa delle colonne del foglio db in formato tabellare,
+- cercare e correggere le formule sospette (es. ++ o valore 833),
+- spiegare come aggiungere un nuovo servizio passo passo. Quale preferisci?

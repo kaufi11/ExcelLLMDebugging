@@ -1,0 +1,37 @@
+Errors found:
+
+1. In cell B21 (IR mag), the formula uses `E21: FORMULA =COS($B$15*D21*1922)` which has `1922` instead of `1000` as in other similar formulas. This is inconsistent and likely an error.
+
+2. In cell L4 and similar cells (e.g., L5, L6...), the formula is `=$B$6*1000/$B$14*F4+$B$24*E4`. Due to operator precedence, this is interpreted as `(($B$6*1000)/$B$14)*F4 + $B$24*E4`. If the intention was to multiply `$B$6*1000` by `(F4/$B$14)` then add `$B$24*E4`, parentheses are needed.
+
+3. In cell J4 and similar cells, the formula is `=ATAN2(G4,H4)*180/PI()`. The `ATAN2` function arguments are usually `ATAN2(y, x)`. Here it is `ATAN2(G4,H4)`, which means `ATAN2(y=G4, x=H4)`. But G4 is Real(VS) and H4 is Imag(VS). Usually, for complex numbers, angle = `ATAN2(imag, real)`. So it should be `ATAN2(H4, G4)` instead.
+
+4. Same error applies for K4/L4 and N4: `ATAN2(K4,L4)` should be `ATAN2(L4,K4)` if K4 is real and L4 is imag.
+
+Summary of errors:
+- Wrong multiplier 1922 instead of 1000 in B21's cosine formula.
+- Possible operator precedence issue in formulas like L4.
+- Incorrect argument order in ATAN2 for angle calculations in J, N columns.
+
+Solutions:
+
+1. Fix B21 formula:
+Change `=COS($B$15*D21*1922)` to `=COS($B$15*D21*1000)` to be consistent.
+
+2. Add parentheses in L4 and similar formulas:
+Change from `=$B$6*1000/$B$14*F4+$B$24*E4` to `=($B$6*1000/$B$14)*F4 + $B$24*E4` or if intended differently, adjust accordingly.
+
+3. Correct ATAN2 argument order:
+Change `=ATAN2(G4,H4)*180/PI()` to `=ATAN2(H4,G4)*180/PI()` in J column formulas.
+
+Similarly, change `=ATAN2(K4,L4)*180/PI()` to `=ATAN2(L4,K4)*180/PI()` in N column formulas.
+
+Explanation:
+
+- ATAN2(y, x) returns the angle of the vector (x, y). For complex numbers, angle = atan2(imaginary part, real part).
+
+- Operator precedence in Excel means multiplication and division have the same priority and are evaluated left to right. Parentheses clarify intended grouping.
+
+- Consistent use of 1000 as multiplier for converting km to meters is needed.
+
+Implementing these fixes will correct angle calculations and formula consistency.

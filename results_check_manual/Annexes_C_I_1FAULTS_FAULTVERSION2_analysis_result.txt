@@ -1,0 +1,59 @@
+I reviewed the formulas in the workbook (all sheets you provided) and found several formula issues and some inconsistent formula patterns that are likely errors or at least warrant attention. Below I list the problems I found (sheet, cell, problem, why it’s a problem, suggested fix).
+
+High‑priority / likely actual errors
+- Sheet: annex f — Cell: K68
+  - Problem: Formula is =K48 (copies the percentage cell for “Total Reserves”).
+  - Why: All other “Variance as % of original forecast” cells use the pattern =IF(Hx=0,"N/A",(Jx/Hx)*100). K68 should follow that pattern for Total Funds. Pointing to K48 returns a text ("N/A") or an unrelated percentage instead of computing the percent variance for Total Funds.
+  - Suggested fix: Replace with =IF(H68=0,"N/A",(J68/H68)*100) (or the appropriate IF-division-by-zero guard consistent with the sheet).
+
+Medium priority / suspicious or inconsistent formulas (may be intentional but unusual)
+- Sheet: annex e — Cell: B31
+  - Problem: Formula is =B29+775 while neighbouring rows use +1 (e.g., B28 = B25+1 then B29 = B28+1 etc).
+  - Why: +775 is an unusual jump and inconsistent with the incremental +1 pattern used elsewhere. It may be intentional mapping to coded line numbers, but it stands out as inconsistent and should be checked.
+  - Suggested fix: Confirm whether +775 was intentional. If not, use +1 to keep sequential numbering or set to the intended code.
+
+- Sheet: annex f — Cell: B31
+  - Problem: Formula is =B29+775 (same pattern anomaly as in annex e).
+  - Why / Suggestion: same as previous — check intended line-code assignment.
+
+- Sheet: annex f — Cells: H58 / I58
+  - Problem: H58 = H15 and I58 = I15 (Endowments cell copies the “Endowment Asset Investments” row earlier in the same sheet).
+  - Why: In many balance-sheet templates “Endowment asset investments” (a fixed asset line) is not identical to the “Endowments” funds/capital lines. Re-using H15 for H58 may be intentional in this template but can be misleading or incorrect if the values should be separately input/calculated.
+  - Suggested fix: Confirm whether Endowments should be linked to Endowment Asset Investments. If they are different, change the references to the correct source cells or make them independent inputs.
+
+- Sheet: Annex g (both ORIGINAL CASH FORECAST and ACTUAL/REVISED sections)
+  - Pattern: In many rows the Total column (column T) is SUM(H:S) (as expected), but in several balance / financing rows T is set to a single-month cell (often the last month or first month) instead of SUM(H:S). Examples:
+    - ORIGINAL section: T18 = H18 (Balance b/f), T19 = S19 (Balance c/f)
+    - ORIGINAL section: T22 = S22, T23 = S23 (Financed by rows)
+    - ACTUAL/REVISED section: T41 = H41 (Balance b/f), T42 = S42 (Balance c/f)
+    - ACTUAL/REVISED section: T45 = S45, T46 = S46 (Financed by rows)
+  - Why: Mixing SUM() totals and single-month copies in the T column is inconsistent and can be confusing. For line items that are totals over months SUM(H:S) is correct; for balance b/f or balance c/f it may be appropriate to show the relevant month (opening or closing balance) rather than a sum. This mixing should be explicit and documented.
+  - Suggested fix: Decide and document the intended meaning of column T (is it an aggregate/year total, or a “final-month” value for balances?). If T is meant to be the aggregate total for cash flow lines, use SUM(H:S) consistently; if T for balance b/f/c/f should show the opening/closing month's value, explicitly set T to the appropriate month (and document).
+
+- Sheet: annex g — Cell: T26 (ORIGINAL section)
+  - Formula: =T19-('annex f'!H20+'annex f'!H21)
+  - Why / Note: This is a reconciliation between cash closing balance and annex f items (Investments + Cash at bank). It is consistent with the later analogous formula in ACTUAL/REVISED (T49 = T42-('annex f'!I20+'annex f'!I21)). Verify that annex f H20 & H21 are indeed the correct cells to be compared for the ORIGINAL section (they are “Investments” and “Cash at Bank/in Hand” in annex f H20/H21). This is probably correct but double‑check the referenced cells are the intended ones.
+
+Lower priority / check and confirm
+- Sheet: annex I — Cell: H27
+  - Formula: =SUM(H10:H26)
+  - Why: H27 is “Underlying operating surplus/deficit”. The sheet explicitly uses H11, H14, H17, H20 etc as the items to include; SUM(H10:H26) will work but includes H10 (probably blank) and all intermediate cells. This is not necessarily wrong, but it would be clearer/safer to sum the specific rows intended (e.g., =SUM(H11,H14,H17,H20,...) ) so accidental values in other rows are not included.
+  - Suggested fix: Replace with an explicit sum of the specific add-back/deduct rows, or at least change SUM(H10:H26) to SUM(H11,H14,H17,H20,H23,H26) (adjust to actual intended rows).
+
+Other observations (informational)
+- Many “Variance as %” cells use =IF(Hx=0,"N/A",(Jx/Hx)*100). This returns the text "N/A" when Hx = 0, and a numeric percent otherwise. That is consistent across most rows — be aware mixing text and numbers in the same column can affect downstream calculations (sorting, charts, averages). If numeric 0 or NA() is preferred for further calculations, consider using NA() or 0 instead of the text "N/A".
+- Several row-code cells in column B jump by large offsets (e.g., B31 = B29 + 775). These could be by design (mapping a specific code set), but they are inconsistent with the simple +1 used elsewhere so worth verifying.
+
+Summary of likely fixes to apply now
+1. Correct annex f K68 to =IF(H68=0,"N/A",(J68/H68)*100).
+2. Review and confirm annex e and annex f B31 (=B29+775) row‑code formulas.
+3. Review and document the intended semantics of column T in Annex G; make totals consistent (use SUM(H:S) where totals are intended; use final‑month references where that is intended) and adjust T18/T19/T41/T42/T22/T23/T45/T46 etc accordingly.
+4. Confirm annex f H58/I58 mapping of Endowments. If Endowments should be a distinct figure, change the references.
+5. Optionally change annex I H27 to sum specific intended cells rather than a broad range.
+
+If you want I can:
+- produce an annotated list of every cell in every sheet whose formula deviates from the common pattern in that area (e.g., all T totals that are not SUM(H:S));
+- create corrected formulas and a patch (list of old formula → new formula) that you can apply to the workbook; or
+- open any specific sheet and do a line‑by‑line check/repair.
+
+Which would you like me to do next?

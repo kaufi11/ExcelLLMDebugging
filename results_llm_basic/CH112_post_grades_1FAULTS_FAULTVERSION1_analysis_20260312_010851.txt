@@ -1,0 +1,22 @@
+Summary of the problem
+- Row 13 (cell O13) has a bad formula. It uses COUNT(...)/weight (dividing the counts by 100/15/30/150) instead of COUNT(...)*weight like every other row. That gives a nonsense overall percent for that student.
+- This is a formula-entry mistake (probably a pasted/typed error). If that wrong formula is left in other rows you would see the same bad results there.
+
+Why it's wrong (short)
+- Denominator must be "total possible points" = number of items × points per item. You must multiply COUNT by the points per item. O13 was dividing the counts by the point values, producing a tiny denominator and a wrong percent.
+
+Correct formula (use this in O13 and any other O-row that is wrong)
+=(SUM(B13:F13)+SUM(G13:M13)+N13) / (COUNT(B13:F13)*100 + COUNT(G13:J13)*15 + COUNT(K13:M13)*30 + COUNT(N13)*150) * 100
+
+Safer version (prevents #DIV/0! if no graded items exist)
+=IF((COUNT(B13:F13)*100 + COUNT(G13:J13)*15 + COUNT(K13:M13)*30 + COUNT(N13)*150)=0,"", (SUM(B13:F13)+SUM(G13:M13)+N13)/(COUNT(B13:F13)*100 + COUNT(G13:J13)*15 + COUNT(K13:M13)*30 + COUNT(N13)*150)*100)
+
+Extra tip
+- You used COUNT(...) (counts numeric cells) which is fine if all grade cells are numbers. If you sometimes enter text like "ABS" or "M" instead of blanks, use COUNTA to count non-empty cells instead. Adjust weights accordingly.
+
+What to do
+1. Replace the formula in O13 with the correct formula above.
+2. Scan column O for any other cells that deviate from the standard O formula; replace them if needed.
+3. Optionally paste the safe IF(…=0,"",…) version into all O cells to avoid divide-by-zero errors.
+
+If you want, I can give you a single formula you can paste into O4 and fill down (with relative references) or produce a LET-based tidy version. Which would you prefer?

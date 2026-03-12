@@ -1,0 +1,28 @@
+Findings (short)
+1) Error: O14 uses subtraction. O14 = L14 - M14 - N14 but should be O14 = L14 + M14 + N14.  
+   - Impact: O14 and P14 are wrong; column O averages/medians and any summaries that include O14 are biased. Individual final grade (AI14) is NOT affected because R14 sums the components directly, but class-level stats (O35/O36 and any sheet using O averages) are affected.
+
+2) Possible inconsistencies in summary sheets / clarity issues:
+   - Sheet5 Final Grade (E3 = 0.8726) differs from Sheet2 Final Grade (E2 = 0.8861). That indicates different aggregation methods/sources are being used. Verify which is the intended class-final calculation (use AJ column on Sheet1 for authoritative per‑student final %).
+   - AF33 uses SUM(Z33:AD33). That works (blank AA33/AC33 treated as zero) but is unclear. Prefer explicit sum of the real test maxima (Z33, AB33, AD33) to avoid confusion.
+
+Fixes and simple steps
+1) Correct O14:
+   - Edit cell O14 to: =L14+M14+N14
+   - Then recalc P14 (it will update automatically because P14 = O14/$O$33).
+   - To be safe, copy the correct formula down column O for all students (select O3, copy; select O3:O32, Paste formulas) so O14 matches the other rows exactly.
+
+2) Reconcile summary sheets:
+   - For class final average use one source. Best practice: set Sheet2 E2 (and other summary sheets) to reference the solved column AJ average on Sheet1:
+     - e.g., Sheet2 E2 = 'Sheet1'!AJ35  (AJ35 = AVERAGE(AJ3:AJ32))
+   - Update any summary values that were calculated differently so all summaries match the same method.
+
+3) Make AF33 explicit (optional, clarity):
+   - Replace AF33 = SUM(Z33:AD33) with AF33 = Z33 + AB33 + AD33 or =SUM(Z33,AB33,AD33). This prevents accidental inclusion of intermediate empty columns later.
+
+Why this fixes it (easy)
+- O14 was the only row using subtraction, producing a wrong homework subtotal and percent for that student; changing to addition makes it consistent with all other rows and with the denominator O33. Copying the correct formula down avoids single-row typos.  
+- Using the AJ column average as the single authoritative final-class value prevents mismatches between summary sheets.  
+- Making AF33 explicit prevents accidental inclusion of unintended columns and improves workbook transparency.
+
+If you want, I can give the exact formula edits and a one-click sequence (which cells to edit/copy) to fix everything.

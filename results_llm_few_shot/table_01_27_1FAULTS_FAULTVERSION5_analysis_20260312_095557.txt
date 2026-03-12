@@ -1,0 +1,27 @@
+Summary of errors found (short and clear)
+
+1) Cell D8 (Functionally, Mar 1992)
+- Error: Wrong operators — the formula uses subtraction: =4186-3424-4479-5125-3339-5690
+- Why it’s wrong: All other similar rows add component counts. Using minus signs will produce a wrong (likely negative) number.
+- Fix: Replace with additions:
+  =4186+3424+4479+5125+3339+5690
+
+2) Cells L12 and M12 (All deficient bridges, columns L and M)
+- Error: Inconsistent/fragile formula: L12 = SUM(L13:L14) and M12 = SUM(M13:M14) while other columns use =B6+B9 pattern (row12 = row6 + row9).
+- Why it’s a problem: Using the intermediate breakdown rows (13–14) is less consistent and harder to audit; if the structure changes it can miscount.
+- Better fix (consistent and clearer):
+  L12: =L6+L9
+  M12: =M6+M9
+- Explanation: This directly sums the two subtotal rows (urban deficient + rural deficient) for that column, matching columns B–K and reducing risk of errors.
+
+3) General reliability issue — many totals are hard-coded sums of numbers rather than references
+- Symptom: Cells like B4, B5, etc. contain formulas that add literal numbers (e.g., =24435+11890+21403+...) instead of summing component cells.
+- Why it’s risky: Hard-coded arithmetic is hard to audit and easy to mistype (as seen in D8). It also prevents automatic updates if component values change.
+- Recommendation / Fix:
+  - Put each component value in its own cell (one per row) and then use SUM(cellrange), or
+  - If components already exist in cells, change formulas to reference them (e.g., =SUM(B7:B11) or =B7+B8...).
+- Benefit: Easier to verify, fewer typing errors, and safer when editing.
+
+If you want, I can:
+- Provide exact corrected formulas for every affected column (I can generate the corrected formulas for D8 and update L12/M12 across all columns), or
+- Convert the sheet to use cell references / SUM ranges consistently (I can show a mapping). Which would you prefer?

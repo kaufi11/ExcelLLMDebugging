@@ -1,0 +1,42 @@
+I inspected the formulas and values on sheet "post1". Found a few real errors and several inconsistencies that can produce wrong results or unpredictable behavior. Summary (with recommended fixes) follows.
+
+1) Missing Pract.4 score on row 55 (student 1691)
+- Symptom: G55 is blank while H55 = 45 (attendance) is present. I55 uses =SUM(D55:G55) and returns 164 — that equals 40+39+85+0, so the missing Pract.4 (G55) was treated as 0.
+- Impact: That student's total and class % are incorrect if a Pract.4 score exists but was omitted.
+- Fix: Enter the missing Pract.4 value in G55 (or correct the cell shifts if values are misaligned).
+
+2) Wrong AVERAGE range for F56 (section 2 mean)
+- Symptom: F56 formula is =AVERAGE(F37:F55). All other column means in that block use rows 36:55; F56 therefore omits F36.
+- Impact: The mean for Pract.3 in the second section is calculated excluding the first student in that block (row 36), producing a wrong mean.
+- Fix: Change F56 to =AVERAGE(F36:F55) (or use consistent named ranges/absolute ranges).
+
+3) Inconsistent grading IF logic (>= vs >)
+- Symptom: In the first student block (rows 6–25) the grade formula uses >= thresholds, e.g. =IF(J6>=89.9%,"A",...), while in the second block (rows 36–55) and on the MEAN rows the formulas use > thresholds, e.g. =IF(J36>89.9%,"A",...).
+- Impact: Students whose Class % equals an exact boundary (e.g. exactly 89.9% or 79.9%) could get different grades depending on which block they are in. This is a logic inconsistency.
+- Fix: Decide on one boundary rule (commonly >= for the higher grade) and apply it uniformly. Example: use =IF(Jx>=89.9%,"A",IF(Jx>=79.9%,"B",...)) everywhere.
+
+4) Inconsistent use of literal divisors vs cell references for Class %
+
+- Examples: J6 uses =I6/400 (literal 400), J26 uses =I26/I3 (I3 contains 400), J36 uses =I36/400, J56 uses =I56/I33.
+- Impact: Functionally okay as long as 400 stays in I3 and I33, but less robust and less consistent. Moving the 400 value would break only some formulas.
+- Fix: Standardize to a single reference (e.g. use $I$3 or $I$33 consistently, or always use the literal 400 but uniformly). Prefer using an absolute cell reference (e.g. =I6/$I$3) so you can change the maximum in one place.
+
+5) Mixed formatting/interpretation of Class % values (decimals vs percent format)
+- Symptom: J-column values are decimals like 0.9425 but are compared against percentage literals (89.9%). Excel treats 89.9% as 0.899, so the comparisons work — but this is easy to misread.
+- Recommendation: Format J column as Percentage (e.g. 94.25%) to match the comparison thresholds visually and reduce confusion.
+
+6) Potential fragile range references (averages and SUM)
+- Observation: Some averages are computed as AVERAGE(D6:D25) etc — that's fine — but because some formulas in the sheet reference other cells (I3 or I33) as denominators, if rows/columns are inserted the references may break or become inconsistent.
+- Recommendation: Convert repeated ranges to named ranges (e.g. PractTotalMax) or use absolute references, and make sure average ranges are consistent (start/end rows identical across columns).
+
+7) Minor: inconsistent grade thresholds used (89.9% / 79.9% / 69.9% / 59.9%)
+- Note: Using 89.9% instead of 90% is a policy choice, but be sure that's intentional. If you want classic integer boundaries (90/80/70/60) change thresholds accordingly.
+
+Quick action checklist
+- Put the missing Pract.4 score into G55 (or fix row 55 alignment).
+- Change F56 to =AVERAGE(F36:F55).
+- Standardize all grading IF formulas to the same operator (recommended: >=) and identical threshold values.
+- Standardize Class % formulas to use a single absolute reference (e.g. =I6/$I$3) and format J column as Percentage.
+- Optionally convert critical constants/ranges to named ranges for robustness.
+
+If you want, I can produce the exact formula fixes (copy-paste ready) for the affected cells and a short script to scan the workbook for similar range/threshold inconsistencies.

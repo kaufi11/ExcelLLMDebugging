@@ -1,0 +1,27 @@
+Findings (short)
+- Bulk compost sheet: C19 is wrong. It uses +1.48 instead of -1.48. All other C formulas in that sheet are A+(B/24)-1.48; C19 is A+(B/24)+1.48.
+- Effect: C19 is offset by 2.96 days (difference between +1.48 and -1.48). Example: A19=15, B19=12.75 -> correct start = 15 + 12.75/24 - 1.48 = 14.05125; with +1.48 it becomes 17.01125 (wrong).
+- Potential secondary issue to check: column B mixes decimal hour notation (e.g., 11.5 = 11h30) and values that look like hh.mm (e.g., 11.17, 15.33). If those were entered as hh.mm (hours.minutes) rather than decimal hours, dividing by 24 will give incorrect times.
+
+Fixes (easy)
+1. Correct the typo in Bulk compost C19:
+   - Replace formula in C19 with =A19 + (B19/24) - 1.48
+   - Or re-fill column C with the correct formula (C4:C22 = A4 + (B4/24) - 1.48 and drag down).
+
+2. Make the offset robust (prevent future typos):
+   - Put the offset value in one cell (e.g., put -1.48 in cell Z1 and -1.71 in Z2 for Treatments).
+   - Use =A4 + (B4/24) + $Z$1 (or =A4 + B4/24 + $Z$1) so future changes are single-cell and sign errors are less likely.
+
+3. Verify hour format in B:
+   - If B contains decimal hours (11.5 = 11.5h), current formula B/24 is correct.
+   - If B is hh.mm (e.g., 11.17 meaning 11:10), convert before dividing. Use:
+     =INT(B4) + (MOD(B4,1)*100)/60
+     then divide that result by 24 (or format B as Excel time).
+   - Better: enter times as Excel times (11:10) and use =A4 + B4 - offset (no /24).
+
+Why this fixes it (one line each)
+- Fixing C19 restores the consistent subtraction offset used everywhere, giving the right "start" day.
+- Using an offset cell avoids repeated typing and sign errors.
+- Converting hours to true decimal or Excel time makes B/24 reliable (prevents subtle time errors).
+
+If you want, I can give the exact cell formulas to paste (including the conversion formula if B is hh.mm) and show how to re-fill column C safely.

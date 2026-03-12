@@ -1,0 +1,31 @@
+Summary of errors found (short):
+
+1) Wrong function in Formulas!C24
+- Problem: C24 is =COUNT(B21:B24). That returns how many numeric cells (e.g. 3 or 4), not the total operating expenses.
+- Effect: Total operating expenses, operating income, tax and net income are all wrong for that month.
+- Fix: Change Formulas!C24 to =SUM(B21:B24). Explanation: SUM adds the expense amounts; COUNT does not.
+
+2) Misaligned month headers vs. data (layout / referencing inconsistency)
+- Problem: Month labels are in B16 / D16 but the month values start in C / E (sales in C17 and E17). Many row formulas are placed in columns B / D but reference the next column (e.g. B21 uses C17). This offset makes formulas fragile and hard to audit and will cause errors if formulas are copied or aggregated incorrectly.
+- Effect: Aggregate/carry-forward formulas (collections, disbursements, prior/current roll-ups like F38, F42, F44) and any copy-down operations may reference the wrong month and produce incorrect roll-ups.
+- Fix (pick one consistent approach):
+  - Option A (recommended): Move the month headers one column right so they sit above the data: move "August" from B16 → C16 and "September" from D16 → E16. This aligns headers (C16/E16) with values in C/E.
+  - Option B: Move all monthly formulas one column left so values sit under the headers in B/D. (Less recommended because formulas currently reference C/E.)
+- Explanation: Headers must sit above the same columns that contain the numbers so formulas, copy/paste and roll-ups reference the intended cells.
+
+3) Verify ending-inventory "next period" links (possible source of confusion)
+- Observation: C33 = ROUND($B$4 + $B$5 * E17, -3) (August ending uses September sales) and E33 = ROUND($B$4 + $B$5 * B8, -3) (September ending uses October sales in B8). These are logically correct only if:
+  - E17 is the next period after C17, and
+  - B8 indeed contains the next period (October) sales.
+- Action: After you fix the header alignment in item #2, visually confirm each ending-inventory formula references the true "next month" sales cell. To make this robust for copying, you can:
+  - Keep months contiguous in columns and use a relative reference to the cell to the right (e.g. for a generic month in column X: =ROUND($B$4 + $B$5 * (cell to the right with next month's sales),-3)), or
+  - Use an INDEX/OFFSET approach or named ranges to express "next month sales" explicitly.
+
+Quick step-by-step fixes to apply now
+1. On the Formulas sheet, change C24 to:
+   =SUM(B21:B24)
+2. Fix header alignment:
+   - Move B16 → C16 and D16 → E16 (so month titles sit above their data in columns C and E).
+3. After step 2, scan the C33/E33 (and subsequent months if present) formulas and ensure each uses the cell one column to the right as "next period sales". If any still point to the wrong place (e.g. B8 or some absolute reference), update to the correct next-month cell or use a consistent relative reference.
+
+If you want, I can give the exact cell formulas to replace for all impacted rows (salaries, rent, depreciation, insurance totals, roll-ups like F38/F42/F44) once you confirm whether you want to move headers or move formulas.

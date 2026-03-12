@@ -1,0 +1,48 @@
+Summary of Sheet: Sheet1 (Grades CH 112 Lecture Fall 2003)
+
+Structure / layout
+- Single sheet named Sheet1.  
+- Header rows:
+  - A1: title. Row 2 contains section headers: B2 = "Exam Grades", G2 = "OWL Homework Grades", N2 = "Final Exam", O2 = "Overall Grade", P2 = "Letter Grade".
+  - Row 3 lists column labels:
+    - A: Student #, B–F: Exams 1–5 (columns labeled 1–5), G–M: OWL homework by chapter (Ch.9 → Ch.17), N: Final Exam, O: Overall Grade (%), P: Letter Grade.
+- Student data: rows 4–46 (43 students). Each row shows student ID (col A), numeric scores across B–N, overall percent in O, and letter grade in P.
+- Summary rows: 47–53 contain class statistics:
+  - Row 47: Averages (AVERAGE formulas for each numeric column B:O).
+  - Row 48: Standard deviations (STDEV for B:O).
+  - Rows 49–53: Grade-distribution counts (# of A's, B's, C's, D's, F's) per column using COUNTIF formulas. For exams (B–F) thresholds use 90/80/70/60 cutoffs; final (N) and overall (O) use scaled cutoffs (e.g., final A >=135, B 120–134.999, etc).
+
+Key formulas and grading logic
+- Overall percent, column O (example for row 4):
+  (SUM(B4:F4) + SUM(G4:M4) + N4)
+  /
+  (COUNT(B4:F4)*100 + COUNT(G4:J4)*15 + COUNT(K4:M4)*30 + COUNT(N4)*150)
+  * 100
+  Explanation: total earned points divided by total possible points ×100. Interpretation of max points:
+  - Each exam (B–F) max = 100
+  - OWL homework Ch.9–Ch.12 (G–J) max = 15 each
+  - OWL homework Ch.15–Ch.17 (K–M) max = 30 each
+  - Final exam (N) max = 150
+- Letter grade, column P:
+  IF(Ox < 59.4, "F",
+     IF(Ox < 69.4, "D",
+        IF(Ox < 79.4, "C",
+           IF(Ox < 89.4, "B", "A"))))
+  (Uses 59.4/69.4/79.4/89.4 cutoffs, presumably to account for rounding.)
+
+Notes / data quirks
+- One inconsistent formula: O13 shows a malformed denominator using COUNT(...)/100 etc instead of multiplying by the max points; this will produce an incorrect overall percentage for student in row 13.
+- Several student rows have missing/zero scores in some columns; the overall formula uses COUNT(...) to compute total possible points, so missing items reduce the denominator (i.e., it handles missing items by reducing max points).
+- Final exam scores include full 150 (e.g., row 32 N32 = 150) and fractional scaled values (e.g., many N values are fractional because of earlier normalization).
+- Summary COUNTIF ranges use column-specific thresholds (B–F use percent cutoffs, N and O use absolute-point cutoffs for final/overall).
+
+Important ranges
+- Student records: A4:P46
+- Summary stats: A47:O53
+- Overall-grade formula template: O4:O46 (same pattern per row)
+- Letter-grade formula template: P4:P46
+
+If you want, I can:
+- Fix the malformed O13 formula.
+- Recompute overall grades using consistent max-point constants.
+- Produce a class grade histogram or list of students by letter grade.

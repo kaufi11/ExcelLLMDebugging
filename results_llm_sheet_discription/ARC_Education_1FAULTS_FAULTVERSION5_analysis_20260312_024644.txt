@@ -1,0 +1,56 @@
+Summary — main errors found (by sheet), short fixes and explanations:
+
+Student-teacher
+- Problem: Ratios stored as text like "15.5-1" (not numeric). This prevents arithmetic and automatic recalculation of ratios.
+  - Fix: Replace text ratios with a numeric formula: e.g. in D7 use =B7/C7 to get 15.512..., then format display. To show "15.5-1" visually keep number but apply a custom format: Format Cells → Custom → 0.0"-1" (or 0.00"-1"). Explanation: storing the ratio as a number lets you recalc, sort or aggregate correctly.
+- Problem: Misentered cell E15 = 1.548 (should be attendance ~1,548). This is a decimal/typo inconsistent with other attendance values.
+  - Fix: Correct the value to 1548 (or verify original source). Explanation: Attendance must be integer; decimals here are clearly data-entry error.
+- Problem: Missing / inconsistent TOTAlS — many total cells are not formulas (or some totals missing).
+  - Fix: Replace totals with SUM formulas for each attendance/teachers column, e.g. B37 = SUM(B26:B36), C37 = SUM(C26:C36), E18 = SUM(E7:E17) etc. Explanation: Using SUM prevents stale totals and fixes when rows are added/changed.
+
+Public Grads
+- Problem: Incorrect SUM range in F56: =SUM(F45:F54) (missing row 55).
+  - Fix: Change to =SUM(F45:F55). Check all total formulas in row 56 to ensure they sum the full set B45:B55 ... J45:J55. Explanation: bad range excludes last district causing wrong totals.
+
+Teachers adv degrees
+- Problem: Inconsistent percent format/scale. Early columns show percents like 50.9 (interpreted as percent) while later columns (1995–2000) show fractions like 0.4690338 (which are decimals of 1). Also some "Total No." cells contain non-integers (e.g., 1995.8).
+  - Fix: Decide one representation and make it consistent:
+    - If cells B21:J31 are fractions (0.469...), format them as Percentage with desired decimals (Format Cells → Percentage → 1 decimal). OR convert them to percent numbers by multiplying by 100 (if the values were intended to be e.g. 46.9 not 0.469).
+    - For "Total No." values that are fractional, round to integers: =ROUND(original_formula,0) (or use INT if truncation is desired). Explanation: Percent should use consistent scale (either 0–1 or 0–100); totals of people must be integers.
+
+State test (Reading & Math)
+- Problem: Mixed scales: some columns (early years) show scores ~216–223 while later columns have small integers like 57, 53 etc. This indicates inconsistent units or misaligned columns.
+  - Fix: Confirm the metric for each year in source. Either convert all years to same scale or add a note/column header indicating the different scale. If later columns are % or # correct, keep separate columns (do not mix with scaled scores). Explanation: Mixing scales makes comparisons and averages invalid.
+
+SAT
+- Problem: Implausible small numbers in some cells (e.g., D10 = 99, D11 = 100) while typical SAT values are 800–1200. Likely digits dropped or import/format error.
+  - Fix: Check source values and re-enter correct 3‑digit SAT scores. To detect quickly: use conditional formatting to highlight SAT cells <400 (Format → Conditional Formatting → cell value < 400 → highlight). Explanation: SAT must be in expected range; values <400 are suspicious and worth verifying.
+
+University (two-year totals)
+- Problem: Several total formulas for two-year totals sum the wrong ranges. Example: C15 = SUM(C5:C14) (should be SUM(C12:C14)); D15..K15 likewise reference C5.. rather than C12:C14.
+  - Fix: Correct formulas to sum only the two-year rows: C15 = SUM(C12:C14), D15 = SUM(D12:D14), … K15 = SUM(K12:K14). Explanation: Wrong ranges include four-year rows and give wrong totals.
+
+Other general issues & quick solutions
+- Missing data represented as "**": If intended as missing, keep as blank or use NA() so formulas ignore them. Replace "**" with blank (Delete) or use =NA() if you want an explicit error.
+- Make ratios formula-driven: For each ratio column use =Attendance_cell / Teacher_cell and format as number/custom display. This ensures consistency.
+- Use consistent formatting and rounding: Percent columns → Percentage format; counts → Number with 0 decimals; ratios → 1 decimal.
+- Validate by rules: Add conditional checks to find anomalies:
+  - Attendance < 100 or > 1,000,000
+  - Teachers fractional: MOD(teachers,1)<>0 highlight
+  - Ratios extremely different from expected range (use data bars or conditional formatting).
+- Document units in header row (e.g., "Reading (scaled score)" or "Reading (% correct)") so unit changes are explicit.
+
+Concrete Excel formulas and steps (examples)
+- Fix Buford attendance typo: select E15, enter 1548 (or correct value).
+- Recompute ratio numeric: in D7 enter =B7/C7 and format Custom → 0.0"-1".
+- Fix Public Grads F56: =SUM(F45:F55)
+- Fix University totals: C15 =SUM(C12:C14) and copy across to K15 adjusting column.
+- Round totals in Teachers adv degrees: if C21 formula produced 1995.8, use =ROUND(old_formula,0).
+- Format 1995–2000 percent cells as Percentage (1 decimal) if the numbers are decimal fractions.
+
+If you want, I can:
+- Provide an exact list of every cell with inconsistent format (I will scan and list them),
+- Generate corrected formulas for all affected total and ratio cells,
+- Or produce a corrected copy of the workbook (describe preferred output).
+
+Which of those would you like next?

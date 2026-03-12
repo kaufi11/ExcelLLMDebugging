@@ -1,0 +1,54 @@
+Summary — what’s wrong (short)
+- Many cost formulas point to the wrong cells/sheets (copy‑paste errors). That produces wrong overtime, inventory and hiring costs.
+- Some formulas contain hard‑coded numbers (e.g. 534) instead of using the cell value — wrong results if the model changes.
+- Revenue formula on Sheet3 is wrong (SUM(J5:J10)*31) — not demand × price.
+- Total cost ranges are inconsistent across sheets (some sheets exclude Material cost).
+- Some parameter references are not anchored (use $) or reference the wrong sheet.
+
+Concrete errors (examples) and exact fixes
+1) Sheet2 — overtime column (Aggregate Plan Costs, column E)
+- Problem: E16..E20 reference wrong Sheet1 cells (B24, B25, B26, …) instead of the overtime rate.
+- Fix: For each period row change the formula to multiply that row’s overtime hours by the overtime hourly cost on Sheet1 ($B$23).
+  Example corrections:
+  - E15: =E5*Sheet1!$B$23
+  - E16: =E6*Sheet1!$B$23
+  - E17: =E7*Sheet1!$B$23
+  - E18: =E8*Sheet1!$B$23
+  - E19: =E9*Sheet1!$B$23
+  - E20: =E10*Sheet1!$B$23
+
+2) Sheet2 — inventory cost row with hardcoded 534
+- Problem: F16 is =534*Sheet1!$B$17 (534 is hardcoded).
+- Fix: Use the sheet cell for inventory level instead of the hard number:
+  - F16: =F6*Sheet1!$B$17
+
+3) Sheet3 — cost formulas reference Sheet2 (wrong sheet)
+- Problem: Many cost formulas on Sheet3 use Sheet2!B5, Sheet2!B6, etc. (they pull decision-variable values from Sheet2 instead of Sheet3).
+- Fix: Change those formulas to use the Sheet3 decision cells (or relative references). Example:
+  - B15 on Sheet3: change =+Sheet1!$B$19*Sheet2!B5 to =B5*Sheet1!$B$19 (or =Sheet3!B5*Sheet1!$B$19).
+  - Apply same pattern for B16..B20 and any other cost formulas that should use that sheet’s decision variables.
+
+4) Sheet3 — inventory cost hardcode (same as Sheet2)
+- Problem: F16 shows =534*Sheet1!$B$17.
+- Fix: F16 =F6*Sheet1!$B$17
+
+5) Sheet3 — Total Revenue is wrong
+- Problem: A24/C24 =SUM(J5:J10)*31. That multiplies total demand by 31 (nonsense).
+- Fix: Revenue must be demand × price each period, summed. Use SUMPRODUCT:
+  - C24 (Sheet3): =SUMPRODUCT(J5:J10, K5:K10)
+  If Sheet3 does not contain prices (K5:K10), link to the sheet with prices:
+  - =SUMPRODUCT(J5:J10, pricing!K5:K10) or if price is constant 40: =SUM(J5:J10)*40
+
+6) Total cost inconsistent ranges
+- Problem: Some sheets sum B15:I20 (includes Material cost) while others sum B15:H20 (excludes Material).
+- Fix: Decide whether Material cost should be included. If yes then change all totals to:
+  - Total Cost: =SUM(B15:I20)
+  If you intended to exclude material, change all to =SUM(B15:H20). Be consistent.
+
+General suggestions (short)
+- Use absolute references for parameters on Sheet1: Sheet1!$B$16, Sheet1!$B$17, Sheet1!$B$22, Sheet1!$B$23, etc.
+- Search for any other formulas that reference Sheet1!B24, B25, B26, B27, B28 — these are likely wrong copy‑pastes.
+- Replace any hardcoded numbers (e.g. 534) with the corresponding cell reference to avoid errors when scenario values change.
+- After fixes, recalculate and verify totals (Total Cost, Total Revenue, Profit).
+
+If you want, I can give you the exact Find/Replace steps or produce the corrected formulas for every affected cell (I can output a list you can paste). Which would you prefer?

@@ -1,0 +1,63 @@
+I reviewed the workbook formulas on all three sheets and found a few clear formula errors and several inconsistencies/possible logic mistakes you should check and (if needed) fix. Below I list them by sheet/cell with an explanation and a suggested correction.
+
+1) Definite formula error
+- Lab Notes!D19
+  - Current formula: =28-B19
+  - Problem: All other buyer profit cells use =C#-B# (value minus price). D19 should be consistent with those.
+  - Effect: D19 shows 10.5 instead of the expected 25 − 17.5 = 7.5.
+  - Suggested fix: Change to =C19-B19.
+
+2) Missing / blank reference that produces an unexpected zero
+- Homework!H69
+  - Current formula: =F55
+  - Problem: Homework!F55 is blank (no value/formula in the file). H69 therefore evaluates to 0; that is almost certainly not intended.
+  - Suggested fix: Replace the reference with the correct cell. Likely candidates:
+    - If you meant the competitive mean price for Session 2, use ='Lab Notes'!E114
+    - Or if the competitive prediction for Session 2 should be entered on Homework!F55, fill that cell and keep the reference.
+  - Action: Decide whether F55 should contain a value (and enter it), or change H69 to point to the correct populated cell.
+
+3) Inconsistent treatment of the fixed cost "10" (per-fisherman vs per-fish)
+There are inconsistent formulas that subtract "10" multiplied by different counts (sometimes number of fishermen, sometimes number of fish sold). You should pick one interpretation and consistently use it.
+
+- Lab Notes!D116
+  - Current formula: =SUM(B10:B49)-10*B109
+  - Meaning: revenue (sum of prices) minus 10 × number of fishermen (B109).
+- Homework!F47
+  - Current formula: =20*F46-10*F46  (i.e. (price 20 × number sold) − 10 × number sold) → effectively subtracts 10 per fish sold (not per fisherman)
+  - Meaning: subtracting cost as 10 per fish sold.
+- Homework!F57
+  - Current formula: =-10*'Lab Notes'!B110
+  - Meaning: subtracting 10 × number of fishermen (no revenue term; odd if you intended revenue − cost)
+
+Why it's an issue: If the cost of 10 is (a) a fixed cost per fisherman, then subtract 10 × number_of_fishermen everywhere (use B109/B110). If the cost is (b) a cost per fish, subtract 10 × number_of_fish_sold (use D115/E115). Right now both conventions appear in the workbook, and one cell (F57) drops revenue entirely. That yields logically inconsistent total-profit numbers across sheets.
+
+- Suggested fixes (choose one consistent model):
+  - If cost is per fisherman: make all fishermen-profit formulas use 10*number_of_fishermen (B109, B110). Example: Homework!F47 → =20*F46 - 10*'Lab Notes'!B109 (or similar), and F57 should include revenue (e.g. =20*F56 - 10*'Lab Notes'!B110).
+  - If cost is per fish sold: use 10*number_of_fish_sold (D115/E115). Example: Lab Notes!D116 → =SUM(B10:B49) - 10*D115.
+  - Ensure F57 is not just =-10*B110 unless that was intentionally meaning “only costs, zero revenue.”
+
+4) Minor issues / questionable references (not strictly errors but confusions)
+- Homework!F69
+  - Current formula: =Homework!F45
+  - Problem: referencing the same sheet with explicit sheet name is allowed but unnecessary; not an error. Just stylistic.
+- Homework!H69 (again)
+  - As noted above, evaluates to 0 because F55 is blank — that is the main problem here.
+- Lab Notes!D26:D49 and Lab Notes!D82:D95
+  - These cells have formulas =C#-B# but C# and/or B# are blank; result is 0. That is fine technically, but verify you intended blank values (no transaction) rather than omitted data.
+- Lab Notes D114/E114 (mean price)
+  - Formulas use SUM(B#)/COUNT(B#) and COUNT ignores blanks, which is consistent with using only actual transactions. This is fine — just note it relies on numeric values only in B ranges.
+- Homework!F69 / other self-sheet references
+  - There are multiple references like =Homework!F45 from within Homework. That works but is redundant and fragile if you rename sheet — not an error, but odd.
+
+5) Summary of recommended concrete edits
+- Fix the clear formula bug:
+  - Change Lab Notes!D19 to =C19-B19.
+- Fix the blank reference:
+  - Enter the intended value in Homework!F55, or change Homework!H69 to point to a populated cell (e.g. ='Lab Notes'!E114) if that was intended.
+- Choose and apply a consistent cost convention:
+  - Decide whether the "10" cost is per fisherman or per fish sold, and then update D116, E116, Homework!F47, Homework!F57 (and any other relevant cells) to use the same base (either B109/B110 for #fishermen or D115/E115 for #fish sold). Also ensure the revenue term is included whenever appropriate (some cells now include only cost).
+- Optional: Replace same-sheet references like =Homework!F45 with =F45 (style only).
+
+If you want, I can:
+- apply the specific corrections (I can produce an updated workbook with fixes),
+- or produce the exact replacement formulas for each inconsistent cell if you tell me which cost convention you prefer (cost per fisherman vs cost per fish). Which would you prefer?

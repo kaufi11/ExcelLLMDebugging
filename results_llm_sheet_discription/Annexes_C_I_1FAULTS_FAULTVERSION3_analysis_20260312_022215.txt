@@ -1,0 +1,27 @@
+I checked the workbook structure and formulas. I found two clear formula errors (plus one inconsistency that can cause confusion). Short fixes and plain explanations below.
+
+1) Error — wrong % variance formula for Total Funds (annex f)
+- Where: Sheet "annex f", cell K68 (Variance % for "Total Funds").
+- Problem: K68 contains =K48 (copies the % variance for "Total Net Assets") instead of calculating the % variance for Total Funds. This is a copy/paste mistake — it shows the wrong % and hides the real variance % for Total Funds.
+- Fix: Replace the formula in K68 with the standard %‑variance pattern used elsewhere:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Why: That computes (I68−H68)/H68 as a percent (or shows "N/A" if the base is zero), which is the intended calculation.
+
+2) Error — wrong total/closing balance in original cash forecast (annex g)
+- Where: Sheet "annex g", cell T19 (Original Cash Forecast block, Balance c/f (cash and overdraft) total column).
+- Problem: T19 currently equals H18 (T19: =H18). That is incorrect: it shows the opening balance again instead of the closing/breakdown value for the July/Total column. The actual/revised block uses T42 = S42 (final month) pattern, so the original block should be consistent.
+- Fix (preferred / consistent): set T19 to the July closing balance (S19):
+  T19 = S19
+  (or, if you prefer the T column to be a sum across months, use =SUM(H19:S19).)
+- Why: T19 should show the closing (end) balance for the period or the total across months — not the opening balance. Using S19 matches the pattern used in the Actual/Revised section (T42 = S42) and prevents incorrect reconciliation values downstream.
+
+3) Inconsistency (not strictly an error but worth noting)
+- Many rows use T = SUM(H:S) (true totals) while others use T = S (final month). This mixed use can be confusing and may cause mistakes when people expect T always to be a month-total or always to be a final-month value.
+- Suggestion: pick a consistent rule for the T column (either "Total across Aug→Jul" or "Value in July") and apply it consistently. The template already mixes both patterns; if you standardize, add a clear comment/header to the sheet so users know which rows show totals and which show end-of-year values.
+
+Quick checklist to apply:
+- Update annex f K68 → =IF(H68=0,"N/A",(J68/H68)*100)
+- Update annex g T19 → =S19  (or =SUM(H19:S19) if you prefer totals)
+- Optionally: review other T‑column formulas and standardize their meaning (total vs final month) and add a sheet note.
+
+If you want, I can produce the exact list of cells where T uses SUM(H:S) vs T=S to help standardize the T column.

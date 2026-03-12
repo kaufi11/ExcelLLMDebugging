@@ -1,0 +1,57 @@
+I reviewed the formulas and cell contents in the "Table 22" sheet. Below are the formula errors and notable inconsistencies I found, with explanations and suggested fixes.
+
+1) Concrete formula error (wrong cell reference)
+- Cell AC26: formula is
+  =SUM(100-(S26+U27+W26+Y26+AA26))
+  Problem: it refers to U27 (1999 Upper‑level B) instead of U26 (2000 Upper‑level B). This is almost certainly a typo and gives an incorrect "Other" percentage for the 2000 Health & Public Affairs upper‑level row.
+  Suggested fix:
+  - Change to =100-(S26+U26+W26+Y26+AA26) (or =SUM(100-(S26+U26+W26+Y26+AA26)) if you want to keep the SUM wrapper).
+
+2) Inconsistent/misaligned data entry (extra values in columns F, H, Z, etc.)
+- Several rows contain numeric values in columns that the header does not define (header uses E= A, G= B, I= C, K= D, M= F/WF for lower level; similarly S,U,W,Y,AA for upper). Examples:
+  - Row 18 (Education 2000) has values in F18 (24.7) and H18 (2.1) in addition to E18,G18,I18,K18,M18. That shifts the pattern and suggests data are misaligned in that row.
+  - Row 19 and 20 (Education 1999/1998) also show F19/F20 and H19/H20 populated.
+  - Row 22 (Engineering 2000) includes Z22 = 4.5 (an unexpected column for the header layout).
+  - Row 23 and 24 similarly show Z23 etc.
+  - Row 28 (Health 1998) includes M28 but K28 is missing; yet O28 formula references K28.
+  Effect:
+  - These extra/misplaced values will make the computed "Other" percentages (O and AC columns) invalid or misleading, since the formulas assume a fixed set of columns (E,G,I,K,M and S,U,W,Y,AA). They also make visual interpretation of column headings wrong for those rows.
+  Suggested fixes:
+  - Inspect the original data row-by-row and shift the misaligned values into the correct columns (e.g., move F18→G18 or whatever the correct mapping is). If those extra entries are stray or belong to other fields, remove or relocate them.
+  - After correction, recompute O and AC formulas (see point 3 for best practice).
+
+3) Inconsistent formula usage and totals
+- Unnecessary use of SUM() around a single scalar expression:
+  - Many "Other" formulas are written like =SUM(100-(E6+G6+I6+K6+M6)). This is not an error—Excel accepts it—but it's unnecessary. Simpler is =100-(E6+G6+I6+K6+M6).
+- Totals for "TOTAL UNIVERSITY" years use explicit addition of selected Q (and AF) cells:
+  - Q30 = Q26+Q22+Q18+Q14+Q10+Q6 (2000 total)
+  - AF30 = AF26+AF22+AF18+AF14+AF10+AF6
+  - Q31 = Q27+Q23+Q19+Q11+Q7 (1999 total)
+  - AF31 = AF27+AF23+AF19+AF11+AF7
+  Issues:
+  - The selected cells differ between years (e.g., Q31/AF31 omit some Q/AF cells used in Q30/AF30). This may be intentional (e.g., hospitality 1999 is n/appl), but it's inconsistent and easy to introduce omissions.
+  - Q32 and AF32 (1998 TOTAL UNIVERSITY) do not use formulas but contain static values (Q32 = 40676, AF32 = 51470). That is inconsistent with the other year totals which use formulas.
+  Suggested fixes:
+  - Use explicit SUM over the exact lower-level cells for the given year (for clarity) or use a robust range/formula pattern. Examples:
+    - If the college total rows for 2000 are contiguous: =SUM(Q6,Q10,Q14,Q18,Q22,Q26) or if they are contiguous in rows, use =SUM(Q6:Q26) and exclude header rows as needed.
+    - Make the same pattern for 1999 and 1998 (include/exclude n/appl rows consistently).
+  - Replace hard-coded totals (Q32/AF32) with formulas mirroring the other totals to avoid manual errors.
+
+4) Formulas referencing potentially empty cells
+- Some O formulas reference K28 although K28 is not present in the row data (row 28 lists E28,G28,I28,M28 but not K28). An absent cell behaves as 0, so the formula produces a numeric result but likely not the intended one if K28 should have a value.
+  Suggested fix:
+  - Ensure each grade column (E, G, I, K, M for lower; S, U, W, Y, AA for upper) has the intended values for each row, or update formulas to ignore empty columns intentionally.
+
+5) Floating point artifacts in "Other" and AC values
+- Many computed "Other" percentages show floating point artifacts (e.g., 8.60000000000001). This is a normal floating‑point display issue. If you want cleaner display, format these cells to fewer decimal places (e.g., 1 decimal) or wrap the computation in ROUND(...,1).
+
+Summary of immediate action items I recommend
+1. Fix AC26 to reference U26 instead of U27.
+2. Audit rows with values in unexpected columns (F, H, Z, and missing K in row 28). Realign those row values so they match the header columns E/G/I/K/M and S/U/W/Y/AA.
+3. Standardize the total formulas for each year. Replace hard-coded/static totals with SUM formulas that include the correct set of college rows for that year.
+4. Remove accidental typos in formulas (U27) and replace unnecessary SUM wrappers with direct arithmetic or at least be consistent.
+5. Optionally apply ROUND formatting to "Other" percentage cells to avoid floating point display artifacts.
+
+If you want, I can:
+- Produce an exact corrected formula list (cell-by-cell) assuming a specific alignment (tell me how the misaligned cells should be shifted), or
+- Produce a repair script (list of edit operations) to fix AC26, fill missing totals, and realign the suspect rows if you tell me the intended mapping for the stray F/H/Z values.

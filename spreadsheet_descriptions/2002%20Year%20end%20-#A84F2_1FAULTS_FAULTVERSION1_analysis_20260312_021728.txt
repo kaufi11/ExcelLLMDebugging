@@ -1,0 +1,68 @@
+Summary of workbook structure and contents
+
+Overall
+- Workbook has three sheets: "Financial Statements" (detailed accounts and notes), "5 Year review" (multi‑year summary and ratios that pull from the Financial Statements sheet), and "Audit Report" (static audit sign‑off text).
+- The Financial Statements sheet is laid out in conventional sections: Balance Sheet, Income Statement, Cash Flow Statement, followed by Notes to the financial statements and detailed schedules (tangible assets, investments, inventory, leases, etc.).
+- The model relies heavily on SUM formulas, intra‑sheet references and a number of cross‑sheet links (the 5 Year review pulls specific line items from Financial Statements). Several cells use explicit arithmetic or link to other computed totals (e.g. accumulated funds references a summed schedule).
+
+Sheet: Financial Statements (key structure and formulas)
+- Balance Sheet (top of sheet):
+  - Non‑current assets C13 = SUM(C14:C15). Tangible assets C14 = 204,331; Listed investments C15 = 30,709.
+  - Current assets C17 = SUM(C18:C21) with Inventory C18 = 26,384; Accounts receivable C19 = 149,622; Short term investments C20 = 1,969,772; Cash & equivalents C21 = 270,997.
+  - Total assets C23 = C13 + C17 (formula shown as =+C17+C13).
+- Equity and liabilities:
+  - Capital and reserves C28 = SUM(C29:C31). Accumulated funds C29 references C330 (C29 = +C330) which is a separate accumulated‑funds schedule in the Notes (C330 = SUM(C324:C329)).
+  - Non‑current liabilities C34 = 39,324 (interest bearing borrowings). Current liabilities C36 = SUM(C37:C40) (accounts payable, subscriptions received in advance, current portion of borrowings).
+  - Total equity and liabilities C42 = C36 + C34 + C28.
+- Income Statement:
+  - Subscriptions C54 = SUM(C55:C60) and Other operating income C61 = SUM(C62:C69).
+  - Financial income C71 references C72 (C72 is shown as =1416).
+  - Total revenue C74 = C61 + C54 + C71.
+  - Administration expenses C78 = SUM(C79:C91). Other operating costs C92 is a separate block (some years are formulas, some are literal values).
+  - Total expenditure C100 = C92 + C78.
+  - Surplus transferred to accumulated funds C102 = C74 - C100.
+- Cash Flow Statement:
+  - Net cash inflow from operating activities C117 = SUM(C122:C125) (operating cash components are listed: cash received from members C120, cash paid to suppliers C121 etc.).
+  - Investing C129 and Financing C136 sections are present (purchases, disposals, lease movements).
+  - Net increase in cash C144 = C136 + C129 + C117. Cash at end C147 = C144 + C145 (C145 pulls opening balance).
+  - Cash & equivalents used in the cash flow are also reconstructed in a short schedule (C529:C531 and C532 = SUM(...)).
+- Notes and schedules:
+  - Numbered notes (1 – 20) containing accounting policies, schedules for tangible assets (note 4: cost, accumulated depreciation, movements), listed investments, inventory, short term investments, accumulated funds, development funds, lease details, other income, seminars, audit fees, and detailed breakdown of "Other administration expenditure".
+  - Many supporting formulas in the notes (SUMs and cross references to the main statements). Example: tangible assets net carrying value C248 = C234 - C241 with cost and accumulated depreciation computed by SUM ranges.
+
+Sheet: 5 Year review (layout and links)
+- Multi‑column (2002, 2001, 2000, 1999, 1998) condensed income & balance summary and cash flow.
+- Numerous cells link to the Financial Statements sheet. Examples:
+  - Member subscriptions (E15) = 'Financial Statements'!E54
+  - Other income (E16) = 'Financial Statements'!E61
+  - Expenditure (C18/E18) = 'Financial Statements'!C100 / !E100
+  - Cash retained C32 = 'Financial Statements'!C117
+  - Net investment and financing C33/C34 also link to Financial Statements.
+- Ratios: current assets to current liabilities and capital & reserves to total assets reference Financial Statements totals.
+- Simple member and student headcount and growth columns included.
+
+Sheet: Audit Report
+- Static text: auditors’ opinion, signatories, dates. No formulas.
+
+Key values observed (as shown or computable on sheet)
+- Member subscriptions (2002): C54 = 7,321,786
+- Other operating income (2002): C61 = 1,302,683
+- Total revenue (2002): C74 = 8,625,885
+- Total administration expenditure (2002): C78 = 6,762,079
+- Surplus for year (2002): C102 = 1,863,806
+- Non‑current assets (tangible + listed) C13 = 235,040 (C14+C15)
+- Current assets (2002): C17 = 2,416,775
+- Total assets (2002): C23 = 2,651,815 (C13 + C17)
+- Cash and cash equivalents at end (2002): C147 (computed via cash flow) = 2,240,769 (sheet formulas: C147 = C144 + C145)
+(These key numbers are taken from the cells and the sheet formulas provided; some totals are computed by sheet formulas rather than explicitly shown.)
+
+Notes on model characteristics / potential points to watch
+- Heavy reliance on SUM ranges and a number of cross‑references—changes in note rows can propagate widely.
+- Some cells are recorded as "FORMULA =<constant>" (e.g., C72 =1416) or reference totals in non‑obvious places (e.g., C29 = +C330) — review links if you re‑structure rows.
+- A few auxiliary columns (G, H, I) contain marks or intermediate values; some starred cells (G31, G34, G40) appear as annotations.
+- The 5 Year review replicates figures by linking to the Financial Statements—good for consistency but sensitive to row/label changes.
+
+If you want, I can:
+- Reconcile the balance sheet (assets vs equity & liabilities) using the workbook values and flag any mismatches.
+- Produce a compact mapping of all cross‑sheet links (which 5 Year cells link to which Financial Statements cells).
+- Extract the primary totals into a one‑page summary sheet.

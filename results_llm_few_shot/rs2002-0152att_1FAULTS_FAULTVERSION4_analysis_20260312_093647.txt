@@ -1,0 +1,23 @@
+Summary — two formula errors found:
+
+1) Sheet: Watershed Protection
+- Faulty cells: I7:I18 (the entire cumulative column in that block)
+- Error type: Wrong-column / inconsistent reference (mechanical/logical)
+- Explanation: The cumulative total (I) is supposed to add the Approved Funds (column H). Many formulas in I use the Requested Funds (column G) or a mixture of G and H, so the running total is wrong whenever G ≠ H.
+- Repair formula (recommended, enter in I7 and fill down): =SUM($H$7:H7)
+  - Or if you prefer incremental: I7 = H7, I8 = I7 + H8 and fill down.
+- Why this fixes it: SUM($H$7:H7) is a robust running total that always sums the approved-awarded amounts up to the current row (prevents accidental references to G).
+
+2) Sheet: Coastal NPS - Reg 1,2,3
+- Faulty cell: I22
+- Error type: Typo / wrong reference
+- Explanation: I22 currently contains =262+H22 (a hard-coded literal "262") instead of adding the prior cumulative. That breaks the running total.
+- Repair formula: =I21+H22
+  - Or use running SUM approach: =SUM($H$7:H22) in I22 (and alter earlier cells similarly if you want consistency).
+- Why this fixes it: It restores the running total logic by adding this row's approved funds to the previous cumulative.
+
+Quick checks to run after fixes:
+- Verify the first cumulative cell in each section uses the Approved Funds (H) only.
+- Prefer the SUM($H$start:Hcurrent) pattern for each I cell to avoid chain-breaks from a bad I cell.
+
+If you want, I can give the exact Find/Replace steps or a ready-to-paste block of corrected formulas for each affected I cell.

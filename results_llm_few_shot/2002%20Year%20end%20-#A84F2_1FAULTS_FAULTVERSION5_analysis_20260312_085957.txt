@@ -1,0 +1,29 @@
+I reviewed the workbook and found three clear, fixable errors that are causing incorrect numbers (especially in the cash‑flow and the 5‑year summary). Short summary with corrections and short explanations:
+
+1) Cash‑flow: C122 is hard‑coded (wrong)
+- Faulty cell: C122 ("Cash (applied to) / generated from operations")
+- Error: It contains a hard‑coded value (-26908) instead of adding the two source cells (cash received and cash paid). This breaks the operating cash inflow calculation (C117) and downstream totals.
+- Fix (formula): =C120 + C121
+- Why: C122 must equal Cash received from members (C120) plus Cash paid to suppliers and employees (C121). Using the cell references keeps the result correct and dynamic.
+
+2) Cash‑flow: C121 uses literal numbers and a typo
+- Faulty cell: C121 ("Cash paid to suppliers and employees")
+- Error: The formula is a literal arithmetic (= -26907 - 7561074) that includes a wrong hard‑coded number (7561074) instead of referencing C120 (7561073) or the actual source cells; using literals causes transcription/rounding errors and makes the sheet fragile.
+- Recommended fix (minimal): replace the literal with a reference so it cannot get out of sync. Example:
+  - = -26907 - C120
+  (or better, if the -26907 is itself derived: replace both parts with references to the underlying detail cells that make up supplier/employee payments)
+- Why: Referencing C120 avoids the off‑by‑one/mistyped constant and keeps the cash‑paid figure consistent with the cash‑received figure and any detail inputs.
+
+3) Five Year Review links point to 2001 instead of 2002
+- Faulty cells: Sheet "5 Year review" C15 and C16 (2002 Income lines)
+- Error: They point to 'Financial Statements'!E54 and E61 (2001 columns) instead of the 2002 columns.
+- Fix (formulas):
+  - C15: ='Financial Statements'!C54
+  - C16: ='Financial Statements'!C61
+- Why: The 5‑year review row C is the 2002 column, so it must pull from the 2002 figures (column C on the Financial Statements sheet), otherwise the 5‑year totals/ratios are wrong.
+
+Quick checklist after fixes
+- After changing C121 and C122, recalc C117 (=SUM(C122:C125)), C144, C147 and any downstream totals (C144, C147, C532, C532 used elsewhere) to confirm the cash flow and balance sheet cash reconcile.
+- After fixing C15/C16, check C17 (total income) and any ratios in the 5‑year sheet.
+
+If you want, I can give the exact corrected formulas and then show the before/after numbers (i.e., how totals change) if you paste the current contents of C121/C122 (or allow me to set the corrections).

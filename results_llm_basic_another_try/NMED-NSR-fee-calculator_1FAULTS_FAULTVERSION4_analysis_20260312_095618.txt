@@ -1,0 +1,48 @@
+Errors found:
+
+1. **Inconsistent use of B34 and B35 in formulas:**
+   - C34 formula: `=IF(B35="",(IF(B34<>"",10,0)),"")` checks B35 but then uses B34.
+   - C35 formula: `=IF(B35<>"",(B35*10),0)` uses B35.
+   - This inconsistency may cause C34 to return "" (blank) when B35 is empty, even if B34 has a value.
+
+2. **C43 formula logic issue:**
+   - `=IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))`
+   - It returns "N/A" if B34 is not blank, but B34 is "Streamlined (# of Sites)" which is a number, so if B34 has a number, it returns "N/A" instead of half fee.
+   - The logic seems reversed or unclear.
+
+3. **C30 formula referencing B31 and B30:**
+   - `=IF(B31="",(IF(B30<>"",20,0)),"")`
+   - If B31 is empty and B30 is not empty, returns 20, else 0; if B31 not empty, returns "".
+   - This may cause blank instead of 0, which can affect SUM.
+
+4. **C34 formula returns "" (blank) which can affect SUM in C36 and C41.**
+
+---
+
+**Solutions:**
+
+1. **Fix C34 formula:**
+   - Change to `=IF(B34<>"",10,0)` to consistently check B34 only.
+   - This avoids dependency on B35 for C34.
+
+2. **Fix C43 formula:**
+   - If half fee applies for small business (B38 has "x") and no streamlined sites (B34 blank), then:
+   - Use `=IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))` is okay if B34 means "streamlined" disables half fee.
+   - Confirm logic with user; if half fee applies when small business marked (B38) and no streamlined sites (B34 blank), formula is correct.
+   - Otherwise, clarify logic.
+
+3. **Fix C30 formula:**
+   - Replace blank "" with 0 to avoid SUM issues:
+   - `=IF(B31="",IF(B30<>"",20,0),0)`
+
+4. **Avoid blank "" in formulas that feed SUM:**
+   - Replace "" with 0 in C34 and C30 to ensure totals calculate correctly.
+
+---
+
+**Explanation:**
+
+- Using "" (blank) in numeric columns causes SUM to ignore those cells, potentially undercounting totals.
+- Consistent referencing of input cells avoids logical errors.
+- The half fee formula depends on presence of streamlined sites and small business indicator; ensure logic matches business rules.
+- Fixing these ensures accurate point totals and fee calculations.

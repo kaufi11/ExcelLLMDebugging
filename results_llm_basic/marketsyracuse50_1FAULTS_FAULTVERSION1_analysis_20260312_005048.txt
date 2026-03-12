@@ -1,0 +1,21 @@
+Summary — the error is in cell F24.
+
+What’s wrong
+- F24 contains =1/$E24 (1 divided by deposits) instead of returning the full deposit amount for a bank. That makes F24 essentially zero instead of 79,364.
+- Consequences: F36 (total adjusted deposits) and any dependent calculations (market shares and HHI) are wrong (market shares for all institutions will be inflated because the denominator is too small, and HHI will be wrong).
+
+How to fix (quick)
+1. Replace F24 with = $E24  (or =1*$E24).  
+2. Recalculate / let Excel recalc. F36, the G% column and H (HHI) will update correctly.
+
+Better, safer solution to prevent manual mistakes
+- Put a single formula in F10:F33 that sets 100% for banks and 50% for thrifts, then fill down. For example, in F10 enter:
+  =IF($C10="Thrift",0.5*$E10,$E10)
+  then copy down to F11:F33.
+- This avoids per-row manual edits that produce typos like 1/$E24.
+
+Optional cleanup (recommended)
+- For G (market share) use =F10/$F$36 and format G cells as Percentage (instead of multiplying by 100 inside the formula). This reduces confusion.
+- If you show G as a percent (0–100%) and want standard HHI on 0–10,000 scale, use H = (G*100)^2 or keep current approach but be consistent about whether G is a percent value or decimal.
+
+If you want, I can provide the exact corrected values for F36, G36 and H36 after the fix.

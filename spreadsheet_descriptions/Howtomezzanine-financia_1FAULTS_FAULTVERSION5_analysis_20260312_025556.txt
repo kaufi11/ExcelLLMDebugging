@@ -1,0 +1,55 @@
+Summary — workbook contains 2 sheets: "Rules of thumb" and "Mezzanine financial model". Both are small financial/price-setting models that take a few key inputs (shaded/independent variables) and calculate per‑sqft, per‑desk and per‑month costs, revenues, breakeven payments and project NPV.
+
+1) Sheet: Rules of thumb
+- Purpose: quick heuristic to convert rent and operating costs into an annual tenant charge and estimate profit after setup amortisation.
+- Key inputs (changeable):
+  - Space allowed per desk: B4 = 90 sq ft/desk
+  - Rent & service charge: B7 = 15 per sq ft
+  - Operating costs + office manager: B8 = 5 per sq ft
+  - Unoccupied lettable fraction: B11 = 0.15
+  - Average markup on costs: B19 = 0.15
+  - Set up cost: B26 = 20 per sq ft
+  - Lease length: B27 = 10 yrs
+  - Interest rate (for amort): B28 = 0.08
+- Key formulas / calculations:
+  - Total operating cost per sq ft: B9 = B7 + B8
+  - Cost of unoccupied space: B12 = B11 * B9
+  - Total cost per sq ft: B14 = B9 + B12
+  - Total cost per desk: B15 = B4 * B14
+  - Annual charge to tenant (cost + markup): B21 = B15 * (1 + B19)
+  - Per sq ft charge: B22 = B21 / B4; monthly per desk: B23 = B21 / 12
+  - Annual payment to repay setup cost per sq ft: B29 = PMT(B28, B27, -1*B26, 0, 0)
+  - Annual operating profit per sq ft: B30 = B19 * B15 / B4
+  - Gross profit (loss) per sq ft: B32 = B30 - B29
+- Outputs: per‑desk and per‑sqft annual and monthly charges, amortisation cost and gross profit per sq ft.
+
+2) Sheet: Mezzanine financial model
+- Purpose: detailed annual operating cost / revenue and project investment model for a mezzanine workspace; presents costs per sq ft, per desk and per month; calculates operating profit, breakeven payments and project NPV.
+- Top-level inputs:
+  - Total Area: C5 = 14,000 sq ft
+  - % Common Area: C6 = 0.33
+  - Number of Desks: C8 = 160
+  - Many annual cost lines in C12:C35 (examples: Basic Rent C12 = 250,000; Services C14 = 65,000; Office Manager C16 = 30,000; Cleaning C20 = 17,000; Telephone charges C31 = 38,000; etc.)
+  - Startup/initial investment line items in C43:C55 (examples: Project Mgmt C45 = 30,000; Building Works C46 = 50,000; IT Infrastructure C48 = 60,000; Telephone system C47 = 40,000)
+  - Startup funding/grants: F59 = 20,000
+  - Assumptions: Lease length C65 = 5 yrs (max 10), Occupancy C67 = 0.95, WACC/MARR C69 = 0.08
+- Layout & calculated columns:
+  - Costs shown in absolute annual totals (column C), plus per sq ft (H), per desk annually (J) and per desk monthly (L/M) using formulas like H## = C## / $C$5 and J## = C## / $C$8, L## = J## / 12.
+  - Basic charge totals: H29/I29/J29/K29 etc = SUM of per‑item columns.
+  - TOTAL CHARGE (summary): C37 = SUM(C12:C35)*0.9 (discount applied); F37 = C37 + SUMPRODUCT(C12:C35, F12:F35) (incorporates % markups stored in F12:F35)
+- Results section:
+  - Initial investment totals: C57 = SUM(C43:C55)
+  - Net initial investment after grants: F76 = F74 - F75 (per sq ft / per desk equivalents in I/K)
+  - Operating costs (annual): F78 = C$37 and equivalents
+  - Operating revenues at occupancy: F79 = (F$37 + F$39) * C67 (includes additional revenue in F39)
+  - Operating profit: F80 = F79 - F78
+  - Break even payment (annual payment to service net initial investment at WACC): F82 = PMT($C$69, $C$65, -1*F$76, 0, 0)
+  - NPV of project: F85 = NPV($C$69, cashflows...) - $F$76 using repeated IF(...) to include F80 for each year up to C65
+  - Required operating revenue to achieve zero NPV / breakeven: F92 = (F90 + F91) / $C$67 and markup needed: F95 = (F92 - F39) / F91 - 1
+- Key functions used: SUM, SUMPRODUCT, PMT, NPV, IF, basic arithmetic and relative/absolute referencing.
+- Units and outputs: most financials in annual currency; columns convert to per sq ft, per desk (annual) and per desk per month.
+
+Overall notes
+- The workbook is input-driven: change the highlighted / top inputs (space per desk, rent, operating costs, number of desks, area, markup, occupancy, setup cost, lease length, WACC, etc.) and the rest recalculates.
+- Useful for quick pricing (Rules of thumb) and for a more detailed capacity/investment analysis (Mezzanine model) including breakeven and NPV.
+- Main decision metrics provided: per‑desk annual/monthly charge, operating profit, annual loan-style payment to recover initial investment (PMT), and project NPV.

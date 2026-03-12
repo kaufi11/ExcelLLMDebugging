@@ -1,0 +1,57 @@
+I inspected both sheets and compared formulas. I found a few actual formula mistakes and several inconsistencies/odd choices that you should check and (most likely) correct.
+
+Summary of real/formula problems (ordered by sheet and cell) plus recommended fixes
+
+Sheet "2003"
+- F4
+  - Current formula: =E4/(1000/999.7)
+  - Problem: This is the only row using division by (1000/999.7). Almost every other row uses multiplication by (1000/999.7). This looks like a typo.
+  - Recommendation: Change to =E4*(1000/999.7) to match the other rows (and the version on Sheet2).
+
+- I4
+  - Current formula: =SUM(H3:H4)/SUM(H3:H6)
+  - Problem: This returns (H3+H4)/SUM(H3:H6) — i.e. a cumulative proportion up to row 4 — not the fraction of the K+ row alone. All other cation rows (e.g. I5, I6) use H5/SUM(H3:H6) etc.
+  - Recommendation: Change to =H4/SUM(H3:H6) if you intend I4 to be the percent contribution of K+.
+
+- I7, I9, I10 (anion percent cells)
+  - Current formulas:
+    - I7 = H7/(H7+H9+H10)
+    - I9 = H9/(H9+H7+H10)
+    - I10 = H10/(H10+H9+H7)
+  - Problem: All three exclude H8 (NO3-) from the denominator. If the intent is to compute each anion's share of total anions, those should normally use SUM(H7:H10). The order/term arrangement is unusual and inconsistent with typical pattern.
+  - Recommendation: Replace each by =H7/SUM(H7:H10), =H9/SUM(H7:H10), =H10/SUM(H7:H10) (or otherwise include H8 consistently if NO3 should be included).
+
+- H12 / J12 / K12 / L12
+  - Observation: G12 appears blank (SiO2 neutral). K12 evaluates to 0, L12 to 1, H12 = F12*G12 -> 0. This is consistent if SiO2 is neutral. Not an error, but verify that leaving G12 blank is intended.
+
+- E23 / E22
+  - Current formula: E23 = C23 + H15, E22 = ((E24-E23))/(E23+E24)*100
+  - Problem: H15 (OH-) is =NA(), so E23 becomes #N/A and E22 returns #N/A. This may be intentional to flag missing OH-, but be aware it will propagate errors into derived quantities.
+  - Recommendation: If you prefer numeric output, fill in OH- or handle the NA with IFERROR or IFNA.
+
+Sheet "Sheet2"
+- F column and percent calculations
+  - Observation: Sheet2 uses consistent multiplication F = E*(1000/999.7) for all rows (no division typo present). Percent formulas for anions/cations are also consistently written (sheet2 uses different column placement for mi*zi^2, see below).
+  - No obvious formula errors found here; values differ slightly from sheet "2003" because of the F4 typo and small rounding differences.
+
+Cross-sheet inconsistencies and notes
+- Column layout shift
+  - On "2003" the mi*zi^2 column is J; on "Sheet2" the same quantity is in column I. Both sheets compute ionic strength using the correct column for that sheet (2003: B20 = 0.5*SUM(J3:J13); Sheet2: B20 = 0.5*SUM(I3:I13)). Not an error but be aware if you copy/paste formulas between sheets.
+
+- F4 discrepancy between sheets
+  - Because "2003"!F4 uses division while "Sheet2"!F4 uses multiplication, the ionic strength (B20) and downstream derived values differ slightly between the sheets. Example B20 values:
+    - "2003" B20 = 0.0117159718476367
+    - "Sheet2" B20 = 0.0117159902647219
+  - Recommendation: fix "2003"!F4 to match Sheet2 (multiply), which will make ionic strength and all dependent calculations identical or consistent.
+
+- Percent formulas inconsistent in cation block
+  - On "2003" I4 was cumulative (SUM(H3:H4)/SUM(H3:H6)) while I5, I6 are single-row fractions (H5/SUM(H3:H6), …). This inconsistent pattern should be corrected so every species shows either single-row fraction or cumulative fraction, consistently.
+
+Other (minor)
+- log gi formulas use -0.51*(G^2)*SQRT($B$20). That is consistent across rows and between sheets except tiny floating-point rounding variations. K column absolute reference to $B$20 is correct.
+- #N/A in OH- propagates as expected; decide if that is desired.
+
+If you want, I can:
+- provide an exact list of the cell addresses and corrected formulas for a direct copy/paste,
+- produce a small VBA/Excel script to fix the highlighted mistakes automatically,
+- or re-evaluate after you confirm how you want NO3 and OH- handled for the percent and charge balance calculations.

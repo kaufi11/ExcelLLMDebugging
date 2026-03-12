@@ -1,0 +1,32 @@
+I reviewed the formulas in the workbook and found several formula errors / inconsistencies. Below are the problems I found, the impact, and exact corrected formulas to fix them.
+
+Summary of problems
+- Q4 Homework: H5 uses COUNT instead of SUM, so Evans' total is 6 (the count of numeric cells) instead of the sum of the assignment scores.
+- Q4 Summary: The weighted-score formulas in column F (F3..F12) mistakenly use the Projects column (D) twice for both the 0.4 and the 0.2 weights. They never use the Homework column (E). As a result the Homework contribution is ignored and Projects is double-counted.
+- Downstream effects: Because Q4 Summary F-values are wrong, the Weighted Averages in G (=(F/300)*100) are wrong for each student and those incorrect Q4 percentages flow into Year Summary (G2:G10, H2:H10 and final letter grades in I2:I10).
+
+Exact cells and corrections
+
+1) Q4 Homework sheet
+- Cell H5 (Evans total)
+  - Current formula: =COUNT(B5:G5)
+  - Problem: counts numeric cells (returns 6) instead of summing scores.
+  - Correct formula: =SUM(B5:G5)
+
+2) Q4 Summary sheet — weighted score column (F)
+- Affected cells: F3, F4, F5, F6, F7, F8, F9, F10, F11, F12 (and F2 is correct as =SUM(B2:E2))
+- Current (incorrect) pattern: =B#*0.3 + C#*0.1 + D#*0.4 + D#*0.2  (D used twice)
+- Problem: last term should use Homework (E) with weight 0.2, not Projects (D).
+- Correct formula (use the appropriate row number):
+  - For row 3: =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+  - General: =Bn*0.3 + Cn*0.1 + Dn*0.4 + En*0.2
+
+3) Downstream to fix after making the above two corrections
+- Q4 Summary column G (Weighted Ave) is calculated from F (=(F#/300)*100). After fixing F, these G values will update automatically.
+- Year Summary pulls Q4 values from Q4 Summary column G. After correcting Q4 Summary F and H5, Year Summary G2:G10 and H2:H10 (averages) and I2:I10 (letter grades) will update. No change needed to the Year Summary formulas themselves — they will produce correct results once upstream fixes are made.
+
+Optional / suggested improvements
+- The nested IF used for letter grades in Year Summary (e.g. I2) works, but is slightly verbose. You could use a lookup (VLOOKUP/LOOKUP) or IFS (Excel 2016+) for clarity. Also the final IF uses H<101 for "A"; this is fine but will return FALSE if a value exceeds 100 — not typically an issue but something to be aware of.
+- In Q4 Summary row 3 (Points Possible) F3 currently equals 300 even though the formula used the wrong cell reference for the last term — fixing the formula makes it logically correct and still returns 300.
+
+If you want, I can produce the exact list of revised formulas to paste into each cell, or I can apply the fixes to the workbook and return the corrected file. Which would you prefer?

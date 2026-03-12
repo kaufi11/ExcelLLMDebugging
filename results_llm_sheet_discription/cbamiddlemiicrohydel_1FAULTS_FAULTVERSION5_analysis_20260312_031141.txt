@@ -1,0 +1,69 @@
+I reviewed the two sheets and found several errors and inconsistencies that will distort the CBA results. Below I list the problems, explain why each is wrong, and give simple fixes (with example formulas). I kept everything short and practical.
+
+1) Discount factor (row 19) — obvious error
+- Problem: I19 = H19*(249/249.2492) (bad copy/paste). This breaks the discount factor series and makes PV of costs wrong from column I onward.
+- Fix: use the same 1/(1+rate) multiplier for every year. Example (put the rate in a cell, e.g. $F$1 = 0.12):
+  - G19 = 1
+  - H19 = G19/(1+$F$1)
+  - I19 = H19/(1+$F$1) and then copy across to AA19.
+- Why: DF must be consistent; a single bad cell corrupts all PV calculations that use row 19.
+
+2) Inconsistent household count (30 vs 31)
+- Problem: CBA formulas use 30 households (e.g. tube lights, bulbs, connection split 15/15), but the survey/aggregation uses 31 households. That misstates total benefits/costs and causes incorrect splitting (half of 31 ≠ 15+15).
+- Fix:
+  - Put household count in one cell, e.g. $B$1 = 31.
+  - Replace hard-coded 30 (and 15) with $B$1 in formulas. Example:
+    - Tube lights row (G11..AA11): =5.67*$B$1*50*6
+    - Bulbs row: =4.22*$B$1*12*15
+    - Connection year1: =ROUND($B$1/2,0)*500
+    - Connection year2: =($B$1-ROUND($B$1/2,0))*500
+- Why: single source of truth prevents mismatches and handles odd household counts correctly.
+
+3) Kerosene price / unit inconsistency
+- Problem: assumptions say Rs.13/litre but later aggregation uses Rs.50 per gallon (C42) — these imply different per-litre prices (Rs50/4.54596 ≈ Rs11). Mixed units/prices produce wrong value of kerosene savings.
+- Fix: pick one unit and apply consistently. Recommended: use Rs13 per litre everywhere (since assumptions list it).
+  - If C37 is litres per year for village, value = C37 * 13
+  - Update C40/C41 to use Rs13/litre (remove conversion to gallons unless you want gallons explicitly).
+- Why: mixing gallon and litre rates without consistent conversion gives wrong monetary savings.
+
+4) Wiring cost inconsistency and fractional houses in rewiring
+- Problem: wiring cost used sometimes as 4297, sometimes 4275 (typo). Sensitivity rewiring uses 7.5 houses (fractional) and 4275*7.5 in Q10 — confusing and prone to error.
+- Fix:
+  - Put wiring unit cost in one cell, e.g. $B$2 = 4297.
+  - Rewire cost in year 10 (25% of houses): =0.25*$B$1*$B$2 (or =ROUND(0.25*$B$1,0)*$B$2 if you must use whole houses).
+  - Replace 4275*7.5 with the formula above.
+- Why: centralizing costs and using formulas avoids typos and fractional-house ambiguity.
+
+5) Scrap value and placement / clarity
+- Problem: AA29 = 0.02*G5 + 0.02*G6 is OK algebraically, but confusing and placed only in AA column. Also better to use a single expression and consistent cell refs.
+- Fix: use AA29 = 0.02*(G5+G6) and document it (if scrap at project end is intended in 2020). Or better: reference the construction-total cell (e.g., ConstructionTotalCell) so the scrap formula is 0.02*ConstructionTotalCell.
+- Why: clearer and less error-prone.
+
+6) Present value and DF robustness
+- Improvement: instead of multiplying year-by-year DF cells, compute DF as power of (1+rate):
+  - Put analysis start year (e.g. 2000) in a cell and compute DF in column header row: =1/(1+$F$1)^(year-2000)
+  - Then PV of each year = YearAmount * DF
+- Why: less chance of a single broken DF cell breaking the whole series.
+
+7) Miscellaneous small issues to check (quick list)
+- O&M formula looked OK after checking (the operators/repair adjustments are implemented correctly) — no change if you verified numbers.
+- Check all hard-coded "30" occurrences (tube lights, bulbs, kerosene savings, battery savings, handicraft profits, etc.) and replace with the household-count cell.
+- Check any other hard-coded unit costs (batteries Rs18, bulb Rs15, tube Rs50) and put them in dedicated cells for easy consistent reference.
+
+Action plan (practical steps you can do now)
+1. Create a small “Parameters” area (top-right or dedicated sheet) with:
+   - HouseholdCount = 31
+   - DiscountRate = 0.12
+   - WiringCost = 4297
+   - KeroPricePerLitre = 13
+   - TubePrice = 50, BulbPrice = 15, BatteryPrice = 18
+2. Fix DF row using DiscountRate and recopy across.
+3. Replace hard-coded numbers (30, 15, 4275, 50/gallon logic) with parameter references and recalc.
+4. Replace AA29 with 0.02*(G5+G6) or reference to total construction cell.
+5. Re-run PV and B/C calculations and check the NPV/B/C change.
+
+If you like, I can:
+- Give the exact replacement formulas for each affected cell (list every cell with a corrected formula), or
+- Provide a small patch (text of formulas) you can paste in to correct the sheet.
+
+Which would you prefer?

@@ -1,0 +1,32 @@
+I inspected all formulas you supplied. Summary: one formula references the wrong column and therefore causes incorrect subtotals/totals; several other formulas are stylistically inconsistent (use of SUM(...) around simple arithmetic or using + inside SUM), and many "remaining" cells subtract a blank E cell (which Excel treats as 0) — that may be intended but is worth checking.
+
+Details
+
+1) Incorrect cell reference (actual error)
+- Cell G19 formula: =SUM(D19-E19)
+  - Problem: D19 is empty; the intended calculation should be Remaining = Allocation (C19) − Year-to-date (E19). Using D19 makes G19 equal 0 (blank minus blank) whereas the allocation in C19 is 2.
+  - Effect: G19 should be 2 but is 0. That causes the "Subtotal administration" (G24) to be understated by 2 (G24 is 112 but should be 114). As a result the "Total campaign expenditure" remaining (G61) is understated by 2 (G61 is 825 but should be 827). Because of this the three-part identity Annual = Year-to-date + Remaining for the campaign section is currently violated (C61 = 1000 while E61 + G61 = 998).
+  - Suggested fix: change G19 to =C19-E19 (or simply =C19-E19 without SUM). After this change:
+    - G19 → 2
+    - G24 → 114
+    - G61 → 827 (and E61 + G61 = 173 + 827 = 1000 matching C61)
+
+2) Other observations (not necessarily errors but inconsistent/redundant)
+- Many "Remaining" cells use formulas like =SUM(C10-E10). SUM around a single arithmetic expression is redundant; =C10-E10 is clearer and consistent with Excel conventions. They work but are inconsistent.
+- Some subtotal/total formulas use SUM with a list of additions inside (e.g. =SUM(C10+C24+C30+...)). That works, but consistency/readability would be improved by either:
+  - Summing ranges where possible (e.g. =SUM(C10:C59) if the block is contiguous and there are no unrelated rows), or
+  - Using =C10+C24+... (no need for SUM).
+- Many rows have no "Year-to-date" (E column) values. Excel treats blank cells as 0 in arithmetic, so Remaining = Allocation − blank will return Allocation. This may be intended, but please confirm that missing E cells are truly 0 and not missing data.
+
+3) Quick checklist to correct/clean
+- Fix G19 to =C19-E19.
+- After that, verify G24 and G61 update correctly.
+- Consider normalizing formula style across the sheet:
+  - Use =Cn-En for remaining rows,
+  - Use =SUM(range) for subtotals where possible (or explicit + between subtotal cells).
+- Scan column E to confirm there are no missing year-to-date amounts that should be filled (they affect remaining values).
+
+If you want, I can:
+- Provide the exact corrected formulas for all affected cells,
+- Recompute and list all corrected totals,
+- Produce a version of the sheet with formulas normalized (consistent style).

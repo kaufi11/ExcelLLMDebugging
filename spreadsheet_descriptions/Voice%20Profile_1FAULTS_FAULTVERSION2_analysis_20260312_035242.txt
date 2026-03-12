@@ -1,0 +1,50 @@
+High-level summary
+- Workbook contains three sheets: Introduction, Example, and FINANCIAL DATA & ANALYSIS.
+- Purpose: guide users to enter telecom/voice cost data (per-bill or per-contract) for multiple sources and produce a consistent aggregated view (total costs, call counts, average cost per call, average call durations, mixes).
+
+Sheet: Introduction
+- Rows A15–A28 contain user instructions (fill the Financial Data & Analysis worksheet, what NOIE will do, contact details).
+- Rows A33–A38 provide organisation and copyright/disclaimer text.
+- Many cells in row 35 across columns A:AZ and beyond contain mailto: links to webmanager@govonline.gov.au.
+- Note: inline comments exist on example and FINANCIAL DATA & ANALYSIS sheets—configure Excel to show comment markers.
+
+Sheet: Example (layout and key values)
+- Purpose: worked example showing how to enter data and how formulas pull together per-source data into totals.
+- Column layout: leftmost column A lists categories (Local, Long distance, Mobile, Intl, Inbound 1800/1300, mixes, durations). Columns B/D/F represent DATA from up to three separate sources; columns C/E/G show SOURCE or notes; column H is TOTAL.
+- Aggregation pattern: totals in H are sums across the same row of B + D + F (e.g. H7 = B7 + D7 + F7).
+- Internal formulas (examples):
+  - B7 = B8 + B9 + B10 (monthly expenditure broken down by category)
+  - H7 = B7 + D7 + F7 (total monthly expenditure)
+  - B22 = B20 / B21 (average cost per call for that source)
+  - H16 = IF(H15<>0, H14 / H15, "") (safely compute average cost per call)
+  - H17 = IF((B15 + D15)<>0, ((B15*B17)+(D15*D17))/(B15+D15), "") (weighted average duration across sources)
+- Example numeric values to note:
+  - Number of handsets: B11 = 752, D11 = 300
+  - Planned handsets: B12 = 820
+  - Local calls cost B14 = 15,000; number of calls B15 = 107,500
+  - Long distance (non-mobile) cost B20 = 7,300; calls B21 = 10,152; B22 formula = B20/B21
+  - Long distance to mobiles cost B32 = 1,250; calls B33 = 1,114; D34 = 1 (example contract price)
+  - Mobile phones cost B50 = 9,000; mobiles B51 = 163; calls B52 = 13,750; avg duration B53 = 105s
+  - Inbound 1800 cost B59 = 2,500; calls B60 = 2,568; avg length B62 =156s
+  - Inbound 1300 cost B65 = 1,600; calls B66 = 5,512; avg length B68 = 330s; B69 = 425 calls > set duration
+- Mix and percentage fields are text/estimated entries (e.g. B28 = "5/25/40/30"; B29 = "80%/20%").
+
+Sheet: FINANCIAL DATA & ANALYSIS (actual data entry sheet)
+- Same structure and categories as Example but organized in columns C, E, G for multiple data sources and column I for TOTAL.
+- Column headers: B (labels), C/E/G (DATA and SOURCE), I = TOTAL, J = COMMENTS.
+- Aggregation pattern: I = C + E + G for costs, call counts and durations (e.g. I7 = C7+E7+G7; I31 = C31+E31+G31).
+- Average and weighted formulas mirror the example:
+  - I15 = IF(I14<>0, I13 / I14, "")
+  - I16 = IF((C14+E14)<>0, ((C14*C16)+(E14*E16))/(C14+E14), "")
+  - I21 and I33 use IF to avoid division by zero; I44/I45/I46 aggregate international calls/costs/durations similarly.
+- Cells I10 (number of handsets) and I11 (planned handsets) are pulled from the final source column (I10 = G10 etc.) — check where you should enter planned values.
+
+Overall layout & user workflow
+- Enter per-source monthly cost, call counts, durations and mixes into the per-source columns (Example uses B/D/F; FINANCIAL uses C/E/G).
+- Totals and averages are computed automatically in the TOTAL column (H in Example, I in FINANCIAL).
+- Key formula patterns to be aware of: summing across sources, per-source averages (cost/calls), IF guards for zero denominators, and weighted averages for durations.
+- Inline cell comments exist to guide required inputs—enable comment indicators in Excel to see them.
+
+If you want, I can:
+- Point to specific cells to edit for a given data source,
+- Create a short checklist of the minimum fields required for a sensible analysis.

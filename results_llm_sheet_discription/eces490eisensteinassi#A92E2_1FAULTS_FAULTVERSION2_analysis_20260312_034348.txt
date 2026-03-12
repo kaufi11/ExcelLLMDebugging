@@ -1,0 +1,21 @@
+Findings (short)
+- Error: Cell F19 is wrong. It contains the constant 2 instead of the information-content formula.
+- Consequence: G19 (and therefore the right-distribution entropy G46 = SUM(G19:G44)) is wrong/at risk of being wrong.
+- Fix: Change F19 to the same formula used in the other rows: =-LOG(E19,2).
+
+Why this is wrong (simple)
+- Information content I(p) = -log2(p). For p in E19 you must compute =-LOG(E19,2). Putting 2 in F19 makes G19 = p*2 instead of p*(-log2 p).
+
+What to do (step-by-step)
+1. Select F19 and replace the entry 2 with the formula:
+   =-LOG(E19,2)
+2. Confirm G19 uses E19*F19 (it already does in your sheet).
+3. Recalculate/verify G46 = SUM(G19:G44).
+4. Optional: verify probability vectors sum to 1: =SUM(E19:E44) and =SUM(A19:A44).
+5. Optional simplification: replace 26*((1/26)*-LOG((1/26),2)) with =LOG(26,2) for Max H.
+
+Result (numeric)
+- After the fix the right-distribution entropy should be about 4.26164 bits (verify in your sheet after recalculation).
+
+Note
+- Scan for any other manually-entered constants in columns F or B (you used formulas elsewhere) — accidental hard-coded numbers are the most common source of this kind of error.

@@ -1,0 +1,20 @@
+Findings (short)
+- Error: F12 (KEYCORP) is a hard-coded value of 5 instead of the weighted deposits formula (=1*$E12 or =E12). This is inconsistent with every other bank row in column F.
+- Consequence: F36 (total weighted deposits) is too low, so every Market Share (column G) and HHI contribution (column H) is wrong (too small for most banks, distorted totals). G36 will not sum to ~100%.
+
+Fix (steps)
+1. In F12 replace the 5 with the correct formula: =E12   (or =1*$E12).  
+2. Press Enter and let Excel recalculate.  
+3. Verify:
+   - F36 = SUM(F10:F33) increases to include KEYCORP's weighted deposits.
+   - G10:G33 recompute as =Frow/$F$36*100, and G36 ≈ 100 (rounding aside).
+   - H10:H33 recompute and H36 (HHI) becomes correct.
+
+Explanation (simple)
+- Column F must contain each institution’s weighted deposits (banks = 100% of E, thrifts = 50% of E). The single manual override (=5) removed KEYCORP’s deposits from the totals. Because G uses F36 as the denominator, all percentages and squared percentages (HHI) were calculated from a wrong total.
+- After restoring F12 to =E12, the denominator and every dependent cell update and the market-share and HHI numbers become correct.
+
+Quick checks to avoid similar errors
+- Use Home → Find (search in column F) for numeric constants (e.g., “=5” or numbers without “$E…” formulas).
+- Turn on Formula Auditing (Formulas → Show Formulas) or use Trace Precedents to confirm F cells reference column E.
+- If you want HHI on a 0–1 scale instead of percentage-squared, change H formula to =(Frow/$F$36)^2 (no *100).

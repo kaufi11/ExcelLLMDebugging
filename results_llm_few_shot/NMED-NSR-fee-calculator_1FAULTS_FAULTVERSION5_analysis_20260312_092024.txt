@@ -1,0 +1,32 @@
+Summary — main error
+- Cell C34 is hard-coded as 7 (C34 = 7). Because C41 tests OR(C34>0,C35>0) that makes the OR always true and C41 always return C36 (TOTAL OTHER ACTIONS) instead of summing the points in C9:C31. In short: the general-permit points are always counted even when no "x" is entered, so the Total Points logic is broken.
+
+Fixes (simple, safe)
+1) Make C34 conditional on the user input in B34:
+   Replace C34 =7
+   With:
+   =IF(B34<>"",7,0)
+   Why: this only gives 7 points when the user has marked B34 (the "x" box for General Permit). Now OR(C34>0,C35>0) will be true only when a General Permit or Streamlined sites are actually present.
+
+2) Make the final fee logic numeric (optional but recommended)
+- Current C43 uses text "N/A" and the sheet compares that text elsewhere (F5). It’s safer and clearer to return the actual numeric fee and let display logic decide.
+   Replace C43 with:
+   =IF(B34<>"",C42,IF(B38<>"",C42/2,C42))
+   And set F5 simply to:
+   =C43
+   Why: this returns the correct numeric payable fee:
+     - full fee if General Permit (B34),
+     - half fee if small business (B38),
+     - otherwise full fee.
+   Using numbers avoids comparing text "N/A" and prevents accidental blanks or text from breaking calculations.
+
+Minor improvement (optional)
+- C30 currently returns "" in some branches. For consistency use 0 instead of "" so SUM ranges are purely numeric:
+   Replace C30 with:
+   =IF(B31<>"",0,IF(B30<>"",20,0))
+
+What this fixes
+- C41 will correctly pick Sum(C9:C31) when no "other actions" are chosen.
+- Fee calculation becomes robust (no text-in-number comparisons or blanks that hide values).
+
+If you want, I can give you the exact cell-by-cell updated formulas and a short test plan to verify the sheet behaves correctly with different inputs.

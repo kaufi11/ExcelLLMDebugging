@@ -1,0 +1,31 @@
+Summary — what’s broken
+- You have one (actually several) circular reference chains in column B where a cell’s formula points to a later row that (through a chain) points back to the original cell. Excel either reports a circular reference or returns wrong numbers.
+  - The clearest loop: B40 -> B53 -> B45 -> B44 -> B43 -> B42 -> B41 -> B40. (Each of those is “=+Bxxx+1” pointing forward in the sheet, creating the loop.)
+  - There are other forward/reverse references too (e.g. B47 references B54, B97 references B221, B107 references B96, etc.) that either create additional loops or unreliable chains.
+- A clear formula typo: B18 = -B17 - 1 likely should be B18 = B17 + 1 (the leading minus makes the number negative and breaks the intended numbering sequence).
+- Cosmetic/unused issues: many formulas use the unnecessary “=+” prefix (not an error, but noisy).
+
+Why this is a problem
+- A formula that depends (directly or indirectly) on itself is a circular reference. Unless you intentionally enable iterative calculation and know the math, the values will be wrong or Excel will warn you. The sheet is intended to produce sequential numbers in column B but several cells point forward instead of to the previous row.
+
+How to fix it (short, actionable)
+1. Remove the forward references in column B. Every B cell that is supposed to be “next number” should reference the previous row’s B, not a later row.
+   - Example corrections:
+     - B18: change =-B17-1 to =B17+1
+     - B40: currently =+B53+1 → change to =B39+1 or =B38+1 (use whichever is the logical previous-number row in your layout). Most consistent pattern is =B(row-1)+1.
+     - B41: change =+B40+1 (if it already does that) — ensure it points to the row above, not below.
+     - B47: change =+B54+1 → =B46+1 (or =B46+1 if that’s the prior row).
+     - B53: change =+B45+1 → if B53 is supposed to follow B52 then use =B52+1, otherwise use the immediate prior-row reference.
+     - B97: change =+B221+1 → point to the previous row (e.g. =B96+1) or restart numbering manually for the new section.
+   - General rule: replace any =+Bxxx+1 where xxx > current row with =B(current_row - 1)+1 (or set a manual start value for a new section).
+2. If you’re unsure which previous B to use, use Excel’s auditing tools:
+   - Formulas → Trace Precedents / Trace Dependents to see the chain.
+   - Formulas → Error Checking → Circular References will list cells involved.
+3. After fixing all forward references, verify the sequence by checking a few rows manually. The numbering should be strictly previous_B + 1.
+4. (Optional cleanup) Replace “=+” with “=” for readability (it does the same thing).
+
+If you want, I can:
+- Produce a precise list of every B-cell that currently points forward and the exact replacement formula (I’d need the full sheet with row numbers present in Excel, or confirm which rows are the “previous” numbers you intend), or
+- Provide the exact corrected formulas for the specific cells I listed above if you confirm which row numbers should be sequential.
+
+Short version: fix B18’s wrong minus sign, and change every cell in column B that references a later row so it references the immediately previous row (or restart numbering manually). This will remove the circular references and restore correct sequential numbering.

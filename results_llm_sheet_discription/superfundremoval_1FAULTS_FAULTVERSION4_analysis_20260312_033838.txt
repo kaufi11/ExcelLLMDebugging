@@ -1,0 +1,39 @@
+Summary — main errors found
+1) Section weight-check formulas compare the sum to "100%" while the weight cells are decimals that sum to 1.0 — this always returns "ERROR".  
+2) Typo in G21: formula multiplies the weight by 704 instead of 1, producing a huge incorrect weighted score.  
+3) Minor inconsistency in Section IV scoring factors (0.33/0.67 vs weight values 0.333/0.334) — can cause small rounding mismatches.
+
+What to change (exact fixes)
+
+1) Fix the weight-sum checks (F12, F24, F36, F56)
+- Replace each IF that uses <>100% with a check against 1 (and round to avoid floating-point precision). Example replacement for F12:
+  =IF(ROUND(SUM(F6:F10),6)<>1,"ERROR","100%")
+- Do the same in F24, F36 and F56, adjusting the SUM ranges:
+  F24: =IF(ROUND(SUM(F16:F22),6)<>1,"ERROR","100%")
+  F36: =IF(ROUND(SUM(F28:F34),6)<>1,"ERROR","100%")
+  F56: =IF(ROUND(SUM(F41,F45,F53,F54,F55),6)<>1,"ERROR","100%")
+Alternative approach: convert the weight cells to percentage format (20%, 14.28%, etc.) and keep the existing <>100% checks. (Either approach is fine; pick one.)
+
+2) Fix the G21 typo (Section II, row 21)
+- Replace
+  =IF(C21="yes",(704*F21),IF(C21="no",(0*F21),""))
+  with the intended formula (simple and clear):
+  =IF(C21="yes",F21,IF(C21="no",0,""))
+This makes G21 produce the correct weighted score (either F21 or 0).
+
+3) Align Section IV partial-score multipliers (optional, for precision)
+- Current nested IFs use 0.33 and 0.67 while the weights are 0.333/0.334. Use consistent fractions to avoid tiny mismatches. Example standardized formula pattern:
+  =IF(C41="yes",F41,IF(C41="no",0,IF(C41="small extent",(1/3)*F41,IF(C41="large extent",(2/3)*F41,""))))
+- Apply the same approach to G45 and G53 formulas if they use 0.33/0.67.
+
+Why these fixes work (short)
+- The weight-check compared 1.0 to "100%" (a different numeric value/format), so it always failed. Comparing to 1 (with rounding) matches how weights are entered. Converting weights to percentage format would also make the original check valid.  
+- The 704 multiplier is a clear typo; replacing with F21 (or 1*F21) returns the correct weighted score.  
+- Using 1/3 and 2/3 (or precise decimals) keeps scoring consistent and avoids small rounding errors.
+
+Anything else to watch
+- Capitalization in the IF tests (e.g., "yes") is fine — Excel text comparisons are not case-sensitive.  
+- Blank answers return "" in weighted-score formulas; SUM ignores text so totals still work.  
+- After making the fixes, verify section totals in G12/G24/G36/G56 reflect expected totals (e.g., 1.00 or 100% depending on your display format).
+
+If you want, I can give a ready-to-paste list of corrected formulas for every affected cell.

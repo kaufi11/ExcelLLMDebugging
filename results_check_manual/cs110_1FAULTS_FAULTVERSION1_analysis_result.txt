@@ -1,0 +1,39 @@
+I reviewed the formulas in all three sheets (SecA, SecB, SecC). No cells report Excel errors (#REF!, #DIV/0!, etc.), but I found a few formula inconsistencies / likely logic errors you should review and (probably) fix.
+
+Summary of issues and suggested fixes
+
+1) J10 uses a different endpoint (AF) than student-assignment sums (AE)
+- Where: J10 on all sheets (SecA/J10, SecB/J10, SecC/J10).
+- Current formula: =SUM(R10:AF10)
+- Other related formulas (e.g. student assignment totals) use ranges R#:AE# (for example J14 = SUM(R14:AE14)).
+- Why it’s a problem: AF is one column further than AE. Excel will treat AF10 as blank so the numeric result is probably unchanged, but the mismatch is an inconsistency and likely a typo (should be AE not AF).
+- Suggested fix: change J10 to =SUM(R10:AE10)
+
+2) Total points cap (I14:I50) includes extra-credit columns P and Q in the MIN(500,...)
+- Where: I14:I50 on all sheets (each student row).
+- Current formula: =MIN(500,SUM(J14:M14,P14:Q14))
+- Why it’s a problem: P and Q are labeled “TA Extra Credit” and “Software Extra Credit.” Including them inside the MIN means extra credit can be capped by the 500-point maximum. Usually instructors intend the 500 cap to apply only to the main graded points (assignments/tests/final) and let extra credit push totals above the cap.
+- Two possible fixes depending on intent:
+  - If you want extra credit added after capping the main points:
+    I14 = MIN(500, SUM(J14:M14)) + SUM(P14:Q14)
+  - If you want extra credit also capped by 500 (current behavior), leave as-is but be aware it is capping extra credit too.
+- Recommendation: use the first fix (cap regular points only, then add extra credit), e.g.
+  I14 = MIN(500, SUM(J14:M14)) + SUM(P14:Q14)
+
+3) Inconsistent J19 cell usage / odd formula
+- Where: SecA J19 has formula =2 (a formula that just returns 2), while SecB and SecC J19 = 0 (via SUM(R19:AE19)).
+- Why it’s a problem: having J19 set to a literal formula (=2) while the others are calculated by SUM is inconsistent and could be accidental.
+- Suggested fix: If J19 should be the sum of assignment columns like other rows, set J19 = SUM(R19:AE19). If it truly should be a fixed 2, consider replacing the formula with the number 2 (no leading “=”) or add a comment documenting why 2 is fixed.
+
+4) J10 is itself a SUM over assignment columns and then used in I10 = SUM(J10:M10)
+- Where: I10 = SUM(J10:M10), J10 = SUM(R10:AF10)
+- Note: This is probably intended (I10 is total available points across categories). No numeric error here; just be aware J10 is a synthetic aggregate. After you fix J10’s range to AE, I10 will remain correct.
+
+Other notes
+- The NOW() formulas in B5 are fine (they update timestamps).
+- No #REF or obvious syntactic errors found in the listed formulas.
+- Columns referenced (R:AE) exist in the workbook; AF does not appear to contain data (hence the AF reference probably returns 0).
+
+If you want, I can:
+- Provide a small script/list of exact replacements to apply to all three sheets (e.g., change J10 to =SUM(R10:AE10), change I14..I50 to the alternate formula).
+- Produce the corrected workbook (if you upload permission/allow me to write).

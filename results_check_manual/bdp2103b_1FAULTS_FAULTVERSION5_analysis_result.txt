@@ -1,0 +1,50 @@
+I reviewed the formulas you provided and found a small number of real errors/inconsistencies plus a few stylistic inconsistencies worth noting.
+
+Summary of real problems (cells that are wrong or refer to the wrong cell)
+- O95
+  - Current formula: =SUM(E95-M95)
+  - Current value: -3
+  - Problem: every other "underspend" cell in that section uses Dxx-Mxx. E95 is empty/unused in this sheet; the formula should reference D95 (the revised allocation) not E95.
+  - Expected/correct formula: =D95-M95 (or simply =D95-M95 without SUM)
+  - Expected value after fix: 0 (D95 = 3, M95 = 3)
+  - Effect: the incorrect E95 reference produces an underspend of -3 and propagates into totals.
+
+- O99
+  - Current formula: =SUM(O93:O98)
+  - Current value: -3
+  - Problem: this subtotal includes O95 (which is currently wrong). Because O95 is wrong (-3), O99 is also wrong.
+  - Expected value after fixing O95: 0
+  - Note: O99 itself has the correct formula (it sums the Oxx underspends), but its result is currently incorrect because of the O95 error.
+
+Inconsistency between formula and displayed value
+- H72
+  - Current formula: =SUM(H12+H26+H31+H38+H56+H62+H70)
+  - Current value: 106
+  - Calculated result from the listed component cells: 111
+    - H12 = 33
+    - H26 = 14
+    - H31 = 1
+    - H38 = 4
+    - H56 = 15
+    - H62 = 16
+    - H70 = 28
+    - Sum = 33+14+1+4+15+16+28 = 111
+  - Problem: displayed value (106) does not match the formula evaluation (111). This indicates either the stored value was manually overridden or the workbook was saved with calculation set to manual and not recalculated.
+  - Action: recalculate workbook (F9 / Calc Sheet) or re-enter the formula so the stored value matches the formula (should become 111).
+
+Stylistic / consistency notes (not errors but worth cleaning)
+- Many cells use SUM around a simple subtraction expression, e.g. =SUM(D12-M12). SUM is unnecessary there; use =D12-M12. It still works, but it's inconsistent/odd.
+- Some totals use SUM(range) while others use SUM(cell+cell+cell). Both work but are inconsistent. Consider using either SUM(range) or SUM(cell1,cell2,...) consistently for readability.
+- C72, D72, F72, etc. use SUM(C12+C26+...) (a single arithmetic expression inside SUM). That works but using either =C12+C26+... or =SUM(C12,C26,...) would be clearer.
+
+Immediate recommended fixes
+1. Change O95 formula to:
+   - =D95-M95
+   - After this change, O95 will be 0.
+2. Recalculate the workbook (or press F9 / set calculation to automatic) so all dependent totals update. After fixing O95 and recalculation:
+   - O99 will update to 0.
+3. After recalculation check H72. If it remains 106, re-enter the formula in H72 (or force recalculation) so it updates to the correct value 111.
+
+If you’d like, I can:
+- Provide a list of all cells whose stored value does not equal the formula-evaluated value (i.e., all cells potentially affected by manual overrides or manual calculation mode).
+- Provide a patch (exact modified formulas) you can paste into the workbook to correct the identified cells.

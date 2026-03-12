@@ -1,0 +1,24 @@
+I inspected the formulas on the "lab grades" sheet and found two issues/inconsistencies that should be fixed.
+
+1) F27 uses the wrong averaging range
+- Cell: F27
+- Formula present: =AVERAGE(F7:F25)
+- Problem: Every other column average in row 27 covers rows 7:26 (e.g. B27 =AVERAGE(B7:B26), C27 =AVERAGE(C7:C26), etc.). F27 only averages through row 25, so the F-column "average" omits the last student's F26 value.
+- Fix: Change F27 to =AVERAGE(F7:F26) so it matches the rest of the summary row.
+
+2) Missing / incorrect H17 value (affects I17)
+- Cells involved: H17 (missing in the provided data) and I17
+- Formula in I17: =AVERAGE(B17:H17)
+- Problem: The JSON for the workbook does not include H17. The value shown in I17 (75.7857142857143) equals the sum of B17:G17 divided by 7, which implies H17 is present in the workbook as 0 (or otherwise being counted). If H17 is actually blank, AVERAGE would ignore it and the average would be different (the average of the six present numbers B17:G17 would be ~88.4167). Either H17 currently contains a zero (likely unintended) or the cell was omitted/cleared while the I17 formula still expects it.
+- Fix: Verify and correct H17:
+  - If H17 should have a numeric quiz score, enter the correct value.
+  - If it should be blank (no score), ensure I17’s formula or intended range matches your grading logic (e.g. adjust the formula or treat missing scores consistently).
+
+Other notes / suggestions
+- The I-column student averages use =AVERAGE(Bn:Hn) — that is consistent, but because H17 is problematic it makes that specific row inconsistent. After fixing H17, re-check I17.
+- D27 =AVERAGE(D7:D26) equals 100 — that's expected since all D7:D26 are 100.
+- Minor: I6 text says "(includes quizes)" — typo (quizes → quizzes). Not a formula issue, but useful to correct for clarity.
+
+If you want, I can:
+- Recompute the corrected F27 value for you, and
+- Show what I17 should be after setting H17 to the intended value (or if you want it left blank).

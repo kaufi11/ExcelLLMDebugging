@@ -1,0 +1,57 @@
+Summary of the main errors I found and simple fixes (short + easy):
+
+1) Wrong unit-total range in Weighted Average (Periodic)
+- Problem cell: I10 — currently "FORMULA =SUM(I9:I9)" so beginning inventory (I8) is omitted. Result: average unit cost and subsequent values are wrong.
+- Fix: change I10 to =SUM(I8:I9)
+- Why: I10 should be total units available = beginning units (I8) + purchase units (I9). This fixes the weighted-average denominator so costs propagate correctly.
+
+2) Missing / placeholder formulas for periodic Weighted Average costs
+- Problem cells: K11 and K12 are "?" (no formula).
+- Fix:
+  - K11 (Ending inventory cost) = J10 * I11  — this uses the average unit cost (J10) times the ending units (I11). Note I11 is negative in this workbook convention, so K11 will be negative (consistent with other rows).
+  - K12 (COGS cost) = K10 + K11  — total cost available (K10) plus ending inventory (K11, negative) = cost of goods sold.
+- Why: with the average unit cost computed in J10, ending inventory cost must be computed from it and COGS must come from the total cost less ending inventory. Using these formulas creates correct numeric flow and consistent signs.
+
+3) Many inconsistent / incorrect references using single-cell SUMs or wrong ranges
+- Examples:
+  - I10 used SUM(I9:I9) (see #1).
+  - Several places use SUM(range:range) where range excludes needed rows (e.g., I10, J10 uses K10/I10 but K10 depended on some incorrect ranges).
+- Fix: review and replace single-cell SUMs that were intended as multi-row totals. Generally use SUM(startcell:endcell) where start and end include all intended rows (e.g., SUM(I8:I9), SUM(K8:K9), SUM(C8:C13) etc.).
+- Why: single-cell SUMs typically indicate a copy/paste or typing error; they omit data and produce wrong averages/totals.
+
+4) Sign / formula convention not consistent across sections (periodic vs perpetual)
+- Symptom: some ending inventory costs are stored as positive numbers in some sections and as negative in others; some COGS formulas use +K10+K11 while others use K10-K11.
+- Fix: pick one consistent convention and apply everywhere:
+  - Option A (recommended, matches current workbook): store ending inventory units/cost as negative values (I11 negative, K11 negative). Then compute COGS as GoodsAvailableCost + EndingInventoryCost (K10 + K11).
+  - Option B: store ending inventory as positive amounts; compute COGS as GoodsAvailableCost - EndingInventoryCost.
+- Why: consistent sign convention avoids double-negatives and incorrect COGS/NI.
+
+5) Placeholder / incorrect cell links used for headers (cosmetic)
+- Examples: Errors sheet D25 = +D6 and F25 = +F6 — those source cells (D6,F6) are text labels ("Understating"/"Overstating"). Not harmful but confusing.
+- Fix: replace =+D6 with plain text "Understating" (or remove the formula) or ensure header formulas point to actual scenario names if you prefer linking.
+- Why: avoids confusing formulas that refer to label cells.
+
+6) NetIncome sheet uses hard-coded COGS values instead of linking to the valuation sheet
+- Problem cells: B21:G21 contain fixed numbers (COGS) rather than links to the detailed computations on "Valuing Ending Inventory".
+- Fix: link each COGS cell to the corresponding COGS result on the Valuing Ending Inventory sheet (e.g., = 'Valuing Ending Inventory'!K12 or whatever cell holds the computed COGS for that method).
+- Why: this makes the summary dynamic (it updates when the valuation sheet is corrected), avoids mismatches between detailed calculations and summary, and prevents manual errors.
+
+7) Other cells with "?" or odd negative cross-references (quick checklist)
+- Search for cells containing "?" or formulas like =-E47, =-E63, =-E79, =-E96, =-E132, etc. Many of these are intended to pull ending inventory cost from another spot, but some point to the wrong target. Verify each such reference points to the correct computed ending inventory cost for that method.
+- Fix: for each, replace with direct link to the ending-inventory-cost cell for that method (or use the consistent formula pattern above).
+
+Quick step-by-step to fix the workbook reliably
+1. Fix unit totals: change I10 to =SUM(I8:I9) (and analogous ranges in other method blocks: e.g., I28, I40, I56, etc. — make sure all "Goods Available" unit totals include beginning + purchases).
+2. Add the missing formulas in Weighted Average periodic:
+   - K11 = J10 * I11
+   - K12 = K10 + K11
+3. Standardize sign convention: decide ending inventory negative (recommended) and update all ending inventory cost formulas to be cost = unit_price * ending_units (ending_units negative) so COGS = goods_available_cost + ending_inventory_cost.
+4. Replace hard-coded COGS on NetIncome with links to the computed COGS cells on Valuing Ending Inventory.
+5. Scan for other single-cell SUMs and "?" placeholders; fix ranges and link targets accordingly.
+6. Recalculate and test using different sample sales/purchases to confirm each method's ending inventory and COGS match expected manual calculations.
+
+If you want, I can:
+- produce the exact corrected formulas for each problematic cell (I can list a cell-by-cell fix: I10, J10, K10, K11, K12, plus the equivalents in FIFO/LIFO sections), or
+- paste a short set of replacement formulas you can copy into the workbook.
+
+Which would you prefer?

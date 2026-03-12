@@ -1,0 +1,27 @@
+Summary of the error
+- One cell in Data Analysis is hard-coded to a constant instead of following the per-course IF pattern: Data Analysis!BH43 has the value/formula =7. All other per-course contribution cells follow the pattern IF(course_flag, rating, 0). BH43 being 7 means outcome "9. An ability to learn independently" always gets +7 added even if that course is not selected.
+
+Why this is wrong / impact
+- BH corresponds to the course in column Q (i.e. the course whose flag is Q$2). Because BH43 = 7 unconditionally, CL43 (SUM of AU43:CI43) and CM43 (the >=4 filtered sum) include 7 always.
+- That inflates B43, the outcome total for "learn independently", and therefore inflates top-level sums and comparisons (input-output I52, the Over/Under checks in column K, and other derived percentages).
+
+Fix (straightforward)
+- Replace the hard-coded 7 in Data Analysis!BH43 with the correct per-course contribution formula:
+  BH43 = IF(Q$2="x", Q43, 0)
+
+How to apply the fix (step-by-step)
+1. Go to sheet Data Analysis.
+2. Select cell BH43.
+3. Change the cell contents from =7 to:
+   =IF(Q$2="x",Q43,0)
+4. Press Enter. Excel will recalc CL43/CM43, B43, then all dependent totals (C43, B46, input-output I52, the Over/Under cells, etc).
+
+Verify the fix
+- After change, check:
+  - CL43 should equal the SUM of AU43:CI43 but now include BH43 only when Q$2="x".
+  - B43 (which chooses CL43 or CM43 based on I48) should drop by 7 if Q$2 is not "x".
+  - input-output I52 and the Over/Under results (column K) should update accordingly.
+- Optionally search the Data Analysis AU:CI blocks for any other numeric constants (use Find for "=7" or scan for cells not starting with IF). If you find other hard-coded numbers in those per-course columns, fix them similarly to follow the IF(flag, rating, 0) pattern.
+
+Optional improvement
+- Consider replacing the many manual IF-sums with SUMPRODUCT or dynamic formulas to reduce risk of copied/typed errors (e.g., use a standard table of flags and ratings and compute sums with SUMPRODUCT(flags_range, ratings_range)).

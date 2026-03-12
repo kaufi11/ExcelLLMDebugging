@@ -1,0 +1,48 @@
+I checked the three workbooks you posted and found a few real errors plus some risky formula patterns that will cause wrong results or #DIV/0! later. Below are the concrete problems, exact fixes, and short explanations.
+
+1) Hard‑coded value (definite error)
+- Problem: Year 1, cell E55 contains the number 3 instead of the formula used on the other months.
+- Why it’s wrong: E55 should be the month‑end cash position (Beginning + Receipts − Paid out). Hard coding gives a wrong result and breaks Year 2 which pulls Year 1 month‑ends.
+- Fix: Replace the 3 with the correct formula:
+  E55 = E15 - E54
+  (or =SUM(E15-E54) if you must keep the SUM pattern)
+- Explanation: This makes month 3 end cash consistent with the other months and keeps Year 2 beginning cash correct.
+
+2) Misaligned row reference in Year 2 (definite error)
+- Problem: Year 2 cell O20 (Payroll Expenses (Direct Labor)) is using SUM(C22:N22) and P20 uses O22/O57 — both reference row 22 instead of row 20.
+- Why it’s wrong: The totals and % of sales for row 20 will be pulling wrong rows (22), so totals and subtotals will be wrong.
+- Fix: Correct O20 and P20 to reference row 20:
+  O20 = SUM(C20:N20)
+  P20 = O20 / O$57
+- Also: scan rows 17–26 (and other groups) in Year 2 to ensure each O(row) = SUM(C[row]:N[row]) — any O cell pointing to a different row number is an alignment error and must be corrected the same way.
+- Explanation: These rows are grouped; when one row’s formula points at the wrong row number it offsets the whole subtotal and total.
+
+3) Risk of #DIV/0! in every variance % formula (likely future error)
+- Problem: Variance/percent change formulas like E8 = +(D8-C8)/C8 will return #DIV/0! when the base (C8) is zero or blank.
+- Why it’s a problem: If any base month is zero you get errors that break summaries and charts.
+- Fix: Wrap the division with an IF or IFERROR. Example:
+  E8 = IF(C8=0, "", (D8-C8)/C8)
+  or
+  E8 = IFERROR((D8-C8)/C8,"")
+- Explanation: This returns a blank (or 0) instead of an error and keeps reporting clean.
+
+4) Unnecessary/fragile use of SUM() around single references and arithmetic
+- Problem: Many formulas use SUM on single cells or simple arithmetic, e.g. SUM(B55), SUM(B15-B54), or +B23+B47.
+- Why it’s a problem: Not a functional error in Excel (SUM will accept single values), but it hides mistakes and makes it harder to see intentional arithmetic vs. accidental ranges. It also makes auditing harder and increases chance of off‑by‑one mistakes when formulas are edited or filled.
+- Fix / Best practice:
+  - Replace SUM(B15-B54) with B15 - B54.
+  - Replace SUM(B55) with B55.
+  - Use consistent formulas and then fill down / right so references stay aligned.
+- Explanation: Cleaner formulas are easier to audit and less likely to be accidentally mis‑rowed.
+
+5) Suggested quick audit steps (how you can find any similar errors fast)
+- Check row alignment for O-column totals: run a Find for "SUM(C22:N22)" (or search pattern SUM(C*:N*)) and confirm each O(row) matches its row number.
+- Check all month‑end cells (row 55 in Year1/Year2) for hard coded values. They should all be (Begin + Receipts − Paid out).
+- Find all variance formulas that divide by a source column (e.g., "/C8") and wrap them with IF(C<>0, …) or IFERROR.
+- Use Fill Right / Fill Down from a correct row to reset consistent formulas across months rather than editing individual cells.
+
+If you want, I can:
+- Provide a corrected list of exact cells (I can scan and list every misaligned O row and every hard coded month‑end) — or
+- Create corrected formulas for the whole Year1 and Year2 O and P columns and paste them (you can then copy/paste into your workbook).
+
+Which would you prefer?

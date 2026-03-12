@@ -1,0 +1,50 @@
+Summary: INzone Savings Calculator workbook — 3 sheets ("Your Company", "Text Only Version", "Sample Company"). Purpose: estimate annual duty/interest cash-flow impacts and potential INzone savings (inverted duty and related categories) based on company inputs (imports, duty rates, turnovers, percentages).
+
+1) Sheet: Your Company
+- Layout: labels in column A; user inputs in column B (percentages) and column C (amounts/results). Highlighted cells on this sheet are required for user entry.
+- Key input cells:
+  - C13: Annual Value of Inventory Importations (numeric; default 0)
+  - C14: Inventory Turnovers per year (default 1)
+  - C15: Average Duty Rate for Parts (0.1)
+  - C16: Average Duty Rate for Finished Product (0.075)
+  - C17: Interest Rate (0.12)
+  - B25, B28, B31, B34, B37: percentages for obsolete/surplus, waste/scrap, exports, international returns, zone-to-zone transfers (all default 0)
+- Key calculated cells / formulas:
+  - C22 (Cash Flow / Inventory Cost of Money) = C13 / C14 * C15 * C17
+  - C24 (Obsolete/Surplus) = C13 * B25 * C15
+  - C27 (Waste/Scrap) = C13 * B28 * C15
+  - C30 (Exports) = C13 * B31 * C15
+  - C33 (International Returns) = C13 * B34 * C15
+  - C36 (Zone-to-Zone Transfers) = C13 * B37 * C15
+  - C39 (Inverted Duty) = C13 * ((1 - B31) - B37 - B25 - B28 - B34) * (C15 - C16)
+  - C41 (Total Possible INzone Savings) = 7 (hard-coded in this sheet)
+- Notes: Annual customs duty/interest expense and average interest expense cells (C18:C20) present but default to 0.
+
+2) Sheet: Text Only Version
+- Purpose: print-friendly copy that pulls values from "Your Company".
+- Most cells reference 'Your Company' equivalents:
+  - C4 = 'Your Company'!C13, C9 = 'Your Company'!C18, C10 = 'Your Company'!C19, C11 = 'Your Company'!C20
+  - Percentage input cells B16, B19, B22, B25, B28 link to 'Your Company' B25, B28, B31, B34, B37 respectively.
+  - Calculations mirror "Your Company" using local cells (e.g., C13 = C4/C5*C6*C8).
+- C30 (Inverted Duty) = 'Your Company'!C39; C32 (Total Possible INzone Savings) = 'Your Company'!C41.
+
+3) Sheet: Sample Company
+- Purpose: worked example with concrete values.
+- Key inputs / values:
+  - C9: Annual imports = 50,000,000
+  - C10: Inventory turnovers = 4
+  - C11 / C12: duty rates = 0.10 / 0.075
+  - C13: interest rate = 0.12
+  - B21: obsolete = 0.05; B24: waste = 0.05; B27: exports = 0.15; B30: international returns = 0.02; B33: zone transfers = 0.10
+  - C14: Annual Customs Duty Expense = 5,000,000; C15: Annual Interest Expense = 6,000,000; C16: Average Interest Expense = 150,000
+- Key calculated cells:
+  - C18 (Cash Flow cost of money) = C9/C10*C11*C13
+  - C20, C23, C26, C29, C32: the category calculations analogous to "Your Company"
+  - C35 (Inverted Duty) = C9 * ((1 - B27) - B33 - B21 - B24 - B30) * (C11 - C12)
+  - C37 (Total Possible INzone Savings) = SUM(C18:C35) — sums all calculated categories for total savings.
+- This sheet demonstrates expected numeric outputs.
+
+Overall notes / structure
+- Inputs: primary inputs on "Your Company" (C13, C14, duty/interest rates, and the B% fields). "Text Only Version" prints those inputs and computed results by referencing "Your Company".
+- Calculations: per-category duty exposure = Annual imports * category % * parts duty rate; inverted duty uses remaining share * (parts duty - finished duty). Cash-flow interest cost uses imports/turnover * duty rate * interest rate.
+- In the provided workbook: most user percentage fields default to 0; "Your Company" C41 is hard-coded to 7 while "Sample Company" computes total savings by summing the component results. Print guidance and contact info are included on all sheets.

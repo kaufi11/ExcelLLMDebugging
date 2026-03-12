@@ -1,0 +1,26 @@
+I found 3 errors in the "van Genuchten fit theta-h" sheet. Short summary, the fixes, and why they matter:
+
+1) Wrong placement of parentheses in the van Genuchten prediction (D12:D16)
+- Problem: the formulas use 1 + alpha * (|h|^n) instead of 1 + (alpha * |h|)^n. Excel interprets $B$5*(-B12)^$B$6 as alpha * (|h|^n). The correct model uses (alpha * |h|)^n.
+- Fix: change D12 (and copy to D13:D16) to:
+  =$B$3 + ($B$4 - $B$3) / ((1 + ($B$5 * (-B12))^$B$6)^(1 - 1/$B$6))
+- Why it matters: mathematically (alpha * h)^n ≠ alpha * (h^n). Using the wrong grouping gives a totally different curve and will break the parameter fit.
+
+2) Typo in one squared-error cell (E15)
+- Problem: E15 uses =(C15-563)^2 (constant 563) instead of using the model prediction.
+- Fix: change E15 to:
+  =(C15 - D15)^2
+- Why it matters: that one big wrong residual will make SSE meaningless and the solver will fit incorrectly.
+
+3) SSE sum range is wrong (E19)
+- Problem: E19 currently =SUM(E14:E18). The actual residual cells are E12:E16.
+- Fix: change E19 to:
+  =SUM(E12:E16)
+  (B7 can remain =E19 or you can set B7:=E19 if you prefer)
+- Why it matters: wrong range omits two residuals and may include blanks or unrelated cells; SSE is the objective for optimization, so it must sum the correct errors.
+
+Extra check (recommended)
+- After applying the fixes, copy the corrected D12 formula down D13:D16 and the corrected E12:E16 formulas down, then re-run Solver minimizing B7 (SSE) by changing B3:B6 as intended.
+- Confirm all pressure values are negative (your LN column already uses LN(-B##), so that’s OK).
+
+If you want, I can give a one-click set of formulas to paste or a small VBA macro to fix all these cells automatically.

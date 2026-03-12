@@ -1,0 +1,28 @@
+Summary — the sheet has a few formula typos in the G (fee) column that produce wrong fees. Fixes below.
+
+Faulty cells, problem and quick fix
+- G21 — Wrong formula: =E21/0.5  
+  Why wrong: dividing by 0.5 doubles the value. Intended fee for "Processor" should be 50% of E21.  
+  Fix: =E21*0.5
+
+- G39 — Wrong formula: =E39*0.3  
+  Why wrong: uses 30% instead of 50% for a Processor license.  
+  Fix: =E39*0.5
+
+- G107 — Wrong formula: =E107*0.0 (returns 0)  
+  Why wrong: produces zero fee; should be the normal 20% for non-processor license.  
+  Fix: =E107*0.2
+
+Suggested consistency improvements (recommended)
+- Make F consistent: replace hard-coded F values with =E#*22% so F always reflects 22% of E.
+- Use one G formula that switches by license type so you avoid manual typos. Example (put in G8 and fill down):
+  =IF(LOWER(D8)="processor",E8*0.5,E8*0.2)
+  (or adjust the test to match the exact text in column D — e.g. use SEARCH if D contains more text: =IF(ISNUMBER(SEARCH("processor",D8)),E8*0.5,E8*0.2) )
+
+How to apply the fixes
+1. Edit each faulty G cell and replace formula with the corrected one above.  
+2. For consistency: put the IF formula in the top G cell and drag/fill down the whole column.  
+3. Replace any hard-coded F numbers with =E#*22% and fill down.
+
+Result
+- Fees (G) will be correct for Processor vs other license types and you avoid future range/type typos.

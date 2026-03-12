@@ -1,0 +1,53 @@
+Summary of workbook structure and key calculations (concise)
+
+Overall layout (applies to Year 1 and Year 2 sheets)
+- Header: B1 title "MONTHLY CASH FLOW PROJECTION"; A3–K3 include Company, Pre-, OWNER, DATE fields. Row 4 labels Start-up / Month columns.
+- Columns: A lists line-item positions. Columns C–N represent Months 1–12. Column O is TOTAL (sum across months). Column P is % of Sales (line-item total divided by total sales in O57).
+- Main cash-flow sequence (rows): 
+  1) CASH ON HAND (begin. of mo.) (row 6)  
+  2) CASH RECEIPTS (rows 8–13: cash sales, collections, loans, etc.)  
+  3) TOTAL CASH RECEIPTS (row 14 = SUM of receipts)  
+  4) TOTAL CASH AVAILABLE (row 15 = begin cash + receipts)  
+  5) CASH PAID OUT (rows 17–53 split into variable lines 17–22 and fixed lines 24–46 plus other outflows 49–53)  
+  6) TOTAL CASH PAID OUT (row 54 = SUM of paid out)  
+  7) CASH POSITION END OF MONTH (row 55 = available – paid out)
+- ESSENTIAL OPERATING DATA block (rows 56–63) includes Sales Volume (row 57), Receivables, Inventory, Payables, Depreciation, and summaries (Total Fixed Costs row 63).
+
+Key formulas and references (Year 1)
+- Monthly totals: each month’s Total column formulas typically use SUM across that month’s detail (e.g., O8 = SUM(C8:N8) consolidates months for that line).
+- Row 6 (C6–N6): beginning cash uses prior month-end cash-position references (e.g., C6 = FORMULA =SUM(B55), D6 = SUM(C55), etc.); M6 explicitly shows FORMULA =5 (a seeded value).
+- Receipts and outflows per line: row-level totals in column O are =SUM(Cx:Nx). Percent of sales column P uses =Oxx / O$57 (e.g., P17 = +O17/O$57).
+- Subtotals:
+  - Subtotal Variable Expenses (row 23) = SUM(rows 17:22) per month and O23 = SUM(O17:O22).
+  - Subtotal Fixed Expenses (row 47) = SUM(rows 24:46), O47 = SUM(O24:O46).
+  - Subtotal Total Operating Expenses (row 48) = row23 + row47 (monthly and total).
+- Totals: Total cash paid out row 54 = SUM(rows 48:53) (monthly), O54 = SUM(O48:O53).
+- Cash position end row 55 = (row15 – row54) per month.
+- Important aggregate cells:
+  - O57 = total Sales Volume for the year (SUM of monthly sales row 57).
+  - O23 = total variable expenses (year).
+  - O54 = total cash paid out (year).
+  - B63 = O54 - O23 (Total Fixed Costs).
+  - B64 = 1 - P23 (Contribution Margin; P23 is variable expenses as % of sales).
+  - F64 = (O54 - O23) / B64 (Break‑even Sales).
+
+Year 2 sheet
+- Mirrors Year 1 layout and formulas. Begin cash references Year 1 ending cash (B6 = 'Year 1'!N55 and other month-begins cascade from prior months).
+- Same pattern of monthly SUMs, totals in O, and % of sales in P using O$57.
+
+Variance sheets (Var,Y1,Q1; Var,Y1,Q2; Var,Y1,Q3; Var,Y1,Q4)
+- Purpose: quarter-by-quarter variance analysis comparing actuals to Year 1 (or prior) values.
+- Structure: columns show Forecast / Actual / Variance for a set of months (quarter groups). Each variance cell uses (New – Old) / Old style percentage, expressed as formulas like =+(D8-C8)/C8 (or +(D8-C8)/C8 type).
+- Data source: many Actual columns in variance sheets link directly to Year 1 monthly values (e.g., C8 = 'Year 1'!C8) and compute percent variance against forecast or adjacent month.
+- Each quarter sheet repeats the same groups of receipts, expenses, subtotals and totals and computes percent variances for subtotals and totals (e.g., E14 = +(D14-C14)/C14).
+- Essential operating data on variance sheets pulls Year 1 values and computes % changes similarly (e.g., C57 = 'Year 1'!C57; E57 = +(D57-C57)/C57).
+
+Notable patterns / key checks
+- Column O is the year total for each line; column P expresses each line as a percent of total sales (O57) using absolute row reference O$57.
+- The model centrally relies on O57 (total annual sales) as the denominator for % of sales calculations.
+- Break-even calculation uses the totals for variable and total paid-out to compute contribution margin and break-even sales.
+- Beginning cash flows are chained month-to-month by referencing previous month row55 values (Year 1) and Year 2 seeds its starting cash from Year 1’s final month.
+
+If you want, I can:
+- Produce a compact diagram mapping key cell dependencies (e.g., O57 → P: %, O23/O54 → B63/B64/F64), or
+- Validate/correct any inconsistent formulas or absolute/relative reference issues I can spot (e.g., some SUM usage like SUM(B55) that effectively just returns B55).

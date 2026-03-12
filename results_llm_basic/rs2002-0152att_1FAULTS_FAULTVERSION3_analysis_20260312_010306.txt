@@ -1,0 +1,30 @@
+Summary of errors found
+- Several cumulative "I" formulas are using the Requested Funds column (G) instead of the Awarded/Approved Funds column (H). That produces wrong cumulative totals.
+  - Example: Sheet "Watershed Protection" — I7 =G7, I8 =I7+G8, I9 =I8+G9, I10 =I9+G10, I11 =I10+G11. These should reference H, not G.
+- A hard‑coded constant is used instead of a cell reference in one place.
+  - Example: Sheet "Coastal NPS-Reg 1,2,3" — I43 =953+H43. The "953" is a literal number; it should be a proper cell reference (or start fresh).
+
+Why these are wrong (short)
+- Cumulative totals should add what was actually awarded (H), not what was requested (G). Using G inflates/changes numbers.
+- Hard-coded numbers stop the sheet from updating correctly when data changes and are error‑prone.
+
+How to fix it (step-by-step, simple)
+1. Standardize the cumulative column to sum Awarded/Approved Funds (column H).
+   - Change formulas that use G to use H instead.
+   - Example fixes for "Watershed Protection":
+     - I7 should be: =H7
+     - I8 should be: =I7+H8
+     - I9 should be: =I8+H9
+     - I10 should be: =I9+H10
+     - I11 should be: =I10+H11
+     (I12 is already =I11+H12 — that is correct.)
+2. Replace the hard-coded value with a proper start/reference.
+   - In "Coastal NPS-Reg 1,2,3", change I43 from =953+H43 to =H43 (if this row starts a new cumulative block) or to =I42+H43 (if it should pick up the previous block). Most other blocks start with =Hfirstrow, so =H43 is likely correct.
+   - Then ensure following rows use I43 as the running total: I44 =I43+H44, I45 =I44+H45, etc.
+3. (Optional, recommended) Correct the I‑column header text where it says "Funds Requested" to "Funds Awarded" (or "Cumulative Funds Awarded") so the label matches the calculation.
+
+Quick check after fixes
+- Totals will update correctly when H values change.
+- No hard-coded numbers remain; formulas will be consistent and auditable.
+
+If you want, I can produce the exact list of cells to change for each sheet (paste‑ready formulas) or create a single consistent formula you can drag down (e.g., in the first cumulative row use =H7, then for rows below use =IF(H8="",I7,I7+H8) to handle blanks). Which would you prefer?

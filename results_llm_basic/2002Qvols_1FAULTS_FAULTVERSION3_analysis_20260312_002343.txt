@@ -1,0 +1,31 @@
+I checked the sheet and found two types of real problems. Short summary, then exact fixes and why.
+
+1) Single incorrect cell reference (easy fix)
+- Problem: O23 contains =E24+J23 — it adds E24 (next row) instead of E23.
+- Why it’s wrong: O23 should be the Q1+Q2 LPG total for the same row, so it must use that row’s Q1 LPG (E23).
+- Fix: change O23 to =E23+J23.
+
+2) Column mis‑alignment across the Q4 block (systemic error)
+- Symptom: many formulas for the Q4 cumulative columns reference AG (e.g. AK6 = AG6 + Y6), but in the row data the LPG value appears shifted into AH (or another adjacent column). That makes AK cells add a blank (or wrong) cell and yields incorrect totals.
+- Where to look: the AE:AH block (the second set of four product columns for the Q4 area). Example formulas that fail because AG is blank: AK6, AK7 (and several AK… formulas for other rows).
+- Why it’s wrong: headers expect the order Diesel (AE), Illuminating (AF), LPG (AG), Petrol (AH). If the LPG value is actually stored in AH (or missing entirely) the formulas that use AG will be wrong.
+- Fix (choose one, depending on what the data actually is):
+  Option A — realign the data (recommended)
+    - Move the LPG values one column left so they sit in AG under the LPG header (AE = Diesel, AF = Illum., AG = LPG, AH = Petrol). Do this only for rows where values are shifted.
+    - After moving, existing formulas (AK = AG + Y etc.) will work correctly.
+  Option B — change formulas (if you prefer that)
+    - Edit the AK... formulas to refer to the column that actually holds LPG (for example change AK6 from =AG6+Y6 to =AH6+Y6) and adjust AL... formulas if they also reference the wrong column.
+    - This is riskier because you must update every affected formula consistently.
+
+How to find all affected cells quickly
+- Use Find (Ctrl+F) to search for formulas referencing AG (e.g. search for “AG” inside formulas) and inspect each occurrence — if AG is blank but the LPG data is in AH, you’ve found a misaligned row.
+- Use Excel Formula Auditing: select one of the problematic AK cells and click Trace Precedents to see the actual precedent cells.
+
+Extra tips
+- Before you move data or change many formulas, make a backup copy of the sheet.
+- After fixing, recalc (F9) and spot‑check totals (row totals and the Grand Total row) to confirm everything sums correctly.
+- Consider locking the layout or using named ranges for columns (e.g. Diesel_Q4, LPG_Q4) so accidental column shifts are easier to detect.
+
+If you want, I can:
+- Give the exact list of every cell that currently references the wrong column (I can scan all AG references and list them), or
+- Provide the exact steps / macro to realign the data automatically (move AH → AG for rows where AG is blank). Which would you prefer?

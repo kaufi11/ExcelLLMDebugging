@@ -1,0 +1,32 @@
+I checked the workbook you pasted. I found three clear problems (wrong cell references / stray values / inconsistent formulas). Below is a short description of each problem, why it’s wrong, and a simple fix you can apply.
+
+1) 2002 Report — wrong references in row 21 (air/land cells duplicated)
+- Problem: C21 and D21 both use H21 as their source:
+  - C21: =H21/1000000 (wrong)
+  - D21: =H21/1000000 (wrong)
+- Why it’s wrong: column C should be air (G21) and column D land (H21). Using H21 twice duplicates land into the air column and drops the true air value.
+- Fix: Change the formulas to:
+  - C21 → =G21/1000000
+  - D21 → =H21/1000000
+- Short explanation: This restores the correct mapping (C = G / 1,000,000; D = H / 1,000,000) so air and land are calculated from the correct source cells.
+
+2) 2003 Report — stray numbers in G20 and H20
+- Problem: G20 = 8.449074 and H20 = 0.6381540899397388 appear in the 2003 Report sheet but there are no column headers for G/H in that sheet’s layout — they look like accidental paste values.
+- Why it’s wrong: stray values can confuse anyone auditing the sheet, and will break any formulas or lookups that expect those columns to be blank or to contain specific data. They may also be remnants that belong on another sheet.
+- Fix: If those numbers were pasted accidentally, clear G20 and H20 (Select cells → Delete). If they belong to another sheet, move them to the correct cells on that sheet instead of leaving them here.
+- Short explanation: Removing/moving those stray values prevents incorrect calculations or mistaken interpretation of the data.
+
+3) "data" sheet — some totals are hard-coded instead of calculated (inconsistent)
+- Problem: Some rows (for example C10 on “data” sheet is a literal 10,533,389 instead of a formula) — in several rows recycled = E - incinerated is not implemented as a formula.
+- Why it’s wrong: Using hard-coded numbers reduces transparency and can cause errors if source totals (E column) or incinerated (B) change.
+- Fix (recommended): Replace the hard-coded recycled cells with the formula:
+  - For a given row (e.g. row 10): C10 → =E10 - B10
+  - Copy that formula down the rows that should be calculated.
+- Short explanation: Using formulas keeps recycled in sync with total and incinerated, avoids stale numbers, and makes auditing easier.
+
+Quick checklist to correct everything
+- Update C21 and D21 on 2002 Report to use G21 and H21 as shown above.
+- Clear or relocate G20 and H20 on 2003 Report (delete them if accidental).
+- Replace any hard-coded recycled values on the “data” sheet with =E# - B# and copy down.
+
+If you want, tell me which sheet you want me to produce the exact cell-by-cell corrected formulas for and I’ll list them.

@@ -1,0 +1,65 @@
+Errors found:
+
+1. In MasterMethod_Checks sheet, cell B6 formula: `=LOG(B4,B5)` is incorrect for calculating the critical exponent CE = log_b(a). Excel's LOG function syntax is LOG(number, base). Here, B4=3 (a), B5=3 (b). So formula should be `=LOG(B4,B5)` which is correct, but since a = b, CE = 1. This is fine, no error here.
+
+2. In MasterMethod_Checks sheet, row 11 (A11=0), formulas like `=A11^$B$6` (C11) and `=LOG(A11,2)` (H11) will cause errors:
+   - `=A11^$B$6` is 0^1 = 0, which is okay.
+   - `=LOG(A11,2)` is `LOG(0,2)` which is undefined and causes #NUM! error.
+   - Similarly, any LOG of 0 in column H will error.
+
+3. In MasterMethod_Checks sheet, row 19 (A19=8), B19 formula is `=473/2` instead of `=A19/2`. This is inconsistent with other rows and likely a typo.
+
+4. In SubstitutionMethod_Checks sheet, in column B and C formulas like `= $B$4*A10*LOG(LOG(A10,2),2)` and `= $B$5*LOG(LOG(A10,2),2)`:
+   - For A10=1, `LOG(LOG(1,2),2)` is `LOG(0,2)` which is undefined and causes error.
+   - This will cause errors for small n values (n=1, possibly 2).
+
+5. In SubstitutionMethod_Checks sheet, D10 formula `=5*1+A10/LOG(A10,2)`:
+   - For A10=1, `LOG(1,2)` is 0, division by zero error.
+   - Similar for small n values.
+
+6. In SubstitutionMethod_Checks sheet, from row 19 onwards, D19 formula references `$D$11` which is a cell with a formula involving n=0 or 1, possibly causing errors or inconsistencies.
+
+Summary of key errors:
+- LOG(0,2) and LOG(1,2) cause errors in both sheets.
+- Inconsistent formula in B19 in MasterMethod_Checks.
+- Division by zero in SubstitutionMethod_Checks for small n.
+- References to cells with problematic formulas ($D$11, $D$12, etc.) may propagate errors.
+
+---
+
+Solutions:
+
+1. Avoid LOG(0,2) and LOG(1,2):
+   - Start n from 2 or higher in both sheets to avoid log(0) or log(1) issues.
+   - Or add IF conditions to handle n=0 or 1 separately.
+
+2. Fix B19 in MasterMethod_Checks:
+   - Change `=473/2` to `=A19/2` for consistency.
+
+3. Fix division by zero in SubstitutionMethod_Checks D column:
+   - Add IF to avoid division by zero, e.g. `=5*1 + IF(LOG(A10,2)=0,0,A10/LOG(A10,2))`
+
+4. Check references to $D$11, $D$12, etc. in SubstitutionMethod_Checks:
+   - Ensure these cells have valid values and formulas.
+   - Possibly replace with constants or correct formulas.
+
+---
+
+Explanation:
+
+- LOG(0) and LOG(1) are undefined or zero, causing errors in Excel.
+- Division by zero causes errors.
+- Consistent formulas ensure correct calculations.
+- Using IF to handle edge cases prevents errors.
+- Correcting typos avoids wrong calculations.
+
+---
+
+In short:
+
+- Start n from 2 or add IF to avoid LOG(0) and LOG(1).
+- Fix B19 formula to `=A19/2`.
+- Add IF to avoid division by zero in D column in SubstitutionMethod_Checks.
+- Verify referenced cells ($D$11 etc.) have correct values.
+
+This will fix the errors and make the sheet work correctly.

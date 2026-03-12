@@ -1,0 +1,36 @@
+Summary of the problem
+- Many cells in column G are not real numeric results because they contain text like "FORMULA =E2*F2" (literal text), and one cell (G21) has the wrong formula/value (=2). SUM(G2:G404) will ignore text cells and wrong values, so the grand total (G407) is incorrect.
+
+Errors found
+1. Column G contains text placeholders ("FORMULA =E#*F#") instead of real formulas. Text is ignored by SUM → wrong total.
+2. One inconsistent cell: G21 = 2 (should be E21*F21).
+3. Column F (subscription counts) may contain blanks or text‑formatted numbers; that will make row totals zero or fail to multiply.
+4. Some H cells contain text ("incl.") — only relevant if postage is ever treated as numeric.
+
+Quick, safe fixes (do these in Excel)
+
+1) Replace column G with a proper formula
+- Put this formula in G2 and fill/copy down to G404:
+  =IF(AND(ISNUMBER($E2),ISNUMBER($F2)),$E2*$F2,0)
+This returns E*F when both are numbers, otherwise 0 (so you can spot missing data).
+
+2) Fix the special cell G21
+- After step 1 it will be corrected automatically if you filled down. If you prefer, set G21 to =E21*F21.
+
+3) Ensure column F and E are numeric
+- Quick convert: select column F, Data → Text to Columns → Finish (this forces Excel to convert numbers stored as text).
+- Or type 1 in any blank cell, copy it, select F2:F404, Paste Special → Multiply → OK.
+- Check with =COUNT(F2:F404) vs =ROWS(F2:F404) to see how many are numeric.
+
+4) Recalculate totals
+- Confirm F407 =SUM(F2:F404) and G407 =SUM(G2:G404). After step 1–3 these will produce correct totals.
+
+Optional checks
+- Find text placeholders: Ctrl+F search for "FORMULA =" or cells with leading apostrophe; convert as above.
+- If you want to keep blanks instead of 0 in G when data missing, use:
+  =IF(OR($E2="", $F2=""), "", $E2*$F2)
+
+Why this fixes it (short)
+- SUM only adds numeric cells. Converting column G to real numeric formulas and ensuring E and F are numbers makes each row produce a numeric total; then the grand total sums correctly.
+
+If you want, I can give you a one‑line macro to fix G2:G404 automatically, or a step‑by‑step for converting text numbers — which would you prefer?

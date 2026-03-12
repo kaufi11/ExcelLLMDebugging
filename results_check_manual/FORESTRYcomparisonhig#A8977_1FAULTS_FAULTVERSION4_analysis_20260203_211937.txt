@@ -1,0 +1,46 @@
+I found several issues in the workbook. Short explanation of each problem, the effect, and a simple fix you can apply.
+
+1) Wrong VLOOKUP reference (typo)
+- Problem: Cell C13 on DATA TEXT uses =VLOOKUP(D14,sort0,2,FALSE) but it should look up D13 ("Conifer - Other conifers"). This returns the wrong code for that row.
+- Effect: one species gets the wrong lookup/code, so any downstream sorting/reporting that uses that code is wrong.
+- Fix: change C13 to:
+  =VLOOKUP(D13,sort0,2,FALSE)
+
+2) A numeric cell stored as text (thousands comma typed in)
+- Problem: DATA!F28 contains "23,397" (with a comma typed) which is text, not a number.
+- Effect: sums or formulas that expect a number can fail or give wrong results; charts will also treat it as text.
+- Fix (pick one):
+  - Re-enter the cell as a number: 23397 and then apply Number format with thousand separators.
+  - Or use a formula to convert: =VALUE(SUBSTITUTE(F28,",","")) and paste the result back as a value.
+
+3) Hard-coded total that doesn't match component sums
+- Problem: DATA!F27 is 1,115,934 but the true sum of F5:F26 is 1,115,933 (off by 1). Totals appear to be entered manually.
+- Effect: totals can become inconsistent when component rows change.
+- Fix: replace manual totals with formulas so they always match the underlying rows. For example:
+  - E27: =SUM(E5:E26)  (or =E15+E26)
+  - F27: =SUM(F5:F26)
+  - E29: =SUM(E5:E28)  (or =E27+E28)
+  - F29: =SUM(F5:F28)  (ensure F28 is numeric first)
+
+4) Display formulas return text (TEXT(...) used for numeric cells)
+- Problem: In DATA TEXT the numbers are created with TEXT(DATA!E5,"#,##0"), etc. TEXT returns text, not numbers.
+- Effect: those cells cannot be used in numeric calculations or charts.
+- Fix: use direct references and format the cells for display:
+  - Replace =TEXT(DATA!E5,"#,##0") with =DATA!E5 and set the cell Number Format to "#,##0".
+  - Do the same for F and G columns.
+
+5) Check the named range used by VLOOKUP (sort0)
+- Problem: VLOOKUP uses a named range sort0. If sort0 is mis-defined (wrong columns/rows) VLOOKUP will return wrong values.
+- Effect: wrong codes/values returned or #N/A errors.
+- Fix: verify sort0 refers to the table where the first column is the species text and the second column is the code. Example (if the mapping is on the Title page in columns B and C rows 5:29):
+  - Define sort0 = 'Title page'!$B$5:$C$29
+  - If you use the species from column A, adjust the VLOOKUP column index (3) or the named range accordingly.
+
+Summary (what I recommend doing now)
+1. Fix C13 to use D13.
+2. Convert DATA!F28 to a real number.
+3. Replace manual totals (E27,F27,E29,F29) with SUM formulas.
+4. Replace TEXT(...) formulas with direct links to DATA! cells and apply number formatting.
+5. Confirm sort0 points to the correct 2-column lookup table (species → code).
+
+If you want, I can give the exact replacement formulas for each DATA TEXT cell or a step-by-step to correct all TEXT formulas automatically. Which would you prefer?

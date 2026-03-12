@@ -1,0 +1,55 @@
+I checked the Financial Statements workbook and found several errors that are (1) causing wrong numbers to roll up into the Five Year Review and (2) making the cash‑flow / reconciliation unreliable. Below are the problems, plain explanations and simple fixes.
+
+Summary of main problems
+1) Wrong cross‑sheet column references in the Five Year Review (causes 2002 numbers to show 2001 values).  
+2) Hard‑coded constants and typos in the cash‑flow section (causes reconciliation errors).  
+3) Some totals use literal arithmetic rather than cell references (hard to audit and prone to mistakes).  
+4) A few “sanity check” reconciliations (end cash vs components) appear to be set up but will show a difference if the wrong references above are not fixed.
+
+Details, cause and simple fixes
+
+Problem A — Five Year Review references wrong year column
+- Example: FIVE YEAR REVIEW!C15 (2002 Subscriptions) has formula ='Financial Statements'!E54 — that pulls 2001 subscriptions into the 2002 column. Same pattern appears elsewhere: C32, C33, C34 and other C‑column cells reference E‑column cells on the Financial Statements sheet.
+- Why it’s wrong: columns C/E on the Financial Statements are year columns (C = 2002, E = 2001). Five Year Review must pull the matching year column, not always E.
+- Fix: change the formulas in the Five Year Review so each year column references the same year column on the Financial Statements sheet. Example corrections:
+  - FIVE YEAR REVIEW!C15 should be ='Financial Statements'!C54 (not E54).
+  - FIVE YEAR REVIEW!C16 should be ='Financial Statements'!C61 (not E61 or hard‑coded).
+  - FIVE YEAR REVIEW!C32 should be ='Financial Statements'!C117 (net cash inflow 2002), not E117.
+  - FIVE YEAR REVIEW!C33 should be ='Financial Statements'!C129 (net investing 2002), not E129.
+  - FIVE YEAR REVIEW!C34 should be ='Financial Statements'!C136 (financing 2002), not E136.
+  - Similarly ensure E‑column in the Five Year Review points to E‑column in Financial Statements, G‑column to G (2000) etc.
+- Result: the five‑year totals and ratios will use the correct year data.
+
+Problem B — Hard‑coded numbers and a likely typo in Cash Flow (breaks reconciliation)
+- Example: FINANCIAL STATEMENTS!C121 reads =-26907-7561074 (hard coded). That looks like a manual arithmetic string and likely a typo (7561074 vs 7561073 and inconsistent -26907 vs -26908 values appear elsewhere). Hard coding hides the true source and invites off‑by‑one mistakes.
+- Why it’s wrong: cash flow items should be built from cell references (so changes update automatically). Hard coding also makes reconciliation formulas unreliable.
+- Fix: remove hard coded arithmetic. Replace C121 with a formula that references the correct source cells (the cells that list payments to suppliers and employees). If there is no single source cell, create a small detail area that lists the cash payments and then use:
+  - =-SUM(range_of_cash_payments)
+  For example, if cash payments are recorded in C121:C125 use =-SUM(C121:C125) (and place the formula in a cell that summarizes them, not inside the detail). If the intention was to show “Cash paid to suppliers and employees = minus (cash received from members + net movement)”, rework to use explicit references rather than numbers.
+- Result: signed cash flows will be consistent and auditable.
+
+Problem C — Use references instead of inline arithmetic for a number of totals
+- Examples: E79 =476555.8+3116.33, E87 =103735.39+26083.05+11314.95, many other cells use literal sums. These are fragile and hide the true inputs.
+- Why it’s wrong: when the underlying figures change, these manual sums can be overlooked and will not update automatically.
+- Fix: replace these inline formulas with SUM of the actual input cells. E.g. if E79 is meant to be SUM(E79a:E79b) replace the arithmetic with =SUM(reference_range). Audit the rows to find which underlying cells were intended and reference them directly.
+
+Problem D — Cash reconciling checks may show non‑zero differences until above fixes applied
+- There is a check cell (G147 = C147 - C532) intended to be zero. Because of the wrong references and hard-coded numbers, that check probably won't be zero.
+- Fix: after you fix Issues A–C, recalculate. If G147 is not zero then trace back which component (C529, C530, C531 or C147) is incorrect and correct the source reference.
+
+Quick action checklist (what to change first)
+1. On FIVE YEAR REVIEW sheet update all C‑column formulas so they reference the C‑column on Financial Statements (and E‑column formulas to E‑column etc). Start with C15, C16, C17, C23, C24, C26, C27, C28, C32, C33, C34.  
+2. On FINANCIAL STATEMENTS sheet replace hard coded arithmetic in the cash flow block with proper SUM references to the underlying detail cells (start with C121).  
+3. Replace any “number + number” formulas with SUM(range) pointing to the detail cells.  
+4. Recalculate and confirm G147 (end cash check) equals zero. If not, trace the residual difference to the single cell that differs and correct the reference.
+
+Why these fixes work (short)
+- Using the correct column references ensures each year in the summary pulls values from the matching year on the detail sheet.  
+- Replacing hard‑coded numbers with cell references makes formulas update automatically, prevents typos and preserves the audit trail.  
+- Once correct references and proper sums are in place, the cash flow will reconcile and cross‑sheet totals (Five Year Review) will be accurate.
+
+If you want, I can:
+- provide an exact list of every formula in the Five Year Review that needs to change (I identified the likely ones), or
+- produce the corrected formulas for the cash‑flow block if you paste the exact cell ranges that contain the cash payment detail.
+
+Which would you prefer?

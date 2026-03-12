@@ -1,0 +1,64 @@
+I reviewed the three sheets and found consistent, repeatable errors. Root cause: many cells reference the wrong cells (totals instead of the individual rows) or use incorrect ranges/signs. That corrupts the weighted average, FIFO/LIFO and perpetual calculations and flows wrong numbers into NetIncome/CashFlow.
+
+Summary of main errors and simple fixes
+
+1) Wrong cell references in the Weighted Average (Periodic) block
+- Problem: I8, K8, I9, K9 reference totals (C10, E10, C14, E14) instead of the row-level values for the beginning and purchase rows. I10 =SUM(I9:I9) is the wrong range.
+- Fix (replace each formula with these):
+  - I8 = C8         (Beginning inventory units)
+  - K8 = E8         (Beginning inventory cost)
+  - I9 = C9         (Purchase units)
+  - K9 = E9         (Purchase cost)
+  - I10 = SUM(I8:I9)       (GAFS units)
+  - K10 = SUM(K8:K9)       (GAFS cost)
+  - J10 = K10 / I10        (weighted unit cost)
+- Why: weighted average requires the row units and row costs, not the totals, to compute correct averages.
+
+2) Ending inventory units/cost sign and formula inconsistency (Periodic average)
+- Problem: I11 = -I10 - SUM(C17:C18) is awkward and K11 was blank (?), producing negative units/cost is confusing and inconsistent across blocks.
+- Fix:
+  - I11 = I10 + SUM(C17:C18)   (this returns positive ending units; C17/C18 are negative sales)
+  - K11 = J10 * I11            (ending inventory cost)
+  - Where you need to subtract ending inventory from GAFS, use -I11 or -K11 explicitly in the GAFS lines — keep units/costs themselves positive.
+- Why: keeping units/costs positive improves clarity and prevents double-negatives and mis-sums.
+
+3) Repeating the same type of wrong references across other "Periodic" sections (Weighted, FIFO, LIFO)
+- Problem: Several cells in FIFO/LIFO periodic blocks reference unrelated totals (for example K41 = -E47, K57 = -E63, K41 points at holding-profit instead of ending-inventory cost). Many rows use totals instead of the specific row cells (same root error as #1).
+- Fix: Audit each block and apply the same pattern: use the row-level units/costs for each dated row (e.g., for a row that represents the December 5 purchase use C8 and E8), then build sums from those row-level cells (SUM of row-level cells). Replace any accidental references to summary cells (like E47, E63) with the correct row or block totals.
+
+4) Perpetual (moving average / FIFO / LIFO) blocks reference wrong prior cells
+- Problem: The perpetual section relies on results of earlier cells (e.g., C71/I8) but I8 was wrong (see #1), so perp calculations are wrong too.
+- Fix: After correcting the periodic block (I8/I9/K8/K9 etc.) recalc the perpetual blocks. Ensure stepwise formulas reference the immediately preceding row (e.g., GAFS on 1/5 uses beginning row cells, sale uses that row’s calculated unit cost, remaining row = previous remaining + purchase - sale). Use explicit row references rather than copying totals.
+
+5) Miscellaneous / cosmetic issues
+- Problem: Cells like D25 (=+D6) simply copy a text label; using formulas to copy labels is unnecessary and confusing.
+- Fix: Replace label-copy formulas with plain text labels (type the text) unless you intentionally want dynamic text.
+- Problem: Several formulas use =+ which is harmless but unnecessary; you can use = for clarity.
+
+Quick checklist to fix the workbook reliably
+1. In the Valuing Ending Inventory sheet, correct the row-level formulas first (all beginning/purchase rows should use C# and E# for units & cost respectively).
+2. Recompute block totals using SUM of those corrected row-level cells (units SUM, cost SUM).
+3. Compute unit costs as (total cost / total units).
+4. Compute ending inventory units by: ending_units = GAFS_units + sales_units (sales in sheet are negative, so SUM works) — keep it positive. Compute ending_cost = ending_units * unit_cost.
+5. Update all dependent cells (FIFO/LIFO/perpetual) so they reference the corrected row-level cells and block totals, not unrelated summary cells.
+6. Re-check NetIncome & Cash Flow numbers—they should change to match the corrected COGS / ending inventory results.
+
+Example: concrete corrected formulas (copy-paste these into the weighted-average periodic area)
+- I8: =C8
+- K8: =E8
+- I9: =C9
+- K9: =E9
+- I10: =SUM(I8:I9)
+- K10: =SUM(K8:K9)
+- J10: =IF(I10=0,0,K10/I10)
+- I11: =I10 + SUM(C17:C18)   (positive ending units)
+- K11: =J10 * I11
+
+Why these fixes solve it
+- Using row-level references gives the correct base numbers. Totals used in place of row values produce circular/wrong intermediate numbers which propagate into weighted averages, FIFO/LIFO layer calculations, COGS and net income. Making ending units/cost positive and subtracting where needed removes double-negative errors and makes sums straightforward.
+
+If you want, I can:
+- Prepare an exact set of corrected formulas for every affected cell (I can produce a list by block: Weighted-periodic, Weighted-perpetual, FIFO-periodic, FIFO-perpetual, LIFO-periodic, LIFO-perpetual).
+- Or provide a corrected copy of the Valuing Ending Inventory sheet (list of cell -> formula corrections).
+
+Which would you prefer?

@@ -1,0 +1,20 @@
+Findings — two clear errors:
+
+1) Faulty cell: DATA TEXT!C13
+- Error: Wrong lookup reference (mechanical).
+- What's wrong: formula uses D14 instead of D13, so "Conifer - Other conifers" pulls the value for "Mixed conifers".
+- Fix: change the formula to =VLOOKUP(D13,sort0,2,FALSE)
+- Why: VLOOKUP must search the species in the same row (D13) to return the correct value.
+
+2) Potential data-type problem: DATA!F28 (and any other manually-entered numbers with commas)
+- Error: F28 shows "23,397" with an embedded comma — that can be text, not a number, breaking numeric calculations.
+- Fix options:
+  - Replace the cell with a proper number: 23397 (or remove the comma from the cell).
+  - Or convert in-sheet: =VALUE(SUBSTITUTE(F28, ",", "")) (use a helper cell) and then replace original with the numeric result.
+- Why: Numeric sums and percent calculations require real numbers; text-looking-numbers are ignored or give wrong results.
+
+Extra check (recommended)
+- Confirm the named range sort0 points to the correct lookup table (first column = species, second column = the value column). If sort0 is mis-defined the VLOOKUPs will fail or return wrong matches.
+- Consider using INDEX/MATCH (or XLOOKUP) for safer lookups if sort order or columns change.
+
+If you want I can give the exact cell-by-cell corrected formulas or instructions to fix the named range.

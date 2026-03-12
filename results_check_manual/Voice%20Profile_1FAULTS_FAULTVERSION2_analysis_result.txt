@@ -1,0 +1,95 @@
+I inspected the formulas you supplied for both sheets ("Example" and "FINANCIAL DATA & ANALYSIS") and found several definite formula errors and a number of inconsistent design choices (most commonly: some totals use three source columns while the weighted averages only combine two). Below I list the concrete problems (by sheet and cell), explain why they are wrong or risky, and give recommended corrected formulas.
+
+Summary of the most important problems
+- Example sheet: H14 is a hard-coded "5" and breaks the average-per-call calculation (H16). H68 points at D68 instead of the expected B/D/F sum. Some average-duration formulas reference empty cells so produce 0 — this may be a data-entry issue rather than a formula error.
+- FINANCIAL sheet: I22 contains a clear typo (C2 used instead of C20) that will produce an error. Several "total" cells correctly sum 3 source columns (C+E+G) but the corresponding weighted-average formulas only use C and E (omit G) — inconsistent and likely incorrect if column G contains data. A few cells (I10/I11, I67) copy a single column instead of summing/averaging.
+
+Detailed findings and recommended fixes
+
+1) Sheet: Example
+- H14
+  - Current formula/value: =5 (cell stores literal 5).
+  - Problem: B14 and D14 are monthly costs (15000 and 7324). H14 should represent the total cost across the three source columns (B, D, F) the same way other H?? totals do. Having H14 = 5 breaks H16 which uses H14/H15 to compute ave cost per call.
+  - Recommended formula: =B14 + D14 + F14
+  - Effect: H16 (currently =IF(H15<>0,H14/H15,"")) will then calculate a sensible weighted average cost per call.
+
+- H16
+  - Current formula: =IF(H15<>0,H14/H15,"")
+  - Note: This formula is fine conceptually, but because H14 was incorrect, H16 was meaningless. No change needed after fixing H14.
+
+- H68
+  - Current formula: =D68
+  - Problem: B68 contains 330 (AVE. CALL LENGTH (SECS) for source B); H68 referencing only D68 (which is blank) results in 0 and ignores B68. Other totals usually sum B+D+F.
+  - Recommended formula (if intent is total/combined): =B68 + D68 + F68
+  - If H68 was intended to be the combined/weighted value, use weighted-average formula similar to other rows.
+
+- H17
+  - Current formula: =IF((B15+D15)<>0,((B15*B17)+(D15*D17))/(B15+D15),"")
+  - Problem/risk: B17 and D17 are not present/empty in the sheet; the formula therefore uses blank cells => treated as zero and returns 0. That might be intended while awaiting input, but flag as "requires inputs in B17 and D17".
+  - Action: confirm that B17 and D17 should be filled. No formula change required if missing data is expected.
+
+General note for Example: many H?? totals use B+D+F; keep that pattern. There are isolated cells that reference only one of the sources (like H14 and H68)—these are likely mistakes.
+
+2) Sheet: FINANCIAL DATA & ANALYSIS
+I found one definite typo that causes an error and several inconsistent formulas where G (third source column) is ignored in averages.
+
+- I22 (AVE. DURATION OF CALLS (SECS))
+  - Current formula: =IF(C2+E20<>0,((C20*C22)+(E20*E22))/(C20+E20),"")
+  - Problems:
+    - The condition uses C2 (a header string) instead of C20. Adding a text cell to a number will produce #VALUE! in Excel, so this formula will error.
+    - The numerator and denominator include only C20 and E20 — column G (G20) is omitted. Most totals in this sheet are C+E+G, so excluding G is inconsistent and will produce incorrect combined averages if G contains data.
+  - Recommended corrected formula (include all three sources):
+    - =IF((C20+E20+G20)<>0,((C20*C22)+(E20*E22)+(G20*G22))/(C20+E20+G20),"")
+  - If column G is intentionally not used for durations, at minimum fix the typo:
+    - =IF((C20+E20)<>0,((C20*C22)+(E20*E22))/(C20+E20),"")
+
+- I10 (NUMBER OF HANDSETS, TOTAL)
+  - Current formula: =G10
+  - Problem: Other totals (for costs/calls) use C+E+G. I10 copying only G10 is inconsistent and likely wrong unless you intentionally only want column G.
+  - Recommended formula: =C10 + E10 + G10
+
+- I11 (PLANNED NO. OF HANDSETS, TOTAL)
+  - Current formula: =G11
+  - Problem/Recommendation: same as I10. Use =C11 + E11 + G11 unless column G is the only valid source.
+
+- I16 (AVE. DURATION OF CALLS (SECS), TOTAL)
+  - Current formula: =IF((C14+E14)<>0,((C14*C16)+(E14*E16))/(C14+E14),"")
+  - Problem: Omits column G (G14 and G16). Totals elsewhere use C+E+G; averages should be weighted over all non-empty sources.
+  - Recommended formula: =IF((C14+E14+G14)<>0,((C14*C16)+(E14*E16)+(G14*G16))/(C14+E14+G14),"")
+
+- I34 (AVE. DURATION OF CALLS (SECS) for MOBILE LONG-DISTANCE)
+  - Current formula: =IF(C32+E32<>0,((C32*C34)+(E32*E34))/(C32+E32),"")
+  - Problem: Omits G32 & G34.
+  - Recommended formula: =IF((C32+E32+G32)<>0,((C32*C34)+(E32*E34)+(G32*G34))/(C32+E32+G32),"")
+
+- I61 (AVE. CALL LENGTH (SECS) for inbound 1800)
+  - Current formula: =IF(C59+E59<>0,((C61*C59)+(E61*E59))/(C59+E59),"")
+  - Problem: Omits G59 & G61 (if G input exists).
+  - Recommended formula: =IF((C59+E59+G59)<>0,((C61*C59)+(E61*E59)+(G61*G59))/(C59+E59+G59),"")
+
+- I67 (AVE. CALL LENGTH (SECS) for inbound 1300)
+  - Current formula: =E67
+  - Problem: Copies E67 only — inconsistent with the weighted-average pattern used elsewhere.
+  - Recommended formula (weighted average across sources): =IF((C65+E65+G65)<>0,((C67*C65)+(E67*E65)+(G67*G65))/(C65+E65+G65),"")
+
+- General inconsistency to highlight:
+  - Many "TOTAL" cells (I7,I9,I13,I14,I19,I20,I31,I32, etc.) correctly use =C+E+G. However many "AVERAGE" or "AVE. DURATION" formulas only combine C and E (omit G). Decide on a consistent approach:
+    - If G is a valid third-data source, all totals and weighted averages should include it.
+    - If G is intentionally excluded for certain metrics (e.g. contract data in G doesn't include counts/durations), document that choice and make it explicit in comments. But do not mix patterns without a good reason.
+
+- Other minor issues / checks
+  - Any formula that multiplies text or empty cells will produce weird results or 0 — e.g., formulas that assume numeric input in Cxx/Eyy/Gzz must be validated. Use error trapping (IFERROR/ISNUMBER) if you expect occasional non-numeric input.
+  - Several cells are left as direct copies from one column (for example many Ixx = Cxx). That is acceptable only if the intent is "take the authoritative source from C", otherwise it should be a sum or a weighted merge.
+
+Actionable next steps
+1. Fix the clear typo at I22 (replace C2 with C20) and, if appropriate, include G20 in the weighted-average computation.
+2. Replace hard-coded/one-column totals (H14 in Example, I10/I11/I67 and any other single-column copies) with sums/weighted averages consistent with the rest of the sheet, unless there is a documented reason not to.
+3. Run a consistency pass to ensure every "TOTAL" (sum of sources) has its corresponding "weighted average" formula including the same set of source columns (C/E/G).
+4. Optionally add ISNUMBER guards or IFERROR wrappers for the formulas that do arithmetic over user-entered cells to avoid #VALUE! when text is present.
+
+If you want, I can:
+- produce a list of every cell in the workbook that omits column G in an averaging formula (so you can quickly decide which ones to update), or
+- produce exact corrected formulas for every inconsistent cell (I can generate a patch list), or
+- (if you upload the actual workbook) open it and insert the fixes and return the corrected file.
+
+Which of those would you like me to do next?

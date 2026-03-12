@@ -1,0 +1,67 @@
+I inspected the workbook and found several clear data / formula / formatting errors. Below are the problems, why they are wrong, and short fix instructions you can apply immediately.
+
+1) Student - Teacher sheet — obvious data-entry typos
+- Problem: BUFORD (row 15) cell E15 = 1.548 (should be 1,548 or 1548). This makes ratios and totals wrong.
+- Fix: Replace 1.548 with 1548 (or the correct attendance number from source). Recalculate any affected totals/ratios.
+- Why: Decimal point is misplaced; attendance should be an integer.
+
+2) Student - Teacher sheet — wrong aggregate / ratio formulas
+- Problem: Some TOTAL cells (e.g., B18, C18, D18) are blank/"**" instead of sums; some ratio columns show "**" where a computed ratio is expected. Also the ratio display style is inconsistent (e.g., "16-1", "16.5-1").
+- Fix: Add proper SUM formulas for totals, and compute ratio as attendance ÷ teachers. Examples:
+  - B18: =SUM(B6:B17)
+  - C18: =SUM(C6:C17)
+  - D18 (overall ratio): =ROUND(B18/C18,1) & ":1"   (or use =B18/C18 and format as number)
+- Why: Totals and ratios should be calculated, not left blank or typed.
+
+3) Student - Teacher (1997‑98 block) — COUNT used instead of SUM
+- Problem: Cell F56 =COUNT(F45:F55) — it counts nonblank cells instead of summing teacher counts.
+- Fix: Change to =SUM(F45:F55)
+- Why: Teacher column contains numeric totals; you need the sum, not the count of entries.
+
+4) University sheet — wrong SUM ranges for two‑year totals
+- Problem: Two‑year TOTAL row uses formulas that include four‑year rows. Example: C15 =SUM(C5:C14) (incorrect).
+- Fix: Use only the two‑year rows (12:14). Correct formulas:
+  - B15 =SUM(B12:B14)
+  - C15 =SUM(C12:C14)
+  - D15 =SUM(D12:D14)
+  - … through K15 =SUM(K12:K14)
+- Why: Summing the wrong range mixes four‑year college data into the two‑year totals.
+
+5) Teachers With Advanced Degrees — percentage and integer issues
+- Problems:
+  - Percent cells (later years) show decimals like 0.4690338 instead of a readable percent (46.90%).
+  - "Total No." columns contain fractional values (e.g., 1995.8, 1789.9) even though counts must be integers.
+- Causes: inconsistent use of decimal (0.469) vs percent (46.9) and lack of rounding after calculating counts from percent.
+- Fix:
+  - Format percent cells as Percentage (Home → Number → Percent) and set decimal places as needed.
+  - If the "Total No." was computed as Percent * TotalStaff, wrap it with ROUND(...,0). Example:
+    - If TotalStaff is in column X and Percent in B21 (as a decimal 0.469), then TotalNo =ROUND(X*B21,0)
+  - Alternatively, ensure Percent cells store 46.9 (as 46.9%) or 0.469 consistently and use the matching formula.
+- Why: Percent display vs stored value mismatch causes misinterpretation; counts must be integers.
+
+6) State test sheet — inconsistent scales / suspicious changes in values
+- Problem: Columns for 1989‑90 and 1990‑91 show scores ~210–225, but from 1991‑92 onward many values are ~40–73. Units change mid-sheet.
+- Fix: Check the data source: those later columns may be a different metric (e.g., percent meeting standard vs scaled score) or a data entry / formatting error. Either:
+  - Relabel the later columns to the correct metric, or
+  - Convert them to the same scale (if possible) so the table is consistent.
+- Why: Mixing metrics without labeling or converting causes misinterpretation and invalid comparisons.
+
+7) SAT sheet — probable typos / outliers
+- Problem: Some SAT entries are clearly too small compared with the rest (e.g., GWINNETT D10 = 99, ROCKDALE D11 = 100, or other two-digit entries where others are ~900–1100).
+- Fix: Cross-check those cells against the source and correct the typos (likely a missing leading digit). As a quick check, apply conditional formatting to highlight values outside a plausible SAT range (e.g., < 700 or > 1600).
+- Why: Data-entry mistakes change the conclusions and totals.
+
+General recommendations (quick checklist)
+- Replace "**" with TRUE blanks or use NA() if you want formulas to treat them as missing.
+- Standardize ratio format: compute ratio numerically (Attendance/Teachers) and show as "x:1" with =ROUND(...,1)&":1".
+- Use ROUND when converting percents to counts: =ROUND(Total*Percent,0).
+- Run Quick Checks:
+  - Use SUM and compare to expected totals.
+  - Use conditional formatting to spot numbers far outside expected ranges.
+  - Use Excel’s Error Checking (Formulas > Error Checking) and Trace Precedents.
+
+If you want, I can:
+- Provide the exact corrected formulas for every erroneous cell you list, or
+- Fix the workbook for you if you upload it / give the specific ranges you want corrected.
+
+Which would you prefer?

@@ -1,0 +1,65 @@
+I inspected the formulas you provided for Sheet1 and found multiple formula mistakes / inconsistent patterns. Summary first, then specific problem cells and recommended fixes.
+
+Summary of problems
+- Many cells in columns E:M on rows 9–39 use chained single-cell SUM formulas (e.g. F9 =SUM(E9), G9 =SUM(F9), L9 =SUM(K9), etc.). Those do not compute column totals or row totals — they simply copy the previous cell and propagate errors. This appears to be an accidental copy/shift of formulas.
+- One cell (E9) references E42 (=SUM(E42)), which is outside the data range and likely a typo.
+- J19 uses =COUNT(I19) which is likely the wrong function for what you want (COUNT returns 1 if I19 is numeric, not the numeric value).
+- Totals row (row 40) partly correct (C40, D40, E40) but then continues the same chaining error (F40 =SUM(E40), G40 =SUM(F40), …) instead of summing the column data ranges.
+- Per-row total (column C) is present for the grand total (C40) but the per-row C9:C39 cells are missing formulas (or are blank). Likely C9:C39 should sum the categories in that row.
+
+Detailed problematic formulas and recommended corrections
+
+1) E9
+- Current: =SUM(E42)
+- Problem: references E42 which is outside the rows used (9:39). Probably a typo.
+- Recommendation: If E9 should be user input, remove the formula and enter the value manually. If E9 is intended to be a column total or part of a range sum, fix the range. (Most likely this should be a data input cell, not =SUM(E42).)
+
+2) Row-level chained formulas in E:M (rows 9–39)
+- Examples: F9 =SUM(E9), G9 =SUM(F9), H9 =SUM(G9), … and similarly for rows 10–39: F10 =SUM(E10), G10 =SUM(F10), …
+- Problem: Each cell simply equals the previous cell rather than being independent category inputs or proper row/column sums. This duplicates values across categories and makes data meaningless.
+- Recommendation: Replace these formulas with either:
+  - Manual numeric input per category (D9:M39 should be numbers you enter), or
+  - If you intended a cumulative pattern, use explicit ranges and proper logic. But most likely you want independent category inputs and the per-row total in C computed as =SUM(D9:M9) (see next point).
+
+3) Column C per-row totals (C9:C39)
+- Current: there are no formulas shown for C9:C39; C40 correctly uses =SUM(C9:C39).
+- Recommendation: Put per-row totals in C9:C39 (if desired) with:
+  - C9 =SUM(D9:M9) and copy down to C39.
+  - Then C40 =SUM(C9:C39) (already correct).
+
+4) J19
+- Current: =COUNT(I19)
+- Problem: COUNT(I19) returns 1 if I19 contains a number (not the number itself). This is almost certainly not what is intended.
+- Recommendation: If you intended to copy the numeric value from I19 or sum that cell, use =I19 or =SUM(I19) (SUM on a single cell returns its value). If you intended to count nonblank numeric entries in a range, use COUNT(range) with a range (e.g. COUNT(I9:I39)).
+
+5) Totals row (row 40) chaining error
+- Current:
+  - C40 =SUM(C9:C39) (correct)
+  - D40 =SUM(D9:D39) (correct)
+  - E40 =SUM(E9:E39) (correct)
+  - F40 =SUM(E40) (incorrect)
+  - G40 =SUM(F40) (incorrect)
+  - H40 =SUM(G40) etc. continues chaining
+- Problem: F40 onwards sum the previous total cell instead of the column data range F9:F39, G9:G39, etc.
+- Recommendation: Replace with:
+  - F40 =SUM(F9:F39)
+  - G40 =SUM(G9:G39)
+  - H40 =SUM(H9:H39)
+  - I40 =SUM(I9:I39)
+  - J40 =SUM(J9:J39)
+  - K40 =SUM(K9:K39)
+  - L40 =SUM(L9:L39)
+  - M40 =SUM(M9:M39)
+
+Other notes / overall suggestions
+- Remove the chain formulas across category columns (E:M rows 9–39). Those are almost certainly accidental and make the data invalid.
+- Decide where data should be manual inputs vs computed. Typical setup:
+  - Enter category counts in D9:M39 manually.
+  - Per-row total in C9:C39 =SUM(D9:M9).
+  - Column totals in row 40 as SUM of each column’s rows (D40 =SUM(D9:D39), etc.). C40 then totals all rows.
+- If you want to protect manual-entry cells from accidental overwriting, lock formulas and leave data cells unlocked.
+- If you want me to produce the exact corrected formulas for every affected cell (e.g., full list for C9:C39, F9:F39, F40:M40), tell me and I will list them or generate a corrected formula map.
+
+If you want, I can:
+- Provide a repaired list of formulas for every affected cell,
+- Or output a copy of the sheet with corrected formulas (if you can accept a patch or send the workbook).

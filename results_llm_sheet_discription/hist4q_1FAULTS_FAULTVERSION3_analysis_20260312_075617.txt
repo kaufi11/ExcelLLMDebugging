@@ -1,0 +1,15 @@
+Findings (short)
+- Error: Cell H12 on Sheet "1" has the wrong formula. It is =SUM(H10:H11) but should be =SUM(H9:H11).
+- Impact: 2001 Q2 totals (H column) for 事務機計 (row12) and all downstream values that reference it (売上合計 row15, 純売上高 row17, 売上総利益, 営業利益, 税前利益, 当期純利益 and all related ratios) are incorrect for that quarter. This also causes mismatch with Sheet "2" (事務機 売上高 in H9 = 569,874).
+
+Fix (very short)
+1. On Sheet "1" select H12.
+2. Replace formula =SUM(H10:H11) with =SUM(H9:H11) and press Enter.
+
+Why this fixes it
+- The current formula omits the オフィスイメージング機器 value in H9 (247,326). Changing the range to H9:H11 includes that missing component, restoring the correct 事務機 計 (H12 = 569,874). Once H12 is corrected, all totals and ratio formulas that reference those totals will automatically recalculate to the correct values for 2001 Q2.
+
+Validation / extra checks
+- After fix, H15 (売上合計) should equal 759,277 (＝H12 + H13 + H14).
+- Cross-check Sheet "2" H9 (事務機 売上高) — it should match Sheet "1" H12 after the correction.
+- Recommend running Excel’s Formula Auditing (Formulas → Error Checking / Trace Precedents) to find any other inconsistent ranges (in case similar copy/paste mistakes exist).

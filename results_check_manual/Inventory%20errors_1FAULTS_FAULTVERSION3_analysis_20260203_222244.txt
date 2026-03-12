@@ -1,0 +1,26 @@
+Summary of the problem
+- The workbook contains inventory-count errors across years. Those errors change inventory (an asset) and cost of goods sold (therefore net income), but the prior-year inventory misstatements were not closed into retained earnings. As a result Total Assets ≠ Total Liabilities + Equity (the balance sheet is off by the inventory error amount).
+
+Where the mistakes are (short)
+1. Wrong formula in Sheet2 B10: it says =B8+C9 instead of =B8+B9 (so cost of goods available is calculated incorrectly).
+2. Ending-inventory cells were edited with inline arithmetic (e.g. B11 = "179800+17000", D11 = "147200-25000") instead of correcting values or documenting the error in a separate cell.
+3. Prior-year inventory errors were not closed to retained earnings. That leaves an asset change unbalanced by equity, causing the balance sheet not to balance.
+
+Why that makes the statement unbalanced (short)
+- An inventory miscount changes assets (ending inventory) and changes net income (through COGS). If the miscount was in a prior year, the correct accounting treatment is to adjust retained earnings (the cumulative effect) at the start of the next year. If you change inventory on the asset side but do not adjust retained earnings for the prior-year error, assets and liabilities+equity will differ by the error amount.
+
+How to fix it (exact steps)
+1. Fix obvious formula errors:
+   - Change Sheet2!B10 to =B8+B9 (so "cost of goods available for sale" = beginning inventory + purchases).
+2. Replace inline arithmetic in inventory cells with the correct inventory values (or move the error amount into a separate cell).
+   - Example: if 2001 ending inventory should be 162,800 instead of 179,800, put 162800 in B11. Do not leave "179800+17000" in the cell.
+3. Close prior-year inventory errors to retained earnings:
+   - If a prior-year ending inventory was overstated by X, reduce beginning retained earnings in the next year by X (so retained earnings at start of year = prior retained earnings ± inventory correction). If the prior-year inventory was understated by X, increase retained earnings by X.
+   - Implement with a clear formula cell. For example (using your sheet layout): if 2001 ending inventory was overstated by 17,000, in 2002 retained earnings cell use D35 = E17 - 17000 or include a separate cell for PriorYearInventoryCorrection and add/subtract it from retained earnings. (Sheet3 shows this approach: it adjusts retained earnings for the prior-year error so the balance sheet balances.)
+
+One-line explanation
+- Inventory errors change assets and net income; to keep the balance sheet balanced you must either (a) use correct inventory/counts or (b) if fixing a prior-year error, adjust retained earnings by the difference so assets = liabilities + equity.
+
+If you want, I can:
+- Give the exact cell formulas to paste into each problematic cell, or
+- Show a corrected sheet (Sheet3-style) that balances, with the retained-earnings correction isolated in its own cell.

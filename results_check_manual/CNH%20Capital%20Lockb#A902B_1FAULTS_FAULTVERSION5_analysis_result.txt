@@ -1,0 +1,31 @@
+I reviewed every formula in the sheet "CNH Capital Homework #2". I found one clear formula/data error and one minor consistency/clarity issue. Details and fixes below.
+
+1) Incorrect / accidental value
+- Cell C35 currently contains =4 (value 4). This is inconsistent with the pattern used for the other "Opportunity cost of float" cells (B33, B34, B35) which use the cost-of-capital * region dollar flow * total days. C35 should follow the same pattern for Midwest → California.
+
+- Proposed correct formula for C35:
+  =$C$21*$B19*C29
+  (i.e. cost-of-capital * Midwest average-daily dollars (B19) * Midwest total days to California (C29))
+
+- Current effect of the error:
+  - C35 (should be ~8,568,000) is 4
+  - C47 (C35 + C41) currently = 1,350,004; corrected would be 9,918,000
+  - Objective cell H52 (SUMPRODUCT ... ) currently = 17,570,004; corrected (with C35 fixed) = 26,138,000
+
+  Calculation for corrected C35:
+  0.085 * 24,000,000 * 4.2 = 8,568,000
+
+  Then corrected C47 = 8,568,000 + 1,350,000 = 9,918,000
+  Corrected H52 = 50,000 (fixed costs) + (6,960,000 [B45]*1 + 9,210,000 [C46]*1 + 9,918,000 [C47]*1)
+               = 26,138,000
+
+2) Minor consistency / clarity observations (not strictly "errors")
+- The two columns under "Check origination data" are labeled B16 = "average daily" and C16 = "yearly checks". That is correct for how the model is used (column B contains average-daily dollar volumes used in opportunity-cost calculations; column C contains yearly check counts used in per-check processing-charge calculations). But those headers are easy to misread — consider clarifying them to "average daily $ volume" and "yearly # checks" so it is clear why opportunity-cost formulas reference column B while processing-charge formulas reference column C.
+
+- Mixed absolute/relative anchoring: some formulas use partial anchoring (e.g. $B17 vs $B$17). That appears intentional (so the row index changes when formula is copied down). If you plan to copy formulas differently, consider using consistent full absolute references where appropriate. This is a suggestion, not a correctness problem in the current layout.
+
+Summary of required fix
+- Replace the hard-coded 4 in C35 with the formula:
+  =$C$21*$B19*C29
+
+After that change, verify C47 and H52 update to the corrected values shown above. If you want, I can produce a patched workbook (or the exact formula list) with the C35 fix applied.

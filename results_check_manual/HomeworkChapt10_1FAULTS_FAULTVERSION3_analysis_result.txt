@@ -1,0 +1,41 @@
+I reviewed the formulas on Sheet1 and found a few formula mistakes and a few inconsistencies that could cause confusion or wrong results. Below are the issues I found, why they are problems, and recommended fixes.
+
+1) D18 — wrong formula
+- Cell: D18
+- Current formula: =B18-18
+- Problem: subtracts the literal number 18 instead of the consumption in C18. This breaks the savings calculation for period 3 in part 1b.
+- Displayed value: 7 (this is 25 - 18)
+- Fix: replace with =B18-C18
+
+2) Inconsistent handling of initial assets (makes formulas non‑uniform / fragile)
+- Cells: E5 (part 1a) vs E16 (part 1b)
+- Observations:
+  - E5 is set to =D5 (implying initial assets = 0).
+  - E16 is =1*(1.05)+D16 (explicitly uses 1 as initial assets and applies interest).
+- Problem: the workbook mixes hard‑coded initial‑asset values (1) and implicit zeros. This is OK if intentional, but it's fragile and unclear. Also your comment text says “With initial assets of $1,000” while the formula uses 1 — that implies a units convention (thousands) but is not explicit.
+- Recommendation:
+  - Create a single cell (e.g., put initial assets in a named cell like InitialAssets) and reference that cell everywhere. Example:
+    - Put initial asset (in the same units as income/consumption) in a cell, say F1 = 1 (or 1000 if using dollars).
+    - Use E5 formula =InitialAssets*(1+0.05)+D5 (or =InitialAssets + D5 if interest timing differs), and E16 =InitialAssets*(1+0.05)+D16.
+  - Or, at minimum, document the units (thousands) and use a consistent reference rather than hard‑coding numbers.
+
+3) Blank income cells for retirement periods (B9 and B20) — implicit zero may be unclear
+- Cells: B9 and B20 are not shown in the sheet data (they are blank). D9 and D20 formulas use B9 and B20.
+- Effect: Excel treats blank as zero in arithmetic, so D9 = -20.48 and D20 = -20.72 (withdrawals). This can be intended (retirement income = 0) but is not explicit.
+- Recommendation: explicitly enter 0 in B9 and B20 (or label them as 0 income in retirement) to avoid confusion.
+
+4) Missing header for column D (savings/change in assets)
+- Observation: Column D is used for B - C but there's no header in D4.
+- Recommendation: add a header like "Savings (Income − Consumption)" in D4 to make the sheet clearer.
+
+5) Minor suggestion: consistent referencing of consumption column
+- Current approach: consumption C5..C8 use formulas like =C5, =C6, etc. That's fine for copying constant consumption, but you might instead lock a single reference (e.g., $C$5) so changes are easier.
+- Recommendation: if consumption is a repeating constant, consider putting the constant in one cell and reference it (e.g., C5 contains the base consumption and C6 formula = $C$5 instead of =C5).
+
+Summary of explicit formula corrections to make immediately:
+- D18: change to =B18-C18
+- (Optional but recommended) E5: change to =InitialAssets*(1+0.05)+D5 (and set InitialAssets cell), and change E16 similarly to reference the same cell.
+- Enter 0 explicitly in B9 and B20 if retirement income is zero.
+- Add header to D4.
+
+If you want, I can provide the exact cell formulas with a suggested cell chosen for InitialAssets (and fix the sheet automatically), or produce a short patch list to apply to the workbook. Which would you prefer?

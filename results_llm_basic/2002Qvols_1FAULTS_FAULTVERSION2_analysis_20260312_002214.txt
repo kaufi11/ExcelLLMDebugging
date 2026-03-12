@@ -1,0 +1,45 @@
+I checked Sheet2 and found a few clear mistakes and some suspicious values. Short, direct fixes below.
+
+1) Wrong hard‑coded constant (definite error)
+- Cell O32 contains: =526+J32
+- Why it’s wrong: it uses the literal 526 instead of the LPG value in column E for row 32. This gives the wrong LPG cumulative value.
+- Fix: change O32 to:
+  =E32+J32
+- Explanation: O is the cumulative LPG column (E+J pattern across the sheet). Replacing 526 with E32 restores the consistent pattern.
+
+2) Missing input used in cumulative formula (likely causing wrong Q4 totals)
+- Example: AK6 is =AG6+Y6 but AG6 is blank/missing (AG6 value not listed).
+- Why it’s a problem: the Q4 LPG cumulative (AK) expects the Q4 LPG input in AG. If AG is empty you get a wrong/incomplete AK result.
+- Fix options:
+  - Enter the correct AG6 value (preferred) — i.e. fill the missing Q4 LPG number for that category.
+  - Or make the formula robust to blanks: =N(AG6)+Y6
+    (N(AG6) returns 0 for blank/text so cumulative still works).
+- Explanation: many AK (and AI/AJ/AL) formulas follow the pattern AG+Y, AE+W etc. Missing AG values must be supplied or handled as zero.
+
+3) Hard‑coded / misplaced negative value (suspicious)
+- Cells S36 and S44 show -134687 (same negative number) while the surrounding rows have normal positive inputs/formulas.
+- Why it’s a problem: identical negative values copied into an input column are likely wrong (or at least need verification). Negative fuel sale quantities are unusual.
+- Fix:
+  - Verify original source numbers and replace with the correct positive values.
+  - If those cells should be calculated, replace the hard number with the correct formula (follow the pattern used in that column for similar rows).
+- Explanation: look for accidental paste of an adjustment or a sign error. Use Find (Ctrl+F) for “-134687” to locate all occurrences.
+
+4) Unexpected negative values (audit required)
+- Examples: J9 = -31560, T9 = -9600, E60 = -1,496,201, K100 = -50483, etc.
+- Why it’s a problem: negative sales volumes are usually data errors (returns/adjustments are possible but should be validated).
+- Fix: check the source data. If signs are wrong, correct them; if those represent adjustments, document them or move them to a dedicated adjustment column.
+- Explanation: formulas will compute totals with these negatives and propagate errors into quarterly and cumulative totals.
+
+5) Formula style / maintainability (minor)
+- Some cells use expressions like =44762024+2009667 instead of SUM or cell references. Not an error but increases risk of mistakes on updates.
+- Recommendation: use cell references or SUM ranges so future edits won’t require manual re-calculation.
+
+How to find and prevent similar errors quickly
+- Use Trace Precedents / Trace Dependents to find where an incorrect cell feeds totals.
+- Use Go To Special → Constants to spot hard‑coded numbers in ranges that should be formulas.
+- Conditional format negative numbers to highlight suspicious negative entries.
+- Use IFERROR or N() in cumulative formulas to avoid #VALUE errors when inputs are blank.
+
+If you want, I can:
+- Give a list of every cell that contains a hard-coded number where a formula is expected (I can scan for constants in a specified range).
+- Produce a corrected small patch (list of corrected formulas) for the exact cells you want fixed (e.g., O32, AK6, S36, S44 and others). Which would you prefer?

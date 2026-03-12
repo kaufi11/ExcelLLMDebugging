@@ -1,0 +1,42 @@
+High-level description
+- Workbook has 3 sheets: Detail (detailed General Fund), Summary (condensed General Fund), and RCM Report (P&L across fund types). All three share the same header structure (RC Unit, College X, FY columns) and use consistent column roles across fiscal categories.
+
+Common layout / columns
+- Rows are grouped into Revenue (tuition, fees, allocations, sales, other) then Expenditures (salaries by category, fringe, goods & services, equipment, travel, transfers, allocations), then Net Change / Beginning / Current fund balance.
+- Columns by header: D = Actuals, E = Original Budget, F = Current Budget, G = YTD Expenditures, H = Encumbrances, I = Exp+Enc, J = Additional/Commitments, K = Year‑End (projected), L = Variance $, M = Variance %, N = Projected Budget. (Header mapping defined at top of sheets.)
+
+Key values (Detail sheet)
+- Tuition actuals: Undergraduate D8 = 21,564,821; Graduate D9 = 4,321,000; Summer D10 = 420,515. Subtotals are computed with SUM formulas.
+- Financial aid actuals: D13 = -2,725,154; D14 = -1,311,515 (negative values reduce tuition).
+- Other material revenue: State appropriation D19 = 1,496,024; University fund allocation D20 = 1,100,000; Dept sales D23 = 342,664; Other revenue D24 = 125,415.
+- Beginning fund balance D64 = 500,000.
+- Major expenditure lines: Permanent salaries components (D29–D33) totaling at D35 via SUM(D29:D34); Goods & Services D53 = 1,615,135; Travel D55 = 315,543; Facilities allocation budget E58 = 2,500,000 (D58 computed from E58).
+- Facilities / overhead allocations: D58, D59, D60 are computed as 93% of the corresponding E cells (E58/E59/E60) using FORMULA =E##*0.93.
+
+Important formulas & calculation patterns
+- Subtotals and totals consistently use SUM over the same row ranges across columns (e.g., revenue subtotal D25 = SUM(D16:D24); total expenditures D61 = SUM(D52:D60)).
+- Personnel/fringe math:
+  - Permanent-salary fringe (full) D49 = D35 * 0.35.
+  - FICA-only fringe D50 = D42 * 0.084.
+  - Total fringe D51 = SUM(D49:D50).
+  - Total personnel D52 = D47 + D51 (where D47 sums all salary subtotals).
+- Net change = Total Revenue – Total Expenditures (e.g., Detail D63 = D25 - D61). Current/projected fund balance = Beginning balance + Net change (D65 = SUM(D63:D64)).
+- Many rows in Summary and RCM Report are direct links to Detail (either =Detail!Cell or =SUM(Detail!range)), creating a single-source-of-truth in Detail.
+
+Cross-sheet relationships
+- Summary sheet mirrors Detail at a higher level by pulling individual lines from Detail (tuition, fees, allocations, salaries, fringe, goods & services, equipment, travel, transfers, allocations) and recomputing totals/net change/current balance.
+- RCM Report re‑allocates the Detail values across fund columns (General, Designated, Auxiliary, Gift, Grant, Plant) by either linking to Detail ranges or using provided fund-specific values. RCM also contains a few hard-coded fund-level numbers (e.g., Grants/Contracts H17 = 2,515,462; Restricted Gifts G18 = 91,515; some E‑column designated amounts).
+
+Notable implementation details / potential review points
+- Consistent use of SUM across matching ranges simplifies audit and updates.
+- Fringe rates are applied to subtotal rows (permanent salary * 0.35; salaries * 0.084) — ensure these rate assumptions remain current.
+- Facilities/general overhead use 93% of budgeted E-column values (E58–E60) — watch for intentional design (budget vs. actual mapping).
+- Some cells in RCM are populated with hard-coded fund values (not linked to Detail) — check that these reflect intended fund allocations and won’t diverge from Detail over time.
+- Beginning fund balances are hard-coded per sheet (Detail D64, Summary D37, RCM D39) and then used in current balance calculations.
+
+Overall flow
+- Detail = source-level inputs and formulas (line-item budgets and actuals).
+- Summary = roll-up of Detail for a concise General Fund view.
+- RCM Report = P&L style roll-up splitting totals across fund types and combining to a consolidated total.
+
+If you want, I can (a) produce a compact map of all cross-sheet links, (b) flag potential formula inconsistencies, or (c) generate a flattened list of every cell formula for auditing. Which would help most?

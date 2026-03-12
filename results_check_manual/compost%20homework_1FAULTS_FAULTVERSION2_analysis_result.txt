@@ -1,0 +1,22 @@
+I inspected the formulas in both sheets. Findings and recommended fixes:
+
+1) Typo in "Bulk compost" C19
+- Current formula: =A19+(B19/783)-1.48
+- This is almost certainly a typo (783 instead of 24). It produces 13.5362835249042, consistent with 12.75/783 but not with the rest of the column.
+- Fix: change to =A19+(B19/24)-1.48
+
+2) Consistency checks / recommendations
+- All other "start" formulas in:
+  - "Bulk compost" C4:C22 use =A# + (B#/24) - 1.48 (consistent except C19).
+  - "Treatments" C3:C22 use =A# + (B#/24) - 1.71 (all consistent).
+- Confirm whether the two different offsets (-1.48 vs -1.71) are intentional. If they should be the same baseline, change one sheet to match the other.
+- Minor text inconsistency: "Bulk compost" C1 is "Days from " (trailing space) while "Treatments" C1 is "Days from" (no trailing space). Not a formula error, but may affect exact-text matches.
+
+3) Suggested improvements to avoid future mistakes
+- Put the offset value in a single cell (e.g., $Z$1) and use =A4 + (B4/24) - $Z$1 so it’s easy to change and copy without manual edits.
+- Fill-down the corrected formula for the entire column to ensure no further accidental deviations.
+- To find any other anomalies quickly, you can use a helper column that checks the expected pattern, e.g.:
+  =IF(FORMULATEXT(C4)=FORMULATEXT($C$4),"OK","DIFFERENT")
+  (or compare parsing of the formula text).
+
+If you want, I can produce a short script of exact cells to change or the fill-down steps, or scan for any other irregularities (e.g., check each cell’s FORMULATEXT) and list them.

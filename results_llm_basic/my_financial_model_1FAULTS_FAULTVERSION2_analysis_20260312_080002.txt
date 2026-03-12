@@ -1,0 +1,46 @@
+I found the main errors. Short explanations + exact fixes you can paste in and copy right across.
+
+1) Cups produced — bad multiplier (huge jump)
+- Error: Income!G3 = F3*(45+$D$3) — "45" is a typo.
+- Fix: change to =F3*(1+$D$3) and copy across.
+- Why: should grow by (1 + growth rate) not multiply by 45 + rate.
+
+2) Sugar-price inflation referenced the wrong cell
+- Error: Income!F8 (and the F..P8 chain) uses $D$7 (lemon inflation) instead of the sugar inflation rate in D8.
+- Fix: change F8 to =E8*(1+$D$8) and copy across to G8:P8.
+- Why: price escalation for sugar must use the sugar inflation cell ($D$8), not the lemon inflation ($D$7).
+
+3) Monthly Total (Revenue) omitted street sales
+- Error: Income!E12:P12 are =SUM(E10:E10) (only online sales).
+- Fix: change each to =SUM(E10:E11) (and copy across E->P).
+- Why: total revenue must add online (row10) plus street (row11).
+
+4) Balance Sheet — Long-term asset original value linked to wrong cell
+- Error: Balance Sheet!D8 = D14 (points at the loan/liability cell).
+- Fix: set D8 to the actual asset purchase amount. If the asset is bought via the Cashflow investment outflow (Cashflow!D9 = -100000), use:
+  - =ABS(Cashflow!D9)
+  or if you want the signed purchase value:
+  - =-Cashflow!D9
+- Why: D8 should show the asset cost (purchase) not a liability number.
+
+5) Depreciation — cumulative totals incomplete / inconsistent at the tail
+- Symptom: Depreciation!M11..P11 are not following the cumulative pattern (e.g., some are just =M7 instead of previous cumulative + current).
+- Fix: make the cumulative chain consistent. Example pattern:
+  - E11 = E7
+  - F11 = E11 + F7
+  - G11 = F11 + G7
+  - ...
+  - M11 = L11 + M7
+  - N11 = M11 + N7
+  - O11 = N11 + O7
+  - P11 = O11 + P7
+- Why: total accumulated depreciation must add each period's depreciation to the previous total.
+
+Quick checklist to apply (copy formulas right across after fixing the first column):
+- Income!G3 -> =F3*(1+$D$3)
+- Income!F8 -> =E8*(1+$D$8) (copy to G8:P8)
+- Income!E12 -> =SUM(E10:E11) (copy to F12:P12)
+- Balance Sheet!D8 -> =ABS(Cashflow!D9) (or =-Cashflow!D9)
+- Depreciation!F11 and onwards -> follow cumulative pattern =previous_total + current_period_depr
+
+If you want, I can give a small script of exact formulas to paste for each corrected cell or walk through applying these fixes across the sheet. Which do you prefer?

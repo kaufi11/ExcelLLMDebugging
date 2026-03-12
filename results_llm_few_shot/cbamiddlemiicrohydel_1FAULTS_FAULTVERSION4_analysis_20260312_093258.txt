@@ -1,0 +1,43 @@
+I checked the workbook. Main problems, causes and quick fixes below (short and simple).
+
+1) Discount factor row (years) — big error, breaks all PVs after year 10
+- Faulty cell: U19
+- Error: formula multiplies by 1.12 instead of dividing. It is written =T19*(1*1.12) which increases the factor instead of discounting. That wrong value then feeds subsequent factors (V19 etc) and makes all Present Value calculations from year 11 onward incorrect.
+- Fix: change U19 to divide by 1.12 like the other cells. Use either
+  =T19/1.12
+  or
+  =T19*(1/1.12)
+- Explanation: discount factor for next year = previous factor / (1+rate). Fixing this corrects all downstream PVs (G20:AA20, G32:AA32, totals and NPV/B/C).
+
+2) Environmental clean-up entry (likely wrong reference)
+- Faulty cell: AA17
+- Problem: AA17 uses =0.1*G5+0.1*G6 (references year-2000 construction cells) but the text says “clean up in year 2020” — that either belongs to 2020 column (AA) but must be 10% of the construction cost (which is in G5/G6) OR 10% of the construction cost values in column AA. The intent is ambiguous.
+- Suggested fix (if clean-up = 10% of original construction cost occurring in 2020): keep the reference to initial construction but wrap it for clarity:
+  =0.1*(G5+G6)
+  If instead clean-up should be 10% of the construction cost in year 2020 (AA column), use:
+  =0.1*(AA5+AA6)
+- Explanation: use a single grouped reference (SUM) so the meaning is clear and it’s easy to change later.
+
+3) Scrap value cell (clarify expression)
+- Cell: AA29 currently =0.02*G5+0.02*G6
+- Suggestion: replace with =0.02*(G5+G6) or =0.02*SUM(G5:G6) for clarity (same result). Keeps it clear that scrap = 2% of total construction cost.
+
+4) Averages/range inconsistencies (minor, but tidy up)
+- Cell: AE13 uses =AVERAGE(AE3:AE10) but AE has data to AE11 in some rows. Use correct full range, e.g.:
+  =AVERAGE(AE3:AE11)
+- Check other AVERAGE ranges (T13, V13, X13, Y13, AB13, AC13, AD13) to ensure they include the full set of household rows.
+
+5) Conflicting assumptions about tube lights (data inconsistency)
+- Problem: Assumptions show two different tube-light specs: A50 says “Rs.170 once a year”, while A89 says “Rs.50 changed 6 times a year”. The sheet’s cost formulas use 50 and 6 (5.67*30*50*6).
+- Action: pick one assumption and update all tube-light formulas consistently. Example (if using Rs.170 once/year):
+  replace 5.67*30*50*6 by 5.67*30*170*1
+- Explanation: inconsistent assumptions will give wrong benefits/costs.
+
+What to do now (practical steps)
+1. Fix U19 to =T19/1.12 and then recalc (Excel will update dependent PV cells).
+2. Decide whether AA17 should reference G5/G6 or AA5/AA6 and change to =0.1*(...) accordingly.
+3. Convert AA29 to =0.02*(G5+G6) (clarity).
+4. Fix AE13 range and any other average ranges that missed a row.
+5. Decide one tube-light assumption and update all tube-light cost formulas consistently.
+
+If you want, I can give exact replacement formulas for each affected cell (I can list every cell that will change after fixing the discount factor), or produce a short macro/formula list to correct them automatically. Which would you prefer?

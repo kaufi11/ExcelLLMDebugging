@@ -1,0 +1,22 @@
+Found 4 real problems (short fixes + why):
+
+1) Wrong operation for Healing Rate (G20)
+- Faulty: =E15/HLOOKUP(G16,R5:AW15,4,TRUE)
+- Fix: =E15*HLOOKUP(G16,$R$5:$AW$15,4,TRUE)
+- Why: The cell is labeled "Healing Rate" and the table entry is a rate (like 0.3). You should multiply Basic Hits (E15) by the End Heal Rate, not divide. I also used absolute references so the lookup range won't change if copied.
+
+2) Hit Points not rounded (H19)
+- Faulty: =(F19*E15)+0.49
+- Fix: =ROUND(F19*E15,0)  (or =INT(F19*E15+0.49) if you prefer the INT trick)
+- Why: Adding 0.49 alone doesn't remove decimals. Use ROUND (or INT+0.49) to get an integer Hit Points result.
+
+3) Base HTH Damage lookup uses Carrying Capacity instead of Strength (H22)
+- Faulty: =HLOOKUP(C22,R2:AG4,3,TRUE)
+- Likely fix: =HLOOKUP(B16,$R$2:$AG$4,3,TRUE)
+- Why: HTH (hand-to-hand) base damage normally depends on Strength, not carrying-capacity. The HLOOKUP should use the Strength value (B16) as lookup_value. If the table truly is keyed to carrying capacity, keep C22 — otherwise use B16.
+
+4) Recommended: make lookup ranges absolute
+- Change ranges like R5:AW15 to $R$5:$AW$15 (and R2:AG4 to $R$2:$AG$4).
+- Why: prevents accidental range shifts when copying formulas.
+
+If you want, I can apply the exact corrected formulas across the sheet and double-check any other lookups (e.g., that the correct lookup-key is used for each table).

@@ -1,0 +1,24 @@
+Short answer — I found two concrete spreadsheet errors that are causing incorrect (and negative) timing margins. Fix those and re-check the device results.
+
+1) Cell L30 is wrong (hard-coded 1)
+- Problem: L30 is set to 1 instead of referencing the C30 value (C30 = 0.4). L30 is used in many “hold” subtractions (often as L30/2). The hard-coded 1 over‑counts the two‑trace skew by 0.6 ns and reduces hold/setup margins.
+- Fix: Change L30 to =C30 (or to the intended value/formula, e.g. = $C30). After this the L30 contribution becomes 0.4 (and L30/2 = 0.2) instead of 1 (L30/2 = 0.5).
+
+2) Cell K6 / P14 mismatch (K6 = 0 produces an incorrect transmit setup baseline)
+- Problem: P14 (Transmit Set-up Time) uses K6 as its base: P14 = +K6 - (many L terms). K6 is currently 0 in the sheet, but the intended baseline there appears to be the nominal setup half‑period (3.125 ns). Using 0 makes P14 = −1.78 ns (negative) even though the correct baseline should be ~3.125 ns.
+- Fix (pick one, depending on intent):
+  a) If K6 was meant to be the nominal setup, set K6 = J6 (or =C6) so K6 = 3.125. — OR —
+  b) Change P14 so it uses J6 (the nominal setup) instead of K6: P14 = +J6 - $L9 - $L11 - ... - ($L30/2).
+After this change P14 becomes positive (approx. +1.345 ns using current C‑column numbers), and device setup margins recover.
+
+Why these fixes work (short):
+- L30 inflated the hold subtraction term across many formulas; fixing it removes the extra 0.6 ns penalty everywhere it’s used.
+- P14 used the wrong baseline (0 instead of the nominal setup value). Restoring the correct baseline gives transmit setup margin back.
+
+Quick instructions to apply:
+- Edit L30 and replace the hard-coded 1 with =C30 (or = $C30).
+- Either set K6 = J6 (or =C6) or edit P14 to use J6 instead of K6.
+- Recalculate/check P13/P14/P15/P17 and the device columns P/Q and the final C41/B41 results.
+
+Optional / follow-up:
+- After you apply the fixes, if any margins are still small or negative I can recompute the affected cells and show the corrected numbers and a short list of the next biggest contributors to reduce.

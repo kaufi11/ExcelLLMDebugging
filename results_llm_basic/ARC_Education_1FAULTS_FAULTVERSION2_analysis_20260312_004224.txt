@@ -1,0 +1,74 @@
+I reviewed the workbook and found multiple data-entry, formula-range and formatting errors. Below are the main problems, why they are wrong, and simple fixes you can apply in Excel. I kept each fix short and actionable.
+
+1) Ratios entered as text instead of calculated numbers (Student - Teacher sheet)
+- Problem: Ratio cells contain text like "15.5-1" or "16-1" (or "**") instead of being calculated. That prevents correct sorting/filtering/aggregations and is error-prone.
+- Fix: Use a formula to compute attendance ÷ teachers, then display as a numeric ratio. Example (for Clayton 1990-91): in D7 use:
+  - =B7/C7
+  Then format to one decimal (or use text display):
+  - If you want "15.5-1" text: =ROUND(B7/C7,1)&"-1"
+  - Prefer numeric for calculations: =ROUND(B7/C7,1)
+- Why: Keeps values numeric so you can compute averages and totals correctly.
+
+2) Mis-typed attendance values with misplaced decimal (e.g. BUFORD E15 = 1.548)
+- Problem: E15 shows 1.548 but other years show ~1500. That is a decimal/typo (should be 1548 or 1,548).
+- Fix: Replace the incorrect value with the correct integer (likely 1548). If you don’t know the correct value, check the source. You can also inspect adjacent years (B34/K34 etc) to infer the intended value.
+- Why: Wrong attendance breaks totals and ratio calculations.
+
+3) Wrong SUM ranges / mis-typed formula ranges
+- Problems:
+  - Student-Teacher (1997-98 block) F56 =SUM(F46:F55) — missing row 45. Should sum F45:F55.
+  - University sheet (Two Year Colleges totals): C15 =SUM(C5:C14) (and similar D15..K15) — those ranges include four-year colleges; the two-year totals should sum rows 12:14 only.
+- Fixes:
+  - Change F56 to =SUM(F45:F55)
+  - Change Two-Year totals to sum only two-year rows, e.g. C15 =SUM(C12:C14), D15 =SUM(D12:D14), etc.
+- Why: Wrong ranges produce incorrect totals.
+
+4) Percent values stored inconsistently (Teachers With Advanced Degrees sheet)
+- Problems:
+  - Early-year percent columns show values like 50.9 (meaning 50.9%), but in later years percent cells show decimals like 0.4690 (46.90%)—these are the same data expressed differently. Also some total counts (Total No.) have decimals (e.g. 1995.8) because percent × staff produced fractions.
+- Fix:
+  - Decide one representation: either percentages (0.469) formatted as % or percentage numbers (46.9). Recommended: store true fraction (0.469) and format as Percentage with 1 decimal.
+  - To apply: select the percent cells (e.g. B21:B31, D21:D31, etc.) and apply Percentage format (1 decimal) OR multiply the decimal values by 100 if you want the 46.9 stored directly.
+  - For counts showing decimals (Total No.), convert to integers with ROUND, e.g. replace formula with =ROUND(percent_cell * staff_total_cell,0).
+- Why: Consistent percent formatting avoids confusion and fractional headcounts.
+
+5) Missing or placeholder data (“**”) — behavior and handling
+- Problem: Many cells use "**" for unavailable data. SUM ignores text, but formulas that expect numeric input (ratios, averages) will error if they reference "**".
+- Fix:
+  - Replace "**" with blank cells (delete) or use NA() or an explicit error-handling formula.
+  - If you must keep placeholders, wrap formulas in IFERROR/IF to skip them, e.g.: =IF(OR(B7="**",C7="**"),"",B7/C7)
+- Why: Keeps calculations robust and avoids wrong results.
+
+6) Misaligned or inconsistent columns (headers vs. data)
+- Problem: In some blocks headers and data appear shifted (e.g. the 1999-2000 block header columns differ), causing numbers to be in the wrong column relative to the header.
+- Fix: Visually inspect each multi-year block to ensure header labels are above the correct data columns. If columns are shifted, cut/paste to realign or move header row so it sits above the intended data columns.
+- Why: Misalignment causes wrong interpretation of which year a number belongs to.
+
+7) State test and SAT sheets: inconsistent scales & truncated values
+- Problems:
+  - State test: first two years show values ~200 (scale score) and later years show ~40–70 — likely mixed scales or a data-import problem.
+  - SAT: several cells show two-digit numbers like 99 or 100 where nearby years are ~900–1000 (looks truncated or missing leading digit).
+- Fix:
+  - Check original source data. Likely two issues: (a) mixture of scaled scores vs. percentiles — standardize to a single metric; (b) truncation from import (leading digits lost). Repair by re-importing or correcting from source.
+  - Quick check: format cells as Number (no custom formats) and see if data was imported as text; if numbers were truncated, re-enter from source.
+- Why: Mixed scales or truncated values make trends meaningless.
+
+8) Missing computed totals/ratios
+- Example: Student-Teacher K37 and L37 are SUM formulas but M37 (overall ratio) is blank.
+- Fix: Add ratio formula where needed: e.g. M37 =K37/L37 and format appropriately (ROUND(...,1) or display as text with “-1”).
+- Why: Gives consistent overall ratios.
+
+Short checklist / recommended workflow to clean the workbook
+1. Replace obvious typos (e.g. 1.548 → 1548) by checking neighboring years or source.
+2. Convert all ratio cells to calculated values: Ratio =Attendance/Teachers. Use ROUND for consistent decimals.
+3. Fix SUM ranges highlighted above (F56 and Two-Year totals).
+4. Standardize percent columns: store fractions and format as Percentage (1 decimal), and round headcount totals to integers.
+5. Replace "**" with blanks or handle via IF formulas.
+6. Re-align any shifted columns so headers match data.
+7. Re-import or correct SAT/State test values from source if you see truncated or mixed-scale numbers.
+8. After fixes, recalc (F9) and visually check totals (grand totals should equal sum of parts).
+
+If you want, I can:
+- Provide an exact list of cells to change (I already flagged the main ones).
+- Give the exact formulas to paste into the affected cells (e.g. D7, F56, C15, etc.).
+Tell me which sheet and a few example rows you want fixed first and I’ll give the exact formula/cell edits.

@@ -1,0 +1,45 @@
+Overview
+- Workbook: 3 sheets. Sheet1 contains the "Monthly Operation Statistics" report; Sheet2 and Sheet3 are present but no details provided.
+- Key top cells on Sheet1: A2 = "Monthly Operation Statistics"; I3 = Month; K3 = Year.
+
+Layout (Sheet1)
+- Title/header area at top (A2, I3, K3).
+- Column headers start at row 7:
+  - A7: Day, B7: Date, C7: Total #, D7: Homework, E7: Job Search, F7: Games, G7: Internet, H7: College, I7: Business, J7: Class, K7: New, L7: Web Design, M7: Other.
+- Row 8 contains subheaders (K8: member, L8: Specialist).
+- Rows 9–39: daily rows for days 1–31 in column B (B9=1 … B39=31). Columns C–M are service counts per day.
+- Row 40: TOTAL (A40) with column totals in C40:M40.
+
+Formulas and patterns observed
+- Column totals (intended): C40 = SUM(C9:C39), D40 = SUM(D9:D39), E40 = SUM(E9:E39) — these are correctly specified.
+- Many per-day cells (E9:M39) and some other cells contain SUM formulas that are inconsistent or self-referential. Examples:
+  - E9 = SUM(E42) (references a single, out‑of‑range cell)
+  - F9 = SUM(E9) and then G9 = SUM(F9), H9 = SUM(G9), … a chained pattern that propagates values across columns
+  - Several other day rows repeat the pattern (F10 = SUM(E10), G10 = SUM(F10), etc.)
+  - H19 uses COUNT(G19) instead of a SUM or direct value.
+- Final totals row has errors for columns F–M: rather than summing the column ranges, they reference prior total cells (e.g., F40 = SUM(E40), G40 = SUM(F40), …) creating a cascade of incorrect totals.
+
+Issues / risks
+- Self-referential and chained SUM formulas will produce incorrect values and can create circularity or misleading totals.
+- Referencing a single off-sheet cell (E42) for a daily total is likely incorrect unless a hidden detail table exists.
+- Totals row references (F40:M40) are misaligned and will not reflect column sums.
+- H19 using COUNT likely returns 0/1 rather than the numeric sum intended.
+
+Recommended fixes (concise)
+1. Decide where daily service details come from:
+   - If Sheet1 rows 9–39 are the daily inputs, set each service cell to a numeric input (no SUM).
+   - If daily service values are aggregated from a detail table (e.g., rows 42+ or another sheet), change each daily cell to SUM over that consistent detail range (example: =SUM(Sheet2!E2:E50) or =SUM(E42:E100)).
+2. Make daily columns independent (no chaining). For example, remove formulas like F9 = SUM(E9). Each column should get its own source or input.
+3. Correct the TOTAL row formulas to sum the day rows for each column:
+   - C40 = SUM(C9:C39) (already)
+   - D40 = SUM(D9:D39)
+   - E40 = SUM(E9:E39)
+   - F40 = SUM(F9:F39)
+   - G40 = SUM(G9:G39)
+   - … continue similarly through M40 = SUM(M9:M39)
+4. Fix H19: replace COUNT(G19) with SUM(G19) or the appropriate formula/value.
+5. Use absolute ranges or named ranges if detail data is on another sheet (e.g., =SUM(DetailRange) or =SUM(Sheet2!E:E) if appropriate).
+
+If you want, I can:
+- Produce a corrected list of exact formulas for rows 9–40 (assuming daily inputs vs. a detail table), or
+- Inspect the workbook if you upload it and apply the fixes directly.

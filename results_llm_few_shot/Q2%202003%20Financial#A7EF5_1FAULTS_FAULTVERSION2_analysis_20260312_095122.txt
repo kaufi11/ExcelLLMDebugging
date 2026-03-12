@@ -1,0 +1,52 @@
+I reviewed the workbook and found several clear, actionable errors. Below are the problems, why they’re wrong, and the simple fixes (with short explanations).
+
+1) EPS rows reference the wrong column (misaligned references)
+- Faulty cells: H51, K51, O51 (and several nearby EPS lines such as K52, K53, K54, etc.)
+- Error type: Reference / copy-paste alignment error
+- Explanation: EPS lines in the H/K/O (and adjacent) columns point to EPS results in other columns (e.g. H51 = +K69+0.01). That mixes periods/columns and gives wrong EPS numbers.
+- Fix: Point each EPS cell to the EPS value in the same column. For example:
+  - H51 → =H69  (or explicitly =H61/H66 if H69 is not present)
+  - K51 → =K69
+  - O51 → =O69
+  - Do the same for neighboring EPS lines (52–54) so each refers to the same-column source (e.g. H52→H71, H53→H70, H54→H72 or to the exact same-column numerator/denominator as intended).
+- Why this fixes it: EPS must be calculated using numbers from the same reporting period/column; using cross-column references mixes periods and produces incorrect results.
+
+2) Cash Flow — wrong function used for Loss from continuing operations
+- Faulty cell: CF sheet, H14
+- Error type: Function error (COUNT instead of SUM)
+- Explanation: H14 is supposed to be Loss from continuing operations (sum of rows H11:H13) but currently uses COUNT(H11:H12) which returns a count, not the sum.
+- Fix: change H14 to =SUM(H11:H13)
+- Why this fixes it: SUM returns the numeric total of the relevant rows; COUNT returns the number of numeric cells only and does not compute the amount.
+
+3) BS Crib — inconsistent SUM ranges for Communications (row 21)
+- Faulty cells: D21 and F21 (and likely G21/H21/J21 should be checked)
+- Error type: Range inconsistency (inconsistent row ranges)
+- Explanation: D21 =SUM(D12:D20) but F21 =SUM(F11:F20). The starting row differs (D12 vs F11) so the totals are inconsistent across columns.
+- Fix: Make the ranges identical in every column. For example, change F21 to =SUM(F12:F20) (and confirm G21, H21, J21 use the same row range).
+- Why this fixes it: Totals must sum the same set of line items in each column; inconsistent ranges cause misstatements and mismatched comparisons.
+
+4) BS Crib — inconsistent ranges for Property, Plant & Equipment net
+- Faulty cells: D59 and F59 (and other column totals)
+- Error type: Range inconsistency / copy-paste error
+- Explanation: D59 =SUM(D54:D58) but F59 =SUM(F53:F58) — F59 includes one extra row (F53). This will make the PP&E totals inconsistent between columns.
+- Fix: Make all column totals sum the same row range. For example change F59 to =SUM(F54:F58). Verify G59/H59/J59 likewise.
+- Why this fixes it: Ensures PP&E totals are calculated from the same subitems in every period.
+
+5) BS Crib — Total Assets formula inconsistent / missing component
+- Faulty cell: D100 (and check consistency for columns F/G/H/J)
+- Error type: Omission / inconsistent aggregation
+- Explanation: D100 =D50+D59+D98+D79 but F100 =F50+F59+F98+F79+F64. D100 is missing the D64 component (Restricted Securities / or another component included in other columns), so totals won’t reconcile across periods.
+- Fix: Make Total Assets use the same components in every column. For example change D100 to:
+  =D50 + D59 + D98 + D79 + D64
+  and ensure F100/G100/H100/J100 use the same five components in their respective column references.
+- Why this fixes it: Total Assets must sum the same asset-blocks across periods; leaving out a component causes balance sheet misstatement and reconciliation differences.
+
+Quick checklist to catch more similar issues
+- Scan for formulas that reference different columns than the cell’s own column (e.g. Hxx = Kyy). Those are often copy/paste alignment errors.
+- Compare SUM ranges across columns for the same label row — they should be identical.
+- Search for obvious wrong functions (e.g. COUNT vs SUM).
+- After fixing formulas, re-check totals and use the workbook’s reconciliation checks (D204, F204, etc.) to ensure Total Assets = Total Liabilities & Equity (differences should be zero).
+
+If you want, I can:
+- produce the exact corrected formulas for each affected cell (I listed examples), or
+- provide a list of every cell in the workbook that references a different column than its own (to fix all alignment errors). Which do you prefer?

@@ -1,0 +1,27 @@
+Found 3 problems. Short fixes and why:
+
+1) Wrong sign for 2002 Net Income (critical)
+- Error: Financial summary K30 = K15 + K27 (adds income and expense).
+- Fix: Change K30 to =K15 - K27.
+- Why: Net income = Total Income minus Total Expense. The plus causes K30 to be wrong and it flows into K33 (ending cash) and the Balance Sheet (H13/H14/H15).
+
+2) Receipts/Expenditures totals swapped on Stork - 2002 Expenditures (affects the 7/3/03 net)
+- Error: On the Expenditures sheet D59 (Receipts) = C55 (expenditures total) and D60 (Expenditures) = 'Stork - 2002 Receipts'!C43 (receipts total). The two are reversed.
+- Fix: Swap the references:
+  - D59 := 'Stork - 2002 Receipts'!C43
+  - D60 := C55
+- Why: The sheet was pulling totals into the wrong labeled cells so D61 (D59-D60) gave the wrong net.
+
+3) Possible wrong cell referenced in Balance Sheet total assets
+- Warning: Balance Sheet E7 = ROUND(E2+E6,5). E2 is not listed in your sheet data and likely contains a header/year number (or is blank) — that looks wrong.
+- Fix: Replace E2 with the correct non-current-assets cell (if there are other assets), or if there are no other assets use:
+  - E7 := =ROUND(E6,5)
+- Why: Total Assets should be Current Assets + Other Assets (not a header/year). If E2 is not an asset amount this inflates/deflates Total Assets.
+
+After changes
+- Recalculate and verify:
+  - Financial summary K33 (ending balance) and Balance Sheet H13/H14/H15 update sensibly.
+  - Differences row (C39, E39, G39, I39, K39, M39) should reconcile (ideally zero except known unexplained items).
+  - D61 on Expenditures sheet should show Receipts minus Expenditures correctly.
+
+If you want, I can give the exact formulas to paste into each cell or check the resulting numbers after you make these changes.

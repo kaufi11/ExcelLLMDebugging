@@ -1,0 +1,28 @@
+Summary — two real problems I can see from your extract:
+
+1) Broken numbering sequence on the A-122 sheet (column C)
+- What’s wrong: C8 contains =C6-1 which breaks the incremental sequence and produces a duplicate/incorrect number (it jumps back instead of continuing). There are other places where a hard-coded constant (C19 = 41) or an incorrect formula stops the automatic +1 sequence.
+- Why it’s a problem: it corrupts the A-122 paragraph numbering (you get duplicated numbers and the wrong offsets for following rows).
+- Fix (quick): replace the bad formula with the consistent +1 pattern. For example
+  - Change C8 from =C6-1 to =C7+1 (or to =C6+1 if row7 is blank/should follow row6).
+  - Then from the first correct C cell, fill/copy the formula downward so every row is =previousRow+1 (or use =C5+ROW()-5 pattern if you prefer one formula to fill).
+- Verify: after fix the sequence should read 29,30,31,32…; remove hard-coded numbers unless they were intentionally overridden.
+
+2) Wrong/ambiguous cross-sheet header references on Pages 2–6
+- What’s wrong: many cells on pages 2–6 use formulas like =A$9, =B$9, =G$9 etc. Those references are relative to the current sheet. If the intent was to echo the header values from Page 1 (A9, B9, … on Sheet "Page 1") they must point explicitly to that sheet. Without the sheet name the formulas may return blank or the wrong value if A9 on the local sheet is empty/different.
+- Why it’s a problem: repeating headers won’t show the intended master text; if you change the master on Page 1 the other pages won’t update (or they will point to the wrong cell).
+- Fix (quick): change the formulas to use an explicit sheet reference. Example:
+  - Replace =A$9 with ='Page 1'!$A$9
+  - Replace =B$9 with ='Page 1'!$B$9
+  - Replace =G$9 with ='Page 1'!$G$9
+  - Apply the same pattern for every page that should pull the header from Page 1.
+- Better options: define a named range on the master header (Insert → Name → Define) like Master_Version and use =Master_Version on every sheet — easier to maintain.
+
+Extra checks (recommended)
+- Use Formula Auditing → Trace Precedents on any header/formula that looks wrong to confirm which sheet it points to.
+- Search the workbook for formulas that start with "=" followed by a single-cell reference (e.g. =A$9) and verify whether they should be sheet-qualified.
+- After making changes, recalc (F9) and spot-check a few rows to ensure numbering and headers are correct.
+
+If you want, I can:
+- Provide the exact Find & Replace string to fix all the header formulas at once, or
+- Give the precise formula to repopulate column C on the A-122 sheet so the numbering is restored. Which would you prefer?

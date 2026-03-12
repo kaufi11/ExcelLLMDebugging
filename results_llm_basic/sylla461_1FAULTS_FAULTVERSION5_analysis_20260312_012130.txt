@@ -1,0 +1,27 @@
+Summary of the errors
+- The 1999 sheet’s starting date is wrong: B7 on the 1999 sheet is 2000-08-22 (a 2000 date). Because every other date in that sheet is calculated from B7 (e.g. =B7+2, =B11+1, etc.), the whole 1999 schedule is shifted into the year 2000.
+- Some cells are shown as text like "FORMULA =B7+2" in your listing. If those are actually stored as text in the workbook (not real formulas), the date chain will not calculate. (If they are just a text export of the file you pasted, ignore this point.)
+
+Why this is a problem
+- Date arithmetic (B7+2 etc.) depends on the correct start date. A wrong initial date cascades into every calculated date.
+- If formulas are text instead of real formulas, the sheet will not update automatically.
+
+Quick fixes (short, actionable)
+1) Correct the start date on the 1999 sheet:
+   - Put the correct first-class date into cell B7 of the 1999 worksheet (for example, change 2000-08-22 to the actual 1999 start date).
+   - Make sure B7 is a real date value (not text). You can re-enter it or use =DATE(1999,8,24) if you know the exact date.
+
+2) Ensure the date formulas are real formulas:
+   - Select a calculated date cell (e.g. B11). It should contain =B7+2 (not the words "FORMULA =B7+2").
+   - If you see text, remove the leading apostrophe or retype the formula with the = sign.
+
+3) Verify dates and formatting:
+   - Test B7 with =ISNUMBER(B7). If it returns TRUE, it’s a valid date; if FALSE, re-enter the date.
+   - Format the date cells as Short Date so you can read them easily.
+
+Recommended improvement to avoid future errors
+- Put the semester start date in one named cell (e.g. cell StartDate on each sheet or a single cell per workbook) and reference it. Example:
+   - In B7: =DATE(1999,8,24) or a reference to NamedRange StartDate.
+   - Downstream: use =B7+2, =B11+1, etc., so only one cell needs changing next year.
+
+If you want, tell me the correct 1999 semester start date and I’ll give the exact value to put in B7 and a quick check-list to validate the whole sheet automatically.

@@ -1,0 +1,40 @@
+Summary — main errors found
+1) Wrong formula in I21:
+   - I21 = H21 * 38 (uses constant 38) — should use the weight in C21.
+   - Effect: with H21 = 1 and C21 = 3, the cell is 1*38 = 38 but should be 1*3 = 3. Oracle's weighted total (I44) is therefore inflated by 35 points (38 − 3).
+
+2) Inconsistent use of formulas vs. hard-coded values in weighted-score columns:
+   - Example: R8 shows a hard-coded 2 instead of the formula =Q8*C8. (It yields the correct number now, but will not update if score or weight changes.)
+   - Risk: other cells in I, L, O, R might be constants instead of formulas and will not recalculate.
+
+3) Summary table is likely static (hard-coded) rather than linked:
+   - The summary block (Overall totals / per-category totals) appears to contain fixed numbers (C55, D55 etc.) instead of pulling from the detail totals (I44, L44, O44, R44). That means totals can get out of sync when detail values change.
+
+How to fix (simple steps)
+1) Fix the formula error:
+   - Change I21 to: =H21*C21
+
+2) Make all weighted-score cells real formulas:
+   - For Oracle (column I): set I8:I43 to =H8*C8, =H9*C9, … =H43*C43 (fill down).
+   - For uPortal (column L): set L8:L43 to =K8*C8, =K9*C9, … =K43*C43 (fill down).
+   - For CleverPath (column O): set O8:O43 to =N8*C8, … =N43*C43 (fill down).
+   - For SharePoint (column R): set R8:R43 to =Q8*C8, … =Q43*C43 (fill down).
+   - Quick method: enter =H8*$C8 in I8 then drag/fill down and adjust columns for other vendors (or copy/paste correct formulas into their columns).
+
+3) Link the summary totals to the detail totals:
+   - Replace the hard-coded overall totals with links:
+     - OP total (summary) = 'Portals comparison'!I44
+     - uPortal total = 'Portals comparison'!L44
+     - CleverPath total = 'Portals comparison'!O44
+     - SharePoint total = 'Portals comparison'!R44
+   - For category subtotals you can sum the appropriate weighted-score rows or link to calculated subtotals in the detail area.
+
+How to check you've fixed everything
+- After fixing I21, Oracle total (I44) should drop by 35 points. Confirm I44 + L44 + O44 + R44 behave as expected.
+- Use Formulas > Show Formulas (Ctrl+`) to visually check that I8:I43, L8:L43, O8:O43, R8:R43 are formulas.
+- Or use Go To Special > Constants in columns I, L, O, R to find any constants that should be formulas.
+
+Why this matters (short)
+- A single incorrect multiplier (38) added 35 points to Oracle’s score and can change rankings and decisions. Making weighted-score cells formula-driven and linking the summary ensures correct, automatic recalculation.
+
+If you want, I can produce the exact corrected formulas for each vendor column or a checklist you can paste into Excel to fix the whole sheet automatically. Which would you prefer?

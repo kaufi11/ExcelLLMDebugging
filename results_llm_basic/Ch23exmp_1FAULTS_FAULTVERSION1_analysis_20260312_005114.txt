@@ -1,0 +1,42 @@
+Summary — what’s wrong
+1) Cell C18 on the Formulas sheet is a hard-coded number (207) instead of linking to the COGS schedule (C34). That freezes COGS and breaks Gross Margin, Operating Income, Taxes, Net Income, etc.  
+2) Several subtotal/total formulas are summing the wrong columns (they are offset by one column). Examples: C24 = SUM(B21:B24) and E24 = SUM(D21:D24). Totals should sum the expense cells in the same month column.  
+3) The months/labels and the months’ data are out of alignment (labels in B and D, actual monthly numbers in C and E). This causes many formulas to reference the “next” column and makes mistakes likely and hard to follow.  
+4) Some ending-inventory formulas use hard-coded cells for “next period” sales (E33 uses B8). That works for your current small layout but is not robust if you add months.
+
+Quick fixes (apply these exact formulas)
+1) Fix hard-coded C18:
+   - Replace C18 (207) with:
+     =C34
+   Explanation: C18 must be driven by the COGS schedule (C32 - C33). Using =C34 keeps COGS linked and will update automatically when purchases/ending inventory change.
+
+2) Fix totals so they sum the same column as the line items:
+   - Replace C24 with:
+     =SUM(C21:C24)
+   - Replace E24 with:
+     =SUM(E21:E24)
+   (Check and correct any other totals that currently point to the previous column — e.g., C32/C24/C18 patterns.)
+
+   Explanation: Totals should add the items in the same month column. Right now totals are shifted one column to the right, producing wrong aggregates.
+
+3) Align month labels and data (preferred structural fix):
+   - Move the month label "August" from B16 to C16 and "September" from D16 to E16 (or move the data left instead). Make sure each month’s label and that month’s data sit in the same column.
+   - After aligning, scan formulas and change any references that point to wrong columns (use Excel’s Trace Precedents / Dependents).
+
+   Explanation: The root cause of many offsets is that labels are in one column and numbers in the next. Aligning them removes the need for shifting references and prevents future errors.
+
+4) Make ending-inventory formulas reference the true “next month” sales (robust option):
+   - For a formula that always uses the next column’s sales, use OFFSET (example for C33 — August ending stock = base + % * next month sales):
+     =ROUND($B$4 + $B$5 * OFFSET(C17,0,1),-3)
+   - And for E33 (September ending) you could use:
+     =ROUND($B$4 + $B$5 * OFFSET(E17,0,1),-3)
+   Or keep the explicit reference to the known next-month cell if you prefer (e.g., C33 =ROUND($B$4 + $B$5 * E17,-3)).
+
+   Explanation: Using OFFSET (or consistent relative references) makes the schedule extendable when you add months.
+
+Checklist to finish (quick audit)
+- Replace any other hard-coded numbers in rows that should be formulas (Gross margin, operating income, taxes should all be formulas).
+- Use Trace Dependents/Precedents for C17, C34, C24 to find other broken links.
+- Once you align labels and data, re-check rounding ranges and absolute references ($B$4, $B$5 etc.) are correct.
+
+If you want, I can give you a corrected cell-by-cell list (exact formulas for every cell in the Example sheet) or provide the minimal moves to realign the month headers to the data columns. Which would you prefer?

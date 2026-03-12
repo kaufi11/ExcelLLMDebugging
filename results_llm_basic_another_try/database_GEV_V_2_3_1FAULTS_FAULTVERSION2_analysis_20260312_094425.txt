@@ -1,0 +1,33 @@
+Errors found:
+
+1. In "visualizza_gruppo" sheet, formulas in columns Q (e.g. Q7, Q8...) have double plus signs like `=D7++G7+J7+M7`. This is a syntax error.
+
+2. In "calcoli" sheet, cell AE16 formula is:
+`=IF(OR(calcoli!$D$21,calcoli!$C$21=J16,calcoli!$C$21=K16,calcoli!$C$21=L16,calcoli!$C$21=M16,calcoli!$C$21=N16),TRUE,FALSE)`
+The use of OR with a single logical value calcoli!$D$21 and multiple equality checks is suspicious and likely incorrect logic.
+
+3. In "calcoli" sheet, cell AI16 formula uses AND with multiple logical tests including AD16, AE16, AF16, AG16, AH16 which depend on other formulas. If any of these are not boolean TRUE/FALSE but numbers or text, the AND may not behave correctly.
+
+Solutions:
+
+1. Fix double plus signs in "visualizza_gruppo" Q column formulas by removing the extra plus. For example, change `=D7++G7+J7+M7` to `=D7+G7+J7+M7`.
+
+Explanation: Excel does not allow double plus signs in formulas; it causes errors. Removing the extra plus fixes the syntax.
+
+2. Correct logic in AE16 formula. Instead of `OR(calcoli!$D$21, calcoli!$C$21=J16, ...)`, check if calcoli!$D$21 is boolean or a condition. If calcoli!$D$21 is a boolean flag, it should be combined properly. Possibly replace OR with AND or clarify logic.
+
+Explanation: Mixing a single boolean and multiple equality checks in OR may cause unintended TRUE results. Ensure the logic matches the intended condition.
+
+3. Verify that all logical test cells (AD16, AE16, AF16, AG16, AH16) return TRUE or FALSE, not numbers or text, so that AI16's AND formula works correctly.
+
+Explanation: AND function requires boolean inputs; if inputs are numbers or text, it may not work as expected.
+
+Summary:
+
+- Remove extra plus signs in formulas in "visualizza_gruppo" Q column.
+
+- Review and correct AE16 formula logic in "calcoli" sheet.
+
+- Ensure all logical test cells used in AND formula return proper boolean values.
+
+This will fix formula errors and improve data accuracy.

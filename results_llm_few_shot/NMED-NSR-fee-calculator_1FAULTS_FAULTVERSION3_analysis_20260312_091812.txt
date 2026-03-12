@@ -1,0 +1,23 @@
+Summary of main problems
+1) C41 uses COUNT(C9:C31) instead of adding the point values. COUNT returns the number of numeric cells, not the sum of points — so Total Points is wrong.  
+2) Several IF formulas (C30, C34, etc.) return "" (text) in some branches and numbers in others. Mixing text and numbers causes SUM/COUNT to behave unpredictably (SUM ignores "" and COUNT doesn't count text).  
+
+Fixes (quick & exact)
+
+- Replace C41 with a sum of all point cells:
+  C41 = SUM(C9:C36)
+  Why: SUM adds the numeric point values (including "other actions" total C36). This gives the true total points.
+
+- Make IF formulas return 0 instead of "" so cells stay numeric. Example fixes:
+  C30 = IF(B31="", IF(B30<>"", 20, 0), 0)
+  C34 = IF(B35="", IF(B34<>"", 10, 0), 0)
+  (Apply the same idea to any cell that currently returns "" or a number.)
+
+Optional / double-check
+- Confirm C43 logic (half fee / "N/A") and that F5 is the intended Total Fee cell. F5 = IF(C43="N/A", C42, C43) is fine if C43 contains either "N/A" text or a numeric half-fee. Just be careful not to mix blank text with numeric values in those referenced cells.
+
+Why these fixes work (short)
+- SUM(C9:C36) gives the actual total of points; COUNT does not.  
+- Returning 0 instead of "" keeps every point cell numeric so SUM works correctly and there are no hidden text values that break logic.
+
+If you want, I can give a single updated list of all corrected formulas in the sheet.

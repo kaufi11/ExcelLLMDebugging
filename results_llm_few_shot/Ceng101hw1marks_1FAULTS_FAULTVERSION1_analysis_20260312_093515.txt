@@ -1,0 +1,47 @@
+Summary: most errors are wrong ranges in the summary rows (rows 69–72) and a few formulas with ambiguous operator precedence in column N. Fix those and your statistics will be correct.
+
+Faulty summary formulas (range mismatches / include summary cell)
+1. B69 (currently =MAX(B33:B68))  
+   Fix: =MAX(B2:B68)  
+   Why: MAX is skipping rows 2–32 while AVERAGE / MIN use B2:B68. Use the same full data range.
+
+2. C69 (currently =MAX(C33:C68))  
+   Fix: =MAX(C2:C68)  
+   Why: same as B69.
+
+3. D69 (currently =MAX(D33:D68))  
+   Fix: =MAX(D2:D68)  
+   Why: same as B69.
+
+4. N69 (currently =MAX(N17:N68))  
+   Fix: =MAX(N2:N68)  
+   Why: starts at row 17 only; average uses N2:N68. Standardize to full data.
+
+5. Q69 (currently =MAX(Q17:Q68))  
+   Fix: =MAX(Q2:Q68)  
+   Why: same inconsistency.
+
+6. N70 (currently =MIN(N17:N69))  
+   Fix: =MIN(N2:N68)  
+   Why: the current MIN includes the N69 summary cell (the MAX) which will distort results. Remove any summary cells from the data range.
+
+7. Q70 (currently =MIN(Q17:Q69))  
+   Fix: =MIN(Q2:Q68)  
+   Why: same issue — it includes Q69 (a summary cell).
+
+General rule: All your MIN / MAX / AVERAGE / STDEV summary formulas should use the same raw-data range (rows 2:68 for columns B, C, D, G, N, Q) and must not include the summary rows (69–72) themselves.
+
+Ambiguous operator-precedence formulas in column N
+- Examples: N10 =17+5/2, N15 =18+5/2, N28 =17+5/2, N30 =18+5/2, N32 =13+5/2, N34 =17/2+2, etc.  
+  Problem: Excel evaluates division before addition. So 17+5/2 = 17 + (5/2) = 19.5. If you intended (17+5)/2 use parentheses.
+
+How to fix:
+- If you intended to add then divide (average of two numbers): use =(17+5)/2.
+- If you intended add and a half-credit (i.e., 17 + 5/2), leave it as is, but confirm intention.
+
+Quick checklist to apply
+- Replace the MAX/MIN formulas listed above with the corrected ranges. Then copy the same pattern to any other summary cells that might be inconsistent.
+- Search column N for any formulas mixing + and / and add parentheses where needed to reflect your intention.
+- Make sure none of the summary rows (69–72) are included in any data-range formulas.
+
+If you want, I can produce the exact corrected formulas for every summary cell (B69:D72, G69:G72, N69:N72, Q69:Q72) and list the column-N cells that likely need parentheses. Which would you prefer?

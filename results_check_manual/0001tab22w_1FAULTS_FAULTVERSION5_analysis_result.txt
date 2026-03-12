@@ -1,0 +1,64 @@
+I reviewed the formulas and layout in "Table 22" and found several formula errors and layout inconsistencies that will produce incorrect percentage totals or make the worksheet fragile. Summary of the problems, their effects, and recommended fixes follow.
+
+1) Wrong operator in Hospitality (row 14), lower-level "Other" cell
+- Cell: O14
+- Formula present: =SUM(100-(E14-G14-I14-K14-M14))
+- Problem: minus signs are used between the referenced cells instead of plus signs. That yields 164.7 (100 - (15.6 - 52.1 - 24 - 2.1 - 2.1) = 164.7) rather than the intended 100 - sum(...)
+- Effect: "Other" percent is wrong by a large margin.
+- Fix: change to use addition, e.g. =100-(E14+G14+I14+K14+M14) (or =SUM(100-(E14+G14+I14+K14+M14)) if you insist on SUM).
+
+2) Misplaced / extra values (column-shift) in several rows — causes totals to ignore values
+- Rows affected: 18, 19, 20 (Education, all years)
+  - Extra values are present in columns F and H (F18, H18; F19, H19; F20, H20).
+  - Header expects lower-level percentages in E, G, I, K, M (A, B, C, D, F/WF) — F and H are unexpected.
+- Rows affected: 22 and 23 (Engineering), possibly also 24:
+  - Z22 and Z23 contain values (4.5) in column Z, which is not part of the expected percentage columns for upper-level groups (should be S, U, W, Y, AA, AC).
+- Problem: O (lower-level "Other") formulas are built as 100-(E+G+I+K+M) and therefore ignore values in F and H; similarly AC (upper-level "Other") formulas ignore a stray value in Z. Those stray values are therefore omitted from totals (or cause other columns to be shifted/incorrect).
+- Effect: "Other" percent cells and the apparent distribution are inconsistent/wrong because some category percentages are sitting in the wrong columns and are not included by the 100-(...) formulas.
+- Fix:
+  - Inspect the source data and shift the stray values into the correct columns (E, G, I, K, M for lower-level; S, U, W, Y, AA for upper-level) or clear the stray cells if they are erroneous.
+  - After fixing positions, recalc O and AC using 100-(sum of the correct category cells).
+
+3) Inconsistent/missing total formulas for 1998 totals
+- Cells: Q32 and AF32 (1998 totals) are static numbers (40676, 51470) and contain no formula, while 2000 (Q30/AF30) and 1999 (Q31/AF31) totals are computed by summing the college rows.
+- Problem: inconsistency in approach; if source rows change these totals will not update.
+- Effect: possible mismatch or stale totals.
+- Fix: replace Q32 and AF32 with consistent formulas that sum the corresponding college-year Q and AF cells (same pattern as Q30/AF30), taking into account which colleges have data for 1998.
+
+4) Inconsistent inclusion of colleges in year totals (1999)
+- Cell: Q31 formula =Q27+Q23+Q19+Q11+Q7
+- Observation: Q31 does not include a Hospitality row for 1999 (row with n/appl) — this may be intentional, but it is inconsistent with the 2000 total (Q30 which sums six colleges).
+- Recommendation: confirm whether rows with "n/appl" should be excluded; if a college should be present but has "n/appl", use a consistent summing pattern or wrap with IFERROR/ISNUMBER checks.
+
+5) Use of SUM() around arithmetic expressions
+- Examples: O6, O7, O8, many AC cells, etc. use =SUM(100-(E6+G6+...))
+- Comment: this works but is unnecessary — SUM is redundant when wrapping a single arithmetic expression. Not an error but a style/clarity suggestion.
+- Suggestion: use =100-(E6+G6+I6+K6+M6) to be clearer.
+
+6) Text entries "n/appl" in numeric columns
+- Cells: E15, G15, I15, K15, M15, O15 and similar in row 16.
+- Problem: text in numeric columns will break any arithmetic if referenced without guarding.
+- Effect: formulas that try to sum or manipulate these cells will return errors or coerce to zero unpredictably.
+- Suggestion: either leave the cells blank or use NA()/#N/A or a numeric sentinel and adapt formulas to handle them (e.g., with IFERROR or IF(ISNUMBER(...),...)).
+
+7) Cells referenced but empty (no explicit value)
+- Examples: some formulas reference K28 but K28 is empty. Excel treats empties as zero — not an error but check if K28 should have a value (e.g., D grade percent for that college/year).
+- Suggestion: verify blanks are intentionally blank.
+
+8) Examples of symptoms to look for after fixes
+- O14 should drop from 164.7 to 100-(sum of proper five %s).
+- O18/O19/O20 and AC22/AC23 should change when stray values are shifted into the correct columns.
+- Year totals (Q30/Q31/Q32 and AF30/AF31/AF32) should be driven by formulas consistently.
+
+Action checklist (recommended)
+1. Fix the Hospitality O14 formula to use + between referenced cells.
+2. Inspect rows 18–20 (Education) and rows 22–24 (Engineering) and remove/shift values in F, H, Z (and any other stray columns) into the proper percentage columns so that each category occupies the header-defined column.
+3. Make 1998 totals (Q32, AF32) computed formulas to match the method used for other years.
+4. Replace redundant SUM-wrapped arithmetic with direct arithmetic for clarity (optional).
+5. Replace "n/appl" text with blank or standardized NA handling if you will perform arithmetic across those cells.
+6. Recalculate and verify that all "Other" cells (O and AC columns) now equal 100 - SUM( the five category columns ) and that none exceed 100 or are negative.
+
+If you want, I can:
+- produce the exact corrected formulas for each problematic cell,
+- show the corrected values after moving the stray column values into the proper columns (if you tell me how the misplaced values should be reassigned), or
+- generate a patch (list of cell edits) that you can apply to the workbook.

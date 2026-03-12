@@ -1,0 +1,20 @@
+I checked the workbook and found the clearest, actionable errors. Short fixes below.
+
+1) Faulty cell: 2002 Report!C21
+- Error type: Wrong cell reference (copy/paste/formula typo)
+- What’s wrong: C21 is =H21/1000000 (it uses the land value) so the “air” column is showing land and the air number is missing. D21 is correctly =H21/1000000, so C21 is a duplicate of D21.
+- Fix (repair formula): change C21 to =G21/1000000
+- Why this fixes it: G21 holds the pounds for the Air column. Dividing G21 by 1,000,000 converts to millions (consistent with the other rows).
+
+2) Inconsistent formulas / hard-coded results in the "data" sheet (rows 1997–1999)
+- Error type: Inconsistent calculation (some rows use formulas; others were replaced with hard values)
+- What’s wrong: Earlier rows use C = E - B (recycled = total - incinerated). For 1997–1999 some C cells are hard-coded numbers instead of =E# - B#. That makes them brittle if E or B change.
+- Fix: Replace the hard-coded recycled values with the formula: e.g. data!C10 = E10 - B10 ; copy down for the other years.
+- Why this fixes it: Keeps the recycled column calculated from the source totals so it updates automatically and eliminates manual-entry mismatch.
+
+3) Minor / suspicious data (review)
+- Where: 2003 Report row 20 has values in G20 and H20 that don’t match the sheet’s described columns (they look out of place).
+- What to do: Verify whether G20/H20 belong on this sheet (they may have been pasted by mistake). If they are not needed, remove them; if they are important, move them into the correct labeled columns.
+- Why: Prevents misleading numbers and accidental wrong totals if formulas reference those cells later.
+
+If you want, I can give the exact list of cells to change (or a small macro) and check for more copy/paste reference errors across the workbook.

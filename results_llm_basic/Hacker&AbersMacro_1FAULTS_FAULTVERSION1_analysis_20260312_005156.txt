@@ -1,0 +1,35 @@
+Summary of the problem
+- Many cells on the database sheet contain literal text like
+  FORMULA =56400000000*1.01097683452934/(1+F6*0.42*R6*298)
+  instead of being real Excel formulas. Excel therefore treats those cells as text, so downstream sheets (minerals, rocks) that expect numeric values or formulas get wrong or stale inputs.
+
+Why this is wrong
+- A cell that shows the text "FORMULA =..." is not a formula and returns text. Any sheet that references that cell will either get text (which breaks numeric calculations) or use an old numeric value left in the cell.
+- The problem looks systematic (many occurrences) so many calculated results may be incorrect or out of date.
+
+How to fix it (quick, safe steps)
+1. Backup the workbook before you change anything.
+2. Go to the database sheet.
+3. Use Find & Replace:
+   - Find what: FORMULA =
+   - Replace with: =
+   - Scope: Sheet (or Workbook if the same issue exists elsewhere)
+   - Click Replace All.
+   This converts text like "FORMULA =H9" into "=H9", which Excel will then interpret as a formula.
+4. If some cells remain as text after the replacement (because their cell format is Text):
+   - Select those cells (or the whole sheet), set Format Cells → General, then while still selected press F2 then Enter on each (or use Text to Columns: Data → Text to Columns → Finish) to force Excel to re-evaluate the cell contents as formulas.
+5. Turn on automatic calculation: Formulas → Calculation Options → Automatic.
+6. Verify:
+   - Press Ctrl+` to toggle formula view and confirm formulas appear where expected.
+   - Use ISFORMULA(cell) or check a few cells in minerals and rocks sheets to see values update.
+
+Extra checks / suspicious items to review
+- After conversion, run a quick review of numeric values. I noticed one odd-looking numeric in database H40 = 125000000001 (an extra 1 compared to similar values of 125000000000). That may be a manual typo — please confirm the intended value.
+- Any cells that explicitly contain text "FORMULA =" but were intentionally meant to be text (notes column) should be left alone. Use the Find preview before Replace All or restrict the replace to columns that should contain formulas (for example the numeric columns H, L, P, etc).
+
+Why the fix works
+- Replacing "FORMULA =" with "=" converts the cell contents into a real Excel formula string (for example "=H9"). Once the cell is a proper formula and Excel is set to Automatic calculation, dependent worksheets are recalculated and numeric outputs will update correctly.
+
+If you want I can:
+- list all cells that currently contain the "FORMULA =" text so you can review them before replacing, or
+- give the exact Find/Replace commands and a small VBA macro to convert them automatically (useful if occurrences are widespread).

@@ -1,0 +1,28 @@
+I reviewed the workbook and found 3 clear problems (one is a real calculation error, two are labeling/consistency issues that can cause confusion or wrong downstream results). Short fixes and explanations below.
+
+1) Faulty cell: H5 (Problem 1)
+- Error type: Typo / calculation error
+- What’s wrong: H5 uses D5 / F5 (division) but it should be the product (D5 * F5) — this cell is one term of the cross‑product sum used for the covariance / correlation.
+- Fix (formula): =D5*F5
+- Why: Pearson numerator is sum of (x - mx)*(y - my). Using division breaks the numerator (and any correlation r computed from that sum).
+
+2) Faulty item: header/label and a typo in Problem 2 (row 22 / column G)
+- Error type: Label typo (not calculation)
+- What’s wrong: G22 is labeled “(x3-mne)sqrd” but it should read “(xe-mne)sqrd” (xe = even-item deviation). The label is confusing.
+- Fix: Change G22 label to “(xe-mne)^2” (or “(xe-mne)sqrd”).
+- Why: Prevents misreading of the column purpose; avoids accidental wrong formulas later.
+
+3) Faulty item: N27 and P27 (Problem 2 summary)
+- Error type: Mislabel / possible misunderstanding
+- What’s wrong: N27 and P27 use =SQRT(N26) and =SQRT(P26) but are labeled as “mean” (or treated inconsistently). SQRT(sum of squared deviations) is not a mean. If you intended the standard deviation, you should divide by the correct denominator first.
+- Fix (if you want SD of sample): =SQRT(N26/(n-1)) and =SQRT(P26/(n-1)), where n = number of subjects (here n=3) → =SQRT(N26/2)
+- Or, if those cells are just helper values for denominator of r (you use SQRT(N26) directly in the r formula), then relabel them to “sqrt(sum sq. dev.)” and leave formulas as-is.
+- Why: Using sqrt(sum) as “mean” is misleading; if you need SD for other formulas you must divide by the proper n or (n-1).
+
+Notes / quick check:
+- After fixing H5 the Problem 1 correlation (A11/B11) should be recalculated correctly.
+- Most other formulas appear consistent (sums, means, KR20/KR21 come from the expected formulas), but watch for hard-coded mean constants (e.g., 2.93333, 2.777767, etc.) — if you change data recompute means with formulas (e.g., =AVERAGE(range)) to avoid stale constants.
+
+If you want, I can:
+- give the exact updated values for r/alpha/kappa after applying H5 fix, and
+- scan for any other cells that use hard-coded means and replace them with dynamic AVERAGE formulas. Which would you like me to do?

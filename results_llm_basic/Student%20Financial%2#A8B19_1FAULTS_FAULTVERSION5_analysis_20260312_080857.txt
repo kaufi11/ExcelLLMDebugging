@@ -1,0 +1,37 @@
+I reviewed the "Tution and Fees" sheet and found the main calculation errors. Short summary, causes and fixes below.
+
+Errors (what’s wrong)
+1. F8 (Room and Board On‑Campus, 2003‑2004) is a hard value (4892) but the other years use formulas (=row9+row10). F8 does not equal F9+F10 (2466+1806 = 4272). This makes dependent totals wrong.
+2. F11 (Comprehensive In‑State, 2003‑2004) is a hard value (7228) instead of a formula. Because F8 is wrong and F11 is hard-coded, the In‑State total won’t update if room/board or fees change.
+3. H12 (Comprehensive Out‑of‑State, 2001‑2002) references the wrong cell: =SUM(H6,I8,H7). I8 is the 2000‑2001 Room&Board cell — it should reference H8 (2001‑2002 Room&Board).
+4. G36 (Required Fees for Out‑of‑State, 12 & Above, 2003‑2004 block) is hard-coded as 584 instead of summing the fee lines (should be sum of G21:G29). That makes Total Out‑of‑State (G37) incorrect.
+
+Why these are errors
+- Hard-coded totals (F8, F11, G36) break consistency and prevent automatic updates.  
+- The H12 formula is an off‑by‑one (wrong column) reference — likely a copy/drag mistake — so it pulls the wrong year’s room/board value.
+
+Fixes (exact, simple steps)
+1. Make F8 equal the sum of room and board:
+   - Put this formula in F8: =F9+F10
+   - This will change F8 from 4892 to 4272 (the correct sum of 2466 + 1806).
+
+2. Replace hard-coded F11 with a formula so it updates automatically:
+   - Put this in F11: =F5+F8+F7
+   - After step 1 this will give the correct In‑State comprehensive total (1168 + 4272 + 1168 = 6608).
+
+3. Fix H12 to use the H8 room/board for 2001‑2002:
+   - Replace H12 formula with: =SUM(H6,H8,H7)
+   - (Or =H6+H8+H7)
+
+4. Fix G36 to sum the fee lines (like the other columns):
+   - Put this in G36: =SUM(G21:G29)
+
+Optional consistency improvements
+- Check other columns for any hard-coded totals and convert them to formulas (e.g., if any other comprehensive totals are values instead of formulas) so all years update automatically.
+- After making the fixes, recalc (F9 → F8 → F11 → F12, G36 → G37, etc.) and verify totals match the expected year-by-year sums.
+
+Effect of the fixes
+- Totals that depended on F8 (F11, F12, etc.) will update correctly.
+- H12 and G37 (and any further subtotals) will show correct values because they reference the right cells or sums.
+
+If you want, I can give a short list of all cells you should check for hard-coded totals (to convert to formulas) and a one-click approach (copy/fill) to apply the correct formulas across columns.

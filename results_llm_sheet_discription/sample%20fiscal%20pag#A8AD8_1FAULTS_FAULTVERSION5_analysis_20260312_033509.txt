@@ -1,0 +1,32 @@
+Findings (short)
+- Root error: Carry‑forward formulas on each fund sheet use TOTAL EXPENDITURES by object (row 72) for columns D:E:F but then switch to TOTAL EXPENDITURES by function (row 53) for columns H:I. This is inconsistent and causes wrong carry‑forward values (and thus wrong Summary totals) for projected years.
+- Affected cells (on each fund sheet 1003, 1043, 1166, 1198, 1856): H6 and I6 (and similarly H6/I6 on every fund sheet).
+
+Why it's wrong (simple)
+- Carry‑forward should subtract the same concept of total expenditures each period. Mixing row72 and row53 means you subtract different totals in different years, so the carry‑forward chain breaks and ending balances/projected carry‑forwards are incorrect.
+
+How to fix (exact)
+1. On every fund sheet (1003, 1043, 1166, 1198, 1856) change:
+   - H6 from: =G6+G25+G35-G53
+     to: =G6+G25+G35-G72
+   - I6 from: =H6+H25+H35-H53
+     to: =H6+H25+H35-H72
+
+2. Verify earlier columns are consistent:
+   - D6 should remain =E6 + D72 - D25 - D35
+   - E6 =F6 + E72 - E25 - E35
+   - F6 =G6 + F72 - F25 - F35
+   (These use row72 and are consistent; keep them.)
+
+3. After changing H6/I6 on each fund sheet, recalc and check Summary (Summary D6:I6 uses =SUM('1003:1856'!D6) etc).
+
+Why that solution works (short)
+- All columns will now subtract the same TOTAL EXPENDITURES (row72 = sum by object class) consistently across years, so the backward carry‑forward chain (D6 ← E6 ← F6 ← G6) remains coherent and projected carry‑forwards (H6,I6) are computed the same way as prior years.
+
+Quick validation steps
+- After edits, on each fund sheet check that:
+  - TOTAL EXPENDITURES by function (row53) equals TOTAL EXPENDITURES by object (row72). (They should match; if not, investigate classification entries.)
+  - Ending Balance = TOTAL NET RESOURCES (row37) - TOTAL EXPENDITURES (row72) and matches Summary's ending balance.
+- On Summary sheet, confirm D6:I6 (carry forwards) now make sense and Summary totals (row26 and row63) update correctly.
+
+If you want, I can provide a copy/paste-ready formula block for all sheets or a short macro to fix all five sheets at once.

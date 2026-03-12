@@ -1,0 +1,50 @@
+Summary of workbook structure and contents
+
+Overall
+- Workbook organizes WFDF financials by year across a "Financial summary" sheet, a "Balance Sheet", and detailed 2002 transaction ledgers ("Stork - 2002 Receipts" and "Stork - 2002 Expenditures").
+- Core design: income / expense summary by year → net income → ending cash → breakdown into checking / money market → reconciliation. Many totals are computed with SUM formulas and some cells link across sheets/years.
+
+Sheet: Financial summary
+- Purpose: multi-year (columns by year: C=1998, E=1999, G=2000, I=2001, K=2002, M=2003) income & expense summary and cash position.
+- Layout: rows grouped by Beginning Cash Balance (row 4), Income categories (rows 6–13), Total Income (row 15), Expenses by category (rows 19–25), Total Expense (row 27), Net Income (row 30 = Total Income - Total Expense), Ending Cash/Investments (row 33 = Beginning Cash + Net), account balances (Checking, Money Market rows 35–36), Difference (row 39 = Ending Cash - sum(accounts)).
+- Key formulas:
+  - Beginning cash for each year after 1998 chains from prior year: E4 = C33, G4 = E33, etc.
+  - Totals: e.g., C15 = SUM(C6:C13); E15/G15 similarly; I15 has COUNT(I6:I13) (likely intended to be SUM — potential error).
+  - Total Expense rows use SUM across expense rows (e.g., C27 = SUM(C19:C25)).
+  - Net = Total Income - Total Expense (row 30); Ending = Beginning + Net (row 33).
+  - Difference (row 39) reconciles Ending to the sum of account balances (SUM of rows 35:37).
+- Key values:
+  - 1998 beginning cash C4 = 15,023.53.
+  - Checking/Money Market examples: E35 (1999 checking) = 69,161.82; G35 (2000 checking) = 8,578.49; G36 (2000 money market) = 50,064.79.
+  - Note O4 documents a restatement for 2001 (net loss corrected to $4,992.05).
+- Misc: some cells contain annotations/footnote markers (e.g., "a" in L13, numbers in adjacent columns) and a manual formula expression (B21 for 2002 Events = "8821.24-118.52").
+
+Sheet: Balance Sheet
+- Purpose: year-end assets and equity summary (columns E=Dec 31, '99; F='00; G='01; H='02).
+- Layout: Current assets (checking/savings, money market) pulled from Financial summary; Total Current Assets = checking + money market; Total Assets = opening cash (row 2) + current assets; Equity section lists Opening Balance Equity, Retained Earnings, Net Income; Total Equity sums equity lines; Total Liabilities & Equity computed.
+- Cross-sheet links:
+  - H4 = 'Financial summary'!K35 and H5 = 'Financial summary'!K36 (pulls 2002 checking/money market).
+  - Net Income rows link to Financial summary: G13 = 'Financial summary'!I30; H13 = 'Financial summary'!K30.
+- Key formulas: sums and ROUND(...) used for totals (e.g., E7 = ROUND(E2+E6,5)).
+
+Sheet: Stork - 2002 Receipts
+- Purpose: transaction-level receipts for 2002, categorized into Dues, Licensing, Sanctioning, Interest, Donations, Other.
+- Layout: date/type/amount columns (A–C) with category columns (D, F, H, J, L, N). Many small deposits and larger items (e.g., C39 = 15,000 labeled WUCC 2002).
+- Totals: C43 = SUM(C6:C42) (total receipts) and category totals (D43, F43, H43, J43, L43, N43).
+- These totals are referenced by the Stork expenditures summary and the Financial summary (via manual transfers).
+
+Sheet: Stork - 2002 Expenditures
+- Purpose: transaction-level expenditures for 2002 with category columns mapping to Financial summary expense categories (Administration, Events, Member Services, Dues, Outreach, Special Projects, Other).
+- Layout: date/type/amount (A–C) with multiple category columns F, H, J, L, N, P, R, T etc. Contains line items for loans, grants (e.g., ck 1335 C7 = 5,000 WUCC Loan), D&O insurance, congress expenses.
+- Totals: C55 = SUM(C6:C54) and category totals (D55, F55, H55, ...). Various summary cells compute net positions (e.g., H58 = H45+H44+H33).
+- Cross-links: D60 = 'Stork - 2002 Receipts'!C43 (expenditures summary references receipts total).
+
+Notable issues / checks
+- I15 in Financial summary uses COUNT(I6:I13) instead of SUM — this will produce the number of entries rather than total receipts for 2001 and likely causes incorrect Net/Ending balances for 2001 and downstream years.
+- Some expense/income rows contain manual arithmetic or text (e.g., "FORMULA =8821.24-118.52" and annotations), and several footnotes explain reclassifications and grants.
+- The beginning cash chain depends on Ending (row 33); any error upstream propagates through subsequent years and the Balance Sheet via links.
+
+If you want, I can:
+- Identify and correct formula errors (e.g., change I15 to SUM),
+- Trace the computed net income and ending balances for each year step-by-step,
+- Produce a short reconciliation of 2002 receipts vs. expenditures based on the Stork sheets.

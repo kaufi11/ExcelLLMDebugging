@@ -1,0 +1,46 @@
+Sheet name
+- "PART Qs & Section Scoring" — single-sheet PART assessment for program "Superfund Removal".
+
+Overall layout
+- Header (A1:A4) with tool title, program type and name.
+- Column structure (row 5, row 15, row 27, row 39 repeated for sections):  
+  - A: Question number / section labels  
+  - B: Question text / sub‑items  
+  - C: Ans. (Yes/No/N/A/Small Extent/Large Extent)  
+  - D: Explanation (narrative)  
+  - E: Evidence/Data (citations)  
+  - F: Weighting (numeric weight)  
+  - G: Weighted Score (calculated)
+
+Sections present
+- Section I: Program Purpose & Design — rows 6:10 questions; section total in row 12.
+- Section II: Strategic Planning — rows 16:22 questions; section total in row 24.
+- Section III: Program Management — rows 28:34 questions; section total in row 36.
+- Section IV: Program Results — rows 41:55 questions and goal detail rows; section total in row 56.
+
+Key formula patterns
+- Weighted score for binary Yes/No questions: Gx = IF(Cx="yes",(1*Fx),IF(Cx="no",(0*Fx),"")). (Used widely in Sections I–III.)
+- Section weighted-score totals: G12 = SUM(G6:G10), G24 = SUM(G16:G22), G36 = SUM(G28:G34), G56 = G55+G54+G53+G45+G41.
+- Section weighting-sum checks (intended to ensure weights sum to 100%): F12, F24, F36, F56 use IF(SUM(range)<>100%,"ERROR","100%").
+- Section IV uses multi‑choice weighted scoring: IF(C="yes",1*F,IF(C="no",0*F,IF(C="small extent",0.33*F,IF(C="large extent",0.67*F,"")))).
+
+Notable contents / key values
+- Program: "Superfund Removal".
+- Target/output repeatedly cited: 300 removals per year (Section I, II, IV).
+- Section I weights: F6:F10 = 0.2 each (evenly weighted).
+- Section II and III weights: values ~0.1428–0.143 (seven questions each).
+- Section IV weights: F41=0.334, F45=0.333, F53=0.333, F54=0, F55=0.
+
+Issues & anomalies to note (may affect calculations)
+- Weight-sum checks compare SUM(range) to the literal "100%" text; but weightings are entered as decimals (e.g., 0.2, 0.1428). Because 1 ≠ "100%", the IF tests will return "ERROR" even when weights sum to 1.0. Either convert weight cells to percentages (100%) or change the check to compare to 1 (e.g., <>1).
+- In Section II, cell G21 uses IF(C21="yes",(704*F21),...) — the multiplier 704 appears to be a typo (expected 1). This will produce an incorrect weighted score if C21="yes".
+- Inconsistent use of rounding/precision for multi‑choice factors: Section IV uses 0.33 and 0.67 in IFs, whereas weights are 0.333/0.334 — minor rounding inconsistency may slightly affect totals.
+- Some F cells are zero (F54, F55) and corresponding G cells explicitly set to 0; these are marked N/A.
+- Several formula cells return empty string "" for unanswered/other options (consistent pattern).
+
+Other notable data entries
+- Performance targets (Section IV): FY00 target 195; FY01 300; FY02 275; FY03 350. Actuals: FY00 375; FY01 302; FY02 426.
+- Evidence entries reference CERCLA, Federal Response Plan, CERCLIS database, RFF 2001 report, OCFO reports, and other internal EPA documents.
+
+Summary
+- The sheet is a single PART assessment table with four sections, consistent column layout, and cell-level IF formulas to compute weighted scores. It correctly sums weighted scores per section, but several formula/format inconsistencies (percentage check vs decimal, G21 multiplier typo, small rounding mismatches) should be corrected to ensure accurate validation and totals.

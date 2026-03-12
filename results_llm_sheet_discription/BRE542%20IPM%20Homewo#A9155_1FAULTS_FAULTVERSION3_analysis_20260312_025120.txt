@@ -1,0 +1,52 @@
+Findings — the errors
+1. Row 15 error is wrong (hard-coded):
+   - E15 = (C15-563)^2 — 563 is a typo. It should compare observed vs predicted (D15).
+
+2. SSE sum range excludes some errors:
+   - E19 = SUM(E14:E18) — this omits E12 and E13 (and includes E18 which is probably blank). B7 (=E19) therefore reports a wrong SSE.
+
+3. Predicted formula: safer use of absolute suction
+   - D12..D16 use (-B12) to turn negative pressure positive. That works only if pressures are always negative. If a pressure cell becomes positive (or zero) you will get wrong results or errors.
+
+4. Minor / labeling issues (not formula-breaking but confusing):
+   - W21 is labeled "1.25m" duplicate of N21 — likely meant to be another elevation (e.g., 3.00 m).
+   - E19 label and B7 link are OK but rely on the wrong sum range.
+
+Exact fixes (short and copy-paste ready)
+1. Fix the typo in E15:
+   - Change E15 to = (C15 - D15)^2
+   - Why: matches the pattern used in other rows; removes the hard-coded constant.
+
+2. Fix the SSE sum to include all squared-error rows:
+   - Change E19 to =SUM(E12:E16)
+   - Or change B7 to =SUM(E12:E16) and leave E19 if you prefer B7 as primary cell.
+   - Why: ensures SSE includes every error row (E12 through E16).
+
+3. Make predicted theta formulas robust (use ABS for suction):
+   - Replace the D12 formula with:
+     =$B$3 + ($B$4 - $B$3) / ((1 + $B$5 * ABS(B12)^$B$6)^(1 - 1/$B$6))
+   - Then fill down for D13:D16.
+   - Why: ABS(B12) is clearer and safe if someone ever enters positive head values. It avoids relying on the minus sign hack.
+
+4. Make LN of pressure safe / clearer:
+   - Replace F12..F16 with =IF(B12<0, LN(-B12), IF(B12>0, LN(B12), "")) or simpler =LN(ABS(B12)) if you accept LN(0) error when B=0.
+   - Why: avoids #NUM! if sign changes and documents intent (use magnitude).
+
+5. Clean labels:
+   - Correct W21 to the intended elevation (e.g., "3.00 m") to avoid confusion.
+
+Notes on Solver setup (quick)
+- If you will run Solver to minimize SSE:
+  - Objective: B7 (Min)
+  - Changing cells: B3:B6 (or a subset, e.g., alpha & n)
+  - Constraints: B3>=0, B4>=B3, B5>0, B6>1 (n>1), optionally reasonable bounds on each parameter.
+  - Use GRG Nonlinear or Evolutionary (nonlinear problem).
+
+Why these fixes matter (one-line each)
+- E15 typo distorts one error term wildly and ruins the SSE.
+- E19 range omission means SSE doesn't represent total fit error.
+- ABS in D-formula prevents sign-related mistakes and makes formulas robust.
+- Correct LN usage avoids runtime errors when pressure sign changes.
+- Label fixes reduce human error when computing fluxes/gradients.
+
+If you want, I can give the exact formulas for D12:D16, E12:E16, F12:F16 and B7/E19 as a ready-to-paste block, or prepare a short checklist to run Solver. Which would you prefer?

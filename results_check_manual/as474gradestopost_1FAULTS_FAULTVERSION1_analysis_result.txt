@@ -1,0 +1,33 @@
+I inspected every formula in the "lab grades" sheet. I found one clear formula-range inconsistency and one data/averaging inconsistency that should be checked. I also list a couple of non-formula inconsistencies you may want to standardize.
+
+1) Wrong-range in F27 (inconsistent average range)
+- Cell: F27
+- Formula present: =AVERAGE(F7:F25)
+- Problem: every other column's summary row (row 27) averages rows 7:26 (e.g. B27 =AVERAGE(B7:B26), C27 =AVERAGE(C7:C26), G27 =AVERAGE(G7:G26), etc.), but F27 stops at row 25. Row F26 exists (value = 100) and is excluded from F27.
+- Effect: the column F average is calculated over 19 rows instead of 20; the value in F27 (96.6610526315789) therefore does not include F26 and is inconsistent with the other columns.
+- Recommendation: change F27 to =AVERAGE(F7:F26) (or otherwise intentionally use the same row range as the other summary cells).
+
+2) Missing / zero value in H17 (affects I17 average)
+- Cell: I17 formula =AVERAGE(B17:H17)
+- Observation: There is no H17 entry in the JSON export. The computed I17 value shown (75.7857142857143) equals 530.5 / 7 = 75.785714..., which indicates the average was taken over seven cells with one cell equal to 0 (i.e. H17 = 0) rather than over six nonblank cells.
+- Problem: if H17 was intended to be blank (not attempted/missing) then AVERAGE would ignore it; if H17 was entered as 0 (or a zero value got inserted), the student is being penalized by a zero. This is inconsistent with the treatment of other rows where missing quizzes appear blank and are ignored by AVERAGE.
+- Recommendation: Inspect H17 in the workbook. If the quiz was not taken, clear the cell (leave blank) so AVERAGE(B17:H17) ignores it; if the student legitimately scored 0, leave it as 0. If you want to ignore zeros as "missing", use a formula that excludes zeros (for example =AVERAGEIF(B17:H17,"<>0")). Make whichever behavior is intended consistent across rows.
+
+3) IDs formatting inconsistency (non-formula)
+- Cell: A7 contains "0022" stored as text (leading zero preserved) while many other ID cells are numeric (e.g. A9 = 1321). This is not a formula error but can cause problems with lookups/sorts.
+- Recommendation: Decide whether IDs should be text (to preserve leading zeros) or numeric, and make them consistent (convert strings to numbers or pad numbers to text as needed).
+
+4) Minor notes
+- I6 text "(includes quizes)" has a typo: "quizes" should be "quizzes" (not a formula issue).
+- Several exercise scores exceed 100 (e.g. B8 = 105, B14 = 105). That may be intentional (extra credit) but is worth verifying.
+- Row 28 (B28:J28 = 1) appears to be "Highest Possible Score, %" but is not used in any formula; confirm intent.
+
+Summary of required fixes
+- Fix F27 to =AVERAGE(F7:F26).
+- Inspect H17: confirm whether it should be blank or zero and adjust (or change averaging logic to ignore zeros if that is desired).
+- Consider standardizing ID formatting and minor textual corrections.
+
+If you want I can:
+- produce corrected formulas for the whole sheet (a list of replacement formulas),
+- compute the corrected F27 value if F26 is included,
+- or scan for any other places where zeros vs blanks may have been used inconsistently. Which would you like next?

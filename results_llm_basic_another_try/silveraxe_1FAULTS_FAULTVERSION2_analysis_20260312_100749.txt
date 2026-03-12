@@ -1,0 +1,55 @@
+Errors found:
+
+1. **Inconsistent HLOOKUP ranges:**
+   - Cell H15 uses `=HLOOKUP(B15,R2:AG3,2,TRUE)` but the lookup range includes only rows 2 and 3, while the lookup value is 170 (weight). The values in R2:AG3 are mostly small numbers (0, 31, 61, etc.), so 170 will not find a proper match.
+   - Cell H18 uses `=HLOOKUP(B18,R17:AN18,2,TRUE)` but the lookup range is R17:AN18, which is only 2 rows, and the lookup value is 15 (Charisma). The first row R17:AN17 has values starting at -100, 0, 3, etc., so 15 should be found, but the range is correct here.
+   - Cell B19 uses `=HLOOKUP(B16,R5:AW15,2,TRUE)` where B16=30 (Strength), but the lookup range R5:AW15 has headers in Q5:AW5 (Attr. Value) starting at 0,1,3,... and the first row is R5:0, S5:1, etc. The row index 2 means it returns the second row of the range, which is R6 (Str HP Mod). This seems correct.
+   - Cell C19 uses `=HLOOKUP(H16,R5:AW15,3,TRUE)` but H16 is empty or missing (not given in your data). This will cause an error or incorrect result.
+   - Cell D19 uses `=HLOOKUP(G17,R5:AW15,5,TRUE)` where G17=11 (Intelligence). This is okay if the 5th row of R5:AW15 corresponds to Int HP Mod (row 9 in your data), but the range R5:AW15 only has 11 rows (5 to 15). The 5th row corresponds to R9 (Int HP Mod), so this is correct.
+   - Cell E19 uses `=HLOOKUP(B17,R5:AW15,9,TRUE)` where B17=34 (Agility). The 9th row in R5:AW15 corresponds to R13 (Agl HP Mod). This is correct.
+   - Cell B20 uses `=HLOOKUP(G17,R5:AW15,6,TRUE)+HLOOKUP(B17,R5:AW15,10,TRUE)` where G17=11 and B17=34. The 6th row is R10 (Int Dmg Mod), and 10th row is R14 (Agl Dmg Mod). This is correct.
+   - Cell H22 uses `=HLOOKUP(C22,R2:AG4,3,TRUE)` where C22 is a formula, but the lookup range R2:AG4 includes only 3 rows, and the 3rd row is R4 (HTH damage). This is okay if C22 matches the values in R2:AG2 (Weight). But C22 is `=((B16/10)^3+(G16/10))*(B15/2)` which can be a decimal and may not match weight values exactly, causing wrong lookup.
+
+2. **Incorrect or missing values in cells referenced by formulas:**
+   - H16 is missing or empty but is used in C19 formula.
+   - B15=170 (Weight) is used in HLOOKUP in H15, but the lookup range only goes up to 15361 in R2:AG2, so 170 should be found between 121 and 241. This is okay, but the row index 2 returns values from R3:AG3 (Agility Mod), which is correct.
+   - C22 formula uses B16=30 (Strength), G16=12 (Endurance), B15=170 (Weight). The formula is `((B16/10)^3+(G16/10))*(B15/2)`. This results in a decimal number, which may not match the exact weight values in R2:AG2 for H22 lookup.
+
+3. **Formula referencing incorrect rows or columns:**
+   - In B21, formula `=HLOOKUP(B17,R5:AW15,11,TRUE)` uses row 11 of R5:AW15 which corresponds to R15 (Agl Acc Mod). This is correct.
+   - In G21, formula `=SUM(B16:B17,G16:G17)` sums Strength, Agility, Endurance, and Intelligence. This is fine.
+   - In A19, B19, C19, D19, E19 formulas use HLOOKUP with different row indexes but the ranges are consistent.
+
+Summary of main errors:
+- Missing or empty cell H16 used in formula C19.
+- Lookup values in H22 may not match exact values in lookup range, causing incorrect results.
+- Potential mismatch in H15 lookup if weight is not found correctly.
+
+**Solutions:**
+
+1. **Fix missing H16:**
+   - Enter the correct value for H16 (likely Endurance) to ensure C19 formula works.
+
+2. **Adjust H22 lookup:**
+   - Instead of using a decimal lookup value in H22, round or approximate C22 to the nearest weight value in R2:AG2.
+   - For example, use `=HLOOKUP(ROUND(C22,0),R2:AG4,3,TRUE)` or use MATCH with approximate match to find closest weight.
+
+3. **Verify H15 lookup:**
+   - Confirm that weight 170 fits correctly between values in R2:AG2. Since 170 is between 121 and 241, HLOOKUP with TRUE should find 121.
+   - If exact matching is needed, consider rounding or adjusting weight.
+
+**Explanation:**
+
+- HLOOKUP with TRUE finds the largest value less than or equal to the lookup value in the first row of the range.
+- If the lookup value is decimal or not matching, it may return wrong results.
+- Missing referenced cells cause formula errors.
+- Rounding or ensuring lookup values match the lookup table improves accuracy.
+
+---
+
+**Summary:**
+
+- Enter a value in H16.
+- Modify H22 formula to round or approximate C22 before lookup.
+- Check weight values and ensure they fit lookup ranges.
+- This will fix errors and improve formula accuracy.

@@ -1,0 +1,54 @@
+Overview
+- Workbook contains two sheets: "Example" and "Formulas". They are near-duplicates: both include an Assumptions block, a monthly income statement (two months), a COGS schedule, a simple cash collections/disbursements area, and a small "July estimates" stub. Most formulas are identical across sheets; one minor discrepancy is noted below.
+
+Key values (Assumptions, A2:B14)
+- Base Sales = 184,000
+- % Sales Increase = 0.02 (2%)
+- Base Inventory Balance = 50,000
+- Additional End Inventory % of next period sales = 0.2 (20%)
+- Purchases as % of Sales = 0.6 (60%)
+- 7/31 Inventory = 80,000
+- October sales = 198,000
+- Monthly salaries = 15,000
+- Sales commissions = 0.06 (6%)
+- Rent (cash) = 14,000
+- Depreciation = 3,000
+- Insurance (prepaid) = 1,000
+- Income tax rate = 0.3 (30%)
+
+Layout / main blocks
+- Assumptions: top-left (A1:B14).
+- Month headers: B16 = August, D16 = September; numerical month outputs appear in adjacent columns C (August) and E (September).
+- Income statement (rows ~17–27): Sales revenue, COGS, Gross margin, Operating expenses (salaries & commissions, rent, depreciation, insurance), Operating income, Income tax expense, Net income.
+- COGS schedule (rows ~29–34): Beginning inventory, Purchases, Cost of goods available for sale, Ending inventory, Cost of goods sold.
+- Cash collections / disbursements section (rows ~36–46): placeholders for current/prior collections, purchases, salaries/commissions, and roll-ups (some formulas in F-column).
+- July estimates stub (rows 52–58): COGS breakout placeholders.
+
+Key formulas and logic (representative)
+- Sales:
+  - August (C17): =ROUND(B2*(1+B3),-3) — base sales grown by % increase, rounded to thousands.
+  - September (E17): =ROUND(C17*(1+B3),-3) — prior month sales grown again.
+- Purchases (COGS schedule):
+  - Purchases = ROUND(Current month sales * Purchases%,-3) (C31, E31).
+- Ending inventory:
+  - Ending inventory = ROUND(Base Inventory + (Additional % * next period sales),-3) (C33 uses E17 as next period; E33 uses B8 (October sales) in the provided sheet).
+- COGS:
+  - COGS = Cost of goods available for sale − Ending inventory (C34, E34).
+- Salaries and commissions:
+  - =ROUND(Monthly Salaries + (Sales commission % * current month sales),-3) (B21 / D21 formulas reference $B$9 and $B$10).
+- Rent, depreciation, insurance:
+  - Linked directly to assumption values ($B$11, $B$12, $B$13).
+- Operating income / taxes / net:
+  - Operating income = Sales − COGS − Operating expenses (C25/E25).
+  - Income tax = ROUND(Operating income * tax rate,-3) (C26/E26).
+  - Net income = Operating income − Income tax (C27/E27).
+- Rounding: Many figures are rounded to the nearest thousand using ROUND(...,-3).
+- Cross-period links: Beginning inventory for one month is taken from the prior period ending inventory (e.g., C30 = B7 initially; E30 = C33).
+
+Notable inconsistencies / points to check
+- The "Formulas" sheet is essentially the same as "Example" but C24 is showing COUNT(B21:B24) while in "Example" C24 = SUM(B21:B24) — likely an error on the Formulas sheet.
+- Ending inventory for September (E33) uses B8 (October sales) rather than the adjacent month sales cell — this appears intentional (uses next-period sales) but confirm B8 is the intended reference for that next period.
+- Month headings are in B16 and D16 while numeric results are in C and E, so column offsets are used throughout.
+
+Summary
+- Simple two-month pro forma: computes sales growth, purchases, ending inventory, COGS, operating expenses, taxes and net income with heavy use of absolute references and rounding to thousands. Assumptions drive all calculations; COGS schedule and operating-expense rows are the calculation core. Check the two noted inconsistencies (C24 COUNT and E33 reference) before relying on the Formulas sheet.

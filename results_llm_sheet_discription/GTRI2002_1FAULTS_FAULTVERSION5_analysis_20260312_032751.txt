@@ -1,0 +1,19 @@
+Summary — I found two clear errors and one data-placement anomaly.
+
+1) Wrong operator (big numeric error) — sheet "2002 Report", cell C30
+- Error: C30 is formula =G30*1000000 but should convert raw pounds to millions. The cell multiplies instead of divides so it returns a huge, wrong number.
+- Fix: change formula to =G30/1000000
+- Why: everywhere else the workbook converts raw pounds to millions by dividing by 1,000,000. Multiplying gives values a million‑fold greater and will break any totals or comparisons that use C30.
+- Quick check: after fix C30 should be 6.367581 (because G30 = 6,367,581 ÷ 1,000,000).
+
+2) Misplaced stray values — sheet "2003 Report", cells G20 and H20
+- Symptom: G20 = 8.449074 and H20 = 0.6381540899 sit outside the main table (main table uses B–F and J–O). They look like stray/pasted numbers and don’t belong to the 2003 layout.
+- Fix: either delete them or move them to the correct columns/rows after verifying source (for example, check if they were intended for a transfer column on row 20 or for another sheet).
+- Why: stray numbers can confuse review, produce incorrect charts, or be accidentally used in unrelated formulas.
+
+Optional additional checks (recommended)
+- Search the workbook for any other formulas using *1000000 (Find -> look for "*1000000" or search for "*1000000" in formulas). Any that are intended to convert pounds → millions should use /1000000 instead.
+- After correcting C30, recalc and verify totals that use column C or any derived sums/ratios (e.g., R or L totals) to ensure figures line up with expected magnitudes.
+- If G20/H20 were moved, re-check totals on row 20 of the 2003 table (F20 and O20) to confirm nothing else was overwritten.
+
+If you want, I can give the exact Find/Replace steps or show the corrected formula list for the affected rows.

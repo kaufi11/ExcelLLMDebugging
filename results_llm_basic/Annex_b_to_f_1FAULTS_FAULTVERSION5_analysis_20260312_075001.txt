@@ -1,0 +1,29 @@
+I reviewed the workbook text you sent. I found two real, easy-to-fix problems (both are formula / reconciliation errors). Below I explain each problem, why it’s wrong, and give the correct formula to use.
+
+1) Cashflow ↔ Balance sheet reconciliation uses the wrong cell (Total vs year‑end)
+- What’s wrong: The reconciliation cells in the cashflow sheet are comparing the Total column value (T19 or T42) to balance sheet items, but they should compare the year‑end (July) closing balance. Example:
+  - Cell T26 formula: =T19 - ('Table 2.0 BS - Annex E'!H20 + 'Table 2.0 BS - Annex E'!H21 + 'Table 2.0 BS - Annex E'!H22)
+    - T19 here resolves to the Total column value, but the balance-sheet references are the Original FFR year-end (column H). The reconciliation should compare the July closing balance (S19) to the balance‑sheet year‑end values (H20:H22) — not the Totals sum.
+  - Same pattern in the revised/actual reconciliation (T49): it compares T42 against I20:I22 when it should be the July closing (S42) vs I20:I22.
+- Why it matters: Totals (T19 / T42) are sums across the months and are not the same as the year‑end closing cash figure. This causes false non‑zero reconciliation results and breaks the “these cells must be zero” checks.
+- Fix (exact formulas):
+  - Replace T26 with:
+    =S19 - ('Table 2.0 BS - Annex E'!H20 + 'Table 2.0 BS - Annex E'!H21 + 'Table 2.0 BS - Annex E'!H22)
+  - Replace T49 with:
+    =S42 - ('Table 2.0 BS - Annex E'!I20 + 'Table 2.0 BS - Annex E'!I21 + 'Table 2.0 BS - Annex E'!I22)
+- Explanation: S19 is the July closing cash balance in the cashflow table (the figure you must reconcile to the balance sheet year‑end numbers in column H). Likewise S42 is the July closing for the Actual/Revised section and must be reconciled to the balance sheet Mid‑Year column I.
+
+2) Total column for the running balance rows is inconsistent / misleading
+- What’s wrong: Some “Total” column cells for the running balance rows are set to a single-month cell instead of a meaningful total or blank. Example:
+  - In ORIGINAL section T18 is set to =H18 (first month balance b/f). That makes the T (Total) column inconsistent (it shows the August b/f instead of nothing or the closing).
+- Why it matters: It’s confusing and may lead to copying errors; totals columns in monthly tables should either show a meaningful summary (e.g., the year‑end closing) or be left blank, not point to a single month.
+- Fix / recommendation:
+  - Either leave the Total column blank for running b/f rows (no total needed), or set Total to the year‑end closing month (for example T18 blank and T19 = S19). Do not point T18 at H18.
+  - Example change: set T18 to blank (no formula) and keep T19 = S19 (or explicitly =S19 if you prefer).
+
+Quick checklist to implement
+- Edit T26 and T49 as shown above.
+- Clear or correct T18 (and any similar “Total” cells that point to a single month).
+- After changes, check the “these cells must be zero” checks (T26, T49 and the cells flagged elsewhere) — they should be zero when the cashflow closing equals the balance-sheet cash components.
+
+If you want, send me the actual workbook (or allow editing) and I’ll change those formulas for you and re-check the reconciliation cells.

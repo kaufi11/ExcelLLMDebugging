@@ -1,0 +1,20 @@
+Summary of problems I found (short & simple)
+
+1) Faulty cell: L29
+- Error: Wrong function (mechanical)
+- What’s wrong: L29 =COUNT(B29:K29) returns the number of scored cells, not their total.
+- Fix: Replace with =SUM(B29:K29)
+- Why: The column L is the row total — it must sum the scores, not count them.
+
+2) Faulty pattern: M3:M45 (every row’s average)
+- Error: Wrong averaging method (logical)
+- What’s wrong: Each row’s average is computed as =L#/10 (always dividing by 10). Several rows have missing scores (blank cells), so dividing by 10 gives the wrong average.
+- Fix (recommended): Replace each M formula with =AVERAGE(B#:K#) (for example M3 = AVERAGE(B3:K3)) and fill down.
+- Alternative fix (if you want to use L): M# =IF(COUNT(B#:K#)=0,"", L#/COUNT(B#:K#))
+- Why: AVERAGE(B:K) ignores blanks and returns the true mean of entered scores. The IF/COUNT version uses the summed total but divides by the actual number of scores.
+
+Notes / optional
+- If blanks are meant to count as zero, keep L#/10, but first ensure blanks are zeros (or use =IFERROR(L#/10,0)). Otherwise use the fixes above.
+- After fixing M formulas, re-check L29 and then recalc summary rows (B47:K47, L47, M47) — they should update correctly.
+
+If you want, I can give the exact Excel steps to apply the fixes and fill down.

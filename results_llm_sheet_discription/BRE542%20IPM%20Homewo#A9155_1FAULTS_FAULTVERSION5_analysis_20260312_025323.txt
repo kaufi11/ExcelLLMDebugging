@@ -1,0 +1,45 @@
+Summary of the problems (short)
+
+1) Wrong residual in E12
+- Current: E12 =(463-D12)^2 — "463" is a wrong hard-coded number.
+- Effect: the squared error for the first observation is incorrect, so SSE (sum of squared errors) is wrong.
+
+2) SSE range wrong in E19
+- Current: E19 = SUM(E14:E18) — that range omits E12 and E13 (and includes E18 which is likely empty).
+- Effect: B7 (SSE) = E19 will not represent the sum of the actual residuals, so any Solver fit minimizing B7 will be optimizing the wrong objective.
+
+3) Minor/label issues
+- Duplicate/incorrect heading: W21 is labeled "1.25 m" though N21 is already 1.25 m (likely a typo; maybe W21 should be 3.0 m).
+- These labels won't break formulas but can cause confusion when computing fluxes/gradients.
+
+Corrective actions (exact fixes to paste)
+
+1) Fix the E12 formula:
+- Replace E12 with:
+  = (C12 - D12)^2
+
+2) Fix the SSE formula (E19) so it sums the actual error rows:
+- If you are summing E12:E16, use:
+  =SUM(E12:E16)
+- A more robust single-cell SSE that auto-uses the observed & predicted ranges (avoids row-range mistakes):
+  =SUMPRODUCT((C12:C16 - D12:D16)^2)
+  (use whichever matches all your observed rows; extend ranges if you have more rows)
+
+3) Verify B7
+- B7 currently =E19 — no change needed once E19 is fixed. B7 will then show the correct SSE.
+
+4) Fix header typo
+- Change W21 from "1.25 m" to the correct elevation label (e.g., "3.00 m") per your design.
+
+Why these fixes matter (short)
+- E12 used a wrong constant so the first data point contributed a meaningless error; that biases SSE.
+- E19 summed the wrong range so SSE ignored some errors; Solver would therefore find parameters that minimize a partial SSE and give wrong van Genuchten parameters.
+- Fixing them ensures SSE truly equals sum of squared residuals between Observed (C) and Predicted (D), so Solver will fit parameters correctly.
+
+Quick Solver setup reminder
+- Objective: minimize B7 (SSE).
+- Changing cells: B3:B6 (theta_r, theta_s, alpha, n).
+- Typical constraints: B3 >= 0; 0 < B4 <= 1; B5 > 0; B6 > 1 (n > 1 for van Genuchten).
+- Ensure your predicted formula in D12:D16 references B3:B6 with absolute references (you already use $B$3:$B$6 — good).
+
+If you want, I can produce the exact corrected formulas for every D12:D16/E12:E16 and the robust SSE formula that handles more rows, or give the step-by-step Solver dialog settings.

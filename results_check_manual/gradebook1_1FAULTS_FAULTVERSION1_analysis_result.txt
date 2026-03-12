@@ -1,0 +1,40 @@
+I reviewed the formulas and values you supplied. There are no #VALUE or #REF errors, but there is a clear logical/formula inconsistency that will produce misleading "grades". Summary, the problem, and recommended fixes are below.
+
+What I found
+- Row 7 is labelled "Total Points Per Assignment" and contains the per-assignment maximums (D7=25, E7=25, G7=20, H7=50, J7=75). Cells F7, I7 and K7 are blank (no maxima entered for Quiz 3, Homework 3 and Final).
+- L7 currently contains the formula =COUNT(D7:K7) and returns 5. COUNT is counting how many numeric cells exist in D7:K7 (there are five non-blank numeric cells).
+- Each student row uses Lx = SUM(Dx:Kx) to compute the student's total points (this is fine).
+- Each student's Grade cell Mx uses the formula =Lx/L$7*1. Because L7 is 5, Mx is the student's total points divided by 5 (i.e. an average points-per-assignment), not the percentage of total possible points.
+
+Why this is a problem
+- Dividing a student's total points by the COUNT of assignment columns (5) yields an average points-per-assignment number that mixes assignments with different maximum points. That is not a standard percentage or grade — it inflates the appearance of a grade and is almost certainly not what was intended.
+- If the intended result is a percent of total possible points, L7 should be the SUM of the per-assignment maximums (D7:K7), not the COUNT.
+- F7, I7 and K7 being blank makes the totals-per-assignment row incomplete; the SUM of D7:K7 (if used) will include zeros for those blanks unless the correct maxima are entered.
+
+Recommended fixes (pick one based on intended grading method)
+
+Option A — Standard percent of total possible points (recommended)
+- Put all assignment maximums in D7:K7 (enter missing maxima in F7, I7, K7).
+- Change L7 to: =SUM(D7:K7)
+- Change Mx to a percent formula and format column M as Percentage. For example in M9:
+  - =L9/$L$7
+  - Format M9:M21 as Percent (or =L9/$L$7*100 if you prefer a number).
+- Use absolute reference $L$7 (both column and row locked) to be robust when copying:
+  - =L9/$L$7
+
+Option B — If you really want "average points per assignment"
+- Keep L7 =COUNT(D7:K7) but rename the label in A7 to "Number of assignments" or similar to avoid confusion.
+- Keep Mx =Lx/L$7 but understand this will be an average points-per-assignment (not a percentage).
+- Better to remove the trailing "*1" (it does nothing); use =L9/L$7 (or =L9/$L$7).
+
+Other minor suggestions
+- Use $L$7 (not L$7) in M formulas to lock the column too: =L9/$L$7. That prevents accidental change if formulas are copied across columns.
+- If you intend percent, include *100 only if you want a plain number; otherwise use Percentage cell formatting.
+- Fill in the missing maxima (F7, I7, K7) so calculations reflect all assignments.
+
+Concrete corrected formulas (recommended)
+- L7: =SUM(D7:K7)
+- L9 (and down): =SUM(D9:K9) (unchanged)
+- M9 (and down): =L9/$L$7 and format as Percentage
+
+If you want, tell me which grading behavior you want (percent of total possible vs average points-per-assignment) and I will give the exact cell formulas and show the corrected values for a couple of sample students.

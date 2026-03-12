@@ -1,0 +1,48 @@
+Thanks — I reviewed the workbook and found several clear mistakes that will give wrong totals/averages. Short, clear list of problems and fixes:
+
+1) Homework: L19 is wrong
+- Problem: cell L19 contains the literal formula "=2" instead of summing the row.
+- Fix: change L19 to =SUM(B19:K19)
+- Why: every other homework total uses SUM(Bx:Kx); L19 should too.
+
+2) Homework: some “Paper” totals (column N) don’t match the row sums (column L)
+- Problem: N4 = 180 but L4 (=SUM(B4:K4)) is actually 160, etc. N appears to be manually entered/inconsistent.
+- Fix: make N a formula that references the correct total (for example N4 =L4) or compute N with the same SUM: =SUM(B4:K4)
+- Why: manual numbers get out of sync. Use formulas or link to L so values stay correct.
+
+3) Homework: text flags in numeric cells (HC, P, x, NG) break numeric totals
+- Problem: cells like I9 = "x", H15="HC", G37="P" are text; SUM ignores them so totals may be lower than intended (or you may be unintentionally masking missing/penalized scores).
+- Fix: choose a consistent numeric code for missing/zero (e.g., use 0), or keep the flags but put them in a separate “status” column and keep numeric score cells blank/0. If you must keep text in-score, replace the SUM with a numeric-only aggregator, e.g. =SUMIF(B4:K4,">=0") or for mixed text/numbers use =SUMPRODUCT(--(IFERROR(VALUE(B4:K4),0))) as an array construct.
+- Why: Excel SUM ignores text; use numbers or separate status fields to avoid silent errors.
+
+4) Mid‑term header/total (row 5): wrong SUM range
+- Problem: L5 is =SUM(C5:K5) but the “Total possible points” should include column B too.
+- Fix: change L5 to =SUM(B5:K5)
+- Why: excluding B5 under‑reports the total possible points for the exam.
+
+5) Mid‑term: some student rows are shifted into column B (alignment error)
+- Problem: many student rows start in column C but some rows have a value in column B (e.g. B11=3 for CAGIRL, B20=4 for khar). The student total formula is =SUM(Cx:Kx) so any value in Bx is excluded.
+- Fix: either (A) move the misplaced Bx values one column right into Cx so every student’s answers line up, or (B) change the totals to include column B: =SUM(Bx:Kx). Pick one approach and apply consistently.
+- Why: misaligned data causes omitted points and wrong totals.
+
+6) Final sheet: inconsistent SUM ranges (Bluesky row)
+- Problem: I7 is =SUM(B7:H7) while the correct range for Final totals is B:G (Q1–Q6). Using H may include an extra/blank column or pick up stray data.
+- Fix: change I7 to =SUM(B7:G7) to match other rows.
+- Why: keep the same range for every row so totals are consistent.
+
+7) Final Grades sheet: numeric totals overwritten with letters/status
+- Problem: Total column (F) should be numeric sums (B:E) but some cells contain letters (e.g. F4 = "F"). Also “Note” (G) contains HC/P etc — some notes appear in the numeric column.
+- Fix: restore numeric totals with formula =SUM(Bx:E x) in every F cell. Put letter grades or HC/P flags in a separate column (G). If you want letter grade derived from total, compute numeric total in F then use a lookup or nested IF to produce a letter in a new column.
+- Why: mixing text and numbers causes sorting/averages to fail and hides correct totals.
+
+Quick recommended checklist to fix the workbook reliably
+- Replace any manually typed totals with formulas (SUM). (e.g. set all L in Homework and all F in Final Grades to =SUM(...) consistently.)
+- Move all status flags (HC, P, NG, x) out of numeric score columns into a dedicated “Status” column.
+- Standardize every row’s score columns so formulas use the same fixed ranges (e.g. Homework B:K, Midterm B:K or C:K but consistently).
+- After changes, recalc and check a few sample rows manually to confirm totals match expected sums.
+
+If you want, I can:
+- give the exact formulas to paste into each wrong cell (I can list them row-by-row), or
+- produce a short macro that fixes all SUM ranges and moves flags to a status column.
+
+Which would you prefer?

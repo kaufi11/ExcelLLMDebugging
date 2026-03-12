@@ -1,0 +1,23 @@
+I found two errors. Short explanation, why it matters, and exact fixes:
+
+1) Q4 Homework — Evans total (H5) is missing the Personal Shield column
+- Problem: H5 is =SUM(B5:F5) so it does NOT include G5 (71). Evans' total and every sheet that references it (Q4 Summary E6, Q4 Summary F6, Year Summary G4/H4) are too low.
+- Fix: change H5 to include G:  
+  Formula to put in H5: =SUM(B5:G5)
+- Why this fixes it: now H5 sums all six assignment values (B–G) to give the correct total that other sheets pull.
+
+2) Q4 Summary — Points Possible weighted score (F3) uses 0 for the Quizzes weight
+- Problem: F3 is =B3*0.3 + C3*0 + D3*0.4 + E3*0.2 — the C3*0 should be C3*0.1 (or a reference to the weight). This makes the weighted total 270 instead of 300 and any dependent calculations (if you use that cell) will be wrong.
+- Fix (two options):
+  - Quick correction: replace F3 with =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+  - Better (safer if weights change): use SUMPRODUCT with the weight row so it automatically uses the actual weights:  
+    Formula to put in F3: =SUMPRODUCT(B3:E3,$B$2:$E$2)
+- Why this fixes it: the corrected formula multiplies each category’s points by its actual weight (0.3, 0.1, 0.4, 0.2) and sums them. The SUMPRODUCT version prevents future typos because it reads the weights from B2:E2.
+
+Optional improvement (recommended): replace each student weighted-score cell (F4:F12) with =SUMPRODUCT(B4:E4,$B$2:$E$2) etc., or use explicit references to $B$2:$E$2, so changes to weights automatically update all computations.
+
+Summary of exact changes to make now:
+- H5 → =SUM(B5:G5)
+- F3 → =SUMPRODUCT(B3:E3,$B$2:$E$2)  (or =B3*0.3+C3*0.1+D3*0.4+E3*0.2)
+
+After those two fixes, recheck Q4 Summary E6/F6/G6 and Year Summary (Q4 values) to ensure totals and percentages are correct.

@@ -1,0 +1,42 @@
+I looked through the workbook and found several clear, testable formula errors that will give wrong results. Short summary first, then each error + fix (very short / actionable).
+
+1) Sheet "DRAM cost side" — D21 (inconsistent reference)
+- Fault: D21 = +D31*D9*D10 - D16 - (D9)*D17 
+- Why wrong: D31 is the “price after fab add” (a later-calculation output). The other columns (E21:H21) use the baseline price cell (E13, F13 …). The 2001 column should use the baseline price (D13). Using D31 mixes scenarios and produces an incorrect per‑wafer profit for 2001.
+- Fix: replace D21 with:
+  =D13*D9*D10 - D16 - D9*D17
+- Effect: uses baseline predicted price for 2001 consistently with other years.
+
+2) Sheet "DRAM cost side" — H22 (typo divisor)
+- Fault: H22 = +$D$18/961
+- Why wrong: all other columns D22:G22 use $D$18/5 (cap cost / 5 years). "961" appears to be a typo. That makes the H22 amortization far too small.
+- Fix: change H22 to:
+  =$D$18/5
+- Effect: consistent 5-year amortization across columns.
+
+3) Sheet "fisher" — Laspeyres index row (H37) (range mismatch)
+- Fault: H37 = +SUMPRODUCT(G25:G28, H32:H35) (wrong ranges used)
+- Why wrong: other columns use SUMPRODUCT of their revenue-share range vs their price-relative range. H37 mixes G25:G28 with H32:H35 (wrong left-hand range) and probably has wrong length; result is meaningless for the Laspeyres component.
+- Fix: make H37 consistent with the pattern (use H24:H28 and H31:H35 OR H24:H28 vs H31:H35 depending on how you defined the five-band weights). Likely correct formula:
+  =SUMPRODUCT(H24:H28, H31:H35)
+- Effect: uses correct revenue-share weights and price relatives for the H (2006) column.
+
+4) Sheet "fisher" — Paasche index row (H38) (missing term)
+- Fault: H38 = 1/(H25*1/H32 + H26*1/H33 + H27*1/H34 + H28*1/H35)
+- Why wrong: it omits the H24 term; other Paasche formulas include all five product lines (H24..H28). Missing a weight biases the Paasche index.
+- Fix: include H24*1/H31 (and use full consistent set). Corrected:
+  =1/( H24*(1/H31) + H25*(1/H32) + H26*(1/H33) + H27*(1/H34) + H28*(1/H35) )
+- Effect: full and comparable Paasche calculation for 2006.
+
+Notes and implementation tips
+- When you fix D21 and H22 in "DRAM cost side" re-check any dependent totals (D23:D28, I23 etc.) — they will change.
+- When you fix the fisher Laspeyres/Paasche formulas double-check the chained Fisher index (D39..H39 and D40..H40) — those depend directly on D37:D38 etc.
+- Reasoning checklist to avoid similar bugs:
+  - Ensure each “year” column uses the same pattern of source ranges (same relative offsets).
+  - Watch for accidental use of a later-scenario cell (e.g., price-after-add) when the formula should use baseline price.
+  - Scan for numeric typos (961 vs 5) when most columns follow a simple repeated pattern.
+  - Use named ranges or pattern-based formulas (OFFSET / INDEX) to reduce manual-copy errors.
+
+If you’d like I can:
+- Provide a small patch file with the exact corrected formulas,
+- Or highlight all cells with inconsistent formulas so you can review them. Which would you prefer?

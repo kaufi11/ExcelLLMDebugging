@@ -1,0 +1,41 @@
+I reviewed the workbook and found a few consistent formula errors that will give wrong numbers. Short, clear fixes below.
+
+1) Problem: Many “Variance” formulas use the wrong sign (Forecast − Actual instead of Actual − Forecast)
+- Where: STMT OF OPERATIONS column E (examples: E7, E9, E11, E17:E41, E41, and other E cells that currently show =Cxx-Axx).
+- Why it’s wrong: Variance should be Actual minus Forecast (Actual − Forecast), not Forecast − Actual.
+- Fix: Replace each incorrect E cell with =Axx-Cxx (for that row).  
+  Example fixes:
+  - E7  → =A7-C7
+  - E9  → =A9-C9
+  - E17 → =A17-C17
+  - …and so on through E40/E41: every variance cell should be =A[row]-C[row].
+
+2) Problem: Wrong hard-coded value in forecast Gross Profit
+- Where: STMT OF OPERATIONS C10 currently =477-C9
+- Why it’s wrong: Forecast Gross Profit must be Forecast Net Sales minus Forecast COGS (not a hard-coded number).
+- Fix: C10 → =C8-C9
+
+3) Problem: Inconsistent/mixed variance formula direction in other variance rows
+- Where: Several other E cells (for reorganization items, totals, etc.) also use =Cxx-Axx.
+- Why: Same sign error causes totals and subtotals to reverse variances.
+- Fix: Standardize all variance cells to =Axx-Cxx (Actual − Forecast). Check E15, E41, E50, E51, E53, etc. (make them all Actual − Forecast).
+
+4) Problem: Potential blank or missing Long‑Term Post‑Petition Debt in Balance Sheet
+- Where: BALANCE SHEET J67 = J65 + J66 but J66 is empty (J66 should contain long‑term post‑petition debt, net of current portion).
+- Why: If J66 is blank the total post‑petition liabilities will be incomplete.
+- Fix: Put the correct formula/value into J66 (e.g., link to the schedule that contains long‑term debt). Example: J66 → ='SCHEDULE_PG3'!<cellWithLongTermDebt> or enter the amount manually.
+
+5) (Check links / mapping) SUMMARY Profit/(Loss) link
+- Where: SUMMARY F26 = 'STMT OF OPERATIONS'!A53
+- Why: Make sure SUMMARY is pulling the correct column for Current Month / Prior / Cumulative.
+- Fix: Verify mapping: for Current Month use STMT OF OPERATIONS!A53, for Prior Month use STMT OF OPERATIONS!C53, for Cumulative use STMT OF OPERATIONS!K53 (adjust if your sheet stores actual/forecast in different columns).
+
+Quick checklist to apply (do these once):
+- Replace all E-column variance formulas with =Axx-Cxx.
+- Change STMT OF OPERATIONS C10 to =C8-C9 (remove the 477).
+- Fill J66 (Balance Sheet long‑term post‑petition debt) with the proper value/formula.
+- Verify SUMMARY links map to the correct STMT OF OPERATIONS columns (A = Current, C = Prior, K = Cumulative).
+
+If you want, I can:
+- Give a list of exact cell addresses that currently have =Cxx-Axx (so you can fix them quickly), or
+- Produce exact replacement formulas for every affected cell and a small VBA macro to fix all variance cells automatically. Which do you prefer?

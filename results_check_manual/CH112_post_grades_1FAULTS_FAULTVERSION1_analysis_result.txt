@@ -1,0 +1,30 @@
+I checked the workbook formulas on Sheet1. Summary first, then details and a suggested fix.
+
+Summary
+- One clear formula error: cell O13 has an incorrect formula (uses division where multiplication was intended). That yields a wrong overall percent (14.0957) and therefore an incorrect letter grade in P13 (F). The correct overall percent should be ≈ 74.5902 and P13 should be "C".
+- All other O (Overall Grade) formulas follow the same correct pattern and appear consistent.
+- A few rows have missing component scores (blank cells). The current formula logic uses COUNT(...) so missing items reduce the denominator (and thus change weighting) — this is probably intended but is behavior you should be aware of.
+- Some rows contain scores >100 (e.g. exam/final extra credit). That can produce overall percentages >100 (e.g. O32 = 101.125). This is expected under the current formula but check if that is intended.
+
+Details and recommended correction
+
+1) Incorrect formula
+- Cell: O13
+- Current (incorrect) formula:
+  =(SUM(B13:F13)+SUM(G13:M13)+N13)/(COUNT(B13:F13)/100+COUNT(G13:J13)/15+COUNT(K13:M13)/30+COUNT(N13)/150)/100
+- Problem: in the denominator the COUNT(...) factors are divided by the point-values ("/100", "/15", "/30", "/150") instead of multiplied by those point-values. That makes the denominator extremely small and yields an incorrect final percent.
+- Correct formula (match other rows):
+  =(SUM(B13:F13)+SUM(G13:M13)+N13)/(COUNT(B13:F13)*100+COUNT(G13:J13)*15+COUNT(K13:M13)*30+COUNT(N13)*150)*100
+- Corrected numeric result:
+  - O13 ≈ 74.5902093596059
+  - P13 (with existing letter-grade IF) => "C" (since 74.59 < 79.4)
+
+2) Other notes you may want to review
+- Missing scores: Several rows omit certain exam/homework/final cells. The formulas use COUNT(...) to detect how many items are present and scale the denominator accordingly. If you want missing items to be treated as zero but keep the full possible points in the denominator (i.e., keep consistent weighting even when students missed something), you should not use COUNT to shrink the denominator; instead use fixed denominators or COUNTBLANK/CUSTOM logic.
+- Final exam: denominator uses COUNT(Nx)*150 so if the final is missing the final category is removed (COUNT(Nx)=0). That may or may not be intended.
+- Extra credit: some exam/final values exceed 100, and O32 > 100 is a consequence. If you want to cap per-component points at the maximum, you would need MAX/MIN logic (e.g., MIN(score,100)) inside the SUMs.
+
+If you want, I can:
+- Update O13 (and P13) for you,
+- Search & report any rows where many components are missing (and therefore denominator changes),
+- Convert the weighting to fixed totals (so missing items count as zero but denominator stays constant).

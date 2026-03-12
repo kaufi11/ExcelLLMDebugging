@@ -1,0 +1,21 @@
+Findings (short)
+- Error: Bulk compost C19 has a typo. It uses =A19+(B19/783)-1.48 instead of dividing the hour by 24.
+- Effect: B19/783 = 0.01629 vs B19/24 = 0.53125, so C19 is ≈0.515 day (~12.36 hours) earlier than it should be. That point will be plotted/analysed at the wrong time.
+- Possible secondary issue to check: the two sheets use different subtraction offsets (-1.48 vs -1.71). That may be intentional (different time anchors) — verify.
+
+Fix (exact)
+- Correct C19 to:
+  =A19 + (B19/24) - 1.48
+
+Quick steps
+1. Select C19, replace formula with =A19+(B19/24)-1.48.
+2. If you use the same formula pattern in other rows, fill down or copy/paste so all rows use /24.
+3. Recalculate and verify the datapoint shifts to the expected time (about +0.515 day).
+
+Recommendation (prevent future mistakes)
+- Put the offset (1.48 or 1.71) in a single cell (eg K1) and name it (e.g., TimeOffset). Use a single formula like:
+  =A2 + B2/24 - TimeOffset
+  This makes it easy to change/check and avoids hard-coded numbers.
+- Scan for other accidental divisors (search for “/783” in workbook) to be safe.
+
+That will correct the time placement and make the workbook easier to maintain.

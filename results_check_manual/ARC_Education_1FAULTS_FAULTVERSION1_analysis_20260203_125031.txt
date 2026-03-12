@@ -1,0 +1,48 @@
+Kurz und knapp: ich habe die wichtigsten Fehler gefunden, erklärt und jeweils die Lösung (in deutschem Excel‑Formelformat) angegeben.
+
+1) Fehler: falsche Funktion für Gesamtsumme (Sheet "Student-teacher")
+- Problem: Zelle F56 hat =COUNT(F45:F55) — COUNT zählt nur die Anzahl der numerischen Zellen, nicht deren Summe. Ergebnis ist falsch (Anzahl Lehrer statt Summe der Lehrer).
+- Lösung: Zähle nicht, summiere:
+  =SUMME(F45:F55)
+
+2) Fehler: falsche Summenbereiche bei "Two Year Colleges" (Sheet "university")
+- Problem: In Zeile 15 (Total 2‑yr) stehen Formeln wie =SUMME(C5:C14) etc. Diese addieren versehentlich auch die Four‑Year‑Zeilen (B5:B8). Für Two‑Year muss die Summe nur aus Zeilen 12–14 kommen.
+- Lösung: Ersetze die Formeln in B15:K15 durch Summen der Zeilen 12–14, z.B.:
+  B15: =SUMME(B12:B14)
+  C15: =SUMME(C12:C14)
+  D15: =SUMME(D12:D14)
+  … bis …
+  K15: =SUMME(K12:K14)
+
+3) Fehler: uneinheitliche Prozentdarstellung (Sheet "Teachers adv degrees")
+- Problem: In der Tabelle sind Prozentwerte teils als Dezimalbruch (z.B. 0,469...) und teils als ganze Zahl (z.B. 46,6). Folge: Inkonsistente Darstellung und falsche Berechnungen/Brüche in Total‑Spalten.
+- Erklärung: Einige Werte sind bereits in Prozentform (46,6 statt 0,466), andere als korrekte Dezimalproportion (0,469). Man muss alle Werte in dieselbe Basis bringen.
+- Lösung (einfach, kein Risiko): Normalisiere alle Prozent‑Zellen so, dass sie Dezimalanteile sind (0,46 = 46 %), und formatiere dann als Prozent:
+  - Schritt 1 (für Werte > 1): in eine freie Zelle 0,01 eingeben und kopieren.
+  - Schritt 2: die betroffenen Prozentzellen markieren (z.B. B6:L16 und B21:K31), Rechtsklick → Inhalte einfügen → Operation: Multiplizieren.
+  - Schritt 3: Zellenformat auf "Prozent" mit 1 Dezimalstelle setzen.
+- Alternativ (Formel, z.B. in Hilfsspalte N, falls du nicht in‑place ändern willst):
+  N6: =WENN(ISTZAHL(B6);WENN(B6>1;B6/100;B6);"")
+
+4) Fehler: gebrochene/kommastellige "Total No." (Teachers adv degrees)
+- Problem: Nach falscher Prozentverarbeitung sind einige "Total No." Werte Dezimalzahlen (z.B. 1995.8), obwohl Personen ganze Zahlen sein müssen.
+- Lösung: Runde berechnete Totals auf ganze Zahlen:
+  Beispiel (wenn Prozent in B6 als Dezimal vorliegt und Gesamtlehrer in X6 steht):
+  =RUNDEN(B6 * X6; 0)
+  Oder um eine vorhandene Dezimalzahl in C6 auf ganze Zahl zu setzen:
+  =RUNDEN(C6; 0)
+
+5) Auffälligkeiten / Datenfehler ohne eindeutige automatische Korrektur
+- State test (Sheet "State test"): Werte springen von ~216 (Skalennote) auf 57/53 (vermutlich andere Einheit oder verschobene Spalten). Ursache: Daten in manchen Jahre/Spalten in anderer Skala oder verschoben. Automatische Korrektur nicht sicher möglich.
+- SAT (Sheet "SAT"): einzelne Einträge wie 99 oder 100 (z. B. D10=99, D11=100) sehen fehlerhaft aus (vermutlich fehlt führende Ziffer, sollten ~900–1000 sein). Auch hier: Quelle prüfen und die korrekten Rohdaten einsetzen.
+- Vorschlag: Prüfe die Originalquelle für diese Jahre/Spalten (Importfehler, falsches Dezimal- oder Tausendertrennzeichen, verschobene Spalten). Wenn du mir paar Originalzellen/Zeilen angibst oder CSV zeigst, kann ich Umwandlungsregeln vorschlagen.
+
+Kurz zusammengefasst — die akutesten, sofort behebbaren Korrekturen:
+- F56 ersetzen durch =SUMME(F45:F55)
+- Zwei‑Jahres‑Summen in Zeile 15 auf =SUMME(…12:14) ändern
+- Prozentwerte in "Teachers adv degrees" vereinheitlichen (Hilfsformel oder PasteSpecial *0,01) und als Prozent formatieren
+- Dezimal‑Totals auf ganze Personen runden mit =RUNDEN(...;0)
+
+Wenn du willst, kann ich dir:
+- die genauen Zell‑Formeln für alle betroffenen Zellen erzeugen (als Liste zum Einfügen), oder
+- eine kleine VBA/Routine schreiben, die die Prozent‑Normalisierung und Rundung automatisch durchführt.

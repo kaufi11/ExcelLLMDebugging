@@ -1,0 +1,39 @@
+I inspected the formulas in the provided Sheet2 and found one clear formula error and a few suspicious / potentially unintended references that you should check. Summary first, then details and recommended fixes.
+
+Summary of definite error
+- Cell L31 contains =COUNT(H31:K31) but should be summing the numeric columns like its neighbouring rows. This returns 3 (the number of non-empty cells) rather than the numeric sum of H31:K31 (which is 988,357 + 1,600 + 302,022 = 1,291,979). This incorrect value propagates into the row 31 totals and then into subtotals and grand totals.
+
+Details, effect and recommended fix
+
+1) Wrong function used (COUNT instead of SUM)
+- Cell: L31
+  - Current formula: =COUNT(H31:K31)
+  - Problem: COUNT counts numeric/non-empty cells (returns 3) rather than summing the numeric values. All surrounding rows use SUM(H#:K#) for this column; L31 is inconsistent.
+  - Correct formula: =SUM(H31:K31)
+  - Immediate effect if fixed:
+    - L31 should be 1,291,979 (not 3).
+    - Q31 (=G31+L31) will change accordingly (current Q31 = 1,936,566; corrected Q31 ≈ 3,228,542).
+    - AA31 (=Q31+V31) will change accordingly (propagates ≈ +1,291,976).
+    - Those changes propagate into any subtotals and grand totals that include row 31 (for example the category total rows and the Grand Total in row 133). So the Grand Total and intermediate aggregates will be understated by the same amount until L31 is corrected.
+
+2) Suspicious references to possibly-missing source cells (verify these are intended)
+- Pattern: Many rows compute the Q4 / final columns with formulas like AIx = AE x + Wx, AJx = AFx + Xx, AKx = AGx + Yx, ALx = AHx + Zx. That pattern is fine where AE..AH are populated.
+  - Example to check: Row 6 — AK6 formula is =AG6+Y6 but AG6 is not present in the excerpt (it may be blank). If AG6 should contain a value but is missing, AK6 will silently treat AG6 as zero and produce a (wrong) result.
+  - Action: Scan rows where AKx (or AIx/AJx/ALx) reference AE/AF/AG/AH cells that appear empty — confirm those source cells are intentionally blank or populate them if data missing.
+
+3) Inconsistent formula styles (not an error, but worth verifying)
+- Some rows use explicit additions like C75 = 44762024+2009667, D75 = 6179061+352427 etc., while most other rows simply contain a single value or SUM(). This is not an error per se, but is an inconsistent approach which makes auditing harder. Consider standardizing to SUM or to cell references (if those numbers should be linked to other cells).
+
+4) Negative values and blanks used in sums
+- There are negative numbers and many sums that add blank cells (e.g., formulas like O6 = E6+J6 where E6/J6 may be blank). Excel treats blanks as zero in arithmetic, so these formulas work but you should verify blanks are expected and not a misplaced column offset.
+
+Suggested immediate actions
+1. Fix L31: change formula to =SUM(H31:K31).
+2. After fixing L31, re-check dependent totals (Q31, AA31, the totals rows that sum row 31 such as the group subtotal lines and the Grand Total row 133) to ensure the changes propagate as expected.
+3. Run a quick search for any other occurrences of COUNT(...) used where SUM(...) is used in adjacent rows; I found only L31 but search the workbook for COUNT formulas to be certain.
+4. Audit any formulas that reference AE/AF/AG/AH when those source cells are blank (they will silently be treated as zero). If those source values are supposed to exist, populate them; otherwise document that blank => zero is intended.
+
+If you want, I can:
+- Provide a list of all dependent cells that will be changed when L31 is corrected (trace dependents up to the Grand Total).
+- Search the workbook for any other COUNT uses and report them.
+- Generate a corrected version (change L31 and recalc) and show the delta on the main totals.

@@ -1,0 +1,39 @@
+Summary of workbook structure and contents (concise)
+
+Sheets (3 data sheets + graph)
+- Q4 Homework
+  - Columns: A Student name, B–G assignment scores (A1: Assignment headers: Conservation Essay, Ch.8 Questions, Ch.9 Summary, Problems #2-20, Collage, Personal Shield), H Total.
+  - Row 2 = Points possible (B2:G2 = 100,25,25,25,50,75). H2 = =SUM(B2:G2) → 300.
+  - Rows 3–11 = student scores. H3:H11 are totals calculated with SUM of the assignment columns (H3,H4,H6–H11 use =SUM(Bn:Gn); H5 currently uses =SUM(B5:F5) — missing column G5).
+
+- Q4 Summary
+  - Purpose: apply category weights to category totals and bring in Q4 Homework totals as the “Homework” category.
+  - Top: A1 Category, B1–E1 category labels (Tests, Quizzes, Projects, Homework); A2 row shows weights B2=0.3, C2=0.1, D2=0.4, E2=0.2; F2 = =SUM(B2:E2) (checks weights sum to 1).
+  - B3–D3 = Points possible for Tests/Quizzes/Projects (300 each). E3 = ='Q4 Homework'!H2 (300).
+  - F3:F12 = weighted score per student calculated as B*0.3 + C*0.1 + D*0.4 + (should be) E*0.2 — currently every F formula listed uses D*0.2 instead of E*0.2 (i.e., D is used twice). This is a consistent formula error to fix.
+  - G3:G12 = normalized percentage = (F#/300)*100.
+  - Rows 4–12 contain student category totals (B4:D12 specific student totals) and E4:E12 link to Q4 Homework totals (E4='Q4 Homework'!H3, etc.).
+
+- Year Summary
+  - Columns: Last, First, SSN, Q1–Q4, Final Average (H), Final Grade (I).
+  - Q4 values (G2:G10) pull from Q4 Summary G4:G12.
+  - H2:H10 =AVERAGE(Dn:Gn) computing the four-quarter average.
+  - I2:I10 = nested IF grading scale: =IF(H<60,"F",IF(H<70,"D",IF(H<80,"C",IF(H<90,"B",IF(H<101,"A"))))) — produces letter grades.
+  - Row 11 calculates class averages for each quarter: D11 =AVERAGE(D2:D10), E11 =AVERAGE(E2:E10), F11 =AVERAGE(F2:F10), G11 =AVERAGE(G2:G10).
+
+- Quarter Grades-Graph
+  - Placeholder sheet for chart(s); no details provided.
+
+Key values & dependencies
+- Total points available per quarter = 300 (from Q4 Homework H2).
+- Data flow: Q4 Homework H2/H3–H11 → Q4 Summary E3/E4–E12 → Q4 Summary F/G → Year Summary G2:G10 → Year Summary H (averages) → I (final grade).
+- Example totals: Q4 Homework H3 (Brantley) = SUM(B3:G3) = 288 (95+23+25+20+50+75). (Other student totals are in Q4 Homework H4:H11.)
+
+Errors / recommended fixes (important)
+1. Q4 Homework H5 uses =SUM(B5:F5) — change to =SUM(B5:G5) to include Personal Shield (G5).
+2. Q4 Summary F3:F12 use Dn*0.2 instead of En*0.2. Update each weighted-score formula to: =Bn*0.3 + Cn*0.1 + Dn*0.4 + En*0.2 so the Homework category is included correctly.
+
+Notes
+- Weight row (B2:E2) correctly sums to 1 via F2.
+- Grading IF formula works but can be simplified with LOOKUP or nested CHOOSE if desired.
+- Workbook is well-structured: per-student raw scores → weighted Q4 summary → year summary with final averages/grades and a chart sheet for visualization.

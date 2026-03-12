@@ -1,0 +1,63 @@
+I reviewed the formulas on all sheets and found a few actual formula errors and several inconsistencies / missing inputs you should review and (probably) fix. Summary first, then details and suggested corrections.
+
+Summary of issues
+- Major inconsistency: infiltration UA (cell E25) uses a different (wrong) formula in "Johnson - Base" than in the other three sheets. ("Johnson - Base" divides by C8*C14; the other sheets multiply by C8*C14.)
+- Missing input: wall area (C22) is blank on every sheet, so E22 = C22/D22 evaluates to zero; likely an omitted input.
+- Missing emission-factor inputs: C93 and C94 (emission intensities for nuclear and hydro/renewables) are blank. The weighted-average emission calculation in C100 therefore ignores nuclear and hydro contributions (blanks treated as zero).
+- Odd / fragile IF logic (not strictly "wrong" but potentially confusing): D38 and F38 use IF(C13<1,...) and IF(C13=G34,...) tests to decide whether to convert Btu to therms/kWh. These work for your present inputs but are brittle / non-transparent and could be simplified.
+- A few cells rely on blank cells (e.g., E22 uses C22) — these produce 0 results which may be unintended.
+
+Details and recommendations
+
+1) Infiltration (E25)
+- Problem: "Johnson - Base" E25 = =0.018/C8/C14 which evaluates to 1.2E-06 (tiny UA). The other sheets ("Johnson - More Efficient", "Your Home - Base", "Your Home - More Efficient") use E25 = =0.018*C8*C14 → 270.0 (much larger). Those are mutually inconsistent.
+- Why it matters: E25 is included in E26 (TOTAL UA). The tiny value in "Johnson - Base" makes the total UA much lower (E26 ~1,828 vs ~2,099 in the other sheets) and flows through to balance point, annual energy, fuel and cost results.
+- Likely fix: use multiplication (consistent with the other sheets). If the intended formula is UA_infiltration = 0.018 * Volume * ACH, change E25 in "Johnson - Base" to:
+  =0.018 * C8 * C14
+- If, instead, the division was intentional, please confirm the intended unit conversion and document it — but given that the other sheets use the multiplication, the division looks like a typo.
+
+Affected cell(s): "Johnson - Base" E25 (change to =0.018*C8*C14)
+
+2) Missing wall AREA (C22)
+- Problem: C22 is blank in every sheet, but E22 uses =C22/D22. Because C22 is blank, E22 = 0. That may be unintended: walls usually have significant area and UA.
+- Why it matters: E22 (walls UA) is part of the total UA (E26). Leaving it blank underestimates UA and heating loads.
+- Recommendation: enter the wall area in C22 (ft^2). If you don't know it, compute from plan dimensions (perimeter * height or similar) and then keep D22 = R-value for walls; E22 formula (=C22/D22) will then produce the correct UA.
+
+Affected cell(s): all sheets C22 (input), E22 (formula depends on it)
+
+3) Emission factors (C93, C94) blank — C100 ignores them
+- Problem: C100 = =C90*E90/100 + C91*E91/100 + C92*E92/100 + C93*E93/100 + C94*E94/100. C93 and C94 are blank, therefore those fuel-type contributions are effectively zero in the weighted average.
+- Why it matters: E100 = C86 * C100 (annual electricity CO2). If nuclear and hydro have non-zero emission intensities, they should be entered; otherwise the average is understated or misrepresented.
+- Recommendation: populate C93 and C94 with appropriate lbs CO2/kWh for nuclear and hydro (or explicitly enter 0 if you intend to treat them as zero). If you purposely left nuclear blank with the note "(no CO2 but…)", replace blank with 0 for clarity.
+
+Affected cell(s): all sheets C93 and C94 (inputs); C100 depends on them
+
+4) IF formulas converting Btu → therms / kWh (D38, F38)
+- Observations:
+  - D38 = IF(C13<1, D37/100000, 0) — converts D37 (Btu/yr fuel need) to therms/year only if C13 < 1. As currently used, furnace efficiency 0.6 (<1) yields therms; if C13 = 1 this returns 0.
+  - F38 = IF(C13=G34, D37/F9, 0) — converts to kWh/year if efficiency equals G34 (G34 is 1 for Electric Baseboard). This logic works but is somewhat fragile and not obvious.
+- Recommendation: consider replacing the IFs with explicit conversions and a single control cell specifying heating fuel type (gas vs electric). For clarity:
+  - therms_per_year = D37 / 100000   (always computed if D37 is fuel Btu/yr)
+  - kWh_per_year = D37 / F9         (always computed if D37 is Btu/yr for electric case)
+  - Or use IF to select between fuels via an explicit "fuel type" cell rather than testing C13 values.
+- This is a suggested clarity/robustness fix; not necessarily a bug with current inputs, but worth improving.
+
+Affected cells: D38, F38 (all sheets)
+
+5) Minor / housekeeping
+- Percent-of-loss formulas (F19:F25) rely on $E$26 as denominator. That is correct but ensure E26 is intended to be total UA (it depends on E25 and C22 as above).
+- Many cells are duplicated across four sheets — be careful to update all sheets if you change an input formula (e.g., E25 bug only existed in "Johnson - Base").
+
+Actionable checklist
+1. Correct "Johnson - Base" E25:
+   -> change from =0.018/C8/C14 to =0.018*C8*C14 (unless you purposely intended division — confirm).
+2. Enter wall area in C22 (every sheet) so E22 = C22/D22 yields correct walls UA.
+3. Populate C93 and C94 with nuclear/hydro emission intensities (or explicitly put 0 if you treat them as zero).
+4. Consider simplifying/clarifying D38/F38 logic: compute therms and kWh conversions from D37 explicitly or add a clear "fuel type" switch cell.
+5. After changes, re-check totals E26, D36, D37, D38, C85, E85 and all dependent results to verify expected behavior.
+
+If you want, I can:
+- produce the exact corrected formulas for each affected cell (and update the workbook), or
+- run the corrected numbers through the workbook and return the updated outputs (showing before/after differences).
+
+Which would you like me to do?

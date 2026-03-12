@@ -1,0 +1,80 @@
+I inspected every formula in the workbook you supplied and checked them against the surrounding data for range errors, inconsistent ranges, mismatched units/scales, and other anomalies. Below I list the formula problems and other strong inconsistencies I found, with short explanations and suggested fixes.
+
+Summary of actual formula locations found
+- Student-teacher sheet: K37 =SUM(K26:K36) ; L37 =SUM(L26:L36)
+- Public Grads sheet: totals at row 16 (B16:J16) all use =SUM(...) over the per-system rows
+- Teachers With Advanced Degrees sheet: no SUM formulas, but numeric values change scale (see below)
+- University sheet:
+  - Four-year totals (row 9): B9..K9 =SUM(B5:B8) .. =SUM(K5:K8) — OK
+  - Two-year totals (row 15): B15 =SUM(B12:B14) — OK
+  - BUT C15..K15 use =SUM(C5:C14), =SUM(D5:D14), … =SUM(K5:K14) — inconsistent (see below)
+
+Problems and recommended fixes
+
+1) University sheet — inconsistent SUM ranges in "Two Year Colleges" total row (row 15)
+- Problem: B15 uses =SUM(B12:B14) (summing only the two‑year rows), while C15..K15 use ranges that start at row 5 (e.g. C15 =SUM(C5:C14)), therefore C15..K15 are summing both the four‑year and two‑year rows (rows 5–14). This is inconsistent and produces totals that do not match the two‑year subtotals and look incorrect (e.g. C15 = 20482 does not equal the sum of the two‑year C12:C14 values).
+- Why it is a problem: The row is labeled "Total" under the "Two Year Colleges" heading — users would expect those totals to be two‑year subtotals (i.e. sum of rows 12–14). Instead most columns are summing all rows 5–14, yielding erroneous/ambiguous totals.
+- Suggested fix: Change C15..K15 to sum only the two‑year rows, e.g.
+  - C15 =SUM(C12:C14)
+  - D15 =SUM(D12:D14)
+  - …
+  - K15 =SUM(K12:K14)
+  Or if the intent was to calculate a grand total (four‑year + two‑year) then change B15 to SUM(B5:B14) and relabel the row as "Grand Total" to avoid confusion.
+
+2) Teachers With Advanced Degrees sheet — inconsistent percent scaling/formatting (not a pure formula bug but critical)
+- Problem: In the 1989–1995 block the "Percent" columns show percentages as numbers in the 0–100 range (e.g., 50.9). In the later block (1995–2000) the "Percent" columns are stored as decimal fractions (e.g., B21 = 0.469033856317093) rather than as percents (46.9). Those later values look like the same percentages divided by 100.
+- Why it is a problem: This inconsistency in scaling will produce wrong results if someone sums/averages or plots the values without converting, and it's visually confusing.
+- Suggested fix: Convert the decimal fractions to percent values (multiply by 100) or apply consistent number formatting. For example B21 should be 46.903% (or 46.90) rather than 0.4690...; or change presentation so all "Percent" columns are displayed as Percent with the same scale.
+
+3) Student-teacher sheet — inconsistent use of formulas vs hard-coded totals
+- Observation: In the 1996–1997 block the totals K37 and L37 are computed via formulas (=SUM(K26:K36) and =SUM(L26:L36)). In earlier blocks (e.g., B18,C18,E18,F18,H18,I18 etc) totals are present as hard-coded values (not formulas).
+- Why it is a problem: Mixing hard-coded totals and formula totals is a reliability/maintainability issue — manual totals can get out of sync when source rows change.
+- Suggested fix: Replace the hard-coded totals with SUM formulas consistently (for example B18 =SUM(B7:B17) or the appropriate row range for that block) so all totals are computed, not manually typed.
+
+4) Student-teacher sheet — missing or inconsistent total columns
+- Observation: In the first page block several total cells are presented as "**" (not available) or as values. Some columns have totals and some do not. This is a data completeness/consistency issue rather than a formula syntax error, but it affects downstream calculations.
+- Suggested remediation: Where data is available, use SUM formulas for totals and mark unavailable totals explicitly (or leave blank) and avoid mixing "**" text in numeric columns (SUM will ignore text, but it's better to be explicit).
+
+5) Public Grads sheet — SUM over ranges with "**" text
+- Observation: The totals row (row 16) uses =SUM(B5:B15) etc. Several system rows have "**" (text) for unavailable values.
+- Note: SUM will ignore text, so those formulas will compute sums over the available numeric rows. This is not an error, but be aware that the totals exclude unavailable items (possibly desired).
+- Suggested remediation: If the intention is to flag missing data, consider using COUNT or IF to show how many systems were included in the total so readers know how many real values contributed.
+
+6) Miscellaneous data/scale inconsistencies (not formula syntax errors but likely to cause confusion)
+- State test / Reading & Math tables: some years (e.g., 1991–92 columns) show much smaller numbers (like 57) next to other years that have values around ~210. That likely indicates a change in metric (raw score vs scaled) or unit — check the source/legend. Not a formula error, but it will confuse users.
+- Teachers With Advanced Degrees: many total number columns (Total No.) for some rows look formatted with decimals (e.g., 1995 block shows non-integer totals like 1995.8). These likely come from earlier computations dividing counts by percentages — confirm the intended representation.
+
+Cells I inspected that contain formulas (for quick reference)
+- Student-teacher:
+  - K37 =SUM(K26:K36)
+  - L37 =SUM(L26:L36)
+- Public Grads:
+  - B16 =SUM(B5:B15)
+  - C16 =SUM(C5:C15)
+  - D16 =SUM(D5:D15)
+  - E16 =SUM(E5:E15)
+  - F16 =SUM(F5:F15)
+  - G16 =SUM(G5:G15)
+  - H16 =SUM(H5:H15)
+  - I16 =SUM(I5:I15)
+  - J16 =SUM(J5:J15)
+- University:
+  - B9..K9 =SUM(... the four-year rows B5:B8 .. K5:K8) — OK
+  - B15 =SUM(B12:B14) — two‑year totals — OK
+  - C15..K15 =SUM(C5:C14), =SUM(D5:D14) … =SUM(K5:K14) — inconsistent/wrong for a two‑year subtotal (see #1 above)
+  - B9..K9 and B15..K15 appear throughout rows as noted
+
+Concrete recommended corrections
+- On the University sheet, change the range for C15..K15 to sum only two‑year rows (12:14) if the row is meant to be the two‑year subtotal, i.e.:
+  - C15 =SUM(C12:C14)
+  - D15 =SUM(D12:D14)
+  - …
+  - K15 =SUM(K12:K14)
+- On Teachers With Advanced Degrees sheet, standardize percent columns to the same scale and formatting. For the later block (rows 21–31) convert decimals like 0.469... into percent numbers (multiply by 100) or format cells as Percentage and adjust values accordingly.
+- Replace hard-coded totals with formulas on the Student‑teacher sheet for any totals that are currently typed values, to ensure totals update automatically (e.g., change B18,C18,E18,F18,H18,I18 to SUM formulas over the appropriate row ranges).
+- Review the State test tables to confirm consistent metrics across years (some years appear to be on different scales).
+
+If you want, I can:
+- Provide the exact corrected formulas (I gave the pattern above) and show the new expected totals for the problematic cells (e.g. recalc C15..K15 with corrected ranges and report the numeric results).
+- Produce a patch (modified workbook) that applies the fixes (range corrections, percent scaling, convert hard-coded totals to formulas).
+Tell me which fixes you want me to apply and I’ll either give the exact formula edits or produce an updated file.

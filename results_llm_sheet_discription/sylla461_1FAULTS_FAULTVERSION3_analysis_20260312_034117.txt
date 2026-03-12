@@ -1,0 +1,22 @@
+Findings (short)
+- Primary error: Sheet "1999" cell B7 contains 2000-08-22 (the 2000 start date) instead of the 1999 start date. Because almost every B cell is B(previous)+N, that single wrong cell corrupts the whole 1999 schedule.
+- Symptom: many dates on the "1999" sheet will be in 2000; yet B198 (final exam) is manually 1999-12-20 — an inconsistency between calculated and manual dates.
+- Other sheets ("2000", "1998") look consistent with their start dates.
+
+Why it’s a problem
+- The sheet uses chained date arithmetic (B11 = B7+2, B15 = B11+1, …). A wrong root (B7) shifts every computed date.
+- Manually-entered dates (like the final exam) may then contradict the formula chain.
+
+Quick fixes (do this now)
+1. Decide the correct start date for 1999 (the sheet’s weekday in A7 is "T" = Tuesday). If you want the same weekday as the 2000 sheet, set B7 to 1999-08-24. Otherwise use the actual intended 1999 start date.
+2. On sheet "1999" change B7 from 2000-08-22 to the chosen 1999 date (e.g., 1999-08-24). Press Enter — all B cells that are formulas will recalculate automatically.
+3. Check B198 (final exam). If it is meant to be calculated, replace the manual date with the formula that follows the chain (or with a formula referencing B7); if the final is fixed by the university, keep it as a manual fixed date and verify the rest of the chain matches the course calendar.
+
+Recommended prevention (short)
+- Anchor all formulas to one explicit start-date cell (e.g., put the semester start in a single cell and name it StartDate). Example: B7 = StartDate; B11 = StartDate + 2; B15 = StartDate + 3 (or use offsets you need). This avoids long chains where a single insertion or accidental change can break everything.
+- Alternatively, use absolute reference to the root: B11 = $B$7 + 2, B15 = $B$7 + 3, etc., or maintain a visible StartDate at the top.
+- Audit for any other manual dates (e.g., final exam) after fixing start date.
+
+If you want, I can:
+- Give the exact set of formulas to replace the chain with anchored offsets, or
+- Suggest the correct 1999 start date if you tell me which weekday the class should begin.

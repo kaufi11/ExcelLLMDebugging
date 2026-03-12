@@ -1,0 +1,42 @@
+Findings (short)
+- Q4 sheet: D14 = COUNT(D9:D12) — wrong. It returns 4 instead of the free cash flow total (should be -30).
+- Several % change cells (row H) either show 0 or will error when prior-year (column F) = 0. Example: Q1 H9 and H12 divide by F=0 (divide-by-zero risk). Q4 H11 shows 0 but should be a calculated percent change.
+- One cell uses an odd literal formula: Q3 4‑Qtr L11 = -80+40 (returns -40) — unclear/ inconsistent (should be a value or linked source).
+- Header inconsistency: Q1 sheet row 6 (J6) reads "Six Months Ended June 30" but the sheet is for March 31 (cumulative heading is wrong).
+
+What’s wrong (why)
+- COUNT returns the count of numeric cells, not the sum.
+- Percent-change formula =((D-F)/F)*100 will produce #DIV/0! when F = 0 and can be misleading/uncomputed when prior-year values are zero or intentionally negative.
+- Using ad‑hoc arithmetic in a cell (=-80+40) reduces transparency and can hide where the number came from.
+- Wrong header text can confuse readers about the period (cumulative vs. single-quarter).
+
+Quick fixes (exact formulas to use)
+1) Fix Q4 Free cash flow total
+- Change D14 from:
+  =COUNT(D9:D12)
+  to:
+  =SUM(D9:D12)
+  Explanation: SUM returns the free cash flow (95 - 25 - 100 = -30).
+
+2) Standardize percent-change cells (all H row percent cells)
+- Use a safe formula that avoids divide-by-zero:
+  =IF(F9=0,"N/A", (D9-F9)/F9*100)
+  (Adapt row numbers per cell: replace D9/F9 with the correct cell.)
+- Or to hide errors and keep blanks:
+  =IF(F9=0,"", (D9-F9)/F9*100)
+  Explanation: returns a readable "N/A" or blank instead of #DIV/0!.
+
+3) Replace incorrect or unclear entries
+- Q4 H11 (and any H11s showing 0): set to the standardized percent-change formula above (use D11 and F11).
+- Q3 4‑Qtr L11: replace =-80+40 with -40 (or better: link to the proper source cell) so the value is explicit and auditable.
+
+4) Fix header text
+- Q1 J6 should be corrected from "Six Months Ended June 30" to "Three Months Ended Mar. 31" (or whatever cumulative label is appropriate for that sheet).
+  Explanation: ensures headings match the period shown.
+
+Recommendations (short)
+- Audit all A14/D14/F14/J14/L14 cells — ensure every Free cash flow cell is SUM(cash flows from operations, securitization, capital expenditures).
+- Replace all raw percent formulas in column H with the IF(...) version to avoid divide-by-zero and to make N/A explicit when prior-year base is zero or not meaningful.
+- Remove hard-coded arithmetic in cells; use references to source values so numbers are traceable.
+
+If you want, I can list the exact cells on every sheet that need their H formulas replaced and produce the corrected workbook formulas for all problematic cells.

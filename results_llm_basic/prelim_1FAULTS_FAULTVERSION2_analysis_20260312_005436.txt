@@ -1,0 +1,34 @@
+Summary of errors
+- Column A numbering in sheet "program" breaks at A24: cell A24 has the formula =A22+829 which produces very large numbers (840, 841, …) and the wrong sequence thereafter. This single bad formula corrupted the whole numbering chain.  
+- There are manual overrides (A41 = 26) that mask the problem but create inconsistency between formula-driven and manual numbers.  
+- Minor data-format issues in sheet "schedule": some time labels mix 24-hour times and AM/PM (e.g. "10.15 - 12.20 AM" should be "PM"; "13.45 - 15.45 PM" repeats 24h + PM). Also one break (A15 row in program) has identical start/end times (zero length) and is marked "Eliminated" — either delete or remove from calculations.
+
+Why it happened
+- A single incorrect constant (+829) was entered instead of +1 (or a correct reference). Because subsequent rows used formulas like =A(previous)+1, the wrong value propagated. Manually changing one cell later (A41) fixed the visual number there but left the inconsistent chain.
+
+How to fix (easy, safe steps)
+Option A — Quick fix (if you want simple sequential numbers down the column)
+1. Put 1 into A12 (it already is).  
+2. In A13 enter: =A12+1  
+3. Copy A13 down through the rest of the event rows (including A24, A25 …).  
+This will restore the normal 1,2,3,… sequence.
+
+Option B — Robust fix (handles blank rows and accidental manual edits)
+1. In A12 enter 1.  
+2. In A13 enter this formula and copy down:
+   =IFERROR(LOOKUP(9.99999999999999E+307,$A$12:A12)+1,"")
+This finds the last numeric above and adds 1, so blank rows or occasional manual edits won’t break the chain.
+
+Recommended cleanup actions
+- Replace the faulty formula in A24 with =A22+1 (or use Option A/B above and copy down) so A24 becomes 12 (not 840). Then copy the corrected formula down through the rest of column A so all event IDs are sequential.  
+- Remove manual overrides (like A41) — reapply formula down the column.  
+- Fix time formatting/text in "schedule": change "10.15 - 12.20 AM" → "10:15 - 12:20 PM" (or use 24-hour "10:15 - 12:20"), and remove redundant "PM" from 24-hour times (e.g. "13:45 - 15:45 PM" → "13:45 - 15:45" or "1:45 PM - 3:45 PM").  
+- If Break-A (A15) is eliminated, delete that row or remove it from the numbering sequence so durations and numbering remain correct.
+
+Why these solutions work
+- Replacing the bad constant (+829) with +1 or using the LOOKUP approach restores proper arithmetic progression. The LOOKUP variant is more robust because it always finds the last numeric entry above and continues numbering even if there are blank rows or someone inserted/deleted rows manually.  
+- Fixing time notation removes ambiguity and avoids wrong AM/PM interpretation when printing or converting times.
+
+If you want, I can:
+- Give the exact formula text to paste into a range to fix the whole column at once, or
+- Provide a one-step macro to fix column A and standardize times automatically. Which would you prefer?

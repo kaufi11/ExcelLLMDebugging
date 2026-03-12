@@ -1,0 +1,47 @@
+Summary of the errors I found (short + how to fix each)
+
+1) Wrong ranges for Financial Aid on the Summary sheet (row 9)
+- Problem: Summary!F9:G9:... etc are pulling SUM(Detail!F9:F11) (and similar ranges) — those ranges are the tuition rows, not the Financial Aid lines. D9 used the correct reference (-Detail!D15) but the other columns mistakenly reference the wrong rows.
+- Fix: Point every Summary row‑9 cell to the Detail financial aid subtotal instead of the tuition rows. Example fixes:
+  - Summary!F9 -> =-Detail!F15
+  - Summary!G9 -> =-Detail!G15
+  - Repeat same pattern through Summary!N9 -> =-Detail!N15
+- Explanation: Detail row 15 is the Financial Aid subtotal (negative). Summary should use that subtotal (negated) for every column, not sum tuition rows.
+
+2) Subtotal net tuition (Summary row 10) references the wrong block
+- Problem: Summary!F10..N10 use ranges like =SUM(Detail!F10:F17) — that pulls many unrelated rows (fees, ICR, etc.), so the subtotal is wrong.
+- Fix (two simple options):
+  - Best/clear: set Summary row 10 to the Detail total net tuition cell:
+    - Summary!F10 -> =Detail!F16
+    - Summary!G10 -> =Detail!G16
+    - ... through Summary!N10 -> =Detail!N16
+  - Or compute from components: Summary!F10 -> =Detail!F11 + Detail!F15 (tuition subtotal + financial aid subtotal)
+- Explanation: Detail row 16 is Total Net Tuition (tuition subtotal + financial aid subtotal). Use that direct cell to avoid range mistakes.
+
+3) Hard‑coded “6” in Summary (University Fund allocation) — Summary!J14
+- Problem: Summary!J14 contains the number 6 (hard code) instead of pulling the corresponding Detail cell.
+- Fix: Replace the 6 with the proper Detail reference:
+  - Summary!J14 -> =Detail!J20
+- Explanation: Summary must reflect Detail. J14 should mirror Detail row 20, column J (where University Fund allocation in that column lives).
+
+4) Hard‑coded total beginning balance in RCM sheet (row 39, total column J)
+- Problem: RCM!J39 is 500006 (hard‑coded). That does not match the sum of the fund beginning balances in D39:I39.
+- Fix: Replace with a sum formula:
+  - RCM!J39 -> =SUM(D39:I39)
+- Explanation: J39 should be the total beginning fund balance across fund columns, not a manual number.
+
+Why these fixes work
+- They restore consistent linking from Summary/RCM to the Detail ledger so totals update automatically when Detail changes.
+- Use the Detail subtotal cells (Detail!F16 / Detail!D15 etc.) wherever possible to avoid off‑by‑one range mistakes.
+- Remove hard‑coded values so totals are accurate and auditable.
+
+Quick checklist you can run now
+- On Summary:
+  - Replace row 9 columns F:N with =-Detail!<same column>15
+  - Replace row 10 columns F:N with =Detail!<same column>16
+  - Replace J14 with =Detail!J20 (and check any other J-column entries that look like hard codes)
+- On RCM:
+  - Replace J39 with =SUM(D39:I39)
+- After changes: recalc workbook and confirm Total Revenue and Net Change rows on Summary and RCM match Detail totals.
+
+If you want, I can give the exact formula for each cell (copy/paste ready) or produce a small macro to correct all these at once. Which would you prefer?

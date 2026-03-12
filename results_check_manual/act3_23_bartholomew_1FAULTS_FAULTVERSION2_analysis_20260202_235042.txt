@@ -1,0 +1,38 @@
+Summary — main problem: Column E (labeled "week 4") contains AVERAGE formulas instead of actual week‑4 hours. That causes total hours, weekly totals and pay to be wrong. There are also a few inconsistent SUM ranges and one missing cell in a SUM.
+
+Errors and fixes (short):
+
+1) E7:E12 wrong formula
+- Error: E7:E12 =AVERAGE(Bn:Dn) but E is labeled "week 4" (should be a week 4 hours value, not an average).
+- Fix: Put the actual week‑4 hours in E7:E12. If you intended to show an average, rename E6 to "Average" and move the average to a new column (e.g., H) with =AVERAGE(Bn:En).
+- Why: AVERAGE in the week‑4 column double‑counts/changes totals when you SUM weeks.
+
+2) F12 missing B12
+- Error: F12 =SUM(C12:E12) ignores week‑1 hours (B12).
+- Fix: F12 =SUM(B12:E12)
+- Why: Total hours must sum all four weeks.
+
+3) Inconsistent weekly total ranges
+- Errors: B15 =SUM(B7:B13), C15 =SUM(C7:C13), G15 =SUM(G7:G13) include row 13 (blank) while other totals use row 12 only.
+- Fix:
+  - B15 =SUM(B7:B12)
+  - C15 =SUM(C7:C12)
+  - G15 =SUM(G7:G12)
+  - (Keep D15 =SUM(D7:D12), E15 =SUM(E7:E12), F15 =SUM(F7:F12) consistent)
+- Why: Use the same employee range (rows 7–12) everywhere.
+
+4) Overtime and Gross Pay logic (recommendation)
+- Problem: Gross Pay formulas use (F + G) * rate. That adds overtime hours (G) on top of total hours (F) and pays them at regular rate — wrong.
+- Recommend:
+  - Calculate overtime automatically: in G7 (and copy down) use =MAX(0, F7-40)
+  - Compute Gross Pay properly (time‑and‑a‑half example): C20 = ((F7-G7)*B20) + (G7 * B20 * 1.5)
+    - Or shorter: =((F7-G7)+1.5*G7)*B20
+- Why: Regular hours should be paid at normal rate; overtime hours at a higher rate. Also F should be total hours, not include G twice.
+
+Quick corrected formulas to copy:
+- F7:F12: =SUM(B7:E7)  (F12 fix: =SUM(B12:E12))
+- G7 (copy down): =MAX(0, F7-40)
+- Gross (Green row example C20): =((F7-G7)+1.5*G7)*B20
+- Weekly totals: B15 =SUM(B7:B12), C15 =SUM(C7:C12), D15 =SUM(D7:D12), E15 =SUM(E7:E12), F15 =SUM(F7:F12), G15 =SUM(G7:G12)
+
+If you tell me whether column E was meant to be "week 4" or "average", I will give the exact single-step fix (replace formulas or rename column and move averages).

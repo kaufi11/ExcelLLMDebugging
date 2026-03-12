@@ -1,0 +1,59 @@
+I inspected the workbook formulas and found multiple formula mistakes and inconsistencies. Summary below, grouped by sheet, with the problem, why it’s wrong, and a suggested fix.
+
+Sheet1
+- I3
+  - Current formula: =(C3*0.125)+(D3*25)+(E3*25)+(F3*25)+(G3*12.5)
+  - Problem: Multipliers are wrong (25 and 12.5 instead of 0.25 and 0.125). This is a clear typo and returns spurious values.
+  - Fix: Use the same weighting pattern as the other students:
+    =(C3*0.125)+(D3*0.25)+(E3*0.25)+(F3*0.25)+(G3*0.125)
+
+- J3:J17 (VLOOKUPs)
+  - Current formula pattern: =VLOOKUP(I3,$K$5:$L$17,2,TRUE())
+  - Issues:
+    - The lookup table in K5:L17 appears misaligned: K5 is blank while L5 contains "F". For an approximate-match VLOOKUP the left column of the lookup range (K) must contain the numeric thresholds and be sorted ascending; the grade labels must be in the right column (L). Because K5 is blank, lookup results will be wrong or unpredictable.
+    - Using TRUE() as the last argument works in Excel (TRUE() returns TRUE), but the more conventional form is TRUE (no parentheses). This is stylistic, not an error.
+  - Fixes:
+    - Fix the translation table alignment: ensure every row K5:K17 has the numeric lower-bound threshold and L5:L17 the corresponding letter grade. If the lowest threshold is 0, put 0 in K5 paired with "F" in L5.
+    - Alternatively adjust the lookup range if the thresholds start at K6 (e.g. $K$6:$L$17) after correcting the table.
+
+- I19 / I20 / I21 and other summary cells
+  - Many summary cells show #DIV/0! because they aggregate ranges (AVERAGE, MIN, MAX) that contain DIV/0 errors coming from other sheets (empty inputs). That’s not a formula syntax error, but it indicates upstream missing data causing division-by-zero. If you want to ignore errors use IFERROR or AGGREGATE/AVERAGEIF to avoid DIV/0 results.
+
+Sheet2
+- Many student-average formulas (P5:P19 etc) return #DIV/0! because the homework cells C5:L5 etc are empty. Not a formula syntax bug but expected when source cells are blank.
+- Minor: header text typos ("Higest Grade") — not a formula issue.
+
+Sheet3
+- P4, P5, P6, ... P18 (student averages) — multiple incorrect references
+  - Examples of bad formulas:
+    - P4: =AVERAGE(D4,F4,H4,J4,L40)   (L40 is wrong)
+    - P5: =AVERAGE(D5,F5,H5,J5,L41)   (L41 is wrong)
+    - P6: =AVERAGE(D6,F6,H6,J6,L42)   (L42 is wrong)
+    - P7: =AVERAGE(D7,F7,H7,J7,L43)   (L43 is wrong)
+    - ...
+    - P12: =AVERAGE(D12,574,H12,J12,L48)  (contains literal 574 and wrong L48)
+    - P13: =AVERAGE(D13,F13,H13,J13,L49) (L49 wrong)
+    - ... through P18 using L44..L54 erroneously
+  - Problems:
+    - The average formulas are referencing L40-L54 instead of the corresponding L4-L18 cells. These are copy/paste reference shifts (row offsets) and produce incorrect averages or errors.
+    - P12 contains a stray literal (574) inserted into the AVERAGE call — likely a mistaken paste or entry. That also explains the 143.5 value propagated to other sheets (Sheet1 D11 = Sheet3!P12 shows 143.5).
+  - Fix (apply to each student row n = 4..18):
+    - Use: =AVERAGE(Dn,Fn,Hn,Jn,Ln)
+      e.g. P4: =AVERAGE(D4,F4,H4,J4,L4)
+    - Remove the literal 574 in P12 and correct the L reference: P12 should be =AVERAGE(D12,F12,H12,J12,L12)
+
+- P4:P18 MAX/MIN formulas appear fine aside from the averages referencing wrong cells.
+
+- Summary/aggregate rows
+  - Many MAX/MIN/AVERAGE summary formulas reference correct ranges; however they sometimes display #DIV/0! because the underlying ranges are empty or contain DIV/0 errors. Consider protecting aggregate formulas with IFERROR or ignore errors.
+
+Other notes and recommendations
+- Upstream empty cells cause many #DIV/0! results. If input cells are intentionally blank, consider wrapping averages with IFERROR(AVERAGE(...), "") or use AVERAGEIF to avoid DIV/0.
+- Standardize weights: Sheet1 uses 12.5% for homework and 25% for each test/term; ensure all I-column formulas are consistent (I3 was inconsistent).
+- Fix the grade-translation table alignment in Sheet1 (K/L) so VLOOKUP approximate matches behave correctly and thresholds are sorted ascending.
+- Clean up typos in headers ("Sudents", "Studnets", "Higest") for clarity (not functionally required).
+
+If you want, I can:
+- Provide an exact list of every cell that needs formula correction (I can output the corrected formula for each cell).
+- Produce a step-by-step repair plan you can apply (copy/paste corrected formulas).
+Which would you prefer?

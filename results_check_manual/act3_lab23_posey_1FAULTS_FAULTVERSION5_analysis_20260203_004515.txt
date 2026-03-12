@@ -1,0 +1,53 @@
+Summary: the sheet has inconsistent / wrong formulas that make totals, overtime, gross pay and taxes incorrect. Below are the concrete errors and simple fixes.
+
+1) Week 4 (column E) wrong
+- Problem: E7, E8, E9, E10, E11 contain =AVERAGE(Bx:Dx). Week 4 cell should be the actual hours for week 4, not the average of weeks 1–3.
+- Fix: Replace each E cell with the correct week‑4 hours (a number). If you intended a formula, document that intent.  
+- Why: Using AVERAGE hides/changes the real week-4 value and causes totals to be wrong.
+
+2) Weekly totals (column F) inconsistent / missing Week 4
+- Problem: F7:F11 are =SUM(Bx:Dx) (they omit column E). F6 is correct (=SUM(B6:E6)).
+- Fix: Make every F row sum B:E. Example for row 7: F7 = SUM(B7:E7). Apply for all employees (F6:F11).
+- Why: Totals must include all four weeks.
+
+3) Overtime (column G) inconsistent and often incorrect
+- Problem: Some G cells use MAX(Bx-40,0) (only week1), some sum week-by-week MAX for only B:D, one is hard-coded (G11 = 7).
+- Fix (recommended): compute overtime from the employee’s total hours: Gx = MAX(Fx - 40, 0). Example: G6 = MAX(F6-40,0). Replace every G cell with that formula.
+- Alternate if policy is per-week overtime: sum MAX for each weekly column including E: Gx = MAX(Bx-40,0)+MAX(Cx-40,0)+MAX(Dx-40,0)+MAX(Ex-40,0).
+- Why: Current formulas only look at one week or omit a week and produce wrong overtime hours.
+
+4) Gross pay formulas double‑count overtime
+- Problem: C17 etc use (F + G) * rate. If G is overtime already included in F (as it will be when F = total hours), (F+G) double-counts overtime hours.
+- Fix (typical/time-and-a-half overtime): use regular+overtime split:
+  - Method A: C17 = (F6 - G6)*B17 + G6*B17*1.5
+  - Equivalent short form: C17 = F6*B17 + G6*B17*0.5
+  Apply similarly for each employee (C18, C19,...).
+- If overtime is paid at the same rate, simply use C17 = F6 * B17.
+- Why: (F+G)*rate pays overtime twice.
+
+5) Taxes hard-coded / wrong character
+- Problem: D17 is 28.96 entered manually; D20 contains an invalid character “ƒ” so tax is not calculated. Other D cells use =C*0.15 correctly.
+- Fix: Use formula consistently: Dx = Cx * 0.15. Example: D17 = C17*0.15 and D20 = C20*0.15.
+- Why: Hard-coded or non-numeric entries break tax totals and make updates incorrect.
+
+6) Totals / Max rows could be formulas (optional improvement)
+- Problem: B14/C14/D14 show static numbers 44/45/48 instead of formulas.
+- Fix: Replace with formulas so they stay current: B14 = MAX(B6:B11), C14 = MAX(C6:C11), D14 = MAX(D6:D11).
+- Why: Keeps sheet automatic when data changes.
+
+7) Other cascading fixes
+- After fixing E, F and G as above, recalc Gross (C column), Taxes (D), and Net (E) for each row:
+  - Cx = F x * rate + overtime premium (see #4)
+  - Dx = Cx * 0.15
+  - Ex = Cx - Dx
+
+Quick checklist to fix sheet (do in this order):
+1. Replace E7:E11 with the correct week‑4 hour numbers (or clear if unknown).  
+2. Update F6:F11 to =SUM(Bx:Ex) for each employee row.  
+3. Update G6:G11 to =MAX(Fx-40,0) (or per-week alternative if required).  
+4. Replace gross formulas: Cx = F x * rate + overtime premium (suggest Cx = F x * rate + Gx * rate * 0.5 for 1.5x overtime).  
+5. Replace all tax cells Dx with =Cx*0.15 (including D20).  
+6. Recalculate net: Ex = Cx - Dx.  
+7. Optionally change B14:D14 to MAX formulas.
+
+If you want, I can supply the exact formulas for every affected cell (one-by-one) or update the sheet for you—tell me whether overtime is calculated from total hours over 40 or week-by-week, and what overtime pay rate to use (1.5x is assumed above).

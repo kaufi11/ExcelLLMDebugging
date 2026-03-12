@@ -1,0 +1,46 @@
+I scanned Sheet1. Summary of the problems, why they matter, and the fixes (short + concrete):
+
+1) Wrong averaging formula (typo)
+- Problem: I86 is = (E86+G86) / 315 — dividing by 315 is clearly a typo. That makes the "Avg. Savings" for Shipping ~1/157th of what it should be.
+- Fix: Change I86 to =(E86+G86)/2
+- Why: Average = (min + max) / 2. This corrects the wrong Avg value and all subtotals that use it.
+
+2) Inconsistent / ambiguous “Range of Savings” input cells
+- Problem: Several cells labelled "Range of Savings = 16-25%" (C57, C63, C69, C77, C83, C89, etc.) contain different single numbers (some 0.16, some 0.25). That is ambiguous: are these min values, max values, or the user's chosen percent? This causes inconsistent “Your Savings” (K…) results.
+- Fix (pick one clear approach):
+  - Option A (recommended): Create two explicit input columns for each category: "Min %" and "Max %". Use those in formulas:
+    - E = base * Min%
+    - G = base * Max%
+    - I = (E+G)/2
+    - K = base * [UserChosen%] (put UserChosen% in its own cell)
+  - Option B (minimal): If a single cell must represent "Your Savings", rename the cell (or document it) and make all K formulas reference a single "YourSavings" input cell. Make the Min and Max cells explicit and correct (Min=0.16, Max=0.25).
+- Why: Explicit min/max/user inputs remove confusion and prevent inconsistent results across similar rows.
+
+3) Potential divide-by-zero in payback formulas
+- Problem: Payback period cells (C262, E262, G262, I262) divide total capital (B+C) by total annual savings (A). If A = 0 (or blank) you get #DIV/0! or huge numbers.
+- Fix: Wrap with a guard, for example:
+  - =IF(C255>0, ((C257+C258)/C255)*12, "N/A")
+  or
+  - =IFERROR(((C257+C258)/C255)*12, "N/A")
+- Why: Prevents errors and gives a readable result when savings aren't entered.
+
+4) Missing / blank input cells used in calculations
+- Problem examples: C106 (driver rate), C110/C111 (maintenance/fuel), C130 (mean inventory value) and others are blank in the provided extract. Formulas that use these produce 0 or unexpected results.
+- Fix: Enter realistic values for these input cells or add validation to highlight empty required inputs (conditional formatting or an IF to show "Enter value").
+- Why: Accurate inputs are required for meaningful outputs.
+
+5) Minor: inconsistent headers/column layout (possible confusion)
+- Problem: Main calculations use columns E (min), G (max), I (avg), K (your). The SUMMARY section places Min/Max/Avg/Your into C/E/G/I. That is not an error per se, but it’s confusing and easy to mis-reference cells.
+- Fix: Either keep all summaries in the same column pattern (E/G/I/K) or clearly document the mapping at the top of the summary block. Or better, use named ranges (e.g., Min_Savings, Max_Savings) so formulas don’t depend on column layout.
+- Why: Reduces risk of copy/paste or reference mistakes.
+
+Quick actionable checklist you can apply now
+1. Change I86 to =(E86+G86)/2.
+2. Decide how you want to represent ranges (two cells: Min% and Max% + single cell for "Your%") and update the K formulas so they reference the chosen "Your%" input consistently.
+3. Add IF/CHECK to payback formulas to avoid divide-by-zero.
+4. Fill in the missing input values (C106, C110, C111, C130, etc.) or mark them as required.
+5. (Optional) Use named ranges for all key input cells (Rates, #hrs, Min%, Max%, Your%) to reduce future errors.
+
+If you want, I can:
+- Give a small list of exact cells to change to Min%/Max% inputs (and the replacement formulas), or
+- Provide corrected formulas for all average and summary cells (I can generate them here). Which would you prefer?

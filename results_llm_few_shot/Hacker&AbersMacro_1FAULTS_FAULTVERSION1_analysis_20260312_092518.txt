@@ -1,0 +1,43 @@
+I reviewed the workbook and found a few clear errors (easy fixes). Summary first, then short explanations and fixes.
+
+1) Wrong formulas in Database column N (dlnG/dlnr)
+- Problem: Many cells in column N (e.g. N6, N7, N11, N12, …) contain the formula =Tn (they were pasted/copied incorrectly). Column T is the "second Grüneisen parameter", not "dlnG/dlnr", so those N values are incorrect.
+- Why it’s a problem: Wrong physical parameter in the database will propagate to the calculated mineral and rock properties.
+- Fix: Replace the =Tn formulas with the correct source/value. Two practical options:
+  a) If the correct values are in the minerals sheet, set each database N cell to point to that calculated cell, e.g. =minerals!N6 (or the correct row), OR
+  b) Restore the intended formula or constants from your original source (i.e. remove “=Tn” and paste the correct numeric or formula).
+- How to implement (quick): select column N → find & replace (replace “=T” with the correct reference or remove the bad formulas) or re-copy the correct N values from the sheet that calculates dlnG/dlnr.
+
+2) Single-number typo in Database H40 (bulk modulus)
+- Problem: H39 = 125000000000 but H40 = 125000000001 (extra “+1”).
+- Why it’s a problem: Looks like a typo; will cause tiny (but avoidable) inconsistencies in any dependent calculation.
+- Fix: Change H40 to the intended value (likely 125000000000). Edit cell and correct the number.
+
+3) Downward references and circular risk (several cells reference lower rows)
+- Problem: Some formulas reference cells below them (e.g. many Lxx formulas =L29*Hxx/H29 or Hxx = Hyy below, or H8 = H9). That is not an error per se, but it is fragile: if the sheet ordering changes or rows are sorted, it will break or create circular references.
+- Why it’s a problem: Sorting/resorting or inserting rows can break the intended dependency chain; also makes auditing harder.
+- Fix / recommendation:
+  - Wherever possible, use named ranges (e.g. name the canonical reference cell like HBULK or a master table) and refer to that name (safer vs row-dependent formulas), or restructure so calculations flow top→down.
+  - Audit and convert any “reference-to-lower-row” that was intended to be a fixed constant into a direct constant or a named reference.
+
+4) A few suspicious / inconsistent formula texts visible (mechanical copy/paste)
+- Problem: I noticed many cells shown as "FORMULA =Tn", "FORMULA =N9" or constants written with leading "FORMULA =" (looks like an export of formulas rather than cell values). That indicates some cells were pasted as formula text or there was a copy/paste error when assembling the database.
+- Why it’s a problem: These textual formula entries might not evaluate, or may indicate other mis-copies.
+- Fix: Inspect those cells, remove the literal text "FORMULA =" and ensure they contain the intended formula (starting with =) or the intended numeric value. You can use Find (search for the text "FORMULA ") to list them.
+
+Short implementation checklist (practical steps)
+1. In Database sheet:
+   - Filter column N for cells that contain “=T” (or search for “=T”) and correct them (either point to minerals!Nn or paste correct numbers).
+   - Search for the literal text "FORMULA " (Find) and correct those cells to real formulas or numbers.
+   - Correct H40 (change 125000000001 → 125000000000) if that is unintended.
+
+2. Recalculate and verify:
+   - After fixing, run a full recalculation (F9) and check the key outputs in the minerals and rocks sheets (compare before/after).
+   - Spot-check a few dependent values (e.g. rows 6–12) to confirm numbers make sense.
+
+If you want, I can:
+- Give the exact list of cells in column N that are wrong, or
+- Provide the exact replacement formulas referencing minerals!N (I can generate them if you want), or
+- Produce a short VBA macro to find & fix literal "FORMULA " text and the =Tn mis-copies automatically.
+
+Which follow-up would you like?

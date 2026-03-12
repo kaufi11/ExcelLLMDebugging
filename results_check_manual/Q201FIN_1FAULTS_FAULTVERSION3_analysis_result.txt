@@ -1,0 +1,61 @@
+I inspected the formulas in both sheets and found several formula mistakes and inconsistencies. I list them below by severity, show the exact cells/formulas involved, explain the issue and the likely fix, and (where useful) show the numeric impact of the most important fix.
+
+High‑priority (likely incorrect) items
+1) Cell H9 — wrong SUM range
+- Current formula: =SUM(H7:H7)
+- Problem: Only adds H7; should add H7 and H8 (Total revenues). This is the main source of a large downstream error in the H (three-month?) column.
+- Suggested fix: change to =SUM(H7:H8)
+- Impact (if fixed): H9 becomes 62,484 (29318 + 33166). That change cascades:
+  - H20 (Income (loss) from operations) becomes 1,150 (H9 − H18)
+  - H27 (Income (loss) before provision for taxes) becomes 2,114 (SUM(H20:H24))
+  - H33 (Net income (loss)) becomes 1,329 (H27 − H30)
+  - H36 (Diluted EPS) becomes ≈ 0.044646 (H33 / H37)
+  - H39 (Basic EPS) becomes ≈ 0.04762 (H33 / H40)
+  (I calculated these to show the magnitude of the effect.)
+
+2) Cell J17 uses hard-coded constants rather than cell references
+- Current formula: =12615-5000 (gives 7,615)
+- Problem: This subtracts two literal numbers. Everywhere else charges/adjustments are entered directly or by cells. Hard-coded arithmetic like this is fragile and inconsistent; it's unclear where 12,615 and 5,000 come from and whether one of them should be a cell reference (e.g., a column total, a charge cell).
+- Suggested fix: Replace constant arithmetic with references to the source cells (for example =<cell_with_12615> - <cell_with_5000>) or enter the intended amount directly with a comment explaining source. At minimum verify that 12,615 and 5,000 are correct and not meant to be dynamic.
+
+Medium‑priority items (inconsistent ranges / hard-coded denominators)
+3) G13 uses a different SUM range than I13 (Balance Sheet)
+- G13 formula: =SUM(G7:G12)
+- I13 formula: =SUM(I7:I11)
+- Problem: G13 includes G12; G12 is not present in the provided list (blank). I13 sums only I7:I11. This asymmetry is not harmful if G12 is blank, but it is inconsistent and invites future errors if a value is placed in G12 unintentionally.
+- Suggested fix: Make ranges explicit and consistent, e.g. =SUM(G7:G11) and =SUM(I7:I11), or adjust both to intentionally include the same rows.
+
+4) Pro‑forma EPS lines use hard-coded denominators and some manual values
+- Cells: F46 =+F44/32703, J46 =+J44/32761, F52 =+F50/32703, J52 =+J50/32761
+- Cells H46, H52, L46, L52 contain numeric values with no formula (manually typed 0.05 or -0.05).
+- Problems:
+  - Hard-coded denominators (32,703 and 32,761) are used instead of referencing a share-count cell. That makes the formulas brittle.
+  - H46/H52/L46/L52 are manual numbers (no formula) whereas other columns compute the ratio — inconsistent.
+  - It’s unclear what the correct share counts for the pro‑forma denominators should be and why they differ from the weighted average shares shown at F37/H37/J37/L37 and F40/H40/J40/L40.
+- Suggested fix:
+  - Put the pro‑forma weighted average shares in dedicated cells (e.g., a "Pro‑forma diluted shares" cells) and have F46/J46/etc reference them (e.g. =F44/$<cell_proforma_shares>).
+  - Replace H46/H52/L46/L52 with formulas referencing the pro‑forma shares (or explain why those are manual overrides and add a comment).
+  - If the denominators are intentionally different, document their source.
+
+Other points and minor issues
+5) Leading plus signs in formulas (e.g. =+F33/F37)
+- Not an error, just cosmetic. Excel allows the leading + but it's unnecessary and inconsistent (other formulas don't use it).
+
+6) Missing formulas for some Pro‑Forma Net Income cells
+- F44, J44, F50, J50 (Net Income Pro Forma) are hard-coded. This may be intentional (manual adjustments) but check that the adjustments are documented and, if possible, computed by formulas to avoid entry errors.
+
+7) Empty cells in some columns for the same items
+- Example: H17 and L17 are blank while F17 and J17 have values (charge for in-process R&D). Similarly H23 and L23 are blank but F23/J23 are -5000. This may be intentional but verify whether the charge/write-off should appear consistently across columns or only for specific periods.
+
+Summary of recommended corrective actions
+- Correct H9 to =SUM(H7:H8). Then re-evaluate the H column (H20, H27, H33, EPS etc.) — several numbers will change dramatically.
+- Replace the literal subtraction in J17 with references to the correct source cells or document the source of the constants.
+- Consolidate the pro‑forma EPS denominators into reference cells and replace hard-coded denominators and manual entries with formulas pointing to those cells (and document the share counts).
+- Harmonize SUM ranges (G13 vs I13) so they match the intended row set and avoid including blank/extra row by accident.
+- Review blank cells (H17, L17, H23, L23) to confirm those values should be blank and not zero/omitted in error.
+- Optionally: remove leading + signs to keep formula style consistent.
+
+If you want, I can:
+- apply the H9 fix and return all recalculated H‑column values (I already showed the primary recalculated numbers above),
+- propose exact replacement formulas (using reference cells you choose) for the pro‑forma EPS,
+- or scan for other subtle issues if you provide the workbook with full cell contents for all cells I didn’t see (some cells were not listed). Which would you like me to do next?

@@ -1,0 +1,29 @@
+Summary — found 4 problems. Short fixes and explanations below.
+
+1) Wrong average range (mechanical)
+- Error: F56 = AVERAGE(F37:F55) excludes row 36.
+- Why: F36 (Pract.3 for first student in section 2) is left out of the mean.
+- Fix: F56 = AVERAGE(F36:F55)
+
+2) Missing Pract.4 score (data omission)
+- Error: Row 55 has no value in G55 (Pract.4). I55 = SUM(D55:G55) therefore misses that score (=treated as 0).
+- Why: Blank cell makes the student’s total incorrect.
+- Fix: Enter the correct Pract.4 score in G55. If the student missed the pract, enter 0 explicitly and/or mark with a note.
+
+3) Inconsistent / unclear grading thresholds (logic)
+- Error: Some grade IF formulas use >=89.9% while others use >89.9% (and 89.9% is an odd breakpoint).
+- Why: Inconsistency can give different grades for the same percentage at the boundary. 89.9% is ambiguous vs 90%.
+- Fix: Use a single, clear boundary and >= consistently. Example (use for every K cell):
+  =IF(J6>=0.9,"A",IF(J6>=0.8,"B",IF(J6>=0.7,"C",IF(J6>=0.6,"D","F"))))
+  (Adjust J6→J# for each row; use J26 or J56 for the means.)
+
+4) Student ID leading zeros risk (formatting)
+- Error: IDs like 0915 may lose leading zero if stored as numbers.
+- Why: Excel drops leading zeros for numeric format.
+- Fix: Format column C as Text or use a custom number format to preserve leading zeros:
+  - Format Cells → Number tab → Text
+  - or Format Cells → Custom → "0000" (if all IDs are 4 digits)
+
+(Additional note: Totals in column I are described as "Total (w/o A/P)" — attendance H is intentionally excluded from I. If you intended to include attendance/participation, change I formulas to =SUM(D6:G6)+H6.)
+
+If you want, I can give the corrected formulas for every problematic cell (I can paste them out for you).

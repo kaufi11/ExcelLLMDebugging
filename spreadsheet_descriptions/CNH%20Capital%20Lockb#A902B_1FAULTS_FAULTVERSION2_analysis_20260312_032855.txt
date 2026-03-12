@@ -1,0 +1,57 @@
+Sheet name
+- "CNH Capital Homework #2"
+
+Overall layout
+- Columns B and C represent two lockbox locations: Pennsylvania (col B) and California (col C). Column A contains section and row labels. Calculations and model/decision variables occupy rows ~23–61. Objective value is shown in H52.
+
+Input data (top of sheet)
+- Annual lockbox operating costs: fixed costs B5=20,000 (PA), C5=30,000 (CA); processing charge per check B6=0.20, C6=0.30; clearing/processing float B7=1.5 days (PA), C7=1 day (CA).
+- Mail-float matrix (days) from origin regions to each lockbox:
+  - East coast → PA B11=2.3, → CA C11=3
+  - West coast → PA B12=3, → CA C12=2.2
+  - Midwest   → PA B13=3.5, → CA C13=3.2
+- Check origination counts: columns labeled "average daily" (B16) and "yearly checks" (C16)
+  - East: B17=20,000,000 (avg daily?) , C17=2,500,000 (yearly)
+  - West: B18=30,000,000, C18=3,500,000
+  - Midwest: B19=24,000,000, C19=4,500,000
+  (These are raw inputs as provided.)
+- Cost of capital: C21=0.085
+
+Calculated section (A23 onward)
+- Total days float (clearing + mail):
+  - East: B27 = B$7 + B11 ; C27 = C$7 + C11
+  - West: B28 = B$7 + B12 ; C28 = C$7 + C12
+  - Midwest: B29 = B$7 + B13 ; C29 = C$7 + C13
+- Opportunity cost of float (annual):
+  - East: B33 = $C$21 * $B17 * B27 ; C33 = $C$21 * $B17 * C27
+  - West: B34 = $C$21 * $B18 * B28 ; C34 = $C$21 * $B18 * C28
+  - Midwest: B35 = $C$21 * $B19 * B29 ; C35 = $C$21 * $B19 * C29
+  (These use cost of capital times check counts times days of float.)
+- Check processing charge (annual processing cost):
+  - East: B39 = $C17 * B$6 ; C39 = $C17 * C$6
+  - West: B40 = $C18 * B$6 ; C40 = $C18 * C$6
+  - Midwest: B41 = $C19 * B$6 ; C41 = $C19 / C$6  — NOTE: C41 appears to have a typo (division) and likely should be =$C19 * C$6.
+- Combined opportunity + processing costs per region/lockbox:
+  - Rows B45:B47 and C45:C47 use formulas =opportunity_cost + processing_cost (e.g., B45 = B33 + B39).
+
+Optimization model (A49 onward)
+- Decision variables:
+  - Open lockbox j: B53 (PA) and C53 (CA) set to 1/0 (currently both =1).
+  - Assignment matrix (region i → lockbox j): B57:C59 with entries 0/1 (rows = East, West, Midwest).
+- Row (region) constraints: D57–D59 calculate row sums (D57 = SUM(B57:C57) etc). RHS in E57:E59 are all 1 (each region must be assigned to exactly one lockbox).
+- Column (lockbox) constraints:
+  - B60 = SUM(B57:B59) and C60 = SUM(C57:C59) are column assignment totals.
+  - B61 = 3 * B53 and C61 = 3 * C53 (intended RHS so assignments to a lockbox are constrained by whether that lockbox is opened; if open=1 RHS=3 allows up to 3 regions, if 0 prevents assignment). These are prepared as cells for Solver constraints.
+- Objective function (H52):
+  - H52 = SUMPRODUCT(B5:C5, B53:C53) + SUMPRODUCT(B45:C47, B57:C59)
+    - First term: fixed opening costs * open variables.
+    - Second term: sum over regions and lockboxes of (opportunity+processing cost) * assignment variable.
+  - H52 labeled as "Objective Function Value" in row 52.
+
+Key values and issues to note
+- Fixed costs: PA 20,000; CA 30,000.
+- Processing per check: PA $0.20; CA $0.30.
+- Clearing float (processing) days: PA 1.5; CA 1.0.
+- Cost of capital: 8.5% (C21).
+- One apparent formula error: C41 = $C19 / C$6 (division) should probably be multiplication like the other processing-cost formulas.
+- The sheet is set up for Solver/ILP: binary open and assignment variables, objective in H52, with row/column sums and RHS cells prepared for use as constraints.

@@ -1,0 +1,40 @@
+I inspected Sheet1. Main problems, why they matter, and how to fix them (short and simple):
+
+1) Hard-coded value instead of formula
+- Problem: G19 contains =3 (a fixed number).  
+- Why it’s wrong: it won’t update if C19 or E19 change.  
+- Fix: Replace with =C19-E19.  
+- Explanation: Remaining = Allocation − Actual, so it must reference the cells.
+
+2) Using SUM() around a subtraction (odd/inconsistent)
+- Problem examples: G10 =SUM(C10-E10), G13 =SUM(C13-E13), many others.  
+- Why it’s bad: SUM() is meant for ranges or lists; SUM(C10-E10) works because Excel evaluates the subtraction first, but it’s confusing and inconsistent. It can hide intent and cause mistakes later.  
+- Fix: Replace with direct subtraction, e.g. G10 =C10-E10 (and similarly for all G rows).  
+- Explanation: This is clearer and standard: Remaining = Allocation − Actual.
+
+3) SUM(...) with plus signs instead of proper arguments
+- Problem examples: C61 =SUM(C10+C24+C30+C37+C45+C51+C59), E61 =SUM(E10+...).  
+- Why it’s odd: SUM accepts either ranges or comma-separated arguments. SUM(C10+C24+...) works because Excel evaluates the addition first, but it’s unconventional and less readable.  
+- Fix: Use one of:
+  - =SUM(C10,C24,C30,C37,C45,C51,C59)  (preferred), or
+  - =C10+C24+C30+C37+C45+C51+C59
+- Explanation: Makes intent clear and avoids confusion.
+
+4) Possible data/consistency issue: donations
+- Problem: Note (A85) says donations/income = £20,896.08, but C69 shows only -8.  
+- Why it’s a problem: sheet totals (Net expenditure) will be wrong if the larger donation/income is missing.  
+- Fix: Verify source data and correct C69 (and E69 if needed) to reflect the full donation amount (enter as negative number for income, e.g. C69 = -20896.08).  
+- Explanation: If donations are omitted or incorrect, Net expenditure (C71/E71/G71) is incorrect.
+
+5) Blank E (actual) cells are treated as zero
+- Note: Rows where E is blank will make Remaining = Allocation (which may be intended). If actuals exist but are text or formatted wrongly, subtraction will fail.  
+- Action: Ensure E cells are numeric (not text). If you want blanks to show blank rather than allocation, use formula like: =IF(E10="", "", C10-E10).
+
+Quick checklist of actions to apply across the sheet
+- Replace all Gxx formulas written as =SUM(Cxx-Exx) with =Cxx-Exx.
+- Replace any hard-coded G values (like G19 =3) with =Cxx-Exx.
+- Replace SUM(...) that uses + inside with SUM(list) or pure addition.
+- Confirm C69 reflects the full donation amount mentioned in the note.
+- Ensure all E (actual) cells are numeric, not text.
+
+If you want, I can produce a list of exact cells and the exact corrected formula strings ready to paste. Which do you prefer?

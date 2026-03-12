@@ -1,0 +1,35 @@
+I checked the workbook and found the clear formula errors and a couple of risky conventions. Short fixes and explanations below.
+
+1) Big / obvious typo — corrupted exponent and references
+- Faulty cell(s): Q1 (first block), cell F5
+- Error type: Typo / mechanical (incorrect text: "83" and "$F$83")
+- Why it's wrong: The formula contains nonsense references (83 and $F$83) so it doesn't compute the discounted cash flow for period 2.
+- Fix: Replace with the intended formula:
+  = $F$2 / (1 + $J5) ^ $F$1
+- Explanation: This discounts the cashflow in F2 back by the rate in J5 for the period number in F1 (consistent with the other D4:E4:G4 formulas).
+
+2) NPV use / t=0 handling (consistency check)
+- Location: Q1 a-b graph and many NPV rows (e.g. Sheet "Q1 a-b, graph" B7:B27 etc)
+- Issue: NPV(rate, range) in Excel discounts only t=1...n. You must add the t=0 cash flow separately if present.
+- Status in file: Most places do this correctly (NPV(...) + $B$3 or +$B$2). Just be careful — if you ever include t=0 in the NPV(...) range you will double-discount it or produce wrong sign.
+- Recommendation/fix (if needed): Always use NPV(rate, cashflows_from_period1_onwards) + cashflow_at_t0.
+
+3) Sign convention for depreciation / confusing sums (risk)
+- Location: Q2 and WITH DEPRECIATION blocks (e.g. C39 = C49/C38, D44 = $C$39 and then SUM used)
+- Issue: C49 is stored as -200 (project cost), dividing gives C39 = -100. Depreciation is negative in the model, so formulas use SUM(EBITDA, depreciation) instead of EBITDA - depreciation. That works numerically but is confusing and error-prone.
+- Recommendation/fix: Use a consistent convention:
+  - Store depreciation as a positive expense (e.g. C39 = -C49 / C38 → OR better: change C49 to positive 200 and set C39 = C49/C38).
+  - Then compute EBT explicitly: EBT = EBITDA - Depreciation (not SUM).
+- Why: Clear sign convention avoids accidental double negatives and makes formulas easier to audit.
+
+4) IRR multiple-solution risk (conceptual)
+- Location: Q1 and Q1 c-d blocks where cashflow signs change
+- Note: When cashflows change sign more than once IRR may have multiple roots or none. Excel's IRR returns one root (depends on guess). This is not a spreadsheet error but a mathematical property — use NPV profile or choose NPV rule.
+- Recommendation: Use NPV curve (NPV at different discount rates) or XIRR with a carefully selected guess, and report multiple possible IRRs if they exist.
+
+Summary of action items (what to change now)
+- Fix the corrupted formula in F5 to = $F$2/(1+$J5)^$F$1.
+- Standardize sign conventions (make depreciation a positive expense and subtract it explicitly) to reduce risk.
+- Continue to use NPV(rate, future_range) + t0 for full NPV and avoid including t0 inside the NPV() range.
+
+If you want, I can produce a corrected list of exact cell formulas for the affected ranges (F4:G5 etc.) or give a short script of Find/Replace patterns to correct similar typos. Which would you prefer?

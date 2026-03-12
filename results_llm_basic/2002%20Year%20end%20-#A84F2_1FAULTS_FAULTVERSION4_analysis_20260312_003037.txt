@@ -1,0 +1,47 @@
+I examined the file you gave and found a few clear errors that will cause wrong or inconsistent numbers. Short summary first, then exact fixes and why.
+
+Summary of the problems (short)
+- Balance sheet: E29 (Accumulated funds, 2001) is a hard‑coded number instead of linking to Note 8 total (E330). This breaks the link between the notes and the balance sheet.
+- Cash flow: C121 uses literal numbers (and the wrong one) instead of referencing C120, producing an off‑by‑1 and sign confusion. This will make operating cash wrong.
+- Five year review: several cells are hard‑coded instead of linking to the Financial Statements sheet (example C15, C16, C23, C24). That causes the review to not update when the financials change.
+- Several similar places use ad‑hoc arithmetic strings (e.g. E79 = 476555.8+3116.33) or literal numbers instead of proper cell references/SUM ranges — these are fragile and cause auditability / update errors.
+
+Exact items, why they are wrong and how to fix (very short & actionable)
+
+1) E29 (Balance sheet — Accumulated funds, 2001)
+- Problem: E29 contains the value 690869 entered directly instead of a formula. The notes calculate closing accumulated funds at E330 (SUM of note 8 lines). If the note changes E29 will not update.
+- Fix: Replace the hard value in E29 with =E330 (or =’Financial Statements’!E330 if you are editing from another sheet). That way the balance sheet value always equals the notes total.
+- Why: Consistency. Balance sheet line items must reference the detailed note totals so changes flow through.
+
+2) C121 (Cash paid to suppliers and employees)
+- Problem: C121 is set as =-26907-7561074 (literal numbers). C120 is 7,561,073 (cash received). The formula uses 7,561,074 (one too many) and uses literals instead of cell references → causes an incorrect sign/value and makes reconciliation brittle.
+- Fix: Replace C121 with a clear formula that references the source cells. Example:
+  - If the payments that make up this number are in specific cells, use =-SUM(range_of_payments). Or, to keep current logic, use =-C120 - 26907 (if 26,907 is genuine). Better: replace the two literals with references: =-(C37 + C78 + …) or =-SUM(C37:C91) as appropriate for your model.
+- Why: Using cell references ensures numbers update and avoids off‑by‑one and sign mistakes.
+
+3) Five Year Review: hard‑coded values (example C15, C16, others)
+- Problem: C15 (2002 subscriptions) is a fixed number 7,321,786 instead of =’Financial Statements’!C54; C16 (other income) is fixed instead of =’Financial Statements’!C61; C23 (tangible assets) uses =’Financial Statements’!C14 (that one is OK) but several other lines use hard numbers rather than links.
+- Fix: Replace hard numbers with formulas pointing to the Financial Statements sheet:
+  - C15 → =’Financial Statements’!C54
+  - C16 → =’Financial Statements’!C61
+  - C24 → =’Financial Statements’!C15
+  - C28 etc. — audit the sheet and change any hard-coded item that should come from Financial Statements to direct references.
+- Why: Keeps the five-year review automatically in sync with the primary statements and prevents reconciliation differences.
+
+4) Fragile arithmetic expressions and inconsistent formula style
+- Problem: Many cells use ad‑hoc sums written as "476555.8+3116.33" or many single-cell formulas typed as plain numbers with plus signs. Those are error-prone and hard to audit.
+- Fix: Replace those with SUM formulas across the actual cells (e.g. =SUM(E73:E76) or =SUM(E79:E91) depending on the items). Use consistent formulas rather than typing numbers into formulas.
+- Why: Easier auditing, fewer transcription mistakes, clear precedents/dependents.
+
+General recommendation to find other hidden problems
+- Use Excel’s Trace Precedents / Trace Dependents for key totals (Total assets, Total equity & liabilities, Net cash) and look for hard‑coded numbers in the precedent chain.
+- After fixing the references above, check that:
+  - Total assets (C23) = Total equity & liabilities (C42). If not, follow the precedent trace to find the mismatch.
+  - Cash at end (C147) reconciles to the sum of cash components (C532).
+- Convert ad‑hoc arithmetic strings into SUMs and replace manual numbers with sheet links.
+
+If you want, I can:
+- produce the exact correction formulas for specific cells you want me to change (tell me which ones), or
+- prepare a step‑by‑step list of cells to replace with correct formulas and the exact formula text to paste into Excel.
+
+Which would you prefer?

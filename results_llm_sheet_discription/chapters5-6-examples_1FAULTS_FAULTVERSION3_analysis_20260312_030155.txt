@@ -1,0 +1,47 @@
+Summary — I found several formula mistakes (wrong cell references and 1 wrong formula type). Below are the errors, why they are wrong, and the exact fixes.
+
+1) Sheet3 — Total Revenue is wrong
+- Problem: C24 = SUM(J5:J10)*31 (multiplies sum of demands by 31). That does not use prices and yields an incorrect revenue.
+- Fix: use SUMPRODUCT(demand, price) like on the pricing sheet.
+- Correct formula: =SUMPRODUCT(J5:J10,K5:K10)
+- Why: Revenue = sum over periods (demand × price). SUMPRODUCT is the correct aggregation.
+
+2) Sheet2 — Overtime cost formulas reference wrong parameter cells
+- Problem: E16..E20 point to Sheet1!B24, B25, B26, B27, B28 (wrong cells) instead of the overtime cost cell (Sheet1!B23). Only E15 is correct.
+- Symptoms: overtime cost values in period rows are wrong/garbled.
+- Fix: change all E15:E20 to multiply by the overtime cost Sheet1!$B$23.
+- Correct formulas:
+  - E15: =E5*Sheet1!$B$23
+  - E16: =E6*Sheet1!$B$23
+  - E17: =E7*Sheet1!$B$23
+  - E18: =E8*Sheet1!$B$23
+  - E19: =E9*Sheet1!$B$23
+  - E20: =E10*Sheet1!$B$23
+- Why: overtime costs should use the single parameter cell Sheet1!$B$23 (overtime $/hour).
+
+3) Sheet3 — Hiring cost rows reference the wrong sheet (Sheet2)
+- Problem: B15..B20 use Sheet2!B5..B10 in their formulas (e.g. =Sheet1!$B$19*Sheet2!B5). That makes hiring cost use the # hired from Sheet2 instead of the # hired in Sheet3.
+- Fix: point those formulas to the Sheet3 hiring cells (or use the local B cells).
+- Correct formulas (example pattern):
+  - B15: =Sheet1!$B$19 * B5
+  - B16: =Sheet1!$B$19 * B6
+  - B17: =Sheet1!$B$19 * B7
+  - B18: =Sheet1!$B$19 * B8
+  - B19: =Sheet1!$B$19 * B9
+  - B20: =Sheet1!$B$19 * B10
+- Why: each period’s hiring cost must use the number hired in the same sheet/period.
+
+4) Sheet3 — Inventory cost for period 2 is a hard-coded constant
+- Problem: F16 = 534*Sheet1!$B$17 (uses “534” constant instead of the F6 cell).
+- Fix: use the sheet’s F6 cell.
+- Correct formula: =F6*Sheet1!$B$17
+- Why: inventory cost must be Inventory_this_period × holding_cost_per_unit.
+
+5) General / housekeeping suggestions
+- Use absolute references for parameters (Sheet1!$B$16:$B$24) consistently to avoid accidental shifts when copying formulas.
+- Scan each sheet for other accidental references to Sheet2 or hard-coded numbers — the pattern above (wrong sheet / wrong parameter offsets) repeats and is the likely cause of other hidden errors.
+- After fixing, recalc totals: check Total Cost and Profit to confirm numbers are logical.
+
+If you want, I can:
+- Provide a small list of exact Find/Replace operations to apply in Excel (e.g., replace "Sheet2!" with "Sheet3!" in specific cells), or
+- Generate the corrected formulas for every affected cell ready for copy/paste.

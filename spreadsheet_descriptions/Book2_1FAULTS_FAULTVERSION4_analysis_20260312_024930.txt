@@ -1,0 +1,24 @@
+Spreadsheet: sheet "total (2)"
+
+Layout and contents (concise)
+- Header: B1 = "Homework". Row 2 labels homework columns: B2..K2 = 2,3,...,11. L2 = "total", M2 = "average".
+- Rows 3–45: one record per row. Column A = ID (numeric). Columns B–K = homework scores (numeric, some cells blank). Column L (per row) contains FORMULA =SUM(Bn:Kn). Column M (per row) contains an average formula; most rows use =Ln/10 but M3 is =L3/944 (likely a typo).
+- Row 47: A47 = "average". B47..K47 = FORMULA =AVERAGE(B3:B45) etc.; L47 = AVERAGE(L3:L45); M47 = AVERAGE(M3:M45). These compute column-wise averages across the student rows.
+
+Key formulas and behaviors
+- Per-row total: L3:L45 = SUM(Bn:Kn). SUM treats blanks as zero; missing scores reduce totals.
+- Per-row average: most are Ln/10 (assumes 10 homeworks). M3 = L3/944 is inconsistent and appears incorrect.
+- Column averages: row 47 uses AVERAGE on each score column and on totals/averages.
+
+Data quality / potential issues (important)
+- Inconsistent/missing score entries in many rows (some rows omit certain homework cells). SUM will still run but totals and fixed-divisor averages will be biased.
+- Per-row average uses a fixed divisor (10) even when some homework cells are blank; this can understate averages for partially entered rows.
+- M3 uses /944 — almost certainly an error.
+- Some rows show values only in C, D, etc., while B is blank; check alignment and intended columns.
+
+Suggested fixes (brief)
+- Replace per-row average with =AVERAGE(Bn:Kn) or =IF(COUNT(Bn:Kn)=0,"",L n/COUNT(Bn:Kn)) to ignore blanks.
+- Correct M3 to match other rows (e.g., =L3/10 or =AVERAGE(B3:K3)).
+- Audit rows with many blanks to confirm whether missing scores are intentional or misaligned.
+
+If you want, I can: (a) list all rows with missing homework cells, (b) fix the M3 typo and convert all per-row averages to AVERAGE(B:K), or (c) compute current totals/averages. Which would you like?

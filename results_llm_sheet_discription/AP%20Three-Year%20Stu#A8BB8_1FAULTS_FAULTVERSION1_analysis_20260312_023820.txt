@@ -1,0 +1,26 @@
+Summary — what’s wrong
+- Row 10 (Total Exams for the Richmond County block) contains at least two errors:
+  1. F10 is =SUM(F6:F9) — it excludes the Grade‑5 row (F5), so the total is too small.
+  2. AI10 is a hardcoded 19 instead of summing the grade rows; it should be a SUM of AI5:AI9.
+- There may be other Total Exams cells with similar mistakes (wrong ranges or hardcoded values). Example: E11 (=SUM(E5:E7)) looks suspicious because it only sums three grade rows instead of five.
+
+Why this is a problem
+- Excluding grade rows or using hardcoded totals causes wrong Total Exams counts. That in turn makes % of Grades 3+ and Mean Grade incorrect for those columns (percentages and means use the totals as denominators).
+
+How to fix (quick steps)
+1. Correct the formulas:
+   - Change F10 to =SUM(F5:F9)
+   - Change AI10 to =SUM(AI5:AI9)
+   - If E11 should be a total of grades 5→1 change it to =SUM(E5:E9) (verify the intended purpose of row11 before changing).
+2. Check for other mismatches:
+   - Turn on Show Formulas (Ctrl+`) and visually scan row(s) labelled “Total Exams” for inconsistent ranges or hardcoded numbers.
+   - Or use a quick audit row: in a blank row enter =SUM(C5:C9)-C10 in the column beside each total, then fill right. Any non‑zero result flags a mismatch.
+3. After fixing totals, recalculate or recheck the % of Grades 3+ and Mean Grade rows (they may need to be re-entered or will update automatically if they reference the corrected totals).
+
+Optional improvement (prevents future errors)
+- Replace dispersed hardcoded totals with a single consistent formula pattern (copy the correct SUM for one column, then Fill Right).
+- Add an audit column with =IF(SUM(rangeGrades)=TotalCell,"OK","Mismatch") so errors are highlighted automatically.
+
+If you want, I can:
+- Produce the exact list of every Total Exams cell that currently differs from SUM(its five grade rows), or
+- Give the single formula you can place in row 10 and fill right that always sums the five rows above. Which would you prefer?

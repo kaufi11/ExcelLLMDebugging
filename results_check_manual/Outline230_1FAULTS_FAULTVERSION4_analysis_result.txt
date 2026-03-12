@@ -1,0 +1,29 @@
+I inspected the formulas in both sheets and found one clear formula error plus several inconsistencies / fragile places and some stylistic oddities that could cause maintenance mistakes later. Summary with locations, effects and recommended fixes:
+
+1) Incorrect (broken) day-number in Sheet1 — D34
+- What I found: D33 = 25 (formula =1+D32). D34 has formula "=2" (hard-coded), then D35 uses "=1+D34" so the sequence restarts at 2 instead of continuing.
+- Effect: all subsequent "#CL" values after row 34 are shifted (count restarts), so the day-count / class number series is wrong from row 34 onward.
+- Fix: replace D34 with the intended incremental formula, e.g. =1+D33 (or set to the correct number such as 26 if that was intended).
+
+2) Duplicate totals and fragile cross-sheet link
+- What I found: Sheet1!J65 is calculated =SUM(J8:J64). Sheet1!J67 contains the same total value (700) entered manually. Sheet1!J68 =+J67-J65 (shows difference).
+- Effect: Manually duplicating the total in J67 is fragile — if J65 changes and J67 is not updated the difference in J68 would show non-zero. Currently they match so no error, but it's a risk.
+- Fix: Remove the manual total in J67 and have J68 reference only J65 (or compute any checks directly from J65). e.g. delete J67 and set J68 =0 or remove J68, or change J68 to =0 (if intended as sanity check) or =Sheet1!J65-Sheet2!D23 (if comparing sheets).
+
+3) Style / consistency issues (not errors but worth cleaning)
+- Many formulas use an unnecessary leading plus-sign (e.g. "=+B2*C2", "=+D2+D3", "=+J67-J65"). Excel accepts this but it's unusual and can confuse readers. Recommend using e.g. =B2*C2, =D2+D3, =J67-J65.
+- The date increment technique uses =1+C9 etc. This works if the C cells are true date serials; if any date cell is text the addition can break. Consider DATE or serial arithmetic only if cells are real dates.
+- Some cells (D10:D15, D16 etc) are formulas referencing blank B/C rows and return 0. If these are placeholders that's fine; if not, consider clearing or documenting them.
+
+4) Sheet2 checks / ranges
+- D23 =SUM(D2:D22) — that sum includes many zero-formula rows (D10:D15 etc). If those rows are intended placeholders OK; otherwise you might want to tighten the range to only the populated rows (e.g. D2:D9).
+- D24 references Sheet1!J65 (=+Sheet1!J65) and D25 calculates the difference (D23-D24). That is a reasonable cross-check, but because Sheet1 also contains a manual duplicate total (J67) this check can be confusing. Keep D24/D25 but remove the manual duplicate on Sheet1.
+
+5) Minor: inconsistent manual vs formula inputs
+- Several rows mix manual values and increment formulas for dates and class numbers (some rows set the date manually and others use =1+prior). This is fine but makes the sheet slightly fragile. If you consistently want automatic sequences, convert every start-of-week row to formulas that reference the prior date.
+
+If you want I can:
+- Produce a short list of exact replacement formulas to repair D34 and clean up J67/J68.
+- Produce a cleaned-up version of both sheets (remove leading '+' signs, make incremental formulas consistent, tighten SUM ranges) and return the corrected formulas.
+
+Which would you prefer?

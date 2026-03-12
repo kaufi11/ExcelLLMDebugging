@@ -1,0 +1,52 @@
+I reviewed the workbook and found the main formula errors and risky formulas that will give wrong totals or break when values change. Below are the problems, why they matter, and simple fixes.
+
+1) Municipal sheet — wrong cell reference
+- Problem: Municipal!F5 is set to =E6 (Hatboro Recommend points to Hatfield Request).
+- Why it matters: Duplicate/replaced value (two recommends use E6) and Municipal total (F22) is wrong.
+- Fix: Change Municipal!F5 to =E5.
+- Explanation: Each "Recommend" cell that should equal the request must reference the same row's Request (E#). =E6 is a typo.
+
+2) AHTF sheet — recommend subtotals/range error
+- Problem: AHTF!F14 is =SUM(F3:F13). That excludes F2 (Canus) and any other relevant recommend values in F2 and lower rows.
+- Why it matters: The AHTF recommended subtotal (F14) is missing items → downstream totals (F18, Total AHTF) are wrong.
+- Fix: Change AHTF!F14 to =SUM(F2:F13) (or to the exact full range of recommend cells you intend to total).
+- Explanation: The subtotal must include all recommend cells in the block; the current formula starts at row 3 by mistake.
+
+3) AHTF sheet — non-numeric / text in Recommend column
+- Problem: AHTF!F10 contains text "Pending Feasibility Study".
+- Why it matters: Text entries are ignored by SUM and can hide the fact you intentionally left an amount out — totals may not match expectations.
+- Fixes (choose one):
+  - Replace the text with a numeric value (e.g., 0 or the recommended amount) if you want it included in sums; or
+  - Leave blank and document separately; or
+  - Use a comment/adjacent cell for status text instead of placing text in the numeric column.
+- Explanation: Numeric columns should hold numbers only. If you need a status, put it in another column to avoid breaking calculations or misleading totals.
+
+4) AHTF sheet — missing recommend values
+- Problem: AHTF!F2 (Canus) is blank while E2 = 1000000.
+- Why it matters: Blank recommend causes subtotal and final recommended totals to be understated.
+- Fix: Enter the intended recommended amount in F2 (or 0 if none).
+- Explanation: If many "Recommend" cells are purposely left blank, the totals will not equal requests — fill them consistently.
+
+5) AHTF Continuum-of-Care match uses a hard-coded number
+- Problem: AHTF!E16 and F16 are =2432890*0.15 (hard-coded 2,432,890).
+- Why it matters: If the base number changes, the match won't update automatically.
+- Fix: Replace with a cell reference, e.g. =E14*0.15 (if 2,432,890 is the value in E14) or reference the actual total cell that should determine the 15%.
+- Explanation: Always reference the source cell so percentages stay dynamic.
+
+6) Totals that aggregate other sheet totals — verify ranges
+- Items to check: County!E13 =SUM(E9:E12) depends on the 3 other sheet totals. After you fix the Municipal and AHTF recommends, verify:
+  - Municipal!F22 =SUM(F2:F21)
+  - Non Profit and Rehab totals
+  - AHTF totals (E14, F14, E18, F18)
+  - HOME!E11 (and AHTF E19) feeding AHTF totals
+- Fix: After making the corrections above, recalc and confirm the higher-level totals match expectations.
+
+Quick checklist you can apply now
+- Fix Municipal!F5 → =E5.
+- Fix AHTF!F14 → =SUM(F2:F13) (or correct full range).
+- Remove text from numeric Recommend cells (AHTF!F10) or move it to another column.
+- Enter missing recommend values (AHTF!F2 or others intentionally blank).
+- Replace hard-coded multiplier (AHTF!E16/F16) with a reference like =E14*0.15 (confirm which cell holds the base).
+- Recalculate and verify all summary totals (Municipal!F22, AHTF!F18, County!E13, etc.).
+
+If you want, I can provide the exact corrected formulas for every affected cell and a short macro to find other numeric columns containing non-numeric text. Which would you prefer?

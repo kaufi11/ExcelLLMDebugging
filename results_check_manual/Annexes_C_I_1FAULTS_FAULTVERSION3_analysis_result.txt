@@ -1,0 +1,45 @@
+I inspected the formulas in the workbook you supplied and found a few real formula errors and a number of inconsistent / fragile formulas (likely copy/paste or numbering artifacts). Below I list the issues I think you should correct or review, with suggested fixes.
+
+1) Wrong cell reference (likely a copy/paste error)
+- Cell: Annex F!K68
+- Current formula: =K48
+- Why it's a problem: K68 is the "Variance as % of original forecast" for "Total Funds". It should calculate J68/H68 (like the other percent cells), not simply mirror K48.
+- Suggested fix: =IF(H68=0,"N/A",(J68/H68)*100)
+
+2) Fragile / inconsistent row-numbering formulas (references to missing/blank cells)
+- Example (most obvious): Annex E!B25 has formula =B24+1 but there is no B24 on that sheet (B24 is blank/not present). Excel will treat a blank as zero (so you get 1) but this is fragile and makes the sequence unpredictable if rows are inserted or removed.
+- Other places use the same pattern (B formulas that chain =previous+1). This pattern is brittle because several of the "previous" cells are blank or suppressed by layout. It is not an error per se, but it is an inconsistency and can lead to incorrect numbering if the sheet layout changes.
+- Suggested fix: Either hard-code the row numbers where you want them, or use a robust formula such as =ROW()-<offset> (if you want sequential numeric IDs) or point the +1 formulas to a guaranteed-existing cell.
+
+3) Summation of implicit ranges including blank/unexpected cells (possible intention mismatch)
+- Cell: Annex I!H27
+- Current formula: =SUM(H10:H26)
+- Why it's a problem: In Annex I the meaningful inputs are H11 and H14 (and perhaps a few other specific lines). Summing H10:H26 will include any blank or unintended entries between those rows and can hide omission of specific add-backs.
+- Suggested fix: Make the intended components explicit, e.g. =SUM(H11,H14,H20,H23) (use actual cells that should be included). That makes the model auditable and robust.
+
+4) Reconciliation formulas referencing specific asset lines — check intent
+- Cells: Annex G!T26 and Annex G!T49
+- Current formulas:
+  - T26 = T19-('annex f'!H20+'annex f'!H21)
+  - T49 = T42-('annex f'!I20+'annex f'!I21)
+- Notes: These subtract annex f H20 (Investments) + H21 (Cash at Bank/in Hand) — that matches the worksheet note "cash as in balance sheet inc short term investments". Functionally this is reasonable, but it's worth confirming whether you intended to use the individual lines (Investments + Cash) or the Total Current Assets (annex f H22). If the reconciliation should include other short-term items (e.g., bursary sub-balances), consider using a more explicit sum or the appropriate "Total" cell in Annex F.
+- Suggested check: Confirm that H20 + H21 (and I20 + I21) are the intended balance sheet lines to reconcile to T19 / T42, otherwise use the total current-assets cell (annex f!H22 / annex f!I22) or the explicit cells that represent "cash + short-term investments".
+
+5) Occasional totals that are single-column rather than full-row totals
+- Example: Annex G!T18 is =H18 (balance b/f) rather than a SUM(H18:S18). That is probably intentional (only August balance b/f is expected), but it is a pattern repeated in a few places (e.g., T41 = H41). If you intend every "Total" column (T) to be the sum across months, these single-column assignments are inconsistent.
+- Suggested check: Verify per-row whether T should be SUM(H:S) or just the August value; make them consistent.
+
+6) Percent formulas and text headers
+- Many percent cells use IF(Hx=0,"N/A",(Jx/Hx)*100). That is fine. Note however some header cells contain text like "£3000" (e.g., H6 in Annex E is textual unit header). Those are header cells and not referenced by percent formulas in the same rows, so no direct error — but be careful not to reference such textual header cells in numeric IF tests or divisions (they would not equal zero and could cause a #DIV/0! or #VALUE! depending on the operation).
+
+Summary / priorities
+- Fix Annex F!K68 (definite incorrect reference).
+- Clean up the fragile B-number sequencing formulas (e.g. Annex E!B25) so numbering is stable.
+- Make the Annex I underlying-surplus sum explicit (Annex I!H27).
+- Review Annex G reconciliation formulas (T26/T49) to ensure they reference the intended balance-sheet lines (H20+H21 vs H22 etc).
+- Optionally review the "Total" (T) cells that are single-column copies rather than SUMs across months and make them consistent with your intended layout.
+
+If you want, I can:
+- produce corrected formulas for every affected cell,
+- scan and list every cell that uses "=previous+1" and flag which "previous" references are blank,
+- or open and apply the fixes and return the corrected workbook. Which would you like me to do next?

@@ -1,0 +1,36 @@
+Summary of errors found
+1) Sheet "2000" — wrong formula in B19:
+   - Current: B19 = B15 + 579
+   - Problem: +579 is almost certainly a typo. It jumps the schedule by ~1.6 years and breaks every downstream date (B23, B27, …).
+2) Sheet "1999" — incorrect start date in B7:
+   - Current: B7 = 2000-08-22 00:00:00 (a year 2000 date on the 1999 sheet)
+   - Problem: inconsistent with sheet name and will make all formula-driven dates wrong for 1999.
+
+Why these are errors (short)
+- The sheets use small increments (+1, +2, +4, +5) to step between class days. A +579 or a wrong year in the seed cell breaks the whole chain because later rows are computed from these cells.
+
+How to fix (step‑by‑step, simple)
+1) Fix the B19 typo on sheet "2000"
+   - Replace the formula in B19 with the intended small increment. Based on the pattern around it, set:
+     B19 = B15 + 4
+   - How: select B19, enter =B15+4, press Enter.
+   - Result: B23 (=B19+2), B27 (=B23+1), etc. will return to the intended calendar sequence.
+
+2) Fix the start date on sheet "1999"
+   - Replace B7 with the correct 1999 start date. If you want the same weekday pattern as the 2000 sheet (Tuesday start), a likely correct value is:
+     B7 = 1999-08-24 00:00:00
+   - How: select B7, type the correct date (or use =DATE(1999,8,24)), press Enter.
+   - If you have a different official semester start date, use that instead — the important point is the year must be 1999 (not 2000).
+
+Quick checks after fixing
+- Verify B11 = B7+2 and B15 = B11+1 give sensible dates (Thursday, Friday following B7).
+- On "2000", confirm B19 is only 4 days after B15 and B23 = B19+2 etc.
+- Check a few later computed dates (B31, B39, B79) to ensure the pattern is restored.
+
+Optional clean-up tips
+- Format column B consistently as Date (no time), or use INT(cell) to strip the time if you prefer plain dates.
+- To avoid future accidental large jumps, consider using named constants or helper column that stores the weekday increment (1/2/4) and calculate next date as previous + increment, which makes mistakes easier to spot.
+
+If you want, I can:
+- Provide the corrected exact dates for the entire "2000" sheet after changing B19 to =B15+4, or
+- Produce a list of all date cells with their current formulas so you can audit them.

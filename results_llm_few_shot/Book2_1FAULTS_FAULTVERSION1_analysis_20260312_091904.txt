@@ -1,0 +1,23 @@
+Summary — main errors found
+1) Many row averages (column M) are calculated as Lx/10 (SUM divided by 10). That forces blank/missing scores (empty cells) to be treated as zeros and gives wrong averages when not all 10 scores exist.  
+2) One clear typo: M42 uses =L42/347 instead of dividing by the number of scores.  
+3) Several rows have missing score cells (examples: row 4 missing E4 and J4; row 11 missing H11; row 25 missing B25; row 27 missing B27; row 28 missing H28 and K28; row 45 missing B45, G45, etc.). Those blanks make the L (=SUM) lower and the fixed /10 average incorrect.
+
+Quick fixes (recommended)
+- Replace the hard-coded Lx/10 averages with a real average function. Put this in M3 and fill down:
+  =AVERAGE(B3:K3)
+  This ignores blanks and calculates the average of only entered scores.
+- Fix the typo in M42 specifically (change =L42/347 to =AVERAGE(B42:K42) or =L42/COUNT(B42:K42)).
+- (Optional) If you want to keep the L = SUM approach but still compute average correctly, use:
+  =IF(COUNT(B3:K3)=0,"",L3/COUNT(B3:K3))
+  This divides by the actual number of numeric scores and leaves cells blank if no scores exist.
+
+Why these fixes work (short)
+- AVERAGE(range) automatically ignores empty cells and non-numeric entries, so blanks are not counted as zeros. That gives a true average of entered scores.  
+- Using COUNT(range) with SUM divides by the actual number of numeric entries (same effect).  
+- Correcting the /347 typo fixes the single-cell error giving an obviously wrong result.
+
+Extra suggestion
+- Highlight missing cells so you can decide whether they should be zeros or were missed data entries: Home → Conditional Formatting → New Rule → “Format only cells that contain” → Cell Value = blank. Or use COUNT to see how many scores each row has: put =COUNT(B3:K3) in a helper column.
+
+If you want, I can give the exact formulas to paste (for M3:M45 and a helper count column) or list the rows with missing cells precisely. Which would you prefer?

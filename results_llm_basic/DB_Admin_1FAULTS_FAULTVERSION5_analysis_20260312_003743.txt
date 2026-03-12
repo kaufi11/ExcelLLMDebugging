@@ -1,0 +1,43 @@
+Summary of the problem
+- Many L-cells on Ap1 / Ap2 / Ap3 reference the wrong Rating-cell on the Rate sheet. These are copy/paste offset errors so the numbers that feed the Summary are wrong.
+- One hard-coded value: Ap3!L20 = 5 (should be a formula like the other proficiency cells).
+
+Why that breaks things
+- Each Bxx on the Ap sheets is a description taken from Rate!G11:G20. The matching score must come from the same row in column E (Rate!E11:E20). Wrong E-row references mean wrong weighted scores, so Summary totals are incorrect.
+
+Exact fixes (replace the formulas below into the named cells)
+
+Ap1
+- L19 (was referencing Rate!E14): 
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 (was referencing Rate!E17): 
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (was referencing Rate!E18): 
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap2
+- L19:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap3
+- L19:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L20 (replace the hard-coded 5):
+  =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+- L32:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+How to verify
+- Change one Rate!E cell (for example Rate!E16 from 100 to 200) and confirm the corresponding Ap L-cell and Summary number update accordingly.
+- Scan Ap sheets for any other cells where the Rate!E index does not match the Rate!G index on the same row — fix with the same pattern.
+
+Optional improvement (prevents this class of errors)
+- Instead of hard-coded Rate!E11/E12... use a single lookup: place the key label (e.g. the text from Rate!Gxx) in Ap, then use INDEX/MATCH or VLOOKUP to fetch the matching Rate!E value. That makes the formula resilient to moved rows and copy/paste mistakes.
+
+If you want, I can give the INDEX/MATCH version to replace all L formulas so they automatically find the correct Rate!E row.

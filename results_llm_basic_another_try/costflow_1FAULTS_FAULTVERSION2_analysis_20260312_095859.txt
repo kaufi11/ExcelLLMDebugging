@@ -1,0 +1,48 @@
+### Error Found:
+In the **"Errors"** sheet, cells **B12, D12, F12** (Cost of Goods Sold for Year 1) use the formula `=SUM(B10:B11)`, `=SUM(D10:D11)`, and `=SUM(F10:F11)` respectively, but **B11, D11, F11 are negative numbers** (ending inventory is subtracted). Using `SUM` here adds the negative ending inventory, which is correct mathematically, but the negative sign is already in the cell, so the formula is correct.
+
+However, the issue is in **cell B12, D12, F12**: the formula is `=SUM(B10:B11)` which sums Goods Available for Sale (positive) and Ending Inventory (negative), resulting in Cost of Goods Sold (COGS). This is correct.
+
+But in **Year 2**, in cells **B27, D27, F27** (Beginning Inventory for Year 2), the formula is `=-B11`, `=-D11`, `=-F11`. Since B11, D11, F11 are negative (ending inventory), negating them gives a positive beginning inventory for Year 2, which is correct.
+
+**No formula error here.**
+
+---
+
+### Actual Error:
+
+In the **"Valuing Ending Inventory"** sheet:
+
+- **Cell I11** formula: `= -I10 - SUM(C17:C18)` is incorrect.
+
+  Explanation:
+  - I10 is total units available for sale.
+  - C17 and C18 are negative sales units (e.g., -4000, -7000).
+  - The formula `= -I10 - SUM(C17:C18)` effectively subtracts a negative number, which adds sales units instead of subtracting them from inventory.
+  
+- This causes the **Ending Inventory units (I11)** to be incorrect (likely negative or too large).
+
+---
+
+### Solution:
+
+Change the formula in **I11** to:
+
+```excel
+= I10 + SUM(C17:C18)
+```
+
+Explanation:
+
+- I10 = units available for sale (positive)
+- C17 and C18 = negative sales units
+- Adding the negative sales units reduces the inventory correctly.
+
+---
+
+### Summary:
+
+- **Error:** Ending Inventory units formula in I11 incorrectly negates I10 and sums sales, causing wrong ending inventory units.
+- **Fix:** Change `= -I10 - SUM(C17:C18)` to `= I10 + SUM(C17:C18)` to correctly calculate ending inventory units.
+
+This correction ensures inventory units are properly reduced by sales, reflecting accurate ending inventory.

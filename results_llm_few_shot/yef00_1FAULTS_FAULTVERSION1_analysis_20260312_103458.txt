@@ -1,0 +1,49 @@
+I reviewed the workbook and found several clear formula/data mistakes. Short, direct list of faulty cells, what’s wrong, and how to fix each.
+
+1) Sheet "Revenues by Source"
+- Faulty: C9 — shows "9432730+111410104"
+  - Error: Unintended arithmetic string (two numbers left as an expression). That produces a value but is likely wrong data-entry (and hard to audit).
+  - Fix: Replace with the correct single value (either the numeric total 120,842,834 or, if you intended a formula, use =9432730+111410104). Better: enter the validated dollar amount (e.g., 120842834).
+  - Why: Mixing two numbers in one cell looks accidental and makes totals and audits confusing.
+
+- Faulty: C11 — shows "141577402+1"
+  - Error: stray "+1" adds one dollar to that line and to totals.
+  - Fix: Replace with 141577402 (or remove the +1 so it is =141577402).
+  - Why: That extra 1 shifts totals and percentage shares.
+
+(Also check B15 and C15 totals after these fixes — they reference C9:C14 and will change once C9/C11 are corrected.)
+
+2) Sheet "General State Financial Aid"
+- Faulty: B21 — shows "3684419+1"
+  - Error: stray "+1" again, adding one dollar to that line and to the totals.
+  - Fix: Replace with 3684419 (remove the +1).
+  - Why: One-dollar offset breaks exact totals and percentage columns (C9:C23).
+
+3) Sheet "FTEE Calculation"
+- Faulty: F14 — formula is =+E14*600
+  - Error: Multiplying by 600 instead of dividing. All other F-row formulas use =E#/600 to convert hours to FTEE; this single cell is reversed and will be wildly wrong.
+  - Fix: Change to =E14/600
+  - Why: Consistency with other rows and correct unit conversion.
+
+- Faulty: E27 — formula is =SUM(E11:E26)+1
+  - Error: stray "+1" adds one to the non-credit hours total.
+  - Fix: Change to =SUM(E11:E26)
+  - Why: That extra 1 distorts totals and any shares that use this total.
+
+- Additional check: Several row formulas reference totals without absolute references (e.g., I11 uses $H$27 — good). Confirm any intended absolute references are used consistently. (I noticed most I-row formulas use $H$27 correctly.)
+
+4) General / housekeeping issues (not necessarily errors but worth fixing)
+- Many SUM ranges end at row +1 beyond last data (e.g., SUM(C9:C14) when last populated row is C13). This is harmless but makes auditing confusing. Adjust ranges to the precise data area or use dynamic ranges / Table objects.
+- Several formulas show a leading plus sign (e.g., =+C9/$C$15). That’s harmless but unnecessary; you can remove the leading + for readability.
+- After correcting the numeric/formula errors above, re-check:
+  - All totals (C15, C19, C15 on categories, B25, B27, H27) equal the expected grand totals.
+  - Percentage columns (B9:B14, B9:B18, B9:B14, C9:C23, I11:I26) sum to 1 (or 100%) within rounding.
+
+Quick summary of repairs to paste in Excel:
+- Revenues!C9 → 120842834 (or =9432730+111410104 if you want the formula)
+- Revenues!C11 → 141577402
+- General State Financial Aid!B21 → 3684419
+- FTEE Calculation!F14 → =E14/600
+- FTEE Calculation!E27 → =SUM(E11:E26)
+
+After making these corrections: recalc the workbook and verify the percentage columns (format as %). If anything still looks off, tell me which sheet and I’ll check the dependent formulas/rows.

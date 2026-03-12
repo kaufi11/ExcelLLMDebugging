@@ -1,0 +1,26 @@
+Summary of errors
+- KauCC cell E20 uses =COUNT(C20:D20) instead of summing the two values. COUNT returns the number of numeric cells (2), not their total (112). This makes the row total incorrect.
+- In every sheet the grand total in E29 is =SUM(C29:D29). That computes C29 + D29 (summing the column totals) and will hide any row-level errors in column E (like the COUNT error above). It’s safer and more logical to make E29 sum the row totals (E10:E28).
+
+What to fix (quick)
+1. On KauCC, change E20 to:
+   =SUM(C20:D20)
+2. On every sheet, change the grand total (E29) to:
+   =SUM(E10:E28)
+
+Why these fixes
+- COUNT counts how many numeric cells are in the range (gives 2), while SUM adds their values. Use SUM when you want the total.
+- Using E29 =SUM(E10:E28) ensures the grand total is the sum of the per-row totals. That will reveal any incorrect per-row formulas and is the correct aggregation method.
+
+How to apply (step-by-step)
+- Fix the KauCC row:
+  - Select KauCC!E20, type =SUM(C20:D20), press Enter.
+- Fix the grand totals on each sheet:
+  - Select E29, replace =SUM(C29:D29) with =SUM(E10:E28), press Enter.
+  - Copy that E29 formula to the other sheets (or edit each sheet similarly).
+
+Quick checks to find similar mistakes
+- Press Ctrl+` to view formulas on the sheet and scan column E for any different formulas (COUNT, hard-coded values, etc.).
+- Use Find (Ctrl+F) to search for "=COUNT(" to catch accidental uses of COUNT instead of SUM.
+
+That will correct the incorrect row total and make the workbook’s totals reliable and consistent.

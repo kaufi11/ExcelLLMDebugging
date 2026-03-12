@@ -1,0 +1,45 @@
+I looked through Table 22. I found three classes of problems: one wrong cell reference (a real formula bug), lots of misplaced numbers in spacer/blank columns (data-entry/alignment issues), and a repeated but poor-use formula pattern. Below are the problems, why they matter, and exactly how to fix them.
+
+1) Wrong cell reference (formula bug)
+- Problem cell: AC26 (Health & Public Affairs, Upper‑level "Other" % for 2000).
+- Current formula: =SUM(100-(S26+U27+W26+Y26+AA26))
+- Why it’s wrong: it includes U27 instead of U26, so the "Other" percent for 2000 uses a value from the next row (1999). That gives a wrong result.
+- Fix: replace with either
+  - =100-SUM(S26,U26,W26,Y26,AA26)
+  or
+  - =100-(S26+U26+W26+Y26+AA26)
+- Explanation: use U26 (same row) and prefer 100-SUM(...) for clarity.
+
+2) Misplaced / stray values in spacer columns (data alignment errors)
+- Where: Several rows have numbers in the columns used as visual spacers between percentage columns (columns F, H, Z, etc.). Examples from the sheet: F18, H18, F19, H19, F20, H20, H10, H14, Z22, Z23 (and possibly others).
+- Why it’s a problem: those columns are not included in the formulas (the formulas use only E,G,I,K,M and S,U,W,Y,AA). The stray numbers therefore are either:
+  - duplicates that cause confusion, or
+  - data entered into the wrong column so the intended numbers are not used in calculations.
+  Either case can produce wrong-looking results or misinterpretation.
+- Fix:
+  - Inspect each stray cell (F18, H18, etc.). If the value belongs in an adjacent percent column (E/G/I/K/M or S/U/W/Y/AA), cut and paste it to the correct cell in the same row. If the value is a duplicate or stray, delete it.
+  - After cleanup, double-check the O (Other) and AC (Other upper-level) cells recalculate correctly.
+- Explanation: the table uses every-other-column for percentages (spacing). Enter data only in the designated percentage columns. Remove everything from spacer columns.
+
+3) Unnecessary use of SUM around a single arithmetic expression
+- Example repeated pattern: O6: =SUM(100-(E6+G6+I6+K6+M6))
+- Why it’s suboptimal: SUM(…) around a single number/expression is redundant and can hide errors. It’s better and clearer to write the expression directly or use SUM for the items being added.
+- Recommended replacements (pick one style and apply consistently):
+  - =100-SUM(E6,G6,I6,K6,M6)     (preferred)
+  - or =100-(E6+G6+I6+K6+M6)
+- Explanation: these are clearer, less error-prone, and easier to audit.
+
+4) Suggested improvements to totals (avoid missing items)
+- Current total formulas use explicit addition of individual cells, e.g. Q30 =Q26+Q22+Q18+Q14+Q10+Q6
+- Recommendation: use SUM(...) or a contiguous SUM range where appropriate, e.g.
+  - =SUM(Q6,Q10,Q14,Q18,Q22,Q26)
+  - or if rows are contiguous for the group, =SUM(Q6:Q26) (only if that range contains exactly the cells you want).
+- Explanation: SUM is easier to read and less likely to miss a term or include the wrong row.
+
+Other notes
+- Text entries like "n/appl" are fine visually but are text (not numbers). They will not be included in numeric calculations. That’s OK if intended, but be aware.
+- After making the fixes, recalc the sheet and spot-check a few totals and "Other" percentages to ensure everything sums to 100 (or to expected totals).
+
+If you want, I can:
+- Give a list of all specific stray cells detected and a suggested action for each (move/delete), or
+- Provide the exact corrected formulas for a block of rows (you can paste them back into your sheet).

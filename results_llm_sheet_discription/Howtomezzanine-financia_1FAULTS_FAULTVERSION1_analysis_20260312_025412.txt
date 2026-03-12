@@ -1,0 +1,27 @@
+Summary — I found two clear spreadsheet errors that will skew totals, plus one smaller fix/recommendation. Fix those three and the model will calculate correctly.
+
+1) Wrong cell reference in H12 (per‑sq‑ft column)
+- Problem: H12 is set to = $C13/$C$5 (it points to the Rates row) instead of the Basic Rent amount in C12. That shifts the whole H-column total down one row and makes H29/H37 (per‑sq‑ft totals) incorrect.
+- Effect: per‑sq‑ft “Basic Rent” is wrong and all H‑column sums and downstream results that use them are wrong.
+- Fix: change H12 to:
+  = $C$12 / $C$5
+- After this, recalc and check H29 and H37 — they should update correctly.
+
+2) Incorrect total in C37 (TOTAL CHARGE)
+- Problem: C37 currently = SUM(C12:C35) * 0.9. There is no input telling the model to multiply the raw costs by 0.9, so this artificially reduces the unadjusted cost total by 10%.
+- Effect: C37 under‑states total costs by 10% and makes F37 and all revenue/profit/break‑even numbers wrong.
+- Fix: replace C37 with the plain sum of costs:
+  = SUM(C12:C35)
+
+3) Incorrect / awkward calculation of F37 (adjusted total)
+- Problem: F37 = C37 + SUMPRODUCT(C12:C35, F12:F35). With the original buggy C37 (the 0.9), this formula produces a wrong total. Even once C37 is fixed, the formula is OK but clearer and less error‑prone if written as a single SUMPRODUCT.
+- Recommended fix (use one clear formula):
+  = SUMPRODUCT(C12:C35, 1 + F12:F35)
+  (Or keep F37 = C37 + SUMPRODUCT(C12:C35, F12:F35) once C37 is corrected.)
+- Why: the SUMPRODUCT version directly computes SUM(C*(1+F)) which is exactly “cost plus each line’s markup”.
+
+Quick additional recommendation
+- Scan column H for any other off‑by‑one references (H13, H14 etc.) — you had one misaligned cell; others sometimes happen. Use the Formula Auditing / Trace Dependents tool or check that each H-row formula references the same row in column C (e.g. H14 = $C$14/$C$5, etc.).
+- Optional tidy: make the absolute refs consistent ($C$5 and $C$8 etc.) so formulas don’t break if copied.
+
+If you want, I can give you the exact list of cells to change (with step‑by‑step Replace actions) or produce corrected formulas for a few other suspicious rows.

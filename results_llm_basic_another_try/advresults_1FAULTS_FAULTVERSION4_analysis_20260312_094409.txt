@@ -1,0 +1,44 @@
+Errors found:
+
+1. In "Pre-Teen (10-12)" sheet:
+   - RANK ranges for places are inconsistent:
+     - E2 uses =RANK(D2,D2:D16) (correct for 15 contestants)
+     - J2 uses =RANK(I2,I2:I15) (only 14 contestants, should be I2:I16)
+   - L2 uses =RANK(K2,K2:K13,1) but data goes to row 16, so range should be K2:K16.
+   - In K column, many formulas like K41: =SUM(F41,68,J41) have a hardcoded number 68 instead of H41. This is an error.
+
+2. In "Junior (13-15)" sheet:
+   - L2 uses =RANK(K2,K2:K5,1) but data goes to row 30, so range should be K2:K30.
+
+3. In "Senior (16-24)" sheet:
+   - L2 uses =RANK(K2,K2:K8,1) but data goes to row 30, so range should be K2:K30.
+
+4. In "College" sheet:
+   - K2 uses =RANK(J2,J2:J2,1) which ranks only one cell, should be J2:J25.
+   - K3 uses =RANK(J3,J2:J6,1) but data goes to row 25, should be J2:J25.
+   - Columns are shifted: Modeling Score is in C, but RANK formulas reference C2:C25 correctly, so no error here.
+   - RANK ranges for places are inconsistent but mostly correct except for K column.
+
+Summary of main errors:
+- RANK ranges for places and final places are too small, not covering all contestants.
+- Hardcoded numbers in SUM formulas instead of cell references (e.g., 68 instead of H41).
+- Inconsistent ranges in RANK formulas for places.
+
+Solutions:
+1. Fix RANK ranges to cover all contestants:
+   - Pre-Teen: E2:E16 =RANK(D2,D$2:D$16), J2:J16 =RANK(I2,I$2:I$16), L2:L16 =RANK(K2,K$2:K$16,1)
+   - Junior: L2:L30 =RANK(K2,K$2:K$30,1)
+   - Senior: L2:L30 =RANK(K2,K$2:K$30,1)
+   - College: K2:K25 =RANK(J2,J$2:J$25,1)
+
+2. Replace hardcoded numbers in SUM formulas with correct cell references:
+   - For example, change =SUM(F41,68,J41) to =SUM(F41,H41,J41).
+
+3. Use absolute references for ranges in RANK formulas to allow copying down without errors.
+
+Explanation:
+- RANK function needs the full range of contestants to rank correctly.
+- Hardcoded numbers cause incorrect total points.
+- Absolute ranges prevent errors when copying formulas.
+
+This will ensure accurate ranking and total points calculation.

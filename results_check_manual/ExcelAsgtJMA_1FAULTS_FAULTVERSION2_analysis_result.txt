@@ -1,0 +1,26 @@
+I reviewed the formulas in Sheet1. No #REF or parse errors are present, but there are clear inconsistencies and at least one incorrect formula that will produce wrong results if the sheet is edited later. Summary and recommended fixes below.
+
+Problems found
+1. Wrong/wide ranges in the "Points" column (C9:C24)
+   - Each Points cell uses =SUM(Dn:CCn) (e.g. C9 =SUM(D9:CC9)). That references column CC (far to the right) instead of the intended I column. Currently this returns the same result because columns beyond I are empty, but it is incorrect and fragile — if any data is ever entered in columns J–CC it will be included unexpectedly.
+2. Wrong function in row 19 (King)
+   - C19 is =COUNT(D19:CC19) instead of SUM. COUNT returns the number of nonblank numeric cells (value 6), not the sum of the point values. That makes C19 = 6 and B19 = 6/100 = 0.06, which is incorrect for this student.
+3. Unnecessary use of SUM in the Grade % column (B9:B24)
+   - Each grade percent uses =SUM(Cn/$C$6). Wrapping the simple division in SUM is unnecessary. It doesn’t produce an error now, but is inconsistent and harder to read.
+
+Recommended corrections
+1. Fix the Points formulas to sum only D:I for all students:
+   - C9:C24 should be =SUM(D9:I9), =SUM(D10:I10), … , =SUM(D24:I24) respectively.
+   - Example: replace C9 =SUM(D9:CC9) with C9 =SUM(D9:I9).
+2. Fix row 19 to use SUM (and correct range) instead of COUNT:
+   - Change C19 from =COUNT(D19:CC19) to =SUM(D19:I19).
+3. (Optional but recommended) Simplify the Grade % formulas to remove the SUM wrapper:
+   - B9:B24 change from =SUM(Cn/$C$6) to =Cn/$C$6.
+   - Example: change B9 from =SUM(C9/$C$6) to =C9/$C$6.
+
+Notes / rationale
+- C6 =SUM(D6:I6) is correct and $C$6 is used correctly as an absolute reference in the B formulas.
+- If you expect any additional graded columns to be added later, adjust the ranges consistently (for example change the header total formula and student sums to include the new columns, and use the same range everywhere).
+- After making the above fixes, re-check a few sample rows to ensure Bn = Cn / 100 yields the expected percentages.
+
+If you want, I can provide the exact set of replacement formulas for every affected cell (C9:C24 and B9:B24) in one list you can paste into the workbook.

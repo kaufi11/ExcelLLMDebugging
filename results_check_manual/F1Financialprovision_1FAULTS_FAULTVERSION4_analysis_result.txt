@@ -1,0 +1,17 @@
+I inspected the formulas in the workbook you supplied and found no broken formulas (#REF, #DIV/0, etc.) or range-mismatch errors. There is, however, one clear inconsistency that you should review and a couple of general suggestions.
+
+1) Hard-coded value in a column of sums
+- Cell: B Direct Payments sheet — I11
+- Current content: value 3 with formula =3 (constant)
+- Why it's an issue: Every other cell in column I (I10, I12–I14) is a formula that sums F:H for the same row (e.g. I10 uses =SUM(F10:H10)). I11 being a hard-coded constant breaks the consistent structure (and the audit trail) — it will still be included by I15 (=SUM(I10:I14)), but it is not calculated the same way as the other row totals.
+- Suggested fix: If the value in I11 should reflect the sum of the "Value of Payments" age bands F11:H11, replace the constant with =SUM(F11:H11). If the 3 is intentionally manual and not derived from F–H, document why it is an exception.
+
+2) Notes / small observations (not errors but worth checking)
+- Many displayed zeros are the result of SUM formulas over empty ranges (for example B14 =SUM(B8:B13), C14, etc.). This is normal but confirm that those input cells were intended to be blank.
+- Consistency / protection: consider protecting cells that are supposed to be formula-only (like row totals) to avoid accidental overwrites with constants (as happened in I11).
+- Label clarity: some header label cells (e.g., A6/C6/D6 and D20/E20) are truncated/incomplete strings like "Details of ", "Amount of ". This is not a formula error but may be confusing to users.
+
+Summary
+- No broken/bad formulas found.
+- One inconsistency: I11 (sheet "B Direct Payments") is hard-coded (=3) whereas analogous cells are formulas; replace with =SUM(F11:H11) if appropriate, or document why it is a manual override.
+- Consider protecting formula cells to prevent future accidental overwrites.

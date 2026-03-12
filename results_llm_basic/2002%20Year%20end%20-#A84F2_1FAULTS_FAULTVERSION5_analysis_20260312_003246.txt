@@ -1,0 +1,57 @@
+I reviewed the workbook and found the main mistakes and a few design/consistency problems that will give wrong numbers or cause confusion. Short summary, then exact fixes and why.
+
+Top problems (what’s wrong)
+1) Five Year Review (2002 column) is pulling 2001 cells
+   - Example: Five Year Review C15 (Member and student subscriptions — 2002) uses ='Financial Statements'!E54 (that is the 2001 subscriptions) instead of the 2002 figure.
+   - Same for C16 (Other) which uses ='Financial Statements'!E61 (2001) instead of the 2002 cell.
+   - Consequence: the five-year summary shows wrong values for 2002 (it shows prior-year numbers).
+
+2) Hard‑coded / inconsistent linking in Five Year Review
+   - C28 (Capital and reserves for 2002) is a hard number (1822009) rather than linking to the Balance Sheet 'Financial Statements'!C28.
+   - Many other five-year cells should be driven by the Financial Statements sheet but are either hard-coded or referencing wrong columns.
+
+3) Suspicious / error‑prone formulas in the cash flow / operating section
+   - C121 (Cash paid to suppliers and employees) is written as =-26907-7561074 (a manual arithmetic expression that mixes a constant and another big value). This is confusing and easy to get wrong; it appears to duplicate the receipts line so the signs and components are hard to audit.
+   - As a result, the derived cell C122 (Cash applied/generated) is produced indirectly by combining C120 and C121 — hard to follow and error prone.
+
+4) Inconsistent / unclear references (design issue that leads to errors)
+   - Several summary cells in the balance sheet and notes reference cells from the same sheet that are calculated later (e.g. C29 = +C330). That can work in Excel but is confusing and invites circular-reference mistakes if later edits are made.
+   - Several places use typed arithmetic inside formulas (e.g. =103735.39+26083.05+11314.95) instead of summing the source line items — harder to audit.
+
+What to do (fixes) — short and exact
+1) Fix Five Year Review 2002 cell references
+   - Change Five Year Review C15 to: ='Financial Statements'!C54
+   - Change Five Year Review C16 to: ='Financial Statements'!C61
+   - For consistency, change other 2002 cells in the Five Year Review to reference the 2002 columns on the Financial Statements sheet (use 'Financial Statements'!C... not E...).
+
+   Why: The Five Year Review 2002 column must use the 2002 source cells (column C) on the Financial Statements sheet. Using the E (2001) cells gave last year’s numbers instead.
+
+2) Replace hard-coded totals with links
+   - Change Five Year Review C28 to: ='Financial Statements'!C28 (and similar for any other totals that are hard-coded).
+   - Confirm all five-year totals are linked to their corresponding Financial Statements cells (2002 → column C, 2001 → column E, etc.).
+
+   Why: Linking keeps the summary consistent and prevents manual-entry errors when the Financial Statements are updated.
+
+3) Make cash-flow components explicit and sign-consistent
+   - Replace C121 with a clear formula that sums the actual payment components (for example =-SUM(range_of_payment_items) ). If the payments aren’t broken out on the sheet, enter the payments as a single negative value but keep it as a single cell representing “cash paid” (not a mixed arithmetic expression).
+   - Ensure C122 = C120 + C121 (or explicit =SUM(C120,C121)) so the net is obvious.
+
+   Why: Explicit component summing (and consistent signs: receipts positive, payments negative) avoids hidden arithmetic and makes reconciliation auditable.
+
+4) Improve referencing clarity in notes and balance sheet
+   - Avoid referencing summary totals that are themselves sums of the very lines displayed earlier (for readability). For example: show the closing accumulated funds line as a direct link to the Notes total (OK to link) but avoid using sums that will be edited later; alternatively, compute the note totals from the same line items used in the Balance Sheet so both come from a single source.
+   - Replace typed arithmetic additions inside cells (e.g. =103735.39+26083.05+11314.95) with =SUM(cells) that contain the components.
+
+   Why: Cleaner references prevent accidental double-counting or broken formulas when rows / line items move.
+
+Quick checklist you can run now
+- In Five Year Review change all C‑column formulas to point to 'Financial Statements'!Cxx (not Exx).
+- Replace any hard-coded summary figures with direct links to the Financial Statements sheet.
+- On Cash Flow sheet, replace C121 with a single clear payment cell (negative) or =-SUM(payment elements).
+- Scan for any formulas that contain explicit arithmetic of numbers (e.g. +103735.39+...) and convert them to SUM over the component cells.
+
+If you want, I can:
+- Give the exact formula replacements for every affected Five Year Review cell (I already flagged C15 & C16 and C28; I can list all).
+- Fix the Cash Flow formulas and show the corrected reconciliations step by step.
+
+Which would you like me to do next?

@@ -1,0 +1,31 @@
+Findings (brief)
+- There is a clear formula error at Sheet1!AC8. Its formula is listed as:
+  AC8: =AB8*$AB$33
+  All other AC cells use division (e.g. AC3 = AB3/$AB$33). AC8 should be a division too.
+
+Why it's wrong
+- AC is "Fract %" (fraction percentage). It must be AB8 divided by the class maximum $AB$33.
+- Multiplying AB8 by $AB$33 (46 * 75 = 3450) produces a huge outlier that will:
+  - Break column AC values
+  - Skew AC averages/medians (AC35 / AC36)
+  - Propagate wrong summaries on Sheet3/Sheet4/Sheet2/Sheet5 that use that average
+
+Fix (one-step)
+- Replace the formula in AC8 with:
+  =AB8/$AB$33
+
+What to do after fix
+- Recalculate (Excel does this automatically if calculation is automatic). Check:
+  - AC8 changes from 3450 to 46/75 = 0.613333...
+  - AC35 (AVERAGE) and AC36 (MEDIAN) update
+  - Any summary cells and sheets using the AC average will update correctly
+
+How to prevent/finding similar errors (quick tips)
+- Filter or conditional format column AC for values >1 (or >100% if formatted as %). Any such cell is suspicious.
+- Use Show Formulas (Ctrl+`) and scan AC3:AC32 for inconsistent formula patterns.
+- Search for "*" in formulas in percentage columns to catch accidental multiplications.
+- Optionally use a helper formula to check pattern consistency, e.g. in a spare column:
+  =IF(FORMULATEXT(AC3)=SUBSTITUTE(FORMULATEXT(AC4),ROW(AC4)-ROW(AC3),ROW(AC3)-ROW(AC3)),"OK","Check")
+  (or simply visually compare formulas in the column).
+
+If you want, I can list any other cells whose formulas deviate from the column pattern or give exact before/after expected averages impacted by this fix.

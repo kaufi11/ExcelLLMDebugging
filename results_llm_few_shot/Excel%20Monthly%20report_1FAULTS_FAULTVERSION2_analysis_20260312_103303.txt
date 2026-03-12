@@ -1,0 +1,38 @@
+Summary — what’s wrong
+- Many daily cells (E9:M39 and similar) contain SUM formulas that point to a single cell or to the cell immediately to the left (for example E9 =SUM(E42), F9 =SUM(E9), G9 =SUM(F9), …). That creates a horizontal cascade instead of summing the vertical column or showing a real value.
+- The totals row (row 40) also cascades: F40 =SUM(E40), G40 =SUM(F40) … instead of summing each column’s daily values.
+- One odd formula: L19 =COUNT(K19) — probably a copy/paste error (COUNT on another column instead of summing or containing a value).
+
+Why it’s wrong (brief)
+- Those formulas don’t sum the column’s daily data; they either reference the wrong single cell or create a chain of dependencies. Totals therefore are incorrect (or circular) and won’t reflect actual category totals.
+
+How to fix (simple & safe)
+1. Restore daily data cells (rows 9:39)
+   - If each cell should be a data entry (counts per day/category), replace the formulas in D9:M39 with the actual numbers (clear the formula and type/ paste the value).
+   - If those cells should sum a vertical source range, change each formula to sum that vertical range in the same column (example: for column E day cells that sum sub-rows 42:50, use =SUM(E42:E50) — do not reference the left-hand cell).
+
+2. Fix the totals row (row 40)
+   - Replace the cascading formulas with proper column sums. Use these formulas in row 40:
+     - D40 =SUM(D9:D39)
+     - E40 =SUM(E9:E39)
+     - F40 =SUM(F9:F39)
+     - … continue through …
+     - M40 =SUM(M9:M39)
+
+3. Fix the stray COUNT
+   - If L19 is supposed to be a daily value, enter that value or the correct formula. If it was meant to be part of the totals, remove the COUNT and ensure L40 =SUM(L9:L39).
+   - Example: change L19 from =COUNT(K19) to the correct formula/value; ensure L40 =SUM(L9:L39).
+
+Quick examples to copy-paste
+- D40: =SUM(D9:D39)
+- E40: =SUM(E9:E39)
+- F40: =SUM(F9:F39)
+- L40: =SUM(L9:L39)
+(Repeat pattern for columns G–M.)
+
+Why this solves it
+- Summing the vertical range (e.g., E9:E39) gives the real total of that category for the month. Removing formulas that reference the left-hand cell stops the cascading errors and avoids accidental circular or single-cell sums.
+
+If you want, I can:
+- Produce the exact corrected formulas for every erroneous cell (D9:M39 and D40:M40), or
+- Fix the sheet if you paste the actual values/source ranges for those daily cells.

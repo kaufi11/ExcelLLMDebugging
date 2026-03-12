@@ -1,0 +1,39 @@
+Summary of errors
+1) Wrong multiplier (major error)
+- EER SITE cell G21 (Functional Analyst, Senior) has formula =F21*1.56935229331187 instead of the standard *1.04. That produces a huge, incorrect jump for Year 5 (and H21 will also be wrong because it depends on G21).
+
+2) Potential/secondary issues that can cause confusion
+- Many B cells contain the text "added 8/02". Those are not numeric Year‑1 rates (intentional), but if someone tries to copy the Year2 formula pattern blindly they may overwrite or get errors.
+- The two sheets are not identical row‑by‑row (some job rows are ordered differently). That is not an Excel formula bug but can break lookups/comparisons if you expect identical layouts.
+
+How to fix (short, step‑by‑step)
+1) Fix the single bad cell now
+- Go to sheet EER SITE, cell G21 and replace the formula with:
+  =F21*1.04
+  or better (uses the escalation cell C21):
+  =F21*(1+$C21)
+- Press Enter. H21 will recalculate correctly if it is =G21*1.04.
+
+2) Standardize formulas so errors don’t recur
+- For rows that have a numeric Year‑1 rate in column B:
+  - Put in column D (Year2): =B6*(1+$C6) and copy that formula right through E–H (Excel will chain correctly if you copy methodically: D uses B, E uses D, etc., or use relative references).
+- For rows that start in D (rows where B is text/blank because “added 8/02”):
+  - Leave D as the entered Year2 value, and in E enter =D*(1+$C#) and copy to F–H.
+- If you want a single formula approach for rows with B present, you can use:
+  D6: =IF(ISNUMBER($B6), $B6*(1+$C6), "") and then for E–H:
+  E6: =IF(D6="","", D6*(1+$C6)) and copy right.
+
+3) Quickly find other anomalies
+- Use Ctrl+F to look for "1.569" (or any multiplier that is not 1.04) or search for formulas that do not contain "1.04".
+- Or: Home → Find & Select → Go To Special → Formulas and inspect formulas in D:H for unexpected constants.
+
+Why this fixes it (simple)
+- Replacing 1.569… with 1.04 restores the intended 4% annual compounding.
+- Using (1+$C#) ties the escalation to column C so if escalation changes you only change one number and all years update.
+- Using IF checks prevents overwriting rows that legitimately start in Year2 (the "added 8/02" rows).
+
+Anything else to check
+- If you rely on identical layouts between EER SITE and GOVT SITE (for VLOOKUPs or comparisons), align the rows or use a unique ID instead of row positions.
+- Consider moving the “added 8/02” note into a separate Remarks column so column B stays numeric for all rows.
+
+If you want, I can give the exact formulas to paste for the whole block (D6:H68) depending on whether you want to preserve the manual D values for the added rows or replace them with formulas. Which option do you prefer?

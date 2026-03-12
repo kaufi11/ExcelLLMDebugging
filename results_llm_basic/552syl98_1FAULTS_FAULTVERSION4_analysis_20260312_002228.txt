@@ -1,0 +1,24 @@
+Summary of errors I found
+1) Cell B33 has a typo: formula is =B30+904. That should be =B30+7. Adding 904 adds 904 days (Excel treats dates as serial numbers), so every date after B33 is shifted far into the future. This is the primary functional error.  
+2) Row-6/Row-7 URLs are unintentionally duplicated across dozens of columns (G6:IV6, G7:IV7). That looks like an accidental fill/copy and is likely unnecessary.  
+3) A7 vs G7 contain two different spellings of the same site (~puenvhyd vs ~puevnhyd) — an inconsistent URL / probable typo.  
+4) Many formulas use the redundant "=+Bxx+2" syntax. It's not an error (Excel accepts it) but is inconsistent and can be cleaned up.
+
+How to fix (quick steps)
+1) Fix the date typo:
+   - Edit B33 and change the formula to =B30+7 then press Enter.
+   - After that, recalc/drag-fill B34:B59 (or the affected range) so all downstream dates use the corrected values.
+
+Why this fixes it: Excel stores dates as numbers. =B30+904 added 904 days. Changing to +7 adds the intended one week (7 days), restoring the schedule pattern; dependent formulas that reference B33 (like B36, B39, etc.) will then return correct dates.
+
+2) Clean up the duplicate URLs:
+   - If you only need the URL in A6/A7, clear the contents of the extra cells (select G6:IV6 and G7:IV7 and Delete).
+   - If you intended a single consistent URL, choose the correct spelling (e.g., ~puenvhyd) and replace the misspelled one (use Find & Replace or correct A7/G7).
+
+3) Optional cleanup (cosmetic):
+   - Replace "=+Bxx+2" with the simpler "=Bxx+2" if you want consistent formulas. Select the range and use Find ="+=" to replace? (Or use a macro / manual edit — not required for correctness.)
+
+One-line alternative approach (if you want a systematic schedule):
+- Keep the first date in B12 and use formulas of +2 for the next class and +7 for the next-week same-day rows. After fixing B33, copy the correct pattern downward to ensure consistency.
+
+If you want, I can give the exact list of cells that will change after fixing B33 or provide the corrected formulas to paste into the range.

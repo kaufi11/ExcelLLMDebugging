@@ -1,0 +1,24 @@
+I inspected the formulas in all three sheets. Overall the SUM formulas are consistent; I found one clear formula error that propagates to totals in the Fall 2002 sheet. Details and recommended fix below.
+
+Problem (Fall 2002 sheet)
+- Cell H14 contains the formula =COUNT(H10:H13).  
+  - This returns 4 (the count of non-empty cells) but the cell is intended to be a subtotal of dollar amounts.
+  - Expected formula: =SUM(H10:H13)
+
+Propagation (consequences of the COUNT error)
+- H21 uses =SUM(H14,H20). Because H14=4, H21 = 4 + 398 = 402 (incorrect). The intended resident per-credit total should be H14 (subtotal state components) + H20 (subtotal local fees).
+- H25 uses =SUM(H21:H24). Because H21 is wrong, H25 (total non-resident rate/credit hour) is also incorrect.
+
+Corrected values (using the numeric data present in the sheet)
+- Correct H14 = SUM(H10:H13) = 4391.26 + 46.4 + 48.8 + 219.555 = 4706.015 (displayed/rounded in other sheets as 4706.01).
+- Correct H21 = SUM(H14,H20) = 4706.015 + 398 = 5104.015 (≈ 5104.01).
+- Correct H25 = SUM(H21:H24) = 5104.015 + 8367.89 + 418.39 = 13890.295 (≈ 13890.29).
+
+Recommendation
+- Replace =COUNT(H10:H13) in Fall 2002!H14 with =SUM(H10:H13). After that the dependent totals (H21, H25) will recalculate to the expected amounts.
+- (Optional) Check numeric formatting/rounding if you want the cells to show two decimals consistently.
+
+Other observations
+- I did not find other formula errors (SUM formulas use ranges or explicit cell arguments consistently). Minor rounding/last-digit differences appear between sheets (e.g., 5227.77 vs 5227.76) but those are data/value differences, not formula mistakes.
+
+If you want, I can produce a corrected copy of the Fall 2002 sheet (or of the whole workbook) with that one formula fixed and the recalculated totals included.

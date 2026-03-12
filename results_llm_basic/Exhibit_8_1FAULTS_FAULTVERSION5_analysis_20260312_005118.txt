@@ -1,0 +1,65 @@
+I reviewed both sheets and found several incorrect formulas and a few inconsistent/hard‑coded references. Below are the problems, why they’re wrong, and the simple fixes.
+
+NAIC increase sheet — errors and fixes
+1) D6 (yrly grth for 2000)
+- Error: formula is =(C6-728)/728. That uses the constant 728 instead of last year’s value.
+- Why wrong: yearly growth should compare 2000 to 1999 (C6 vs C5), not a hardcoded number.
+- Fix: replace with =(C6-C5)/C5
+
+2) E7 (total yearly Sng+Grp for 2001)
+- Error: formula =E8-2258280 — it references the row below and subtracts a hardcoded number.
+- Why wrong: you normally reference the actual 2001 total (input) or compute it from proper components. Referencing the next year and a constant is fragile and probably incorrect.
+- Fix: either (a) enter the correct 2001 total directly in E7, or (b) change to reference the correct source cell (e.g., if you meant previous year use E6), but do not point to E8 and subtract a magic number. Example if 2000 was in E6 and you want % change: =E7-E6 (or similar) — choose the correct reference based on your data source.
+
+3) E16, E17, E18 (grps hit the cap $Amt (% of total prem))
+- Errors:
+  - E16 = (0.46*C7) — multiplies 0.46 by C7 (NAIC Expenses) instead of total premiums.
+  - E17 = (0.43*C8) — same issue for 2002.
+  - E18 = (0.46*C9) — uses the wrong percent (0.46) and wrong column (C9).
+- Why wrong: you should multiply the percentage of total premiums (D16..D18) by the corresponding total premiums (E7..E9), not the C column.
+- Fix:
+  - E16: =D16 * E7
+  - E17: =D17 * E8
+  - E18: =D18 * E9
+  (Or, if you prefer explicit numbers: =0.46*E7, =0.43*E8, =0.35*E9.)
+
+4) G16, G17, G18 ($Amt of Pd % of total database fee)
+- Errors: formulas use hardcoded percentages and/or reference the wrong totals.
+  - Example G16 = (0.22*E7) is OK numerically but uses a literal 0.22 instead of the F16 cell.
+- Why wrong: use the F‑column (pd % of total database fee) so the formulas update automatically if percentages change.
+- Fix:
+  - G16: =F16 * E7
+  - G17: =F17 * E8
+  - G18: =F18 * E9
+
+Notes for NAIC sheet
+- Whenever you calculate a percent change or a share, reference the previous row or the value column (E7..E9) rather than hardcoding numbers. That prevents future errors when you insert or change rows.
+- After fixing E7 (entering the correct 2001 total), recalc F8, F9, G and any dependent cells — they will update correctly.
+
+Consumer Price Index sheet — likely mistakes
+1) R21
+- Error: R21 = (Q21-Q12)/Q12
+- Why wrong: it compares 2001 (row21) to row12 (1992). Probably intended to compare to 2000 (row20).
+- Fix: = (Q21 - Q20) / Q20
+
+2) S21
+- Error: S21 = (M21-M12)/M12
+- Why wrong: it compares December 2001 to December 1992. Likely intended to compare December 2001 to December 2000 (row20), or it's a duplicate of N21.
+- Fix: = (M21 - M20) / M20 (or delete S21 if that comparison duplicates N21)
+
+General CPI note
+- Check any cells that reference row 12 (1992) across the bottom rows — several likely should point to the immediate prior year (row20) or the prior row, not to 1992. Use relative references (e.g., = (thisRowCell - priorRowCell)/priorRowCell) so formulas copy down reliably.
+
+Summary checklist (apply these changes)
+- D6: =(C6-C5)/C5
+- Correct E7 by entering the real 2001 total or reference the correct cell (do NOT use E8-2258280).
+- E16: =D16*E7
+- E17: =D17*E8
+- E18: =D18*E9
+- G16: =F16*E7
+- G17: =F17*E8
+- G18: =F18*E9
+- R21: =(Q21-Q20)/Q20
+- S21: =(M21-M20)/M20 (or remove/adjust as appropriate)
+
+If you want, I can produce the exact corrected formulas in Excel format for every affected cell, or I can fix the workbook if you upload it.

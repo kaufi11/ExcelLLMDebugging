@@ -1,0 +1,47 @@
+Summary of problems I found and short fixes
+
+1) Faulty cells: FRF sheet — column I (rows 5:28 and others)
+- Error: Many cells show "FORMULA =SUM(Hx-Jx)" or similar text. One cell (I20) uses =SUM(H20-100).
+- Why it's wrong: 
+  - Putting the word "FORMULA ..." makes the cell text, not a working formula.
+  - =SUM(Hx-Jx) is harmless but confusing (SUM is unnecessary). 
+  - I20 subtracts 100 (a hard-coded constant) instead of using the gauge value in J20.
+- Fix:
+  - Put a proper subtraction formula in I5 and copy down:
+    =H5-J5
+  - Correct I20 to:
+    =H20-J20
+- Explanation: Height off (column I) should be water level (H) minus gauge (J). Use simple subtraction so Excel computes numeric results and you can copy the formula down.
+
+2) Faulty cells: FRF sheet — some header/label cells show the literal word "FORMULA =SUM(...)" instead of being a label/real formulas
+- Error: The formula text appears where a calculation or header should be.
+- Fix: Remove the text and either enter the header label (e.g., "Height off (m)") or the correct formula in the data rows only. Don’t prefix formulas with quotes or the word "FORMULA".
+
+3) Faulty data: DOZRJune (and DOZRSept) — "From" / "To" columns inconsistent
+- Error: In DOZRJune the "To" column values are full timestamps (1994-07-04 00:00:00) while other sheets use day numbers (e.g., 23, 30). Mixing date formats and plain numbers will cause confusion and broken calculations.
+- Fix: Decide on one format:
+  - If these are day numbers, change the timestamps to day numbers (e.g., 4, 30).
+  - If these are full dates, convert the "From" column to proper dates as well. Use Excel date format so formulas work.
+- Explanation: Keep a column's data type consistent (all dates or all numbers) so comparisons and arithmetic work.
+
+4) Possible data anomaly: FRF F23 = -927.3 (coordinate)
+- Error: negative coordinate stands out (maybe input error).
+- Fix: Verify source data. If it's a typo (should be +927.3), correct it. If negative is intentional (local coordinate system), add a note.
+- Explanation: Out-of-range numbers often indicate entry errors — check the source.
+
+5) Cells with "N/A" in J or H
+- Issue: Subtraction formula (=H-J) returns an error or misleading result if one side is "N/A".
+- Fix (optional): Use a guarded formula to avoid errors:
+  =IF(OR(H5="N/A",J5="N/A"),"",H5-J5)
+  or
+  =IFERROR(H5-J5,"")
+- Explanation: Keeps the sheet clean when required inputs are missing.
+
+Quick checklist to apply now
+- In FRF I5 put: =H5-J5 and fill down through I28 (and other I rows). Replace the single bad cell I20 with =H20-J20.
+- Remove any leading text "FORMULA ..." from cells; enter real formulas or labels.
+- Standardize the date/number format in DOZR sheets (choose date or day-number) and correct entries.
+- Verify suspicious negative/odd numbers (e.g., F23).
+- Optionally wrap subtraction in IFERROR or IF tests to handle N/A.
+
+If you want, I can produce the exact fill-down formulas for the whole I column and a short macro or paste-ready list of corrected cells. Which would you prefer?

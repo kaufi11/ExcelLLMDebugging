@@ -1,0 +1,28 @@
+I scanned the workbook formulas and found one clear formula error and one minor inconsistency that can affect summary numbers.
+
+1) Wrong formula (error)
+- Cell: Sheet1!AC8
+- Current formula: =AB8*$AB$33
+- Current value: 3450
+- Why it's wrong: Every other row in column AC calculates the percentage as ABn / $AB$33 (i.e. dividing the student's "FRACT" score by the class total in AB33). AC8 uses multiplication instead, producing a hugely inflated value.
+- Expected formula: =AB8/$AB$33
+- Impact: This wrong value inflates downstream summaries that average AC3:AC32. For example Sheet1!AC35 (Average of AC3:AC32) is 115.778..., which is incorrect because of AC8. Other averages/aggregates that include AC8 will likewise be skewed.
+
+2) Minor inconsistency (style / potential fragility)
+- Cell: Sheet1!AF33
+- Current formula: =SUM(Z33:AD33)
+- Comment: Row-level totals AFn are computed as Z + AB + AD (e.g. AF3 = Z3+AB3+AD3). AF33 uses a contiguous range SUM which includes AA33 and AC33 (they are blank here, so the numeric result is correct). This is not an error per se, but inconsistent with the rest of the sheet and could be fragile if any of the intermediate columns (AA33, AC33) later become populated.
+- Suggested formula for consistency: =Z33+AB33+AD33
+
+Other checks
+- I scanned the rest of the sheet for similar anomalies (unexpected * instead of /, or other operators). AC8 is the only cell with that multiplication error; all other per-row percentage formulas follow the consistent ABn/$AB$33, ADn/$AD$33, AFn/$AF$33 patterns, and the division denominators (the $...$33 cells) are present and non-zero.
+
+Recommended fixes
+1. Replace Sheet1!AC8 with =AB8/$AB$33.
+2. Recalculate workbook / re-evaluate averages (Sheet1!AC35 and any sheets that use AC averages), they should revert to expected ~0.8 values.
+3. (Optional) Change AF33 to =Z33+AB33+AD33 for consistency and to avoid accidental future errors.
+
+If you want, I can:
+- show the corrected values (e.g., what AC35 becomes after fixing AC8),
+- produce a short VBA/Excel formula search that finds any other "*" uses in percentage columns, or
+- apply the fix and return an updated file. Which would you prefer?

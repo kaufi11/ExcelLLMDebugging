@@ -1,0 +1,73 @@
+I reviewed the workbook formulas and found no broken references or #REF/#VALUE errors, but I did find a number of formula inconsistencies, fragile constructions and likely logic mistakes that will cause wrong results depending on how users enter data. Below I list the issues I found, the cells/areas affected, and recommended fixes.
+
+1) Degree-of-use / "in %" fields — likely incorrect multiplication (major)
+- Affected sheets/cells (examples):
+  - Table G.5.a: G6:G40 = "Degree of use for the project (in %)" but H6..H40 use =E6*G6
+  - Table G.5.b: J6:J40 = "Degree of use for the project (in %)" but K6..K40 use =I6*J6
+  - Table G.5.c: H6:H40 = "Degree of use for the project (in %)" but I6..I40 use =SUM(F6*G6)*H6 (see next point)
+  - Table G.6: G5:G39 "Degree of use (in %)" but H5..H39 use =F5*G5
+  - Table G.7: same pattern F/G->H
+- Problem: the headers say "in %" which is ambiguous:
+  - If users enter percentages using Excel's percent format (e.g., 50%), the formulas are fine (50% = 0.5).
+  - If users enter whole numbers (e.g., 50 to mean 50%), the formulas will be off by factor 100.
+- Recommendation: either:
+  - Require users to enter percentages in percentage format (50%), and add a comment/documentation cell; or
+  - Change formulas to explicitly divide by 100 to accept whole-number percentages. Example change:
+    - H6 in Table G.5.a: =E6*(G6/100)
+    - K6 in Table G.5.b: =I6*(J6/100)
+    - H5 in Table G.6: =F5*(G5/100)
+  - This should be applied consistently across Tables G.5.a, G.5.b, G.5.c, G.6 and G.7.
+
+2) Inconsistent / unnecessary use of SUM() around scalar products
+- Affected cells:
+  - Table G.5.c I6..I40 use =SUM(F6*G6)*H6 (and similarly for other rows)
+- Problem: SUM(F6*G6) is redundant (SUM on a single scalar). This is stylistic but confusing.
+- Recommendation: replace with straightforward multiplication (and handle percentage division as noted above). E.g.:
+  - I6 -> =F6*G6*H6 (or =F6*G6*(H6/100) depending on percent convention).
+
+3) Unusual / fragile SUMIF usage in Table G.8 (per-row SUMIF with single-cell ranges)
+- Affected area:
+  - Table G.8 I5:N54 — formulas like =SUMIF($E5,$I$4,$H5)
+- Explanation:
+  - The formula works because each SUMIF is applied to a single cell (range=$E5, sum_range=$H5); it returns H5 if E5 matches the criterion in I4, otherwise 0.
+  - However this is unconventional and fragile: it is harder to read and may break or confuse future maintainers. It can also cause issues if someone expects a single summary formula (SUMIF over a whole column) rather than many per-row formulas.
+- Recommendation:
+  - Replace the per-row SUMIFs with an IF or logical test per row for clarity, e.g. in I5:
+    - =IF($E5=I$4,$H5,0)
+  - Or, better, do a single column summary (single-cell) using a proper SUMIFS over the entire range. Example (single summary cell for package 1):
+    - =SUMIFS($H$5:$H$54,$E$5:$E$54,I$4)
+  - Then Table G.2 that references the I column can be adapted to use the single summary cells, which is clearer and less fragile.
+
+4) Inconsistent anchoring and mixed absolute/relative usage (potential maintenance risk)
+- Examples:
+  - Some SUMIF criteria references use column-anchored row-anchored mixes like C$4 or $I$4; they mostly work as-is, but the workbook contains many mixed absolute references which increases the chance of copy/paste errors.
+- Recommendation:
+  - Standardize anchoring where possible (use $A$1 style anchors for fixed headers/ranges; use relative for row operations). Document in a short comment how the ranges/headers are laid out so future edits do not inadvertently break formula propagation.
+
+5) Ambiguous / inconsistent handling of subcontracting summaries
+- Implementation: Table G.8 creates per-row outputs in columns I:N (packages 1..6) and Table G.2 sums those columns by partner (SUMIF over partner column and that I..N range).
+- Observations:
+  - The approach works but is a convolution (creating a per-row column per package rather than a single summary per package).
+- Recommendation:
+  - Consider a clearer design: in Table G.8 keep each subcontracting row as raw data (E=package number, C=partner number, H=cost) and compute per-package-per-partner sums in a compact summary block using SUMIFS—less duplicated formulas, easier to maintain.
+
+6) Minor / miscellaneous issues
+- Table G.5.b row I36: formula =IF(G36>=10000,G36/60*F36,G36/36*F36) — this is consistent with other rows but double-check the intended logic: depreciation = purchaseCost / (60 or 36 months) * monthsUsed. That is OK if F is months used. (No change unless policy differs.)
+- Table G.4: P5:P142 are formulas =N5+O5 etc. These are fine; just be aware subsistence in O column must be consistent with the %/rate conventions described above.
+- Table G.2 and Table G.1 inter-sheet links are consistent and intact (no broken references).
+- There is a stray character in Table G.2 A32 containing "`" — appears to be a leftover. Not a formula error but probably unintentional.
+
+Summary of recommended quick fixes (prioritized)
+1. Fix the "% / degree of use" ambiguity first:
+   - Decide whether users will enter percent values as 50 (meaning 50%) or 50% (0.5). If the former, update all formulas that multiply by "degree of use" to divide by 100.
+   - Apply consistently in Tables G.5.a (H), G.5.b (K), G.5.c (I), G.6 (H), G.7 (H).
+2. Replace SUM(F*G) wrappers with direct multiplication (readability).
+3. Replace the per-row SUMIFs in Table G.8 with IF tests or use proper SUMIFS over full ranges for compact summaries.
+4. Clean up the stray "`" in Table G.2 A32.
+5. Add small helper comments / input guidance in sheets that indicate expected input format for "Degree of use (in %)" (e.g., "Enter as percentage (e.g. 50%): use Excel percent format").
+
+If you want, I can:
+- produce exact corrected formulas for each affected cell/area (I can give an updated formula map); or
+- generate a patch (list of cell-by-cell replacement formulas) you can apply to the workbook.
+
+Which of those would you like next?

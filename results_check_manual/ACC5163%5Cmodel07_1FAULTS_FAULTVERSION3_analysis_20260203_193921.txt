@@ -1,0 +1,30 @@
+I checked MODEL07 and found two clear formula errors that will make the consolidation totals wrong and the proof (debits = credits) fail.
+
+1) Wrong function in Total Liab. & Equity (cell F74)
+- Error: F74 = COUNT(F67:F73)
+- Why it’s wrong: COUNT counts how many numeric cells exist; it does not add values. This returns a small integer (the count) instead of the total of the F67:F73 balances.
+- Fix: Change F74 to =SUM(F67:F73)
+- Result: F74 will show the correct total of liabilities & equity.
+
+2) Sign error in many Consolidation asset formulas (cells F105:F117)
+- Error pattern: F105, F106, F107, F108, F109, F110, F111, F112, F113, F114, F115, F116, F117 use =(Bxxx + Cxxx + Dxxx - Exxx)
+  (the worksheet shows them as = (B105+C105+D105-E105) etc.)
+- Why it’s wrong: Column D is the consolidation "Dr." entry column. In all comparable consolidated-row formulas elsewhere (for liabilities & equity) the D column is subtracted: F = B + C - D + E. In the asset rows the D term is added (+D) instead of subtracted. That reverses the effect of debits and will inflate (or deflate) asset balances incorrectly and cause the consolidation proof to fail.
+- Fix: For each asset row in the consolidation section, change the formula so column D is subtracted. Example corrections:
+  - F105: change =(B105+C105+D105-E105)  → =(B105+C105-D105+E105)
+  - F106: change =(B106+C106+D106-E106)  → =(B106+C106-D106+E106)
+  - Repeat similarly for F107 through F117.
+- Result: Assets will correctly reflect the effect of Dr. and Cr. consolidation entries and the totals should reconcile with liabilities & equity.
+
+Recommended quick steps
+- Edit F74 and replace COUNT with SUM.
+- Edit F105:F117 and change the +Dxxx term to -Dxxx (or copy-corrected formula and paste).
+- After changes, recalc worksheet and check the proof:
+  - D134 should equal E134 (proof of debit and credit postings).
+  - Total Assets (F118) should equal Total Liabilities & Equity (F132 / F74).
+
+Why these fixes fix the problem (simple)
+- SUM adds the numbers you intend to total; COUNT only counts numeric cells.
+- Consolidation works by adding/subtracting the original balances and the adjustment debits and credits. Using the wrong sign for debit adjustments flips the adjustment and gives wrong consolidated balances and unbalanced totals.
+
+If you want, I can give the exact corrected formulas for every affected cell or provide a one-step Find & Replace pattern you can run to fix all +D... → -D... instances safely. Which would you prefer?

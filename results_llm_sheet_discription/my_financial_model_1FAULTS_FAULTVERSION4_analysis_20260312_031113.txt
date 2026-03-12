@@ -1,0 +1,40 @@
+Summary — I found 3 major functional errors that will misstate revenue, COGS and the balance sheet (and thus profit, cashflow and retained earnings). I also list a couple of smaller formula bugs to tidy up. Fix those three first.
+
+1) Revenue total omits Street Sales (big)
+- Where: Income!E12 (and F12:P12).
+- Problem: E12 is =SUM(E10:E10) — it only sums the Online row (E10) and leaves out Street (E11). That understates Total Revenue and every downstream number (gross/net profit, cashflow, retained earnings, BS).
+- Fix: replace E12 with:
+  =SUM(E10:E11)
+  then copy across F12:P12.
+- Why it fixes it: now Total = Online + Street as intended.
+
+2) Sugar price growth uses wrong growth-rate cell
+- Where: Income!F8:G8:...:P8 (Sugar price row).
+- Problem: those formulas use $D$7 (lemon-price-growth cell) instead of the sugar growth-rate cell ($D$8). That can give the wrong sugar prices and thus wrong COGS.
+- Fix: change F8 to:
+  =E8*(1+$D$8)
+  then copy across to P8.
+- Why it fixes it: sugar price uses its own growth-rate input (D8) so ingredient costs are calculated correctly.
+
+3) Long‑term asset original value references a liability (major BS/depreciation error)
+- Where: Balance Sheet!D8 (Original Value)
+- Problem: D8 is =D14 (D14 is the long‑term loan/liability). That makes your asset original value equal to the loan amount — so Depreciation and asset values become wrong.
+- Fix — pick one appropriate source:
+  - If the long‑term asset was bought in Cashflow (Cashflow!D9 = -100000), set Balance Sheet!D8 to:
+    =-Cashflow!D9
+    (this converts the negative cash outflow into a positive asset cost),
+  - OR hardcode the correct asset cost (e.g., =100000) if you prefer an input cell.
+- After that, Depreciation will correctly read the asset original value (Depreciation!D6 = Balance Sheet!D8) and compute correct annual depreciation.
+- Why it fixes it: removes the incorrect link to liabilities and ties the asset to the investment amount.
+
+Other (smaller) fixes / cleanups
+- Depreciation totals chain: Depreciation!E11..P11 should accumulate correctly. Set E11 = E7, F11 = E11 + F7, G11 = F11 + G7, … copy across so accumulated depreciation is continuous.
+- simple income (sheet) odd cell: simple income!F8 is set to a constant (=284) — likely should be =E8. Fix if you want repeat of the same COGS across months.
+- Check copy-forward formulas that use chained equalities (F = E, G = F, …). They’re fine technically but watch for accidental references to the wrong growth-rate absolute cell (as happened with sugar).
+
+How to test quickly
+1. Fix Income!E12 as above. Total revenue should increase (Total = Online + Street).
+2. Fix Income!F8 and verify COGS in E17..P17 change accordingly and Gross Profit reacts.
+3. Fix Balance Sheet!D8 to =-Cashflow!D9 (or correct asset cost). Depreciation (Depreciation!E7..P7) and BS asset values should now reflect the proper asset cost (not the loan).
+
+If you want, I can produce the exact list of cell-by-cell replacement formulas ready to paste (or a corrected workbook).

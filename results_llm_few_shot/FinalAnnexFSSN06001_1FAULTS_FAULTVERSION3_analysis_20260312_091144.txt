@@ -1,0 +1,50 @@
+I checked the workbooks and found several clear, fixable errors. Below are the concise problems, why they’re wrong, and the corrected formulas.
+
+1) Sheet Annex1 — hard-coded / inconsistent “share” formulas (cells like C7, E7, G7)
+- Error type: Logical / manual-entry error
+- Explanation: Some “share” cells use typed percentages or arithmetic like "73.3%+3.7%" or "(60.8+3.7)/100" or "0.903+0.048" instead of dividing the appropriate amount by the column total. That will produce wrong results and won’t update if the underlying numbers change.
+- Fix (pattern): Replace the manual entries with value / total. Example pattern: =<amount_cell> / <column_total_cell>
+  - e.g. if the commercial banks amount for 1992 is in C? and the total assets for 1992 is in C6 then: =C? / $C$6
+  - specifically replace "(60.8+3.7)/100" with =(60.8+3.7)/D6 if D6 holds that column’s total (remove the /100 if you’re already dividing by the column total).
+
+2) Sheet Annex3 — L26 (Foreign commercial banks, 1997) missing a row in the SUM
+- Faulty cell: L26
+- Error type: Range/omission error
+- Explanation: L26 =SUM(L27:L30) omits row L31 while B26 and other year-columns include row 31. This makes totals inconsistent across columns.
+- Repair formula: =SUM(L27:L31)
+
+3) Sheet Annex3 — H38 is a wrong hard-coded value
+- Faulty cell: H38
+- Error type: Logical/formula omission
+- Explanation: H38 contains 4 (a stray constant) while every other total row uses sum of the 3 groups (I, II, III).
+- Repair formula: =H12 + H26 + H33  (or =H33+H26+H12 — whichever matches your layout)
+
+4) Sheet Annex3 — K52 percentage uses the wrong denominator
+- Faulty cell: K52
+- Error type: Wrong reference / copy-paste error
+- Explanation: K52 is written as =(J52/$H$77) — it divides the 1996 amount (J52) by the 1995 total ($H$77). That mixes years.
+- Repair formula: =(J52 / $J$77)
+
+5) Sheet Annex2 — inconsistent GDP denominators in memo lines (L34 / N34 etc.)
+- Faulty cells: L34, N34 (and possibly other memo cells)
+- Error type: Inconsistent / hard-coded denominator
+- Explanation: L34 uses 100*L32/318346 while N34 uses 100*N32/341386. Hard-coded GDP numbers (and different ones) make the sheet fragile and inconsistent.
+- Repair (recommended): Put each year’s GDP in a dedicated cell (e.g. $Z$1 = GDP1997, $Z$2 = GDP1998) and use absolute references:
+  - e.g. =100 * L32 / $Z$1
+  This keeps units consistent and makes updates simple.
+
+6) General: many percent/formula cells are copy-paste errors (wrong absolute column in denominator)
+- Error type: Copy/paste anchoring
+- Explanation: Throughout Annex2/Annex3 there are many formulas like =(B13/$B$38) that are correct, but others in the same row/column were copied with bad anchors (see K52 above). These create wrong percentages.
+- Fix: Scan all percentage cells and ensure each is: =<amount cell> / $<column_total_cell> with the column in the denominator matching the column of the amount.
+
+How to proceed (quick checklist)
+- Replace hard-coded percentages with formulas that divide the correct amount by the correct column total.
+- Fix range omissions (L26 -> include row 31).
+- Replace stray constants (H38) with the sum formula matching other columns.
+- Put GDP values in dedicated cells and reference them absolutely (avoid hard-coded numerators/denominators).
+- Do a quick audit: in each column, select an amount cell and its percentage cell — confirm denominator uses that column’s total (e.g. column J amounts divide by $J$77 or $J$116 as appropriate).
+
+If you want, I can:
+- Produce exact corrected formulas for every faulty cell (I’ll list them one per line), or
+- Return a marked-up list of every cell that currently uses the wrong denominator/range if you paste a smaller subset of suspect rows/columns.

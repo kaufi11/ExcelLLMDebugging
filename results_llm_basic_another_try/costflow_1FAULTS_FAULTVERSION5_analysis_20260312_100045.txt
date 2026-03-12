@@ -1,0 +1,82 @@
+### Errors found in the "Errors" sheet:
+
+1. **Cost of Goods Sold (COGS) Calculation in Year 1 (Row 12)**
+   - Formula: `=SUM(B10:B11)` but B11 is negative (ending inventory is negative).
+   - Issue: Using `SUM(B10:B11)` adds goods available for sale (positive) and ending inventory (negative), which is correct mathematically, but the ending inventory is input as negative already, so summing is fine.
+   - No error here.
+
+2. **Cost of Goods Sold Calculation in Year 2 (Row 31)**
+   - Formula: `=SUM(B29:B30)` where B30 is `-150000` (ending inventory).
+   - This is consistent with Year 1.
+
+3. **In Year 2 Beginning Inventory (Row 27)**
+   - Formula: `=-B11` (negative of Year 1 ending inventory).
+   - This is correct because beginning inventory for Year 2 equals ending inventory of Year 1.
+
+4. **In the "Understating" and "Overstating" columns (D and F), the formulas in Year 2 (D25, F25, D26, F26)**
+   - D25: `=+D6` (Understating initial error)
+   - F25: `=+F6` (Overstating initial error)
+   - D26: `=+D7` (Year 1 inventory)
+   - F26: `=+F7`
+   - Issue: These formulas just copy the initial errors and Year 1 inventory, which is correct for carrying forward errors.
+
+5. **Ending Inventory in Year 2 (Row 30)**
+   - B30, D30, F30 all `-150000` (correct ending inventory assumed).
+
+6. **In the "Valuing Ending Inventory" sheet:**
+   - Cell I11 formula: `=-I10-SUM(C17:C18)`
+     - Issue: This formula subtracts the sum of sales units (C17:C18) from negative goods available for sale (I10), which is incorrect.
+     - Goods Available for Sale (I10) should be positive, so ending inventory should be `=I10 + SUM(C17:C18)` (since sales are negative units).
+     - The negative sign before I10 is wrong.
+   - Cells K11 and K12 have question marks, indicating missing formulas.
+
+7. **In FIFO Periodic (Row 41, K41)**
+   - Formula: `=-E47`
+   - But E47 is sum of ending inventory costs, so negative sign is likely incorrect here.
+
+8. **In LIFO Periodic (Row 57, K57)**
+   - Formula: `=-E63`
+   - Same issue as FIFO: negative sign likely incorrect.
+
+9. **In FIFO Perpetual (Row 96, K96)**
+   - Formula: `=-E107`
+   - Same issue: negative sign likely incorrect.
+
+10. **In LIFO Perpetual (Row 123, K123)**
+    - Formula: `=-E132`
+    - Same issue: negative sign likely incorrect.
+
+### Summary of errors:
+- **Ending Inventory calculation in Valuing Ending Inventory sheet (I11) has incorrect sign.**
+- **Missing formulas in K11 and K12.**
+- **Negative signs in Cost of Goods Sold calculations for FIFO and LIFO (periodic and perpetual) in K41, K57, K96, K123 are incorrect.**
+
+---
+
+### Solutions:
+
+1. **Fix Ending Inventory formula in I11:**
+   - Change from `=-I10-SUM(C17:C18)` to `=I10+SUM(C17:C18)`
+   - Explanation: Ending inventory = Goods Available for Sale - Sales. Since sales are negative units, adding them is correct.
+
+2. **Add formulas for K11 and K12:**
+   - K11 (Ending Inventory cost): `=I11 * J10` or sum of unit cost * units remaining.
+   - K12 (COGS): `=K10 - K11`
+   - Explanation: Ending inventory cost = units remaining * unit cost; COGS = goods available for sale cost - ending inventory cost.
+
+3. **Remove negative signs in K41, K57, K96, K123:**
+   - Change `=-E47` to `=E47` (and similarly for others).
+   - Explanation: These cells represent costs and should be positive values; negative sign causes incorrect COGS or inventory values.
+
+---
+
+### Explanation of solutions:
+
+- Ending inventory should be calculated as goods available for sale minus sales (units sold). Since sales are recorded as negative units, adding them to goods available for sale gives the correct ending inventory units.
+- The cost of ending inventory should be positive, reflecting the value of inventory left.
+- Cost of Goods Sold is calculated as goods available for sale cost minus ending inventory cost.
+- Negative signs in cost calculations cause incorrect totals and distort financial results.
+
+---
+
+If you fix these formulas, the inventory valuation and resulting financial calculations will be accurate.

@@ -1,0 +1,22 @@
+Findings (short)
+- One clear formula error: Q5 is wrong. It uses COUNT in the numerator instead of SUM, so it returns a nonsense negative value (and breaks the Classwork average for Reed, Bret).
+- Everything else looks consistent (Homework/Classwork/Quiz averages drop the lowest; Tests use AVERAGE; Final grade formula correctly uses the weight cells in row 1).
+
+Exact error
+- Q5 currently: =(COUNT(J5:O5)-MIN(J5:O5))/(COUNT(J5:O5)-1)
+  - COUNT(J5:O5) returns 6, MIN(J5:O5) is 64 → numerator = 6 - 64 = -58 → wrong.
+
+Fix (one-step)
+- Replace Q5 with the same formula used in the other rows:
+  =(SUM(J5:O5)-MIN(J5:O5))/(COUNT(J5:O5)-1)
+
+What this does and why it fixes it
+- Correct numerator: SUM(J5:O5) sums the classwork scores (not the count of cells).
+- That formula drops the lowest classwork (subtract MIN) and divides by (COUNT-1) to average the remaining scores.
+- After fixing Q5, copy the correct formula down/up as needed and recalc row 5 — the Classwork average and Final Grade (AE5) will update to the correct values.
+
+Optional robustness tip
+- To avoid divide-by-zero if a student has only one score, wrap with IF:
+  =IF(COUNT(J5:O5)>1,(SUM(J5:O5)-MIN(J5:O5))/(COUNT(J5:O5)-1),IF(COUNT(J5:O5)=1,SUM(J5:O5),0))
+
+If you want, I can give a ready-to-copy formula for Q5→Q6 or check the sheet for any other similar typos.

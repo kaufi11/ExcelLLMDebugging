@@ -1,0 +1,43 @@
+Summary of errors I found (short) and how to fix each:
+
+1) Missing Pract.4 score (row 55)
+- Problem: G55 is blank but I55 = SUM(D55:G55) still runs and treats G55 as zero, so Total (I55) and the class mean are wrong.
+- Fix: Enter the student's Pract.4 score in G55. If you don’t have it, mark it clearly (e.g., "NA") and exclude that row from averages until you have the score.
+
+2) Mean in F56 uses SUM instead of AVERAGE
+- Problem: F56 = SUM(F36:F55) returns a total, not the average like the other mean cells.
+- Fix: Replace with:
+  =AVERAGE(F36:F55)
+
+3) Inconsistent grade-cutoff comparisons and awkward cutoffs
+- Problem: First block uses >= (e.g. K6 uses >=89.9%), second block uses > (e.g. K36 uses >89.9%), and the cutoffs use 89.9% instead of the usual 90%, 80%, ... This creates boundary inconsistencies.
+- Fix (make all the same and clearer). Put this formula in every K cell (students and mean rows) and copy down:
+  =IF(Jn>=90%,"A",IF(Jn>=80%,"B",IF(Jn>=70%,"C",IF(Jn>=60%,"D","F"))))
+  (Replace Jn with the appropriate row reference, e.g. J6, J7, …). This uses standard >= thresholds and is consistent.
+
+4) Class % may be excluding Attendance/Participation unintentionally
+- Observation: I = SUM(D:G) (Total w/o A/P) and J = I/400 — so J is percent of practicals only. If the intent is to include attendance (H) in the class percent, change either:
+  Option A (include A/P in I):
+   - I_n: =SUM(Dn:Gn,Hn)
+   - I3 (max total) should be changed from 400 to 450
+   - J_n: =I_n / I$3
+  Option B (keep I as w/o A/P; compute J including H):
+   - J_n: =(I_n + H_n) / (I$3 + H$3)
+Choose whichever matches the grading rules. Right now the workbook is consistent for excluding A/P, but that might be unintended.
+
+5) Mean grade cell formulas (K26 and K56)
+- Problem: K26 currently uses >89.9% (not >=) while student K cells use >= in first block; K56 similarly uses >. This repeats the inconsistency.
+- Fix: Use the standardized grading formula from item 3 for K26 and K56 as well.
+
+6) Preserve leading zeros in SS# column (column C)
+- Problem: If SS#s with leading zeros are entered as numbers, Excel will drop the leading zero.
+- Fix: Format column C as Text (or use Custom format 0000) before entering SS#s so values like 0643 or 0541 keep the leading zero.
+
+Quick checklist of exact cell fixes to paste:
+- G55: enter missing score (or "NA")
+- F56: =AVERAGE(F36:F55)
+- K6:K56 (and K36:K55): replace with =IF(J6>=90%,"A",IF(J6>=80%,"B",IF(J6>=70%,"C",IF(J6>=60%,"D","F")))) — adjust row number as you copy down
+- If including attendance: change Jn to =(SUM(Dn:Gn)+Hn)/(I$3+H$3) or change I and I3 per Option A above
+- Format column C as Text or Custom 0000
+
+If you want, tell me whether class % should include attendance; I’ll give the exact single formula set to change and a copy-down plan.

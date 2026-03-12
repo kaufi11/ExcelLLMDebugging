@@ -1,0 +1,38 @@
+Short answer — main error and fix
+
+1) Error: I5 (Bryant TD %) is wrong. It’s =G5/C5/100 which divides twice and gives a tiny number (0.0286%) instead of ~2.86%. That makes Bryant’s Points (L5) incorrect.
+
+Fix (quick): replace I5 with
+=G5/C5*100
+then copy/fill I5:I11 so every row uses the same correct TD% formula.
+
+Why: TD% should be (TD ÷ Attempts) × 100. The current formula divides by 100 a second time.
+
+Better (recommended) — make units explicit and consistent
+
+The Points formula in column L expects completion%, touchdown% and interception% as percent values (0–100) because it uses the scaled coefficients (8.4, 3.3, 2) consistent with the common passer-rating numerator:
+Points = (Yards/Attempt)*8.4 + Completion% + (TD%)*3.3 − (INT%)*2
+
+Two clean options:
+
+A — Keep percent cells as 0–100 (minimal change)
+- H5 = D5/C5*100
+- I5 = G5/C5*100
+- J5 = E5/C5*100
+- L5 stays =K5*8.4 + H5 + I5*3.3 - J5*2
+Copy down rows 5:11. Format H:I:J as Number (one decimal) or Percent if you prefer to display with % sign but note the formula uses the numeric percent value (e.g., 48.7).
+
+B — Use decimal percentages (preferred for clarity) and update L accordingly
+- H5 = D5/C5     (format as Percentage)
+- I5 = G5/C5     (format as Percentage)
+- J5 = E5/C5     (format as Percentage)
+- Update Points to use decimal-based coefficients:
+L5 = K5*8.4 + H5*100 + I5*330 - J5*200
+(or if you want the standard passer rating, divide that whole expression by 6:
+L5 = (K5*8.4 + H5*100 + I5*330 - J5*200) / 6)
+Copy down rows 5:11.
+
+Summary / Action steps
+- Fix I5 to =G5/C5*100 (quick fix).
+- Then decide: keep percent cells as 0–100 (Option A) or convert to decimals and adjust L (Option B). Apply formula changes and fill down for rows 5–11.
+- Format H:I:J consistently (either plain number with one decimal or Percentage format if using decimal formulas).

@@ -1,0 +1,38 @@
+I checked the workbook and found a few formula mistakes that will give incorrect variance / total results. Short list of problems and the fixes:
+
+1) Problem — wrong % variance cell (clear error)
+- Where: Sheet "annex f", cell K68 (Variance % for Total Funds).
+- Current formula: =K48
+- Why it's wrong: K68 should calculate the % variance for Total Funds (J68 relative to H68). Pointing to K48 just copies another unrelated percent.
+- Fix: Replace with the usual percent-variance formula:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Explanation: This calculates (Revised - Original)/Original *100 and avoids copying the percent from a different line.
+
+2) Problem — “Total” column for balances uses single-cell references instead of sums (likely producing wrong totals)
+- Where: Sheet "annex g" (Original section) and the Actual/Revised section:
+  - T18 currently =H18 (Balance b/f total)
+  - T19 currently =H18 (Balance c/f total)
+  - (Similarly in the Actual section T41 = H41, T42 = S42, etc. — many “Total” cells are not SUMs)
+- Why it's wrong: The Total column should normally be the sum across months (columns H:S). Using a single-month cell will show the wrong “Total”.
+- Fix: Change those T-column cells to SUM across months. Example fixes:
+  - T18 -> =SUM(H18:S18)
+  - T19 -> =SUM(H19:S19)
+  - T41 -> =SUM(H41:S41)
+  - T42 -> =SUM(H42:S42)
+- Explanation: Totals must aggregate the monthly columns (Aug–Jul) to give correct yearly totals and make the reconciliation checks valid.
+
+3) Recommendation / possible improvement — clearer sum in Annex I (underlying surplus)
+- Where: Sheet "Annex I", cell H27 (Underlying operating surplus/deficit)
+- Current formula: =SUM(H10:H26)
+- Why this can be risky: H10:H26 includes heading/blank cells and any intermediate rows you may not intend to include. That can hide mistakes if rows are moved or new rows added.
+- Fix (preferred explicit sum of the add-backs):
+  =H11 + H14 + H17 + H20
+  (Adjust the cell list if you have other specific one-off add-backs.)
+- Explanation: Explicitly summing only the rows that represent the base surplus and the one-off addbacks prevents accidental inclusion of unrelated cells and makes the calculation easier to audit.
+
+Extra check to run after fixes
+- After correcting formulas, verify the reconciliation cells:
+  - annex g T26 and T49 (cash reconciliation with annex f) should be zero. They use annex f H20+H21 and I20+I21 respectively — confirm those referenced cells indeed contain short-term investments + cash as intended (if bursary funds are also required, include them).
+- Spot-check the % variance formulas elsewhere — many use IF(Hx=0,"N/A",(Jx/Hx)*100) — keep that pattern.
+
+If you want, I can give the exact Replace commands or produce the corrected formulas for each specific cell in a short list so you can paste them straight into Excel. Which would you prefer?

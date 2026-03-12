@@ -1,0 +1,38 @@
+I inspected the formulas and values in Sheet1 and found the following formula errors and inconsistencies, with recommended fixes.
+
+1) Incorrect formula (clear error)
+- Cell: M19
+- Current formula: =L19*L$7*1
+- Problem: All other percent formulas in column M use division (student total ÷ total possible). M19 multiplies, producing 36465 instead of a percentage.
+- Fix: Replace with the consistent formula used elsewhere, for example:
+  =L19/L$7
+  (or =L19/$L$7 to fully lock the total cell). The trailing *1 is unnecessary.
+
+2) Missing assignment totals and student scores (data/formula inconsistency)
+- Cells: F7, I7, K7 (Total Points Per Assignment row) are blank.
+- Observation: Headers show Quiz 3 (F6), Homework 3 (I6) and Final (K6) but there are no total points entered for those assignments in row 7. Student columns F, I and K are also blank for every student.
+- Impact: L7 (=SUM(D7:K7)) and each student's L# (=SUM(D#:K#)) are summing blanks for those assignment columns (treated as zero). This may make the workbook appear "correct" mathematically but likely does not reflect intended totals or student scores.
+- Action: Enter the intended total points in F7, I7 and K7, and enter student scores in the corresponding F, I, K rows (or explicitly enter 0 where appropriate). After populating, verify L7 and each L# update correctly.
+
+3) Inconsistent absolute reference style (recommendation)
+- Cells: M9:M21 formulas use L$7 (e.g. =L9/L$7*1)
+- Observation: L$7 fixes the row only; it will work correctly when formulas are copied down the M column, but if copied horizontally it could shift. It's cleaner and safer to use $L$7 to lock both column and row.
+- Recommendation: Standardize percent formula to:
+  =L9/$L$7
+  and copy down. Remove the "*1" which does nothing.
+
+4) Unnecessary use of "*1"
+- Cells: M9:M21 currently end with *1 (e.g. =L9/L$7*1).
+- Observation: Multiplying by 1 has no effect and reduces clarity.
+- Recommendation: Remove *1 (use =L9/$L$7).
+
+5) Confirm sum ranges
+- Cells: L7 and L9:L21 use SUM(D#:K#).
+- Observation: Those ranges include columns F and I and K—currently blank. That is appropriate if blanks represent zero, but confirm that the intended range is indeed D:K (i.e., Quizzes 1–3, Homeworks 1–3, Mid-Term and Final). If any columns are not intended to be included, adjust the SUM range.
+
+Summary of concrete changes to make immediately
+- Replace M19 formula with: =L19/$L$7
+- Replace all M9:M21 formulas with: =L9/$L$7 (and copy down)
+- Populate F7, I7, K7 with correct total points and populate student cells in columns F, I, K (or explicit zeros) so L7 and L# reflect the real totals.
+
+If you want, I can produce a list of exact corrected formulas for each M cell (M9:M21) or suggest a new layout (e.g., make $L$7 the total points and format M as Percentage).

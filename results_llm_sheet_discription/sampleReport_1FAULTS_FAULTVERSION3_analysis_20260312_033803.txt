@@ -1,0 +1,58 @@
+Good overview — I found a small set of real errors (mostly wrong ranges and one hard‑coded value) and a few poor-practice formulas. Short fixes and plain explanations below.
+
+1) Income sheet — hard‑coded value
+- Error: Income!L14 = 748 + L13
+  - Problem: hard‑coding 748 breaks automatic updates; L14 should be TOTAL RENTAL INCOME = Net Residential + Net Commercial.
+- Fix: replace with
+  - Income!L14 = L10 + L13
+- Why: keeps the total dynamic and consistent with J14 (=J10+J13).
+
+2) OP_EXP (Operating & Maintenance total) — off‑by‑one
+- Error: OP_EXP!L46 = SUM(L33:L44) while OP_EXP!J46 = SUM(J33:J43)
+  - Problem: L46 includes an extra row (row 44) that J46 does not — totals will mismatch between years or include an unrelated cell.
+- Fix: change to
+  - OP_EXP!L46 = SUM(L33:L43)
+- Why: both year totals should sum the exact same item rows.
+
+3) Cash Flows (Investing total) — off‑by‑one in 2001 column
+- Error: Cash Flows!J45 = SUM(J37:J42) but L45 = SUM(L37:L44)
+  - Problem: L45 includes extra rows (37–44) while J45 covers 37–42; will cause mismatched totals.
+- Fix: change to
+  - Cash Flows!L45 = SUM(L37:L42)
+- Why: keep ranges identical for 2002/2001.
+
+4) Balance Sheet — total assets formula should be explicit (safer)
+- Error: Bal Sht!J36 = SUM(J23:J35) and L36 = SUM(L23:L35)
+  - Problem: these ranges may accidentally include or exclude rows if layout shifts; also it’s unclear/fragile.
+- Fix (recommended): replace with explicit sum of Net Investment + Total Other Assets:
+  - Bal Sht!J36 = J23 + J34
+  - Bal Sht!L36 = L23 + L34
+- Why: clearer, less error‑prone and guarantees Total Assets = Net investment + Total other assets.
+
+5) Partners’ equity single-cell SUM (cosmetic / clarity)
+- Error: Bal Sht!J52 = SUM(J51:J51)
+  - Problem: unnecessary/odd; not wrong but poor style.
+- Fix: replace with
+  - Bal Sht!J52 = J51
+- Why: simpler and clearer.
+
+6) Statements of Partners’ Equity — header typo and inconsistent check formulas
+- Error A (typo): Sheet header reads “YEARS ENDED DECEMBER 31, 2001 AND 2001”
+  - Fix: correct to “2002 AND 2001”.
+- Error B (formula/checks): O17 and O21 use IF tests referencing the totals column (SUM(O9:O15) etc.), which is confusing and can give false "off" results.
+  - Fix (simple, safe): make the totals explicit and remove confusing checks:
+    - O17 = SUM(K17:M17)
+    - O21 = SUM(K21:M21)
+  - If you want a reconciliation check, compare the component columns to the total column explicitly, for example:
+    - =IF(SUM(K21:M21)=O21, O21, "off")
+- Why: the current IFs mix totals and component ranges; explicit sums or clear checks prevent false "off" outputs.
+
+7) General recommendations
+- Ensure for every total that the J (2002) and L (2001) ranges match exactly (same start/end rows).
+- Avoid hard‑coded numbers; always use cell references.
+- Where totals represent logical items (e.g., Total Assets = Net Investment + Total Other Assets), prefer explicit addition of the two subtotal cells — this is clearer and safer if rows shift.
+- Consider naming subtotal cells (e.g., NetInvestment, TotalOtherAssets) so formulas are self‑documenting.
+
+If you want, I can:
+- Provide the exact corrected formulas for every total cell in the workbook, or
+- Produce a small VBA or Excel formula checker to scan for mismatched J/L ranges and hard‑coded constants.

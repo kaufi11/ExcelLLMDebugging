@@ -1,0 +1,40 @@
+I checked the sheet and found the main errors plus a few risky hard‑coding choices. Short summary, why they matter, and how to fix them.
+
+1) Problem 1 — wrong cross‑product in H5 (critical)
+- Error: H5 is set to =D5/F5 (division) while H6 and H7 use multiplication (=D6*F6, =D7*F7). That makes the summed covariance (H8) wrong and therefore rxx' (B11) wrong.
+- Fix: change H5 to =D5*F5.
+- Why: H column should be (x1 - mean1)*(x2 - mean2). Using division produces an incorrect cross‑product and a wrong correlation.
+
+2) Hard‑coded means (risk of future errors)
+- Examples: D5 uses =B5-2.93333, D6 =B6-2.93333, B9 =8.8/3, C9 =6/3, many other places use numeric constants for means (e.g. 2.777767, 2, 3.166667).
+- Problem: If you change the raw data, those hard‑coded numbers won’t update → wrong deviations, sums, correlations, KR formulas, etc.
+- Fix: reference the computed cells instead of literal numbers. e.g.:
+  - B9 → =B8/COUNT(B5:B7) (or =B8/3)
+  - D5 → =B5 - $B$9 (use absolute reference to the mean cell)
+  - F5 → =C5 - $C$9
+  - Do this throughout (replace 2.93333, 2, 2.777767, etc. with the appropriate mean cell reference).
+- Why: ensures calculations auto-update and reduces transcription mistakes.
+
+3) Problem 6 — KR‑21 formula missing k/(k-1) factor
+- Error: B104 = 1 - ((B102*(5-B102))/(5*B103)) omits the (k/(k-1)) multiplier. You do include it in F104 (corrected), but B104 label “KR21” should use the standard KR‑21.
+- Fix: Use the standard form with k referenced, e.g.
+  - If k=5 in B104: = (5/(5-1))*(1 - ((B102*(5 - B102))/(5 * B103)))
+  - Or generalized: = (k/(k-1))*(1 - ((mean*(k-mean))/(k*variance))) with k in a cell.
+- Why: KR‑21 normally multiplies by k/(k-1); omitting it underestimates reliability.
+
+4) Minor / non‑critical items to tidy
+- Problem2 and elsewhere: a few cell labels/headers are typos (e.g., “(x3-mne)sqrd”) — cosmetic but can confuse users.
+- Problem4: constructing mean of the 10 off‑diagonal correlations by hand is fragile; better to use ranges or an explicit list of the 10 cells (or compute average of upper triangle). Not an error per se but increases chance of omission.
+- KR‑20: be consistent about whether you use sample or population variance. Your B124 uses population variance (divide by N). If you want sample variance in KR‑20, change denominator accordingly. (Current formulas can be fine if that was your intention—just be deliberate.)
+
+Quick concrete fixes (paste into cells):
+- H5: =D5*F5
+- B9: =B8/COUNT(B5:B7)  (then change any D*/F* to subtract $B$9/$C$9)
+- D5: =B5 - $B$9 ; F5: =C5 - $C$9 (copy down)
+- B104 (KR‑21, corrected): =(5/(5-1))*(1 - ((B102*(5 - B102))/(5 * B103)))
+
+If you want, I can give:
+- a) the corrected cell‑by‑cell formulas for the whole sheet (replacing hard‑coded numbers), or
+- b) recalc the numeric results after applying these fixes.
+
+Which would you like?

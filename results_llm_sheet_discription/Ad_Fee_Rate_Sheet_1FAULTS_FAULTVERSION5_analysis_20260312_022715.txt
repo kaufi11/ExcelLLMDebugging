@@ -1,0 +1,59 @@
+Summary of the problems I found
+1. Many #REF! errors (broken formulas) — e.g. O39, P39, Q39, R39, S44, many P‑column formulas (P45, P50, P51, P53) show #REF!. That means a cell or range used by those formulas was deleted or moved.  
+2. Inconsistent percent units — some cells hold decimals (0.2297) while others hold whole‑number percents (10.01). Formulas that divide one by the other (O45 = N45 / N44) will give wrong results because the units are inconsistent.  
+3. Potential totals mismatch risk — the worksheet expects E62 (SUM of discipline $ amounts) to match E31 (Total Basic Services / Contract Amount). If links are broken or some discipline amounts reference deleted cells, those two will not reconcile.  
+4. Risk of divide‑by‑zero or spurious errors — F36:F44 use =E36/$E$62; if E62 is zero or missing, those will error.
+
+Why these are errors (short)
+- #REF! appears only when a referenced cell was deleted or its address changed. So the formula can’t compute.  
+- Percent math must use consistent units: either decimals (0.2297) or percent formatting (22.97%). Mixing them produces incorrect ratios.  
+- The sheet’s logic expects discipline totals to sum back to the contract amount; broken references break that reconciliation.
+
+How to fix (step‑by‑step, short and exact)
+1. Fix #REF! formulas
+   - Select a cell showing #REF! → look at the formula bar → click Trace Precedents (Formulas tab) to see what was deleted.  
+   - Replace the #REF! reference with the correct cell that contains the base $ amount for that row (usually the column E cell for that discipline). Example fixes (use exact row E cells on your sheet):
+     - For row 39 (Cost Consultant): change O39 from =#REF!*0.0547 to =E39*0.0547 (similarly P39 =E39*0.0109, Q39 =E39*0.0065, R39 =E39*0.0065). Keep S39 =SUM(K39:R39).
+     - For other rows where formulas multiply a base by a ratio, replace #REF! with the correct base (e.g., E40, E41, etc.).  
+   - If the intended base was a single “total” cell, replace #REF! with that absolute reference (for example $E$62 or $E$31), not a deleted cell.
+
+2. Make percent units consistent
+   - Decide if percent values will be stored as decimals (0.2297) or as percent format (22.97%). Convert all N‑column and O‑column percent cells to the same system.
+   - Example: if N44 is 0.2297 (decimal) and N45 is 10.01 (should be 10.01%), change N45 to 0.1001 (or format as 10.01% and ensure formulas treat it as decimal). Then O45 formula becomes meaningful. If you want O45 as a percent result, use =N45 / N44 (both decimals) or =N45 / N44 * 100 (if you want percent number).
+
+3. Restore reconciliation between totals
+   - After fixing #REF! and percent units, verify E62 (SUM(E36:E57)) equals E31 (=E16+E29). If they differ:
+     - Find which E36:E57 cell(s) are wrong or empty (Trace Dependents or use E31-E62 to see difference).
+     - Either correct discipline amounts (E36:E57) or make E62 reference E31 directly if appropriate (e.g., set E62 = E31 if that is the intended master value).
+   - Add a small check cell: =E31-E62 to show any mismatch quickly.
+
+4. Protect against future deleted references
+   - Use named ranges for critical totals (e.g., name E62 as ContractAmount) and use names in formulas: =E36/ContractAmount. That avoids accidental #REF! if rows shift.  
+   - Consider wrapping divide formulas in IF to avoid divide‑by‑zero: =IF($E$62=0,"",E36/$E$62) or =IFERROR(E36/$E$62,"").
+
+Quick examples of corrected formulas
+- Per‑firm allocation for Cost Consultant (row 39):
+  - K39 = $E$39 * 0.6811
+  - L39 = $E$39 * 0.01
+  - M39 = $E$39 * 0.0109
+  - N39 = $E$39 * 0.2194
+  - O39 = $E$39 * 0.0547
+  - P39 = $E$39 * 0.0109
+  - Q39 = $E$39 * 0.0065
+  - R39 = $E$39 * 0.0065
+  - S39 = SUM(K39:R39)
+
+- Allocation cell that used #REF! for base → use $E$62 if base is contract amount:
+  - P50 (example) = (O50/100) * $E$62   (if O50 is in percent like 4.68)
+
+What to do right now (action list)
+1. Open the workbook, go to one #REF! cell (e.g., O39). Inspect the formula to see which cell was deleted.  
+2. Replace #REF! with the correct base cell (most likely the column E cell for that discipline or $E$62) and copy the corrected pattern across the row.  
+3. Normalize percent values (convert whole numbers like 10.01 → 0.1001 or format as %).  
+4. Recalculate and confirm E31 = E62 and totals in the budget reconcile. Add the reconciliation check cell.
+
+If you want, send me:
+- A screenshot of one or two of the formulas that currently show #REF! (formula bar visible), or
+- The workbook (or the small affected range) and I will rewrite the broken formulas and standardize percent units for you.
+
+Short recap: #REF! = deleted/moved references — replace with the correct base (usually the E‑column discipline amount or $E$62). Make percent values consistent (decimals vs percent) so division/multiplication formulas produce correct allocations. Use named ranges and IFERROR to avoid future breakage.

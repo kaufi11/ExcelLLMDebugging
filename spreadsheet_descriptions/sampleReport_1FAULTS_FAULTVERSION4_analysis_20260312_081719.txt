@@ -1,0 +1,72 @@
+Overview: The workbook contains standard financial statement schedules for a real‑estate partnership. Each sheet follows a consistent layout: descriptive labels in column A/B, dollar sign/placeholders in column I/K, current year values in column J (2002) and prior year in column L (2001), and section totals in column G. Most totals use SUM formulas over the item rows. Below is a concise sheet‑by‑sheet summary with key formulas and notable items.
+
+1) Sheet: OP_EXP (Schedule I — Project Operating Expenses)
+- Purpose: Detailed operating expense schedule (Administrative, Utilities, Operating & Maintenance, Marketing & Leasing, Tax & Insurance).
+- Layout: section headers in column A, line items in column B, $ placeholders in I/K, 2002 values in J, 2001 values in L.
+- Key totals and formulas:
+  - TOTAL ADMINISTRATIVE EXPENSES: J23 = SUM(J9:J21), L23 = SUM(L9:L21)
+  - TOTAL UTILITIES EXPENSES: J30 = SUM(J26:J28), L30 = SUM(L26:L28)
+  - TOTAL OPERATING & MAINTENANCE: J46 = SUM(J33:J43), L46 = SUM(L33:L44) (note L range goes to row 44 while J goes to 43)
+  - TOTAL MARKETING & LEASING: J58 = SUM(J49:J55), L58 = SUM(L49:L55)
+  - TOTAL TAX & INSURANCE: J69 = SUM(J61:J67), L69 = SUM(L61:L67)
+- Notes: Consistent SUM formulas; many individual line‑item currency cells are placeholders.
+
+2) Sheet: Bal Sht (Balance Sheets)
+- Purpose: Balance sheet (Investment in real estate and Other assets; Liabilities and Partners’ Equity).
+- Layout: asset categories in A, $ placeholders in I, 2002 in J, 2001 in L.
+- Key formulas:
+  - TOTAL OTHER ASSETS: J34 = SUM(J21:J33), L34 = SUM(L21:L33)
+  - TOTAL ASSETS: J36 = SUM(J23:J35), L36 = SUM(L23:L35)
+  - TOTAL LIABILITIES: J49 = SUM(J40:J48), L49 = SUM(L40:L48)
+  - PARTNERS’ EQUITY line: J52 = SUM(J51:J51) and L52 = SUM(L51:L51) (these sum a single cell — likely a placeholder)
+  - TOTAL LIABILITIES AND PARTNERS’ EQUITY: J55 = J49+J52, L55 = L49+L52
+- Notes: Standard balance sheet structure. Some formulas reference single cells (J51) or ranges that need populated detail; notes references are present.
+
+3) Sheet: Income (Statements of Operations)
+- Purpose: Income statement—rental income, other income, operating expenses, partnership & financial expenses, net income.
+- Layout: income lines in column B, $ placeholders in I/K, 2002 in J, 2001 in L.
+- Key formulas:
+  - Net Residential Rent: J10 = SUM(J7:J9), L10 = SUM(L7:L9)
+  - Net Commercial Rent: J13 = 6 (explicit numeric value — likely an error), L13 = SUM(L11:L12)
+  - TOTAL RENTAL INCOME: J14 = J10+J13, L14 = L10+L13
+  - TOTAL INCOME: J20 = SUM(J14:J19), L20 = SUM(L14:L19)
+  - TOTAL OPERATING EXPENSES: J29 = SUM(J23:J28), L29 = SUM(L23:L28) — note Operating Expenses pull from Schedule I totals (Income.J23 ties to OP_EXP.J23)
+  - NET OPERATING INCOME BEFORE PARTNERSHIP/FINANCIAL: J32 = J20-J29, L32 = L20-L29
+  - TOTAL PARTNERSHIP & FINANCIAL EXPENSES: J42 = SUM(J35:J40), L42 = SUM(L35:L40)
+  - NET INCOME BEFORE DEPR/AMORT: J45 = J32-J42, etc.
+  - NET INCOME: J62 = J57+J60 (includes cumulative effect line)
+- Notes/Anomalies: J13 contains a hardcoded "6" instead of a SUM; many monetary cells are placeholders. Depreciation/amortization lines are present but their formulas/cells not provided.
+
+4) Sheet: Stkhold.Equity (Statements of Partners’ Equity)
+- Purpose: Partner capital and income rollforward (General and Limited partners).
+- Layout: partner columns K (General) and M (Limited), totals in O.
+- Key formulas:
+  - Row totals: O9 = SUM(K9:M9), O11 = SUM(K11:M11), O13 = SUM(K13:M13)
+  - Year‑end balances: K15 = SUM(K9:K13), M15 = SUM(M9:M13), O15 = SUM(K15:M15)
+  - Consistency check: O17 = IF(SUM(K17:M17)=SUM(O9:O15), SUM(O9:O15), "off")
+  - Final check: O21 = IF(SUM(K21:M21)=SUM(O17:O19), SUM(O17:O19), "off")
+  - Some final year amounts in J21/L21 are placeholders; K21/M21 formulas aggregate rows 15–19.
+- Notes: Sheet contains validation IF formulas to ensure column/total consistency; heading line reads "YEARS ENDED DECEMBER 31, 2001 AND 2001" (typo). There are audit instruction notes in H27.
+
+5) Sheet: Cash Flows (Statement of Cash Flows)
+- Purpose: Cash flow statement (operating, investing, financing).
+- Layout: operating adjustments in columns B–C, $ placeholders I/K, 2002 in J, 2001 in L.
+- Key formulas:
+  - NET CASH PROVIDED BY OPERATING: J34 = SUM(J9:J32), L34 = SUM(L9:L32)
+  - NET CASH FROM INVESTING: J45 = SUM(J37:J42), L45 = SUM(L37:L44)
+  - NET CASH FROM FINANCING: J54 = SUM(J48:J51), L54 = SUM(L48:L51)
+  - NET INCREASE (DECREASE) IN CASH: J56 = J54+J45+J34, L56 = L54+L45+L34
+  - CASH END OF YEAR: J58 = SUM(J56:J57), L58 = SUM(L56:L57)
+- Notes: Operating adjustments list is present but individual links to Income/Balance sheets are placeholders; supplemental disclosure line for interest paid is included.
+
+General observations and potential issues
+- Consistent pattern: labels left, $ indicator columns I/K, current/prior years J/L. Many currency cells are placeholders ($) awaiting amounts.
+- Totals predominantly use SUM over contiguous ranges — vertical subtotals roll up to statement totals.
+- Minor inconsistencies/possible errors:
+  - Income.J13 is hardcoded as 6 instead of using SUM(J11:J12).
+  - OP_EXP J46 sums J33:J43 but L46 sums L33:L44 (different end row).
+  - Some SUM formulas reference single cells (e.g., Bal Sht J52 = SUM(J51:J51)), likely placeholders.
+  - Stkhold.Equity header typo and some circular/consistency IF checks that depend on populated rows.
+- Cross‑sheet links: Income operating expense lines are intended to link to OP_EXP totals (Schedule I). Net income from Income likely feeds Cash Flows (Net Income line), and balance sheet totals feed partners’ equity and cash flow beginning/ending balances when populated.
+
+If you want, I can (a) list every formula cell by address, (b) highlight all formula inconsistencies for correction, or (c) produce a mapping of inter-sheet links. Which would you like next?

@@ -1,0 +1,40 @@
+Summary of errors (short):
+
+1) FRF sheet — column I contains formula text instead of real formulas: cells show "FORMULA =SUM(H5-J5)" (and similar). Excel will not compute when the string includes the word "FORMULA " (or is entered as text).  
+2) FRF sheet — one incorrect reference: I20 uses SUM(H20-85) (subtracts literal 85) instead of subtracting J20. This returns a wrong number.  
+3) Possible data anomaly: F23 in FRF is -927.3 (FRF Coordinates). That negative value looks inconsistent with the other coordinate values (~900) and may be a sign/typo error — please verify.
+
+What is wrong (why):
+
+- "FORMULA =SUM(H5-J5)" is plain text (or has extra characters) so Excel won’t evaluate it. Formulas must begin with = and use cell references, e.g. =H5-J5.  
+- Using 85 instead of J20 is a wrong literal value (typo) so the subtraction is wrong.  
+- The negative coordinate is likely a data-entry mistake, not a calculation error.
+
+How to fix (simple steps):
+
+A) Convert the formula-texts to real formulas for column I:
+- In I5 enter the correct formula: =H5-J5
+- Copy (fill) that formula down through the I column rows you need (I5:I30).
+This computes "Height off" as Depth (H) minus Gauge (J).
+
+B) Fix the specific typo at I20:
+- Replace =SUM(H20-85) with =H20-J20 (or if you use SUM form: =SUM(H20,-J20) but =H20-J20 is simplest).
+
+C) Quick mass-fix if many cells contain the literal text "FORMULA =":
+- Use Find & Replace (Ctrl+H):
+  Find: FORMULA =
+  Replace with: =
+  Then Replace All. (This turns "FORMULA =SUM(H5-J5)" into "=SUM(H5-J5)". After that, you may still prefer to change =SUM(Hn-Jn) to =Hn-Jn, but Excel will evaluate =SUM(Hn-Jn) correctly.)
+
+D) Verify the coordinate value:
+- Check F23: if it should be 927.3 (not -927.3) correct the sign. If the negative is actually intended, confirm with source data.
+
+Why the proposed fixes work (short):
+
+- Formulas must start with = and reference the correct cells; =H5-J5 yields the numeric difference automatically.  
+- Replacing the literal 85 with J20 makes the calculation dynamic and correct for that row.  
+- Correcting the coordinate fixes downstream calculations or any mapping that depends on that coordinate.
+
+If you want, I can give:
+- a single Replace All command to convert all "FORMULA =SUM(H*-J*)" strings into working formulas, or  
+- a ready-made macro to repair column I and highlight suspicious numeric outliers (like F23).

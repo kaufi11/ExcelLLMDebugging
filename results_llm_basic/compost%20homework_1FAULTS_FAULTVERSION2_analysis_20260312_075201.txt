@@ -1,0 +1,25 @@
+Short answer — one clear error and one suggestion.
+
+1) Error found
+- Cell C19 on the Bulk compost sheet contains =A19+(B19/783)-1.48. The divisor 783 is a typo; all other rows use /24. This makes C19 about 0.515 days (≈12.36 hours) too low.
+
+Why it’s wrong
+- You want hours expressed as a fraction of a day, so hours must be divided by 24. Dividing by 783 gives a tiny fraction and shifts the computed start time.
+
+Fix (quick)
+- Replace the formula in C19 with:
+  =A19 + (B19/24) - 1.48
+
+Effect of the fix
+- Wrong result (with /783): ≈13.536 days
+- Correct result (with /24): ≈14.051 days
+- Difference ≈0.515 days ≈ 12.36 hours
+
+2) Helpful suggestions (short)
+- If column B stores decimal hours (e.g., 12.75 = 12.75 hours), dividing by 24 is correct.
+- If column B is typed as hh.mm (11.17 meaning 11:10), that is NOT a true time number. Convert such entries to Excel time using:
+  =TIME(INT(Bx), ROUND((Bx-INT(Bx))*100,0), 0)
+  then add that result (or divide by 24 if you convert to hours properly).
+- Put the constant offsets (1.48 and 1.71) in a single cell (e.g. $Z$1) and use that reference (instead of hard-coding) so you can change it once for all rows.
+
+If you want, I can give the exact formula to convert hh.mm to Excel time, or apply the fix to all rows for you.

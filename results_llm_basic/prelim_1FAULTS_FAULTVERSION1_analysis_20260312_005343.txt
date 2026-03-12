@@ -1,0 +1,32 @@
+Short answer — main error(s) and fixes
+
+1) Wrong formula in program! (big cause of the numbering jump)
+- Error: Cell A25 contains =A24+715 (should increment by 1).
+- Effect: A25 becomes 727 (if A24=12) and every subsequent A cell that depends on it becomes huge/wrong (A26 = 728, A27 = 729, ...). This breaks any lookup or cross-reference that relies on those event numbers.
+- Fix: Replace A25 with =A24+1, then fill that formula down the rest of column A.
+
+2) Inconsistent hard-coded number
+- Issue: A41 is hard-coded as 26 while most other A cells are formulas. That is not an error in value (26 is correct if numbering is continuous) but is inconsistent and prone to break if you re-order rows later.
+- Fix (recommended): Change A41 to =A39+1 (or fill down the sequence from A12). Best is to make the whole column generated the same way.
+
+Cleaner, safer approaches (pick one)
+- Simple fill-down: Put 1 in A12, put =A12+1 in A13 and drag the fill handle down through the whole schedule. This keeps every row consistent and easy to maintain.
+- Stable auto-number using ROW(): put this in A12 and fill down:
+  =ROW()-11
+  This returns 1 at row12, 2 at row13, etc. (Adjust the -11 if your first numbered row changes.)
+- In Office 365: you can use SEQUENCE to generate all numbers in one go.
+
+Other issues to be aware of (minor)
+- Program sheet has some blank rows (A23, A32). That’s okay but if you use fill-down be sure you include all rows you want numbered.
+- Schedule sheet time labels use inconsistent AM/PM text (e.g., "10.15 - 12.20 AM" — 12:20 noon should be PM). These are text labels and can confuse readers or automated parsing.
+  - Fix: Use real Excel time values in separate Start/End cells and format as "hh:mm AM/PM", or correct the text to "10:15 - 12:20 AM/PM" appropriately. Use Text to Columns or TIMEVALUE to convert text to times if needed.
+
+Why these fixes?
+- Fixing A25 returns the sequential numbering so any formulas, filters, or lookups that depend on event IDs will work correctly.
+- Using a consistent formula or ROW()-based numbering prevents single-typing mistakes and makes the sheet robust to row insertions/deletions.
+- Converting text times to true time values prevents ambiguity (AM/PM mistakes) and enables correct time calculations (durations).
+
+If you want, I can give the exact cell-by-cell quick steps (or a macro) to:
+- fix A25,
+- fill-column A consistently,
+- and convert the schedule text times to real Excel times. Which would you prefer?

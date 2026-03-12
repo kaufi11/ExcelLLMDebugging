@@ -1,0 +1,35 @@
+Summary — the sheet has 3 problems that stop Week 4 (column E averages) from being used correctly:
+1) Many overtime formulas in column G point to the wrong E row (off-by-one or to E10).  
+2) Jones (E5) average is wrong — it only averages B5:C5 instead of B5:D5.  
+3) Possible payroll double-count: Gross Pay uses (F+G)*rate, which can overpay overtime depending on your overtime policy.
+
+Fixes (short & exact)
+
+A. Fix Week 4 averages (column E)
+- E3: =AVERAGE(B3:D3)  (already OK)
+- E4: =AVERAGE(B4:D4)
+- E5: =AVERAGE(B5:D5)  ← change this (was =AVERAGE(B5:C5))
+- E6: =AVERAGE(B6:D6)
+- E7: =AVERAGE(B7:D7)
+- E8: =AVERAGE(B8:D8)
+
+B. Fix overtime formulas (column G) so each row uses its own E cell
+Put this in G3 and copy down to G8:
+- G3 (and fill down): =MAX(B3-40,0)+MAX(C3-40,0)+MAX(D3-40,0)+MAX(E3-40,0)
+
+This makes the overtime calculation include the Week‑4 value (the average in column E) for each employee.
+
+C. Check Gross Pay formula (C15:C20)
+- Current: =(F3+G3)*B15 — this adds overtime hours twice if F already includes those overtime hours.
+- If overtime is paid at 1.5× regular pay, use:
+  - =F3*B15 + G3*B15*0.5  (or =(F3 + 0.5*G3)*B15)
+- If overtime is paid at the same rate as regular hours (unusual), use:
+  - =F3*B15
+Choose the one matching your payroll rule and copy down.
+
+Why this works (brief)
+- E cells hold Week‑4 hours (you wanted those to be averages). Using E3..E8 in G ensures overtime checks Week‑4 values.  
+- Fixing E5 ensures Jones’ Week‑4 is actually the average of weeks 1–3.  
+- Adjusting Gross Pay prevents double‑paying overtime (or calculates the correct overtime premium).
+
+If you want, I can give you the exact formulas to paste for G3:G8 and C15:C20 after you tell me the overtime pay rate you use (1×, 1.5×, etc.).

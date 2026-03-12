@@ -1,0 +1,32 @@
+I checked the workbook. Two types of errors stand out (one is a clear typo, the other a consistency risk you should fix).
+
+1) Typo in CWS per-recipient (immediate bug)
+- Where: Sheet "CWS per-recipient", cell C14 (Louisiana, 1985–86).
+- Problem: The formula uses *1880 instead of *1000:
+  =('College Work-Study'!C16*1880)/'College Work-Study'!T16
+- Why it's wrong: All other per-recipient formulas convert funding "in thousands" to dollars by multiplying by 1000. Using 1880 multiplies the funding by the wrong factor and produces a wrong per‑recipient value.
+- Fix: Change the formula to:
+  =('College Work-Study'!C16*1000)/'College Work-Study'!T16
+- Result: that cell will be consistent with every other per‑recipient calculation.
+
+2) Unit/consistency risk (recommendation)
+- What I saw: Some funding cells are written as big numbers divided by 1000 (e.g. 635073450/1000) and others are written as already-truncated numbers (e.g. 615053 - ...). The per-recipient sheets assume funding values are "thousands" and therefore multiply by 1000 in the numerator.
+- Risk: If any funding cell is already in dollars (not thousands) or accidentally missing the /1000, the per-recipient calculation will be off by a factor of 1,000 (or inconsistent across years).
+- Fix / best practice:
+  - Pick one canonical unit for funding (recommended: funding in thousands, as current layout implies).
+  - Make all funding source formulas return the same unit (all end in /1000 if they start from raw dollars, or none if you store thousands explicitly).
+  - In per-recipient formulas use one canonical expression: =Funding_000s*1000 / Recipients.
+  - To make maintenance safer, create named ranges (e.g. Funding_US_1985 = 'College Work-Study'!C5) or a hidden helper column that outputs funding in dollars (Funding$ = Funding_000s * 1000) and use that helper in all per-recipient formulas. That prevents repeating *1000 everywhere and reduces typo risk.
+
+Quick steps to apply now
+1. Fix the typo:
+   - Edit CWS per-recipient!C14: change 1880 → 1000.
+2. Do a quick scan for similar typos:
+   - Search workbook for "*1880" or other non-1000 multipliers in per-recipient sheets.
+3. Standardize units:
+   - Decide funding unit (thousands) and make funding cells uniform (add /1000 where missing).
+   - Optionally add a helper column with Funding_in_Dollars = Funding_000s * 1000 and point all per-recipient formulas to that helper.
+
+If you want, I can:
+- give the exact list of all per-recipient formulas that differ from the standard (so you can audit),
+- or produce the single corrected formula text for any specific cell(s).

@@ -1,0 +1,21 @@
+I reviewed the workbook and found one clear formula error and one important check to make. Short and simple:
+
+1) Wrong % variance cell (definite error)
+- Faulty cell: Table 2.0 BS - Annex E — K69 (Variance as % of original forecast for "Total Funds")
+- Problem: K69 currently contains =K49 (it just copies the % for "Total Net Assets"). That is wrong — it does not compute the % variance for Total Funds, it copies another row's result.
+- Fix (repair formula): 
+  =IF(H69=0,"N/A",(J69/H69)*100)
+- Why: The pattern used elsewhere is (change/original)*100. For Total Funds you must divide J69 (variance) by H69 (original forecast) — not reuse K49. This gives the correct percent variance.
+
+2) Review: reconciliation formulas and zero-denominator handling
+- Many "% variance" cells use IF(Hx=0,"N/A",(Jx/Hx)*100). That prevents #DIV/0! errors by returning "N/A" when the original forecast is zero. That is intentional — but confirm you want "N/A" instead of 0% or blank. If you prefer a blank instead of "N/A", change "N/A" to "".
+- Also validate the reconciliation cells that compare cashflow totals to balance sheet items (e.g. Table 3 T26 and T49) to ensure they reference exactly the balance-sheet line(s) you intend (short-term investments + cash + bursary balances). If your reconciliation should use a different set (for example only cash at bank), update the summed references accordingly.
+
+How to implement
+- Edit K69 on the Balance Sheet sheet and replace =K49 with:
+  =IF(H69=0,"N/A",(J69/H69)*100)
+- Optionally scan other K-cells to confirm they follow the same IF(...,(J/H)*100) pattern, and adjust the "N/A" handling to your preference.
+
+If you want, I can:
+- Provide a short list of every cell where a % formula uses "N/A" so you can change the behavior in one go.
+- Double-check any other specific reconciliation you’re unsure about (tell me which reconciliation you want it to match).

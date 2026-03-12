@@ -1,0 +1,40 @@
+I've checked the three sheets. I found the key formula errors (and one likely data-link omission). Short answers and fixes below.
+
+1) Sheet: Seq Production Costs
+- Error: Cell G21 uses COUNT(G19:G20) instead of summing dollars.
+  - Problem: COUNT returns how many numeric cells exist (e.g. 1 or 2), not the total dollar amount. This makes the "Other Activities" grand total wrong and will make the One Year Total (B23) incorrect.
+  - Fix: Replace the formula in G21 with:
+    =SUM(G19:G20)
+  - Explanation: G19 is the sum of direct costs for "Other Activities", G20 is indirect costs for them; G21 should be their dollar total, so SUM is required.
+
+2) Sheet: Tech Dev Costs
+- Error: Cell B6 (TOTAL COSTS) is 0 while B17 =SUM(B9:B16) contains the tech-dev total; B18 divides by B6.
+  - Problem: B18 =B17/B6 will produce #DIV/0! (or be meaningless) if B6 is 0 or not linked to the actual total.
+  - Fix: Make B6 reflect the total tech-dev costs. Either:
+    - Put formula in B6:
+      =B17
+    or if your workbook expects B6 to be an overall total coming from other sheets, link it accordingly. But if B6 is meant to be the tech-dev total, use =B17.
+  - Explanation: B18 computes "percent of total costs" (B17/B6). B6 must contain the correct denominator (total funds requested) or the percent will be wrong or cause divide-by-zero.
+
+3) Sheet: Bioinformatics Costs
+- Error: Cell B6 (TOTAL COSTS) is 0 but the sheet has three subtotal blocks (Infrastructure B17, Assembly B30, Annotation B43); several percent formulas divide by B6.
+  - Problem: B18 =B17/$B$6, B31 =B30/$B$6, B44 =B43/$B$6 will all be #DIV/0! or incorrect if B6 is 0 / not the combined total.
+  - Fix: Set B6 to sum the three section totals. Put this formula in B6:
+    =B17 + B30 + B43
+  - Explanation: The sheet calculates each block's percentage of the total using B6 as the denominator; B6 must equal the overall total of those three blocks.
+
+Optional small consistency improvements (not critical errors but recommended)
+- On Seq Production, cells C21, E21, H21 currently contain literal 1s (to indicate 100%). Consider using formulae for clarity:
+  - C21: =B21/B21
+  - E21: =D21/D21
+  - H21: =G21/G21
+  This makes it obvious they represent 100% and prevents confusion if layout changes.
+
+Summary of fixes to enter:
+- Seq Production!G21 -> =SUM(G19:G20)
+- Tech Dev Costs!B6 -> =B17
+- Bioinformatics Costs!B6 -> =B17 + B30 + B43
+
+After making these changes, verify there are no #DIV/0! errors and that totals (e.g., Seq Production B23, Tech Dev B18, Bioinformatics B18/B31/B44) look reasonable.
+
+If you want, I can give a quick checklist to validate the whole workbook (common places where divide-by-zero or wrong aggregation appears).

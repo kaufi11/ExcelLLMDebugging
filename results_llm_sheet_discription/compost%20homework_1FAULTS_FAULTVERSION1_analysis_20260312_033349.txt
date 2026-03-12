@@ -1,0 +1,25 @@
+Summary of the error
+- On sheet "Bulk compost" the cell C5 is wrong: its formula is =A5 + (B5/24) + 1.48 (plus), while every other row on that sheet uses -1.48. That makes C5 off by 2 * 1.48 = 2.96 days (and shifts that row’s timestamp/“Days from” value a lot).
+
+Why it’s a problem
+- One incorrect sign breaks any time‑series ordering, plotting, grouping or day-based summaries that rely on column C. Because the offset is hard-coded, a single typo like this is easy to miss but causes a large error.
+
+Quick fix (one cell)
+- Edit Bulk!C5 to =A5 + (B5/24) - 1.48 and press Enter. Then fill down C5–C22 again (or fill the whole column) so all rows use the same correct formula.
+
+Better / robust solutions (recommended)
+1) Use a single offset cell instead of hard-coded numbers:
+   - Put the offset 1.48 in a cell, e.g. $Z$1 (label it StartOffset).
+   - Change formulas to =A4 + (B4/24) - $Z$1 and fill down. This prevents manual typos and lets you change the offset once.
+
+2) Prefer real Excel datetimes (safer than day numbers + decimal hours):
+   - Put the actual start date in cell $Z$1 (e.g. 2026-03-01).
+   - If A = day count where A=1 is the start date, use:
+     = $Z$1 + (A4 - 1) + (B4/24)
+     Format the column as Date/Time. This is clearer and less error‑prone.
+
+Extra check
+- Search column C for any formula that differs from your template (look for “+1.48” or other signs). Use Home → Find to find inconsistent formulas and correct them.
+- Also confirm that your "hour" values are true decimal hours (e.g., 11.17 = 11.17 hours). If hours were entered as HH.MM (11.17 meaning 11:10), convert them properly (or enter as Excel time).
+
+If you want, I can give the exact steps to convert the sheet to real datetimes and update all formulas.

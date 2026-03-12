@@ -1,0 +1,66 @@
+Workbook overview
+- Contains financial statements plus many blank/placeholder sheets (sheet3, Sheet4–Sheet16).
+- Key populated sheets: "P&L" (profit & loss / income statement) and "Balance Sheet".
+- Layout uses blocks of columns for comparative periods (Three Months Ended and Six Months Ended on P&L; Dec 31 and June 30 on Balance Sheet). Numeric columns are mainly F, H, J, L (P&L) and G, I (Balance Sheet).
+
+P&L sheet — structure and key formulas
+- Headers: G3 = "Three Months Ended", K3 = "Six Months Ended". Columns under those headers: F (Dec 31, 2000), H (Dec 31, 1999), J (Dec 31, 2000), L (Dec 31, 1999).
+- Revenues:
+  - Software licenses: F7=40,630; H7=29,318; J7=73,212; L7=50,825
+  - Maintenance and other services: F8=41,057; H8=33,166; J8=77,963; L8=65,011
+  - Total revenues formulas: F9 = SUM(F7:F8); H9 = COUNT(H7:H8) (note: appears incorrect — should be SUM); J9 = SUM(J7:J8); L9 = SUM(L7:L8)
+  - Computed totals: F9 = 81,687; H9 (as written) = 2 (error); J9 = 151,175; L9 = 115,836
+- Expenses:
+  - Line items in B12:B17 with values provided for each period (costs, S&M, R&D, G&A, charge for in‑process R&D). J17 is set by formula "12615-5000" (=7,615) rather than referencing cells.
+  - Total costs: F18 = SUM(F12:F17) = 82,030; H18 = SUM(H12:H17) = 61,334; J18 = SUM(J12:J17) = 158,190; L18 = SUM(L12:L17) = 120,166
+- Operations and net:
+  - Income (loss) from operations: F20 = F9 - F18 = -343; H20 = H9 - H18 = -61,332 (artifact of the COUNT error); J20 = -7,015; L20 = -4,330
+  - Other items: interest, write-off, other income in rows 22–24; F23 = -5,000 and J23 = -5,000 (write‑offs)
+  - Income before taxes: row 27 = SUM(row20:row24): F27 = -3,763; H27 = -60,368; J27 = -9,028; L27 = -2,335
+  - Provision for taxes (row 30): F30 = -1,128; H30 = 785; J30 = -2,708; L30 = -594
+  - Net income (row 33): F33 = F27 - F30 = -2,635; H33 = -61,153; J33 = -6,320; L33 = -1,741
+- EPS:
+  - Diluted EPS (row 36): values are F33/F37, H33/H37, J33/J37, L33/L37 where F/J/H/L37 are diluted shares.
+    - Diluted shares: F37=29,747; H37=29,774; J37=29,493; L37=27,863
+    - Computed diluted EPS: F36 ≈ -0.09; H36 ≈ -2.06 (driven by incorrect H33); J36 ≈ -0.21; L36 ≈ -0.06
+  - Basic EPS uses row 40 shares (F40/J40/etc).
+- Pro forma sections:
+  - Pro forma excluding certain charges (rows 42–52) contain reported pro‑forma net income and diluted EPS formulas (e.g., F44=3,111; F46 = F44/32,703 ≈ 0.095; J46 ≈ 0.096; F52 ≈ 0.132; J52 ≈ 0.154). Some pro‑forma values for 1999 are hardcoded (0.05 or -0.05).
+
+Notable formula issues on P&L
+- H9 uses COUNT(H7:H8) instead of SUM; this yields 2 rather than the expected revenue total (~62,484), propagating errors into H20,H27,H33,H36, etc.
+- J17 uses the hardcoded expression "12615-5000" rather than a cell reference (result = 7,615); F17 is 2,615 (inconsistency between periods).
+- Some rows mix direct arithmetic and cell references; check consistency and intent.
+
+Balance Sheet — structure and key formulas
+- Columns: G = "December 31, 2000" (G3/G4), I = "June 30, 2000" (I3/I4).
+- Current assets (G7:G11 provided; G12 not listed):
+  - Cash & short-term investments G7 = 83,160
+  - Accounts receivable G8 = 107,032
+  - Current portion long-term installments G9 = 29,566
+  - Deferred tax asset G10 = 3,300
+  - Prepaids & other G11 = 18,388
+  - Total current assets G13 = SUM(G7:G12) = 241,446 (blank G12 treated as 0)
+  - For June 30 (I): I13 = 261,555
+- Noncurrent and totals:
+  - Long-term installments G15 = 38,729; equipment G16 = 42,385; software costs G17 = 7,654; intangibles G18 = 29,409; deferred tax G19 = 4,027; other assets G20 = 11,661
+  - Total assets G22 = SUM(G13:G20) = 375,311; June 30 total I22 = 364,945
+- Liabilities and equity:
+  - Current liabilities sum G31 = SUM(G27:G30) = 86,665; I31 = 92,175
+  - Long-term debt G33 = 88,489; deferred revenue (long-term) G34 = 13,199; other liabilities G35 = 832
+  - Total stockholders' equity G37 = 186,126 (G) and I37 = 169,198 (I)
+  - Total liabilities & equity G38 = SUM(G31:G37) = 375,311 (balances with assets); I38 = 364,945
+
+Notable Balance Sheet observations
+- G13 sums G7:G12 but G12 value is absent in the provided extract — formula will treat missing cell as zero (verify if G12 should contain an item).
+- Assets = Liabilities + Equity (G22 = G38; I22 = I38), so totals reconcile.
+
+Summary of action items / checks to perform
+- Correct H9 to SUM(H7:H8) so 1999 three‑month revenues propagate correctly.
+- Verify J17 (in‑process R&D charge) and ensure consistent cell references rather than inline arithmetic.
+- Confirm any missing cells (e.g., G12) that are included in SUM formulas.
+- Review write-off entries (F23/J23 = -5,000) and pro‑forma adjustments for consistency with disclosures.
+
+If you want, I can:
+- Provide a corrected P&L with the H9 fix and updated downstream calculations, or
+- Export the summarized totals into a new sheet with corrected formulas. Which would you prefer?

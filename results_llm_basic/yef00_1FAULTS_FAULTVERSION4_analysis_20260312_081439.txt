@@ -1,0 +1,44 @@
+Summary — main errors I found
+- Several data cells contain hard-coded arithmetic (numbers added together or “+1”) instead of the correct single value or proper references. These artificially change totals and percentages.
+  - Revenues by Source: C9 is "9432730+111410104" (should be a single value or a reference), C11 is "141577402+1".
+  - General State Financial Aid: B21 is "3684419+1".
+  - FTEE Calculation: E27 is "SUM(E11:E26)+1".
+- Wrong cell used in one FTEE row:
+  - FTEE, row for NCC (row 14): C14 = 302/24 — should divide the hours in B14 by 24 (C14 = B14/24).
+- Cosmetic / fragile formula patterns that can hide mistakes:
+  - Many formulas use literal additions (e.g. +1) or constants instead of referencing the input cells. The leading plus sign (+C9/...) is harmless but inconsistent.
+  - Some SUM ranges include blank rows (not an error by itself, but check ranges to make sure all intended rows are included and no unintended rows are included).
+
+Why these are errors
+- Adding constants (like +1) or lumping two numeric literals into a “formula” changes the true data values and will make totals and percentages wrong.
+- C14 = 302/24 ignores the actual hours in B14 and produces an incorrect FTEE for that college.
+- Using constants instead of references prevents the sheet from updating correctly if source data change.
+
+How to fix (short, actionable)
+1. Replace hard-coded arithmetic with the correct single value or (preferably) a reference to the input cell:
+   - Revenues!C9: replace =9432730+111410104 with the correct value cell or a single numeric value (or with a reference like =<cellContainingTuitionFees>). If the two numbers are supposed to be two source cells, put them each into their own cells and use =SUM(cell1,cell2).
+   - Revenues!C11: change =141577402+1 to =141577402 (if that is the true amount) or, better, to a reference =<cell>.
+   - General State Financial Aid!B21: change =3684419+1 to =3684419 or to a reference =<cell>.
+   - FTEE Calculation!E27: change =SUM(E11:E26)+1 to =SUM(E11:E26).
+   (In short: remove the extraneous "+1" and stop embedding sums of constants in data cells.)
+2. Fix the FTEE hours formula:
+   - FTEE Calculation!C14: change =302/24 to =B14/24.
+3. Audit and correct any other places where numeric literals have been used in formulas instead of references. Make totals reference the corrected component cells.
+4. Recalculate and verify:
+   - After changes, recalc totals (C15 on Revenues, C19 on Expenditures, C15 on Expenditures by Category, B25/B27/C27 etc.) and check percentage formulas (e.g. B9 =C9/$C$15) to ensure they now sum to ~100% (allowing for rounding).
+   - Remove any +1 additions used to “force” nonzero totals — they skew percentage results.
+
+Example corrected formulas (exact addresses depend on where you keep raw numbers)
+- Revenues: C9 should be a single value cell (for example 9432730) or =SUM(C9a,C9b) if coming from two source cells.
+- General State Financial Aid: B21 => =3684419 (or =<cellRef>).
+- FTEE: C14 => =B14/24
+- FTEE totals: E27 => =SUM(E11:E26)
+
+How this fixes the problem
+- Removing the added constants restores true values so totals and percentage calculations (which divide by those totals) will be correct.
+- Using B14/24 ensures each college’s credit FTEE is calculated from its reported hours, not from an unrelated constant.
+- Using proper cell references makes the workbook update automatically and avoids hidden manual adjustments that break downstream calculations.
+
+If you want, I can:
+- Provide an exact list of corrected formulas for every affected cell, or
+- Show before/after examples with numbers so you can verify the corrected totals. Which would you prefer?

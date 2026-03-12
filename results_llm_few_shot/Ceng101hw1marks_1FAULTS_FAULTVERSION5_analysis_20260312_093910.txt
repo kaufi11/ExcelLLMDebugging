@@ -1,0 +1,45 @@
+Summary of main errors (short & fixable):
+
+1) Incorrect MAX/MIN/AVERAGE ranges in summary rows (rows 69–72)
+- Problem: Some summary formulas start at the wrong row (e.g. B69 =MAX(B33:B68), N69 =MAX(N17:N68), Q69 =MAX(Q17:Q68)) or even include summary cells (N70 uses N17:N69). This omits many students or creates self-reference.
+- Fix: Make all summary formulas use the same student range (rows 2:68). Example corrections:
+  - B69: =MAX(B2:B68)
+  - C69: =MAX(C2:C68)
+  - D69: =MAX(D2:D68)
+  - N69: =MAX(N2:N68)
+  - Q69: =MAX(Q2:Q68)
+  - N70: =MIN(N2:N68)
+  - Q70: =MIN(Q2:Q68)
+  - B71/C71/D71/G71/N71/Q71 and the STDEV cells: ensure they all use the same consistent student range (B2:B68, C2:C68, etc.)
+- Why: Consistent ranges ensure summary stats include every student and do not accidentally include summary rows.
+
+2) Many HW4 (column N) cells are hard-coded arithmetic expressions or typos
+- Problem: N cells contain formulas like =20+4, =269+5, =17+5/2, etc. These are:
+  - Hard-coded constants instead of referencing the actual parts (makes maintenance/error-prone).
+  - Sometimes produce impossible values for a /25 item (e.g. 269+5 = 274).
+  - Some use ambiguous operator precedence (see next point).
+- Fix:
+  - Replace hard-coded arithmetic with references to the real source cells (example if HW4 is composed of parts in columns L and M): =MIN(L2+M2,25) or simply =L2+M2 if that’s the rule.
+  - If HW4 is a single entered score, enter the numeric value directly (not as "20+4").
+  - To enforce the maximum (= /25), wrap with MIN: =MIN(L2+M2,25).
+- Why: Referencing cells keeps data correct when underlying parts change; MIN(...) prevents scores above the stated max.
+
+3) Operator-precedence mistakes
+- Problem: Expressions like =17+5/2 evaluate as 17 + (5/2) = 19.5 in Excel. If the intent was (17+5)/2, the formula is wrong.
+- Fix: Use parentheses when intended: =(17+5)/2 or replace with proper cell references: =(L10+M10)/2.
+- Why: Parentheses control evaluation order and avoid subtle wrong results.
+
+4) Suspicious outliers / data-entry typos
+- Problem: Student ID cells A16 (98,227,577) and A68 (99,650,185) are far larger than other IDs (~2–2.7 million) — likely typos (extra digits).
+- Fix: Verify and correct these IDs to the intended values.
+- Why: Bad IDs may break lookups, filters and cause confusion.
+
+What you should do now (quick checklist)
+1. Replace all summary formulas in rows 69–72 to use the consistent range rows 2:68.
+2. Audit column N: replace hard-coded "x+y" text formulas with cell references or numeric values, and add MIN(...,25) if you must cap at 25.
+3. Fix any formulas with ambiguous precedence by adding parentheses where needed.
+4. Review obvious data outliers (IDs, values > stated maxima) and correct them.
+
+If you want, I can:
+- Provide a list of every cell in column N that needs fixing (I can parse and list them), and
+- Generate the exact corrected formulas for all summary cells (I already listed the pattern). Which would you like me to do?

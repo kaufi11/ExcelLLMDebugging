@@ -1,0 +1,27 @@
+Summary of the actual error I found
+- Cell BH43 contains the constant 7 instead of the pattern used everywhere else: IF(Q$2="x",Q43,0). That is the single clear wrong entry in the sheet you posted.
+
+Why this is wrong / the impact
+- All the CL/CM totals on each row are built by summing those IF(...) cells (AU..CI). Putting a constant 7 in BH43 forces that row (and every aggregation that includes it: CL43, B43, B46, the I52/J52 totals and the final comparisons) to be too large. In short: totals and comparisons that include row 43 are inflated and therefore incorrect.
+
+Exact fix
+- Replace BH43 (currently =7) with the consistent formula:
+  =IF(Q$2="x",Q43,0)
+
+Why that fix works
+- The sheet’s pattern is: for each course-column the cell either includes the course’s rating (if that course is selected with an "x" in row 2) or 0. Using IF(Q$2="x",Q43,0) restores the intended conditional inclusion of Q43 only when that course is active. Then row-sums and global totals will calculate correctly.
+
+Other small recommendations (to avoid future issues)
+1. Scan for other accidental constants
+   - BH43 was likely a copy/paste mistake. Search the sheet for other standalone numbers where an IF(...) was expected and correct them the same way.
+2. Make the inclusion formulas uniform
+   - Some formulas use D2 while others use D$2. That’s not an error per se, but standardizing to D$2 (absolute row) makes copying consistent.
+3. Clean up SUM usage (optional)
+   - Some cells use SUM(I5+I9+...) which works but is clearer as =SUM(I5,I9,I10,...) or a proper contiguous range if possible.
+4. Recalculate and verify after the fix
+   - After correcting BH43, recalc and check CL43, B43, B46, I52 and J52 and the final "Outcome/Comparison" cells to confirm totals now match expected values.
+
+If you want, I can:
+- give you the exact list of cells to check for accidental constants,
+- produce a corrected copy of the critical formulas (BH43 and any similar mismatches) or
+- show how to use a simple macro or Find (e.g., Find "=?") to detect non-formula constants.

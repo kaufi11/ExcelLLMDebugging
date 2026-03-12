@@ -1,0 +1,30 @@
+Summary of errors
+- Faulty cell: A34
+  - Error: Typo in formula (=A33+604). This jumps the numbering from 28 to 632.
+  - Fix: change to =A33+1
+  - Why: you want a simple +1 increment, not +604.
+
+- Impacted cells: A35, A36, A37, A38, A39 (they inherit the wrong sequence)  
+  - After fixing A34 they will automatically become correct (if their formulas are =A34+1, =A35+1, ...).
+
+- Faulty cell: A40
+  - Error: hard-coded 35 which conflicts with the generated sequence.
+  - Fix: change to =A39+1 (or delete and fill down from above)
+  - Why: keep the sequence consistent; don’t mix manual values with the formula-driven series.
+
+Notes about gap/header rows
+- You intentionally have header/blank rows (e.g., row 14). That’s fine, but when you copy formulas down you must ensure formulas either reference the previous numeric cell or ignore headers. Some earlier formulas jump (e.g. A15 uses =A12+1) because rows 13–14 are not numbered; that’s acceptable if intentional.
+
+Safer, robust formula (recommended)
+- In A4 (and copy down every row in column A), use:
+  =IF(B4="","",A3+1)
+  - This leaves A-row blank if there is no name in column B and otherwise increments from the previous number.
+  - If your first numbered row is A3 with 1, it will produce a clean sequence even with inserted header rows.
+
+Quick steps to repair
+1. Change A34 to =A33+1.
+2. In A35 and below, ensure formulas are =A34+1, =A35+1, etc., or select A34 and drag the fill handle down to copy the correct pattern.
+3. Replace the manual A40 with =A39+1 (or re-fill down as above).
+4. Optionally replace column-A formulas with =IF(Bn="","",A(n-1)+1) to handle blank/header rows safely.
+
+That will restore a correct, continuous numbering sequence.

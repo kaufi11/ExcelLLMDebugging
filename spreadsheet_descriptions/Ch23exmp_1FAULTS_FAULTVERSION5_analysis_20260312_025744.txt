@@ -1,0 +1,57 @@
+Summary — workbook layout and key contents
+
+Sheets: Example and Formulas (both contain the same layout/logic and identical assumptions; Formulas sheet repeats formulas, with a couple of discrepancies noted below).
+
+Top: Assumptions (A1:A14 / B2:B14)
+- Key input values:
+  - Base Sales = 184,000
+  - % Sales Increase = 0.02 (2%)
+  - Base Inventory Balance = 50,000
+  - Additional ending inventory = 20% of next period sales
+  - Purchases = 60% of sales
+  - 7/31 (beginning) Inventory = 80,000
+  - October sales = 198,000
+  - Monthly salaries = 15,000
+  - Sales commission = 6%
+  - Rent (cash) = 14,000
+  - Depreciation = 3,000
+  - Insurance (prepaid) = 1,000
+  - Income tax rate = 30%
+
+Income statement (rows ~17–27)
+- Sales revenue:
+  - August (C17): =ROUND(B2*(1+B3),-3) → base sales grown by % increase, rounded to thousands.
+  - September (E17): =ROUND(C17*(1+B3),-3) → prior month * (1+growth).
+- Cost of goods sold (COGS): pulled from C34 / E34 (COGS schedule).
+- Gross margin = Sales − COGS.
+- Operating expenses:
+  - Salaries & commissions: =ROUND($B$9 + ($B$10 * <sales>), -3)
+  - Rent: =$B$11
+  - Depreciation: =$B$12
+  - Insurance: =$B$13
+  - Total operating expenses (sum of the above) and operating income = Gross margin − Operating expenses.
+- Income tax expense = ROUND(Operating income * tax rate, -3)
+- Net income = Operating income − Income tax
+
+COGS schedule (rows ~29–34)
+- Beginning inventory: uses 7/31 inventory for first month (C30 = B7); for next month it links to the prior month’s ending inventory.
+- Purchases = ROUND(Sales * $B$6, -3)
+- Cost of goods available = Beginning inventory + Purchases
+- Ending inventory = ROUND($B$4 + ($B$5 * next-period sales), -3) — target ending balance = base inventory + % of next period sales
+- COGS = Available for sale − Ending inventory
+
+Cash collections / disbursements skeleton (rows ~36–46)
+- Some roll-up formulas to aggregate current + prior-period items:
+  - F38 = E38 + C37 (collections aggregation)
+  - F42 = D42 + B41 (purchases disbursements aggregation)
+  - F44 = D44 + B43 (salaries & commissions aggregation)
+- Sections titled Current / Prior and placeholders for Rent, Insurance, Increase (Decrease).
+
+Other: July estimates and COGS breakout shown (rows ~52–58) — same schedule fields for July.
+
+Noted inconsistencies / likely errors
+- In the Formulas sheet, cell C24 is shown as =COUNT(B21:B24) (should be SUM(B21:B24)) — will miscalculate total operating expenses.
+- Ending inventory references are inconsistent: C33 references E17 (next-month sales) while E33 references B8 (October sales) — verify that each month’s ending inventory uses the correct "next period" sales cell.
+- Some column/label placement is inconsistent (month headers in B16/D16 but formulas in C and E); check column alignment if you intend labels and values to align.
+
+Overall: The model projects monthly sales using a growth rate, computes purchases (as % of sales), runs a COGS schedule with a target ending-inventory equal to base inventory plus a % of next-period sales, produces a simple income statement (gross margin, operating expenses, tax, net income), and includes a partial cash collections/disbursements layout for rolling current and prior-period items. Fix the two noted formula issues for correct totals and consistent inventory links.

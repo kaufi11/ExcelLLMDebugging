@@ -1,0 +1,33 @@
+Summary of errors
+1) Wrong reference (typo)
+   - EER SITE, row 21 (Functional Analyst, Senior): E21 = D22*1.04 — this points to the next row instead of its own prior year. That produces a wrong escalation for that row.
+
+2) Fragile formula design (risk, not immediate Excel error)
+   - Almost every escalation formula is hard‑coded as *1.04 instead of using the Escalation cell (column C). If you need to change the escalation percent you must edit many formulas.
+   - Rows marked "added 8/02" have no Year‑1 value in column B and instead start with a number in column D. That makes formula filling/inconsistency likely if you try to standardize.
+
+Quick fixes (short & safe)
+1) Fix the typo
+   - Change EER SITE!E21 to:
+     =D21*1.04
+   - Better (recommended): =D21*(1+$C21)
+   Explanation: this points to the correct prior-year value and uses the row’s escalation cell.
+
+2) Make formulas reference the escalation cell
+   - Replace hard-coded *1.04 with *(1+$C#). Example for row 6:
+     D6: =B6*(1+$C6)
+     E6: =D6*(1+$C6)
+     F6: =E6*(1+$C6)
+     …
+   Explanation: if escalation changes in column C you only change that cell and all year formulas auto-update.
+
+3) Normalize rows that were “added 8/02” (recommended for consistency)
+   - Option A (best): Move the first numeric rate (currently in D) into column B for those rows, then fill D:H with the standard formulas in step 2. This makes every row start from Year‑1 and follow the same logic.
+   - Option B: If you must keep D as the first numeric (and B has text), keep D as the numeric value and ensure E uses D*(1+$C#), F uses E*(1+$C#), etc. Do not overwrite D for those rows when filling formulas.
+
+How to apply quickly
+- Fix the single typo first (E21).
+- Then in a sample row (say row 6) enter the corrected formulas that reference C (D6 =B6*(1+$C6); E6 =D6*(1+$C6)) and drag across and down.
+- For added‑8/02 rows either move D → B or skip overwriting D and drag only E:H (they will use D as the starting point).
+
+If you want, I can give you a single copyable formula to put in D:H that works in all cases (handles blank B / values in D), or produce the exact list of cell formulas to paste. Which would you prefer?

@@ -1,0 +1,57 @@
+I inspected every formula in the provided sheet. I found one clear formula mistake that propagates through many totals and percentages. I also list a few minor inconsistencies (formatting / hard-coded constants) you may want to clean up.
+
+1) Primary formula error (causes the rest of the sheet to be off)
+- Cell: B7
+- Current formula: =B5*145
+- Issue: 145 is a hard-coded constant that breaks the consistent pattern used in columns C–E (which use unit count × ASP). B7 should multiply the quarter‑1 ASP (B5) by the quarter‑1 units (B4). The current wrong formula gives B7 = 20 * 145 = 2,900; the expected sales for Q1 is 20 * 1,000 = 20,000.
+- Suggested fix: change to =B5*B4
+
+2) Effects of the error
+Because B7 is too small, many row totals, operating cost allocations, taxes, and percentage-of-sales figures are incorrect. If you apply the suggested fix (B7 = B5*B4), the key totals change as follows (current → corrected):
+
+- F7 (Total Sales)
+  - current: 135,900
+  - corrected: 153,000
+
+- F5 (ASP/Unit, annual weighted avg)
+  - current: 19.4142857143 (=F7/F4 with bad B7)
+  - corrected: 21.8571428571 (=153,000 / 7,000)
+
+- F9 (Gross Margin)
+  - current: 73,900
+  - corrected: 91,000
+
+- F14 (Total Operating Costs)
+  - current: 14,472
+  - corrected: 15,840
+
+- F15 (Operating Income)
+  - current: 59,428
+  - corrected: 75,160
+
+- F16 (Taxes)
+  - current: 18,104.8
+  - corrected: 21,044.8
+
+- F17 (Net Income)
+  - current: 41,323.2
+  - corrected: 54,115.2
+
+- Example percentage (G8 = F8/F7)
+  - current: 0.4562178072 (with bad total sales)
+  - corrected: 0.4052287582 (62000 / 153000)
+
+You will get corresponding changes in all G-column % of sales values (they should be recalculated off the corrected F7).
+
+3) Minor / stylistic issues
+- Cells A5, A6, A10, etc. have leading spaces in their labels (e.g., " ASP/Unit", " CGS/Unit", "  Adv Expense"). Not an error, but inconsistent labeling.
+- Rent and Utilities are entered as formulas using constants (=200*3, =100*3) rather than referencing input cells. If you want easy scenario changes, consider moving those constants to input cells and referencing them.
+- Text in A8 reads "Cost fo Goods Sold" (typo: "fo" → "of").
+
+4) Summary recommended action
+- Fix B7 to =B5*B4. After that, review the changed totals (F7, F5, F9, F14–F17 and G-column percentages). Everything else appears consistent (formulas follow expected patterns).
+
+If you want, I can:
+- apply the fix and return a full list of recalculated cell values for all affected cells, or
+- produce a corrected copy of the workbook (if you provide write access), or
+- scan for any other potential best-practice suggestions (naming inputs, using named ranges, etc.).

@@ -1,0 +1,41 @@
+Errors found:
+
+1. **Inconsistent formulas for Ending Inventory (C33 and E33):**
+   - C33: `=ROUND($B$4+($B$5*E17),-3)` uses September sales (E17) to calculate August ending inventory.
+   - E33: `=ROUND($B$4+($B$5*B8),-3)` uses October sales (B8) to calculate September ending inventory.
+   
+   This is inconsistent because ending inventory for a month should be based on the *next month's* sales, but the references are mixed up.
+
+2. **Error in Operating Expenses Total in August (C24):**
+   - C24 formula is `=COUNT(B21:B24)` which counts the number of cells with numbers, not sums expenses.
+   - It should sum B21:B24 instead.
+
+3. **Circular Reference Risk:**
+   - E30 (September beginning inventory) is `=C33` (August ending inventory), which is correct.
+   - But C33 depends on E17 (September sales), which is fine.
+   - No circular reference here, but the inconsistency in ending inventory formulas can cause wrong values.
+
+Solutions:
+
+1. **Fix Ending Inventory formulas:**
+   - For August ending inventory (C33), use September sales (E17) → correct.
+   - For September ending inventory (E33), use October sales (B8) → correct.
+   
+   So formulas are logically right, but the problem is the base inventory ($B$4) is constant and may not be correct for both months. Usually, ending inventory should be based on the previous ending inventory, not a fixed base.
+
+   Suggestion: Use previous month's ending inventory as base, or clarify assumptions.
+
+2. **Fix Operating Expenses total for August (C24):**
+   - Change formula in C24 from `=COUNT(B21:B24)` to `=SUM(B21:B24)` to correctly sum expenses.
+
+Explanation:
+
+- Ending inventory should reflect the inventory needed for the next period's sales, so using next month's sales is correct.
+- Using COUNT instead of SUM for expenses causes wrong totals, affecting operating income and net income.
+- Fixing the sum will ensure accurate expense totals and correct profit calculations.
+
+Summary:
+
+- Change C24 formula to `=SUM(B21:B24)`
+- Review inventory assumptions if base inventory ($B$4) should be fixed or dynamic.
+- Otherwise, ending inventory formulas are consistent with assumptions.

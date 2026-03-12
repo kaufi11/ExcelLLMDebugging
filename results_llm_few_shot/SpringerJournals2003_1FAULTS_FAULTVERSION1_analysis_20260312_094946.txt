@@ -1,0 +1,23 @@
+Summary — main error found
+- Faulty cell: G25
+- Error type: Typo / hard-coded reference
+- Explanation: G25 contains =E25*61 (a hard-coded 61) instead of multiplying E25 by the subscription count in F25. That gives the wrong total for that row and makes the grand total in G407 too low/high.
+
+Fix (quick)
+- Change G25 to: =E25*F25
+
+Better (robust) formula to use for all G cells
+- Replace G2:G404 with a safe formula and fill down, e.g.:
+  =IFERROR(E2*F2,0)
+  This prevents errors if E or F are blank or non-numeric and returns 0 instead of an error.
+
+Check totals after fixing
+- G407 currently =SUM(G2:G404). After fixing G25 (and ensuring all G cells are real formulas), G407 will reflect the correct grand total.
+- Optionally change G407 to a SUM of the product to avoid row-by-row errors:
+  =SUMPRODUCT(N(E2:E404),N(F2:F404)) 
+  (This sums E*F even if some G cells are wrong or missing.)
+
+Extra recommendation
+- Scan column G for any other hard-coded constants or text (e.g. any cell like =E##*61 or cells showing the literal text "FORMULA =..."). Make sure the cells contain real formulas, not plain text. You can detect text formulas because they won’t calculate and will be left-aligned by default.
+
+If you want, I can give the exact steps to replace all G formulas and update totals.

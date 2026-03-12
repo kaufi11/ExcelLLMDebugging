@@ -1,0 +1,47 @@
+Summary of the problem
+- Several score formulas on the Ap1 / Ap2 / Ap3 sheets reference the wrong Rate!E cells (they are shifted two rows up), so those items use the wrong weighting values.  
+- One formula (Ap3 L20) uses wrong logic (<> instead of =) so it returns incorrect results.
+- Because the Ap sheets are wrong, the Summary totals will also be wrong.
+
+Cause
+- Likely a copy/paste or manual-edit error when building the IF formulas for E11:E20 — the E references for the last 5 items got shifted upward by 2 rows. Ap3 L20 was also mistyped.
+
+Exact errors and fixes (replace each wrong formula with the corrected one)
+
+Ap1
+- L19 (wrong): =IF(K19=2,Rate!E14*0.33,IF(K19=3,Rate!E14*0.66,IF(K19=4,Rate!E14*1,0)))  
+  Correct L19: =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 (wrong): =IF(K32=2,Rate!E17*0.25,IF(K32=3,Rate!E17*0.5,IF(K32=4,Rate!E17*0.75,IF(K32=5,Rate!E17*1,0))))  
+  Correct L32: =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (wrong): =IF(K33=2,Rate!E18*0.25,IF(K33=3,Rate!E18*0.5,IF(K33=4,Rate!E18*0.75,IF(K33=5,Rate!E18*1,0))))  
+  Correct L33: =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap2
+- L19 (wrong): uses Rate!E14  
+  Correct L19: use Rate!E16 — e.g. =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 (wrong): uses Rate!E17  
+  Correct L32: use Rate!E19 — e.g. =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (wrong): uses Rate!E18  
+  Correct L33: use Rate!E20 — e.g. =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap3
+- L19 (wrong): uses Rate!E14  
+  Correct L19: =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L20 (wrong logic): =IF(K20<>2,Rate!E15*0.33,IF(K20<>3,Rate!E15*0.66,IF(K20<>4,Rate!E15*1,0)))  
+  Correct L20: =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+- L32 (wrong): uses Rate!E17  
+  Correct L32: use Rate!E19 — e.g. =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (wrong): uses Rate!E18  
+  Correct L33: use Rate!E20 — e.g. =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Why this fixes it
+- Each L cell is supposed to multiply the correct Rate!E value for the matching question (E11 → L16, E12 → L17, …, E20 → L33). The wrong formulas were pointing to E11..E18 incorrectly; fixing the references aligns the correct weight value with the correct question and K-key selection. Fixing the IF in Ap3 L20 restores the intended "=" comparisons.
+
+Recommendation to avoid recurrence
+- Use a single consistent formula pattern and then copy it down (relative references) rather than manually editing individual cell references. Example robust pattern for the proficiency block (starting L16) using OFFSET (so you only write it once and copy down):
+  - Proficiency (L16 and down): =IF(K16=2,OFFSET(Rate!$E$11,ROW()-16,0)*0.33,IF(K16=3,OFFSET(Rate!$E$11,ROW()-16,0)*0.66,IF(K16=4,OFFSET(Rate!$E$11,ROW()-16,0)*1,0)))
+- Or even better: put the multipliers in a small table and use CHOOSE, or use INDEX to pick Rate!E11:E20 by position — this eliminates manual row-number errors.
+
+If you want, I can:
+- Give corrected formulas ready to paste for every incorrect cell, or
+- Show an INDEX/CHOOSE version you can put once and copy down to avoid this class of error. Which would you prefer?

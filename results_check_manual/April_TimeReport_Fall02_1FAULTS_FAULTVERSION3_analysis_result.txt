@@ -1,0 +1,24 @@
+I inspected the sheet's formulas. There is one clear formula error that propagates into higher-level totals, plus a couple of notes about potential fragility.
+
+1) Clear error (causes large incorrect totals)
+- Cell: N26
+- Current formula: =B26+C26+D26+E26+F26+G26+965+I26+J26+K26+L26+M26
+- Problem: the formula contains the literal number 965 instead of a cell reference (presumably H26). This produces N26 = 997.5, which is almost certainly wrong.
+- Effect (propagation): N26 is included in the Studio I subtotal (N19 = SUM(N20:N34)) and in the overall total (N35 = N3+N7+N11+N15+N19). Because of the 965 constant:
+  - N19 is inflated by +965 (current N19 = 1141.5; after fixing N26 it should be 1141.5 − 965 = 176.5).
+  - N35 is inflated by +965 (current N35 = 1727; after fixing N26 it should be 1727 − 965 = 762).
+- Recommended fix: replace the formula in N26 with a proper sum of the row's columns. For example:
+  - =SUM(B26:M26)
+  - or =B26+C26+D26+E26+F26+G26+H26+I26+J26+K26+L26+M26
+
+2) Other observations / possible inconsistencies (not necessarily errors)
+- Many row totals in column N use explicit B..M addition (or SUM of B..M). These handle blank cells as zero — that is fine, but if columns are later shifted the hard-coded lists could break. Using SUM(Bx:Mx) is more robust.
+- The main aggregated totals (B35..M35 and N35) are built by summing five category header rows (e.g., B3+B7+B11+B15+B19). That looks intentional, but confirm no other top-level category should be included.
+- Several per-row total formulas include references to Lx and Mx even when those cells are blank; this is OK (treated as zero), but if some subrows are outside the expected B..M range the totals could miss them.
+
+3) Suggested immediate actions
+- Fix N26 as shown above.
+- Recalculate or verify the effected summary cells (N19 and N35) after the fix.
+- Consider converting per-row additions to SUM(Bx:Mx) for consistency and maintainability.
+
+If you want, I can provide the corrected numeric totals (updated N19 and N35) after applying the recommended fix, or produce a version of the workbook with the corrected formula applied.

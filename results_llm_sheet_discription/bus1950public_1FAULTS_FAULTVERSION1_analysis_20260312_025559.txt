@@ -1,0 +1,41 @@
+Summary of errors (short)
+1. ID cells in column A are typed as formulas like =356-78-4365 → they evaluate to negative numbers (arithmetic) instead of showing the ID string.  
+2. Letter-grade IF formulas sometimes reference another sheet’s O$38 (e.g., 'F Noon'!O$38 or 'M Noon'!O$38). That makes grade cutoffs inconsistent across sheets.  
+3. Summary formulas (AVERAGE / MAX / COUNT in rows 39–41) use different row ranges between sheets (B6:B37, B6:B30, B7:B30, etc.) and some COUNT values are hard-coded. This gives wrong / incomparable class metrics.  
+4. (Minor) Grade IF tests use > instead of >= so boundary scores can be misclassified.
+
+How to fix (concrete + simple)
+1. Fix IDs (column A)
+   - Replace formula-style IDs with text. Example: change =356-78-4365 to '356-78-4365 (type an apostrophe before the ID) or ="356-78-4365".
+   - Why: leading apostrophe or quotes force Excel to treat the entry as text, not a subtraction formula.
+
+2. Fix grade formulas (column P)
+   - Use the sheet’s own total-possible cell O$38 and include >= for boundaries. Example (put in P6 and copy down):
+     =IF(O6>=O$38*0.9,"A",IF(O6>=O$38*0.8,"B",IF(O6>=O$38*0.7,"C",IF(O6>=O$38*0.6,"D","F"))))
+   - Why: using O$38 on the same sheet keeps each section’s grade thresholds local and consistent; >= ensures exact boundary scores receive the higher grade.
+
+   - If you have many sheets with the wrong cross-sheet reference, use Find & Replace to replace " 'OtherSheet'!O$38" with "O$38".
+
+3. Standardize summary ranges (rows 39–41)
+   - Decide the student row span (e.g., rows 6–36 or 6–37). Then apply the same range on every sheet for AVERAGE/MAX/COUNT. Example using rows 6:36:
+     - B39 = AVERAGE(B6:B36)   (copy right to C39:N39)
+     - B40 = MAX(B6:B36)       (copy right)
+     - B41 = COUNT(B6:B36)     (copy right)
+   - Replace any hard-coded counts (numbers in row 41) with COUNT formulas.
+   - Why: consistent ranges ensure comparable class statistics and avoid mixing different student subsets.
+
+   - Alternative (dynamic): convert the student area to an Excel Table or use a named dynamic range so you don't have to change formulas when students are added/removed.
+
+4. Verify totals (column O)
+   - Make sure every student O# uses =SUM(B# : N#). If some O# are missing, insert =SUM(B# : N#) and copy down.
+   - Why: totals drive grades and summary statistics.
+
+Quick checklist to apply now
+- Replace IDs: edit A6:A36 (or full A column) and remove = expressions; prefix intended IDs with ' or use quotes.
+- Replace grade formulas in P6:P36 with the corrected IF that uses O$38 (local) and >=; copy down.
+- Standardize rows 39–41 formulas to the same range (B6:B36) and copy across columns and sheets.
+- Use Find & Replace across workbook to fix any stray external O$38 references and any hard-coded counts.
+
+If you want, I can:
+- Provide the exact Find/Replace string steps, or
+- Generate the exact formulas for one sheet so you can paste them in.

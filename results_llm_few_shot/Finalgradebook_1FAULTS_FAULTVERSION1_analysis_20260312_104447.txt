@@ -1,0 +1,36 @@
+Here are the errors I found, where they are, and how to fix them. Short and direct.
+
+1) Sheet3 — many student average formulas (P4:P18) reference the wrong last cell (L40, L41, L42, etc.)
+- Faulty example: P4 =AVERAGE(D4,F4,H4,J4,L40)
+- Problem: the last argument should be the same row (L4), not L40 (and similarly L41, L42… for other rows). That makes the averages wrong or include unrelated/blank cells.
+- Fix (for each row n): replace with =AVERAGE(Dn,Fn,Hn,Jn,Ln)  
+  Example for row 4: =AVERAGE(D4,F4,H4,J4,L4)
+- Why: all test percentage cells for that student are in Dn,Fn,Hn,Jn,Ln — average must use those same-row cells.
+
+2) Sheet3 — wrong hard-coded number in one percentage formula
+- Faulty cell: F14 =510/$F$24
+- Problem: 510 is a typo; it should use the student’s Test 2 points (E14).
+- Fix: F14 =E14/$F$24
+- Why: that formula converts Test 2 points to a percentage using the test's total; 510 is meaningless here.
+
+3) Sheet1 — Homework low / class-average summary rows use wrong ranges or functions
+- Faulty cell: C20 =MIN(C4:C18)
+- Problem: range shifted down one row; High grade used C3:C17. This misses student in row 3 and includes row 18 which is outside the student block.
+- Fix: C20 =MIN(C3:C17)
+- Faulty cell: C21 =MAX(C5:C19)
+- Problem: uses MAX instead of AVERAGE and wrong range.
+- Fix: C21 =AVERAGE(C3:C17)
+- Why: summary stats must use the same student block (C3:C17) and use the correct aggregation function.
+
+4) Sheet1 — final grade calculation uses mixed scales (not strictly an error but fragile / inconsistent)
+- Current formula (example I3): =(C3*0.125)+(D3*25)+(E3*25)+(F3*25)+(G3*12.5)
+- Problem: C3 is coming from Sheet2!P5 as a 0–100 value, while D3,E3,F3,G3 are decimals 0–1. The current formula works numerically in many cases but is inconsistent and easy to break.
+- Recommended (consistent) formula (for each student row): =C3/100*12.5 + D3*25 + E3*25 + F3*25 + G3*12.5
+- Why: convert homework (C3) to a 0–1 scale before applying the percent weight (12.5%). This makes all inputs the same scale and easier to reason about.
+
+5) Other checks to run (quick checklist)
+- Confirm Sheet3 P4:P18 were all corrected to the same-row L cell.
+- Confirm no other formulas accidentally reference row numbers far outside the student rows.
+- After fixing Sheet3 P cells and F14, recalc: Sheet1 D (tests) and I (final) values should update and VLOOKUP letter grades (J) should then be correct.
+
+If you want, I can produce the exact corrected formulas for every affected cell (P4:P18, F14, C20, C21, and a sample I formula), or give a short macro to fix all P formulas at once. Which would you prefer?

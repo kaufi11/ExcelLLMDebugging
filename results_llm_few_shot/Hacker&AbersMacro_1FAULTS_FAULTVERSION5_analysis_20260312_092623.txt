@@ -1,0 +1,23 @@
+I checked the workbook and found two clear, fixable problems. Short answers below.
+
+1) Faulty cell: database (cz) — H40 = 125000000001
+- Error type: Data-entry / typo
+- Why it's wrong: H40 should match the same base value used elsewhere (125000000000). The extra “1” is a one-digit typo and propagates into any cells that scale from H40 (L40 and downstream calculations in the minerals sheet), producing small but measurable errors.
+- Fix: Change H40 from 125000000001 to 125000000000.
+- Why this fixes it: restoring the correct base value returns all dependent scaled results (L40 etc.) to the intended values.
+
+2) Faulty cells: rock mineral modes — F16 and F17 (and any similar cells using “*15” as a hard-coded multiplier)
+- Error type: Hard‑coded “magic number” / maintenance risk (possible logic error)
+- Why it's wrong: F16 = 0.88*15 and F17 = 0.12*15 use the literal 15 inside the formula. If that 15 is supposed to represent another cell (e.g., a total or percent that can change), the formula will break when inputs change. Hard-coded constants are hard to verify and easy to get wrong.
+- Fix: Replace the literal 15 with a reference to the cell that holds the value it should depend on. Example: if the 15 is stored in cell B16 (or a named cell TotalX), use:
+  =0.88*$B$16
+  and
+  =0.12*$B$16
+- Why this fixes it: the formulas then update automatically when the source value changes and are easier to audit.
+
+Quick recommendations
+- Run Excel’s Error Checking / Trace Dependents on cells with unusually large numbers (columns H and L) to find any other typos.
+- Use named ranges for important constants (e.g., Base_KT) so you avoid hard-coded numbers and simplify auditing.
+- Use Trace Precedents / Evaluate Formula on any cell whose result looks off (this will show whether a wrong constant has been used).
+
+If you want, I can scan for other hard-coded multipliers or run through a dependency tree and list every cell affected by H40.

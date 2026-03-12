@@ -1,0 +1,29 @@
+I inspected the workbook formulas and found no broken references or #ERROR outputs, but I found a few formula inconsistencies and one likely data error that you should check.
+
+1) Likely data/formula error
+- Cell O95 contains the constant/formula "=7".  
+  - Context: Row 95 (“Set up costs”) has D95 = 3 and M95 = SUM(F95:L95) = 3, so the logical underspend/overspend (D95 - M95) should be 0. O95 = 7 therefore appears to be an incorrect hard-coded value.  
+  - Knock-on: O99 = SUM(O93:O98) therefore becomes 7 (because it includes O95), which then propagates that 7 into the ESI totals/summary (O99 = 7) even though the row-level numbers indicate 0. Recommendation: replace O95 with a formula =D95-M95 (or =D95 - M95) if the cell is intended to show the variance.
+
+2) Inconsistent / non-standard use of SUM
+- Many variance cells use SUM with an arithmetic expression inside, e.g. O12 = =SUM(D12-M12), O15 = =SUM(D15-M15), etc. Using SUM around a single subtraction is unnecessary; it’s not an Excel error, but it’s inconsistent and reduces readability. Use direct subtraction instead: =D12-M12 (or =D15-M15).
+- Some totals use SUM with explicit additions rather than ranges, e.g. C72 = =SUM(C12+C26+C31+C38+C56+C62+C70) and F72 = =SUM(F12+F26+...), M72 = =SUM(M12+M26+...). These are functionally correct, but inconsistent with other subtotal formulas that use SUM(range). For readability and maintainability prefer either:
+  - contiguous ranges where possible: =SUM(C12:C70) (only if there are no unwanted rows in between), or
+  - explicit addition without SUM: =C12+C26+C31+... (or keep SUM but remove the misconception that SUM requires ranges).
+
+3) Mixed conventions across workbook
+- Some subtotals use SUM(range) (e.g. M12 = =SUM(F12:L12)), while aggregation rows sometimes use SUM(a+b+c) or SUM with arithmetic. This is not an error but is inconsistent and can be confusing for future edits. Consider standardising to SUM(range) for contiguous groups and plain additions for small sets of discrete cells (or keep SUM with the plus-style but know it’s equivalent).
+
+4) Items to verify (intentional differences)
+- Several rows have different values in column C vs column D (annual vs revised allocation). Examples: C59 148 vs D59 158, C60 20 vs D60 10, C65 36 vs D65 6, etc. These may well be intentional (original vs revised allocations); just confirm they are meant to differ.
+- Several rows only list values in specific months (sparse monthly entries). SUM(Fx:Lx) correctly totals them; just verify that blank cells should be zero and were not accidentally left out.
+
+Summary of immediate action items
+- Correct O95: change the hard-coded "=7" to =D95-M95 (or update to the intended value if 7 was purposeful). Then check O99 and O99-dependent totals to ensure they reflect intended values.
+- Optionally standardize formula style across worksheet for clarity:
+  - Replace =SUM(Dx-Mx) with =Dx - Mx
+  - Replace SUM(a+b+c) with either SUM(range) if contiguous or plain addition without SUM for clarity.
+
+If you’d like, I can:
+- produce a list of every cell that uses the pattern =SUM(Dx-Mx) so you can change them in bulk; and/or
+- update O95 and recalc downstream totals and show before/after figures.

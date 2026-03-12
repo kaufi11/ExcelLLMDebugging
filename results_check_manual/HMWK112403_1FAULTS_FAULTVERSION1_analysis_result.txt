@@ -1,0 +1,56 @@
+I inspected the sheet formulas and the values you provided and found no outright Excel errors (no #REF!, #DIV/0!, etc.). However there are a number of formula inconsistencies, hard‑coded numbers, and duplicated manual values that make the workbook fragile and could lead to mistakes if source numbers change. I list the specific issues I found and recommended fixes.
+
+1) Cross‑column / inconsistent references (fragile)
+- F45 =SUM(F41:F44) - E43
+  - Problem: the formula sums F41:F44 (column F) but subtracts E43 (column E). E43 contains the Treasury Stock amount (7,500) while F43 is blank. This mixed‑column reference works now, but is inconsistent and error‑prone. Likely intent was subtract treasury stock cost from the F‑totals; either put the treasury stock number in column F (F43) and subtract F43, or explicitly reference the intended cell with a comment.
+  - Recommendation: move the 7,500 into F43 (or set F43 = E43) and change F45 to =SUM(F41:F44) - F43 (or =SUM(F41:F44) - E43 with clear comment).
+
+- E79 =SUM(E75:E76) - D77
+  - Problem: similar issue: subtracting D77 (column D) while summing E75:E76 (column E). Again it works now because D77 contains 39,000, but mixing columns is inconsistent.
+  - Recommendation: keep all equity amounts in a single column (E). Either put the treasury stock (39,000) in E77 and subtract E77, or explicitly document the cross‑column reference.
+
+2) Hard‑coded constants instead of cell references
+- H7 = 47500 * 0.15
+  - Problem: 47,500 (number of outstanding common shares) is hard‑coded into the formula. The outstanding shares number appears in sheet text (A39) but not as a numeric cell used by formulas. If outstanding shares change you must edit multiple cells.
+  - Recommendation: put outstanding shares in a single cell (e.g., F39 or a named cell) and change formulas to reference that cell, e.g. =OutstandingShares * 0.15.
+
+- F42 = 100000 - 20000 - 7125
+  - Problem: uses literal amounts instead of referencing the cells those amounts come from (e.g., beginning retained earnings, distributions, dividends). That makes the cell fragile and hides relationships.
+  - Recommendation: reference the source cells (e.g., =<cell_with_100000> - <cell_with_20000> - <cell_with_7125>).
+
+- Many other multiplicative formulas use constants for share counts rather than referencing a single “shares” cell (e.g., D48 = 20000*11, D56 = 12*5000, D61 = 2000*100*0.09*1/12). These are correct numerically but are brittle if share counts change.
+
+3) Duplicate values entered manually instead of linked formulas
+Several places duplicate the same number in two places rather than linking them:
+- G7 (7125) is entered manually while H7 computes 7125. If H7 changes, G7 will not update.
+- B8 (7125) is manual while H7 computes 7125.
+- E60 is 39,000 entered manually while D59 is =13*3000 (39,000). E60 could be =D59.
+- E65 is 1,960 while D64 is 1,960. E65 could be =D64.
+- Many totals are computed in one column but duplicated as constants in another column (increases risk of inconsistency).
+- Recommendation: replace duplicated manual numbers with direct references (e.g., G7 = H7, B8 = H7, E60 = D59, E65 = D64).
+
+4) Sums including blank cells or unexpected ranges
+- B10 = SUM(B7:B9)
+  - Observation: B9 is blank in your data; SUM ignores blanks, so the result is fine (37,125). But if B9 was intended to hold a value, the blank would hide an omission.
+  - Recommendation: verify B9 if a value was expected, or make the sum range explicit to only intended rows.
+
+- F41 = SUM(F39:F40)
+  - OK functionally, but check that F39:F40 are the intended inputs (they are currently 59,000 and 78,500).
+
+5) Use of “=+” prefix
+- Formulas like =+E49+E52+E57 and =+E50+E53+E58 use an unnecessary leading plus sign. This is syntactically valid but unconventional. No functional problem.
+
+6) Large values that may be intentional but worth double‑checking
+- H18 = 2500 * 733 => 1,832,500 and H19 = SUM(H17:H18) => 1,847,500
+  - These are large numbers relative to the rest of the sheet and may be correct, but double‑check that the multiplier 733 and the 2,500 factor are intended and in the correct units.
+
+Summary of cells to review / potentially fix
+- Cross‑column subtotal/exclusion: F45 (uses E43), E79 (uses D77) — make column use consistent.
+- Hard‑coded constants: H7, F42, and numerous multiplication cells (D48, D56, D61, etc.) — consider referencing defined cells or names.
+- Duplicate manual values: G7, B8, E60, E65, L10, L11, B? (others) — replace with references to source cells.
+- Blank/missing entries: B9 (included in SUM(B7:B9)) — verify whether B9 should contain data.
+- Large calculations: H18/H19 — verify intent.
+
+If you want, I can:
+- produce a corrected version of the worksheet where I replace hard‑coded counts with named cells and convert manual duplicates into references, or
+- create a short list of specific formula edits (exact formula replacements) for each affected cell. Which would you prefer?

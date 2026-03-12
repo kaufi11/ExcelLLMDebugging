@@ -1,0 +1,29 @@
+I checked both sheets and found a few clear errors and some risky practices. Short summary, explanation and fixes below.
+
+1) Wrong operator (obvious formula bug)
+- Faulty cell: Nine‑Quarter!H14 (Hardware Gross Profit % for FY2002‑Q4)  
+- Error: formula uses multiplication (=+H13*H5) instead of division. This returns a huge wrong number.  
+- Fix: =H13/H5  
+- Why: Gross profit % = gross profit ÷ revenue.
+
+2) Inconsistent / hard‑coded results (risk of future errors)
+- Examples: Seven‑Year!E19, many period totals and margins in Nine‑Quarter (some D29/D31/H31 values) are stored as numeric values instead of formulas.  
+- Problem: If underlying numbers change these summaries won’t update and produce inconsistencies.  
+- Fix (examples): 
+  - Seven‑Year E19 → =E13+E15+E17 (or =SUM(E13,E15,E17))  
+  - Nine‑Quarter D29 → =D19-D26  
+  - Nine‑Quarter H31 → =H29/H8  
+- Why: Use formulas for totals/ratios so the sheet stays accurate when source data changes.
+
+3) Possible #DIV/0 or #VALUE! when prior year is "-" (text)
+- Where: Any %‑change cell that divides by a prior‑year cell that contains "-" (text) instead of a numeric zero or blank (e.g., Office Closure Costs row).  
+- Problem: Division by text or zero will error.  
+- Fix: Protect with IF or IFERROR, e.g.:  
+  - =IFERROR((D5-E5)/E5,"n/a") or =IF(E5=0,"n/a",(D5-E5)/E5)  
+- Why: Prevents errors and shows a clear "n/a" when a meaningful percent change cannot be computed.
+
+4) Consistency recommendation (not strictly an error but important)
+- Many rows use =+… style (fine) but some rows mix hard values and formulas. Standardize: totals =SUM(range) and percentages =component/total.  
+- Benefit: Easier auditing and fewer manual update mistakes.
+
+If you want, I can produce a list of exact cells that are hard‑coded (should be formulas) and provide the replacement formulas ready to paste. Which sheet would you like fixed first?

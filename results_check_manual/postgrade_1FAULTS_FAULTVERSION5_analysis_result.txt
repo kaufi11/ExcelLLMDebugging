@@ -1,0 +1,48 @@
+I inspected the formulas you provided for sheet "PHYS102-0101" and found a mix of correct-looking formulas, hard-coded values entered as formulas, and a few items that look like clear mistakes or at least inconsistencies you should review. Below I list the issues I found (grouped by severity) and recommended fixes.
+
+1) Very likely typo (almost certainly wrong)
+- R95: formula =10/934*100 (value 1.07066381156317)
+  - Why it's suspicious: nearly every other R cell in that area is something like X/15*100 (i.e. denominator 15). 934 looks like a typo and produces an implausibly tiny percent that will drag the R-column average down.
+  - Suggested fix: change to =10/15*100 if the denominator should be 15 (which would give 66.6667%). Verify the intended numerator/denominator from your raw data.
+
+2) Hard-coded literal formulas / inconsistent usage of computed fractions
+- Several cells use a literal numeric formula (e.g. "=100" or "=93.3") rather than the same fraction structure used elsewhere. That is inconsistent and makes auditing harder:
+  - Examples found: S8 (=100), S10 (=100), S26 (=100), S99 (=100), S103 (=100), R64 (=93.3), R64 in particular uses "=93.3" while most similar cells use =14/15*100 (=93.3333...).
+  - Recommendation: replace these hard-coded constants with consistent formulas (e.g. =15/15*100 or =14/15*100) so it's clear how they were derived and consistent with other rows.
+
+3) Inconsistent denominators in column E
+- Many E cells use E = /35*100 (e.g. =27.5/35*100), but I found E cells that use /25*100 instead:
+  - Examples: E48 (=22/25*100), E67 (=18/25*100), E77 (=18/25*100) and E48/E67/E77 are notable.
+  - If the assignment behind column E has a uniform maximum (e.g. 35), the /25 items are inconsistent and should be corrected. If some students legitimately had a different max (25) then document that (or keep separate columns) — mixing denominators makes the averaged percentage column harder to interpret.
+
+4) Inconsistent approaches in column F (multiplication vs division)
+- Some F cells are computed by doubling a raw score (e.g. =34.5*2, =21.5*2, =31.5*2, =27.5*2, =37.5*2, =43.5*2) while others use a fraction (/30*100, etc.). Examples:
+  - F15 =34.5*2, F23 =21.5*2, F29 =31.5*2, F55 =27.5*2, F64 =37.5*2, F93 =43.5*2, F85 =37.5*2, F83 =28*2, F81 =20/30*100.
+  - This is an inconsistency in method: either convert every raw "out of X" to a percent with /X*100, or standardize the raw->percent conversion rule. Using *2 implies the raw score was half of the percent scale for that student, while /30*100 implies a different max; check the underlying raw max points for that assignment and standardize.
+
+5) Miscellaneous inconsistent fraction usage in other columns
+- Column G and K (and others) contain many fraction formulas (e.g. =34/40*100, =32/40*100, etc.) but some entries are raw numbers (e.g. G38 = 5, G28 = 35, G30 = 40) without formulas. If those are already percent values that's OK, but if they are raw scores they should be converted consistently.
+- Example K27 uses =38/40*100 while many K cells are direct percentages. Again: standardize or document.
+
+6) Strange formulas that look odd but may be intentional
+- P35: =14+1+12 — odd to see a sum entered this way but it's mathematically OK (gives 27). If that's intentional (adding parts) it's fine; just note it for clarity.
+- R64 uses "=93.3" rather than the more precise =14/15*100 (93.3333...) — minor but inconsistent.
+
+7) Averaging: averages at E105:U105
+- AVERAGE formulas at the bottom (E105..U105) use ranges E6:E104 etc. Those averages will reflect the inconsistencies/typos above. In particular the R-average (R105) is likely reduced by the R95 1.07% value — fix R95 first and then recompute averages.
+
+Summary of actionable items
+- Correct the obvious typo at R95 (change denominator 934 → likely 15).
+- Decide on a single consistent method per assignment column: either always store percent values (0–100) or always store raw scores and compute percent in a separate column. In particular:
+  - Standardize column E denom (35 vs 25).
+  - Standardize column F conversions (use /max*100 or a named constant for the max).
+  - Replace hard-coded =100 or literal "=93.3" with uniform fraction formulas where applicable.
+- After corrections, re-check the AVERAGE row (E105:U105) — it will change once the outliers are fixed.
+- If different students legitimately have different maxima for an assignment, add a column documenting the max points or keep a consistent percent conversion cell to avoid mixing denominators.
+
+If you want, I can:
+- Produce a complete list of all cells that deviate from the "column standard" (e.g., all E cells not using /35*100, all F cells not using /X*100 vs *2), or
+- Output a proposed corrected version of any cells you identify (e.g., change R95 → =10/15*100), or
+- Recompute the averages after you confirm intended corrections (especially the R95 fix).
+
+Tell me which you prefer and I will proceed.

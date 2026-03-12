@@ -1,0 +1,32 @@
+I inspected the formulas in Sheet1 and found one clear formula bug and a few calculation/consistency issues to be aware of.
+
+1) Clear formula error (typo)
+- Cell O46 is wrong. All other Overall Grade cells (column O) use:
+  =(SUM(Bx:Fx)+SUM(Gx:Mx)+Nx)/(COUNT(Bx:Fx)*100+COUNT(Gx:Jx)*15+COUNT(Kx:Mx)*30+COUNT(Nx)*150)*100
+  but O46 contains:
+  =(COUNT(B46:F46)+COUNT(G46:M46)+N46)/(COUNT(B46:F46)*100+COUNT(G46:J46)*15+COUNT(K46:M46)*30+COUNT(N46)*150)*100
+  The numerator in O46 mistakenly uses COUNT(...) instead of SUM(...). That produces a drastically wrong overall percent (O46 = 15.6964) and is almost certainly a typo.
+  - Corrected formula for O46:
+    =(SUM(B46:F46)+SUM(G46:M46)+N46)/(COUNT(B46:F46)*100+COUNT(G46:J46)*15+COUNT(K46:M46)*30+COUNT(N46)*150)*100
+
+2) Potentially unintended behaviours / inconsistencies to check
+- The O-column formula relies on COUNT(...) to determine the denominator (the number of graded items present) and SUM(...) for the numerator. That is OK if blank cells mean "assignment not attempted / not applicable", but it has these implications:
+  - If a missing grade is left blank, COUNT will not include it in the max-possible points (reducing the denominator). If a missing grade is entered explicitly as 0, COUNT will include it (increasing denominator). Inconsistent use of blanks vs explicit zeros will change students' percentages unexpectedly. Verify that missing assignments are consistently represented (prefer all missing as blanks if you intend to drop them from the denominator).
+  - COUNT ignores text. If a cell contains text (e.g., "NA" or "-"), COUNT will not count it. That again changes the denominator. Make sure non-numeric placeholder entries are used intentionally.
+- Some overall percentages exceed 100 (e.g., O32 = 101.125). This is not a formula error per se — it happens if students have earned more than the nominal max points (e.g., exam scores >100 or extra credit). If you do not want overall grades >100, cap the result with MIN( ,100).
+- The P column (letter grade) uses strict < comparisons (IF(Ox<59.4,"F",IF(Ox<69.4,"D",...))). That means a score exactly 59.4 yields a D, not an F. Decide if the boundary behavior (< vs <=) is what you intend.
+
+3) Rows with missing grade cells (data consistency note)
+- Several student rows have many blanks (for example rows 17, 25, 28, 35, 43, etc.). That will change COUNT(...) results and thus the denominator for those students. This is not necessarily a formula error, but it is a common source of unexpected results. If you want the denominator to be fixed (same max points for all students) use fixed divisors instead of COUNT(...).
+
+4) Recommendations / fixes
+- Fix the O46 numerator to use SUM as shown above.
+- Audit the sheet for unintended blanks vs zeros vs textual placeholders and standardize (decide whether an unattempted assignment should be blank or zero).
+- If you want to prevent overall grades >100, wrap the overall formula with MIN(...,100).
+  Example:
+  =MIN(100, (SUM(...)+...)/(...)*100)
+- If you want different boundary behaviour for letter grades, adjust P formulas to use <= as appropriate.
+
+If you want, I can:
+- Produce a corrected copy of the workbook lines with the O46 fix applied.
+- Scan and list every row that contains any blank cells in the expected grading columns (B:F, G:J, K:M, N) so you can review (useful if you want to standardize blanks vs zeros).

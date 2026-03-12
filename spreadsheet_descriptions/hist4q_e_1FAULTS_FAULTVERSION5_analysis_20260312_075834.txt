@@ -1,0 +1,64 @@
+Summary of workbook: "Consolidated Historical Data (Quarterly)" — 3 sheets (Contents + two quarterly statement sheets). Data are quarterly figures by year (columns C:R = 2000–2003, 1st–4th quarters). Units: Millions of yen.
+
+Sheet 0 — Table of Contents
+- Title: "Consolidated Historical Data (Quarterly)".
+- Simple TOC listing Page 1 = "Quarterly Statement (1)" and Page 2 = "Quarterly Statement (2)".
+- Timestamp in B25: 2004-01-29 00:00:00.
+
+Sheet 1 — "1. Quarterly Statement (1)"
+- Sections:
+  - Sales by Product and P&L (rows 8–36):
+    - Product revenue rows: Office imaging products (row 9), Computer peripherals (10), Business information products (11).
+    - Business machines total (row 12) — formulas: SUM of the three product rows for each quarter (e.g. C12 = SUM(C9:C11), etc.).
+    - Cameras (13) and Optical & other (14).
+    - Total net sales (row 15) = SUM of business machines total + cameras + optical (C15 = SUM(C12:C14), etc.).
+    - Net Sales (row 17) simply references total net sales (C17 = C15, etc.).
+    - Cost of sales (row 18) — raw numbers.
+    - Gross profit (row 19) = Net sales − Cost of sales (e.g. C19 = C17 − C18).
+    - % of sales for gross profit (row 20) uses IF to avoid divide-by-zero, e.g. C20 = IF(C$17=0,"-  ",C19/C$17).
+    - S.G. & A. expenses (row 21) — raw.
+    - Operating profit (row 22) = Gross profit − S.G. & A. (C22 = C19 − C21).
+    - % of sales for operating profit (row 23): IF(...,C22/C$17).
+    - Other income/(deductions) breakdown (rows 25–27) with C28 = SUM(C25:C27).
+    - Income before income taxes (row 29) = Operating profit + Other (C29 = C22 + C28).
+    - Income taxes (31) and Minority interests (32) — raw.
+    - Income before cumulative effect (row 33) = C29 − SUM(C31:C32).
+    - Cumulative effect of accounting change (row 34): value present in G34 = 3,692 (only quarter where applied).
+    - Net income (row 35) = SUM(income before cumulative effect, cumulative effect) (e.g. C35 = SUM(C33:C34)).
+    - % of sales for net income (row 36): IF(...,C35/C$17).
+  - Sales by Region (rows 38–46):
+    - Japan (40) and Overseas breakdown (Americas 42, Europe 43, Other areas 44).
+    - Overseas total (row 45) = SUM(regional rows 42:44).
+    - Total (row 46) = Japan + Overseas (e.g. C46 = SUM(C40,C45)).
+- Notes (rows 47–48) about accounting standard changes and restatements.
+- Minor formula anomaly: H12 is defined as =SUM(H10:H11) (omits H9) — likely a typo (expected H9:H11).
+
+Sheet 2 — "2. Quarterly Statement (2)" (Segment information by product)
+- Sections for three segments plus corporate/eliminations:
+  - Business machines (rows 8–11):
+    - Net sales (row 9) and Operating profit (row 10).
+    - % of sales (row 11) = IF(net sales=0,"",operating profit/net sales).
+  - Cameras (rows 15–18): same structure (net sales row 16, operating profit 17, % row 18).
+  - Optical & other products (rows 22–25): same structure.
+  - Corporate and Eliminations (rows 29–31): net sales and operating profit (negative values).
+- Consolidated totals (rows 36–39):
+  - Consolidated net sales (row 37) = SUM of segment net sales (C37 = SUM(C9,C16,C23,C30), etc.).
+  - Consolidated operating profit (row 38) = SUM of segment operating profits (C38 = SUM(C10,C17,C24,C31)).
+  - % of sales for consolidated operating profit (row 39): IF(C37=0,"",C38/C37).
+- Same accounting notes repeated at bottom.
+
+Key formulas and patterns
+- Totals are computed with SUM across component rows for each quarter (consistent across both sheets).
+- Percentage metrics use IF to suppress divide-by-zero (e.g. =IF(C$17=0,"-  ",C19/C$17) or =IF(C9=0,"",C10/C9)).
+- Many cell formulas are column-wise copies across C:R (years/quarters).
+- One explicit single-period adjustment: cumulative accounting effect in G34 = 3692, included in net income via SUM(C33:C34)-style formulas.
+
+Overall layout
+- Columns: B labels, C:R = 16 quarter columns (2000–2003).
+- Sheet 1 focuses on product sales, consolidated P&L and regional sales.
+- Sheet 2 focuses on segment-level net sales and operating profit with consolidated roll-ups.
+- Consistent use of SUM-based aggregation and IF-based percentage calculations.
+
+If you want, I can:
+- Produce a flattened list of all key totals per quarter (net sales, operating profit, net income).
+- Inspect and correct formula inconsistencies (e.g., H12).

@@ -1,0 +1,41 @@
+I checked the sheet formulas and flagged the formula errors and inconsistencies I found. For each issue I show where it is, what is wrong, the effect (difference where applicable) and a suggested fix.
+
+Summary of problems found
+- H12 uses a literal number instead of the H8 cell (typo) → wrong out‑of‑state total for 2001–2002.
+- G36 is missing a formula and its displayed value does not match the sum of the fee rows.
+- F8 (Room and Board On‑Campus for F column) is hard‑coded and inconsistent with F9 + F10.
+- A few cells are hard‑coded while their peers use formulas (inconsistent approach — not an error per se but a maintainability issue).
+
+Details and fixes
+
+1) H12 (Comprehensive tuition/room/board/fees Out‑of‑State, 2001–2002)
+- Current formula/value: =SUM(H6,877,H7) producing 9247.
+- Problem: the formula contains the literal 877 instead of summing cell H8. That looks like a typo.
+- Correct expression: =SUM(H6,H8,H7) (or =H6+H8+H7)
+- Effect: current = 7273 + 877 + 1097 = 9,247 (incorrect). Correct = 7273 + 3864 + 1097 = 12,234. Difference = 2,987 (the sheet underreports that total by 2,987).
+
+2) G36 (Required Fees for 2002–2003, Out‑of‑state fee column)
+- Current: value shown = 584, no formula.
+- Problem: peers D36/E36/F36/H36/I36/J36/K36 use SUM(...) of the fee rows (21:29), but G36 is left blank of a formula and the value does not equal SUM(G21:G29).
+- Check: SUM(G21:G29) = 619 (78.5 + 35 + 155 + 160 + 57.5 + 122.5 + (G27 blank) + 10 + 0.5 = 619).
+- Effect: displayed 584 differs from correct 619 by 35.
+- Suggested fix: put formula =SUM(G21:G29) (or =SUM(G21:G29)) into G36. If any of the component cells should be different, correct those component cells first.
+
+3) F8 (Room and Board On‑Campus, 2003–2004 column)
+- Current: F8 = 4892 (hard coded), F9 = 2466 (Room Only), F10 = 1806 (Board Only).
+- Problem: in other years/columns the "Room and Board On‑Campus" row is computed as Room Only + Board Only (e.g., G8 uses =G9+G10). In F column F8 is hard‑coded and does not equal F9+F10.
+- Check: F9 + F10 = 2466 + 1806 = 4,272. F8 = 4,892 → difference = 620.
+- Suggested action:
+  - If F8 should be the sum of room+board like the other columns, change F8 to =F9+F10 (or =SUM(F9:F10)).
+  - If F8 intentionally includes additional items (so should be larger), document why and/or adjust F9/F10 accordingly for consistency.
+
+4) Inconsistent use of formulas vs hardcoded values
+- Examples: F11 (Comprehensive in‑state) is a hardcoded number 7,228 while G11/H11/I11 are formulas (G11 = G5+G8+G7 etc). F11 is numerically consistent with F5+F8+F7 but is hardcoded.
+- Recommendation: convert hardcoded summary cells to formulas (e.g., F11 -> =F5+F8+F7) so future edits to components automatically update totals and avoid mismatch risks.
+
+Non‑formula notes (optional)
+- Typos in labels (e.g., "TUTION", "*Anticpated Cgarges") — not formula errors but worth cleaning for presentation.
+
+If you want, I can:
+- Produce the exact replacement formulas for each cell and list them in one block for quick copy/paste.
+- Recalculate any totals to show corrected totals for the affected rows/columns (e.g., recalc F11/F12/H12/G36 after fixes).

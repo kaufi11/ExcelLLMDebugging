@@ -1,0 +1,60 @@
+Summary of problems I found
+- Broken / incorrect sequential numbering in column B:
+  - Many B cells reference the wrong row (forward references like B40 = +B53+1, B47 = +B54+1, B97 = +B221+1, etc.). These are likely copy/paste or offset errors and produce jumps or unstable numbering.
+  - At least one cell is hard-coded to a literal (B26 = 602+1) which creates a large unexpected jump (603).
+  - Using formulas that reference later rows makes the sequence fragile (reordering/deleting rows will break numbers) and can create circular-reference risk.
+- Inconsistent headers / column use:
+  - K3 is labeled "Email Address" near the top but K10 (and much of column K) is "Dependencies". That is confusing and can cause wrong placement of email vs dependencies data.
+- Minor: D1 =TODAY() is volatile (updates every day). Not an "error" but may be unwanted if you wanted a static date.
+
+Why these are problems
+- Wrong references and hard-coded numbers break the intended contiguous index and cause incorrect/undefined numbers when rows are moved or cells are blank/edited.
+- Inconsistent column header meaning (K as email vs K as dependencies) risks misplacing data or misinterpreting the sheet.
+- Volatile TODAY() will change the workbook date every day (which may be undesirable for a draft/version stamp).
+
+Recommended fixes (short, safe, easy)
+
+1) Fix column B numbering — best robust two options (pick one):
+
+Option A — Simple incremental from first item (stable and human-readable)
+- Put 1 in the first data row (example you gave: B12 = 1).
+- In B13 and every B cell below use:
+  =IF(C13="","",B12+1)
+  (adapt the row numbers as you paste this down). In general for row n:
+  =IF(Cn="","",B(n-1)+1)
+- Fill this formula down the whole column. This keeps numbers contiguous and only numbers rows that have an entry in column C.
+
+Option B — Auto-count based on non-blank Column C (more robust to blank rows)
+- In the first data row (row 12) enter:
+  =IF(C12="","",COUNTA($C$12:C12))
+- In row 13 copy the same formula (it will become =IF(C13="","",COUNTA($C$12:C13))) and fill down.
+- This produces a running index (1,2,3...) counting only rows where Column C has content; no forward/back references.
+
+Why one of these is better
+- Both avoid references to rows below and remove hard-coded numbers. They automatically adjust as you add/delete rows and will not create circular references or unpredictable jumps.
+
+2) Fix the specific erroneous cells now (quick cleanup)
+- Replace any formulas like =602+1 with the correct formula from Option A or B (e.g., =IF(C26="","",B25+1) or the COUNTA approach).
+- Replace forward references like =+B53+1, =+B54+1, =+B221+1 with the formula referencing the previous row (see Option A) — or just fill the chosen formula down the column to overwrite them.
+
+3) Make column use consistent
+- Decide where emails vs dependencies will live. Suggested:
+  - Move email addresses into a dedicated column (J or a clear header row for K = Email Address).
+  - Reserve column K exclusively for Dependencies (update K3 to "Dependencies" and put email header somewhere else).
+- Update the top header rows so they are consistent and visible (e.g., make the header at row 3 the only header for columns C–L).
+
+4) If you want the date to be static
+- Replace D1 =TODAY() with its current value: Copy D1 and Paste Special → Values. That captures the date as of now instead of changing daily.
+
+How to implement quickly (step-by-step)
+- Choose Option A or B.
+- Select B12 (first number cell). Put 1 (Option A) or the COUNTA formula (Option B).
+- Drag the fill handle down through the entire used range in column B to overwrite all current broken formulas.
+- Inspect a few previously wrong cells (B26, B40, B47, B97) to confirm they now show the expected incremental numbers.
+- Adjust column headers (row 3 and row 10) for clarity and move emails if needed.
+- Save a backup before making mass changes.
+
+If you want, I can:
+- Provide the exact formula filled for a range (e.g., the whole B12:B250 block using Option B).
+- Produce a small macro to automatically normalize column B.
+- Give the exact steps to move email addresses to a new column without losing data.

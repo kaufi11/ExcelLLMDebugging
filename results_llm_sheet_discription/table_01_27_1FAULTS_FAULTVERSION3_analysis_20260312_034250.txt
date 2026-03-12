@@ -1,0 +1,35 @@
+Summary of errors
+1) D6 (Urban deficient, 1992) is 0 but should equal D7 + D8 — this is a wrong hard-coded value.  
+2) Several aggregate cells are constants instead of formulas (e.g., B13/B14, many J–N cells). That breaks automatic updating and makes auditing/error-prone.  
+3) Inconsistent aggregation references: Row 12 (All deficient) in columns L and M uses SUM(L13:L14)/SUM(M13:M14) while other columns use B12 = B6 + B9 etc. This is inconsistent (though numerically equivalent now) and is risky if intermediate rows change.  
+4) Many subtotal rows (Urban/Rural) are built by adding literal numbers inside a single formula rather than referencing component cells. That makes the sheet hard to maintain and easy to break.
+
+Concrete fixes (short, copy‑paste formulas)
+- Fix the D6 error:
+  - D6 should be: =D7 + D8
+
+- Make All deficient (row 12) consistently reference urban + rural:
+  - L12: =L6 + L9
+  - M12: =M6 + M9
+  (You can leave L12/M12 as SUM(L13:L14) if you prefer, but using L6+L9 matches the pattern used elsewhere.)
+
+- Make Structurally/Functionally totals (rows 13–14) reference their urban + rural components (so changes propagate):
+  - B13: =B7 + B10  (copy across C13:N13)
+  - B14: =B8 + B11  (copy across C14:N14)
+
+- Replace hard-coded literal sums with cell references where possible:
+  - Instead of B4 = 24435+11890+..., place those component values each on their own rows (or in helper cells) and use =SUM(range) for B4. If you cannot move them, at least convert the result to a formula that references the component subtotal cells (once you create them).
+  - Example if components are moved into B20:B25: B4 becomes =SUM(B20:B25).
+
+Why these fixes
+- Correcting D6 restores the true total for Urban deficient in 1992.  
+- Using references instead of constants ensures totals update automatically when underlying numbers change and makes errors visible during formula auditing.  
+- Consistent aggregation formulas across columns reduce the chance of unnoticed mismatches when the sheet is edited.
+
+How to apply quickly
+1. Edit D6 and enter =D7+D8.  
+2. For rows 13–14, replace each constant cell with =corresponding_upper_row + corresponding_lower_row (e.g., C13 = C7 + C10). Fill right.  
+3. Replace L12 and M12 with =L6+L9 and =M6+M9 for consistency (optional).  
+4. If you want a longer-term cleanup, move each literal component of B4/B5/etc. into their own rows (create a breakdown), then change the subtotal formulas to =SUM() ranges.
+
+If you want, I can list the exact cells that are constants (not formulas) or produce the cleaned formulas for every column to paste into the sheet.

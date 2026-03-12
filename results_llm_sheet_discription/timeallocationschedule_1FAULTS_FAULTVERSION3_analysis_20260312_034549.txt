@@ -1,0 +1,34 @@
+I found three clear problems in the sheet. For each I give (a) what’s wrong, (b) the quick fix (exact formula to use), and (c) why that fixes it.
+
+1) VLOOKUP doesn’t cover the whole lookup table
+- Problem: C6 uses =VLOOKUP(C5,R7:T136,3,FALSE) but the mapping table continues to row 190. Departments below row 136 won’t be found.
+- Fix: expand and absolute-lock the range. Example:
+  =VLOOKUP(C5,$R$7:$T$190,3,FALSE)
+  (or more robustly: =INDEX($T$7:$T$190,MATCH(C5,$R$7:$R$190,0)))
+- Why: the VLOOKUP must include all rows of the mapping table. Absolute references ($) avoid accidental range shifts when copying.
+
+2) Wrong IF test / result in J14
+- Problem: J14 =IF(I$39>50,I14/I$39,50) — this returns 50 when total I39 ≤ 50 (likely nonsense) and uses a >50 test unlike every other J cell.
+- Fix (make consistent with the rest):
+  =IF($I$39>0,I14/$I$39,0)
+  If you intended to cap the proportion at 50% then use:
+  =IF($I$39>0,MIN(I14/$I$39,0.5),0)
+- Why: the existing formula returns a raw number “50” instead of a fraction/percentage. Using IF($I$39>0,...,0) prevents divide-by-zero and MIN(...,0.5) enforces a 50% cap correctly.
+
+3) NETWORKDAYS is a UDF and may break on other machines
+- Problem: J4 uses =_xludf.NETWORKDAYS(C4,F4). The _xludf prefix suggests a custom add‑in / UDF; that function may not be available if the workbook is opened elsewhere.
+- Fix: replace with built-in function and strip time stamps:
+  =NETWORKDAYS(INT(C4),INT(F4))
+  (If you need international weekend rules use NETWORKDAYS.INTL.)
+- Why: NETWORKDAYS is a standard Excel function (or NETWORKDAYS if the Analysis ToolPak is present in older Excel). INT(...) removes time-of-day so the day-count is correct. Using built-ins avoids dependency on missing add-ins.
+
+Bonus: make denominator references consistent
+- I noticed mixes like I$39, $I39 and $I$39 in different formulas. Use $I$39 as the denominator everywhere (e.g. =IF($I$39>0, I13/$I$39, 0)) so copying formulas is safe and the reference never shifts.
+
+Summary of actions to perform
+1. Edit C6 to use $R$7:$T$190 (or INDEX/MATCH) so all departments map.
+2. Fix J14 to =IF($I$39>0,I14/$I$39,0) (or the MIN version if you want a 50% cap).
+3. Replace the UDF in J4 with =NETWORKDAYS(INT(C4),INT(F4)).
+4. Optionally standardise all I39 denominator references to $I$39.
+
+If you want, I can give exact replacement formulas for every cell that references I39 or scan for trailing spaces in C5 (TRIM) to prevent missed matches.

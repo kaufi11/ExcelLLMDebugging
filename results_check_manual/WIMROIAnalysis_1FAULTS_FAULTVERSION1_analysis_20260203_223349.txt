@@ -1,0 +1,53 @@
+I reviewed Sheet1 and found the main errors and a few poor/ambiguous formula choices. Short list with clear fixes and explanations:
+
+1) Typo (wrong cell reference) — SHIPPING, Max savings
+- Where: G86
+- Problem: formula uses the literal number 61 instead of the Shipper’s Rate/Hr. cell (C88). This produces a wrong Max shipping saving.
+- Current: =C86*C87*61*0.25
+- Fix: =C86*C87*C88*0.25
+- Why: it should multiply #people * hours/year * rate/hr * % saved. Replacing 61 with C88 fixes it.
+
+2) Missing input cell for Lift Truck Productivity
+- Where: E104 (and the K104 calculation depends on it)
+- Problem: C106 (Driver's Rate/Hr. - Burdened) is blank/missing. E104 multiplies that blank cell so it returns 0.
+- Fix: enter the lift truck driver hourly burdened rate into C106 (e.g., 17.39) and set C107 to your chosen % (e.g., 0.16–0.25). No formula change needed.
+- Why: the calculation needs that rate value.
+
+3) Inventory / Carrying-cost formulas are inconsistent (rows ~129–135)
+- Where: E133, G133, K133 (Reduce Inventory Costs area)
+- Problem: E133 uses C130 * 0.04 * 0.18, while G133 uses C130 * 0.06 * 0.25 — they use different carrying-cost factors/percent references and mix hard-coded numbers and range cells. K133 = C130*C131*C133 also looks wrong/inconsistent because the reference cells aren’t clearly the carrying-cost and reduction %.
+- Recommended fix (consistent, clear layout):
+  - Put Mean Warehouse Inventory in C130.
+  - Put Carrying Cost % in a single cell (e.g., C131 = 0.18).
+  - Put Inventory Reduction % Min and Max in two cells (e.g., C132 = 0.04, C133 = 0.06) and your chosen % in another (e.g., C134).
+  - Then use:
+    - E133 = C130 * C131 * C132
+    - G133 = C130 * C131 * C133
+    - I133 = (E133+G133)/2
+    - K133 = C130 * C131 * C134
+- Why: keep carrying-cost % and reduction %s as explicit cells and use them consistently. This avoids mixing unrelated %s and hard-coded numbers.
+
+4) Inconsistent “Range of Savings” default values (possible source of wrong “Your Savings”)
+- Where: many Cxx cells labeled “Range of Savings” (examples: C12, C57, C63, C69, C77, C83, C89, C126...)
+- Problem: some of these range cells contain the low bound (0.16), some contain the high bound (0.25), some are blank. That makes the K (Your Savings) column inconsistent depending on which default is present.
+- Fix: decide a single “Your Savings” input cell for each block and set it explicitly (e.g., C12 = your chosen %). Make sure Kxx formulas point to that dedicated cell. Optionally add both Min% and Max% cells and a separate “Your%” cell for user input.
+- Why: avoid accidental use of a boundary value as the user's selection.
+
+5) Hard-coded literals where consistent cell references would be safer
+- Examples: G259 = 3 (literal) while E259 = C259 elsewhere; some formulas use literal 0.16/0.25 repeatedly.
+- Fix: use =C259 (or =C257 etc.) for consistency across Min/Max/Avg columns and use dedicated percent cells rather than literals inside formulas. This makes maintenance and updates less error-prone.
+
+How to proceed (recommended quick steps)
+1. Fix G86 to =C86*C87*C88*0.25.
+2. Enter the missing lift-truck rate into C106.
+3. Rework the inventory carrying-cost area using explicit cells for:
+   - Mean Inventory, Carrying Cost %, Reduction % (min), Reduction % (max), and “Your %”.
+   - Replace E133/G133/K133 with formulas that reference those cells (example above).
+4. Scan all "Range of Savings" cells and set a clear “Your %” input cell for each block. Change Kxx to reference that cell.
+5. Replace a few suspicious hard-coded numbers with cell references (e.g., G259 -> =C259).
+
+If you want, I can:
+- Give an exact list of corrected formulas for every affected cell, or
+- Produce a small corrected copy of the problem blocks (Shipping row, Lift Truck block, Inventory block) with concrete example values.
+
+Which would you prefer?

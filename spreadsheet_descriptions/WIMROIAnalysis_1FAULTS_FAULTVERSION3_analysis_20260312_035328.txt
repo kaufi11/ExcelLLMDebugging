@@ -1,0 +1,50 @@
+Spreadsheet summary (Sheet1 primary; Sheet2 & Sheet3 present but not detailed)
+
+Layout and structure
+- Column usage: A = labels/benefit descriptions; C = user/data inputs; E = Min. savings results; G = Max. savings results; I = Avg. savings (usually average of E and G); K = “Your Savings” (user-selected/custom result).
+- Top header: A1–A2 title and provider. Repeated “Annual Savings / Benefit / Data / Min/Max/Avg/Your” headings start at rows 5, 44, 100, etc., for each application area.
+- Three main application blocks:
+  1. Receiving Application (rows ~7–42)
+  2. Putaway / Picking / Shipping Application (rows ~46–95)
+  3. Warehouse Application (rows ~102–149)
+- Each block contains multiple benefit lines (e.g., Improve Receiver Productivity, Reduce Inventory Float Dollars, Reduce Clerical Effort, Reduce Paperwork, Reduce Keypunch, Reduce Missing Inventory research) with:
+  - Data inputs in column C (counts, hours/year, rates, % ranges).
+  - Min/Max formulas in E and G (apply low/high % savings multipliers).
+  - Avg in I = (E + G) / 2 typically.
+  - Your Savings in K = explicit multiplier of inputs by selected % (C… * C… * C… * C…).
+
+Key formulas and calculations
+- Generic pattern: Min = C# * C# * C# * (min %), Max = C# * C# * C# * (max %), Avg = (Min + Max)/2, Your = product using the “Range of Savings” cell.
+- Subtotals:
+  - Receiving subtotal: E42, G42, I42, K42 = SUM of corresponding E:G:I:K rows in that block.
+  - Putaway/Pick/Ship subtotal: E95, G95, I95, K95 = SUM(E48:E94) etc.
+  - Warehouse subtotal: E149, G149, I149, K149 = sum of key warehouse elements (mix of direct sums and formula aggregates).
+- Consolidated summaries:
+  - SUMMARY OF ANNUAL SAVINGS table (rows ~208–238) echoes per-benefit/min/max/avg/your values and computes subtotal rows.
+  - SUMMARY OF ALL RETURN-ON-INVESTMENT ANALYSIS (rows ~249–266) aggregates subtotals across applications into TOTAL ANNUAL SAVINGS (A) in C255/E255/G255/I255.
+- Capital & ROI:
+  - Capital Investment: C257 Hardware = 60000; C258 Software = 91121; C259 Depreciation Years = 3.
+  - Payback Period (months) = ((B + C) / A) * 12 — implemented across columns C/E/G/I at row 262.
+  - Return on Investment (ROI) = (A * D) / (B + C) at row 264.
+  - Projected Monthly Cash Generation = A / 12 at row 266.
+
+Notable data inputs (explicitly provided)
+- Receiving: receiver rate/hr C11 = 22.49; receivers/hr C9 = 1; hrs/yr C10 = 1920; savings range 16–25% (C12 = 0.16).
+- Putaway/Picking/Shipping: typical rate/hr C56/C62/C68/C76/C82/C88 = 17.39; hrs/yr values vary (e.g., C55=960, C61=960, C75=450, C81=950, C87=1920); many personnel counts = 1–2.
+- Warehouse: many labor rates default to 17.39; physical inventory: C116 people = 10, C117 hrs/person = 20, C118 freq = 1; range up to 100% for elimination.
+- Totals: Hardware 60,000; Software 91,121; Depreciation 3 years.
+
+Notes, gaps and potential issues to check
+- Some required inputs are blank (e.g., lift truck driver rate C106, lift truck fuel & maintenance C110–C112 are not filled), so related formulas return incomplete/zero results until populated.
+- A likely formula error: I86 uses =(E86+G86)/315 instead of dividing by 2 (should be /2).
+- Inventory reduction section references C130 (mean warehouse inventory value) but C130 is blank — inventory savings (E133/G133/I133/K133) need that input.
+- Some formulas use explicit multipliers of 0 or 1 to model minimum/max scenarios (e.g., some Min formulas multiply by 0 to show no savings possible at the minimum).
+
+Other content
+- Rows 172–206: “SUMMARY OF INTANGIBLE BENEFITS” lists qualitative advantages for each application area (real-time visibility, improved customer service, reduced floor space, etc.).
+- Sheet2 and Sheet3 exist but no data provided in this extract.
+
+If you want, I can:
+- Validate all formulas and highlight every anomaly.
+- Fill missing inputs with realistic example values and show resulting payback/ROI.
+- Convert errors (like I86) and produce a corrected version of the sheet.

@@ -1,0 +1,77 @@
+I reviewed the formulas in all sheets you provided and found several clear formula errors, a major conceptual error in the "savings" calculation, and a number of inconsistencies / hard-coded values and mislabeled text that make the workbook fragile. Below I list the problems (by sheet and cell), explain why each is wrong or risky, and give corrected formulas or recommendations.
+
+1) Incorrect cell reference (likely a typo)
+- Sheet: World 1996
+- Cell: E19
+- Problem: Formula is =710*(C19/100) — using the literal 710 instead of the rice production cell (E8). This produces an absurdly small value (8.733) compared with all other rows which use production * %N.
+- Fix: Replace with the same pattern used elsewhere:
+  =E8*(C19/100)
+
+2) Conceptual / formula error for "N fertilizer savings per year for each 1% increase in NUE (same yield)"
+- Sheets / cells affected (examples):
+  - World 1996: E32 (and E37 which depends on E32)
+  - World 2002: D44 (and D49 which depends on it)
+  - Developed 96: E31 (and E35)
+  - Developing 96: E31 (and E35)
+- Problem: The existing formula uses the pattern =Applied*(new_NUE) - current_removed (for example =E3*(0.426)-E27). That computes the additional N removed if you keep applied fertilizer constant and NUE goes up — NOT the fertilizer savings required to keep the same yield when NUE increases. The worksheet label asks for "savings ... for each 1% increase in NUE (same yield)" — that is: if NUE increases by 1 percentage point, how much less fertilizer would be needed to obtain the same crop N removal (i.e. same yield). The current formula is the wrong quantity.
+- Correct formula (recommended)
+  If:
+    A = cereal fertilizer applied (e.g. E3 or E4)
+    R = current N removed from fertilizer (e.g. E27 or E31)
+    r = current NUE = R / A (cells E29, E30, D33, etc)
+  Then fertilizer required at the improved NUE (r + 0.01) to get same removal R is:
+    new_applied = R / (r + 0.01)
+  Savings (applied - new_applied) = A - R / (r + 0.01)
+  Equivalent algebraic form (sometimes simpler):
+    Savings = A * (0.01 / (r + 0.01))
+- Example replacements:
+  - Developed 96 E31 (replace =(E3*(0.426)-E27) ):
+      =E3 - E27/(E29 + 0.01)
+    (or =E3*(0.01/(E29+0.01)))
+  - Developing 96 E31 (replace =(E3*(0.295)-E27) ):
+      =E3 - E27/(E29 + 0.01)
+  - World 1996 E32 (replace =(E4*(0.343)-E28) ):
+      =E4 - E28/(E30 + 0.01)
+  - World 2002 D44 (replace =(D6*(0.343)-D31) ):
+      =D6 - D31/(D33 + 0.01)
+- Also update the dependent 20% values (e.g. *20) to use the corrected 1% savings cell. E.g. E37 = E32 * 20 (but only after E32 is corrected).
+
+Why it matters: with the corrected formula, the magnitude of the "savings" changes significantly (often larger than your current numbers). The current workbook is reporting "extra removal if applied fertilizer remains constant", not "fertilizer savings to maintain same yield".
+
+3) Hard-coded "new NUE" constants and rounding issues
+- Examples: 0.343 (used in World sheets), 0.426, 0.295, 0.343 used inconsistently across sheets.
+- Problem: These are hard-coded and inconsistent with the computed current NUEs in the workbook. They cause rounding differences or are outright unrelated (e.g. World current NUE is ~0.262 in World 1996; 0.343 is not +1 percentage point).
+- Recommendation: Do not hard-code "new NUE". Instead compute new_NUE as current_NUE_cell + 0.01 (use cell references). That avoids rounding errors and makes the sheet transparent:
+    new_NUE = current_NUE + 0.01
+    savings = Applied - Removed / new_NUE
+
+4) Text / number mismatches and mislabeled cells
+- World 2002:
+  - A6 text: "0.60 * 82,421,368 = 49,452,821" but actual D4 is 81,969,570 and D6 is 49,181,742 (=0.6*81,969,570). The textual number 82,421,368 is inconsistent with the data. Fix the comment or update the data so labels match.
+- Developing 96 (sheet name) cell B1:
+  - B1 reads "Developed world consumption..." but sheet is "Developing 96" and E1 = 52,938,780 (which is the developing-world number). Update textual label to "Developing world consumption..." to avoid confusion.
+- Several cells contain text of formulas rather than live formulas (e.g. World 1996 I33 contains "49743804*0.343 - 16,572,232" as text). If those were intended to be computed, convert them to formulas.
+
+5) Miscellaneous / housekeeping suggestions
+- Use consistent naming/labels for "Applied to cereals" cells: the cereal-applied values are in different cells across sheets (E3, E4, D6, etc). Consider a named range (e.g. CerealApplied) so formula consistency is easier.
+- Replace occurrences of "=(1-0.5)*E24" or similar with "*0.5" for readability — not an error, but simpler.
+- Document the meaning of the multiplier 67 used in several sheets (e.g. G33 = E33*67). It appears repeatedly but is not explained in a formula cell.
+- Check units carefully (some labels use "mT", others use kg conversions in bu/ac calculations). Several conversions (bu/ac) use constants (1.12, 56, 60) — verify those conversion constants and document them.
+
+6) Cells with obvious formatting or text issues (non-formula but confusing)
+- World 1996: B33 has I33 text; H45 and I33 contain leftover textual calculations that should be either removed or converted to formulas.
+
+Summary of concrete fixes I recommend you apply immediately
+- Replace the wrong reference in World 1996 E19: =E8*(C19/100)
+- Replace every hard-coded “savings” expression of the form =(Applied*(hardcoded_newNUE) - Removed) with:
+    =Applied - Removed / (current_NUE + 0.01)
+  where current_NUE is the cell that already computes Removed/Applied in that sheet.
+- Replace hard-coded new_NUE constants with currentNUE + 0.01 (cell reference).
+- Fix textual inconsistencies (labels showing the wrong numbers or wrong “Developed/Developing” wording).
+- Convert any textual formulas to real formulas or delete them.
+
+If you want, I can:
+- Produce the exact corrected formulas for every affected cell in each sheet (I listed the template above, but I can give literal formulas per cell), and
+- Recompute the corrected numeric results (1% and 20% savings and dollar values) for each sheet after applying the corrected formula (so you can see the numeric impact).
+
+Tell me if you want the per-cell replacement list and recalculated numbers and I'll produce it.

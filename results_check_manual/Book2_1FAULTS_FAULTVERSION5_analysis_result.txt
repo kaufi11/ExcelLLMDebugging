@@ -1,0 +1,32 @@
+I inspected the formulas and data on sheet "total (2)". I found one clear formula error and a few important inconsistencies that will likely produce incorrect averages. Summary and recommended fixes below.
+
+1) Wrong formula (definite error)
+- Cell L29 contains: =COUNT(B29:K29)  
+  - This is inconsistent with all other rows which use SUM for the row total. COUNT returns the number of numeric cells (10) not the sum of the scores. As a result L29 = 10 and M29 = 1 (because M29 = L29/10).
+  - Fix: change L29 to =SUM(B29:K29). After that update M29 (see section 2).
+
+2) Per-row averages use a fixed divisor of 10 (possible inconsistency)
+- Column M is computed as =L#/10 for every row, even when some score cells B#:K# are blank. If blanks are truly "0" this is fine. If blanks indicate missing (not-yet-entered) scores, dividing by 10 underestimates the average.
+- Recommendation (pick one depending on intent):
+  - If you want average of the present scores (ignore blanks): use either
+    - M# = IFERROR(AVERAGE(B#:K#), "")  (simpler — Excel ignores blanks)
+    - or M# = IF(COUNTA(B#:K#)>0, L#/COUNTA(B#:K#), "")  (explicit)
+  - If you intend blanks to count as zeros, keep =L#/10 (no change).
+- Example replacement (preferred if you want true average of present scores):
+  - M3 -> =IFERROR(AVERAGE(B3:K3),"") and fill down.
+
+3) Downstream / summary impact
+- Row 47 averages (B47:M47) use the ranges B3:B45, ... L3:L45, M3:M45. Because L29 and M29 are wrong, these averages are currently incorrect. After fixing L29 (and adjusting M29 if you adopt an AVERAGE/CounTA approach), recompute/refresh those cells (they will update automatically after you change formulas).
+
+4) Missing score cells across many rows (data completeness)
+- Many data rows have some columns intentionally or unintentionally missing (e.g., E4, J4, B25, H11, etc.). SUM(B:K) treats blanks as zero. Confirm whether blanks mean "0" or "missing". If missing, use AVERAGE or COUNTA as noted above to avoid penalizing students/rows for missing data.
+
+5) General consistency suggestions
+- Use a consistent formula pattern and fill down rather than typing individual totals/averages. For example:
+  - Put =SUM(B3:K3) in L3 and fill down.
+  - Put =IFERROR(AVERAGE(B3:K3),"") in M3 and fill down.
+- That prevents isolated typos like the COUNT in L29.
+
+If you want, I can:
+- Provide the exact formulas to paste into L3/L29 and M3/M29 (and fill down), or
+- Produce a list of rows that have missing B:K cells (so you can review which entries are absent).

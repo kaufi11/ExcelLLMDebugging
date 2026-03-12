@@ -1,0 +1,41 @@
+Summary — main problems found
+1) Many #REF! errors (broken references) — these are the root cause of most wrong results.
+2) Inconsistent source for the “total to allocate” (E31 vs E62). Some formulas appear to expect a single Total Basic Services / Contract Amount cell but that cell was deleted or not used consistently.
+3) A few formulas are incorrect sums (e.g. S44 should be the sum of K44:R44, not a #REF!), and some percentage/decimal mixing may produce wrong results if cells are formatted inconsistently.
+
+What caused it
+- A key input cell (the total amount used to allocate dollars by percent) was deleted or the reference was changed, so many formulas now point to #REF!. Other formulas assume that single total cell but use different addresses (E31 vs E62) which makes maintenance fragile.
+
+Fix (short, concrete, and safe)
+1) Pick the single cell that represents Total Basic Services / Contract Amount. I recommend using E62 (it already sums the discipline $ amounts). If you prefer E31, use that — but use only one cell everywhere.
+2) Create a named range for it to avoid future broken references: select E62 → Name box → name it Total_Basic (or in Formulas → Define Name).
+3) Replace every formula that currently multiplies #REF! by a percent with a formula that multiplies the percent by the named cell (or absolute cell $E$62). Examples:
+   - Replace O39 =#REF!*0.0547  with  =Total_Basic*0.0547  (or = $E$62 * 0.0547)
+   - Replace P39 =#REF!*0.0109  with  =Total_Basic*0.0109
+   - Replace Q39 =#REF!*0.0065  with  =Total_Basic*0.0065
+   - Replace R39 =#REF!*0.0065  with  =Total_Basic*0.0065
+   - Replace any other "#REF!*percentage" the same way (rows 40, etc.).
+4) Fix row totals that are broken:
+   - Replace S44 =#REF!  with  =SUM(K44:R44)
+   - Replace any single-cell SUMs like S45 =SUM(S44:S44) with simply =S44 (not an error but cleaner).
+5) Fix percent→dollar conversions that use #REF!:
+   - Example: P45 currently =(O45/100)*#REF!  → change to =(O45/100)*Total_Basic
+   - Do the same for P50, P51, P52-related formulas, etc.
+6) Use absolute references or the named range so copying formulas won’t break (e.g. =Total_Basic*0.0547 or =$E$62*0.0547).
+7) Check formatting: make percent cells consistent (either enter 22.97% or 0.2297 but format appropriately). Mixing decimals and percent-format values can produce incorrect ratios.
+
+Why this fixes it (brief)
+- #REF! means the formula points to a cell that no longer exists. Restoring the intended source (a single total) and using a named range removes those broken links and makes allocations deterministic.
+- Using a single total (Total_Basic) everywhere ensures all percentage allocations multiply the same correct base.
+- Using absolute references or a name prevents future broken formulas when you insert/delete rows or copy formulas.
+
+Quick checklist you can follow now
+- Define Total_Basic = E62 (or confirm E31 if that is the real total).
+- Use Excel Find for "#REF!" and replace each formula to point to Total_Basic (or $E$62).
+- Replace S44 (and similar) with SUM(K44:R44).
+- Scan percent cells and standardize formatting (all as % or all as decimals consistently).
+- Recalculate and confirm E62 (or E31) equals the Total Basic Services / Contract Amount shown above.
+
+If you want, I can:
+- Give a full list of every cell with #REF! and the exact corrected formula, or
+- Provide the exact Find/Replace strings or a VBA small script to repair all #REF!*percentage occurrences automatically. Which would you prefer?

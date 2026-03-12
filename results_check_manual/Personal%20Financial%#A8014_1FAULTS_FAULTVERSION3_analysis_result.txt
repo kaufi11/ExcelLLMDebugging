@@ -1,0 +1,66 @@
+I examined all formulas in both sheets and identified formula errors, likely bugs and stylistic inconsistencies. Below I list the problems (by cell), why they are a problem, and recommended fixes.
+
+Summary of the main issues
+- Many percentage cells show #DIV/0! because they divide by H6 (Earnings) while H6 is zero. This is expected when earnings = 0 but should be handled to avoid error displays.
+- One clear wrong cell reference (a copy/paste error): F10 uses H8 instead of H10.
+- Several cells contain hard-coded values that look wrong in the budget context (H14 = 4).
+- A few formulas use SUM(...) around an already-added expression (SUM(G32+I32)) — works but is nonstandard and inconsistent; better to use G32+I32 or SUM(G32,I32).
+- Minor places use SUM of a single cell (SUM(E42)) — harmless but inconsistent.
+
+Detailed findings and recommended fixes
+
+1) Repeated #DIV/0! (divide-by-zero)
+- Cells affected (examples): F6 (not an error but set to 100), F8, F10, F12, F14, F16, F18, K6, K20, K30, F34, F45, and any other formula of the form =something/H6 or =Mxx/H6.
+- Cause: H6 = 'STEP 1 OF 2'!E22 which is currently 0, so divisions by H6 return #DIV/0!.
+- Recommendation: wrap the divisions to avoid dividing by zero. For example:
+  - Replace =H8/H6 with =IF(H6=0,NA(),H8/H6) or =IF(H6=0,0,H8/H6) or =IFERROR(H8/H6,"")
+  - Use whichever behavior you want when earnings are zero (show 0, blank, NA(), or a message).
+  - Example: F8 -> =IF(H6=0,"",H8/H6)
+
+2) Wrong reference / probable copy-paste error
+- Cell: F10
+- Current formula: =H8/H6
+- Why: F8 already calculates H8/H6 (giving GIVING %). F10 is "SAVING (10%)" and should use the saving dollar cell (H10), not H8.
+- Recommendation: change F10 to =IF(H6=0,"",H10/H6) (or simply =H10/H6 if you handle divide-by-zero globally).
+
+3) Hard-coded value where a reference is expected
+- Cell: H14
+- Current formula/value: =4 (hard-coded 4)
+- Why: H14 is "TAX W/H & PAYMENTS (15-25%)" — this should come from the tax withheld total on sheet 1 (likely 'STEP 1 OF 2'!G22 or another cell), not a literal 4.
+- Recommendation: point H14 to the appropriate source, for example: = 'STEP 1 OF 2'!G22 (if G22 is the tax-withheld total). If the tax amount entered is elsewhere, reference that cell.
+
+4) Nonstandard / inconsistent use of SUM with an expression
+- Cells: G33 ("=SUM(G32+I32)"), I33 ("=SUM(G32+I32)"), M33 ("=SUM(K32+M32)"), and similar patterns.
+- Why: SUM(G32+I32) works (Excel evaluates the addition and SUM of a single value) but is confusing and inconsistent. Prefer SUM(G32,I32) or simple addition G32+I32.
+- Recommendation: replace with either:
+  - =G32+I32
+  - or =SUM(G32,I32)
+
+5) SUM of a single cell or trivial SUMs (stylistic)
+- Examples: E43 =SUM(E42), E33 =SUM(E29:E30) (could be correct), M43 =M42
+- Why: Not errors per se; just inconsistent style. E43 SUM(E42) is equivalent to =E42 but fine. E33 may or may not be missing rows (see next point).
+- Recommendation: optional cleanup to consistent style.
+
+6) Possible omitted rows in SUM ranges (needs domain check)
+- Example to check: E33 =SUM(E29:E30) — verify whether E31 should be included. In the "giving" area many columns sum three rows (rows 29–31) for other columns (G32 = SUM(G29:G31)). If E31 contains a tithes entry it is currently excluded from E33.
+- Recommendation: confirm the intended rows to include in each category and align sums (e.g., =SUM(E29:E31) if needed).
+
+7) Dependent cells propagate odd values
+- Because H14 is hard-coded to 4, H16 (=H6-H8-H10-H12-H14) becomes -4 given current zero values. This then flows into M45 (=H16) and M47 (=M45-M43). Fixing H14 to the correct tax value will change these downstream figures.
+- Recommendation: correct H14 to a proper reference, then review H16, M45, M47 after fixing.
+
+8) Cells referencing text placeholders
+- Several SUMs include cells that appear to hold text placeholders (underscores), e.g., SUM(E42) or sums that include cells with "_______________". Those text cells evaluate as zero in SUMs. This is not an error, but be aware sums will ignore text and return numeric totals only.
+
+Quick list of cells to change immediately (recommended edits)
+- F10: change from =H8/H6 to =IF(H6=0,"",H10/H6)
+- H14: change from =4 to the correct tax reference (example: ='STEP 1 OF 2'!G22)
+- All percentage formulas dividing by H6: wrap with IF(H6=0,... ) or IFERROR(...,"") to avoid #DIV/0!:
+  - F8, F10, F12, F14, F16, F18, K6, K20, K30, F34, F45, etc.
+- Replace SUM(G32+I32) and SUM(K32+M32) with SUM(G32,I32) or G32+I32 (and similarly elsewhere where SUM wraps an expression).
+
+If you want, I can:
+- Produce the exact corrected formulas to paste in each affected cell (with IF checks),
+- Or create a small script/list with "cell, old formula, new formula" for a quick mass-fix.
+
+Which would you prefer?

@@ -1,0 +1,39 @@
+Thanks — I checked the workbook description and found the concrete errors plus how to fix them.
+
+Summary of errors found
+1) Wrong operator in O14
+   - Cell O14 currently: =N14*$N$3 (multiplication).
+   - All other student O# cells use division (N# / $N$3) to compute homework percent. O14 multiplying gives a huge, wrong homework percent and therefore wrong BC and BD for row 14.
+
+2) Letter‑grade formulas overwritten (hard‑coded text)
+   - Cells BD9 and BD14 (at least) contain literal text "B-" instead of the grading IF formula used elsewhere (BD4, BD5, etc.). Any manual overwrite like this makes that student's letter grade not update if BC changes.
+
+Possible additional problem to watch for
+- If any other BD cells or percent cells have been accidentally overwritten, those will give inconsistent results. (I only saw BD9 and BD14 as examples in your listing.)
+
+What to do (quick fixes)
+1) Fix O14
+   - Change O14 to the correct formula: =N14/$N$3
+   - Effect: restores O14 to be the homework percent (0–1), bringing BC14 and BD14 back in line.
+
+2) Restore BD formula wherever overwritten
+   - Replace BD9 and BD14 (and any other overwritten BD cells) with the standard formula used in the sheet. Example formula to use in BD9 (copy it down to other BD rows):
+     =IF(BC9>=0.915,"A",IF(BC9>=0.895,"A-",IF(BC9>=0.875,"B+",IF(BC9>0.815,"B",IF(BC9>=0.795,"B-",IF(BC9>=0.775,"C+",IF(BC9>0.715,"C",IF(BC9>=0.695,"C-","D"))))))))
+   - Or copy the BD cell that is correct (for example BD4) and paste it into BD9 / BD14 using Fill Down (it will adjust row references if you copy down).
+
+3) Find any other overwritten formula cells (recommended)
+   - Use Home → Find & Select → Go To Special → Constants and check for Text/Numbers in columns O, AO, AT, AY, BB, BC, BD. Or filter the BD column to show non-formula cells.
+   - If you find more, replace with the correct formulas as above.
+
+Optional improvement (cleaner letter mapping)
+- Replace the long nested IF with a single LOOKUP to reduce accidental overwrites:
+  =LOOKUP(BC9,{0,0.695,0.715,0.775,0.795,0.815,0.875,0.895,0.915},{"D","C-","C","C+","B-","B","B+","A-","A"})
+- Copy that down the BD column.
+
+Why these fixes work (short)
+- O# must be N# divided by the maximum homework total ($N$3) to get a percent between 0 and 1. Multiplying is logically wrong and breaks the weighted grade.
+- BD must be a formula based on BC to remain consistent when scores or weights change. Hard‑coding a letter prevents automatic updates.
+
+If you want I can:
+- Provide the exact BD formula already present in your sheet as a single copy‑pasteable string for all rows, or
+- Give the LOOKUP version for the whole BD column and show how to fill it down.

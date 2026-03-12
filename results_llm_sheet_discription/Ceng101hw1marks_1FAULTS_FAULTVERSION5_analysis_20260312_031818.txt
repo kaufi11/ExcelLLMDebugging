@@ -1,0 +1,52 @@
+Findings (short)
+1. Inconsistent / wrong summary ranges:
+   - B69 =MAX(B33:B68), C69 =MAX(C33:C68), D69 =MAX(D33:D68) — these start at row 33 but all other summary rows use rows 2:68. Likely a mistake; they miss students in rows 2–32.
+   - N69 =MAX(N17:N68) and Q69 =MAX(Q17:Q68) — start at row 17 while AVERAGE/MIN/STDEV use other ranges.
+2. Summary formulas include summary cells:
+   - N70 =MIN(N17:N69) and Q70 =MIN(Q17:Q69) include row 69 (the MAX results). That makes MIN include a computed summary cell and skews/invalidates the result (and can create circular logic).
+3. Data entry / formula errors in student rows:
+   - N5 =269+5 → 274 (HW4 column header is “/25”, 274 is impossible). This looks like a typo (extra digit).
+   - Many N cells use literal arithmetic (e.g. =20+4). Those evaluate to constants but are error-prone and hard to maintain.
+4. Outlier student IDs:
+   - A16 = 98,227,577 and A68 = 99,650,185 look like entry errors (other IDs are ~7 digits). They may affect any ID-based checks.
+
+Why these are errors (one line each)
+- Wrong ranges: summary statistics that start at row 33 or 17 omit many students and give incorrect max/min.
+- Including summary cells: MIN/MAX that reference row 69 include a result cell, producing wrong/min values or circular references.
+- N5 and similar: values exceed column maximum (/25) so the input is likely incorrect.
+- Literal arithmetic in data rows: OK technically, but fragile and hides the real inputs.
+
+Quick fixes (exact formulas to put in the indicated cells)
+1. Fix MAX row (row 69) to cover all student rows (2:68):
+   - B69 =MAX(B2:B68)
+   - C69 =MAX(C2:C68)
+   - D69 =MAX(D2:D68)
+   - G69 =MAX(G2:G68) (already correct)
+   - N69 =MAX(N2:N68)
+   - Q69 =MAX(Q2:Q68)
+2. Fix MIN row (row 70) so it does not include row 69:
+   - B70 =MIN(B2:B68)
+   - C70 =MIN(C2:C68)
+   - D70 =MIN(D2:D68)
+   - G70 =MIN(G2:G68)
+   - N70 =MIN(N2:N68)
+   - Q70 =MIN(Q2:Q68)
+3. Make all summary ranges consistent for AVERAGE and STDEV (if not already). Example:
+   - B71 =AVERAGE(B2:B68), N71 =AVERAGE(N2:N68), Q71 =AVERAGE(Q2:Q68)
+   - B72 =STDEV(B2:B68), N72 =STDEV(N2:N68), Q72 =STDEV(Q2:Q68)
+4. Fix the obvious data typo:
+   - Edit N5 and correct the formula/value. Replace =269+5 with the intended numbers (for example if you meant 26+9 use =26+9, or enter the final correct value like 24). I cannot know intent — verify the underlying pieces and correct.
+5. Optional but recommended:
+   - Replace literal arithmetic in HW/Final columns with references to the cells that hold the component scores (or replace with the computed value if it’s final). Example: if HW4 should be sum of two component cells (say X5 and Y5), use =X5+Y5 instead of hard-coded =20+4.
+   - Add data validation for IDs (A column) and for scores to limit values to the correct ranges (e.g., HW4 between 0 and 25).
+   - Convert the student range to an Excel Table (Insert > Table). Then use structured references for summaries and they will automatically cover the correct rows and not include summary rows.
+
+Short explanation of why the fixes work
+- Changing ranges to B2:B68 (etc.) makes MAX/MIN/AVERAGE/STDEV consider every student exactly once, so statistics are correct.
+- Removing row 69 (summary) from MIN/MAX avoids using computed results inside the data set, preventing skewed values and circularity.
+- Correcting N5 removes an impossible score and keeps the HW4 column consistent with its /25 maximum.
+- Using references or a Table makes formulas maintainable and automatically correct when you add/remove rows.
+
+If you want, I can:
+- Provide a list of every cell in column N (or Q) that exceeds its stated maximum (e.g., >25 for N), and a list of all formulas that use literal arithmetic so you can review them.
+- Produce the corrected summary formulas as a copy-ready list for paste.

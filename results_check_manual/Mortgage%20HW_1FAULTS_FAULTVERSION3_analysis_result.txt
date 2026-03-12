@@ -1,0 +1,35 @@
+I reviewed the formulas on sheet "HW". I found one clear formula error that breaks the amortization schedule and a few inconsistencies / fragility issues you should fix so the sheet behaves correctly and is easier to maintain.
+
+1) Critical formula error (causes the negative balances)
+- Fault: cell D43 is not a balance formula — it contains "=2" (a hard-coded value) instead of the expected formula.
+- Symptom: Because D43 is 2, the subsequent interest (B44) becomes 0.12 and the balance goes negative from D44 onward (B44..D47 are incorrect).
+- Fix: replace the formula in D43 with the correct amortization formula:
+  D43 = D42 - C43
+  (i.e. subtract the period's principal payment in C43 from the previous balance in D42).
+- After that change the downstream rows (B44,D44 etc.) should recalculate correctly.
+
+2) Inconsistency / fragile formula usage (recommended improvements)
+- Inconsistent references to the payment cell (A25):
+  - Some rows use A25 (relative) and others use $A$25 (absolute). If you intend to fill/copy formulas down, use $A$25 consistently (or better: name the cell).
+- Hard-coded rate and principal numbers:
+  - Many formulas use 0.06 or "6%" or 100000 directly (e.g. G22 =0.06*100000, B27 uses G22). Best practice: put loan amount and annual rate in cells and reference them (e.g. $B$5 and $B$6) so the sheet updates when inputs change.
+- PMT usage:
+  - A25 uses =-PMT(6%,15,100000,0) which is fine for a 15-year annual-pay example, but the sheet header (A4) says "30 years with MONTHLY payments" and the top input cells (B5, B6) contain different values (loan 196,555 and rate 0.0572). The PMT call and rest of the schedule are using a separate 15-year/6%/100,000 example — that is an inconsistency between the header/inputs and the amortization example.
+  - Recommendation: make PMT reference the input cells (and divide rate by periods if monthly). Example for annual payments:
+    =-PMT($B$6, $B$nper, $B$5, 0)
+    or for monthly payments (30 years):
+    =-PMT($B$6/12, $B$nper*12, $B$5, 0)
+  where $B$6 is annual rate, $B$5 is loan amount, and $B$nper is years.
+- Use of literal percentages:
+  - Several formulas use 0.06 directly. Replace with $B$6 (the rate cell) to keep the sheet dynamic.
+- Self-consistency note:
+  - The final text (A49) claims "we get to a 0 principal balance on the last payment." With D43 overwritten the sheet shows negative balances. After fixing D43 (and cleaning references), the schedule should correctly amortize to ~0 on the last payment.
+
+3) Quick checklist to repair and harden the sheet
+- Fix D43 formula to =D42-C43.
+- Replace hard-coded 0.06 / 6% / 100000 in formulas with references to the input cells (loan amount and annual rate).
+- Make the payment cell reference absolute (e.g. $A$25) or use a cell name and use that consistently in principal formulas.
+- Decide whether the worksheet is an annual 15-year example or a 30-year monthly example; make the header, input cells and PMT formula consistent (and if monthly, use rate/12 and nper*12).
+- After changes, scan the rest of the column formulas to ensure the pattern (Interest = rate * prior balance; Principal = Payment - Interest; Balance = Prior balance - Principal) is used consistently for each row.
+
+If you want, I can produce the exact corrected formulas (and a version that references B5/B6 and supports monthly/annual options), or return a small patched file with the fixes applied. Which would you prefer?

@@ -1,0 +1,21 @@
+Errors found
+1) A4 toggles between A3 and C3 with IF. That makes the worksheet feed different values into the chart series depending on which hand is larger. Excel assigns colours by series order, so when the formulas swap values the hour/minute slices swap places and the colours appear to switch.
+
+2) C4 is awkwardly written using two IF branches instead of a simple absolute difference. Use ABS to avoid sign logic and make it clearer.
+
+3) E4 does not subtract D4. That means the four pieces do not sum to 1 (100%), which will distort the chart.
+
+Corrected formulas (replace the existing ones)
+- A3: =(A2 + C2/60)/12   — clearer expression for hour hand position
+- C3: =C2/60            — minutes as fraction of circle (keep)
+- A4: =A3               — always use the hour fraction in the hour series (do not swap)
+- C4: =MIN(ABS(C3 - A3), 0.01)  — gap between hands, capped at 0.01
+- D4: =0.01             — keep as-is
+- E4: =1 - A4 - C4 - D4 — remainder (subtract D4 too)
+
+Why this fixes it
+- Keeping A4 = A3 guarantees the hour series always occupies the same series position, so its colour never jumps when minute > hour.
+- Using ABS(C3-A3) removes the need for IF branches and prevents negative differences.
+- Subtracting D4 makes the four segments add to 1, so the chart proportions are correct.
+
+Optional: remove F3 (the IF comparator) if it’s only used to drive the old swapping logic.

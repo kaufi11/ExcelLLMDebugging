@@ -1,0 +1,61 @@
+Summary of workbook structure and key contents (concise):
+
+Overall layout
+- Several question sheets (Q1, Q1 a-b graph, Q1 c-d additional, Q2, Q3, Q4, Q5). Each sheet models cash flows, discounting and IRR/NPV analysis, or performs financial statement / valuation calculations.
+- Common pattern: period headers in columns (0,1,2,3,..), nominal cash flows in row below, then rows of discounted CFs computed for a vector of discount rates down a column, plus summary cells (SUM, NPV, IRR).
+
+Sheet: Q1
+- Purpose: DCF table and sensitivity of NPV to discount rates for cash flows at periods 0–3.
+- Key inputs: Periods (D1:G1 = 0,1,2,3), Nominal cash flows A2 / D2:G2 = -85, 120, 100, -140.
+- Discount-rate column: J4:J44 contains rates from -10% to 30% (step ~1%).
+- Discounted CF formulas (rows 4–44): each cell Dn..Gn = $D$2/(1+$Jn)^$D$1 etc. Row sums in column B (SUM(Dn:Gn)).
+- Notes: cell B4 shows formula =SUM(D4:G4). Text in A46: “The NPV is positive for discount rates which are >7% and <43%.”
+- IRR: D48 label IRR, E48 = IRR(D2:G2). Commentary rows explain multiple-solution IRR issue because later-period negative cash flow produces multiple roots.
+- Important anomaly: F5 shows a malformed formula referencing $F$83 and “/(83+$J5)^$F$83” — likely a typo/bug; most other rows use consistent (1+$Jx') denominators.
+
+Sheet: Q1 a-b, graph
+- Purpose: NPV profile / graph preparation for the same cash flows.
+- Inputs: Periods B2:E2 = 0–3, Cashflows row B3:E3 = -85, 120, 100, -140.
+- Rate column A7:A47 lists rates from -10% to 30%; column B computes NPV at each rate using Bx = NPV(rate,$C$3:$E$3)+$B$3 (standard Excel NPV use: excludes time 0 cashflow which is added).
+- This sheet is the plotted data for NPV vs rate.
+
+Sheet: Q1 c-d, additional info
+- Same structure as previous but with slightly different terminal cashflow: B2:E2 = -85, 120, 100, -138 (note -138 vs -140).
+- NPV column computes NPV(rate,$C$2:$E$2)+$B$2 for many rates up to very high (0.5+).
+- IRR calculations: F26 = IRR(B2:E2), G26 = IRR(B2:E2,22%) (explicit guess). Text explains how changing last-period cash flow shifts the multiple IRR solutions and can produce misleading IRR rankings.
+
+Sheet: Q2 (long: WITHOUT/ WITH DEPRECIATION, NO DEBT / DEBT scenarios)
+- Purpose: Project DCF to equity under different depreciation and financing scenarios; tax effects and WACC/equity cost calculations.
+- Inputs/common: Taxes 25% (C3/C37/C57), Discount/WACC 15% (C4/C40/C62), Project revenues CF(in) D7..G7 = 80 each year, project cost C9/C49/C74 = -200, loan principal C17/C75 = 100, interest rate C18/C61 = 6%.
+- No-debt scenario (top): computes taxes = -EBIT*tax, total after-tax CFs per period, discounting at WACC (C4); DCF = SUM discounted CFs (C12).
+- Debt scenario: includes interest deductions, loan principal and equity cash flows; computes cost of equity (C20/C63) with formula: =(0.15-0.06*(0.5)*0.75)/0.5 [uses leverage 0.5 and tax shield in formula].
+- Depreciation sections: with depreciation, depreciation amount computed as asset cost / years (C39/C60 from C49/C74 divided by C38/C59). Tax-loss carryforward logic via IF() in taxable income rows (e.g., D47 = IF(D45<0,0,D45+D46)), taxes only when taxable income positive.
+- Discounting: no-debt discounted at WACC; equity cash flows (debt scenario) discounted at implied cost of equity (C20/C63).
+- Outputs: DCF values for project and equity value (C32, C78).
+
+Sheet: Q3 (Ford)
+- Purpose: simple historical income statement extract and valuation heuristics (3-year averages, perpetuity value, PVGO).
+- Data: Total revenue, COGS, gross profit, operating expenses etc. for 1999–2001 (large absolute numbers).
+- Key items: Net income 3-year series C28:E28 with C28 = -5,453,000,000 (2001), D28 = 3,467,000,000, E28 = 7,237,000,000.
+- Valuation: 3-year average earnings C34 = AVERAGE(C28:E28). Perpetuity value at 9% C37 = C34/0.09 and at 11% C51 = C34/0.11. Shares outstanding C39 = 1,735,756,535; price per share C40 = 15.55; market value C41 = C39*C40. PVGO = C41 - perpetuity value (C43/C53). P/E and EPS/Price relations computed (C46 = C41/C34, E45 = 1/(1-C43/C41)).
+
+Sheet: Q4 (Tax / depreciation example — Coca‑Cola)
+- Purpose: compute tax rate and tax impacts of depreciation and interest.
+- Inputs: Income tax expense D6 = 1,691,000,000; Income before taxes D7 = 5,670,000,000; depreciation D9 = 803,000,000; interest D16 = 289,000,000.
+- Formulas: tax rate D8 = D6/D7; Tax with depreciation = (D7 - D9)*tax rate (D11); Tax without depreciation = D6 (D12); tax reduction D13 = D12 - D11 or D9*tax rate; similarly for interest.
+
+Sheet: Q5 (P/E and E/P relationships)
+- Purpose: illustrate Gordon growth P/E and earnings yield.
+- Formulas: P/E = 1/(r - g). Example uses r = 10% and g = 5% or 2% (cells B4,B5). E/P = r - g (cells B8,B9).
+
+Notable formula practices and issues
+- NPV computed consistently as NPV(rate, cashflows excluding time 0) + time0 cashflow (correct Excel pattern).
+- IRR used directly on cashflow rows; workbook documents multiple-IRR ambiguity when CF signs change more than once.
+- Some obvious typos/inconsistencies (e.g., Q1 F5 referencing $F$83 and “83+$J5” — likely erroneous relative/absolute reference).
+- Repeated blocks create NPV sensitivity tables for wide rate ranges (used to plot NPV profiles).
+- Cost-of-equity formula in Q2 uses a simplified decomposition including tax shield and leverage; check assumptions (0.5 leverage, 0.75 tax effect) before reuse.
+
+If you want, I can:
+- Extract and show the computed NPVs / IRRs for the principal cases,
+- Fix the erroneous formula(s) (e.g., F5) and validate IRR multiplicity,
+- Or produce a cleaned single-sheet summary of inputs and final DCF/NPV/IRR results.

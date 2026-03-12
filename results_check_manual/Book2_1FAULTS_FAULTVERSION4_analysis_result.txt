@@ -1,0 +1,16 @@
+I inspected the formulas in the sheet "total (2)". I found one clear formula error and a couple of potential inconsistencies you may want to confirm.
+
+1) Clear formula error
+- Cell M3 has =L3/944 but should be consistent with the rest of the sheet (divide the total by 10). L3 = 91, so M3 currently evaluates to 0.096398..., whereas it appears it should be =L3/10 → 9.1.
+  - Fix: change M3 to =L3/10
+
+2) Potential/inconsistent behaviors to check (intentional or not)
+- Most per-row averages in column M use =Lx/10 even when some of the 10 judge cells (B:K) are blank. That treats missing scores as zeros (i.e. intentionally penalizes missing judges). This is consistent across the sheet except for the M3 error, but confirm whether you intended to always divide by 10 rather than divide by the actual count of provided scores.
+  - If you intended to average only the provided scores, use =IF(COUNT(Bx:Kx)=0,"",SUM(Bx:Kx)/COUNT(Bx:Kx)) (or =AVERAGE(Bx:Kx)).
+  - If you intended a fixed denominator of 10 (scale to 10 judges), keep =Lx/10.
+
+3) Other minor notes
+- Many rows have some blanks in B:K; SUM(Bx:Kx) treats blanks as zero which matches the current Lx/10 approach. If blanks are actually "not scored" rather than zero, consider the COUNT/AVERAGE approach above.
+- Column A contains values like 41696 (possibly an Excel serial date). This is not a formula error but worth checking if that column should be plain IDs/dates.
+
+Summary: fix M3 to =L3/10. Decide whether dividing by 10 when scores are missing is intended; if not, switch to SUM/COUNT or AVERAGE for column M.

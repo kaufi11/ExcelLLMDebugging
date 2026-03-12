@@ -1,0 +1,45 @@
+Overview
+- Workbook has 5 sheets: Rate (master definitions & weights), Ap1–Ap3 (three applicant scoring forms that pull from Rate), and Summary (aggregates Ap scores).
+- Core idea: Rate defines questions, preferences and numeric weights (E11:E20). Each Ap sheet references Rate to capture question text and uses preset choices (K cells) to compute partial scores (L cells). Summary pulls those L values to show per-question and total scores.
+
+Sheet-by-sheet highlights
+
+1) Rate (master)
+- Header: Requisition (C3 = M34933), Job Title (C4 = DATABASE ADMINISTRATOR), Department (C5 = VICE PROVOST FOR RESEARCH).
+- Columns A–C: keys and descriptors (Experience, Proficiency).
+- Column G (G11:G20): preference/requirement text for 10 items (e.g., “Computer and/or network security…”, “Develop, program…”, etc.).
+- Column E (E11:E20): numeric rating values for each preference (all shown as 100).
+- E22: total =SUM(E11:E20).
+- Key legend for proficiency/experience is provided in rows 25–31.
+
+2) Ap1 / Ap2 / Ap3 (applicant scoring forms — same structure with different K presets)
+- Top: link back to Rate for Requisition/Job Title/Department (e.g., D3 = Rate!C3, D4 = Rate!C4, D5 = Rate!C5).
+- Column B (B16:B20) pulls the preference text from Rate (e.g., B16 = Rate!G11, etc.).
+- Two scoring blocks:
+  - Proficiency (rows ~16–20): each row has a preset choice in K (e.g., Ap1 K16=2, K17=3, …). L16:L20 compute proficiency score using IF logic that multiplies Rate!E11:E15 by 0.33/0.66/1 depending on the K value. Example pattern: L16 = IF(K16=2,Rate!E11*0.33,IF(K16=3,Rate!E11*0.66,IF(K16=4,Rate!E11*1,0))).
+  - Experience (rows ~29–33): each row pulls the appropriate Rate!G (B29:B33) and has a preset numeric choice in K (2–5 range). L29:L33 compute experience score using IF logic with multipliers 0.25/0.5/0.75/1 for K=2..5. Example pattern: L29 = IF(K29=2,Rate!E16*0.25,IF(K29=3,Rate!E16*0.5,IF(K29=4,Rate!E16*0.75,IF(K29=5,Rate!E16*1,0)))).
+- Each Ap sheet therefore produces 10 numeric L values (L16:L20 and L29:L33).
+
+3) Summary
+- Header links (C3 = Rate!C3, C4 = Rate!C4, C5 = Rate!C5).
+- Columns B–K correspond to questions 1–10; rows 8–10 pull each Ap sheet’s computed L-values:
+  - Example: Summary B8 = 'Ap1'!L16, C8 = 'Ap1'!L17, …, K8 = 'Ap1'!L33.
+- Column L totals each applicant: L8 = SUM(B8:K8), L9 = SUM(B9:K9), L10 = SUM(B10:K10).
+
+Key formulas / logic
+- Cross-sheet references: Ap sheets use Rate!Gxx to bring text and Rate!Exx for numeric weights. Summary reads Ap!Lxx to aggregate.
+- Proficiency scoring uses multipliers 0.33 / 0.66 / 1 keyed to K=2,3,4.
+- Experience scoring uses multipliers 0.25 / 0.5 / 0.75 / 1 keyed to K=2..5.
+- Rate total: E22 = SUM(E11:E20). Summary totals per applicant: SUM across the 10 question columns.
+
+Noted issues / inconsistencies (recommend checking)
+- Ap sheets L32 formulas reference Rate!E17 in some sheets but B32 is set to Rate!G19 (i.e., L32 should multiply Rate!E19). Several L32 cells appear to use the wrong E-column index — verify mapping between B (Rate!G) and L (Rate!E) references.
+- Ap3 B20/K20 mapping: L20 contains IF(784=2,...) which is a hard-coded constant (784) instead of the K20 cell — this is almost certainly a typo and will always evaluate the same branch (false) yielding the fallback (0) or wrong result. Replace 784 with the K20 reference.
+- Similar cross-reference mismatches exist in other Ap sheets (some L formulas refer to Rate!E17/E18 where they should refer to E19/E20). Because Rate E11:E20 are all 100 in this file, totals may appear correct now but will break if weights differ — correct the mapping.
+
+Suggested fixes
+- For each Ap sheet, ensure each L-cell multiplies the corresponding Rate!E row that matches the B-cell’s Rate!G row. Example: if B32 = Rate!G19 then L32 should use Rate!E19.
+- Replace the literal 784 in Ap3 L20 with the K20 cell reference.
+- Consider consolidating the scoring logic to use LOOKUP or INDEX formulas (e.g., mapping K to multiplier via a small multiplier table and INDEX) to reduce repeated nested IFs and prevent manual errors.
+
+If you want, I can produce corrected formulas for the problematic cells (list of exact replacements) or provide a cleaned template that fixes the K→E mapping and the 784 typo. Which would you prefer?

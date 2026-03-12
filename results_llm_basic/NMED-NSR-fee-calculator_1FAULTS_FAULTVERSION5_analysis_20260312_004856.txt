@@ -1,0 +1,28 @@
+Summary — main error found
+- C34 (General Permit points) is hard-coded as =7. Because C34 is always >0, the sheet always treats the application as an "Other Action" and uses C36 (Other Actions total) instead of summing the regular points. That makes the Total Points (C41) and Fee (C42) wrong whenever no General Permit is selected.
+
+Why this is wrong (short)
+- C34 should only contribute 7 points when the user checks the General Permit box (B34). As written it always contributes 7 whether the box is checked or not, forcing C41 to take the wrong branch.
+
+Fixes (copy-paste formulas)
+1) Make C34 conditional on the General Permit checkbox:
+   - Replace C34 =7
+   - With: =IF(B34<>"",7,0)
+
+2) (Optional but safer) Make the Total Points test check the input boxes instead of the point cell:
+   - Replace C41:
+     =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+   - With:
+     =IF(OR(B34<>"",B35<>""),C36,SUM(C9:C31))
+
+Explanation, short and clear
+- Change #1 fixes the root cause: C34 only gives points when B34 has an "x" (or any entry).
+- Change #2 avoids relying on point cells (which could be changed later) and instead looks directly at the user's inputs (B34/B35) to decide which summing method to use.
+
+Small suggestions (optional)
+- Make C43/F5 more robust: if you prefer treating the half-fee only when C43 contains a number, change F5 to:
+  =IF(ISNUMBER(C43),C43,C42)
+  That avoids dependence on the text "N/A".
+- Keep cells that sometimes return "" or text separate from numeric ranges to avoid potential confusion, but Excel SUM ignores text so this is not critical.
+
+If you want, I can update any other formulas to follow the same input-checking pattern (use B‑cells for decisions) and draw a quick test example showing before/after totals.

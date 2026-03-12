@@ -1,0 +1,34 @@
+Found errors (short):
+
+1) Liabilities & equity “New Basis” formulas are inconsistent/wrong.
+   - Cells F67, F68, F69, F70, F71, F72, F73 use different formula patterns (include Bxx, or use C - D + E, or F71 = 1). The asset rows use F = C + D − E; liabilities & equity must use the same pattern for this worksheet. Using B or flipped signs will give wrong new-basis amounts and break the debit/credit proofs.
+
+Why it’s wrong (simple):
+- The push‑down section is laid out C = old basis, D = adjusting debit, E = adjusting credit, F = new basis. New basis should be Old + Dr − Cr for every line. The current versions for the liability/equity lines don’t follow that and will misstate account balances and make the proof totals (D76/E76 and later consolidation proofs) incorrect.
+
+Fix (step‑by‑step & exact formulas):
+
+- Replace the formulas in these cells with the consistent "Old + Dr − Cr" formula:
+
+  - F67 = C67 + D67 - E67
+  - F68 = C68 + D68 - E68
+  - F69 = C69 + D69 - E69
+  - F70 = C70 + D70 - E70
+  - F71 = C71 + D71 - E71   (replace the erroneous constant =1)
+  - F72 = C72 + D72 - E72
+  - F73 = C73 + D73 - E73
+
+- F74 should remain =SUM(F67:F73) (no change necessary if already set).
+
+How to apply quickly:
+- Select F67, type =C67+D67-E67 and press Enter.
+- Copy F67 and paste (or drag) down to F73 to fill the same relative formula.
+- Verify F71 no longer shows 1.
+
+How to verify it's fixed (two quick checks):
+1. Check push‑down proof: D76 should equal E76 after fixes (D76 = D65 + D74; E76 = E65 + E74).
+2. Check consolidation proof: D134 = D118 + D132 and E134 = E118 + E132 (these should still hold; correcting Fxx prevents wrong carryovers).
+
+Optional: If any of the B‑column usages were intentional (for a separate "Inc." column), confirm the worksheet design. But based on the header (C=Old, D=Dr, E=Cr, F=New), the corrected formulas above are the proper and consistent ones.
+
+If you want, I can also produce the exact one‑click correction VBA (or the Paste‑down sequence) to update these cells.

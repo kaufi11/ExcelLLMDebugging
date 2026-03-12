@@ -1,0 +1,100 @@
+I reviewed the formulas and cell values you supplied. Below I list the formula errors, likely bugs, and other inconsistencies I found (grouped by sheet). For each issue I give the cell(s), what is wrong, why it’s a problem, and a suggested correction.
+
+Summary of the main problems
+- A hard-coded incorrect value (Rice N removal) instead of the standard production*%N formula.
+- Multiple places multiply by 67 (an apparent percentage written as 67) when the sheets otherwise use 0.67 — this is almost certainly a factor-of-100 error.
+- Several “savings per 1% increase in NUE” formulas use different hard-coded target NUE values (0.343, 0.426, 0.295, etc.) instead of deriving target = current NUE + 0.01, so the logic is inconsistent and not transparent.
+- Some sheet headers/labels do not match the sheet names (Developed/Developing), causing confusion.
+- A few text/comment-like cells show expressions but are not actual formulas (left as text).
+
+Detailed issues and proposed fixes
+
+World 1996
+1. Cell E19 (B19 = “Rice” → N removed)
+- Problem: E19 contains the constant/value 5 with formula "=5". All other crops use =Production*(%N/100) (e.g. E17 =E6*(C17/100)).
+- Effect: Total N removed (E25 = SUM(E17:E24)) is wrong because E19 should be ~E8*(C19/100).
+- Fix: Replace E19 with =E8*(C19/100)
+
+2. Cells G33 (and G34)
+- Problem: G33 is "=E33*67" (and G34 "=E34*67"). In the sheet you also have a 0.67 value in G32 — it’s almost certainly intended to multiply by 0.67 (67%) not 67 (a factor-of-100 error).
+- Effect: Results are 100× too large.
+- Fix: Use =E33*0.67 or reference the cell containing 0.67 (e.g. =E33*$G$32) rather than *67.
+
+3. Cell E32 (N fertilizer savings per year for each 1% increase in NUE)
+- Problem: Formula is =(E4*(0.343)-E28). The 0.343 is hard-coded and not explained. The “Estimated NUE” is in E30 (=E28/E4). If the intent is “savings for a 1 percentage-point increase in NUE,” then hard-coding 0.343 is unclear and inconsistent with other sheets.
+- Recommendation: Replace the magic constant with an expression referencing the current NUE cell. Example (if “1%” means an absolute +0.01): =E4*(E30+0.01) - E28. If "1%" is intended relative (1% of applied N) then formula should be =E4*0.01. Clarify intent and use a cell reference (E30) rather than literal 0.343.
+
+4. Cells containing descriptive expressions left as text
+- Example: I33 = "49743804*0.343 - 16,572,232" (text). If you intend this to be a calculation, convert it to an actual formula or remove the text. If it’s a comment, keep as text but label as comment.
+
+Developed 96 (sheet)
+5. Cell B1 label vs sheet name
+- Problem: Sheet is named "Developed 96" but B1 says "World consumption of fertilizer-N". This is misleading. (Also the numeric values in this sheet correspond to the developed-world total = 29,967,560.)
+- Recommendation: Change the label in B1 to "Developed world consumption of fertilizer‑N" (or otherwise clarify).
+
+6. Cell E31 (N fertilizer savings per year for each 1% increase in NUE)
+- Problem: Formula uses = (E3*(0.426)-E27) — again a hard-coded 0.426 (magic number). The computed current NUE is E29 (=E27/E3). 0.426 appears to be not simply E29+0.01 (E29 ≈0.4169), so it's inconsistent.
+- Fix/Recommendation: If this is meant to be “1 percentage-point increase” use =E3*(E29+0.01)-E27. Or if meant to be “1% of applied N,” use =E3*0.01. Replace the hard-coded 0.426 with an expression referencing E29.
+
+7. Multiplying by 67 vs 0.67
+- Check any follow-up cells that multiply the dollar amounts by 67 (if present) — same problem as above: likely they should multiply by 0.67 (or by a cell containing 0.67). Example pattern in other sheets.
+
+Developing 96 (sheet)
+8. Cell B1 label mismatch
+- Problem: Sheet is named "Developing 96" but B1 reads "Developed world consumption of fertilizer-N" and E1=52938780 (which is the developing-world value). The label text is incorrect (says Developed).
+- Recommendation: Update B1 to "Developing world consumption of fertilizer‑N" to match sheet name and numbers.
+
+9. Cell E31 (N fertilizer savings per 1% increase)
+- Problem: Uses =(E3*(0.295)-E27) — again a hard-coded 0.295. Current NUE is E29 (~0.285740). This 0.295 looks like current NUE + 0.00926 (not an exact +0.01). This inconsistency makes the calculation hard to interpret.
+- Fix: Use =E3*(E29+0.01)-E27 (or =E3*0.01 if that’s what's meant).
+
+World 2002
+10. Cell D36 (Homework 1)
+- This looks correct logically: =D31/(40000000*0.6) gives NUE when total fertilizer is 40,000,000 and cereals are 60% of total. No change if that is your intent. (I note D37 is a text explanation.)
+
+11. Cell D44 (N fertilizer savings per 1% increase)
+- Problem: =(D6*(0.343)-D31) — again uses a hard-coded 0.343. D33 is the computed estimated NUE (0.3256). If the intent is “increase NUE by 1 percentage point,” use =D6*(D33+0.01)-D31 (or =D6*0.01 for a 1% of applied N). Also D44 is later multiplied by 67 in F45; see next point.
+
+12. Cells F45 / F46 (and similar)
+- Problem: F45 = D45*67 and F46 = D46*67 (they multiply the dollar value by 67). In the same sheet there is a cell F44 = 0.67; I think the intention was *0.67 (i.e., 67%) or to use the 0.67 factor from the sheet, but multiplying monetary dollar amounts by 67 gives huge, likely incorrect numbers.
+- Fix: Change *67 to *0.67, or better: =D45*$F$44 (reference the cell containing 0.67).
+
+Cross-sheet / general consistency issues
+13. Use of inconsistent hard-coded target NUE values
+- Examples: 0.343 (World 1996 & World 2002), 0.426 (Developed 96), 0.295 (Developing 96), 0.343 again in other places. These differ between sheets and their relationship to the computed current NUE value in each sheet is inconsistent (some are approximately current+0.01, others are not).
+- Recommendation: Decide and document what “1% increase in NUE” means:
+  - If it means an absolute +0.01 (e.g. from 0.262 to 0.272), implement as AppliedN*(CurrentNUE + 0.01) - CurrentRemoved (i.e., refer to the current NUE cell).
+  - If it means “1% of applied N” then use AppliedN*0.01.
+  - Replace hard-coded constants with formulas that reference the current NUE cell, e.g. main_applied_cell*(nue_cell+0.01)-removed_cell, or main_applied_cell*0.01.
+
+14. Labels that are inconsistent with values or sheet names
+- Examples already noted: B1 on Developed 96 and Developing 96 contain confusing labels. Several rows have explanatory text referencing global numbers from a different sheet (e.g., "0.60 * 82,906,340 = 49,743,804 MT in cereals" is in multiple sheets; the numeric examples inside the text aren’t updated to each sheet’s actual totals). Suggest standardize labels and update text to match the specific sheet numbers to avoid confusion.
+
+15. Text cells containing arithmetic expressions
+- There are cells (e.g. I33 in World 1996, D37 in World 2002, H45 in World 2002 and others) that show formulas as text rather than computed results. If they are intended just as comments, keep them but label them clearly; if they are intended to calculate values, replace with real formulas.
+
+Small notes / sanity checks (no outright formula error, but worth checking)
+- Yield -> bu/acre conversions use /1.12 as an approximate conversion factor from kg/ha to lb/acre; it’s consistent throughout but is approximate. If you require greater precision, replace 1.12 with the precise conversion factor (2.2046226218 / 2.4710538147 = 0.892179…). Current factor 1.12 is the inverse of ≈0.8929 — close but approximate.
+- Many reference codes in column D are text (like “(51)-1” or “3-1”), that’s fine if intended as references.
+
+Actionable summary (recommended quick fixes)
+- World 1996 E19: replace with =E8*(C19/100)
+- Replace all instances of "*67" used to scale dollar values with "*0.67" or, better, with multiplication by the cell that contains the 0.67 factor (absolute reference).
+  - Example: world1996 G33: change =E33*67 to =E33*$G$32 (or =E33*0.67)
+  - World 2002 F45, F46: change *67 to *0.67 or reference the 0.67 cell.
+- Replace the hard-coded NUE target constants (0.343, 0.426, 0.295, etc.) with expressions based on current NUE + 0.01 or with 0.01 if you intend “1% of applied N.” Example:
+  - World 1996 E32 -> =E4*(E30+0.01)-E28 (if +1 percentage point)
+  - Developed 96 E31 -> =E3*(E29+0.01)-E27
+  - Developing 96 E31 -> =E3*(E29+0.01)-E27
+  - World 2002 D44 -> =D6*(D33+0.01)-D31
+- Correct sheet headers:
+  - Developed 96 B1: change text to "Developed world consumption of fertilizer‑N" (or ensure it matches sheet content).
+  - Developing 96 B1: change text to "Developing world consumption of fertilizer‑N".
+- Convert any cells that are meant to compute numbers but currently show arithmetic as text into real formulas (or label clearly as comments).
+
+If you want, I can:
+- Produce the exact corrected formulas for each cell and show how totals change after correction (I can recompute those values).
+- Scan the workbook for every occurrence of "*67" and produce a list of addresses to change.
+- Replace the hard-coded NUE targets throughout with a consistent implementation (choose whether +0.01 or absolute 1% of applied) and update formulas accordingly.
+
+Which follow-up would you like?

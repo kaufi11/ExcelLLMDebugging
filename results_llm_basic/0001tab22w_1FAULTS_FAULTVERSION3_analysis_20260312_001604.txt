@@ -1,0 +1,29 @@
+Summary of errors I found
+- Several rows have data in the spacer columns (F, H and Z) that should be empty. Those stray values have shifted that row’s grade percentages one column to the right, so the table shows numbers in the wrong grade columns and the “Other” formulas compute from the wrong cells.
+  - Examples: H10 = 0 (Business); F18 and H18 (Education 2000 row); F19/H19 (Education 1999); F20/H20 (Education 1998); Z22 = 4.5 (Engineering 2000). There may be others.
+- A formula typo: O20 currently reads =SUM(100-(E20+G20+I20+K20+M21)) — the last reference should be M20, not M21. That returns a wrong “Other” for Education 1998 lower level.
+
+Why these are wrong (short)
+- The spacer columns (F, H, Z) are intended to be blank. Putting numbers there shifts the visible pattern (E, G, I, K, M = A,B,C,D,F/WF). The "Other" cell (O) uses E+G+I+K+M; because the numbers are shifted into F/H/Z they are excluded from that sum, so “Other” is wrong and the displayed grade columns are misassigned.
+- The M21 reference is a simple typo and pulls a value from the wrong row.
+
+How to fix (step‑by‑step, easy)
+1. Find stray values:
+   - Filter or inspect columns F, H and Z (and any other blank spacer columns) for non‑blank cells.
+2. For each row that has stray values:
+   - If there is a value in a spacer column between two grade columns (for example a value in F between E and G), the row’s grade cells have been shifted right by one. Fix it by shifting that row’s grade percentage block one column to the left so each percent sits under the correct header.
+     - Practical method: cut the range G:M for that row and paste it starting in F:L (shift left 1). Repeat as needed for any additional misplaced cells (if there are two spacer values you may need to shift left 2).
+   - Alternatively, if the stray value truly belongs in the grade column to its right, copy it into the correct grade column and clear the spacer cell.
+3. Correct the formula typo:
+   - Change O20 from =SUM(100-(E20+G20+I20+K20+M21)) to =100-(E20+G20+I20+K20+M20) (or keep SUM around it if you like, but SUM is unnecessary).
+4. Recheck:
+   - For each corrected row check O (Other) and AC (upper-level Other) — they should now be the remainder to 100 and non‑negative.
+   - Check totals (Q30, AF30) still point to the correct row sums.
+
+Extra notes
+- The formulas like =SUM(100-(...)) are unnecessary; use =100-(...) which is clearer but either works.
+- Do not delete spacer columns (F, H, Z) unless you intend to redesign the layout — deleting would shift all columns and break headers/formulas. Just clear or move stray values.
+
+If you want I can:
+- Give the exact cut/paste commands for the Education rows (18–20) and Engineering row 22, and correct O20 for you, or
+- Provide a small VBA macro to scan spacer columns and auto‑shift rows that have data in them.

@@ -1,0 +1,48 @@
+I inspected the workbook formulas and found one clear formula error that cascades through many results, plus a few minor inconsistencies/appearance issues. Summary and recommended fixes below.
+
+1) Critical formula error (root cause)
+- Cell D7 currently contains: =771*D4
+- It should be the quarter-3 sales calculation like the other quarters, i.e. =D5*D4 (or =22*D4).
+- Effect: D7 is 1,542,000 instead of the correct 44,000. That single incorrect value inflates F7 (Total Sales) and therefore all totals, averages and percentage rows that depend on total sales.
+
+2) Cells and results affected (will be wrong until D7 is corrected)
+- F7 (Total Sales) and any cell that sums B7:E7
+- F5 (Avg ASP/Unit), because it uses =F7/F4
+- D9 and F9 (Gross Margin)
+- D10 and F10 (Advertising Expense), D13 and F13 (Misc Expense), D14 and F14 (Total Operating Costs)
+- D15 and F15 (Operating Income)
+- D16 and F16 (Taxes)
+- D17 and F17 (Net Income)
+- All G-column percentages (G7:G17) because they divide by F7
+In short: every cell downstream of the wrong D7 is invalid.
+
+3) Recommended corrective formula
+- Change D7 to: =D5*D4
+
+4) Example — corrected key numbers (after fixing D7 = D5*D4 = 22*2000 = 44,000)
+- Quarter sales:
+  - B7 = 20,000; C7 = 31,500; D7 = 44,000; E7 = 57,500
+- F7 (Total Sales) = 153,000
+- F5 (ASP/Unit average) = 153,000 / 7,000 = 21.8571428571
+- F8 (COGS total) = 62,000 (unchanged)
+- F9 (Gross margin) = 91,000
+- F10 (Adv Expense) = 9,180
+- F14 (Total Operating Costs) = 15,840
+- F15 (Operating Income) = 75,160
+- F16 (Taxes) = 21,044.8
+- F17 (Net Income) = 54,115.2
+- Example percentages (G column as share of total sales F7=153,000):
+  - G8 (COGS / Sales) = 62,000 / 153,000 ≈ 0.40523
+  - G9 (Gross Margin / Sales) ≈ 0.59477
+  - G10 (Adv / Sales) = 9,180 / 153,000 = 0.06
+  - etc.
+
+5) Minor issues / suggestions
+- Typo: A8 reads "Cost fo Goods Sold" → "Cost of Goods Sold".
+- Several labels contain leading spaces (A5, A6, A10, etc.) — cosmetic but may affect lookups.
+- G7 formula =F7/$F$7 evaluates to 1 (works) but is redundant; you could simply show 1 or omit that cell.
+- Avoid hard-coded multiplicative constants like =200*3 if they represent named concepts (consider putting monthly rent or months into cells and reference them, for clarity).
+
+If you want, I can:
+- apply the D7 fix and recompute the entire sheet and return the corrected workbook values, or
+- produce a small list of all corrected cell formulas/values to paste into your sheet.

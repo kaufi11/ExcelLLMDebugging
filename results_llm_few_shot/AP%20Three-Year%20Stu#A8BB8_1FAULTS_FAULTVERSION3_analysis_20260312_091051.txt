@@ -1,0 +1,38 @@
+Summary — what’s wrong (short)
+- A few Total cells use the wrong SUM range or are typed numbers instead of formulas. That causes omissions and breaks automatic updates.
+- Two explicit faults I found: F10 and E11. Many other totals are hard-coded (not formulas) and should be formulas for consistency.
+
+Fault 1 — F10
+- Actual: F10 =SUM(F6:F9)
+- Problem: omits F5 (the row that contains the 2001 value). Pattern for that “Total Exams” row is SUM(X5:X9) for every column.
+- Fix: change to =SUM(F5:F9)
+- Why: includes the missing cell so the total equals the sum of rows 5–9 and will update if any of those values change.
+
+Fault 2 — E11
+- Actual: E11 =SUM(E5:E7)
+- Problem: it only sums rows 5–7 while the rest of that block uses rows 5–9 for totals. Likely an accidental copy/paste that omitted rows 8–9.
+- Fix: change to =SUM(E5:E9) (if the intended total is rows 5–9)
+- Why: keeps consistency with the other “Total Exams” cells and prevents under-counting.
+
+Fault 3 — Hard-coded totals (examples)
+- Examples: AI10 contains 19 (a typed number), C44 and D44 are values (84, 73) rather than =SUM(C39:C43), =SUM(D39:D43). A107/AJ107/AK107/AL107 and several other “Total” rows are also entered as numbers.
+- Problem: these won’t update if source rows change and are inconsistent with nearby cells that use formulas.
+- Fix: replace the hard-coded numbers with SUM formulas. Example:
+  - AI10 → =SUM(AI5:AI9)
+  - C44 → =SUM(C39:C43)
+  - D44 → =SUM(D39:D43)
+  - AJ107 → =SUM(AJ102:AJ106) (and similarly for AK107/AL107)
+- Why: formulas keep totals correct and automatic.
+
+How to find remaining errors quickly
+- Press Ctrl+` (toggle Show Formulas) to see where totals are typed numbers vs formulas.
+- Or use Find (Ctrl+F) for the numeric totals (e.g., search the total rows for numbers) or use Go To Special → Constants to highlight numeric constants in total rows.
+- Audit: compare each “Total Exams” cell pattern (should be =SUM(column rowStart:rowEnd)) and correct any that use a different row range.
+
+One-line checklist to fix the sheet
+1. Correct F10 to =SUM(F5:F9) and E11 to =SUM(E5:E9) (if intended).
+2. Replace all manually-entered totals in Total rows with SUM formulas referencing the correct row ranges.
+3. Use Show Formulas / Go To Special → Constants to find other hard-coded totals and fix them.
+
+If you want, I can:
+- Provide a list of every total cell that’s currently a constant instead of a SUM formula (I can scan the sheet and list them).

@@ -1,0 +1,41 @@
+Summary of the problems I found (short + concrete fixes)
+
+1) Homework totals omit HW1 for at least one student
+- Problem: L5 (Aya) is =SUM(C5:K5) — this leaves out column B (HW1 = 10). That makes Aya’s Total incorrect. The description says "some rows use =SUM(Cn:Kn) when HW1 omitted" — so this is a consistency error.
+- Fix: Put the correct formula =SUM(B5:K5) in L5 (and then copy L4:L42 from a correct cell so every student uses =SUM(Bn:Kn)).
+- Why: SUM(C:K) excludes HW1; using B:K includes all ten HW columns and makes totals comparable.
+
+2) Final exam total uses wrong range on at least one row
+- Problem: I7 (Bluesky) is =SUM(B7:H7) but the Final questions are in B:G. That range is inconsistent with the other rows.
+- Fix: Change I7 to =SUM(B7:G7) and then copy I4:I42 down so every student row uses =SUM(Bn:Gn).
+- Why: Consistent ranges ensure the Total column sums the intended questions.
+
+3) Final Grades totals overwritten by text / inconsistent handling of HC/P notes
+- Problem: Column F in "Final Grades" should be numeric totals (=SUM(B:E)) but some cells are manual text (example F4 = "F") or may be affected by text in D (Term) or G (Note). That breaks consistency and makes automated sorting/thresholds unreliable.
+- Fix options (choose one):
+  a) If you want the numeric total unless there is a special note in G:
+     Replace Fn with
+     =IF(OR(Gn="HC",Gn="P"), Gn, SUM(Bn:En))
+     This shows "HC" or "P" instead of a number when flagged, otherwise it returns the numeric sum.
+  b) If you want numeric totals always and keep notes in G:
+     Re-enter Fn =SUM(Bn:En) for every row and move any manual text marks to column G.
+- Why: Mixing text and numeric values in a totals column breaks formulas/analysis and makes grade cutoffs unreliable.
+
+4) Averages / copy-down inconsistencies
+- Problem: Some AVERAGE formulas appear to reference the wrong rows/ranges (example in Mid-term row 46 B46 is shown as average(C4:C42) whereas the student data range is C6:C44).
+- Fix: Standardize the averages to the correct student rows. For Mid-term averages, use e.g. =AVERAGE(C6:C44) for column C, and copy across for D..K. For Final use =AVERAGE(B4:B42) etc. Adjust ranges to match actual student rows.
+- Why: Averages that include header rows or miss student rows give wrong class means.
+
+Extra tip about text flags (HC, P, NG, x)
+- SUM ignores text, so those flags are treated like zero in totals. That may be what you want, but if you want them to block totals or display a special note, use an IF test as shown above.
+
+How to implement quickly
+1. Go to a correct Homework total (e.g. L4 =SUM(B4:K4)), copy that cell.
+2. Select L4:L42 and Paste Formulas (or drag handle) — all L cells become consistent.
+3. Go to a correct Final total (e.g. I4 =SUM(B4:G4)), copy and paste down I4:I42.
+4. In Final Grades, pick one of the Fix options above and apply the formula down column F.
+5. Fix any average formulas to reference the actual student row range and copy across.
+
+If you want I can:
+- give the exact IF formula filled for F (Final Grades) with the cell addresses you use, or
+- list exactly which rows in Homework have the wrong sum ranges (I can scan and list them if you want).

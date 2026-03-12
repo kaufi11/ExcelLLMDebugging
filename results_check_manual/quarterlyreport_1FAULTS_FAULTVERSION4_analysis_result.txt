@@ -1,0 +1,63 @@
+I reviewed the formulas in all three sheets (Detail, Summary, RCM Report). Most arithmetic is correct, but I found several formula errors/inconsistencies and a few suspicious hard-coded values or unusual references. Below I list the issues, why they are problematic, and suggested fixes.
+
+High‑priority formula errors / likely bugs
+1) Summary sheet — Financial Aid (row 9) columns F..I (and related subtotal)
+   - Problematic cells: Summary!F9, G9, H9, I9
+   - Current formula pattern: e.g. F9 =SUM(Detail!F9:F11) (and similarly G9..I9)
+   - Why it's wrong: Financial Aid in the Detail sheet is in rows 13–14 and the subtotal is Detail!D15 (and D15 is negative). The Summary D9/E9 use =-Detail!D15 / =-Detail!E15 (correct). But F9..I9 are summing Detail rows 9:11 (tuition/other), not the financial aid rows — so they bring in unrelated rows.
+   - Suggested fix: Make them consistent with D9/E9. Either:
+     - F9 = -Detail!F15 (or = -SUM(Detail!F13:F14)), and same for G9..I9; or
+     - If you prefer summing the underlying rows: F9 = -SUM(Detail!F13:F14).
+   - Follow-on: Summary!F10 (Subtotal net tuition) currently uses a different (also incorrect) range — see next item.
+
+2) Summary sheet — Subtotal net tuition (row 10) columns F..I
+   - Problematic cells: Summary!F10 (and G10..I10)
+   - Current formula pattern: F10 =SUM(Detail!F10:F17)
+   - Why it's wrong: Subtotal net tuition = Tuition minus Financial Aid (in the Summary sheet that’s D8 + D9). D10 uses =SUM(D8:D9) (correct). But F10 etc. are pulling an unrelated block (Detail!F10:F17) which includes many rows that are not net tuition components.
+   - Suggested fix: Make F10 =SUM(F8:F9) (i.e., Summary F8 + F9) or = (Detail!F11 + Detail!F15) / =SUM(Detail!F8:F10) + (-SUM(Detail!F13:F14)) as appropriate. The simplest: F10 = F8 + F9 (and same pattern for G10..I10 and other columns).
+
+3) Summary sheet — hard-coded "6" in J14
+   - Cell: Summary!J14
+   - Current formula/value: =6 (hard-coded)
+   - Why it's suspicious: All other columns in row 14 pull from Detail!D20/E20 etc. J14 should reflect the Projected/Commitments column for "University Fund allocation" — it should probably be =Detail!J20 (or the appropriate Summary/Detail reference). A standalone 6 is likely a data entry error.
+   - Suggested fix: Replace with =Detail!J20 (or with the logic used for other columns).
+
+Other important inconsistencies / suspicious formulas
+4) Many inconsistent range patterns between Summary and Detail
+   - Examples:
+     - Summary!D8 uses =SUM(Detail!D8:D10) (tuition) — good. But Summary!F8 uses =SUM(Detail!F8:F10) (ok).
+     - For financial aid and subtotal rows, Summary sometimes references the subtotal cell (Detail!D15) and sometimes the underlying rows; in other places Summary sums blocks that don't align (see items 1–2).
+   - Why it matters: Inconsistent referencing makes maintenance error‑prone and has led to the errors above. Decide on a single approach (summarize either from the underlying Detail rows or from Detail subtotals) and apply it consistently.
+
+5) Use of SUM for simple arithmetic (stylistic / consistency)
+   - Examples: Detail!D63 =SUM(D25-D61), Detail!E63 =SUM(E25-E61), Summary!D36 =SUM(D19-D34), etc.
+   - Issue: SUM() is unnecessary around a single subtraction. Not an error (Excel evaluates it), but inconsistent with other formula styles and confusing.
+   - Suggested change: Replace with D25-D61, etc., for clarity.
+
+6) Detail sheet — Beginning fund balance references (possible logic issue)
+   - Cells: Detail!E64, F64, K64, N64 (and similarly Summary!E37, F37, K37, N37)
+   - Current formulas: E64 =D65, F64 =D65, K64 =D65, N64 =K65 (beginning balance cells reference current/projected balances elsewhere)
+   - Why suspicious: Beginning fund balance for a column typically should come from prior-year ending balance rather than being set equal to the current/projected balance in another column. This may be intentional, but it is unusual and could be a mistaken reference (e.g., E64 probably should refer to the prior-year "current/projected fund balance" for that same column rather than D65). Check that the intended flow of balances matches these references. If you intended FY02 beginning balance = FY01 ending balance, then E64 = Detail!D65 is correct; but F64 =D65 (same D65 for F64) is suspect unless that's intended.
+   - Suggested check: Verify whether each column's beginning balance is intended to come from the same prior-column cell (D65) or should come from the prior-year ending balance in that same column.
+
+7) RCM Report — some hard-coded starting balances and other hard-coded numbers
+   - Examples: RCM Report row 39 has D39=500000 (ok), E39=151000, G39=75611, H39=81354, J39=500006 (odd)
+   - J39 = 500006 is inconsistent with D39/E39/G39/H39 (J39 often expected to be SUM(D39:I39)). Here J39 is not SUM(D39:I39). Many other RCM cells are not linked to Detail (some are, some are not).
+   - Suggested action: Check whether these starting values should be linked (e.g., J39 = SUM(D39:I39)) or whether they are intentionally manually entered. Hard-coded totals or inputs are a frequent source of aggregation errors.
+
+8) RCM Report — inconsistent/implicit sign handling
+   - Example: Summary and RCM handle the negative Financial Aid in different ways (Summary uses =-Detail!D15; RCM uses =-SUM(Detail!D13:D14)). Both work but are inconsistent. That's fine for correctness, but note for maintenance.
+
+9) Several Summary cells reference different ranges than RCM/Detail equivalents
+   - Many cells in Summary use different reference ranges to obtain the same conceptual value compared to the RCM Report. This can lead to mismatches if Detail is updated and only one summary is corrected. I can list every mismatch if you want, but the ones above (financial aid, subtotal net tuition, J14) are the functional errors.
+
+Minor observations (non-fatal)
+- Many subtotal formulas include blank rows or blank cells in ranges (e.g., SUM(D29:D34) where D34 is blank). Not an error but could be tightened.
+- Some calculations use intermediate subtotals on Detail (good), others reference the underlying rows. Pick one canonical place to compute each subtotal to reduce the chance of inconsistencies.
+
+If you want, I can:
+- Produce a cell-by-cell list of all formulas that differ from the expected pattern (i.e., blueprint expected formulas per row/column).
+- Create corrected formulas for the Summary and RCM sheets (I can provide the exact corrected formulas for each problematic cell).
+- Apply the fixes to a copy of the workbook and return it.
+
+Which would you like next — a corrected formula list, or an updated workbook with fixes applied?

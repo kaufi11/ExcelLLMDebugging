@@ -1,0 +1,43 @@
+Summary — I found two types of errors in the workbook:
+
+1) ATAN2 arguments are reversed everywhere (wrong angle sign/values)  
+What’s wrong
+- Many cells that compute an angle use ATAN2(real, imag) (for example J4 uses ATAN2(G4,H4)). The correct usage for the complex-angle calculation is ATAN2(imag, real). In other words the imaginary part must be the first argument and the real part the second argument.
+- This affects all column-J formulas (VS angle), all column-N formulas (IS angle) and the RhoV phase terms in B32 and B33 (and any other ATAN2(...) you have). Because the arguments are swapped, the computed angles are wrong (sign and quadrant errors).
+
+How to fix
+- Replace ATAN2(G4,H4)*180/PI() with ATAN2(H4,G4)*180/PI() and fill down the column.
+- Replace ATAN2(K4,L4)*180/PI() with ATAN2(L4,K4)*180/PI() and fill down the column.
+- Replace B32:
+  =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*COS(ATAN2(B28,B29)-ATAN2(B30,B31))  
+  with
+  =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*COS(ATAN2(B29,B28)-ATAN2(B31,B30))
+- Replace B33 similarly:
+  =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*SIN(ATAN2(B28,B29)-ATAN2(B30,B31))  
+  with
+  =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*SIN(ATAN2(B29,B28)-ATAN2(B31,B30))
+
+Why this fixes it
+- The angle of a complex number (x + j y) is atan2(y, x). Passing (real, imag) gives the wrong quadrant and sign. Swapping the arguments gives the correct phase (degrees after *180/PI()).
+
+2) Typo in E21 (distance-phase cosine)  
+What’s wrong
+- E21 =COS($B$15*D21*1922) — the constant 1922 is a typo; all other similar cells multiply the km distance by 1000 to convert to meters.
+
+How to fix
+- Change E21 to =COS($B$15*D21*1000) (and ensure F21 = SIN($B$15*D21*1000) as you already have).
+
+Why this fixes it
+- Beta (B15) is in rad/m and D21 is in km; you must multiply D21 by 1000 to get meters. Using 1922 skews the phase at that row only.
+
+Quick examples of corrected formulas you can paste:
+- J4 (and fill down): =ATAN2(H4,G4)*180/PI()
+- N4 (and fill down): =ATAN2(L4,K4)*180/PI()
+- E21: =COS($B$15*D21*1000)
+- B32: =SQRT((B28^2+B29^2)/(B30^2+B31^2))*COS(ATAN2(B29,B28)-ATAN2(B31,B30))
+- B33: =SQRT((B28^2+B29^2)/(B30^2+B31^2))*SIN(ATAN2(B29,B28)-ATAN2(B31,B30))
+
+Recommendation
+- Do a review for any other ATAN2(...) uses and ensure the order is ATAN2(imag, real). After fixing, recalc and check a few angles against a hand calculation to confirm.
+
+If you want I can generate a short list of every cell (row numbers) that must be changed for J and N columns so you can paste them in one go.

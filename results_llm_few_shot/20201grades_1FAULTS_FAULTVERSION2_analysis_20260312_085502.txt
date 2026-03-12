@@ -1,0 +1,41 @@
+Summary — main problems found
+1) Wrong SUM range that omits a score (one clear mechanical error).
+2) Many percentage formulas use hard‑coded totals (150, 350, 400, etc.) instead of referring to the header/total cells — this creates inconsistent / incorrect percentages if the totals change.
+3) Non‑numeric text values (x, X, #, .) in numeric ranges — these break averages/grades or hide missing values.
+
+Details, explanation and fixes (short)
+
+1) Faulty cell: T19
+- Error: =SUM(E19:S19) — this omits the cell D19 (one assignment).
+- Why it’s wrong: one assignment column (D) is excluded so the student’s assignment total is too low.
+- Fix: change to =SUM(D19:S19)
+
+2) Hard‑coded denominators in percent formulas (example cells: U5, AR5, BU5, CF5, others)
+- Examples found:
+  - U5 currently =T5/150*100 (Sheet1) while the assignment total header cell is T3 (80).
+  - AR5 =AQ5/350*100 (Sheet1) while the First/Second Research project total is in AQ1 or AF1 on some sheets.
+  - BU5 =BT5/400*100 (Sheet1) and CF5 =CE5/830*100 — these use literal totals.
+- Why it’s wrong: if you change the assignment or exam maximums in the header, every hard‑coded formula must be updated manually and can easily get out of sync.
+- Fix (use absolute references to the header/total cell). Replace hard‑coded numbers with the appropriate header cell reference, locked:
+  - Example: replace U5 =T5/150*100 with =T5/$T$3*100 (if T3 holds the max assignment points).
+  - Replace AR5 =AQ5/350*100 with =AQ5/$AQ$1*100 (if AQ1 holds project max).
+  - Replace BU5 =BT5/400*100 with =BT5/$BT$1*100 (if BT1 or another header cell holds the overall max).
+- Explanation: using $T$3 (absolute) means every row can use the same formula and will update automatically if you change the maximum point value in the header.
+
+3) Text values in numeric ranges (examples: cells with "x", "X", ".", "#")
+- Error: cells like BL7="X", BR6="#" or AZ13="x" appear inside numeric ranges that are summed/averaged.
+- Why it’s wrong: text in numeric ranges either is ignored by SUM (giving unintentionally low totals) or shows errors for other formulas. It hides missing data and can distort averages or grade buckets.
+- Fix:
+  - Replace text placeholders with either 0 (if absence = zero) or leave blank and handle missing with IFERROR/IFNA/ISNUMBER logic.
+  - Or use a formula-aware placeholder, e.g., put NA() for intentionally missing work and use AGGREGATE or IFERROR in summary formulas.
+  - Short example: if BR6 sometimes has text, change BM6 formula to tolerate text: =SUMIF(BG6:BL6,"<>X") or better, ensure numeric inputs only and use data validation to prevent X entries.
+
+Optional cleanup recommendations (keeps workbook robust)
+- Convert all embedded totals to use absolute header references (e.g., $T$3, $AQ$1, $BT$1, $BS$1, $CE$1) so you can change maximums in one place.
+- Use consistent formula patterns across rows and then fill down.
+- Add data validation to grade-entry cells to allow only numbers (0‑max) to avoid X/# entries.
+- Replace any SUM that accidentally includes its own cell (not found as a big problem here except classical patterns) — scan for ranges that extend below the formula.
+
+If you want, I can:
+- Give an exact list of every cell that uses hard‑coded denominators and provide the corrected formula; or
+- Produce the corrected formulas for the entire sheet and show how to fill them down. Which would you prefer?

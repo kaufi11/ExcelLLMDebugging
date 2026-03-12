@@ -1,0 +1,44 @@
+I examined the workbook formulas and found several formula errors and/or inconsistencies that could lead to incorrect results or confusion. Below I list each issue, why it is a problem, and a recommended fix.
+
+1) Municipal sheet — wrong reference in F5
+- Problem: Cell F5 contains =E6 (value 26000). F5 is the "Recommend" cell for the Hatboro Borough row (request is in E5 = 147,970) but it points at E6 (Hatfield). This produces an incorrect recommended amount for Hatboro and duplicates Hatfield's amount.
+- Impact: F5 shows 26,000 instead of the expected value for that row (likely =E5 or a specific recommended value).
+- Fix: Change F5 to =E5 (or to the intended recommended number). Formula: =E5
+
+2) County sheet — total "Total Requested" double-counts Rehab
+- Problem: Cell E13 is =SUM(E9:E12). E9 = Municipal total, E10 = Non-Profit total, E11 = Rehab!E8 (Total Non-Profit Rehabilitation Applications), E12 = County total. But the Rehab amounts are already included in the Non-Profit total (Non-Profit!E22 sums the Non-Profit items that include Rehab projects). Summing E9:E12 therefore adds the Rehab total twice.
+- Impact: E13 overstates the total requested by including non-profit rehab twice.
+- Fix: Exclude the Rehab!E8 cell from the grand total (either remove E11 from the summed range or subtract it). For example:
+  - Replace E13 with =E9+E10+E12
+  - Or =SUM(E9:E12)-E11
+  Choose whichever best reflects the intended aggregation.
+
+3) AHTF sheet — inconsistent SUM ranges for E14 vs F14
+- Problem: E14 is =SUM(E2:E13) (summing requests for rows 2–13). F14 is =SUM(F3:F13) (summing recommends for rows 3–13) — F14 excludes F2 but E14 includes E2.
+- Impact: If F2 ever contains a recommendation, it will be omitted from F14 and cause E/F totals to be mismatched. The differing ranges are inconsistent and likely accidental.
+- Fix: Make the ranges consistent. If E14 is intended to cover rows 2–13, change F14 to =SUM(F2:F13). If E14 should start at row 3, change E14 accordingly. Recommended: change F14 to =SUM(F2:F13).
+
+4) AHTF sheet — hard-coded constant in E16 and F16
+- Problem: Cells E16 and F16 use =2432890*0.15 (the multiplier is applied to a hard-coded number). Hard-coding a base amount makes the sheet fragile and opaque.
+- Impact: If the 2,432,890 figure should come from another cell (e.g., sum of Continuum of Care amounts) and that base changes, E16/F16 will not update automatically and the source of the number is not obvious.
+- Fix: Replace the hard-coded constant with a reference to the single source cell that holds the Continuum of Care total. For example, if the Continuum base is in cell Z1 use =Z1*0.15 (or =SUM(range)*0.15 if the base is a sum of multiple cells). If the constant is intentionally fixed, consider adding a comment or placing it in a clearly labeled cell and referencing that cell.
+
+5) Non-critical / stylistic: SUM of a single cell
+- Examples: Non Profit E28 =SUM(E27) and F28 =SUM(F27) are used instead of =E27 or =F27.
+- Impact: No numerical error, but it's unusual and can be confusing to readers.
+- Recommendation: Use the direct reference =E27 (or keep if you prefer consistency with SUM usage). Not required to change, but cleaner to use direct reference for single-cell totals.
+
+6) Rehab sheet / other consistent blanks in "Recommend" columns
+- Observation: Several Recommend (F…) cells are blank while E… cells have numbers; some sheets use F… =E… formulas for defaults, others leave blank or use hard-coded recommended values. This is not strictly an error, but it is inconsistent.
+- Recommendation: If the intended convention is that Recommend defaults to Request, use formulas (Fx = Ex) consistently where appropriate, otherwise leave explicit numbers but document the policy. Consistency reduces accidental mismatches.
+
+Summary of recommended formula changes (concrete):
+- Municipal!F5: change from =E6 to =E5
+- County!E13: change from =SUM(E9:E12) to =E9+E10+E12 (or =SUM(E9:E12)-E11)
+- AHTF!F14: change from =SUM(F3:F13) to =SUM(F2:F13) (if E14 remains =SUM(E2:E13))
+- AHTF!E16 and AHTF!F16: replace hard-coded 2432890 with a reference to the cell (or SUM(range)) that holds the Continuum of Care base, e.g. =<cell_with_base>*0.15
+
+If you want, I can:
+- produce the exact corrected formulas and a patch file,
+- recompute the affected totals after applying these fixes, or
+- search for other potential logical duplications across sheets (e.g., whether Rehab entries should be present both in Non-Profit and Rehab sheets or be consolidated).

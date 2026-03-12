@@ -1,0 +1,30 @@
+Findings (short)
+- Faulty cell: A8 — contains =A7+277. This is wrong; it jumps the numbering by 277 and makes every subsequent auto-number wrong.
+- Faulty cell: A40 — contains a hard-coded 35, which breaks the sequence (should be calculated, not typed).
+(Other A? formulas that reference the “previous” cell are fine — they rely on continuing the sequence. The single +277 and the hard-coded 35 are the problems.)
+
+Why it’s wrong
+- A8 should add 1 to the prior row to continue the sequence. +277 produces 282, then A9=A8+1 produces 283, etc. The whole column is offset.
+- Manually typing 35 in A40 prevents the automatic numbering from matching the series.
+
+Quick fixes (pick one)
+
+Option A — Fix the one bad formula and copy down
+1. Change A8 to =A7+1.
+2. Select A8 and drag the fill handle (or copy/paste) down to the last row (A40). This restores the continuous +1 numbering.
+3. Replace A40 with =A39+1 (or just fill it when you copy down).
+
+Option B — Use a stable formula that won’t break when rows/headers are inserted
+1. In A3 enter: =ROW()-2
+   - Explanation: Row 3 -> 3-2 = 1, Row 4 -> 2, etc. It auto-numbers regardless of inserted rows above.
+2. Fill A3 down to the last row.
+
+Option C — Excel 365 (array)
+- In A3 use: =SEQUENCE(number_of_rows,1,1,1) to populate the whole column of IDs at once.
+
+Which to use
+- If you just want the current list fixed: do Option A.
+- If you want a robust solution that survives inserted header rows: do Option B (ROW()-2) or Option C (SEQUENCE).
+
+Extra tip
+- After fixing, scan column A for any other hard-coded numbers (like A40) and replace them with formulas so the series remains consistent.

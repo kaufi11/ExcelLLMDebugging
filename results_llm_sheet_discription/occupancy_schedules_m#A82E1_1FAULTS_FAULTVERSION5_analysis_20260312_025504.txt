@@ -1,0 +1,35 @@
+I found two clear errors in the workbook (one obvious typo + one recurring formula bug). Short summary, cause, and fix below.
+
+1) Wrong minus sign (typo) — Occ L1-WD!D20
+- Problem: cell D20 on sheet Occ L1-WD contains a leading minus:
+  =-'OccL2-WD-DU'!D20*Occupancy!$F$35-'OccL2-WD-DU'!F20*Occupancy!$F$36
+  All other hourly cells use positive weighted sums. This will produce a negative occupancy fraction for hour 5 (incorrect).
+- Fix: remove the negative signs so it matches the pattern used elsewhere. For example:
+  ='Occ L2-WD-DU'!D20*Occupancy!$F$35 + 'Occ L2-WD-DU'!F20*Occupancy!$F$36
+  (Use the exact sheet name as in your file — I used "Occ L2-WD-DU" with the space to match other references.)
+- Why: Occupancy fractions must be positive weighted sums of DayUse/NoDayUse; the negative produces wrong schedule values and downstream errors.
+
+2) Latent-per-person weighting is wrong (recurring bug)
+- Problem: several sheets compute latent load per person with this form:
+  = (Occupancy!F22*Occupancy!F19 + Occupancy!F23*Occupancy!F20) / (Occupancy!F19 + Occupancy!F20)
+  That uses F19 and F20 (sensible BTU values) as weights/denominator — that's incorrect. The latent-per-person value should be weighted by the relative amounts of living vs bedroom occupancy (the schedule sums), not by the sensible BTU numbers.
+- Where: I saw this on Occ L0 (F10) and the same formula on Occ L1-WD, Occ L1-DU, Occ L2-WD-DU, etc.
+- Correct formula (use Occupancy!F38 and Occupancy!F39 as the LR/BR schedule totals, same pattern as sensible F9):
+  = (Occupancy!$F$22 * Occupancy!$F$38 + Occupancy!$F$23 * Occupancy!$F$39) / (Occupancy!$F$38 + Occupancy!$F$39)
+- Why: Occupancy!F22/F23 are latent BTU/person values for living and bedroom. To get a weighted single-zone latent per-person you must weight those by how many hours (or fractions) people occupy living vs bedroom (F38/F39), not by the sensible BTU numbers (F19/F20). Using F19/F20 produces a nonsense weighting and wrong latent-per-person result.
+
+Suggested steps to fix (safe and quick)
+1. Fix the D20 typo:
+   - Edit Occ L1-WD!D20 and remove the leading minus signs, matching the neighboring formulas.
+2. Fix latent-per-person formulas:
+   - On each sheet where you see the latent formula referencing Occupancy!F19 and F20, replace with the corrected formula that uses Occupancy!F38 and F39.
+   - Sheets to check: Occ L0 (F10), Occ L1-WD (F10), Occ L1-DU (F10), Occ L2-WD-DU (F11) and any other sheets where F22/F23 are combined — search for the text "Occupancy!F22*Occupancy!F19" (Ctrl+F) to locate all occurrences.
+3. Recalculate and sanity-check:
+   - After change, confirm latent-per-person values are plausible and that DOE2.2 schedule strings still sum to 1 across 24 hours where expected.
+4. Extra check:
+   - Do a quick search for formulas that begin with a minus (search for =- ) in hourly ranges to catch any other accidental negative signs.
+
+If you want I can:
+- Give the exact list of cells that currently have the wrong latent formula (based on the description I can infer likely cells),
+- Provide the exact Find/Replace string to run,
+- Or produce the corrected formulas for each sheet ready to paste.

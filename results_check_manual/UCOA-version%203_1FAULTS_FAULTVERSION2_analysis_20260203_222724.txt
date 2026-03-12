@@ -1,0 +1,45 @@
+Summary of the problem
+- The Account-range column (column H, the "xxxx-xxxx" ranges) is misaligned / incorrect in many rows. In other words the range shown in H does NOT match the account number in column A (or the 1st four digits of A where A contains a range like "4010-***"). This appears throughout Assets, Liabilities and Equity (and also later sections). Example:
+  - Row with A = 1070 (savings) → H shows 1100-1199 (should be 1000-1099).
+  - Row with A = 1110 → H shows 1200-1299 (should be 1100-1199).
+  - Row with A = 2310 → H shows 2500-2599 (should be 2300-2399).
+- Likely cause: someone cut/pasted or inserted/deleted rows in column H (or copied values instead of formulas) so the H column got shifted relative to the A column. That produced a systematic offset (ranges are often 100–300 higher than the account number category).
+
+Why it’s a problem
+- The H ranges are used for grouping / validation / reporting. Wrong ranges mean:
+  - automatic categorization will be wrong,
+  - lookups and mappings that rely on that range will fail,
+  - financial reports and reconciliations may show wrong totals by category.
+
+How to fix (quick, reliable solution)
+1. Replace the manual/incorrect H values with an automatic formula that derives the correct "xxx0-xxx9" hundred-range from column A (works with plain numbers like 1010 or 1070 and with strings like "4010-***").
+2. Put this formula in H16 (or the first row that needs a range) and fill down the whole H column for your mapping area:
+
+Robust formula (copy/paste into H16 and fill down):
+=IF($A16="","",IFERROR((INT(VALUE(LEFT($A16,4))/100)*100)&"-"&((INT(VALUE(LEFT($A16,4))/100)*100)+99),"" ))
+
+What it does (short):
+- Takes the first 4 characters from column A (handles "4010-***" and "4010"),
+- converts to number, truncates to the hundreds block (e.g. 4010 → 4000),
+- returns a string "4000-4099".
+- Leaves the cell blank if column A is blank or non-convertible.
+
+Notes and variants
+- If your A cells are always pure numbers (no "4010-***"), you can use the slightly simpler formula:
+=IF($A16="","",INT($A16/100)*100 & "-" & (INT($A16/100)*100+99))
+- After you have validated the H column is correct, you can either:
+  - keep the formulas (best practice), or
+  - copy H and Paste Special → Values to freeze the ranges.
+
+Extra validation (recommended, one-time check)
+- Add a helper column that checks if H agrees with A:
+=IF($A16="","OK", IF( ISNUMBER(VALUE(LEFT($A16,4))), IF(VALUE(LEFT($A16,4))>=VALUE(LEFT(H16,4)) , "OK","MISMATCH"), "CHECK") )
+- Filter for "MISMATCH" to catch remaining problems.
+
+Other things to check
+- Look for any rows where column A is a text label (e.g., "Cash:" rows). The formula will skip blanks/labels.
+- Check for any manual overrides in H you intentionally want to keep. Convert them back to manual only after confirming they are exceptions.
+
+If you want, I can:
+- produce a one-line macro to replace H values for the whole sheet,
+- or scan the workbook and list rows where A vs H mismatch so you can review them. Which do you prefer?

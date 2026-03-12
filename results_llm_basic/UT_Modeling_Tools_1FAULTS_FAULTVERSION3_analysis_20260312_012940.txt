@@ -1,0 +1,25 @@
+I checked the workbook and found three clear formula mistakes (easy fixes). Short explanation + how to fix each.
+
+1) DRAM cost side — wrong price reference in D21
+- Problem: Cell D21 (var profit/wafer, “including ovhd” row) is =+D31*D9*D10-D16-(D9)*D17. D31 is the price AFTER adding a fab (used in the “after fab add” scenario). For the baseline/“var profit wafer” row you should be using the baseline predicted price (D13). All other columns (E21..H21) use the baseline cell (E13..H13) correctly — only D21 is wrong.
+- Fix: Change D21 to =+D13*D9*D10-D16-(D9)*D17
+- Why: The row is calculating baseline variable profit per wafer; using the price after adding capacity mis-states the baseline margin and breaks downstream cash‑flow/ROI numbers.
+
+2) DRAM cost side — typo in cap cost per start for H column (H22)
+- Problem: H22 is =+$D$18/380 while the other columns divide by 5 (=+$D$18/5). /380 is clearly a typo/inconsistency and makes column H’s cap amortization wrong by a large factor.
+- Fix: Change H22 to =+$D$18/5 (to match columns D–G) — or, if column H is intentionally different, replace 380 with the intended divisor and document it.
+- Why: That cell is supposed to be “cap cost/start/5 years”; dividing by 380 instead of 5 yields meaningless per-year amortization in H and will corrupt profit and IRR calculations that include H.
+
+3) Capacity&Price Calculation — inconsistent/likely incorrect formula in C115 (price×functionality revenue)
+- Problem: In the block that computes revenues with the extra fab, most columns use the column-local “price/function” cell (e.g. D115 uses D104). But C115 is =+C152*'LEM Demand Calibration'!C$10 instead of using C104 (the pattern breaks). C152 is a “price/function with upgrade fab” cell (different scenario) and not the column’s intended “price with extra fab” value. That inconsistency will give column C revenue based on the wrong price/senario.
+- Fix: Replace C115 with =+C104*'LEM Demand Calibration'!C$10  (or otherwise make the price reference consistent with the other columns), unless you intentionally want C to use the upgrade-fab price (then document that).
+- Why: Mixing different scenario price cells causes the C-column revenue and any downstream sums/IRRs to be inconsistent with the rest of the table.
+
+Quick checklist to avoid similar issues
+- Use consistent absolute/relative references (and $ where appropriate) and keep the same pattern across columns so copying formulas doesn’t pick up the wrong cell.
+- Highlight important scenario cells (baseline price, post-add price, upgrade price) and name them with defined names so formulas can’t accidentally point to the wrong one.
+- After structural changes, re-run sanity checks: compare E21..H21 to D21 etc (look for a single column that differs) and check totals/IRRs for step-changes that look like typos (e.g. /380).
+
+If you want, I can:
+- produce exact corrected formula text for every affected cell and a small validation table (before/after),
+- or scan the workbook for other single-column anomalies (I can list all cells that deviate from the column-copy pattern). Which would you prefer?

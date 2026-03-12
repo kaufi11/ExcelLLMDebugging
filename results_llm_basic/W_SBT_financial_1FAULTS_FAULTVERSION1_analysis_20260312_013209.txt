@@ -1,0 +1,41 @@
+Summary of the problems I found (short & clear), why they matter, and how to fix them.
+
+1) Wrong column references on In‑Kind Contributions sheet — Personnel row (C23)
+- What’s wrong:
+  - R23 is set to =Q23 (should be =O23).
+  - AF23 is set to =AE23 (should be =AC23).
+  - Because R23 and AF23 point to the wrong (empty) columns the month‑13 and month‑25 chains for that row are broken and the Yr2/Yr3 totals are wrong.
+- Why it matters:
+  - Yr2/Yr3 totals for "Contributions displacing operating costs → Personnel costs" (and any aggregates that use them) will be incorrect (likely zero or wrong).
+- Fix (exact formulas to enter):
+  - R23 → =O23
+  - S23 → =R23, T23 → =S23, … (follow the same chain as other rows for months 14–24)
+  - AF23 → =AC23
+  - AG23 → =AF23, AH23 → =AG23, … (follow the same chain for months 26–36)
+  - AD23 should then be =SUM(R23:AC23) (already correct) and AR23 =SUM(AF23:AQ23) (already correct).
+- Quick method:
+  - Copy one of the correct row formulas (for example row 24) and paste into row 23 to restore the pattern, then re-enter any actual values.
+
+2) Hard-coded / inconsistent cell in Personnel sheet — Marketing Co‑ordinator row (Personnel!E9)
+- What’s wrong:
+  - Personnel!E9 contains the literal “=461” instead of the usual chain formula (=D9 or = previous month cell). That is inconsistent with the majority pattern which chains month to month from the first month.
+- Why it matters:
+  - It may be intentional (salary starts in month 2), but it looks like a hard-coded value in the wrong place and can cause confusion or wrong year totals if the first month (D9) is supposed to contain the starting value.
+- Fix / recommendation:
+  - Decide which month the 461 belongs in:
+    - If salary should start in Month 1, put 461 into D9 and change E9 to =D9 (then copy the chain).
+    - If salary should start in Month 2, leave 461 but set E9 =461 is OK; then ensure P9 (sum D9:O9) and yearly totals match your intention. For clarity, it’s preferable to put the 461 in the first month where payment occurs (D9) and use chained formulas across months.
+
+3) General cause & check
+- Why these happened:
+  - Looks like copy/paste or column‑shift errors (Q and AE columns were accidentally used instead of O and AC).
+- What to do generally:
+  - Scan all rows in In‑Kind Contributions and Personnel for any formulas that reference Q, AE, or other unexpected columns (compare to nearby correct rows).
+  - For any broken chain, restore the standard pattern:
+    - Months 1–12: E = D, F = E, … O = N, P = SUM(D:O)
+    - Month13 (R) = O, months14–24: S = R, … AC = AB, AD = SUM(R:AC)
+    - Month25 (AF) = AC, months26–36: AG = AF, … AQ = AP, AR = SUM(AF:AQ)
+
+If you want, I can:
+- Provide a short macro or exact copy/replace steps to fix all the mis‑referenced cells at once, or
+- Give the exact list of cells that reference Q / AE / other wrong columns (so you can correct them manually).

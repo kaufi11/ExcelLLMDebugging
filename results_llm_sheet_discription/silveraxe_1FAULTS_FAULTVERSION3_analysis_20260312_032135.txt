@@ -1,0 +1,31 @@
+I reviewed the sheet and found a few (small but important) issues. Short explanations and fixes below.
+
+1) Misleading label: A19 says "Hit Mod." but cells B19:E19 are actually HP modifiers
+- Problem: B19:E19 pull the *HP* modifier rows (Str HP Mod, End HP Mod, Int HP Mod, Agl HP Mod) and F19 multiplies them to compute Hit Points, so A19 should not say "Hit Mod."
+- Fix: Change A19 text to "HP Mod." or "HP Modifiers" so the label matches the values.
+
+2) Hit Points cell (H19) not rounded — shows fractional HP
+- Problem: H19 currently = (F19*E15)+0.49 — this only adds 0.49; it does not round to an integer. HP should normally be an integer, so the cell may show non-integer results.
+- Fix (recommended): Replace formula with an explicit rounding function, e.g.
+  - =ROUND(F19*E15,0)  — rounds to nearest whole HP
+  - or =INT(F19*E15+0.5) — alternative integer rounding
+- Why: these produce a proper integer HP rather than leaving a decimal or relying on a magic +0.49 offset.
+
+3) Charisma breakpoint row odd value (-100)
+- Problem: the Charisma lookup row (R17) begins with -100 (R17 = -100). HLOOKUP expects ascending breakpoints; -100 is unusual and may cause unexpected bucket matches if Charisma can be 0 or negative.
+- Fix: If -100 was a typo, change R17 to 0 (or the intended lowest breakpoint). If -100 was intentional to catch extreme negatives, document that behavior (or use 0 and handle negatives explicitly).
+- Why: using a clear ascending breakpoint set (0, 1, 3, 6, ...) prevents accidental mismatches when HLOOKUP uses approximate match.
+
+4) (Optional / potential) Base HTH Damage lookup uses the weight breakpoint row
+- Observed: H22 = HLOOKUP(C22,R2:AG4,3,TRUE) uses the same breakpoint row (R2:AG2) that is labeled "Weight" to look up base hand-to-hand damage by carrying capacity (C22). If the carrying-capacity thresholds should be different from the weight thresholds, this is wrong.
+- Fix: If carrying-capacity thresholds differ, create a dedicated breakpoint row for carrying-capacity thresholds and use that new range in the HLOOKUP. Example:
+  - Put carrying-capacity breakpoints in, say, R? (new row) and then: =HLOOKUP(C22, R?:AG?, 3, TRUE) (adjust row index to point to HTH damage row).
+- Why: HLOOKUP always compares the lookup_value against the first row of the table_array; you must use the correct breakpoint row for that lookup.
+
+Summary of immediate actions I recommend:
+- Rename A19 to "HP Mod." (quick labeling fix).
+- Replace H19 with =ROUND(F19*E15,0) (or INT(...+0.5)) to ensure integer HP.
+- Fix R17 from -100 to 0 if that was a typo (or document/handle intentionally).
+- Review H22’s lookup breakpoints only if you expect carrying-capacity thresholds to differ from the weight table.
+
+If you want, I can give the exact cell-change commands (copy/paste formulas) or update the sheet for you.

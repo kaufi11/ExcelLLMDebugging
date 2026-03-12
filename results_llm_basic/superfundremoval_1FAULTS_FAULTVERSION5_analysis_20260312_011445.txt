@@ -1,0 +1,30 @@
+Findings (short)
+1) Wrong formula in G21 — it divides instead of multiplies. This will return ~7 (1/0.143) for a "Yes" instead of the intended weighted value (0.143), throwing off the Section II weighted score.
+2) Weight-sum checks (F12, F24, F36, F56) currently compare the sum to 100% but return the text "100%". Also using raw decimal approximations (0.1428 / 0.143) can cause tiny floating-point mismatches and trigger the "ERROR" even when weights are intended to add to 100%.
+
+What to change (exact fixes)
+1) Fix G21
+Replace the current formula in G21
+=IF(C21="yes",(1/F21),IF(C21="no",(0/F21),""))
+with either of these (simpler + correct):
+=IF(C21="yes",F21,IF(C21="no",0,""))
+or, preserving the original pattern:
+=IF(C21="yes",(1*F21),IF(C21="no",(0*F21),""))
+
+Why: you want to multiply the "Yes" (1) by the weight, not divide by the weight.
+
+2) Improve section weight-sum checks to avoid false ERRORs
+Replace formulas like
+=IF(SUM(F6:F10)<>100%,"ERROR","100%")
+with a numeric check that tolerates rounding, and return a numeric 100%:
+=IF(ABS(SUM(F6:F10)-1)>0.0001,"ERROR",1)
+then format the cell as Percentage. Or use rounding:
+=IF(ROUND(SUM(F6:F10),3)<>1,"ERROR",1)
+
+Why: SUM(...) returns 1 (100%) not the text "100%". Returning numeric 1 lets you use the cell in calculations and formatting. The ABS/ROUND tolerance avoids tiny floating-point differences from showing "ERROR" incorrectly.
+
+Optional recommendations (brief)
+- Standardize answer text (Yes/No/N/A) or use a dropdown; formulas are string-sensitive to exact wording.
+- Consider using exact fractions for weights (e.g., =1/7) or enter weights as percentages (e.g., 14.2857%) to reduce rounding issues.
+
+If you want, I can produce the corrected formulas for every affected cell and show a quick test of totals.

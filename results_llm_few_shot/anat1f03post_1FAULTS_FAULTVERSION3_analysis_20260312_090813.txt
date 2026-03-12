@@ -1,0 +1,46 @@
+Here are the problems I found, why they are wrong, and quick fixes. Short and simple.
+
+1) Missing input (data)
+- Location: G55 is blank but I55 =SUM(D55:G55).
+- Problem: Total I55 treats G55 as zero → I55 (and any averages using it) will be wrong.
+- Fix: Enter the correct score in G55. If the student had 0, explicitly enter 0; if unknown, put NA or leave and adjust formulas (see #2).
+
+2) Wrong average range (one-cell typo)
+- Location: F56 =AVERAGE(F36:F54)
+- Problem: Row 55 is excluded from the F‑column mean (should include F36:F55).
+- Fix: Change to =AVERAGE(F36:F55)
+
+3) Hard-coded denominators instead of referencing header cells
+- Locations: Many Class% formulas use I6/400, I7/400, I36/400, etc., and J26 uses I26/I3 (but others use 400).
+- Problem: If the max points change you must update many cells; also inconsistent (first block uses 400 literal, summary uses I3).
+- Fix: Use the header cell as an absolute reference:
+  - For rows 6–25: change J6 to =I6/$I$3 and copy down.
+  - For rows 36–55: change J36 to =I36/$I$33 and copy down.
+  - For class means: J26 = I26/$I$3 and J56 = I56/$I$33
+- Benefit: If the max (I3 or I33) changes, all percents update automatically.
+
+4) Hard-coded totals in header (better as formula)
+- Locations: I3 = 400 and I33 = 400 (entered manually).
+- Problem: If D3:G3 or D33:G33 max values change you must update I3/I33 manually.
+- Fix: Use =SUM(D3:G3) for I3 and =SUM(D33:G33) for I33.
+
+5) Inconsistent grading thresholds (>= vs >)
+- Locations: First section K6..K25 use >=89.9% etc; second section and summary K36..K55, K26, K56 use >89.9% etc.
+- Problem: Borderline scores (exactly 89.9%, 79.9% etc) could be graded differently depending on row.
+- Fix: Pick one rule and apply everywhere. Recommended (consistent with top block): use >=. Example standardized formula to put in all K cells:
+  =IF(Jx>=89.9%,"A",IF(Jx>=79.9%,"B",IF(Jx>=69.9%,"C",IF(Jx>=59.9%,"D","F"))))
+  (replace Jx with the row cell, e.g. J6 or J26)
+
+6) Potential double-check: Totals I-col vs Attendance column
+- Note: Column I is "Total (w/o A/P)" and currently uses =SUM(D:G) — that matches the label. If you intended totals to include Attendance/Participation (H), change I formulas to =SUM(Dx:Gx,Hx) or =SUM(Dx:Hx) and update denominator (I3/I33) accordingly.
+- Action: Verify whether Attendance should be included. If yes: change I formulas and the header totals.
+
+Summary of immediate formula fixes to enter:
+- G55: enter correct score (or 0/NA).
+- F56: =AVERAGE(F36:F55)
+- I3: =SUM(D3:G3) ; I33: =SUM(D33:G33)
+- Replace J formulas: J6 =I6/$I$3 (copy down), J36 =I36/$I$33 (copy down), J26 =I26/$I$3, J56 =I56/$I$33
+- Replace every K with the standardized IF using >=, e.g.
+  =IF(J6>=89.9%,"A",IF(J6>=79.9%,"B",IF(J6>=69.9%,"C",IF(J6>=59.9%,"D","F"))))
+
+If you want, I can produce the exact copy-down formulas for each block (first block rows 6–25 and second block 36–55) or a corrected sheet you can paste in.

@@ -1,0 +1,21 @@
+Summary of error found
+- On the "Select Financial Data" sheet cell J12 is wrong. It contains =J9-J11 but it should match the other years: =J8-J11.
+
+Why this is wrong (short)
+- J12 is the subtotal "Earnings (or similar) before other items" calculated elsewhere as Total revenues minus Cost of operations (B12 = B8-B11, C12 = C8-C11, etc.). Using J9 (Cost of sales) instead of J8 (Total revenues) gives a meaningless result (J9-J11 = -88,269) and breaks every downstream calculation in column J (Earnings from operations, earnings before taxes, net earnings, EPS, etc.).
+
+Fix (two quick ways)
+1) Manual fix:
+   - Select J12, replace the formula with: =J8-J11 and press Enter.
+2) If you want to fix many columns or ensure consistency:
+   - Select the correct cell in a neighboring correct column (for example I12), Copy, then Paste Special -> Formulas into J12 (or drag the fill handle from I12 to J12).
+
+What the fix does (short explanation)
+- Replaces the wrong input (cost of sales) with the correct input (total revenues). This yields the correct J12 value (J8 minus J11) and automatically corrects any values that depend on J12 (J14, J18, J21, J25, EPS lines, etc.) because those cells reference J12 or cells downstream.
+
+Quick check to make sure there's no more errors
+- For each subtotal/total row, scan the row across years and confirm formulas follow the same pattern (e.g., row12 should be =<col>8-<col>11 for every column). Use Excel’s "Compare formulas" or select the row and visually confirm each formula references the same relative cells. If you find any outliers, correct them the same way.
+
+If you want, I can:
+- List every cell whose formula differs from the pattern in its row (so you can correct them all), or
+- Compute and show the corrected J-column values after the fix.

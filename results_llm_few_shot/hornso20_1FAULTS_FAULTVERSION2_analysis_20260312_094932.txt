@@ -1,0 +1,55 @@
+I checked the sheets and found several clear formula mistakes. Short, one‑line faults + fixes below (grouped by sheet). I also include a very short explanation of why each fix is needed.
+
+1) Sheet E20-9 (the second version)
+- Faulty cell: C11
+- Error: Wrong divisor (uses C3 = direct labor cost instead of C2 = direct labor hours)
+- Fix: =SUM(C4:C6)/C2
+- Why: Indirect cost hourly rate = total indirect costs ÷ total direct labor hours (not ÷ direct labor dollars).
+
+2) Sheet E20-9 (first version) — sanity check
+- C10 = C3/C2 is correct (direct labor cost per hour).
+- C11 in the first version (SUM(C4:C6)/C2) is correct.
+
+3) Sheet P20-1B (both copies appear identical)
+These are bookkeeping/transfer errors (wrong source columns and wrong direction for inventory transfers).
+- Faulty cell: F14 (=+E4+G6)
+- Error: It adds a Finished Goods cell (E4) to a Cost of Goods Sold total (G6). COGS must NOT be added to Finished Goods.
+- Fix: Make F14 equal only the finished‑goods balances (for example =SUM(E4:E12) or specifically =E4 + any other E‑column finished goods rows). Remove any G‑column (COGS) values from that sum.
+- Why: Finished Goods inventory should be the sum of unsold finished‑goods balances (column E), not include costs already recorded as COGS (column G).
+
+- Faulty pattern: G15, G19, G27 and similar use =+F14 or =+F18 (copying a value into another account)
+- Error: They copy amounts instead of recording the proper decrease from the source account (no offset / wrong account affected).
+- Fix pattern: When you move costs from WIP → Finished Goods you should (a) add the amount to Finished Goods and (b) subtract the same amount from Work‑in‑Process. Example:
+  - If F18 is the amount moved to Finished Goods, then set Finished Goods increase cell =F18 (or add to previous E‑balance) and set Work‑in‑Process new balance = previous WIP balance - F18 (e.g. =C6 - F18).
+- Why: Transfers between inventory accounts require a debit and a credit; simply copying creates incorrect balances.
+
+- Faulty cell: G27 (=+F26)
+- Error: Uses Finished Goods column (F26?) and copies into G27 without reducing Finished Goods.
+- Fix: When recording Cost of Goods Sold, reduce Finished Goods: Finished Goods new = previous Finished Goods - F26, and COGS = F26.
+- Why: Selling a finished job moves cost from Finished Goods to COGS — Finished Goods must be decreased.
+
+(If you want I can map each journal line to exact +/− formulas for each row — tell me the intended journal entries and I’ll give exact formulas.)
+
+4) Sheet P20-3B (both copies)
+- Faulty cell: I10 (=+F14*H10)
+- Error: Allocates overhead using the total direct labor (F14) instead of using the job‑level base (this job’s direct labor hours or dollars).
+- Fix (choose the correct base in your file):
+  - If H10 is overhead rate per direct‑labor dollar: I10 = F10 * H10
+  - If H10 is overhead rate per direct‑labor hour: I10 = (job’s DL hours) * H10 — e.g. if hours are in a cell use that cell (HoursCell*H10).
+- Why: Overhead for each job must be calculated from that job’s base (hours or dollars), not from the department total.
+
+- Faulty cell: I14 (=+I10+F14+D14)
+- Error: This looks like an attempt to compute “Total Cost” but mixes one job’s overhead (I10) with totals (F14, D14). It probably double‑counts or omits proper overhead totals.
+- Fix: Total Cost (for the set of jobs) should be =D14 + F14 + SUM(I10:I12) (i.e., total materials + total labor + total overhead). If I14 is the “total overhead” cell make it =SUM(I10:I12); if I14 is “total cost” make it =D14+F14+I14_overhead.
+- Why: Totals must consistently add the same-level subtotals; don’t mix one-job items with totals.
+
+Quick summary of the errors and the fixes:
+- Wrong divisor: C11 in E20-9(2) — divide by hours (C2), not by cost (C3).
+- Wrong source cell / wrong aggregation: many inventory moves in P20-1B are copying COGS into Finished Goods or copying Finished Goods into WIP — instead, transfers must add to the receiving account and subtract from the source.
+- Wrong allocation base: I10 in P20-3B uses a total (F14) instead of job‑level base (use F10 or job hours).
+
+If you want, I can:
+- Provide the exact corrected formulas for every affected cell in P20-1B and P20-3B (I’ll need you to confirm which column holds hours vs. dollar amounts and confirm the intended journal entries), or
+- Fix the sheet and return a corrected version (describe how you will receive it).
+
+Which would you prefer?

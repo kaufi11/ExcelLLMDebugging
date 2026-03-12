@@ -1,0 +1,37 @@
+Overview
+- Workbook has three sheets: "Select Financial Data", "Statements of Earnings", and "Cash Flow".
+- Layout: rows list financial line items; columns are years. "Select Financial Data" spans 1994–2003 (columns K–B), "Statements of Earnings" covers 1999–2003 (columns F–B), and "Cash Flow" covers 1994–2003 (columns K–B). Many numeric cells are in thousands (notes: “(add 000)” or “(add 000, except per share)”).
+
+Sheet: Select Financial Data
+- Purpose: condensed multi-year income statement, per-share metrics and condensed balance-sheet data.
+- Main blocks: Consolidated Operating Results (Net Sales, Freight, Total revenues, Cost of sales, Cost of operations, Earnings from operations), Interest/other nonoperating items, Taxes, Net Earnings, Basic/Diluted EPS, Cash Dividends, Condensed Balance Sheet Data (selected assets, liabilities, shareholders’ equity).
+- Formula patterns:
+  - Totals and subtotals use SUM across component rows (e.g., Total revenues B8 = SUM(B6:B7); Cost of operations B11 = SUM(B9:B10); balance sheet subtotal B50 = SUM(B44:B49); B59 = SUM(B51:B58)).
+  - Earnings from operations and later lines are computed by arithmetic differences (e.g., B14 = B12 - B13; B18 = B14 - B15 - B16; B21 = B18 - B19).
+  - Per-share rows use SUM across EPS components (e.g., Basic EPS total B32 = SUM(B29:B31); Diluted EPS B39 = SUM(B36:B38)).
+- Key values (2003 column B): Net Sales 1,537,869; Freight revenues 212,425; Total revenues computed by SUM; Earnings from Operations calculated at B14; Shareholders’ equity B58 = 1,129,847.
+- Notes/oddities:
+  - Row H12 (column H) is documented as H12 = H8 + H11 while other years use B12 = B8 - B11 etc. That appears to be a typo/inconsistency (should likely be H8 - H11).
+  - Some extraordinary / cumulative-effect items are present in specific years (e.g., cumulative effect B24 negative in 2003, 2002; extraordinary debt extinguishment in 1994).
+
+Sheet: Statements of Earnings
+- Purpose: alternative (or supporting) income statement for 1999–2003 with line-by-line reconciliation of continuing/discontinued operations and EPS.
+- Structure and formulas mirror Select Financial Data for revenues, costs and operations:
+  - Total revenues B9 = SUM(B7:B8); Cost of operations B12 = SUM(B10:B11); Earnings from operations B15 = B13 - B14.
+  - Earnings before tax computed as B20 = B15 - B16 - B17; Taxes B21; Earnings from continuing operations B24 = B20 - B21; Net earnings via additions of discontinued, extraordinary and cumulative effect (B31 = SUM(B27:B30)).
+  - EPS lines compute basic and diluted EPS and then sum components (e.g., B38 = B35 + B36; B41 = SUM(B38:B40)).
+- Key values (2003): Net Sales B7 = 1,500,686 (note this differs from Select Financial Data Net Sales B6 = 1,537,869 — two sheets contain slightly different sales figures).
+
+Sheet: Cash Flow
+- Purpose: multi-year Consolidated Cash Flow Statement (operating, investing, financing) with beginning/end cash computation.
+- Structure:
+  - Operating: starts with Net earnings (B3) and cumulative-effect adjustments (B4), reconciles to Net Cash Provided by Operating Activities with adjustments (depreciation B10, gains B11, changes in working capital B14–B16) and totals via SUM(B6:B16) → B17.
+  - Investing: major lines (PP&E additions B20, Acquisitions B21, asset proceeds B22, other investing B23); Net investing B24 = SUM(B20:B23).
+  - Financing: debt repayments/issuances, commercial paper, swaps, dividends, stock issuances/repurchases; Net financing B39 = SUM(B27:B38).
+  - Net change in cash B41 = B17 + B24 + B39. Beginning-of-year cash (row 42) is taken from the next column’s end-of-year cash (e.g., B42 = C44; C42 = D44 … K42 = 2084 fixed), creating a rolling chain that terminates because K42 is a fixed value. End-of-year cash B44 = SUM(B41:B42).
+- Key values (2003): Net earnings B3 = 93,623; Depreciation/amortization B10 = 139,606; Net cash provided by operating activities B17 = SUM(B6:B16) (formula-driven); Additions to PP&E B20 = -120,638; Net cash used for investing B24 = SUM(B20:B23); Dividends paid B36 = -33,714; Net financing B39 = SUM(B27:B38); End-of-year cash B44 computed as B41 + B42.
+- Notes/structure detail: beginning-of-year cash references the sheet’s end-of-year cash one column to the right (C44, D44, …) and uses K42 = 2,084 to anchor the series — no circular reference given that anchor exists.
+
+Overall comments
+- The workbook is formula-driven with consistent use of SUM for aggregation and arithmetic for reconciliations; key financial metrics (revenues, costs, operating earnings, taxes, net earnings, EPS, and cash flow sections) are computed from component rows.
+- Watch for the noted inconsistencies: differing Net Sales between sheets, the H12 sign error (H8 + H11 vs expected H8 - H11), and the chained beginning-of-year cash references (intended but requires the fixed anchor in K42).

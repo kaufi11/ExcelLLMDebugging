@@ -1,0 +1,44 @@
+I checked the workbook. I found three clear, easy-to-fix errors that are causing wrong revenue, wrong input growth for sugar, and a likely bad asset/depreciation link. Below are the problems, why they’re wrong, and exactly how to fix them.
+
+1) Revenue Totals only include Online sales (big error)
+- Problem: Row 12 (Total revenue) uses SUM(E10:E10), SUM(F10:F10), … i.e. each total only sums the online-sales cell and ignores Street Sales (row 11).
+- Effect: Total revenue, gross profit and all downstream profit numbers are too low (they omit street sales).
+- Fix: Change each Total formula to sum both revenue lines. Example:
+  - Replace E12 =SUM(E10:E10) with E12 =SUM(E10:E11)
+  - Do the same for F12..P12: F12 =SUM(F10:F11), G12 =SUM(G10:G11) … P12 =SUM(P10:P11)
+- Why: The total must include both Online (row 10) and Street (row 11) revenue.
+
+2) Sugar price growth uses lemon-growth cell (wrong reference)
+- Problem: Row 8 (Sugar price) for F8..P8 uses $D$7 (the lemon-price growth cell) instead of $D$8 (the sugar-price growth cell).
+- Effect: Sugar price escalates with the lemon growth-rate cell (wrong input); if D7 and D8 differ this gives incorrect sugar cost projection.
+- Fix: Update the growth reference in F8..P8 to $D$8. Example:
+  - Change F8 from =E8*(1+$D$7) to =E8*(1+$D$8)
+  - Repeat for G8..P8: G8 =F8*(1+$D$8) etc.
+- Why: price-growth cells should point to their own growth-rate cell ($D$8 for sugar).
+
+3) Long-term asset original value is linked to a liability cell (likely wrong) → breaks depreciation
+- Problem: Balance Sheet D8 is set to =D14. D14 is a liability (1,000,000 loan), so the long-term asset original value is incorrectly tied to that liability cell.
+- Effect: Depreciation, balance sheet asset values and accumulated depreciation are wrong (Depreciation!D6 draws from Balance Sheet!D8).
+- Suggested fixes (pick one appropriate for your model intent):
+  - If the asset cost is the investment shown in Cashflow (Cashflow D9 is -100,000 each period), set D8 to the asset cost explicitly or link to the cashflow purchase:
+    - Example: D8 = -Cashflow!D9  (this turns the negative cashflow purchase into a positive asset value)
+  - Or enter the correct one-time original asset value directly (e.g., D8 = 100000).
+- Why: The asset original value should reflect the purchase cost, not be copied from a liability cell. Fixing D8 corrects values used by Depreciation!D6 and all downstream depreciation / book-value calculations.
+
+4) (Minor / check) Depreciation cumulative formula pattern has inconsistencies
+- Problem: Depreciation sheet’s “Total Depreciation” (row labelled C11) has inconsistent formulas / missing columns in the cumulative chain (some columns jump or are omitted).
+- Fix: Make the cumulative pattern consistent:
+  - E11 = E7
+  - F11 = E11 + F7
+  - G11 = F11 + G7
+  - H11 = G11 + H7
+  - … continue same pattern across all columns.
+- Why: ensures accumulated depreciation is calculated consistently year-to-year.
+
+Summary of the immediate edits to make
+- Change E12:P12 from SUM(X10:X10) to SUM(X10:X11).
+- Change F8:P8 growth references from $D$7 to $D$8 (F8 = E8*(1+$D$8), etc.).
+- Change Balance Sheet D8 to the asset original value (e.g., D8 = -Cashflow!D9 or D8 = 100000), then let E8..P8 copy forward as already set.
+- Fix Depreciation cumulative row so it consistently sums prior accumulated + current year depreciation.
+
+If you want, I can produce the exact corrected formulas for every affected cell (paste-ready), or I can validate results after you make the three main fixes above. Which would you prefer?

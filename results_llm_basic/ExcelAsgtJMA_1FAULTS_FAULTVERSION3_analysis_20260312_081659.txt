@@ -1,0 +1,28 @@
+Summary of errors
+- Most "Points" cells (C9:C24) use the wrong range: they say D#:CC# (e.g., =SUM(D9:CC9)). That references up to column CC instead of stopping at column I. It may still return the same number now, but it's incorrect and will break if other data appear in columns beyond I.
+- Row 19 (King) uses COUNT instead of SUM: C19 =COUNT(D19:CC19). That returns 6 (number of numeric cells) instead of the total points (should be 88), so his grade % is wrong.
+
+Quick fixes (exact formulas)
+1. In C9 enter:
+   =SUM(D9:I9)
+   Then copy/fill that formula down to C24.
+2. In C19 (if you prefer a single step) replace the COUNT formula with:
+   =SUM(D19:I19)
+3. In B9 enter (and copy down to B24):
+   =C9/$C$6
+   Format column B as Percentage.
+
+Alternative single-formula approach (put directly in B9 and fill down):
+   =SUM(D9:I9)/$C$6
+and format as Percentage.
+
+Why this fixes it (short)
+- D9:I9 limits the sum to the actual assignment columns (D through I). Using CC goes far past I and is wrong.
+- COUNT returns the count of numeric cells, not their sum; SUM returns the total points.
+- Using $C$6 (absolute reference) correctly divides each student's total by the class total points.
+
+Optional cleanup
+- Remove unnecessary SUM wrappers like =SUM(C9/$C$6). They work but are redundant; use =C9/$C$6 or the alternative above.
+- Ensure column B is formatted as Percentage for readable grades (0–100%).
+
+If you want, I can provide the exact fill-down sequence or a Find/Replace pattern to correct all formulas at once.

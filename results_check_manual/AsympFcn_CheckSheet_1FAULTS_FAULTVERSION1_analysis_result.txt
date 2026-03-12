@@ -1,0 +1,75 @@
+I reviewed both sheets and checked each formula/value you provided. Below I list the formula errors and inconsistencies I found, grouped by sheet, with cause and suggested fixes.
+
+MasterMethod_Checks (sheet)
+- B6 (=LOG(B4,B5))
+  - Comment: LOG(number, base) is a valid Excel form; with B4=3 and B5=3 this correctly yields CE = 1. (No change required unless you prefer =LOG(B4)/LOG(B5).)
+
+- Row 11 (cells A11..H11)
+  - Symptoms: C11 = 0 (A11^CE), D11 = #DIV/0! (B11/C11), H11 = #VALUE! (LOG(A11,2)).
+  - Cause: A11 is 0 (or blank treated as zero). n = 0 produces n^CE = 0 so dividing by it gives DIV/0, and LOG(0,2) is invalid.
+  - Fix: start n at 1 (or >0), or guard formulae (e.g. wrap with IF(A11<=0,"",...) or IFERROR).
+
+- B19 (cell B19 formula =A19/873)
+  - Symptom: B19 value is 0.0091638, but all other rows use A/2 and expect 4 for n=8.
+  - Cause: likely a typo: using 873 as divisor instead of 2.
+  - Fix: change B19 to =A19/2 (consistent with other rows). This will also affect D19–G19 comparisons.
+
+- General
+  - H-column uses =LOG(Ax,2) — valid for Ax>0. Any rows with n<=0 will produce errors (as for row 11). If you expect n=0 present, you must guard the LOG calls.
+
+SubstitutionMethod_Checks (sheet)
+- Row 10 (n=1) — B10, C10, D10, E10, F10, G10
+  - Symptoms: B10 and C10 = #VALUE!, D10 = #DIV/0!, E10/F10/G10 propagate errors.
+  - Cause:
+    - B10/C10 use =...*LOG(LOG(A10,2),2). For n=1, LOG(1,2)=0, then LOG(0,2) is invalid -> #VALUE!.
+    - D10 uses A10/LOG(A10,2) -> division by zero.
+  - Fix: do not evaluate log-log expressions at n<=1. Options:
+    - Start the table at n=2, or
+    - Wrap with guards: e.g. =IF(A10<=1,"", $B$4*A10*LOG(LOG(A10,2),2)) and =IF(A10<=1,"", 5*1 + A10/LOG(A10,2)), or
+    - Use IFERROR to handle/remove the error output.
+
+- Many D-column formulas are inconsistent (incorrect absolute references)
+  - Expected pattern (used in early rows): Dn = 5*1 + An / LOG(An,2)
+  - Actual inconsistent entries (they reference other D cells via absolute addresses instead of 1):
+    - D19:D23 use =5*$D$11 + A#/LOG(A#,2) (they reference $D$11)
+    - D24:D28 use =5*$D$12 + A#/LOG(A#,2) (they reference $D$12)
+    - D29:D33 use =5*$D$13 + A#/LOG(A#,2)
+    - D34:D38 use =5*$D$14 + A#/LOG(A#,2)
+    - D39 uses =5*$D$15 + A39/LOG(A39,2)
+  - Symptom: these produce large offsets (e.g. 5*$D$11 = 5*7 = 35 instead of 5*1 = 5) and therefore inconsistent T(n) values and comparison results in columns E/F/G.
+  - Cause: accidental mixed/absolute references copied down (instead of constant 1 or anchored constant).
+  - Fix: replace those formulas with the consistent form:
+    - =5*1 + A# / LOG(A#,2)
+    - or if you intended 5*D11 for some reason, explicitly document that; but based on the pattern earlier it looks like a mistake.
+
+- Logical test propagation and expected behavior
+  - Because of the errors above and the n=1 problems, E10:F10 and G10 show error output. Several later rows produce True/False results based on the (incorrect) D-values; fixing D formulas and the n=1 row will change E/F/G accordingly.
+  - Also B10/C10 use LOG(LOG(n,2),2) — this is mathematically log2(log2 n). That is valid only for n>1; if you intended natural log or a different base, consider using LN or another LOG base.
+
+Other observations / suggestions
+- Use IFERROR or explicit guards for cells that can produce domain errors (log of <=0, division by zero). For example:
+  - =IF(A#<=1,"", $B$4*A#*LOG(LOG(A#,2),2))
+  - =IF(A#<=1,"", 5 + A#/LOG(A#,2))
+- Check the intended asymptotic expression: the use of LOG(LOG(n,2),2) is unusual but legitimate (it's log base 2 of the log base 2 of n). If you intended ln ln n or log base 10, change accordingly.
+- After correcting B19 and all inconsistent D# references and removing n=1 from evaluation (or guarding it), re-check the Boolean tests (E/F/G) because the Theta decisions will change.
+
+Summary of explicit cells to correct (minimum):
+- MasterMethod_Checks:
+  - B19: change =A19/873 to =A19/2 (typo).
+  - Handle A11=0 issues (start n at 1 or guard logs/divisions).
+
+- SubstitutionMethod_Checks:
+  - Row 10 (A10=1): avoid evaluating LOG(LOG(1,..)) and 1/LOG(1,..) — either remove row or guard formulas.
+  - Replace incorrect D formulas:
+    - D19:D23: change =5*$D$11 + A#/LOG(A#,2) -> =5*1 + A#/LOG(A#,2)
+    - D24:D28: change =5*$D$12 + ... -> =5*1 + ...
+    - D29:D33: change =5*$D$13 + ... -> =5*1 + ...
+    - D34:D38: change =5*$D$14 + ... -> =5*1 + ...
+    - D39: change =5*$D$15 + ... -> =5*1 + ...
+  - Optionally wrap B/C/D formulas with IF/Aggregate/IFERROR to prevent #VALUE!/#DIV/0! showing for small n.
+
+If you want, I can:
+- produce the exact corrected formulas for every affected cell (I can list a formula string per cell),
+- or produce a corrected copy of the workbook with the above fixes applied.
+
+Which would you prefer?

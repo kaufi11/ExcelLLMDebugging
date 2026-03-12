@@ -1,0 +1,30 @@
+I found two clear errors and one class of suspicious formulas. Short fixes below.
+
+1) Major bug (wrong hard-coded value)
+- Faulty cell: Data Analysis!AU32
+- Error: It contains IF(D$2="x",345,0) — the 345 is a hard-coded number instead of the cell value for that course. This will add 345 to the totals whenever that course is included and wildly distort all results.
+- Fix: Replace with the correct pattern used elsewhere:
+  =IF(D$2="x",D32,0)
+- Why: Every AU# cell should return the score from column D of the same row (D32) when that course is selected. The constant 345 is a typo.
+
+2) Suspicious zero-IFs (possible omitted weights)
+- Examples: Data Analysis!DD3 (and a few similar cells like DE3, DF3, DO3, etc.) use IF(...,"0","0") or IF(...,0,0). That always returns 0 regardless of the condition.
+- Why it's suspicious: In that section many other IFs return non-zero weights for a TRUE condition (e.g., IF(...,0.25,0)). These zero/zero IFs look like placeholders or typos where a non-zero weight was intended.
+- Action / Fix: Audit each IF that currently has IF(...,0,0) and confirm the intended TRUE value. Example pattern to use if weight should be 0.5:
+  =IF(J$2="x",0.5,0)
+  or if it intentionally should be always zero, replace with just 0 (to make intent clear).
+
+3) Minor (style / possible maintenance)
+- input-output!I52 and input-output!J52 use SUM with a single expression that already adds items (SUM(I5+I9+...)). It's not incorrect but odd. Prefer:
+  =SUM(I5,I9,I10,I21,I31,I38,I42,I43,I44,I45,I46)
+  or a contiguous SUM range if appropriate (safer / easier to maintain).
+- Why: Cleaner and less error-prone when editing.
+
+Summary of recommended quick steps
+1. Correct AU32 to =IF(D$2="x",D32,0).
+2. Search Data Analysis for IF(...,0,0) occurrences; verify whether the TRUE-result should be a non-zero weight and correct where needed.
+3. (Optional) Clean up SUM formulas in input-output!I52/J52 to use comma-separated arguments or ranges.
+
+If you want, I can:
+- Produce a list of every cell that uses IF(...,0,0) so you can review them, or
+- Suggest a corrected workbook snippet with the AU32 fix and the cleaned SUM formulas. Which would you like?

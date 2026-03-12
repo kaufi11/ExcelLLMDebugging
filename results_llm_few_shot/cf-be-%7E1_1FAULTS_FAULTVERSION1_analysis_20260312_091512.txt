@@ -1,0 +1,50 @@
+Summary — main errors found and how to fix them (short + clear):
+
+1) Wrong hard-coded value in totals
+- Faulty: Sheet "Year 1" cell L14 = 1
+- Problem: L14 should be the month‑12 total of rows C8:N8, not the number 1.
+- Fix: Replace with =SUM(L8:L13) (or =SUM(C8:N8) if you want the total across months).  
+- Why: prevents wrong totals and downstream %‑of‑sales errors.
+
+2) Misaligned monthly-sum formulas (rows shifted)
+- Faulty example: Sheet "Year 2" shows O20 = SUM(C22:N22) (should sum row 20)
+- Problem: Several O‑column sums in Year 2 are shifted down (row labels don’t match the summed row). That will put amounts under the wrong line items.
+- Fix: For each operating line, set Oxx =SUM(Cxx:Nxx). Specifically correct O20 → =SUM(C20:N20), O21 → =SUM(C21:N21), O22 → =SUM(C22:N22), etc.
+- Why: Keeps each row’s monthly values aggregated into the correct total cell.
+
+3) Unnecessary / confusing use of SUM around single arithmetic or single-cell refs
+- Faulty examples: =SUM(B6+B14), =SUM(B15-B54), =SUM(B55), =SUM(B55) used in many sheets.
+- Problem: These aren’t errors technically (Excel evaluates them) but they are confusing and prone to mistakes (and can hide range vs. arithmetic typos).
+- Fix: Replace with plain arithmetic or direct cell refs:
+  - =B6+B14 instead of =SUM(B6+B14)
+  - =B15-B54 instead of =SUM(B15-B54)
+  - =B55 instead of =SUM(B55)
+- Why: Cleaner, easier to audit and less likely to be accidentally edited into a wrong SUM range.
+
+4) Percent / “% of Sales” and variance formulas — denominator mistakes & self-division
+- Faulty examples: P57 formulas like =+O57/O$57 or =+O57/O57 (dividing total by itself); some percent cells divide by the wrong reference column.
+- Problem: Some formulas divide a cell by itself (always 1) or use the wrong base for percent‑of‑sales. Variance formulas must use the planned (budget) number as denominator, not the actual or the total cell by mistake.
+- Fix rules:
+  - % of Sales for row X: Pxx = Oxx / $O$57 (make O57 the fixed total sales cell and lock it with $ signs).
+  - Total % row (row 57): P57 = 1 (or =O57/$O$57) if you want 100%.
+  - Variance %: use (Actual - Budget) / Budget. Make sure the denominator points to the budget cell (not to the same cell or to a total).
+- Why: Prevents meaningless 1.00 results and wrong percent calculations.
+
+5) Beginning-of-month cash links — verify first month input
+- Faulty pattern: Month‑1 beginning cash sometimes linked to other cells (C6 = SUM(B55) etc).
+- Problem: If the opening cash for month 1 isn’t a fixed input (B6) or correctly linked to prior-year closing, month cash chain breaks.
+- Fix: Ensure the first beginning cash cell for Year 1 (B6) is a manual input (opening cash) or correctly linked to prior-year final cash. Subsequent months should be =previous_month_cell55 (e.g., C6 = B55, D6 = C55 …).
+- Why: Keeps the month‑to‑month cash flow chain correct.
+
+How to proceed (recommended quick checklist)
+1. Fix L14 on Year 1 to =SUM(L8:L13).
+2. Inspect Year 2 O‑column totals for rows 17–26 (and similar ranges) and change any =SUM(C22:N22) style misaligned formulas to =SUM(Cxx:Nxx) where xx matches the row.
+3. Replace SUM wrappers around single arithmetic with direct formulas throughout for clarity.
+4. Standardize percent formulas to use absolute reference $O$57 as the total-sales denominator. Make P57 =1.
+5. Verify beginning‑of‑month cash inputs: set Year1 B6 = opening cash (manual), then C6 = B55, D6 = C55 … etc.
+
+If you want, I can produce:
+- A short list of exact cells with corrected formulas (full mapping) — or
+- A corrected worksheet snippet showing all repaired formulas for Year1 and Year2.
+
+Which would you prefer?

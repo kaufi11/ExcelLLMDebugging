@@ -1,0 +1,68 @@
+Summary of workbook structure and key logic
+
+Overall layout / conventions
+- Time axis: monthly columns for 36 months. Months 1–12 are in D:O (Year‑1), Year totals in P; months 13–24 in R:AC (Year‑2), Year total in AD; months 25–36 in AF:AQ (Year‑3), Year total in AR. (Column Q and column AS+ are unused for month data.)
+- Month-to-month propagation: most row formulas copy the prior month (e.g. E = D, F = E …) so a value entered in the first month flows forward unless changed.
+- Year totals: computed with SUM across monthly ranges (e.g. P = SUM(D:O), AD = SUM(R:AC), AR = SUM(AF:AQ)).
+- Many category totals are monthly sums across a block of rows (SUM(rowX:rowY) for that column) and annual totals are SUM of monthly totals.
+
+Sheets
+
+1) Instructions
+- Title/metadata: Telecentre name (Cash Flows!C2) and model title.
+- Purpose: instruction / heading sheet (no detailed formulas presented here).
+
+2) Cash Flows (main model)
+- Purpose: builds financing, operating inflows, asset purchases and operating outflows, then computes Net Cash Flow, Cumulative Net Cash, Reserve for Capital Replacement and Unallocated Net Cash.
+- Major sections (by row):
+  - Financing Cash Flows (rows 9–14): Equity, Loans, Startup grants, Sustaining grants, Sale of assets, etc. Monthly values are entered and year totals computed (P9 = SUM(D9:O9)); row 15 is Total Financing Cash Inflows computed per month as SUM of rows 9:14 (D15 = SUM(D9:D14)) and P15 = SUM(D15:O15).
+  - Operating Cash Inflows / Revenues (rows 18–37): many revenue lines (membership, internet subscriptions, telephone, fax, photocopying, training, product sales, etc.). Default first-months are zero; each subsequent month cell references previous (E18 = D18, etc.). Row 38 is Total Operating Revenues per month (D38 = SUM(D18:D37)), year totals similarly in P38/AD38/AR38.
+  - Purchase of Assets (rows 42–52): listing asset types (computers, furniture, leasehold improvements, etc.). Totals per month in row 53 (D53 = SUM(D42:D52)), year totals in P53/AD53/AR53.
+  - Operating Costs (rows 56–82): personnel (linked from Personnel sheet), vehicle costs, rent, utilities, maintenance, insurance, advertising, goods for resale, loan repayments/interest, taxes etc. Personnel row links: D56 = Personnel!D20 etc. Row 83 totals operating costs (D83 = SUM(D56:D82)).
+  - Net Cash Flow (row 85): per month formula = Financing (row15) + Operating revenues (row38) − Asset purchases (row53) − Operating costs (row83). Example: D85 = D15 + D38 − D53 − D83. Year totals in P85/AD85/AR85.
+  - Cumulative Net Cash Flow (row 87): running total of Net Cash Flow (D87 = D85, E87 = D87 + E85, …). Year boundaries: P87 = O87 (derived via formula chain) and AD/AR as shown.
+  - Reserve for Capital Replacement (row 89): monthly/annual reserve (defaults mostly 0); P89 = SUM(D89:O89).
+  - Unallocated Net Cash (row 91): cumulative net less reserves. D91 = D87 − D89, then running additions/subtractions per month. Year totals follow same pattern and P91 = P87 − P89.
+- Notable cell/value: many initial monthly inputs are 0 by default; formulas propagate values forward. Cash Flows!C2 contains Telecentre name used elsewhere.
+
+3) Personnel
+- Purpose: builds detailed personnel salary schedule, overhead percentage and computes total personnel costs which feed into Cash Flows.
+- Structure:
+  - Salary rows for positions (Telecentre Manager, Assistant, Marketing Co‑ordinator, Trainers, Technicians etc.). D7:D13 initial months default 0; rows copy forward (E7 = D7 …). One explicit nonzero: Marketing Co‑ordinator E9 = 461 (so month 2 contains 461 and propagates forward).
+  - Totals: Total Salaries row 15 sums salary rows per month (D15 = SUM(D7:D14)), year totals in P15 etc.
+  - Overhead percentage row 17 (D17 default 0); Overhead costs row 18 multiply salaries by overhead percentage (D18 = D15 * D17).
+  - Total Personnel Costs row 20 = Salaries + Overhead (D20 = D15 + D18). These totals are linked into Cash Flows: Cash Flows!D56 = Personnel!D20 etc and similarly for each month/year.
+- Purpose in model: Personnel!D20 drives operating cost row Cash Flows!D56 so changes here update operating costs and downstream cash flow results.
+
+4) In‑Kind Contributions
+- Purpose: records donated asset contributions and contributions that displace operating costs, aggregated monthly and annually.
+- Structure:
+  - Contribution of Assets (rows 9–18): same asset categories as Cash Flows; monthly values and P/AD/AR year totals (P9 = SUM(D9:O9) etc).
+  - Total Asset Contributions (row 20) sums rows 9:19 per month (D20 = SUM(D9:D19)). Year totals: P20 / AD20 / AR20.
+  - Contributions Displacing Operating Costs (rows 23–46): lists items that replace operating costs (personnel, rent, electricity etc). Row 47 totals these per month (D47 = SUM(D23:D46)) and year totals P47/AD47/AR47.
+  - Many rows default 0 and use the same month-to-month copy pattern; some rows reference Personnel sheet (row 23 references Personnel data).
+- Links: Cash Flows!C2 is used for name; Financial Summary pulls In‑Kind totals from this sheet.
+
+5) Financial Summary
+- Purpose: high‑level 3‑year summary drawing key year totals from Cash Flows and In‑Kind sheets.
+- Items / links:
+  - In‑Kind Contributions: Contribution of Assets and Contributions displacing operating costs pulled from In‑Kind P20/AD20/AR20 and P47/AD47/AR47. Total In‑Kind row sums those two items.
+  - Cash Flows section: Total Financing Cash Flows, Revenue from Operations pulled from Cash Flows P15/AD15/AR15 and P38/AD38/AR38. Total Cash Inflows = financing + revenue. Purchase of Assets and Operating Expenses pulled from Cash Flows P53/P83 etc. Total Cash Outflows = sum of those. Net Cash Flow = Total Cash Inflows − Total Cash Outflows. Reserve and Unallocated Cash at year end pull Cash Flows P89/P87 etc.
+- All high‑level year figures are cell references to the detailed sheets; no independent calculations beyond simple sums/differences.
+
+Key formulas / mechanics (recap)
+- Monthly roll‑forward: each month's cell typically equals previous month (E = D, F = E, …). This creates a propagated time series from the first-month inputs.
+- Year totals: P = SUM(D:O), AD = SUM(R:AC), AR = SUM(AF:AQ).
+- Category totals: per month SUM across category rows (e.g. D15 = SUM(D9:D14), D38 = SUM(D18:D37), D53 = SUM(D42:D52), D83 = SUM(D56:D82)).
+- Net Cash Flow (monthly): Financing + Operating revenues − Asset purchases − Operating costs.
+- Personnel totals: Salaries SUM + Overhead (Salaries * Overhead %) -> Personnel!D20 feeds Cash Flows row for personnel costs.
+
+Notes & quick checks
+- Many inputs default to 0; to populate a projection enter the intended value in the initial month(s) (usually D cells) or the first non‑zero month and the forward‑copy formulas will propagate.
+- To change overhead %, update Personnel!D17 and the overhead and total personnel rows will update and flow into Cash Flows.
+- The Financial Summary provides a top‑level check: its year cells are direct links to the detailed sheets (useful for presentation and verification).
+
+If you want, I can:
+- produce a concise diagram of the row groups with row numbers, or
+- highlight any broken/missing links or cell Q/AS columns that appear unused, or
+- suggest improvements (e.g., replace repetitive month-to-month formulas with absolute input + fill logic or use structured named ranges).

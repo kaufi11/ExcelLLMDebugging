@@ -1,0 +1,23 @@
+I checked the sheet. Found three clear formula errors and gave fixes + short explanations.
+
+1) Faulty cell: B20
+- Error: wrong lookup key (uses Intelligence instead of Strength).
+- What's wrong: B20 is “Dmg. Mod.” and should include the Strength damage modifier, but formula uses G17 (Intelligence): =HLOOKUP(G17,R5:AW15,6,TRUE)+HLOOKUP(B17,R5:AW15,10,TRUE)
+- Fix: use Strength (B16) for the first lookup:
+  =HLOOKUP(B16,R5:AW15,6,TRUE) + HLOOKUP(B17,R5:AW15,10,TRUE)
+- Why: first term should be the Strength-based damage modifier, not Intelligence.
+
+2) Faulty cell: G19
+- Error: missing rounding/integer conversion (returns decimal).
+- What's wrong: formula is =(F19*E15)+0.49 — adding 0.49 alone doesn’t round; result stays fractional.
+- Fix (recommended): =ROUND(F19*E15,0)  (or =INT(F19*E15+0.5) if you prefer classic rounding)
+- Why: Hit Points should be a whole number; use ROUND/INT to get integer result.
+
+3) Faulty cell: H22
+- Error: likely wrong lookup key (looks up Base HTH Damage by carrying capacity instead of Strength).
+- What's wrong: formula =HLOOKUP(C22,R2:AG4,3,TRUE) uses C22 (Carrying Capacity) to index the Weight → HTH damage table. Usually HTH damage is determined from Strength (or a Strength-derived column), so using carrying capacity looks wrong/unintended.
+- Fix (if HTH should be from Strength): =HLOOKUP(B16,R2:AG4,3,TRUE)
+- Alternative (if table really indexes by carrying-weight): leave as is, but confirm design.
+- Why: use the attribute the damage table is meant to reference (usually Strength), not an indirectly calculated carrying capacity—otherwise the damage can map to the wrong bracket.
+
+If you want, I can scan for any more ambiguous mismatches (there are many HLOOKUPs with different row indexes) and validate each one against the intended mapping.

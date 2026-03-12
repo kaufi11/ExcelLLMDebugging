@@ -1,0 +1,58 @@
+Errors found:
+
+1. **Income!G3 formula error**:  
+   - Current formula: `=F3*(45+$D$3)`  
+   - Issue: Multiplying by `(45 + 0.05)` (since D3=0.05) is incorrect for growth calculation. Other years use `(1 + $D$3)` for growth rate.  
+   - This causes a huge, unrealistic jump in cups produced in 2004.
+
+2. **Income!F4 formula error**:  
+   - Current formula: `=E4*(1+$D$4)` where D4 = `=0.08/12` (~0.0067) but E4=4 (price per cup).  
+   - The price grows by only ~0.67% per year, which seems inconsistent with initial value 4.  
+   - However, no direct error, just unusual growth rate.
+
+3. **Income!F8 and onward formulas**:  
+   - Formula uses `$D$7` (lemon price growth rate) instead of `$D$8` (sugar price growth rate).  
+   - Sugar price growth is incorrectly linked to lemon price growth.
+
+4. **Income!C11 formula**:  
+   - Formula in D11: `=1-D10` where D10=0.4 (online sales proportion).  
+   - Correct, but in subsequent formulas like E11: `=E3*$D$11*E4` uses `$D$11` which is 0.6, correct.
+
+5. **Income!E12 to P12 formulas**:  
+   - These sum only the online sales row (E10:E10), ignoring street sales (E11).  
+   - Total revenue should be sum of E10 and E11, but formula sums only E10.
+
+6. **Income!E29 to P29 (Fixed Costs total) formulas**:  
+   - Sum ranges are correct.
+
+7. **Income!E19 to P19 (Gross Profit) formulas**:  
+   - Correctly subtract total COGS from total revenue.
+
+Summary of main errors:
+
+- Wrong formula in G3 for cups produced (uses 45 + growth rate instead of 1 + growth rate).
+- Sugar price growth linked to lemon price growth instead of sugar price growth rate.
+- Total revenue sums only online sales, missing street sales.
+
+---
+
+**Solutions:**
+
+1. Fix Income!G3 formula:  
+   Change from `=F3*(45+$D$3)` to `=F3*(1+$D$3)` to apply consistent growth rate.
+
+2. Fix sugar price growth formulas (Income!F8 onward):  
+   Change references from `$D$7` to `$D$8` so sugar price grows by sugar price growth rate.
+
+3. Fix total revenue formulas (Income!E12 to P12):  
+   Change from `=SUM(E10:E10)` to `=E10+E11` (or `=SUM(E10:E11)`) to include both online and street sales.
+
+---
+
+**Explanation:**
+
+- The cups produced should grow by a percentage, so multiplying by `(1 + growth rate)` is correct. Multiplying by `(45 + growth rate)` inflates values wrongly.  
+- Sugar price growth should be based on sugar price growth rate, not lemon price growth rate, to reflect correct cost changes.  
+- Total revenue must include all sales channels (online + street) to accurately reflect income.
+
+Fixing these will correct the model's calculations and provide realistic projections.

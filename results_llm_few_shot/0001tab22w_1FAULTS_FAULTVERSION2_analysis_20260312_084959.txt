@@ -1,0 +1,49 @@
+Summary — main problems found
+1) Wrong operator (typing) in AC22:
+   - Cell AC22 has =SUM(100-(S22-U22-W22-Y22-AA22)) — it uses minus signs instead of plus signs. This gives a wrong "Other" percent.
+
+2) Misplaced/extra data in some rows (data alignment error):
+   - Several rows have stray numbers in the columns between the header columns (e.g. F18, H18, F19, H19, F20, H20, Z22, etc.). Those extra entries shift or duplicate values and will make the category percentages and "Other" calculations wrong.
+
+3) Fragile formulas and text values:
+   - Many "Other" cells use =SUM(100-(...)). SUM around a single expression is harmless but confusing. More importantly, if any referenced cell contains text like "n/appl" the formula returns #VALUE.
+   - Totals that add cells will also break if non-numeric text is in any referenced cell.
+
+What to fix and why (short)
+A) Fix the operator error
+   - Correct AC22 to use addition: =100-SUM(S22,U22,W22,Y22,AA22)
+   - (You can keep SUM(...) inside the subtraction for readability.)
+
+B) Fix misaligned data
+   - Remove or move the stray values from columns that are supposed to be blank (F, H, Z, etc.) into the proper percentage columns so every row's values line up exactly under the header (E = A, G = B, I = C, K = D, M = F/WF for lower level; S = A, U = B, W = C, Y = D, AA = F/WF for upper).
+   - After you realign the data, re-check the "Other" and total formulas.
+
+C) Use clearer, safer formulas
+   - Replace =SUM(100-(E6+G6+I6+K6+M6)) with =100-SUM(E6,G6,I6,K6,M6)
+     (clearer and does the same when all references are numeric)
+   - If a row can be "not applicable" use a guarded formula to avoid #VALUE, e.g.:
+     =IF(COUNT(E15,G15,I15,K15,M15)=5,100-SUM(E15,G15,I15,K15,M15),"n/appl")
+     This returns "n/appl" when not all five numeric percentages exist.
+
+D) Re-check totals after cleaning
+   - Totals like Q30 and AF30 are sums of specific rows — ensure those referenced Q/AF cells are the correct ones after you fix alignment.
+
+Examples (exact replacements)
+- Lower-level "Other" (row 6): change
+    O6  from =SUM(100-(E6+G6+I6+K6+M6))
+    to   =100-SUM(E6,G6,I6,K6,M6)
+- Upper-level "Other" (Engineering row 22): change
+    AC22 from =SUM(100-(S22-U22-W22-Y22-AA22))
+    to      =100-SUM(S22,U22,W22,Y22,AA22)
+- Guarded for "n/appl" (row 15 example):
+    O15 =IF(COUNT(E15,G15,I15,K15,M15)=5,100-SUM(E15,G15,I15,K15,M15),"n/appl")
+    AC15 =IF(COUNT(S15,U15,W15,Y15,AA15)=5,100-SUM(S15,U15,W15,Y15,AA15),"n/appl")
+
+Quick checklist to finish
+- Fix AC22 operator.
+- Scan for and remove/move stray numeric entries in F, H, Z, etc. so every row lines up with headers.
+- Replace "100-(...)" formulas with 100-SUM(...) for clarity.
+- Wrap formulas with IF(COUNT(...) = 5,...) where rows may have "n/appl" texts.
+- Recalculate totals (Q30, AF30, etc.) and verify row sums ≈100%.
+
+If you want, send a screenshot or the sheet with the highlighted problem rows and I’ll give exact cell-by-cell corrections.

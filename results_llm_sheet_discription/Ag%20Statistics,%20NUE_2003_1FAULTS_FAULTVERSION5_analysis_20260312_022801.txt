@@ -1,0 +1,68 @@
+Here are the errors I found, why they’re wrong, and exactly how to fix them. Short and to the point.
+
+1) Wrong formula for Rice N removal (World 1996)
+- Error: E19 contains "FORMULA =5" instead of using the rice production and %N.
+- Fix: Put =E8*(C19/100) in E19.
+- Why: N removed = production * (%N/100). The current cell is a wrong constant.
+
+2) Hard-coded totals instead of cell references (fragile / will not update)
+- Examples:
+  - World 1996: E4 = 0.6 * 82906340 (uses literal 82,906,340 instead of E2).
+  - World 2002: A6 text uses 0.60 * 82,421,368 instead of referencing D4.
+  - Developed 96 / other sheets show copied text with 82,906,340 while the sheet's E1/E2 differ.
+- Fix: Use cell references. Example for World 1996: change E4 to =0.6*E2. For World 2002 change D6 to =0.6*D4 (and update any displayed text to match the referenced cell).
+- Why: Prevents inconsistent/incorrect numbers when the world total changes.
+
+3) Inconsistent / incorrect “savings per 1% increase in NUE” formulas
+- Error: Different sheets use hard-coded coefficients (0.343, 0.426, 0.295) and formulas like =E4*(0.343)-E28 which are either zero or meaningless. That pattern is wrong for "savings per 1% increase".
+- Correct logic and formula:
+  - Let F = total fertilizer applied to cereals (cell E4 or sheet-specific), R = fertilizer N removed (E28 or sheet-specific), current NUE u = R / F (cell E30 or sheet-specific).
+  - If NUE increases by 1 percentage point (absolute +0.01), required fertilizer to deliver the same removed N becomes R / (u + 0.01). Savings = current applied − new required.
+  - Compact formula (works in Excel): =F - R / (u + 0.01)
+  - Equivalent form: =F * (0.01 / (u + 0.01))
+- Sheet-specific replacements (examples):
+  - World 1996 E32: replace with =E4 - E28 / (E30 + 0.01)  (or =E4*(0.01/(E30+0.01)))
+  - Developed 96 E31: =E3 - E27 / (E29 + 0.01)
+  - Developing 96 E31: =E3 - E27 / (E29 + 0.01)
+  - World 2002 D44: =D6 - D31 / (D33 + 0.01)
+- Why: This gives the actual metric-ton fertilizer saving when NUE increases by one absolute percentage point. The previous formulas used unexplained constants and gave incorrect/zero results.
+
+4) Mismatched/incorrect static text and headers (copy/paste errors)
+- Errors:
+  - Many sheets have leftover text like "0.60 * 82,906,340 = 49,743,804" even where the sheet’s total is different (Developed 96, Developing 96).
+  - Developing 96 sheet header says "Developed world consumption…" while sheet name is Developing 96.
+- Fix: Update the caption text to reflect the actual referenced cell (use formulas or show the cell value) or remove the static text. Correct the header label to match the sheet purpose.
+- Why: Prevents confusion and avoids misleading readers.
+
+5) Stray / incorrect cell contents and pasted text
+- Examples:
+  - World 1996 G33 shows "49743804*0.343 - 16,572,232" instead of using cell formulas.
+  - Some cells show reference codes or -numbers in D-column; confirm these are notes not formulas.
+- Fix: Replace pasted expressions with the proper Excel formula referencing cells (e.g., =E33*67 or whatever the intended calculation is). Clean up stray text.
+- Why: Pasted text won’t calculate and is error-prone.
+
+6) Recommendation: centralize parameters and prices
+- Move constants into dedicated cells and reference them:
+  - Put cereal share (0.6) in one named cell (e.g., Inputs!CerealShare) and reference it everywhere (=Inputs!CerealShare * WorldTotal).
+  - Put prices ($/mT) into input cells and reference them for monetary conversions (avoid embedding 479, 550, 636 in formulas).
+- Why: Easier updates, reduces copy/paste mistakes, makes the workbook auditable.
+
+Quick checklist to implement now (minimum changes to make workbook consistent)
+1. Fix Rice N removal: E19 = E8*(C19/100) (World 1996).
+2. Replace hard-coded cereal-share cells with references:
+   - World 1996 E4 = 0.6 * E2 → =0.6*E2
+   - World 2002 D6 = =0.6*D4
+   - Any other sheet using literal numbers, change to =0.6*<total cell>.
+3. Replace per‑1% savings formulas with the correct formula using current NUE:
+   - World 1996 E32 = E4 - E28/(E30 + 0.01)
+   - Developed 96 E31 = E3 - E27/(E29 + 0.01)
+   - Developing 96 E31 = E3 - E27/(E29 + 0.01)
+   - World 2002 D44 = D6 - D31/(D33 + 0.01)
+4. Clean up any pasted math/text cells (G33 etc.) and replace with formulas referencing cells.
+5. Correct sheet header texts to match sheet purpose.
+
+If you want, I can:
+- Prepare the exact formulas for every affected cell across sheets and provide a patch list you can apply; or
+- Recalculate and give the corrected numeric results after applying these fixes.
+
+Which would you prefer?

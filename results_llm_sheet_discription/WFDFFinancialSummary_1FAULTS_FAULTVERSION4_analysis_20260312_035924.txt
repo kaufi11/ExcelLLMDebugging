@@ -1,0 +1,30 @@
+I found three clear errors that make totals and the balance sheet wrong. Short fixes below.
+
+1) Wrong function in Financial summary → 2001 Total Income (I15)
+- Error: I15 = COUNT(I6:I13). That counts non‑blank cells (gives ~6) instead of summing amounts.
+- Effect: Net Income (I30), Ending Cash (I33) and all downstream links (Balance Sheet G13, G12, etc.) are incorrect for 2001 and later years.
+- Fix: Replace the formula in I15 with =SUM(I6:I13).
+- Why: SUM adds the dollar amounts; COUNT returns a small integer, so changing to SUM restores the correct total income and cascades correct values downstream.
+
+2) Balance Sheet — Dec 31, 2001 checking balance not linked / wrong value (G4)
+- Error: G4 is a manual number (12323.99) but the Financial summary checking for 2001 (I35) is 12823.99 — they don’t match.
+- Effect: Total Current Assets / Total Assets and Equity for 2001 are inconsistent (Balance Sheet won’t tie).
+- Fix: Put a direct link in G4 to the Financial summary cell for 2001 checking: G4 = 'Financial summary'!I35 (or correct the number to 12823.99 if you prefer a manual value).
+- Why: Using the live link ensures the balance sheet always reflects the Financial summary values and prevents transcription typos.
+
+3) Stork - 2002 Expenditures — Receipts / Expenditures references swapped
+- Error: On the Expenditures summary, D59 (labeled Receipts) references C55 (which is the Expenditures sheet total), and D60 (labeled Expenditures) references 'Stork - 2002 Receipts'!C43 (receipts total). They are reversed.
+- Effect: The 2002 net calculation (D61 = D59 - D60) is using swapped numbers, so the reported net is wrong (sign/amounts wrong).
+- Fix: Swap the formulas so they match labels:
+  - D59 (Receipts) = 'Stork - 2002 Receipts'!C43
+  - D60 (Expenditures) = C55
+- Why: Each summary cell must reference the appropriate sheet total. Correcting these restores the true receipts minus expenditures net.
+
+Quick checklist after fixes
+- Recalculate (or press F9) so dependent formulas update.
+- Verify I30 (Net 2001) and I33 (Ending 2001) change to expected values; then confirm Balance Sheet G13 (Net Income) and G4 (Assets) match.
+- Confirm row 39 (Difference) on Financial summary becomes zero (or small rounding) for each year.
+
+If you want, I can:
+- Show the before/after numeric impact for 2001 and 2002 (how much Net Income and Total Assets change), or
+- Provide the exact corrected formulas ready to paste.

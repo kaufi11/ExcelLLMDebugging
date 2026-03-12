@@ -1,0 +1,35 @@
+I inspected the formulas and values on Sheet1 and found one clear formula error plus a few consequences and potential data/layout inconsistencies you should review.
+
+1) Incorrect formula (bug)
+- Cell O11 is wrong. All other Overall Grade cells (column O) use this pattern:
+  =(SUM(Bx:Fx)+SUM(Gx:Mx)+Nx)/(COUNT(Bx:Fx)*100 + COUNT(Gx:Jx)*15 + COUNT(Kx:Mx)*30 + COUNT(Nx)*150) * 100
+  but O11 contains a multiplication instead of a division:
+  =(SUM(B11:F11)+SUM(G11:M11)+N11)*(COUNT(B11:F11)*100+COUNT(G11:J11)*15+COUNT(K11:M11)*30+COUNT(N11)*150)*100
+  Result: O11 is an enormous incorrect number (53,598,581.28) instead of a percentage. This is almost certainly a typo and should be fixed to the standard division formula above.
+
+Suggested correction for O11:
+=(SUM(B11:F11)+SUM(G11:M11)+N11)/(COUNT(B11:F11)*100+COUNT(G11:J11)*15+COUNT(K11:M11)*30+COUNT(N11)*150)*100
+
+2) Cascading effects caused by the O11 error
+- Because O11 is so large, summary statistics that include the O column are distorted:
+  - O47 (Average of O4:O46) is huge (1,246,553.8046) — driven entirely by the O11 outlier.
+  - O48 (Std. Dev. of O4:O46) is huge (8,173,695.2809) — likewise driven by the outlier.
+- Fixing O11 to the correct formula will change O47 and O48 to meaningful values.
+
+3) Other observations / potential inconsistencies to review
+- Many rows contain missing entries in some exam or homework columns (blanks). The overall-grade formula uses COUNT(...) to scale the denominator so missing columns reduce the denominator (and the numerator treats blanks as zero). This is a reasonable approach if blanks mean "work not submitted and worth 0", but it will change weighting per-student. Verify that blanks are intentional and that you want the weight adjusted dynamically when a student is missing a column, rather than enforcing fixed denominators (e.g., always using 5 exams, 4 small OWL, 3 large OWL, 1 final).
+  - Examples of rows with many blanks: row 17 (only B17, G17, H17 present), row 25 (missing E25,F25,K-M,N), row 28 (missing E28,F28,K-M,N), row 35 (missing E35,F35,K-M,N), row 43 (lots of blanks). (There are several others — you can use COUNT(Bx:Fx), COUNT(Gx:Jx), COUNT(Kx:Mx), COUNT(Nx) to identify them.)
+- Some raw scores exceed 100 (e.g., C32 = 102, D32 = 110). This may be intended (extra credit), but verify it's expected.
+- Final-exam thresholds and weights: the denominator includes COUNT(Nx)*150 — this assumes the final is out of 150 points. Confirm that is intended.
+- Letter-grade thresholds in column P use <59.4 / <69.4 / <79.4 / <89.4 instead of round numbers (60/70/80/90). This is consistent across rows, so it's not a formula error, but verify these fractional cutoffs are deliberate.
+
+4) Action items I recommend
+- Correct O11 to the division version shown above.
+- After fixing O11, recalc and verify O47 and O48.
+- Audit rows with many blanks to confirm whether blanks = 0 is intended or if missing entries should be filled / treated differently.
+- Optionally: add a validation step (e.g., conditional formatting or an error-check column) to flag rows where the expected count of exam/homework/final cells is less than expected, so missing data are obvious.
+
+If you want, I can:
+- produce the corrected O11 value,
+- recalculate O47 and O48 after fixing O11, and
+- list all rows that do not have the full expected counts (B:F != 5, G:J != 4, K:M != 3, N missing).

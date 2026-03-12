@@ -1,0 +1,37 @@
+I inspected the formulas on the Activity Log sheet and found a few formula errors / inconsistencies and some places that are fragile (likely to produce unexpected results when a cell is blank). Summary and recommended fixes below.
+
+1) Obvious incorrect formula (likely a typo)
+- Cell J19 = I19 * F19 (shows 36). All other J cells are In / Fn (attendance ratio).  
+  - Problem: J19 currently multiplies instead of dividing, which inflates G19 (=(J19+P19+Z19)/3) to ~12.67.  
+  - Fix: Change J19 to =I19/F19.
+
+2) Missing AL cells referenced by AM formulas (blank references)
+- Several rows have AMn formulas of the form =ALn/Fn but ALn is missing (or not present in the row excerpt), so AMn evaluates as 0 or #DIV/0 depending on the contents:
+  - Examples found in the sheet excerpt: AM11 (=AL11/F11) but AL11 is not present; AM26 (=AL26/F26) with AL26 not present; AM32 (=AL32/F32) with AL32 not present. (There may be other rows with the same issue — scan AM:AM for references to ALn and verify ALn exists and contains the expected attendance #.)
+  - Implication: If ALn is intentionally empty when there was no session-4 attendance, the formula yields 0 (or error if Fn = 0). But it's unclear whether the blank is intended (and should be treated as zero) or a missing data entry.
+  - Fix options:
+    - If ALn should contain a value but is missing: populate ALn with the correct attendance #.
+    - If ALn may legitimately be blank and you want AMn to be 0 when blank: change AMn to =IF(ALn="";0;ALn/Fn) or =IFERROR(ALn/Fn,0).
+    - If you want blanks to be ignored in averages downstream, use explicit IF tests instead of relying on blank evaluation.
+
+3) Fragile formulas that assume a value always present
+- Many cells use straightforward divisions like =In/Fn or =ALn/Fn and multi-IF counts such as =(IF(Rn="x",1)+...)/7. These are fine when the referenced input cells are present and contain expected values, but:
+  - If Fn = 0 (pt positions) any =In/Fn will produce #DIV/0.
+  - If any expected input cell (like ALn, AO..AW etc.) is accidentally missing, formulas can silently produce 0 or wrong ratios (as in J19 cascading into G19).
+- Recommendation: make formulas robust:
+  - Use IFERROR or explicit IF checks, e.g. =IF(Fn=0,0,In/Fn) or =IFERROR(In/Fn,0).
+  - For presence checks: wrap counts in N() or use COUNTIF pattern, or use IF(cell="","",...) where you want blanks to remain blank.
+
+4) Cascading / symptomatic error to check
+- Because Gn, Hn etc. aggregate other computed ratios, a single bad numerator/denominator (like J19) will distort G/H. After fixing J19, review any large/small outliers for the same cause.
+
+5) Quick checklist to verify consistency across rows
+- Verify Jn formulas are all =In/Fn (except intentionally different ones). I found only J19 deviating.
+- Verify Pn and Zn formulas are =On/Fn and =Yn/Fn respectively across rows.
+- Verify K, Q, AA, AN formulas use the expected set of IF(...="x",1)/N denominators consistent for the sheet (K uses 3, Q uses 7, AA uses 10, AN uses 9).
+- Verify ALn exists whenever AMn (=ALn/Fn) is used; if ALn intentionally left blank, decide desired output (blank or 0) and make AMn formula explicit.
+
+If you want, I can:
+- produce a list of all cells in the sheet that deviate from the standard patterns (e.g., all Jn not equal to In/Fn), or
+- generate corrected formulas (e.g., provide a corrected formula column for the problematic rows), or
+- auto-scan the file and return every cell where a formula references a missing cell. Which would you prefer?

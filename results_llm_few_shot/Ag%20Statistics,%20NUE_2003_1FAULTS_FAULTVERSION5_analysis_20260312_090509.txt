@@ -1,0 +1,40 @@
+I checked the workbook and found a few clear, fixable errors. Short answers, each with what’s wrong, why it matters, and the correct formula.
+
+1) Hard-coded / wrong value instead of formula (World 1996)
+- Faulty cell: E19 (Rice N removal)
+- Error: Contains =5 (hard-coded) instead of calculating N removed from rice production.
+- Fix: replace with =E8*(C19/100)
+- Why: keeps the sheet consistent (production × %N) and updates automatically if production or %N changes.
+
+2) Wrong multiplier 67 instead of 0.67 (causes 100× scale error)
+- Faulty examples: G33 (FORMULA =E33*67), G34, F45 (D45*67), F46 (D46*67), possibly others where “67” is used.
+- Error: multiplying by 67 gives a 67× result instead of applying the 67% factor.
+- Fix: multiply by 0.67 or reference the 0.67 cell. Example: =E33*0.67 or =E33*$G$32 (use the cell that holds 0.67).
+- Why: 67 = sixty-seven, 0.67 = sixty-seven percent. Use the decimal percent or a cell reference to avoid huge incorrect results.
+
+3) Text that looks like a calculation but isn’t (not a formula)
+- Faulty examples: I33 ("49743804*0.343 - 16,572,232") and H45 (similar text).
+- Error: these are plain text, not computed. They won’t update if inputs change.
+- Fix: convert to real formulas using references. Example (World 1996): =E4*0.343 - E28  (or use the exact cell refs that represent the numbers in that expression).
+- Why: ensures outputs update automatically and keeps numbers traceable.
+
+4) Inconsistent comment vs. formula (Developed 96)
+- Faulty area: B3 text says “0.60 * 82,906,340 = 49,743,804” while cell E3 formula is =0.6*E1 (and E1 = 29,967,560).
+- Error: the narrative uses the world total (82,906,340) but the formula uses the Developed-region value (E1). This is a mismatch.
+- Fix: decide which you want:
+  - If you mean cereals for the developed region: keep E3 = 0.6*E1 and change the text to match the Developed total.
+  - If you meant to reuse the world total, change E1 to 82,906,340 or set E3 =0.6*82906340.
+- Why: text and formula must match to avoid confusion and wrong downstream calculations.
+
+5) Minor clarity: use 0.5 not (1-0.5)
+- Examples: E27 =E25*(1-0.5) works but is clearer as =E25*0.5.
+- Fix: change to =E25*0.5 (or keep but consistent).
+- Why: readability and fewer chances for accidental mistakes.
+
+Quick checklist to apply across the workbook
+- Replace hard-coded numeric “calculations” (e.g., “49743804*0.343 - …”) with formulas using cell references.
+- Search for “*67” where you expect percent and change to “*0.67” or reference the 0.67 cell.
+- Verify every N-removal row uses production × (%N / 100). (E.g., E17:E24 should be production cells × C%/100.)
+- Keep textual notes consistent with the formula inputs.
+
+If you want, I can produce an edited list of exact cell-by-cell replacement formulas for the entire workbook and/or generate a small macro to find likely problems (hard-coded arithmetic strings, *67 occurrences, numeric constants where formulas should be). Which would you prefer?

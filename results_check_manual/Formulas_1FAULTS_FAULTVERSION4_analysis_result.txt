@@ -1,0 +1,52 @@
+I reviewed the workbook formulas and found a few clear formula errors and a few inconsistencies that will cause wrong results once data is present. For each problem I show where it is, why it’s wrong, and a suggested fix.
+
+1) Wrong weights (typo) in Sheet1 cell I3
+- Current formula (incorrect):
+  =(C3*0.125)+(D3*25)+(E3*25)+(F3*25)+(G3*12.5)
+- Problem: D3, E3 and F3 use 25 (should be 0.25) and G3 uses 12.5 (should be 0.125). This mixes percent weights with whole-number percentages and will massively inflate the weighted score for row 3 only.
+- Fix (make consistent with other rows):
+  =(C3*0.125)+(D3*0.25)+(E3*0.25)+(F3*0.25)+(G3*0.125)
+
+2) Many per-student averages on Sheet3 reference wrong cells (L40..L54) instead of L4..L18
+- Problem: Rows P4:P18 use AVERAGE(Dx,Fx,Hx,Jx,L4x?) but their formulas point to L40, L41, … L54 (e.g. P4 uses L40, P5 uses L41, … P18 uses L54). Those L4x references are off by 36 rows and will either return #DIV/0! or incorrect averages.
+- Examples:
+  - Sheet3!P4 currently: =AVERAGE(D4,F4,H4,J4,L40) — should be =AVERAGE(D4,F4,H4,J4,L4)
+  - Sheet3!P5: =AVERAGE(D5,F5,H5,J5,L41) — should be =AVERAGE(D5,F5,H5,J5,L5)
+  - … and so on down to P18: change the trailing L## to L4..L18 respectively.
+- Fix: replace each Pn formula with =AVERAGE(Dn,Fn,Hn,Jn,Ln) for n = 4:18 (or fill down the corrected formula).
+
+3) Hard-coded / inconsistent cell in Sheet3 J10
+- Current: J10 = 7 (constant)
+- Problem: Column J is “Test 4 Percentage” and in most rows Jn = In/$J$24. J10 is hard-coded to 7 (a points value) which is inconsistent with the other percentage formulas and causes N10/P10 (max/avg) to be wrong.
+- Fix: change J10 to the same formula pattern: =I10/$J$24 (so it yields a percentage, not a raw point count).
+
+4) VLOOKUP approximate match table and header/lookup array
+- Sheet1 column J uses =VLOOKUP(Ix,$K$5:$L$17,2,TRUE()) for letter grades.
+- Notes/issues:
+  - TRUE() works but more commonly written as TRUE (no parentheses). Not an error, but stylistically unusual.
+  - K5 (the first row of the lookup range) appears blank while L5 contains “F”. It’s better/clearer for the lookup column (K5:K17) to contain explicit numeric thresholds (for example put 0 in K5 if that row corresponds to F). Leaving K5 blank can still act like 0 in numeric comparisons, but explicitly putting 0 avoids ambiguity and makes the approximate-match behavior obvious.
+  - For approximate-match VLOOKUP the lookup column (K5:K17) must be sorted ascending. K6:K17 appear sorted, so ensure K5 is a valid numeric lower bound (e.g. 0) and that all K values are numeric and sorted ascending.
+- Suggested improvements:
+  - Put 0 in K5 (if F means 0–59), keep the other thresholds (60, 63, …).
+  - Use =VLOOKUP(I3,$K$5:$L$17,2,TRUE) or keep TRUE() if you prefer.
+
+5) #DIV/0! outputs from averages that reference empty ranges (expected but handleable)
+- Many AVERAGE, MIN, MAX cells on Sheet2 and Sheet1 show #DIV/0! because the underlying score cells are empty (for example Sheet2 P5 = AVERAGE(C5:L5) returns #DIV/0!).
+- Not an incorrect formula per se, but you will likely want to hide/handle it:
+  - Wrap with IFERROR or use IF(COUNT(range)=0,"",AVERAGE(range)) to avoid displaying #DIV/0!.
+
+6) Minor notes (non-formula or stylistic)
+- Typos in header texts ("Sudents" on Sheet1 A1 and "Studnets" on Sheet3 A1) — not formula errors but worth correcting.
+- Many columns/rows contain formulas referencing other sheets that are currently returning #DIV/0! until data is entered — expected behavior, but consider defensive formulas.
+
+Summary of explicit fixes to apply immediately
+- Sheet1!I3: change to =(C3*0.125)+(D3*0.25)+(E3*0.25)+(F3*0.25)+(G3*0.125)
+- Sheet3!P4..P18: change each to =AVERAGE(Dn,Fn,Hn,Jn,Ln) for n = 4..18 (replace the incorrect L40..L54 addresses)
+- Sheet3!J10: change to =I10/$J$24 (instead of the hard-coded 7)
+- Optionally: put 0 in Sheet1!K5 (or wherever the first numeric threshold should be) and confirm K5:K17 are numeric & sorted before using approximate VLOOKUP
+- Optionally: wrap averages with IFERROR or IF(COUNT(...)=0,"",AVERAGE(...)) to avoid #DIV/0! display.
+
+If you want I can:
+- produce the corrected formulas for every affected cell in a list or a patch that you can paste, or
+- scan for other non-obvious inconsistencies (e.g., confirm that the grade thresholds in K6:K17 are exactly what you intend), or
+- create safer formulas (IFERROR/IF(COUNT(...)=0,...)) and provide them.

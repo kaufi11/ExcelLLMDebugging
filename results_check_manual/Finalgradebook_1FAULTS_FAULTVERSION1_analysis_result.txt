@@ -1,0 +1,81 @@
+I inspected the workbook formulas and found several clear formula errors and a number of inconsistencies that will cause incorrect grades (some inflated above 100). Below I list each problem, why it matters, and how to fix it.
+
+High‑priority / incorrect formulas
+
+1) Sheet3 — many per‑student averages reference the wrong cell (off‑row L-cells)
+- Where: Sheet3 cells P4:P18 (each student’s "Student's Average").
+- Current pattern: P4 =AVERAGE(D4,F4,H4,J4,L40), P5 =AVERAGE(D5,F5,H5,J5,L41), … P18 =AVERAGE(D18,F18,H18,J18,L54).
+- Problem: the last argument references L40..L54 instead of the corresponding L4..L18. Those L40..L54 cells are unrelated/blank; the AVERAGE therefore omits the intended L column values or uses blanks and yields wrong averages.
+- Effect: the test percentage averages on Sheet3 are wrong, and those wrong values flow to Sheet1 (tests component) and to final grades.
+- Fix: change each Pn to reference its own row’s L cell. Example corrections:
+  - P4 -> =AVERAGE(D4,F4,H4,J4,L4)
+  - P5 -> =AVERAGE(D5,F5,H5,J5,L5)
+  - … up through …
+  - P18 -> =AVERAGE(D18,F18,H18,J18,L18)
+(Or use a single consistent formula pattern and fill down.)
+
+2) Sheet3 F14 (Test 2 Percentage for Moutian, Misty) has a wrong hardcoded numerator
+- Where: Sheet3 cell F14.
+- Current formula/value: F14 = 4.63636363636364 with formula "=510/$F$24".
+- Problem: Using a constant 510 (and dividing by the curve 110) produces 4.636... (>>1). The correct formula should compute E14 / F$24 (the student’s Test2 points divided by total possible points).
+- Effect: Produces a percentage > 1, causes the student’s test average (P14) to blow up (>1), which then produces a final grade > 100 on Sheet1 (I13 = 113.67).
+- Fix: set F14 = =E14/$F$24 (consistent with other rows’ pattern). After fixing this, re-evaluate P14 (corrected by fix #1 above).
+
+3) Cascading result: inflated test averages and final grades
+- Symptoms: Sheet3 F22 (Class average for Test2 percentage), P14 and other P cells showing anomalous values; Sheet1 I13 = 113.6726 for Moutian, Misty.
+- Cause: the F14 error and the P4:P18 wrong references described above.
+- Fix: apply fixes 1 and 2; then check Sheet1 final grade formulas (they will recalculate correctly).
+
+Medium‑priority / logical / range errors in summary rows
+
+4) Sheet1 summary rows have incorrect ranges / wrong functions
+- Where & problems:
+  - Sheet1 C20 (Low Grade row) formula: =MIN(C4:C18). This excludes the first student (C3) and includes row C18 which is outside the student block; should be =MIN(C3:C17).
+  - Sheet1 C21 (Class Average row) formula: =MAX(C5:C19) — label says "Class Average" but uses MAX, and range is off. It should be =AVERAGE(C3:C17). (The current C21 value is 97.7 which is the maximum, not the average.)
+- Effect: summary numbers are incorrect/misleading.
+- Fixes:
+  - C20 -> =MIN(C3:C17)
+  - C21 -> =AVERAGE(C3:C17)
+- (Check other summary cells for similar off‑by‑one range mistakes — I only saw the above C column mismatches in the extract.)
+
+5) Sheet2 typos / header issues (minor but confusing)
+- Where: Sheet2 A21 label is "Higest Grade" (typo), Sheet1 A1 "Sudents", Sheet3 A1 "Studnets".
+- Not formula errors but worth cleaning for clarity.
+
+Lookup / grading table issues
+
+6) Sheet1 VLOOKUP grade translation table malformed
+- Where: Sheet1 column K:L used by J3 formula =VLOOKUP(I3,$K$5:$L$17,2,TRUE()).
+- Problems:
+  - K5 contains the text "F" (it looks like the table is misaligned and contains letter grades in the first column). The first column of the VLOOKUP table must contain numeric cutoff values (sorted ascending) when using approximate match (TRUE).
+  - As-is, the lookup range $K$5:$L$17 contains non-numeric / misordered entries, so VLOOKUP may return wrong letters or #N/A for some numeric final grade inputs.
+- Effect: final letter grades (column J) may be incorrect.
+- Fix recommendations (pick one):
+  - Rebuild the K:L lookup table so column K holds numeric grade cutoffs (e.g., 0, 59.5, 63, 66, 69.5, 73, 76, 79.5, 83, 86, 89.5, 93, 96) and column L holds the corresponding letter grade (F, D-, D, D+, C-, C, C+, B-, B, B+, A-, A, A+). Then use =VLOOKUP(I3,$K$5:$L$17,2,TRUE) (ensure column K sorted ascending).
+  - Or if the numeric cutoffs are currently in K6:K17 and the first row K5 is just stray text, change the lookup range to exclude that stray row (e.g., $K$6:$L$17) only if those K6:K17 values are the proper cutoff numbers and sorted ascending.
+- Note: TRUE() is acceptable (TRUE or TRUE() both work). Ensure the table is sorted ascending.
+
+Other inconsistencies / design notes (not necessarily "errors" but risky)
+
+7) Mixed scales in final grade calculation (Sheet1 I3:I17)
+- Formula: I3 = (C3*0.125) + (D3*25) + (E3*25) + (F3*25) + (G3*12.5)
+- Observation: C3 is a 0–100 homework average, multiplied by 0.125 (12.5%). D/E/F/G are stored as 0–1 fractions and multiplied by 25 to produce percent points. This mixing of scales works numerically (0–100 and 0–1 are handled), but it is fragile and confusing.
+- Recommendation: for clarity/stability either:
+  - Convert C to 0–1 (e.g., Sheet2 Px store as fraction) and use consistent weights (0.125, 0.25, 0.25, 0.25, 0.125), or
+  - Explicitly comment the design so future editors don’t accidentally change scales and break formulas.
+
+8) Sheet3 header typos and labeling
+- "Studnets" spelled incorrectly (A1). Also "Higest Grade" in Sheet2. Not formula-critical but clean up.
+
+Summary of actionable steps (minimum to restore correct calculations)
+- Fix the F14 formula to =E14/$F$24.
+- Fix P4:P18 formulas to =AVERAGE(Dn,Fn,Hn,Jn,Ln) for the corresponding rows (replace the L40..L54 references).
+- Recalculate and verify Sheet3 P4:P18 values are now between 0 and 1.
+- Fix Sheet1 summary ranges: C20 -> =MIN(C3:C17); C21 -> =AVERAGE(C3:C17) (and check other summary ranges).
+- Rebuild the K:L grade translation table so the first column contains numeric cutoffs sorted ascending (or adjust the VLOOKUP range to the correct numeric rows).
+
+If you want, I can:
+- Provide the exact list of corrected formulas to paste for each affected cell (I can generate a per‑cell change list for P4:P18, F14, the two Sheet1 summary cells, and the suggested VLOOKUP table layout).
+- Recompute the affected final grades after the fixes and report changed student totals and letter grades.
+
+Which would you like me to do next?

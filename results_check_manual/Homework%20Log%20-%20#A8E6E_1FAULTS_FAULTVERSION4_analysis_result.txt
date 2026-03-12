@@ -1,0 +1,22 @@
+I inspected the formulas in the "Activity Log" sheet and found one clear formula error and one noteworthy anomaly. Summary and recommended fixes below.
+
+1) Wrong sign / typo producing negative average
+- Cell: H19
+- Current formula: =(K19-Q19-AA19-AN19)/4
+- Problem: All other H-cells compute an average using addition of the four component scores (K, Q, AA, AN). H19 uses subtraction signs which produced H19 = -0.5 (outside expected 0–1 range).
+- Suggested fix: Change to the consistent average form:
+  =(K19+Q19+AA19+AN19)/4
+
+2) Data/JSON omission (not necessarily a formula error in Excel)
+- Observation: In the JSON extract some indicator cells (e.g. AE25 in the row-25 block) are not listed. That does not necessarily mean the workbook formula is wrong — IF(AE25="x",1) will evaluate to 0 if AE25 is blank. I flagged this only because it looked different from most other rows where every indicator cell is present. If AE25 is supposed to contain an "x" you should populate it; otherwise no formula change is needed.
+
+Other checks I ran
+- The common average/count formulas are consistent:
+  - Attendance averages: Gx = (Jx+Px+Zx)/3
+  - Component averages: Hx = (Kx+Qx+AAx+ANx)/4 (except H19 which is the typo above)
+  - Kx uses 3 IFs and divides by 3; Qx uses 7 IFs and divides by 7; AAx uses 10 IFs and divides by 10; ANx uses 9 IFs and divides by 9. These divisor counts match the number of IF() terms in the formulas shown.
+- No divisions-by-zero were visible in the provided rows (F column values are nonzero in the sample).
+
+If you want, I can:
+- Apply the H19 fix and produce an updated file, or
+- Scan the whole workbook programmatically and return all cells whose computed values fall outside the expected 0–1 range (to catch any other hidden mistakes).

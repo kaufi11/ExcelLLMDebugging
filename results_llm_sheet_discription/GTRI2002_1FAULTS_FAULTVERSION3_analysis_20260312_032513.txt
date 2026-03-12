@@ -1,0 +1,29 @@
+Short, clear list of errors, why they matter, and how to fix them.
+
+1) Wrong conversion formula (big error)
+- Where: Sheet "2002 Report", cell C13.
+- Problem: Formula uses multiplication: =G13*1000000. That multiplies pounds by 1,000,000 instead of converting to millions — it produces an enormous incorrect value and will break any row/column totals or percentage comparisons that use that cell.
+- Fix: Change C13 to =G13/1000000 (divide, not multiply).
+- Why: All other rows convert raw pounds → millions by dividing by 1,000,000. Using division keeps units consistent and makes totals meaningful.
+
+2) Stray/unexpected values in unused columns (possible source of errors)
+- Where: Sheet "2003 Report", cells G20 and H20 contain numbers (8.449074 and 0.6381540899) although columns G–H are not part of the main tables on that sheet.
+- Problem: These stray values can be accidentally picked up by range-based formulas or charts, causing wrong sums/plots or confusion.
+- Fix: Either delete/clear G20:H20 or move the numbers to the correct columns (if they belong to another table). Then re-check any ranges/charts that might include G:H.
+- Why: Removing unused data prevents accidental inclusion in summaries or chart series.
+
+3) Unit/format inconsistency risk (general issue)
+- Where: Multiple sheets (2002 Report, 1999 Report, data, 2003 Report) mix raw pounds and "millions of pounds" columns.
+- Problem: If a formula references the wrong column (pounds vs millions) you get wrong arithmetic or misleading reporting.
+- Fix / Recommendation:
+  - Standardize: keep raw pounds in one clearly-labelled column and millions in a separate column with formula =pounds/1000000.
+  - Audit: Use Excel Find (search for "*1000000" and "/1000000") or Formula Auditing → Trace Dependents/Precedents to find any stray *1000000 or incorrect references.
+  - After fixing C13 and clearing stray cells, recalc and spot-check totals (e.g., R11, L totals, N/O differences) against expected values.
+
+Quick verification steps to run now
+- Edit C13 → =G13/1000000 and press Enter.
+- Clear G20 and H20 on "2003 Report" if they are not supposed to be there.
+- On "2002 Report" and "1999 Report", go down the column of conversion formulas and confirm they all use /1000000.
+- Recalculate workbook and confirm totals (R11, R23, L and N columns) look reasonable.
+
+If you want, I can list the exact formula corrections to check (all cells in conversion columns) or produce a short macro / Find & Replace pattern to catch any other "*1000000" errors. Which would you prefer?

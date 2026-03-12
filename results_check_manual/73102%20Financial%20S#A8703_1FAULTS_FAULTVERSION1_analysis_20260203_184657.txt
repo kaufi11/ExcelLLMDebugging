@@ -1,0 +1,29 @@
+I reviewed the sheet formulas and found the main errors causing imbalance and confusion — plus one small logic issue. Short summary and fixes:
+
+1) Hard-coded grand totals (big cause of confusion)
+- Problem: Cell H285 ("ASSETS =") and H286 ("LIABILITIES/CAPITAL") contain hard-coded numbers (3855164.52). That hard-coded value can differ from the worksheet calculations (D178 and D283), so balance checks can be wrong.
+- Fix: Replace H285 with =D178 and H286 with =D283 (or point both to whichever single, authoritative total you use). This makes the displayed totals always come from the calculated totals.
+- Why: Hard-coded numbers don't update when underlying data changes. Linking eliminates stale values and shows the true difference.
+
+2) Unnecessary / confusing subtraction of permanently restricted fund in Unrestricted net assets
+- Problem: D52 (Unrestricted) = -D273 + D275 + D277 subtracts the permanently restricted fund (D273) and then D54 = D273 adds it back. That cancels out, but it's confusing and risks mistakes.
+- Fix: Change D52 to =D275 + D277 (and change E52 similarly). Keep D54 = D273. Then D57 (=SUM(D51:D56)) still gives the correct total net assets but formulas are clearer and less error-prone.
+- Why: Make each net-asset category represent only that category; avoid formulas that cancel each other.
+
+3) (Optional clarity) Net property/equipment formula uses a negative value
+- Observation: D34 = D30 + D32 works because D32 is the (negative) accumulated depreciation (D170). That is mathematically correct but can be confusing to readers.
+- Recommendation: Replace D34 with an explicit subtraction for clarity: =D30 - ABS(D32) or =D30 - D170 (if D170 is negative, use =D30 + D170 only if you document the sign convention). This is not required for correctness but helps avoid future mistakes.
+
+4) Minor: check for omitted cell references
+- Observation: The Accounts receivable formula (D11) includes D98, but the sheet listing jumps from D96 to D99. If D98 is blank or missing, it won't break calculation but could indicate an omitted account row.
+- Recommendation: Verify D98 actually exists or remove it from the sum if it's not needed.
+
+Quick action checklist you can paste into Excel:
+- In H285 put: =D178
+- In H286 put: =D283
+- In D52 put: =D275 + D277
+- In E52 put: =E275 + E277
+- (Optional) In D34 put: =D30 - ABS(D32) (and same for E34 if desired)
+- Verify D98 (or remove it from the D11/E11 formulas if not used)
+
+After those fixes, recalc and the balance check (H291 or your chosen difference cell) should be zero (or only a small rounding difference).

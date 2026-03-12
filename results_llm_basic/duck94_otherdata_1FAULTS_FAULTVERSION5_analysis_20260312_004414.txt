@@ -1,0 +1,26 @@
+Summary of problems found
+- Wrong cell reference / typo
+  - FRF sheet, cell I20 contains the formula =SUM(H20-251). The 251 is a hard-coded number (looks like a typo) instead of the intended reference J20. This gives the wrong result.
+- Formulas entered as text / inconsistent formula style
+  - Many I-column cells show "FORMULA =SUM(H5-J5)" (and similar). If those cells actually contain the literal text "FORMULA =SUM(...)" they are not real formulas and will not calculate. Even when they are real formulas, using SUM around a subtraction is confusing and inconsistent.
+- Potential N/A / text errors
+  - Some rows have J = "N/A" or other text. A subtraction formula H - J will produce #VALUE! if J is text. Those should be handled to avoid errors.
+
+Easy fixes (step-by-step)
+1. Fix the typo in I20
+   - Change the formula in FRF!I20 from =SUM(H20-251) to =H20-J20
+2. Convert the text "FORMULA =SUM(...)" into real formulas (and make them consistent)
+   - In FRF column I replace entries like FORMULA =SUM(H5-J5) with =H5-J5 (for row 5), and repeat for each row (or enter =H5-J5 then fill down).
+   - Simpler and clearer than SUM(H-J) is just H-J.
+3. Protect against N/A or text in J
+   - Use a safe formula to avoid errors when J is not numeric:
+     - Example: =IF(AND(ISNUMBER(H5),ISNUMBER(J5)),H5-J5,"")
+     - Or, shorter: =IFERROR(H5-J5,"") — this hides any error by returning blank.
+4. Copy the corrected formula down the I column for all rows that need it.
+
+Why these fixes work (short)
+- =H20-J20 subtracts the actual height-off-bottom (J20) from the water depth (H20). Using the literal number 251 produced an incorrect constant subtraction.
+- Entering =Hn-Jn as a real formula makes Excel calculate the value. The previous "FORMULA =" text prevented calculation.
+- Wrapping with IF/ISNUMBER or IFERROR prevents #VALUE! or other error messages when one of the inputs is text or N/A.
+
+If you want, I can supply the exact corrected formulas for each FRF row (5:30) or provide a Find & Replace macro to convert the "FORMULA =SUM(H*-J*)" text into working formulas automatically. Which would you prefer?

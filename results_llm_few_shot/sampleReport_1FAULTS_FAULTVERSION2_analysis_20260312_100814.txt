@@ -1,0 +1,37 @@
+I reviewed the workbook and found several formula problems that will give wrong totals and cascade through the financial statements. Short summary (sheet!cell — problem — fix — why):
+
+1) OP_EXP!L46
+- Problem: =SUM(L33:L44) (includes an extra row)
+- Fix: =SUM(L33:L43)
+- Why: The L44 row is the total/label row and should not be summed. Including it double-counts or pulls an unintended value into “TOTAL OPERATING AND MAINTENANCE.”
+
+2) Bal Sht!J36 and Bal Sht!L36 (TOTAL ASSETS)
+- Problem: J36 =SUM(J23:J35) and L36 =SUM(L23:L35) — wrong source range
+- Fix: J36 = J17 + J34 ; L36 = L17 + L34
+- Why: Total Assets should be Net Investment in Real Estate (cell J17/L17) plus Total Other Assets (J34/L34). The current range is incorrect and will produce a wrong total.
+
+3) Income!L14 (TOTAL RENTAL INCOME — 2001 column)
+- Problem: entered as =1 (hard-coded)
+- Fix: =L10 + L13
+- Why: It must sum Net Residential Rent (L10) and Net Commercial Rent (L13). A hard-coded “1” breaks all downstream totals (J20/L20, J32/L32, etc.).
+
+4) Income!L62 (NET INCOME)
+- Problem: =L57 - L60 (wrong sign for cumulative effect)
+- Fix: =L57 + L60
+- Why: Net income should add the cumulative effect in L60 (same sign as the J column). The minus produces an incorrect final net income.
+
+5) Cash Flows!L45 (NET CASH FROM INVESTING — 2001)
+- Problem: =SUM(L37:L44) (extends past the intended rows)
+- Fix: =SUM(L37:L42)
+- Why: J45 sums J37:J42. L45 must match that range. The larger range pulls in extra rows (totals/labels) and skews the investing cash flow and thereby Net Change in Cash (L56) and ending cash (L58).
+
+6) Stkhold.Equity!G4 (label)
+- Problem: Text says “YEARS ENDED DECEMBER 31, 2001 AND 2001”
+- Fix: change to “YEARS ENDED DECEMBER 31, 2002 AND 2001”
+- Why: Label error — not a formula but will confuse users.
+
+Notes and impact
+- Several of these are “range off-by-one” errors and one is a manual overwrite (L14). They cause cascading misstatements: totals on Schedule I, Total Assets, Total Income, Net Income, Cash Flow totals and any statements that link to them.
+- After you fix the formulas above, recalculate and then trace dependent cells (use Trace Dependents) to confirm downstream totals correct.
+
+If you want, I can give a quick checklist you can run in Excel (formulas to search for hard-coded numbers, inconsistent ranges between columns, or a short VBA to find ranges where left/center/right column ranges differ). Which would you prefer?

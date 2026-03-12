@@ -1,0 +1,29 @@
+Summary of the problem
+- Cell E93 ("Advertising and public relations" — 2001 column) contains a manual subtraction formula:
+  =119787.63-23296.62-7810.26-39259.95-700.75-9833.86
+  This produces 38,886.19 and makes E92 (Other operating costs), E100 and many downstream totals incorrect or inconsistent with the 2002 column.
+- The root cause: the 2001 breakdown was entered as a series of subtractions instead of as a sum (or proper references). That gives the wrong sign/direction for several components and breaks the audit trail (hard-coded numbers instead of cell references).
+
+Why this is wrong
+- Subtraction here is almost certainly incorrect — the components look like expense elements that should be added to give the total advertising expense, not subtracted from a single starting number.
+- Hard-coded numeric arithmetic makes the workbook fragile: if any source numbers change, totals won't update.
+- Because E93 is part of E92 (SUM(E93:E98)) this wrong value propagates to E92, E100, the income statement and the cash flow / 5-year review numbers.
+
+How to fix (short steps)
+1. Replace the E93 formula with a sum of the component cells (preferred):
+   - Identify the cells that hold the advertising component amounts for 2001 (the rows that those six numbers represent). Suppose they are in Eaaa: Ebbb etc — use:
+     =SUM(E-firstComponent:E-lastComponent)
+   - Example (if you don't have neat source cells and you must use the numbers): replace E93 with
+     =119787.63+23296.62+7810.26+39259.95+700.75+9833.86
+     (this will give ~200,689.07 — which is much closer to the 2002 value than the current 38,886.19).
+2. After changing E93, recalc the sheet (F9 or press Ctrl+Alt+F9) and check these dependent cells:
+   - E92 (Other operating costs), E100, E78 (Administration expenses total), E100 (Total expenditure), E102 (Surplus), E117 (Cash retained) and the FIVE YEAR REVIEW sheet cells that link to the financial statements (E.g. E18, E28 etc).
+3. Replace other hard-coded arithmetic formulas in the 2001 column (I noticed similar hard-coded sums in E95, E87, E79, etc.) with references to the original line items, not manual numbers. This prevents future inconsistencies.
+
+Explanation in plain language
+- Someone built E93 by subtracting several numbers from a starting number rather than adding the expense components. That produced a much smaller figure than it should be and made totals downstream wrong.
+- The correct approach is to add all expense components (or better: point E93 at the cells that contain each component). When E93 is corrected, Excel will automatically update the totals that use E93.
+
+If you want, I can:
+- give the exact SUM formula to enter if you paste which cells contain each of the six component amounts for 2001; or
+- correct the other suspect hard-coded formulas (list them and I’ll suggest cell-reference replacements).

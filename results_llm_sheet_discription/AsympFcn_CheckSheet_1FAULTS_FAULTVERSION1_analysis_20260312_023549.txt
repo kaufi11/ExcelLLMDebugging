@@ -1,0 +1,67 @@
+Good — I examined both sheets and found the errors, why they happen, and exactly how to fix them. Short and actionable.
+
+Summary of problems (by sheet)
+1) MasterMethod_Checks
+- Typo in B19: =A19/873 (should be =A19/2). This makes row 19 inconsistent.
+- n = 0 (row 11) causes domain / divide-by-zero errors:
+  - C11 = 0^CE = 0 so D11 = B11/C11 -> #DIV/0.
+  - H11 = LOG(0,2) -> #NUM error.
+- Theta column (H) is suspicious: it computes LOG(n,2) but header says "Theta Term" — this is inconsistent with purpose (should show n^CE or whether Θ(n^CE) holds).
+- Minor: CE formula is OK (LOG(B4,B5) returns log_b(a)), but make it absolute references for safety: =LOG($B$4,$B$5).
+
+Fixes for MasterMethod_Checks (exact replacements)
+- Fix the typo:
+  - B19 → change to: =A19/2
+- Avoid n=0 domain errors (choose one):
+  Option A — remove row with n=0 (start n at 1).
+  Option B — guard the problematic formulas. Replace the D and H formulas with guards:
+  - D11 (and fill down) → =IF(C11=0,"N/A",B11/C11)
+    or more generally for the column D: =IF(C10=0,"N/A",B10/C10) then fill down.
+  - H11 (and fill down) → =IF(A11>0,LOG(A11,2),"N/A")
+- Make CE formula robust (optional):
+  - B6 → =LOG($B$4,$B$5)
+- Make Theta column meaningful (optional but recommended):
+  - Replace H10 (and fill down) with: =IF(AND(F10="TRUE",G10="TRUE"),"Theta(n^CE)","") 
+    OR to show value n^CE: =C10
+
+Why these fixes:
+- The /873 typo makes f(n) wrong for that row.
+- LOG(0,2) is undefined; dividing by 0 produces #DIV/0 — guards or removing n=0 avoids the errors.
+- H should show the intended Theta expression, not log base 2 of n.
+
+2) SubstitutionMethod_Checks
+- C10 missing the leading *A factor: C10 = $B$5*LOG(LOG(A10,2),2) (wrong). It should be c2 * n * log(log n).
+- Column D (T(n)) has inconsistent, incorrect formulas: some rows use things like 5*$D$11 (references to other D-cells) instead of 5 + n/LOG(n,2). Those accidental absolute references make T(n) vary incorrectly across row blocks.
+- Domain problems for LOG(LOG(n,2),2): log(log n) is undefined for n ≤ 2 (Excel will error at LOG(0,2) when log2(n) ≤ 0). Row 10 (n=1) and n=2 produce errors.
+- The Boolean checks E/F/G will return errors or incorrect results if B/C/D are error strings.
+
+Fixes for SubstitutionMethod_Checks (exact replacements)
+- Fix C10 and any other missing-A cells:
+  - C10 → = $B$5 * A10 * LOG(LOG(A10,2),2)
+  - Ensure all C rows use the pattern: = $B$5 * A# * LOG(LOG(A#,2),2)
+- Fix D column to be uniform (replace the erroneous reference-based cells). Use a single formula and guard the domain:
+  - D10 (and fill down) → =IF(A10>2, 5 + A10/LOG(A10,2), "N/A")
+  - (Replace all D cells that reference $D$11/$D$12/etc. with the above pattern for their own row.)
+- Guard B and C (avoid LOG(LOG(...)) errors). Use the same domain guard:
+  - B10 (and fill down) → =IF(A10>2, $B$4 * A10 * LOG(LOG(A10,2),2), "N/A")
+  - C10 (and fill down) → =IF(A10>2, $B$5 * A10 * LOG(LOG(A10,2),2), "N/A")
+- Make the inequality tests robust (optional but recommended):
+  - E10 (and fill down) → =IF(AND(ISNUMBER(B10),ISNUMBER(D10)), IF(B10<=D10,"TRUE","FALSE"),"N/A")
+  - F10 (and fill down) → =IF(AND(ISNUMBER(D10),ISNUMBER(C10)), IF(D10<=C10,"TRUE","FALSE"),"N/A")
+  - G10 (and down) can stay as your combined test but use the numeric-safe E/F above:
+    =IF(E10="TRUE",IF(F10="TRUE","True","False"),"False")
+
+Why these fixes:
+- C10 missing *A causes asymptotic-factor underestimation.
+- The stray absolute references like $D$11 produce huge/incorrect T(n) values. Using a single consistent formula fixes intent.
+- log(log n) requires log2(n)>0 → n>1. Because log2(2)=1 and LOG(1,2)=0 then LOG(0,2) fails, we choose n>2 guard to be safe for double log. Use IF to show "N/A" for invalid n.
+- E/F should only compare numbers; the ISNUMBER guard avoids comparing text "N/A".
+
+Extra recommendations (small)
+- Use IFERROR(...) if you prefer to hide errors: e.g. =IFERROR( 5 + A10/LOG(A10,2) , "N/A" ).
+- If you want to test only for large n (master theorem / substitution method), start your n values where all expressions are valid (Master: n>=1; Substitution with double log: n>=3).
+- Standardize TRUE/FALSE as logicals (TRUE/FALSE) instead of text if you plan further logic. E.g. use IF(B10<=D10, TRUE, FALSE) (no quotes).
+
+If you want, I can:
+- Generate a copy of the sheet with all cells corrected (I can list exact cell formulas to paste for a block), or
+- Give a short script of replacements (e.g., D10:D39 := formula X, B10:B39 := formula Y, etc.). Which do you prefer?

@@ -1,0 +1,27 @@
+I inspected every formula in Sheet1. No #REF! or #NAME? errors were present, and all subtotal/total numeric results are consistent with the values shown — with one clear formula mistake and a few style/inconsistency issues worth fixing.
+
+1) Actual formula error (likely a typo)
+- Cell G19 currently: =SUM(D19-E19)
+  - Problem: D19 is blank / not used elsewhere; the other similar rows use C# - E#. This looks like a typo and causes G19 to show 0 rather than C19 (2).
+  - Fix: change to =C19-E19 (or =SUM(C19-E19) if you insist on SUM wrapper). Recommended: =C19-E19
+
+If you make that change, G24 (subtotal administration), G61 (total campaign expenditure remaining) and any dependent totals will update accordingly (they currently reflect the erroneous G19 = 0).
+
+2) Inconsistent formula style (not errors, but recommended cleanup)
+- Many single-cell arithmetic formulas are written as =SUM(Cxx-Eyy), or =SUM(C10+C24+...), instead of the simpler/standard forms:
+  - Prefer =Cxx-Eyy (for simple subtraction)
+  - Prefer =SUM(C10,C24,C30,...) or =C10+C24+C30+... (for adding discrete cells) or =SUM(C10:C59) where appropriate.
+- Example: C61 is =SUM(C10+C24+C30+C37+C45+C51+C59). It works, but clearer would be =C10+C24+C30+C37+C45+C51+C59 or =SUM(C10,C24,C30,C37,C45,C51,C59).
+
+3) Blank E-cells and subtraction-from-blank behavior (potential data issue)
+- Several E cells (e.g., E17, E21, E35, E56, E79, etc.) are blank. Formulas like =Cxx-Eyy treat a blank Eyy as 0, so Gxx equals Cxx. That may be intended, but confirm whether blanks are deliberate or represent missing data. If blanks should be treated as missing, you may want explicit zeros or an IF test.
+
+Summary / recommended actions
+- Correct the typo in G19 to reference C19 (G19 := C19 - E19).
+- Consider normalizing formula style: remove SUM wrappers around simple arithmetic; use SUM(range) or SUM(list) for totals for clarity.
+- Review blank E cells to confirm they are intentionally blank (treated as 0) and not missing actuals.
+
+If you want, I can:
+- Produce a list of all cells that use SUM with arithmetic (so you can standardize them),
+- Return the cell dependency tree for totals so you can see which totals would change if G19 is fixed,
+- Or produce a corrected copy of the sheet with the typo and style changes applied.

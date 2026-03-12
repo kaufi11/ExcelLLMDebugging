@@ -1,0 +1,93 @@
+I checked both sheets and found several formula errors and inconsistencies. Below I list the problems I found, explain why they are incorrect, and give the corrected formulas / suggested fixes.
+
+Summary of the main issues
+- Piper/percent columns use inconsistent/incorrect numerators or denominators (both sheets).
+- Sheet2 has an obvious data/formula error for SiO2 (D12 = 2 instead of C12*1000), producing wrong concentration/activity for SiO2.
+- Ionic strength calculation excludes H+ (and OH) — maybe intentional but worth calling out.
+- #N/A (OH) leaks into charge-balance formulas, producing #N/A results.
+- Minor: the two sheets use different column layouts (so comparisons must be mindful of column shifts) — not an error per se but a source of confusion.
+
+Detailed problems and recommended fixes
+
+1) Cation percentages (Piper cation ternary) — inconsistent formula (sheet "2003")
+- Problem cells:
+  - 2003!I4 contains =SUM(H3:H4)/SUM(H3:H6)
+  - 2003!I5 contains =H5/SUM(H3:H6) (this is OK)
+  - 2003!I6 contains =H6/(SUM(H3:H6)) (this is OK)
+  - 2003!I3 is blank (no % formula)
+- Why wrong: I4 uses SUM(H3:H4) as numerator (Na+ + K+) instead of only K+. I3 (Na+) should have its own percentage but is missing.
+- Correct formulas (use the same denominator SUM(H3:H6) for all cations):
+  - 2003!I3 = H3 / SUM(H3:H6)
+  - 2003!I4 = H4 / SUM(H3:H6)
+  - 2003!I5 = H5 / SUM(H3:H6)
+  - 2003!I6 = H6 / SUM(H3:H6)
+
+2) Anion percentages (Piper anion ternary) — incorrect/excluded species (sheet "2003")
+- Problem cells:
+  - 2003!I7 = H7/(H7+H9+H10)
+  - 2003!I9 = H9/(H9+H7+H10)
+  - 2003!I10 = H10/(H10+H9+H7)
+  - 2003!I8 (NO3-) has =F8*G8 (no %) and I11 (CO3-2) is missing percent
+- Why wrong: The formulas for I7/I9/I10 omit H8 (NO3-) and H11 (CO3-2) from the denominator. That gives inconsistent %s and excludes species.
+- Correct formulas — include all anions in the ternary denominator (rows 7:11):
+  - 2003!I7 = H7 / SUM(H7:H11)
+  - 2003!I8 = H8 / SUM(H7:H11)
+  - 2003!I9 = H9 / SUM(H7:H11)
+  - 2003!I10 = H10 / SUM(H7:H11)
+  - 2003!I11 = H11 / SUM(H7:H11)
+
+Note: if the Piper anion ternary is meant to be only a subset (e.g., Cl, HCO3, SO4), then the set must be consistent for every anion cell; but the current mix is inconsistent. Decide which three you want and apply the same denominator for all three.
+
+3) SiO2 row error in Sheet2 (serious)
+- Problem: Sheet2!D12 contains =2 (explicitly), all other species have D = C*1000. This makes E12, F12, L12 and final "activity" for SiO2 completely wrong.
+- Evidence: Sheet2!D12 = 2, Sheet2!E12 = B12/D12 → 43/2 = 21.5 instead of ~0.000715; Sheet2!F12 = E12*(1000/999.7) ≈ 21.506; Sheet2!L12 = F12*K12 ≈ 21.506 (grossly incorrect).
+- Likely correct formula: D12 should be =C12*1000 (consistent with other rows).
+- Fix:
+  - Sheet2!D12 = C12*1000
+  - Sheet2!E12 = B12 / D12
+  - Sheet2!F12 = E12*(1000/999.7)
+  (these match the pattern used for SiO2 in sheet "2003")
+
+4) Ionic strength range / inclusion of H+ and OH
+- In 2003: B20 = 0.5*SUM(J3:J13) — this sums mi*zi^2 from J3..J13. That excludes J14 (H+) and J15 (OH).
+- In Sheet2: B20 = 0.5*SUM(I3:I13) similarly excludes H+ and OH.
+- This may be intentional (H+ usually negligible), but if you want ionic strength to include H+ (and possibly OH) add the corresponding J14 and J15 (or I14/I15) into the sum. Example:
+  - =0.5*SUM(J3:J15)
+- If you purposely exclude H+/OH, document that choice.
+
+5) #N/A in OH row causes downstream #N/A in charge-balance
+- Problem: F15 = NA(), then H15, J15, M15 are NA. E23 = C23 + H15 becomes #N/A so E22 (charge balance incl H/OH) evaluates to #N/A.
+- Suggestion: either represent missing OH as zero (0) rather than NA(), or use IFNA / IFERROR in the charge balance formula to treat NA as 0.
+  - Example: E23 = C23 + IFNA(H15,0)
+  - Then E22 = ((E24-E23))/(E23+E24)*100 will compute correctly.
+- If NA() is used intentionally to flag missing data, keep it but be aware it propagates and breaks charge-balance results.
+
+6) Column-layout differences between "2003" and "Sheet2"
+- The two sheets use different columns for the same conceptual values (in "2003" mi*z^2 is in column J and log gi in K, in "Sheet2" mi*z^2 is in I and log gi in J). This is fine if formulas reference the correct local columns, but it increases risk of copy/paste errors (as seen with D12 in Sheet2). Be careful when copying rows between sheets.
+
+7) Minor / stylistic
+- Many log-activity coefficient calculations use a fixed -0.51*(z^2)*SQRT($B$20). That is consistent across rows (correct if using Debye-Hückel limiting law approximation) — I just flag that it uses $B$20 anchored, which is correct as long as ionic strength is in B20.
+- Check that species you want to include in ionic strength and charge balance are consistently included (H+, OH, SiO2 is neutral so contributes zero, CO3, etc).
+- If you want robust spreadsheets, consider wrapping sums in IFERROR or IFNA or using named ranges for the cation and anion groups so formulas are easier to audit.
+
+Suggested concrete corrections (paste-ready)
+- 2003:
+  - I3: =H3/SUM(H3:H6)
+  - I4: =H4/SUM(H3:H6)
+  - I5: =H5/SUM(H3:H6) (already)
+  - I6: =H6/SUM(H3:H6) (already)
+  - I7: =H7/SUM(H7:H11)
+  - I8: =H8/SUM(H7:H11)
+  - I9: =H9/SUM(H7:H11)
+  - I10: =H10/SUM(H7:H11)
+  - I11: =H11/SUM(H7:H11)
+  - (optional) B20: =0.5*SUM(J3:J15) if you want to include H+ and OH
+
+- Sheet2:
+  - D12: =C12*1000 (replace =2)
+  - Then ensure E12, F12 and downstream formulas follow the normal pattern (they already use E12 and F12 formulas).
+  - (Optional) use IFNA(H15,0) in E23 to avoid #N/A cascade, or replace NA() with 0 if you prefer.
+
+If you want, I can:
+- produce an itemized fix list that you can copy/paste into the workbook, or
+- apply the fixes and re-export the corrected workbook (if you give permission / provide write access).

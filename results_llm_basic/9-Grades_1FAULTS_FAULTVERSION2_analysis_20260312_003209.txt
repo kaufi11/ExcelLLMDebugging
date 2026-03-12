@@ -1,0 +1,69 @@
+I checked the workbook text you gave. Summary: the main problems are inconsistent/wrong totals (bad ranges, wrong functions, and a hard‑coded value) and some blank cells/placeholders that make percentage totals ≠ 1. Below are the errors, why they matter, and simple fixes.
+
+Key errors (with examples)
+1) Inconsistent SUM ranges in Totals
+- Example: University Total row B31 =SUM(B9:B29) but D31 =SUM(D9:D30) (and E31 =SUM(E9:E30), etc.).
+- Effect: some columns include an extra row or omit a row, so column totals do not add to 1 (or are inconsistent across columns).
+
+2) Wrong function used instead of SUM
+- Example: O31 =COUNT(O9:O30). COUNT counts non‑empty cells, not sums percentages.
+- Effect: O31 shows number of entries instead of the percent total.
+
+3) Hard‑coded total instead of formula
+- Example: M31 is set to 1 (entered manually) while adjacent totals are formulas.
+- Effect: M31 may hide errors in the underlying data and is not dynamically correct when inputs change.
+
+4) Blank cells or missing zeros and placeholder values
+- Several grade cells are blank (or have weird placeholders like “N/A” or single “4” in some GPA cells). Blank cells are treated as zero by SUM but blanks make it hard to spot missing data; “N/A” text or other non‑numeric placeholders can break sums or averages.
+- Effect: totals may be less than 1 or averages wrong if non‑numeric placeholders are present.
+
+5) Division formulas that are fragile / inconsistent references
+- Example on Sheet1: D1 =+C1/+C24 (repeated for many rows). This uses a relative reference for the denominator and an unnecessary plus sign; if C24 changes position or rows are inserted the link can break.
+- Effect: percentages calculated from these may be wrong if the referenced cell moves or if C24 is not what you expect.
+
+Simple fixes (do these; they are short and safe)
+
+A) Standardize totals ranges
+- Decide the exact rows that should be summed for each table (e.g., grades rows 9:29). Then make every total cell use the same end row.
+- Example change for University Total row 31:
+  - B31: =SUM(B9:B29)
+  - C31: =SUM(C9:C29)
+  - D31: =SUM(D9:D29)   ← fix from D9:D30
+  - … copy the corrected formula across columns B:L (and M,N,O) using the same row range.
+- How to do quickly: correct the first total formula and drag/fill across.
+
+B) Replace COUNT with SUM
+- Change O31 from =COUNT(O9:O30) to =SUM(O9:O30) (or to the same standard range you used above, e.g. O9:O29).
+- This will produce the percent total rather than a count.
+
+C) Replace hard-coded totals with formulas
+- Replace M31 =1 with M31 =SUM(M9:M29) (or whatever your standard range is). Do this for any other manually entered totals.
+
+D) Handle blanks and placeholders
+- Replace text placeholders (“N/A”, “—”, etc.) with either blank cells or NA() if you want them excluded from averages. If a grade category truly has 0%, enter 0.
+- If you must keep text like “N/A”, wrap sums/averages with VALUE or use IFERROR or SUMIFS to only sum numeric cells (but best is to clean the source: numeric or blank).
+- Optional: add data validation on grade rows to allow only numeric input or zero.
+
+E) Make division formulas robust and absolute
+- On Sheet1 change D1 from =+C1/+C24 to =C1/$C$24 (use absolute reference $C$24 to lock the denominator). Repeat for D2:D23 etc.
+- This prevents accidental wrong denominators if rows inserted or formulas moved.
+
+F) Add a quick audit check for each totals row
+- Add a cell next to each total with =ABS(SUM(range)-1) and conditional formatting to highlight if > 0.001. This quickly flags distribution totals that are not ~100%.
+
+G) Where possible use consistent named ranges or SUMPRODUCT/SUMIF
+- If rows vary between categories, consider using structured formulas such as =SUM(B:B) for small sheets (less safe), or create a named range for all grade rows (e.g., GradesRange =B9:B29) and use =SUM(GradesRange) copied across.
+
+Short checklist to implement now
+1. Fix one Totals row (choose the correct row range), then copy across to other totals in that table.
+2. Replace COUNT with SUM (O31 and any other misused COUNT).
+3. Replace any hard‑coded totals with SUM formulas.
+4. Clean blanks/placeholders (enter 0 or use NA()), then re‑calculate totals.
+5. Change D formulas on Sheet1 to use absolute denominator (e.g., =C1/$C$24).
+6. Add audit cells (ABS(SUM-1)) and conditional formatting.
+
+If you want, I can:
+- Give the exact corrected formulas for the University Total sheet (I can produce a copy of the corrected cell formulas),
+- Or produce a short macro (VBA) that standardizes all Totals formulas across the workbook and highlights cells where totals ≠ 1.
+
+Which would you prefer?

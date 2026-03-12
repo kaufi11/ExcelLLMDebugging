@@ -1,0 +1,34 @@
+I checked both sheets and found the clear formula errors and a few likely inconsistencies. Short, direct fixes below.
+
+1) Error — wrong operator in Nine‑Quarter sheet (big bug)
+- Where: Nine‑Quarter sheet, cell H14 (Hardware Gross Profit % for FY2002‑Q4).
+- Problem: formula is =+H13*H5 (multiplication). It should divide gross profit by revenue.
+- Impact: H14 returns a huge/wrong number and any dependent % or analysis is wrong for that quarter.
+- Fix: change H14 to =H13/H5 (or =H13÷H5). Copy the same pattern used in the adjacent columns.
+
+2) Error — hard‑coded percent instead of formula (consistency bug)
+- Where: Nine‑Quarter sheet, cell H31 (Income From Operations % for FY2002‑Q4).
+- Problem: H31 contains the number 0.075 instead of a formula; all other quarters use =IncomeFromOperations/TotalRevenue.
+- Impact: If H29 or H8 change, H31 will not update.
+- Fix: replace H31 with =H29/H8 (matching C31, D31, etc.), then copy-fill to keep consistency.
+
+3) Likely error — Book Value Per Share values are inconsistent (Seven‑Year sheet)
+- Where: Seven‑Year sheet, row 64 (Book Value Per Share) — values look manually entered instead of calculated.
+- Problem: D64/E64 etc. do not match Shareholders’ Equity ÷ Weighted Average Shares in rows 62 and 43. Example: 221,228 ÷ 17,838 ≈ 12.40 but D64 = 12.28.
+- Impact: Reportable per‑share metric is off / possibly using wrong share count or a different basis.
+- Fix: replace each cell in row 64 with formula =D62/D43 (for column D) and copy across (i.e., =E62/E43, etc.). If you intended to use diluted or average shares, change denominator accordingly and document it.
+
+4) Recommendation — use formulas for the “Points” change labels (optional)
+- Where: several rows in Seven‑Year have labels like “+2.5 Points” in column C but the sheet doesn’t compute the change in points.
+- Why: those labels are static text and can be misleading.
+- Fix: add a helper column or formula like =(D18-D21) to compute percentage‑point changes (e.g., =D18-E18 if you want D vs E). Or for automatic “points change” from prior year use = (Dxx/Dyy) - (Exx/Eyy) and format as percentage points.
+
+How to apply changes (quick steps)
+- For H14: double‑click H14, replace the formula with =H13/H5, press Enter.
+- For H31: replace 0.075 with =H29/H8.
+- For Book Value Per Share row 64: select D64, enter =D62/D43, press Enter, then drag/fill across to J64.
+- After changes, recalc (F9) and verify numbers look sensible.
+
+If you want, I can:
+- Give the exact corrected formulas for every affected cell and show the before/after values, or
+- Produce a short list of cells that are hard‑coded that should be formulas so you can audit them. Which would you prefer?

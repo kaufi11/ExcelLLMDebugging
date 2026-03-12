@@ -1,0 +1,104 @@
+I inspected the formulas and values in each sheet you supplied. Below I list the formula errors, likely mistakes, and inconsistencies I found (grouped by sheet). For each item I explain the problem, why it is likely wrong, and give a recommended fix.
+
+Summary of the most important issues
+- The FTEE Calculation sheet contains several clear formula problems and many misplaced/incorrect values in column D (the "% of College" / "% of Total" area). One row (ILCC) has a wrong reference that propagates errors to other dependent cells.
+- Several sheets use ad‑hoc small numeric “fudges” (+0.01, -0.02, +0.02, -0.000001, etc.) or adjust rounded values manually. These are inconsistent and make auditing difficult; they should be removed and replaced by consistent rounding or by fixing the underlying formulas.
+- Some SUM ranges include an extra row (e.g., SUM(...:B15) when data runs to B14), which works because the extra row is blank, but is inconsistent and error‑prone.
+
+Detailed findings and recommended fixes
+
+Sheet: Revenues by Source
+- Observations: formulas appear correct. C10 is a hardcoded sum of two constants; C12 uses =147577404-1 to yield 147,577,403 (unusual but not technically incorrect). B10..B14 are =C#/$C$16 and sum to 1 in B16.
+- Recommendation: The C12 formula (=147577404-1) is odd; if the intent is to enter 147,577,403 directly, replace the expression with the literal number to avoid confusion.
+
+Sheet: Expenditures by Function
+- Minor inconsistency: B20 uses =SUM(B10:B19) and C20 uses =SUM(C10:C19). The sheet lists rows through row 18 only; row 19 is blank. This is not an error (SUM ignores blank), but the range should match the actual data range (B10:B18/C10:C18) for clarity and to avoid future errors if rows are shifted.
+- Recommendation: change sum ranges to explicit last row (B10:B18 and C10:C18).
+
+Sheet: Expenditures by Category
+- B12 formula: =ROUND((C12/$C$16),4)-0.0001
+  - Problem: this subtracts 0.0001 after rounding. The other category percentages use ROUND(...,4) without such subtraction. This manual subtraction is inconsistent and likely a hack to make totals = 1.
+  - Recommendation: remove the -0.0001. If rounding-cumulative rounding error is the issue, control display via formatting or adjust the final displayed cell by rounding the SUM to required decimals rather than altering source cells.
+- B16 formula: =SUM(B10:B15) while data rows stop at row 14. Same as other sheets: technically harmless but inconsistent. Use =SUM(B10:B14) and =SUM(C10:C14) instead.
+- General: Several formulas use redundant + signs (e.g. =+C11/$C$16) — harmless but inconsistent style.
+
+Sheet: General State Financial Aid
+- Generally OK. A couple of stylistic oddities:
+  - B23 is =12027969 (formula that just re-states the number). You can replace with the literal value.
+  - SUM ranges include B10:B24 etc. That is fine given the listed rows, but keep consistent.
+- D column values sum to 1 at D26: technique is consistent.
+
+Sheet: FTEE Calculation — (major problems)
+This sheet contains multiple substantive issues. I list them by cell / area.
+
+1) Column D appears to contain the wrong values (misplaced data)
+- Problem: Column D in this sheet is labelled in different header rows as either "Total FTEE" or "% of College" (header rows are inconsistent), but the populated D cells are decimal values that match the "% of Total FTEE" values from the General State Financial Aid table (and from the separate FTEE Graph block). In other words, the D values in the FTEE Calculation sheet appear to be pasted or copied from another table and are not the expected computed "% of College" values (they do not equal C#/H#).
+- Example: Row for NICC (A12): C12 = 3432.6458 and H12 = 4254.6438; expected D12 (if it is % of college credit) would be C12/H12 ≈ 0.807. Instead D12 contains 0.036029, which is ILCC’s percentage from the General State Financial Aid sheet. Many D cells follow this pattern (misaligned/copied values).
+- Consequence: Any calculation that depends on these D column values is suspect.
+- Recommendation: Clarify the intended meaning of column D (header rows are inconsistent). If D should be "credit % of college" then set Dn = Cn / Hn (or =IF(Hn=0,0,Cn/Hn)). Remove the manually-entered pasted percentages and replace with formulas. Fix the header rows so each label is unique and consistent across the sheet.
+
+2) Wrong cell reference on ILCC row (row 14)
+- Cell H14 formula is =+C15+F14
+  - Problem: it references C15 (the next row) instead of C14. H14 should sum this row’s credit FTEE (C14) and non‑credit FTEE (F14), plus any deliberate adjustment. As written it mixes data from the next college into ILCC’s total.
+  - Consequence: H14, and any dependent values (G14, I14, totals) are incorrect.
+  - Recommendation: Change H14 to =C14+F14 (or =C14+F14+0.01 if that +0.01 is intended consistently). Recalculate dependent cells.
+
+3) Many manual small numeric adjustments scattered and inconsistent
+- Examples:
+  - H12 = +C12+F12+0.01 (adds +0.01)
+  - H13 = +C13+F13+0.01
+  - H14 currently uses wrong reference and omits or misapplies +0.01
+  - H15 includes +0.01, others do not
+  - C28 = SUM(C12:C27)+0.02 (adds +0.02)
+  - F28 = SUM(F12:F27)+0.03
+  - H28 = SUM(H12:H27)-0.02
+  - I28 = SUM(I12:I27)+0.000002
+  - I20 and I21 have -0.000001 adjustment in their formulas
+- Problem: these are ad-hoc corrections (fudges) to force totals to match 1.000000 or to compensate for rounding, applied inconsistently across rows. This obscures the real data and makes the workbook brittle.
+- Recommendation: Remove the ad-hoc numeric adjustments. Use consistent formulas (no manual offsets), then:
+  - If you need to present percentages rounded to n decimals, use ROUND(...,n) for display or separate display cells, or use number formatting.
+  - If you need to force the final displayed total to 100% exactly, apply a controlled correction only to one cell (e.g., adjust the largest item by the rounding residual) — but document it and do it systematically.
+  - Use formulas like =SUM(C12:C26) (not to an extra row), and compute totals consistently.
+
+4) SUM ranges include extra rows / inconsistent ranges
+- Examples: B28 uses =SUM(B12:B27) while the last data row is 26. C28 uses C12:C27, H28 uses H12:H27. The extra :27 range includes a blank row so it doesn’t change the numeric result, but it is inconsistent with the actual end row (26).
+- Recommendation: Change all SUM ranges to match the data rows explicitly (B12:B26, C12:C26, F12:F26, H12:H26, I12:I26) to avoid accidental inclusion when rows are inserted/deleted.
+
+5) Inconsistent headers / misaligned header rows
+- The header rows around rows 7–10 are confusing (multiple header rows with overlapping labels). For example:
+  - Row 8 places labels 'Total', 'Credit', 'Non-Credit' etc.
+  - Row 9 places 'Credit', 'Credit', '% of College' etc.
+  - Row 10 repeats 'FTEE' headers.
+- This make it difficult to determine which columns should contain what calculations and may have led to copying wrong data into column D.
+- Recommendation: Collapse into a single clear header row and/or add a helper row documenting the intended formula for each column (e.g., Cn = Bn/24; Fn = En/600; Hn = Cn + Fn; Dn = Cn/Hn; Gn = Fn/Hn; In = Hn / H_total).
+
+6) Specific cells with explicit problems to fix
+- H14: change from =+C15+F14 to =C14+F14 (add +0.01 only if used consistently elsewhere).
+- D12..D26: replace pasted constants with a formula calculating the intended percentage (likely =Cn/Hn or =IF(Hn=0,0,Cn/Hn)). Verify what D is intended to represent (see header comment).
+- C28, F28, H28, I28: remove +0.02, +0.03, -0.02, +0.000002 and instead compute exact sums; handle rounding separately.
+- B28 and other SUM ranges: change to SUM(B12:B26), SUM(C12:C26), SUM(F12:F26), SUM(H12:H26) etc.
+
+Other general/style issues worth noting
+- Use of redundant leading plus signs in formulas (e.g., =+C12/24) — harmless but inconsistent.
+- Several cells use simple arithmetic (e.g., C10 = 9595817+116896967). It's OK but consider using references instead of literal constants if those numbers come from other cells.
+- Everywhere there are ad-hoc small adjustments (see above). They obscure the true calculation and should be cleaned up.
+
+Quick actionable checklist
+1. On FTEE Calculation:
+   - Fix H14 to reference C14 not C15.
+   - Decide what column D should be and replace pasted numbers with formulas (likely Dn = Cn/Hn).
+   - Remove the scattered +0.01 / -0.02 / +0.03 / +0.000002 adjustments and recalc totals using consistent SUM ranges (rows 12:26, not 12:27).
+   - Fix all SUM ranges to match the actual data rows (12:26).
+   - Normalize header rows so each column has a single clear label and document the expected formula per column.
+
+2. On Expenditures by Category (and other sheets where it occurs):
+   - Remove the -0.0001 from B12 — use consistent rounding rules for presentation.
+   - Fix SUM ranges to match actual last data row (avoid including blank row).
+
+3. Replace odd literal formulas (e.g., =147577404-1 or =12027969) with the literal number or with references to the source cell for clarity.
+
+If you want, I can:
+- Produce a corrected version of the problematic sheet(s) (FTEE Calculation and Expenditures by Category), showing the corrected formulas (I can provide exact formulas for the changed cells).
+- Or, if you prefer, I can generate a concise mapping of each cell that should be changed and give the exact formula to put into each.
+
+Which would you like me to do next?

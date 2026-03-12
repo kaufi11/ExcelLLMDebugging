@@ -1,0 +1,82 @@
+I examined the workbook formulas and found multiple errors/inconsistencies. I list them below grouped by sheet, with the cell(s), what’s wrong, why it matters, and a suggested fix.
+
+Summary of highest-priority problems
+- Revenue "Total" row only sums the first revenue line (Online) and ignores Street Sales — this makes all downstream profit/cash figures wrong. (Income!E12:P12)
+- Liabilities row F14 is an incorrect hard-coded value (6) and breaks the liability rolling balance. (Balance Sheet!F14)
+- Several formulas reference the wrong inflation / input cells (Sugar price, Depreciation original value) — these are logical mismatches that will produce incorrect results if inputs change. (Income!F8:Px, Depreciation!C5)
+- Missing / misplaced references in Balance Sheet lemon inventory and in the Depreciation totals cause zero/misaligned values. (Balance Sheet!E7/F7... and Depreciation!L11 / M11..P11)
+
+Detailed issues and suggested fixes
+
+1) Income sheet — Revenue total incorrectly computed (HIGH)
+- Cells: Income!E12, F12, G12, … P12
+- Current formula pattern: e.g. E12 = =SUM(E10:E10) (same for other months)
+- Problem: This sums only the Online Lemonade Sales row (E10) and ignores Street Sales (E11). Total revenue is therefore understated by the Street Sales amount.
+- Why it matters: Gross profit, net profit, cash flow and the balance sheet are all downstream of this total, so a core number is wrong.
+- Suggested fix: Change each total to sum both revenue rows, e.g.
+  - E12 = =SUM(E10:E11)
+  - F12 = =SUM(F10:F11)
+  - etc.
+
+2) Balance Sheet — Liabilities row contains incorrect value that propagates (HIGH)
+- Cell: Balance Sheet!F14 (and downstream G14…)
+- Current: F14 = 6 (formula: "=6"), then G14 = =F14 + Cashflow!G9 which yields odd negatives
+- Problem: F14 is a stray hard-coded "6" — looks incorrect; E14 was 900,000 but F14 should carry-forward or be computed consistently.
+- Why it matters: Total liabilities and Equity+Liabilities become inconsistent and produce wrong balance-sheet totals in many years.
+- Suggested fix: Replace F14 with consistent carry/roll-forward formula. Likely intended:
+  - F14 = =E14 + Cashflow!F9
+  (or if E14 already included cashflow for that period, set F14 = E14). Review design intent and correct.
+
+3) Income sheet — Sugar price formulas use lemon inflation cell (MEDIUM)
+- Cells: Income!F8, G8, H8 … P8
+- Current formula: e.g. F8 = =E8*(1+$D$7)
+- Problem: they use $D$7 (the lemon-price monthly inflation) instead of $D$8 (the sugar-price monthly inflation). Right now D7 and D8 happen to be the same numeric value, so results match, but it’s logically incorrect and will break if the two rates differ.
+- Suggested fix: change the growth reference to $D$8:
+  - F8 = =E8*(1+$D$8), etc.
+
+4) Depreciation sheet — Depreciation "Original Value" reference wrong (MEDIUM)
+- Cell: Depreciation!C5
+- Current formula: ="='Balance Sheet'!C8" (this points to the label "Original Value" on Balance Sheet rather than the numeric value)
+- Problem: C8 on Balance Sheet is a header label; the actual numeric original value is in Balance Sheet!D8.
+- Suggested fix: change Depreciation!C5 to reference the value:
+  - Depreciation!C5 = ='Balance Sheet'!D8
+
+5) Balance Sheet — Lemon Inventory references missing starting cell (MEDIUM)
+- Cells: Balance Sheet!C7 row: F7 = =E7, G7 = =F7, etc.
+- Problem: E7 (the initial value) is not defined on the sheet. F7 references E7 which is blank -> Excel treats as 0, so every inventory cell is 0. Probably you intended to populate E7 or link it to an inventory calculation (e.g. Income!E6 or a derived inventory figure).
+- Suggested fix: Put the correct starting inventory value in Balance Sheet!E7 or change F7 to link to the correct source (for example =Income!E6*cost-per-lemon or similar).
+
+6) Depreciation sheet — Total Depreciation accumulation breaks after column K (LOW→MEDIUM)
+- Cells: Depreciation!E11..P11
+- Observation: E11..K11 correctly accumulate (E11 = E7; F11 = E11 + F7; ... K11 = J11 + K7). But then L11 is missing in the saved rows and M11..P11 appear to be single-period values (e.g. M11 = =M7) not cumulative.
+- Problem: The column-by-column cumulative total pattern is broken/skipped (missing L11). If totals for later years are used elsewhere they will be incorrect.
+- Suggested fix: ensure L11 = =K11 + L7 and then M11 = =L11 + M7 and so on — consistent cumulative pattern.
+
+7) Income / Balance Sheet / Depreciation cross-references inconsistent or out-of-range (MEDIUM)
+- Cells: Income!P31 = =Depreciation!P7 (Income references up to Depreciation!P7)
+- Problem: Depreciation sheet as provided lists through O7; P7 might be absent or not populated. Confirm that Depreciation does have P7; if not, update references to the correct final column or add blank 0 values in Depreciation P7.
+- Suggested fix: check Depreciation sheet column count and make all cross-sheet references consistent (E7..P7 exist and contain expected values).
+
+8) Income sheet — Miscellaneous inconsistent formulas and patterns (LOW)
+- Many places use redundant or odd-range sums such as =SUM(E10:E10) or chained references offset by varying columns (e.g. Advertising row: I25 = =F25, J25 = =G25, K25 = =H25, etc.). These are not necessarily errors (they return correct numbers), but are inconsistent and confusing — they make maintenance/error tracing harder.
+- Suggestion: standardize propagation formulas (e.g., each column refers to the prior column or to a single input cell) and simplify SUM ranges to the intended rows.
+
+9) Cashflow sheet — SUM ranges include empty rows (LOW)
+- Example: Cashflow!D13 = =SUM(D6:D12) but D12 may not exist. Excel treats missing/blank as zero; not an error but consider tightening ranges to actual used rows to avoid accidental inclusion of empty rows later.
+
+10) Balance Sheet — Original value cell linked to D14 (design confusion) (LOW→MEDIUM)
+- Cell: Balance Sheet!D8 = =D14
+- Problem: D14 is used below for a liability entry (Lear Jet Finance Co. amount = 1,000,000). Using the same cell D14 as the original asset value is confusing and fragile (it can be overwritten or cause user confusion). Better to have a dedicated input cell for the asset original value.
+- Suggested fix: Move the original long-term asset value to a dedicated input cell and link consistently (e.g. Balance Sheet!D8 input or a named input cell). Do not reuse D14 which is then used as liability input.
+
+Other comments
+- The most urgent fixes are items 1 (Revenue total) and 2 (F14). Both materially change outcomes and are clear formula mistakes.
+- Several issues are stylistic/inconsistency but not immediate errors (extra SUMs, chained references that could be simplified).
+- After the core fixes, run a reconciliation: check that Assets = Liabilities + Equity for every column (Balance Sheet!E11 vs E22 etc). That will catch any remaining mismatched roll-forwards.
+
+If you want I can:
+- produce the exact corrected formulas for each affected cell (copy/paste ready),
+- or produce a small patch file with corrected formulas (if you can accept a modified workbook),
+- or validate the balance-sheet equality after you approve changes.
+
+Which would you prefer?

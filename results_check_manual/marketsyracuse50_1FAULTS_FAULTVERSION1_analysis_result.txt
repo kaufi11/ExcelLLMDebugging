@@ -1,0 +1,40 @@
+I reviewed the formulas on the "Syracuse, NY" sheet. I found one clear formula error and a few related inconsistencies/impacts; everything else follows the same pattern and appears syntactically correct.
+
+1) Incorrect formula (typo)
+- Cell: F24
+- Current formula: =1/$E24
+- Pattern used elsewhere: banks → F = 1 * E, thrifts → F = 0.5 * E
+- Problem: F24 is the reciprocal of E24 (1 / E24) instead of 1 * E24. This is almost certainly a typo and makes F24 a very small number (~1.26E-05) instead of 79,364.
+
+2) Effects/impacts caused by F24 error
+- F24 current value: 1.26001713623305E-05 (from 1/79364)
+- Correct F24 value should be: 79,364 (i.e. =1*$E24)
+- Current F36 (sum of F10:F33): 7,356,617.5000126
+- Corrected F36 (if F24 = 79,364): 7,435,981.5
+- Difference in F36 due to the error: 79,364 (F36 currently understated by 79,364)
+- Current E36 - F36 = 8,232,933 - 7,356,617.5000126 = 876,315.4999874
+- Correct E36 - corrected F36 = 8,232,933 - 7,435,981.5 = 796,951.5 (this is equal to half the total thrift deposits as intended)
+- So with the existing incorrect F24, the relationship between E36 and F36 is inconsistent (the subtotal of half-thrift deposits no longer matches E36 - F36).
+
+3) Consequences on percentages and HHI
+- All G (market share) formulas use $F$36 as denominator (= $F_i / $F$36 * 100). Because F36 is wrong, every market share (G10:G33) is slightly distorted (other institutions' shares are inflated to compensate).
+- H (HHI) cells are computed as G^2, so H values and the H36 total are also affected.
+- G36 still sums to 100 (because it’s sum of the G row formulas using the same F36), but the underlying weights are wrong.
+
+4) Recommended fix
+- Replace F24 formula with the intended weight formula:
+  - If row 24 is a bank: =1*$E24
+  - If row 24 is indeed a bank (C24 = "Bank"), use =1*$E24
+  - Better (robust) approach for whole column F: set F formula using column C to avoid manual mistakes, e.g.
+    =IF($C10="Thrift",0.5*$E10,1*$E10)
+  and copy down for F10:F33.
+- After fixing F24 (or implementing the IF formula for all rows) recalculate and confirm:
+  - F36 = =SUM($F$10:$F$33) should become 7,435,981.5
+  - G and H columns will update automatically and will reflect correct market shares and HHI.
+
+5) Optional check / note on HHI units
+- H uses =($Gx)^2 where G is in percent (e.g., 21.96). This produces an HHI around 1,173 (the workbook’s current H36). That is consistent with an HHI computed using percentage-point shares squared. If you intended HHI on the 0–1 scale (then typically HHI = sum of (share as decimal)^2 and often multiplied by 10,000), be sure the current squared-unit choice matches your reporting convention.
+
+If you want, I can:
+- apply the corrected formula to the sheet and provide the updated G/H values and the corrected HHI; or
+- give a short table showing current vs corrected top 5 institutions' market shares and the corrected HHI.

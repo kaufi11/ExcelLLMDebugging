@@ -1,0 +1,35 @@
+Summary — workbook structure (Sheet1 primary; Sheet2 & Sheet3 present but not detailed)
+
+Overall layout (Sheet1)
+- Top rows: Row 1 contains broad category headers (Homework, Total, HW, Quiz, Drop, Take/Closed/Open, Total, Exam, Final, Term, Total, Letter). Row 2 contains detailed column labels (#1–#12 for homework, 1–23 for many quizzes/assignments, category names for exams/finals/papers).
+- Row 3 is the "points possible / baseline" row. It holds the maximum points for each individual item (e.g., B3:M3 for homework item maxima, P3:AL3 for quiz maxima, AP3/ AQ3/AR3 for exam components, AV3/AW3/AX3 for final components, AZ3/BA3 for term papers). Many formulas use absolute references to these row‑3 cells (e.g., $N$3, AN$3, AS$3) as denominators to normalize scores.
+- Rows 4–37 (and beyond) are student records: column A = student code/name/ID; B–M = individual homework scores; P–AL = many small quiz/assignment scores; AP/AR/etc = exam/take‑home/final components; AZ/BA = term/paper scores. Each student row mirrors the formulas in row 3 but uses that student’s values.
+
+Key formulas and calculations
+- Homework total per student: column N = SUM(B#:M#).
+- Homework percent: column O = N# / $N$3 (normalizes student homework total to the maximum homework total on row 3).
+- Quiz total: column AM = SUM(P#:AL#).
+- Quiz drop policy: column AN = AM# - MIN(P#:AL#) - SMALL(...,2) - SMALL(...,3) - SMALL(...,4) - SMALL(...,5). This removes the five lowest quiz scores.
+- Quiz percent after drops: column AO = AN# / AN$3.
+- Take‑home / Book / Closed totals: AP/AQ/AR/AS etc. AS = AP + AQ + AR; AT = AS# / AS$3 (normalized).
+- Final exam percent: AY = (AV + AW + AX) / 100 (student final components summed then divided by 100).
+- Term/paper grade (BB): BB# = 0.5 * (AZ# + BA#) / 100 (average of two term components converted to proportion).
+- Weighted numeric grade (column BC): BC# = (0.16*(O# + AO#) + 0.18*(AT# + AU#) + 0.14*BB# + 0.22*AY#) - 0.04 * MIN(O#, AO#, AT#, AU#, BB#, AY#)
+  - Interpretation: combines component percentages with weights (16% homework/quizzes, 18% exams/attendance, 14% term/paper, 22% final) and applies a penalty equal to 4% of the lowest component.
+- Letter grade (column BD): nested IF mapping on BC#:
+  - A if BC ≥ 0.915; A- if ≥ 0.895; B+ if ≥ 0.875; B if > 0.815; B- if ≥ 0.795; C+ if ≥ 0.775; C if > 0.715; C- if ≥ 0.695; else D.
+
+Notable implementation details / conventions
+- Row 3 is used as the canonical "points possible" row; many normalization formulas reference row‑3 absolute cells (e.g., N$3, AN$3, AS$3) so updating row‑3 changes normalization for all students.
+- Quiz drop removes five lowest quiz scores per student using MIN + SMALL(...,2–5).
+- The BC formula incorporates both sums of related normalized components (e.g., O + AO) and then halves/weights them as shown; it also subtracts a penalty based on the minimum component value.
+- The workbook contains about 34+ student rows (rows 4–37 shown) each using the same formula pattern.
+
+Sheets
+- Sheet1: Complete gradebook with item level scores, totals, normalized percentages, weighted final numeric score (BC) and letter grade (BD).
+- Sheet2 and Sheet3: present in workbook but not described / no detail provided.
+
+If you want, I can:
+- produce a compact legend of every column,
+- verify or correct any formula (e.g., confirm denominator references like N$3 are intentional),
+- convert the nested IF letter grade to a LOOKUP for readability.

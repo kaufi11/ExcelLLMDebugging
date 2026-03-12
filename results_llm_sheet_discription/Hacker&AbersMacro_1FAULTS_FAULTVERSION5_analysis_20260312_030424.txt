@@ -1,0 +1,38 @@
+I checked the workbook and found two clear, actionable errors plus a couple of small issues / robustness recommendations. Summary first, then short fixes and why they matter.
+
+1) Major data error — antigorite (atg) has wrong molar mass and molar volume (big effect)
+- What’s wrong
+  - database sheet, row for atg (A38): B38 = 4535.95 (g/mol) and C38 = 1712.972 (cm3/mol). Those are ~16× too large for antigorite.
+  - rock mineral modes sheet, row for atg (A38): the chemical formula is wrong (given as Ca2Al3Si3O12(OH) — that is not antigorite).
+- Why it matters
+  - Any rock or mineral calculations that include antigorite will be strongly biased (density, H2O content, moduli, velocities). The large gfw inflates molar-volume-related calculations and H2O wt% etc.
+- Fix (exact steps)
+  1. In database!B38 set the correct molar mass for antigorite (Mg3Si2O5(OH)4). Exact stoichiometric molar mass = 277.118 g/mol. Put: 277.118
+  2. Recompute molar volume consistently (database!C38). Use the density in D38 (2585 kg/m3) to produce the molar volume:
+     - Formula to use: =B38/(D38/1000) or =B38*1000/D38
+     - With B38=277.118 and D38=2585 you get C38 ≈ 107.227 cm3/mol.
+  3. In rock mineral modes!C38 fix the chemical formula to the standard antigorite/serpentine formula: Mg3Si2O5(OH)4 (and update the description D38 to “antigorite / serpentine” if you want).
+- Result
+  - All mineral/rock properties that use antigorite will immediately become realistic. (Minerals sheet and rocks sheet values that depend on B38/C38 will update.)
+
+2) Minor typographical / numeric slip — stray “+1” in a KT value
+- What’s wrong
+  - database!H40 is 125000000001 (125,000,000,001 Pa). database!H39 is 125000000000 (125,000,000,000 Pa). H40 appears to have an accidental extra “1”.
+- Impact
+  - This produces a tiny numerical mismatch when other cells scale by H40/H39. The effect is 1 Pa on ~1.25×10^11 Pa (negligible), but it is a typo.
+- Fix
+  - Change database!H40 to 125000000000 (remove the extra 1).
+- Note
+  - This is not causing large errors; it’s just a typo to fix for cleanliness.
+
+3) Robustness / consistency improvements (recommended)
+- Keep molar volume automatically consistent with molar mass & density
+  - Replace manual C entries with a formula: C = B*1000/D (i.e., =B#*1000/D#) so molar volume updates if you change gfw or density. Example cell formula: =B38*1000/D38
+- Scan for other outliers
+  - Quick check: in database column B look for molar masses >> ~1000 g/mol. Any extremely large B values are likely copy/paste errors (like the atg case).
+- Prevent future typos
+  - Lock or validate critical database cells (B, C, D, H, L) that are intended to be constants; provide a comment or data validation to avoid accidental edits.
+
+If you want, I can:
+- Provide the exact list of database rows where B (gfw) looks suspicious (I can scan column B and point out rows with values > ~1000).
+- Give the exact corrected values for atg and show the updated downstream numbers (e.g., updated rock properties that include antigorite).

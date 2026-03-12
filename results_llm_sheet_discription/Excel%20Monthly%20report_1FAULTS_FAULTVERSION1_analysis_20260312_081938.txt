@@ -1,0 +1,40 @@
+Summary of errors
+- Many daily service cells (D9:M39) contain wrong formulas that just copy an adjacent cell (e.g., F9 =SUM(E9), G9 =SUM(F9)). They should be plain numeric inputs, not SUM chains.
+- E9 = SUM(E42) references a cell outside the table (E42) — likely accidental.
+- J19 = COUNT(I19) is inconsistent and wrong for a daily count (COUNT will return 0/1 if a single cell is empty/non-empty).
+- Totals row (row 40) partly cascades totals instead of summing each column: F40 = SUM(E40), G40 = SUM(F40), H40 = SUM(G40), etc. This makes wrong results and can cause circular references.
+
+Why this is wrong
+- The per-day formulas merely copy values from other cells instead of accepting daily input values. That breaks aggregation and propagates errors from one mistaken cell (E42) across many cells.
+- Column totals must sum their own column ranges; referencing other total cells produces incorrect totals and creates dependencies/circular logic.
+
+Fix — step-by-step (simple)
+1. Clear the incorrect per-day formulas:
+   - Select D9:M39 and press Delete (so these cells are blank and ready for you to enter daily counts). Also clear E9, J19 and any other individual wrong formulas in the day rows.
+
+2. Put the per-day row total formula in C9 and fill down to C39:
+   - C9 formula: =SUM(D9:M9)
+   - Fill (copy) C9 down through C39.
+
+3. Put correct column totals in row 40 and fill across:
+   - D40: =SUM(D9:D39)
+   - E40: =SUM(E9:E39)
+   - F40: =SUM(F9:F39)
+   - Continue the pattern through M40: =SUM(M9:M39)
+
+4. Keep A40 or C40 as overall total if desired:
+   - C40: =SUM(C9:C39) (this should match the sum of D40:M40 once corrected).
+
+5. Optional: format D9:M39 as Number and lock or convert the range to an Excel Table to prevent accidental formula copying.
+
+Examples of corrected formulas (copy these exactly)
+- Row totals: C9 =SUM(D9:M9) then fill down to C39.
+- Column totals: D40 =SUM(D9:D39), E40 =SUM(E9:E39), F40 =SUM(F9:F39), …, M40 =SUM(M9:M39).
+
+Notes
+- If some daily cells must be computed from other worksheet ranges, edit only those specific cells to reference the correct source ranges (not single cells like E42 unless intentional).
+- Replace J19 =COUNT(I19) with a blank (for manual input) or with =SUM(J9:J39) only if you meant a column aggregation — otherwise remove the COUNT formula.
+
+If you want, I can give:
+- A one-click script (VBA) to clear the bad formulas and write the correct ones, or
+- The exact list of formulas to paste into each cell if you prefer.

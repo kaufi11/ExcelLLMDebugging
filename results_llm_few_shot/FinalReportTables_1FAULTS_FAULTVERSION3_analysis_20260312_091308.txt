@@ -1,0 +1,40 @@
+I checked the workbook and found a few real problems that can give wrong totals or make the model fragile. Short summary, explanation and fixes below.
+
+1) Wrong hard‑coded value in Production (Table G.6)
+- Problem: Table G.6 cell F14 contains the literal 4. H14 uses H14 = F14 * G14, so that 4 will incorrectly inflate the Production total and all roll‑ups that depend on it.
+- Fix: Remove the hard code. Put the correct unit cost in F14 (or blank if there is no unit cost). If you intended a calculated value, restore the correct formula. Example: if F14 should be a calculated unit cost, replace 4 with the appropriate formula or with a correct numeric value.
+- Why: hard codes in input/formula areas break traceability and produce wrong totals when copied/aggregated.
+
+2) Fragile / incorrect use of SUMIF on single cells in Table G.8
+- Problem: many cells in Table G.8 use formulas like =SUMIF($E5,$I$4,$H5). SUMIF expects a range of cells for its first argument. Using single‑cell ranges is fragile and non‑standard (it effectively acts like IF($E5=I$4,$H5,0) but is confusing and error‑prone when copied or audited).
+- Fix (two options, choose one):
+  a) Per‑row approach (clear and explicit): in I5 (and copy I5: N54) use
+     =IF($E5=I$4,$H5,0)
+     This makes each row put H5 into column I if E5 matches package header I4, otherwise 0.
+  b) Better: eliminate the per‑row distribution and compute summaries directly with SUMIFS in the summary sheet (Table G.2). For example, to get subcontracting cost for partner in C4 and package 1 use:
+     =SUMIFS('Table G.8'!$H$5:$H$54,'Table G.8'!$C$5:$C$54,C4,'Table G.8'!$E$5:$E$54,1)
+     (Replace 1 with the package number or a reference to the header cell.)
+- Why: SUMIFS is the correct, efficient way to sum H values filtered by partner and package. The IF per‑row approach is also acceptable but must be clear and consistent.
+
+3) Unnecessary / confusing SUM(...) wrappers (Table G.5.c and a few others)
+- Problem: formulas like =SUM(F6*G6)*H6 (Table G.5.c I6) use SUM() around a single product. This is not an error per se (it returns the right result) but is confusing and can hide intention and create problems if you later change to ranges.
+- Fix: simplify to:
+     =F6*G6*H6
+- Why: clearer, avoids accidental range changes and is consistent with other rows (F*G).
+
+4) Make range references absolute and consistent when used for column summaries
+- Problem: some SUMIF/SUM formulas mix relative/absolute references (e.g., C$4 vs C4, or single‑cell ranges in Table G.8). This can cause wrong results when formulas are copied.
+- Fix: standardize formulas that aggregate across rows to use absolute ranges. Examples:
+  - Use: =SUMIF('Table G.4'!$C$5:$C$142,$C$4,'Table G.4'!$N$5:$N$142)
+  - Or SUMIFS as shown above for multi‑criteria sums.
+- Why: absolute ranges prevent accidental reference shifts and make the sheet maintainable.
+
+Quick recommended action plan (minimal steps to fix right now)
+1. Clear the value 4 in Table G.6 F14 (or replace with correct value/formula).
+2. Replace the Table G.8 I5:N54 formulas with IF($E5=I$4,$H5,0) and copy across/down (fast fix), OR remove them and change Table G.2 subcontracting formulas to SUMIFS directly (cleaner).
+3. Replace any SUM(F*G)*H patterns with F*G*H for clarity.
+4. Scan for any relative references that should be absolute in the aggregation formulas and fix (use $ signs).
+
+If you want, I can:
+- give the exact SUMIFS formulas to replace each Table G.2 subcontracting cell (I can generate them for C19:D25 etc.), or
+- produce the one-line change list that you can paste into the sheet (I’ll output the specific formulas and cells). Which do you prefer?

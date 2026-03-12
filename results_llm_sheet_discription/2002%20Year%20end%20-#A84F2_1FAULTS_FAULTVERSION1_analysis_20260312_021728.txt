@@ -1,0 +1,36 @@
+Summary — main errors found and how to fix them
+
+1) Other operating costs (2002) not included in total expenditure
+- Problem: C92 is set to 0 but the other‑operating‑cost lines for 2002 are in C93:C98. So total expenditure C100 (=C92+C78) omits those costs.
+- Effect: Expenditure is understated, surplus (C102) is overstated, which then misstates accumulated funds, the balance sheet and all linked reports (5 Year review, cash flow reconciliation).
+- Fix: Replace the formula in C92 with:
+  =SUM(C93:C98)
+- Explanation: That makes C92 equal to the sum of the detailed other operating costs, so C100 and the surplus reflect the true total expenses.
+
+2) Hard‑coded / inconsistent cash flow numbers (cash paid to suppliers & operations)
+- Problems:
+  a) C121 uses a hard‑coded calculation (= -26907-7561074) instead of linking to the cash‑reconciliation results; the numbers are error‑prone (off by 1 in this case).
+  b) C122 (Cash applied to / generated from operations) is a fixed number (-26908) rather than being linked to the reconciliation (C511).
+- Effect: The operating cashflow section is fragile and can be internally inconsistent (wrong signs or off‑by‑one errors), leading to wrong net cash and closing cash balances.
+- Fix (preferred, two simple changes):
+  - Set C122 to the reconciliation result:
+    C122 = C511
+  - Make C121 derive from C120 and C122 (no hard coded values):
+    C121 = C122 - C120
+- Explanation: C511 is the working‑capital / operations reconciliation. Linking C122 to C511 ensures the "cash from operations" number is driven by the reconciliation. Computing C121 as C122 - C120 produces the cash paid amount consistently from receipts (C120) and the reconciled net operations cash (C122), eliminating hard‑coded arithmetic and off‑by‑one errors.
+
+3) Text “-” used in numeric cells may break formulas
+- Problem: Some cells that should be zero show a dash (“-”) (e.g. C39 Bank overdraft has “-”).
+- Effect: If a cell contains text it may be ignored by SUM or cause errors when referenced with unary plus (e.g. =+C39) or when feeding other formulas.
+- Fix: Replace textual “-” with an explicit numeric 0 (or blank if intended). Use 0 where calculations require a numeric.
+- Explanation: Excel treats "-" as text; numeric formulas work reliably only with numbers (0) or empty cells.
+
+Additional recommendations (short)
+- Avoid embedding sums as literal additions (like =103735.39+26083.05+11314.95). Instead reference the source cells or use SUM(range) so row changes don’t break formulas.
+- After applying the fixes, reconcile:
+  - Income statement surplus (C102) to Accumulated funds movement (C327/C330).
+  - Total assets (C23) = Total equity & liabilities (C42).
+  - Cash closing (C147) = cash aggregate (C532).
+  If any of these still mismatch, trace the dependent cells/note rows you’ve edited.
+
+If you want, I can give the exact cell changes in order and a short test checklist to confirm the workbook is balanced after you apply them.

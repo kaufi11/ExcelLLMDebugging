@@ -1,0 +1,53 @@
+I reviewed the formulas in the workbook you supplied. Overall the workbook is well-constructed and mostly consistent, but I found a small number of formulas that are either incorrect, inconsistent with the surrounding pattern, or likely to lead to an incorrect reconciliation. Below I list the items to check, what is wrong, why it matters, and suggested corrections.
+
+1) Sheet: Table 2.0 BS - Annex E — Cell K69
+   - Current formula: =K49
+   - Problem: K69 is the "Variance as % of original forecast" for "Total Funds". All other rows in the sheet calculate the % variance as IF(H#=0,"N/A",(J#/H#)*100). K69 instead copies the percent from K49 (the % variance for "Total Net Assets"), which is not generally the same as the % variance for Total Funds.
+   - Why it matters: The percent variance shown for Total Funds will be wrong if Total Funds and Total Net Assets move differently.
+   - Suggestion: Replace with the consistent calculation, e.g.
+     =IF(H69=0,"N/A",(J69/H69)*100)
+     (or follow whatever % presentation rule the sheet uses for other rows).
+
+2) Sheet: Table 3.0 CF - Annex F — Original forecast, Cell T26
+   - Current formula: =T19-('Table 2.0 BS - Annex E'!H20+'Table 2.0 BS - Annex E'!H21+'Table 2.0 BS - Annex E'!H22)
+   - Problem: T26 is described as "This cell should be zero (reconciliation with balance sheet)". T19 is the CF total closing balance (cash and overdraft). The formula subtracts H20 (Investments), H21 (Cash at bank/in hand) and H22 (unspent bursary/access) from T19. That mixes investments and other current-asset items with cash; for a cash reconciliation you generally only compare the cash-at-bank/overdraft items on the balance sheet, not investments or other current asset lines.
+   - Why it matters: If the intention is to reconcile CF closing cash with balance-sheet cash, including investments and/or unspent bursary in the subtraction will give a non-zero result even when cash balances match, causing false reconciliation failures.
+   - Suggestion: Confirm the intended reconciliation target. If you only want CF closing cash to match the balance-sheet "Cash at Bank/in Hand" (and overdraft shown elsewhere), change to reference the appropriate BS cells. For example:
+     - If you want CF closing cash to equal balance-sheet "Cash at Bank/in Hand" (H21) minus overdraft (if overdraft is shown elsewhere), the formula could be:
+       =T19 - 'Table 2.0 BS - Annex E'!H21
+     - If overdraft is included on the BS as a positive number in row H28 (Bank Overdrafts shown as positive), and CF closing cash is net of overdraft, do:
+       =T19 - ('Table 2.0 BS - Annex E'!H21 - 'Table 2.0 BS - Annex E'!H28)
+     - Make the formula explicit for the exact reconciliation you expect.
+
+3) Sheet: Table 3.0 CF - Annex F — Actual/Revised forecast, Cell T49
+   - Current formula: =T42-('Table 2.0 BS - Annex E'!I20+'Table 2.0 BS - Annex E'!I21+'Table 2.0 BS - Annex E'!I22)
+   - Problem: Same issue as T26 but applied to the revised/actual columns (I20/I21/I22). It subtracts Investments + Cash + Unspent bursary rather than reconciling to the cash/overdraft line(s) you intend.
+   - Suggestion: As with T26, change to reference the correct BS cell(s) (I21 for "Cash at bank/in hand" and, if needed, the overdraft cell I28 or the bank overdraft row) according to the intended reconciliation.
+
+4) Sheet: Table 3.0 CF - Annex F — use of column T for balance rows (possible inconsistency / potential for confusion)
+   - Examples: In the Original Forecast section:
+     - T10 = SUM(T7:T9) (Total cash in uses SUM of T-month totals)
+     - T19 = S19 (Balance c/f total uses last-month value S19 rather than SUM(H19:S19))
+   - Problem/Observation: The workbook uses column T as a "Total" column in many rows (SUM across H:S). For flow and balance rows, however, T is sometimes set to equal a single month (for example T19 = S19 or T18 = H18). That is probably intentional (balances are not summed across months), but it is inconsistent with the giant pattern of column T being "SUM across months" and can be confusing/readily mis-edited.
+   - Suggestion: If this is intentional (T for flow rows = sum across months; T for balance rows = last-month value), consider adding a comment cell or label to clarify the rule so future editors won't accidentally replace T18/T19/T41/T42 etc with a SUM. If the intended "Total" for those rows is something else, adjust accordingly.
+
+5) Sheet: Table 2.0 BS - Annex E — Cells H59 / I59 (Endowments) link to H15 / I15
+   - Current formulas: H59 = H15, I59 = I15
+   - Observation: In this sheet H15 is the sheet row "Endowment Asset Investments" (a fixed-assets line). H59 is "Endowments" (a funds/reserves line). Copying H15 into H59 assumes the endowment fund value equals the endowment asset investments value (which may be true in your model), but it is an assumption worth checking.
+   - Suggestion: Confirm this link is intentional. If endowment funds should equal the endowment asset investments value on the fixed-asset side, keep. If endowments should be entered separately or derived differently, revise.
+
+6) Minor items to review (no definite error but worth double-checking)
+   - B-numbering formulas (e.g., B28 = B25+10) are fine as long as the numbering scheme is intentional.
+   - Many percent cells use IF(H#=0,"N/A",(J#/H#)*100). This returns "N/A" when the denominator is zero. If you prefer 0% or blank instead of text "N/A", change accordingly; mixing text in a numeric column can affect charting/aggregates.
+   - In a few sums ranges you might see inclusion of rows that are visually blank (SUM(H43:H47), etc.). Confirm the intended rows are included.
+
+Summary of actionable fixes
+- Fix K69 on Table 2.0 BS: replace =K49 with =IF(H69=0,"N/A",(J69/H69)*100) (or equivalent desired % formula).
+- Fix reconciliation formulas on Table 3.0 CF:
+  - T26: change to reference the appropriate balance-sheet cash/overdraft cell(s) instead of H20+H21+H22.
+  - T49: change to reference the appropriate balance-sheet cash/overdraft cell(s) instead of I20+I21+I22.
+- Review whether H59/I59 link to H15/I15 is intentional.
+
+If you want, I can:
+- Propose the exact corrected formulas for T26 and T49 based on how overdrafts are represented (show me which BS row stores overdraft as positive/negative), or
+- Generate a short patch (list of exact replacement formulas) you can paste into the workbook.

@@ -1,0 +1,18 @@
+I checked the workbook. Two real issues (plus a couple small cleanup items):
+
+1) Wrong range in F27 (calculated column average)
+- Problem: F27 is =AVERAGE(F8:F26) while every other column average uses rows 7:26. That excludes the F7 score (Ex 5 for the first student), so the column average is wrong.
+- Fix: Change F27 to =AVERAGE(F7:F26).
+- Why: All student scores are in rows 7–26. The average must include row 7 to be consistent.
+
+2) Row 28 (“Highest Possible Score, %”) values look incorrect
+- Problem: B28:J28 are all “1”. That does not look like the highest possible score or weight percentages.
+- Fix: Replace the 1s with the actual max scores or weight fractions you want to use (for example use 100 if showing max points, or use 0.20 for 20% weight). If you intend to compute a weighted final grade, put the weights (as decimals) in B28:J28 and use a SUMPRODUCT formula for each student:
+  - Example formula for student in row 7: =SUMPRODUCT(B7:J7,$B$28:$J$28) / SUM($B$28:$J$28)
+- Why: Using the correct max/weights allows accurate weighted totals and prevents misleading rows of “1”.
+
+Optional cleanup
+- Fix the spelling in I6 (“quizzes” not “quizes”) and any labels for clarity.
+- Verify whether student per-row averages (I7 etc =AVERAGE(B7:H7)) should be unweighted averages or a weighted combination — if weighted, use SUMPRODUCT with row28 weights instead of plain AVERAGE.
+
+If you want, I can give the exact formulas to compute a weighted lab + quizzes + exam final grade if you tell me the intended weights.

@@ -1,0 +1,25 @@
+Faulty cell(s)
+- A38 (and therefore A39:A75 which depend on it)
+
+Error type
+- Hard-coded value / formula inconsistency → breaks the sequential numbering.
+
+Explanation (short)
+- Column A is meant to be a running index: A2 = 1 and subsequent rows use =previous+1.
+- A38 was entered as the literal 6 (FORMULA =6) instead of continuing the pattern. That resets the sequence at row 38, so every row after A38 shows the wrong ID.
+
+Repair (quick fix)
+1. In A38 replace the 6 with =A37+1.
+2. Fill (copy) that formula down from A38 through the last row (A75) so each row uses the previous row + 1.
+
+Better (robust) alternatives
+- Use a formula that does not depend on the previous cell (safer if rows are inserted/deleted):
+  - In A2 put 1 and in A3 use =ROW()-1, then fill down; or
+  - If you have Excel 365, in A2 use =SEQUENCE(number_of_rows,1,1,1) to generate the whole column at once.
+
+Why the alternatives are better
+- =A(prev)+1 is fragile: if someone overwrites one cell the chain breaks.
+- ROW() or SEQUENCE produces correct indices regardless of deleted/inserted rows or accidental overwrites.
+
+Quick check
+- After fixing, verify A2..A75 read 1,2,3,... sequentially.

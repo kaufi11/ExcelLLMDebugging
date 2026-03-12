@@ -1,0 +1,31 @@
+Summary of the errors I found and how to fix them (short & simple):
+
+1) Missing Pract.4 score in row 55
+- Problem: G55 is blank but I55 = SUM(D55:G55) — so total and percent for that student are wrong (blank treated as zero).
+- Fix: Enter the correct Pract.4 score in G55 (or enter 0 explicitly if the student missed it).
+
+2) Wrong average range for Pract.3 (section 2)
+- Problem: F56 = AVERAGE(F37:F55) — this skips row F36 (first student in that section), so the section mean is incorrect.
+- Fix: Change to F56 = AVERAGE(F36:F55)
+
+3) Inconsistent grade cutoffs (>= vs >) and odd thresholds
+- Problem: K6:K25 use >=89.9% etc., while K36:K55 and K26/K56 use >89.9% etc. This inconsistency can misclassify students whose percent equals the boundary (for example exactly 89.9%). Also 89.9% is an unusual boundary — maybe you intended 90%.
+- Fix: Pick one consistent rule and apply to all grade cells. Example (recommended, tidy and clear):
+  =IF(J6>=0.90,"A",IF(J6>=0.80,"B",IF(J6>=0.70,"C",IF(J6>=0.60,"D","F"))))
+  Copy that formula down for all K cells (K6:K55) and use the same pattern for K26 and K56. If you really want 89.9% as the cutoff use >=89.9% consistently.
+
+4) Class % may be calculated without Attendance/Participation
+- Problem: J6 (and J36, etc.) = I6/400 uses only the pract. total (D:G). If you want Class % to include Att./Partcip. (H), the formula is wrong.
+- Fix (if class % should include attendance): change J6 to =(I6+H6)/(I3+H3) or explicitly =(I6+H6)/450 and copy down. Also change J26/J56 similarly to use group means: =(I26+H26)/450.
+
+5) (Minor) Leading zeros in SS#s
+- Problem: values like 0915 will lose the leading zero unless the cell is text-formatted.
+- Fix: Format the SS# column as Text or enter as '0915 (leading apostrophe) to preserve zeros.
+
+Quick checklist of cells to change now:
+- Enter value in G55.
+- Edit F56 -> =AVERAGE(F36:F55)
+- Replace all grade formulas in K6:K55, K26, K56 with one consistent formula (example above).
+- If attendance should count, replace J6:J55 and J26/J56 with =(I+H)/450.
+
+If you tell me whether attendance should be included in Class % and whether the cutoff is 90.0% or 89.9%, I’ll give you the exact formulas ready to paste.

@@ -1,0 +1,48 @@
+Summary — workbook structure and contents
+
+Sheets
+- Sheet1: Main P&L by quarter (detailed below).
+- Sheet2, Sheet3: present but contain no data (empty).
+
+Layout (Sheet1)
+- Header in row 1: Owner/name (A1) and company (C1).
+- Row 3: column headers: Item (A), 1st–4th Qtr (B:E), Total-2002 (F), %-Sales (G).
+- Rows 4–17: line items from Units Sold through Net Income. Column F holds year totals (mostly SUM(B:E)); column G shows each line's percent of total sales (each total / $F$7).
+
+Key inputs (explicit values)
+- Units sold: B4=1,000; C4=1,500; D4=2,000; E4=2,500 → F4 = 7,000.
+- ASP/Unit (prices): B5=20; C5=21; D5=22; E5=23.
+- CGS/Unit: B6=7; C6=8; D6=9; E6=10.
+- Fixed/other: Rent = 200*3 per quarter (B11:E11 = 600 each); Utilities = 100*3 per quarter (300 each).
+
+Key formulas / calculations
+- Totals and averages:
+  - F4 = SUM(B4:E4) — total units.
+  - Sales by quarter: B7 = B5*B4; C7 = C5*C4; D7 is intended = D5*D4; E7 = E5*E4. F7 = SUM(B7:E7) (total sales).
+  - F5 = F7/F4 (year‑average ASP per unit).
+  - COGS by quarter: B8 = B6*B4 etc.; F8 = SUM(B8:E8); F6 = F8/F4 (avg CGS/unit).
+  - Gross margin by quarter: row 9 = row7 − row8; F9 = SUM(B9:E9).
+- Operating expenses:
+  - Advertising: row10 = 6% * sales (per quarter).
+  - Misc: row13 = 2% * sales (per quarter).
+  - Rent (row11) and Utilities (row12) are fixed per quarter.
+  - Row14 = SUM(rows10:13) per quarter; F14 = SUM(B14:E14).
+- Profit & tax:
+  - Operating income (row15) = gross margin − total operating costs.
+  - Taxes (row16) = IF(operating income>0, operating income*28%, 0).
+  - Net income (row17) = operating income − taxes.
+- Percent column G: each Gx = Fx / $F$7 (each line’s total as a percent of total sales).
+
+Important anomaly to check
+- D7 is recorded as =771*D4 in your sheet. That produces D7 = 1,542,000 and inflates F7 and downstream totals. Likely intended formula is =D5*D4 (22 * 2,000 = 44,000). If corrected, the annual totals become:
+  - Total sales F7 = 153,000
+  - Total COGS F8 = 62,000
+  - Gross margin F9 = 91,000
+  - Total operating costs F14 = 15,840
+  - Operating income F15 = 75,160
+  - Taxes F16 = 21,044.80
+  - Net income F17 = 54,115.20
+
+Notes
+- Percent column G uses $F$7 (grand total sales) as the denominator for all %-Sales calculations.
+- Conditional tax logic prevents negative taxes (only applies when operating income > 0).

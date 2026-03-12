@@ -1,0 +1,27 @@
+Summary — I found two real errors. Fixing them will correct a student's homework total and the Summary’s points-possible weighted check.
+
+1) Error: Q4 Homework H5 missing Personal Shield
+- Problem: H5 = SUM(B5:F5) excludes column G (Personal Shield). Evans’ homework total is too low by the G5 value (71).
+- Fix: Change H5 to:
+  =SUM(B5:G5)
+- Why: All other student totals use SUM(Bx:Gx). Including G ensures the full 6 assignments are counted so the student’s homework total, Q4 Summary entry, and final grade are correct.
+
+2) Error: Q4 Summary F3 uses wrong weight for Quizzes
+- Problem: F3 = B3*0.3 + C3*0 + D3*0.4 + E3*0.2 — C3 is multiplied by 0 instead of 0.1.
+- Fix: Change F3 to either:
+  =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+  or better (robust):
+  =SUMPRODUCT(B3:E3,$B$2:$E$2)
+- Why: F3 should show the weighted points-possible total using the quiz weight (0.1). The SUMPRODUCT version uses the weight row (B2:E2), avoids manual copy errors, and is easier to maintain if weights change.
+
+Quick recommended improvements (optional, but prevents future errors)
+- Replace student weighted-score formulas (F4:F12) with:
+  =SUMPRODUCT(B4:E4,$B$2:$E$2)
+  then copy down. This guarantees consistency and uses the live weight cells.
+- Verify H2 = SUM(B2:G2) = 300 and F2 = SUM(B2:E2) = 1.0 after fixes.
+- Recalculate / check: Q4 Summary E# cells pull from Q4 Homework H# so correcting H5 will automatically update E6 (Evans) and downstream weighted scores and Year Summary.
+
+How to verify
+- After fixes: Evans’ H5 should increase by 71 (to match SUM of that row). Q4 Summary F3 should change slightly to reflect C3*0.1. Check Year Summary G#/H# to confirm final averages updated.
+
+If you want, I can list the exact cells to edit and give a one-click copyable formula set for the whole workbook.

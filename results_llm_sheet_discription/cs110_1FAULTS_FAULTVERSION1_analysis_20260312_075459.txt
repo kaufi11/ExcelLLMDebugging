@@ -1,0 +1,26 @@
+Found 3 problems (and the fixes). Short, clear and how-to.
+
+1) Wrong range in the "assignment weights" header (all sheets)
+- Problem: J10 =SUM(R10:AF10) uses AF10 but the assignment weights stop at AE10. This is an off-by-one column reference and is inconsistent with the student-sum ranges (R:AE).
+- Fix: Change J10 to:
+  =SUM(R10:AE10)
+- Why: keeps the header sum consistent with the actual assignment-weight cells and with the student SUM formulas.
+
+2) Header Total (I10) omits extra credit P10:Q10
+- Problem: I10 =SUM(J10:M10) does not include the TA/Software extra credit in P10:Q10, but student totals (I14:I…) do include P:Q. The header total therefore understates the maximum.
+- Fix: Change I10 to:
+  =SUM(J10:M10,P10:Q10)
+- Why: matches the student total formula which adds assignments + tests + final + extras.
+
+3) One student assignment total replaced by a constant (only SecA shown)
+- Problem: J19 is =2 instead of SUM(R19:AE19). That makes that student's assignment total wrong and breaks their Total Points.
+- Fix (SecA): Change J19 to:
+  =SUM(R19:AE19)
+- Why: restores the intended per-student assignment sum. After this the student's I19 (MIN(500, SUM(...))) will calculate correctly.
+
+Extra recommended actions (quick)
+- After fixing J10 and J19, fill/copy the corrected formulas down across the student rows so all J- and I-row formulas are consistent (e.g., drag J14:J50 and I14:I50 as needed).
+- Search the workbook for any other occurrences of ":AF" (or any constants like =2) to catch similar typos.
+- Verify the MIN(500, ...) cap is intended to include extra credit (P:Q). If extras should NOT be capped, adjust the I-row formula accordingly.
+
+If you want, I can give the exact steps to replace these formulas or produce a macro to fix all three sheets automatically.

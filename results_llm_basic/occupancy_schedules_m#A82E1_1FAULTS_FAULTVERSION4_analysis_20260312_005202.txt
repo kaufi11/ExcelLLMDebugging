@@ -1,0 +1,40 @@
+Summary of errors found
+1) Wrong references in the "Latent load per person" formulas (systemic)
+- Many sheets compute the latent load per person using this incorrect pattern:
+  = (Occupancy!F22*Occupancy!F19 + Occupancy!F23*Occupancy!F20) / (Occupancy!F19 + Occupancy!F20)
+- Problem: that weights the latent values by the sensible-per-person numbers (F19,F20) instead of by the living-area and bedroom schedule totals. It mixes different units and gives wrong latent-per-person results.
+
+Sheets/cells affected (examples from your workbook):
+- Occ L0  cell F10
+- Occ L1-WD  cell F10
+- Occ L1-DU  cell F10
+- Occ L1-LR  cell F10
+- Occ L2-WD-DU  cell F11
+- Occ L2-WD-LR  cell F11
+- Occ L2-DU-LR  cell C10 (and other sheets that show a similar latent-per-person formula)
+
+Fix (apply this replacement wherever the latent-per-person formula currently uses Occupancy!F19 and Occupancy!F20)
+Replace the wrong formula with:
+= ( Occupancy!$F$22 * Occupancy!$F$38 + Occupancy!$F$23 * Occupancy!$F$39 ) / ( Occupancy!$F$38 + Occupancy!$F$39 )
+
+Why this is correct
+- Sensible-loading formulas (e.g. your Occ L0 F9) are weighting living-area and bedroom sensible gains by the schedule totals (Occupancy!F38 and Occupancy!F39). The latent-per-person calculation must use the same schedule weighting but with the latent-per-person values (F22, F23). That keeps units consistent and yields the correct weighted latent rate.
+
+2) Typo / sign error causing negative value
+- Location: Occ L2-WD-DU sheet, cell D34
+- Current (wrong) formula: =-'Occ L3-WD-DU-LR'!E34-'Occ L3-WD-DU-LR'!F34
+- Problem: leading minus signs cause the result to be the negative sum of the source cells (likely unintended); this will produce incorrect (negative) schedule fractions.
+
+Fix:
+Change D34 to:
+= 'Occ L3-WD-DU-LR'!E34 + 'Occ L3-WD-DU-LR'!F34
+(or explicitly: =+'Occ L3-WD-DU-LR'!E34+'Occ L3-WD-DU-LR'!F34)
+
+How to test after fixes
+- Recalculate workbook and check the latent-per-person cell(s) (they should be reasonable numbers between the two latent values, not wildly off).
+- Check D34 (and any sibling hourly cells) for expected positive fractions.
+- Confirm totals like "Total hours/person" and summed schedule outputs still behave consistently.
+
+If you want I can:
+- Provide a short macro you can run to replace all incorrect latent formulas automatically, or
+- List every exact cell address in the workbook that needs the latent-formula correction.

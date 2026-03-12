@@ -1,0 +1,26 @@
+Summary — I found two real model errors (one bad formula, one constraint type) and one setup issue to check. Fixes and short explanations below.
+
+1) Wrong value/formula: C35 = 4
+- Problem: C35 should be the opportunity cost for Midwest → California, but it was entered as the number 4. That is wrong units and will distort costs/objective.
+- Fix: Replace C35 with the correct formula:
+  = $C$21 * $B19 * C29
+  (or in full: = $C$21 * $B19 * C29)
+- Why: opportunity cost = cost of capital * average daily dollars from Midwest * total days float to that lockbox. The cell must compute that, not contain 4.
+
+2) Wrong constraint type (capacity constraint equality)
+- Problem: The model currently forces SUM(assignments to lockbox j) = 3 * open_j. That forces every open lockbox to serve all 3 regions. The usual capacity constraint should allow up to capacity, not force equality.
+- Fix: Change the constraint to ≤ (less-than-or-equal). In other words:
+  SUM(B57:B59) <= 3 * B53
+  SUM(C57:C59) <= 3 * C53
+- Why: If a lockbox is open (open_j = 1) it can serve up to 3 regions; forcing equality incorrectly requires it serve exactly 3.
+
+3) Solver variable types / integrality check (setup)
+- Problem: If you use Solver, ensure the binary/integer nature of decision variables is set. B53:C53 (open lockbox) must be binary (0/1) and assignment variables B57:C59 must be binary (0/1).
+- Fix: In Solver add constraints: B53, C53, B57:C59 are binary (or Integer and bounded 0..1). Also set objective cell H52 to Min and supply the corrected constraints above.
+- Why: Otherwise Solver may assign fractional/open values that are not feasible for the combinatorial problem.
+
+Small consistency check (optional)
+- Verify row/column references are the intended ones (e.g., opportunity cost formulas use average daily dollars in B17:B19 and total days in B27:B29 — the formulas you have use those cells and are fine except for the C35 error).
+- Verify the objective H52 = SUMPRODUCT(B5:C5,B53:C53) + SUMPRODUCT(B45:C47,B57:C59) is correct after fixes.
+
+If you want, I can give the exact corrected workbook formulas and the full Solver setup (objective cell, variable range, constraint list, Solver options).

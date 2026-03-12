@@ -1,0 +1,63 @@
+Sheet name and purpose
+- Sheet2 — "RSA 2002 QUARTERLY CUMULATIVE FUEL SALES IN LITERS BY MARKET CATEGORY AND PROVINCE": a detailed 2002 fuel sales register by market category and province, reporting quarterly product volumes and cumulative totals.
+
+Overall layout
+- Title rows: A1 contains the sheet title; row 4 shows quarter labels (Q1, Q2, Q3, Q4) spanning groups of columns.
+- Row 5 contains repeated product headings for each quarter and cumulative blocks (Diesel gas oil, Illuminating paraffin, LPG, Petrol, Quarter/ Cumulative totals).
+- Columns:
+  - A = Category name (market segment)
+  - B = Province
+  - C–G = Q1 detail (C–F = product volumes, G = Q1 total)
+  - H–L = Q2 detail (H–K = product volumes, L = Q2 total)
+  - M–Q = Q2 cumulative (M–P = cumulative product totals after Q2, Q = cumulative total for all products after Q2)
+  - R–V = Q3 detail (R–U = product volumes, V = Q3 total)
+  - W–AA = Q3 cumulative (W–Z = cumulative product totals after Q3, AA = cumulative total after Q3)
+  - AI–AL = Q4 product columns (AI–AL used for Q4 product volumes / final cumulative assemblies)
+  - There are auxiliary columns (AB–AD, AE–AH, AG etc.) used repeatedly for a second block of breakdowns (codes, repeated category/province and additional intermediate totals).
+- Rows: groups of provinces per market category (e.g., Construction rows 6–14, then "Construction Total" row 15), repeated for many market categories (General Dealers, Government, Indep. LPG Marketers, Local marine fishing, Mining, Public Passenger Bus Transport, General Commercial & Industrial, Retail - garages, Road Freight, Transnet, Agricultural Co-ops & Farmers, Local Authorities). Final row 133 = Grand Total.
+
+Key formula patterns
+- Quarter totals: Gx = SUM(Cx:Fx), Lx = SUM(Hx:Kx), Vx = SUM(Rx:Ux), etc.
+- Cumulative by product: Mx = Cx + Hx (Q1 + Q2 diesel), Nx = Dx + Ix, Ox = Ex + Jx, Px = Fx + Kx.
+- Cumulative totals: Qx = Gx + Lx (total after two quarters), AA x = Qx + Vx (total after three quarters).
+- Further cumulative progression: Wx = Mx + Rx (previous cumulative diesel + Q3 diesel), Xx = Nx + Sx, Yx = Ox + Tx, Zx = Px + Ux.
+- Annual/category roll-ups: AI (and AJ/AK/AL) cells compute cumulative/annual product totals per row by adding the appropriate cumulative columns (e.g., AI6 = AE6 + W6 in the template). Category subtotal rows sum their province rows (example: AI15 = SUM(AI6:AI14)).
+- Grand totals: row 133 aggregates all categories; AI133..AL133 are computed by summing category totals (AI15 + AI25 + ... + AI132, etc).
+
+Examples (explicit formula examples shown in sheet)
+- G6 = SUM(C6:F6)
+- L6 = SUM(H6:K6)
+- M6 = C6 + H6; N6 = D6 + I6; O6 = E6 + J6; P6 = F6 + K6
+- Q6 = G6 + L6
+- V6 = SUM(R6:U6); W6 = M6 + R6; AA6 = Q6 + V6
+- Category totals use SUM over the block (e.g., row 15 is "Construction Total" with G15 = SUM(C15:F15) etc.)
+- Grand total (row 133) uses SUM across all product columns and SUM of category subtotals for AI–AL:
+  - AI133 = AI15 + AI25 + AI35 + ... + AI132 (same pattern for AJ/AK/AL)
+
+Key values / notable cells
+- Report year: 2002 (quarters Jan–Mar, Apr–Jun, Jul–Sep, Oct–Dec).
+- Grand Total row (row 133) main raw product figures (as present):
+  - C133 (Diesel Q1): 1,581,074,066
+  - D133 (Illuminating paraffin Q1): 160,521,567
+  - E133 (LPG Q1): 116,638,546
+  - F133 (Petrol Q1): 2,543,051,188
+  - H133 (Diesel Q2): 1,651,936,923
+  - I133 (Illuminating paraffin Q2): 199,230,905
+  - J133 (LPG Q2): 166,903,935
+  - K133 (Petrol Q2): 2,478,518,923
+  - R133 (Diesel Q3): 1,823,612,974
+  - S133 (Illuminating paraffin Q3): 220,387,423
+  - T133 (LPG Q3): 168,738,160
+  - U133 (Petrol Q3): 2,656,215,681
+  - Totals for G/L/V/AA and final AA133 are computed via SUM formulas across product columns (G133 = SUM(C133:F133), etc.).
+- Many intermediate per-sector totals are provided (e.g., Construction Total row 15, General Dealers Total row 25, etc.). Row blocks contain province-level detail that roll up to those totals.
+- Some cells contain negative or unexpected values (examples: J9 = -31,560; T9 = -9,600; E60 = -1,496,201) — these are present in raw data and propagate through cumulative formulas.
+
+Data & formula integrity notes
+- The sheet mixes hard-coded numeric values (province-level volumes) with consistent arithmetic formulas to calculate quarterly totals, cumulative product totals, category subtotals and the grand total.
+- Column groups are repeated for a second block (columns AE–AH and around AB–AD) presumably to store an alternative breakdown or to compute the annual additions; these columns are used in the AI–AL annual assembly.
+- Calculation pattern is consistent and easy to audit: quarter product columns → quarter total (SUM) → cumulative product (add prior cumulative) → cumulative total (sum of totals) → category subtotals (SUM of provinces) → grand totals (SUM of category subtotals).
+
+If you want, I can:
+- Produce a compact map of all column headers to their purpose (column-by-column).
+- Extract and present the final annual totals (AI:AL row 133) if those AI:AL values are populated or if you want me to compute them from the provided quarter/cumulative columns.

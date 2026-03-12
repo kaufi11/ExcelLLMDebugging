@@ -1,0 +1,44 @@
+I reviewed the workbook and found several clear formula errors and inconsistencies. Below are the problems, short explanations, and simple fixes.
+
+1) Sheet "Total LOE" — Grand Total (B70)
+- Fault: B70 =SUM(B68:H68) omits column I (Opt.7).
+- Why it’s wrong: You’re not including the final period’s total.
+- Fix: Replace with =SUM(B68:I68)
+- Explanation: Sum must cover all period totals B:I (not stop at H).
+
+2) Sheet "T&M Type" — Grand Total (B62)
+- Fault: B62 =SUM(B60:T60) is wrong (it sums across many blank/intermediate cells and misses W60).
+- Why it’s wrong: Totals for each period are in B60, E60, H60, K60, N60, Q60, T60, W60 — they are not contiguous B→T.
+- Fix (best): =SUM(B60,E60,H60,K60,N60,Q60,T60,W60)
+- Explanation: Explicitly sum the period totals (or place period totals contiguously and sum that range).
+
+3) Sheet "T&M Type" — hard-coded value (K20)
+- Fault: K20 =670+(670*0.02) (hard-coded 670).
+- Why it’s wrong: Hard-coding breaks the dynamic link to the base/previous cell; if base hours change, K20 will not update.
+- Fix: Replace with a reference to the previous period cell, e.g. =H20*1.02 (or =H20+(H20*0.02))
+- Explanation: Use the prior-period cell so increases cascade automatically.
+
+4) Many sheets — inconsistent percent used for Opt.4 (N column)
+- Fault: Some N-column formulas use *0.023 (2.3%) and others use *0.02 (2.0) — e.g. Fixed Price N28 =K28+(K28*0.02) while many other N formulas use 0.023.
+- Why it’s wrong: Inconsistent escalation percentages across rows leads to wrong hours/rates in some positions.
+- Fix: Decide which escalation is correct for Opt.4 and standardize. If Opt.4 should be +2.3% from Opt.3 use:
+  - =K#*1.023  (replace # with the row)
+  If Opt.4 should be +2.0% use:
+  - =K#*1.02
+- Explanation: Use the same percent and reference the previous option cell (K#) rather than hard-coded numbers.
+
+5) Sheets "Fixed Price" and "Cost Type Task" — missing Grand Total formulas
+- Fault: There are “Grand Total” labels (Fixed Price A61, Cost Type A63) but no grand-total formula provided.
+- Why it’s wrong: The workbook won’t produce a single combined total for all options without those formulas.
+- Fix examples:
+  - Fixed Price Grand Total (put in the Grand Total cell): =SUM(E59,H59,K59,N59,Q59,T59,W59)
+  - Cost Type Grand Total: =SUM(E61,H61,K61,N61,Q61,T61,W61)
+- Explanation: Sum the period totals (the column totals rows) across all options.
+
+Quick checklist to apply across workbook
+- Replace any hard-coded numeric expansions (like 670) with references to the proper previous-period cell.
+- Standardize Opt.4 (N) formula to the correct percentage and use previous-cell references (K#*1.023 or K#*1.02).
+- Update the three grand-totals to sum all period-total columns (use explicit SUM of the totals columns if they are non-contiguous).
+- After fixes, do a quick spot-check: change one Base value and confirm all successive option cells and grand totals update correctly.
+
+If you want, I can produce the exact Find/Replace patterns (or a list of the exact cells to change) and a short macro to fix all instances automatically—tell me which escalation percent you want for Opt.4 (2.3% or 2.0%).

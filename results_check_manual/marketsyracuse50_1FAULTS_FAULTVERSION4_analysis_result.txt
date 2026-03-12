@@ -1,0 +1,31 @@
+I inspected all formulas on the "Syracuse, NY" sheet. Overall the formulas are consistent (G = F / F$36 * 100; H = G^2; totals use SUM) except for one clear formula error/inconsistency and a couple of style/clarity issues.
+
+1) Major formula error (inconsistent multiplier)
+- Cell: F25
+- Current formula: =1.21674489270828*$E25
+- Problem: Row 25's Institution Type (C25) is "Thrift", so every other thrift row correctly uses =0.5*$E## to compute "Weighted Deposits". F25's multiplier (1.2167...) is anomalous and inconsistent with the rest of the column — it looks like a stray pasted multiplier.
+- Likely fix: set F25 to the same rule used for other thrifts:
+  - Replace with: =0.5*$E25
+  - Or, to prevent this class-of-institution errors across the column, use a type-driven formula (in F10 and copied down):
+    =IF($C10="Thrift",0.5,1)*$E10
+- Impact if corrected:
+  - Current F25 = 179,834.895142284; corrected F25 = 0.5*147,800 = 73,900.
+  - Current F36 = 7,541,916.39514228; corrected F36 = 7,435,981.5 (difference = -105,934.895142284).
+  - Current G25 = 2.38447213838269; corrected G25 ≈ 0.99383 (since denominator F36 changes).
+  - Current H25 = 5.68570737872332; corrected H25 ≈ 0.98768.
+  - H36 (HHI) will drop by roughly 4.70 points (from 1122.34347428889 to ≈1117.6455).
+  - All G and H values (and H36) will change slightly because F36 (the denominator) changes; the suggested fixes will make the table consistent.
+
+2) Minor issues / suggestions
+- Many bank rows use =1*$E## (e.g., F10 = 1*$E10). The multiplier 1 is redundant; it is not an error but inconsistent styling. The IF-based formula above both standardizes and prevents manual multiplier mistakes.
+- H column formula uses =$G#^2 with G shown in percent units (e.g., 21.418...). That means the HHI is being computed on percentage-point shares (resulting HHI around 1122). This is a valid convention (HHI range ~0–10,000), but be sure this is the intended scale. If you intended to use shares in the 0–1 range, H should be =($G#/100)^2 (and H36 would then be ≈11.223 rather than 1122).
+- G36 shows =SUM($G$10:$G$33) and displays 100. Floating rounding can cause tiny deviations; the formula is correct.
+
+3) Action items I recommend
+- Correct F25 to =0.5*$E25 (or implement =IF($C#="Thrift",0.5,1)*$E# down column F).
+- After correction, verify F36, G10:G33, H10:H33 and H36 recalculate (they should do so automatically).
+- Decide and document whether H is meant to square percentage points (current) or decimal shares (G/100), and adjust H formulas if needed.
+
+If you want, I can:
+- Provide the corrected values for every G and H cell with F25 fixed (I can recompute the whole column),
+- Or provide a short VBA snippet or Excel formula to auto-generate the correct weighted deposits based on the Type column.

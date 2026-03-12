@@ -1,0 +1,52 @@
+Summary — Workbook structure
+- Sheets: 
+  - Calculations (detailed points-based fee calculator)
+  - Definitions (exists but contents not provided)
+
+Calculations sheet — layout & sections
+- Header: A1 title, A2 regulation reference, A4 Permit Number & Site Name input.
+- Fee basis: B5 label "Fee ($/point)"; C5 = 315 (dollar amount per point). F5 contains a formula to choose displayed fee: =IF(C43="N/A",C42,C43).
+- Permit actions area (columns A–C): rows grouped under headings:
+  - Technical Complexity (A8–A19): each row has a B column input (either a count or "x") and column C calculates points. Example formulas:
+    - C9 (Emission Units): =IF(B9<>"",IF(B9<5,5,IF(B9>15,15,B9)),0) — clamps units to 5–15 when B9 is entered.
+    - C11 (Fugitive Emissions): =IF(B11<>"",5,0)
+    - C12 (Non-attainment Area): =IF(B12<>"",75,0)
+    - C13 (Modeling Review): =IF(B13<>"",15,0)
+    - C16 (Level 1): =IF(B16<>"",8,0)
+    - C18 (BACT): =IF(B18<>"",60,0)
+    - C19 (Health Assessment): =IF(B19<>"",100,0)
+  - Applicable Regulations (A21–A27): B column provides counts, C multiplies counts to points:
+    - C22 (20 NMAC regs): =IF(B22<>"",(3*B22),0)
+    - C23 (NSPS): =IF(B23<>"",(5*B23),0)
+    - C24 (NESHAPs): =IF(B24<>"",(5*B24),0)
+    - C27 (Case-by-case MACT): =IF(B27<>"",100,0)
+  - PSD (A29–A31): netting/review:
+    - C30 (PSD Netting): =IF(B31="",(IF(B30<>"",20,0)),"") — returns 20 or 0, or blank if B31 not blank
+    - C31 (PSD review): =IF(B31<>"",75,0)
+  - Other Actions (A33–A36):
+    - C34 (General Permit): =IF(B35="",(IF(B34<>"",10,0)),"")
+    - C35 (Streamlined): =IF(B35<>"",(B35*10),0)
+    - C36: =SUM(C34:C35) (total other actions)
+- Small business and totals:
+  - A38–A39 small-business "x" input (B38)
+  - C41 (Total Points): =IF(OR(C34>0,C35>0),C36,COUNT(C9:C31))
+    - Note: this uses COUNT(C9:C31) rather than SUM; COUNT returns the number of numeric cells, not the sum of point values.
+  - C42 (Fee): =C41*C5
+  - C43 (Half fee for small business): =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))
+- Guidance & metadata: A47–A48 usage notes; A49 revision date.
+
+Non-applicable regs / reference columns
+- Column E lists NMAC part numbers and federal subparts (F/G columns show examples). These are reference-only and marked as "Non-applicable regulations (do not count these)".
+
+Key values & formulas to note
+- Fee per point = 315 (C5)
+- Total fee = Total points * fee per point (C42 = C41*C5)
+- Display fee selection logic in F5: =IF(C43="N/A",C42,C43) — uses half-fee when applicable
+- Many point-calculation formulas use IF(Bx<>"",value,0) pattern; C9 uses clamping logic for unit counts; C22–C24 scale by counts.
+
+Potential issues / recommended fixes (concise)
+- C41 likely intended to SUM points, but currently uses COUNT(C9:C31). Replace COUNT with SUM to aggregate point values: =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+- Some cells (C30, C34) return "" (text) in branches — these can disrupt numeric aggregation. Prefer returning 0 instead of "" to keep column numeric.
+- Ensure inputs (B columns) are consistently filled: some tests check B34 vs B35 vs B38 — verify intended logic for streamlined/general permit vs small-business half-fee.
+
+If you want, I can produce a corrected formula set (with SUM and numeric blanks) and a cleaned layout version.

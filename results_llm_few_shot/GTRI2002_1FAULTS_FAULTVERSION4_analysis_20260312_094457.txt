@@ -1,0 +1,24 @@
+Summary — two clear errors I found and how to fix them.
+
+1) Sheet "2002 Report" — wrong unit conversion (typo)
+- Faulty cell: C18 (shows: FORMULA =G18*1000000)
+- Error type: Mechanical / scale error
+- Why it's wrong: Every other row converts pounds to millions by dividing by 1,000,000 (e.g. C11 = G11/1000000). C18 multiplies instead, producing a huge, incorrect value and breaking any totals that use that column.
+- Fix: Replace the formula with division:
+  - Formula to use: =G18/1000000
+- Explanation: Converting pounds to millions requires dividing by 1,000,000, not multiplying.
+
+2) Sheet "1999 Report" (block "Data from Joint Venture's 2003 Index report")
+- Faulty cells: M46:M55 (example given: M46 = SUM(B14:D14), M47 = SUM(B15:D15), etc.)
+- Error type: Copy/paste / relative-reference offset
+- Why it's wrong: Those M-row formulas point to rows 14–25 instead of the same row (46–55). That gives SVEP values from unrelated rows, so N (L−M) and O (N/L) are incorrect.
+- Fix: Make each M cell sum its own row's B:D. For example:
+  - For row 46: change M46 to =SUM(B46:D46)
+  - Then fill/copy M46 down through M55 so each row uses =SUM(Bn:Dn)
+- Explanation: The formulas were shifted (relative references moved up 32 rows). Restoring each M cell to sum B:D on the same row aligns the calculation with L (the row's total) so N and O will be correct.
+
+Optional quick checks
+- After fixes, recalc/confirm N = L−M and O = N/L for those rows.
+- Scan for other accidental *1000000 vs /1000000 occurrences (search for "*1000000") and verify they should be divisions.
+
+If you want, I can give the exact list of corrected formulas for every affected row and a step-by-step to apply with Excel (find/replace or copy-down).

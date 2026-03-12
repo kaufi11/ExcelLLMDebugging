@@ -1,0 +1,35 @@
+Errors found:
+
+1. In cell O13, the formula is incorrect:
+   ```
+   =(SUM(B13:F13)+SUM(G13:M13)+N13)/(COUNT(B13:F13)/100+COUNT(G13:J13)/15+COUNT(K13:M13)/30+COUNT(N13)/150)/100
+   ```
+   It uses division (/) instead of multiplication (*) in the denominator, which is inconsistent with other rows.
+
+2. In some rows (e.g., row 17, 25, 28, 35, 42, 43), many exam or homework grades are missing (cells empty). This causes COUNT functions in the denominator to count fewer items, which is correct, but the SUM includes empty cells as zero, which is fine.
+
+3. In row 17 (B17:F17), only B17 has a value, others are empty. This might cause division by a smaller denominator, but formula is consistent.
+
+Main error is only in O13.
+
+Solution:
+
+- Fix the formula in O13 to match the pattern of other rows:
+  ```
+  =(SUM(B13:F13)+SUM(G13:M13)+N13)/(COUNT(B13:F13)*100+COUNT(G13:J13)*15+COUNT(K13:M13)*30+COUNT(N13)*150)*100
+  ```
+  
+Explanation:
+
+- The formula calculates the weighted overall grade as a percentage.
+- Numerator sums all points earned.
+- Denominator sums maximum possible points: count of exams * 100 + count of some homework * 15 + others * 30 + final exam * 150.
+- Multiplying counts by max points per category gives total max points possible.
+- Dividing total earned by total max points and multiplying by 100 gives percentage.
+- Using division (/) instead of multiplication (*) in denominator breaks this logic, causing wrong overall grade.
+
+Summary:
+
+- Correct O13 formula by replacing "/" with "*" in denominator.
+- Check for missing data but no formula fix needed there.
+- Other formulas are consistent and correct.

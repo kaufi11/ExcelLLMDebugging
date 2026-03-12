@@ -1,0 +1,44 @@
+Thanks — I reviewed both sheets and found a small set of actual / likely errors plus a few non‑critical but confusing formulas. Below are the problems, why they matter, and the concise fixes (copy‑paste formulas). After you apply them, recalc and the Step‑2 totals (percent columns and net/difference) should become correct.
+
+High‑priority errors (cause wrong totals in Step 2)
+1) STEP 1 — G22 is wrong (it contains "2" instead of summing tax withheld)
+- Problem: H14 on STEP 2 points to G22 (taxes). Because G22 is hardcoded 2, taxes and downstream values are wrong.
+- Fix: Replace G22 with the sum of the tax‑withheld column:
+  G22: =SUM(G11:G20)
+
+2) STEP 2 — Saving % formula uses the wrong cell
+- Problem: F10 (SAVING %) currently =H8/H6 (copies the giving formula). That gives the wrong percent for saving.
+- Fix:
+  F10: =H10/H6
+
+Medium / cleanup fixes (won't necessarily break Excel but are wrong or confusing)
+3) STEP 1 — Use explicit sums instead of SUM(expression)
+- Problem: I33 currently =SUM(G32+I32) and M33 =SUM(K32+M32). SUM(G32+I32) works but is nonstandard and confusing.
+- Fix (clearer):
+  I33: =G32+I32
+  M33: =K32+M32
+  (Or use SUM(G32,I32) and SUM(K32,M32) if you prefer SUM syntax.)
+
+4) STEP 1 — M43 is likely wrong (copies single cell instead of summing plans)
+- Problem: M43 =M42 simply copies one cell. If the intention is to total the "plans" column (M41 and M42), that's incorrect.
+- Fix (if you intend to sum the two plan rows):
+  M43: =SUM(M41:M42)
+
+5) STEP 1 — E43 is suspicious (SUM of a single cell)
+- Problem: E43 =SUM(E42) is odd; if you meant to total emergency + future rows, use the range.
+- Fix (if correct range is rows 41–42):
+  E43: =SUM(E41:E42)
+(If E43 was intentionally only E42 leave it, but it’s clearer to use the range.)
+
+6) STEP 1 — Possible omission in giving totals
+- Problem: E33 =SUM(E29:E30) — check whether column E has data on row 31 too. If giving in column E spans rows 29:31 you are missing row 31.
+- Fix (if E29:E31 should be included):
+  E33: =SUM(E29:E31)
+
+Notes / recommended checks
+- After fixing G22, H14 on STEP 2 will show the correct taxes and H16 (ENJOYING) and all % calculations that reference H14 will update.
+- Review any other single‑cell SUMs (e.g., SUM(A1) or SUM(B2+B3)) and replace them with explicit ranges or SUM(list) for clarity.
+- Where you want a sum of non‑contiguous cells use SUM(cell1,cell2) — e.g., =SUM(G32,I32) — rather than SUM(G32+I32).
+- Recalculate (F9) or press Ctrl+Alt+F9 to force full workbook recalculation and verify totals: H6 (earnings), H8 (total giving), H10 (total saving), H12 (monthly debt M65), H14 (taxes) — then confirm H16, M43, M45, M47.
+
+If you want, I can produce a short pasteable list of all corrected cells (including conservative replacements of single‑cell SUMs) or point out any other cells you want me to validate.

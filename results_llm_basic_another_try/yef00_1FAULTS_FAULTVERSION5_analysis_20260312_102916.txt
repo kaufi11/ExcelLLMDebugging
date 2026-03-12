@@ -1,0 +1,60 @@
+### Errors Found:
+
+1. **In "Revenues by Source" sheet:**
+   - Cell C9 formula: `=9432730+111410104` is a hardcoded sum instead of a single value or reference.
+   - Cell C11 formula: `=141577402+1` adds 1 dollar unnecessarily.
+   - Cell B15 formula sums B9:B14, but B14 is missing (no data in row 14).
+   - Cell C15 sums C9:C14, but C14 is missing (no data in row 14).
+   - Percentage formulas in column B (e.g., B9) use `$C$15` as denominator, but C15 depends on C14 which is missing, causing incorrect totals.
+
+2. **In "General State Financial Aid" sheet:**
+   - Cell B21 formula: `=3684419+1` adds 1 dollar unnecessarily.
+   - Total in B25 sums B9:B23, but B21 has an extra +1, causing slight overstatement.
+   - Percentages in C9:C23 depend on B25, so any error in B25 affects them.
+
+3. **In "FTEE Calculation" sheet:**
+   - Cell E27 formula: `=SUM(E11:E26)+1` adds 1 unnecessarily.
+   - Cell D27 formula: `=+C27/H27` divides total credit FTEE by total FTEE, which is incorrect for total FTEE calculation.
+   - Cell G27 formula: `=+F27/H27` divides total non-credit FTEE by total FTEE, also incorrect.
+   - Cell D9 and G9 formulas divide individual FTEE by H11, H12, etc., which are total FTEE for each college, causing circular or incorrect calculations.
+
+---
+
+### Explanation of Errors:
+
+- Adding +1 dollar in sums (C11, B21, E27) is unnecessary and causes inaccuracies.
+- Missing data in rows 14 (Revenues) causes total sums to be incomplete.
+- Percentage calculations referencing totals that include missing or incorrect data lead to wrong percentages.
+- Dividing individual FTEE by total FTEE or by the same row's total FTEE (e.g., D9 = C9/H9) is logically incorrect and causes circular references or invalid percentages.
+- Total percentages should sum to 1 (or 100%), but due to these errors, they won't.
+
+---
+
+### Solutions:
+
+1. **Remove unnecessary +1 additions:**
+   - Change `=141577402+1` to `=141577402` in C11.
+   - Change `=3684419+1` to `=3684419` in B21.
+   - Change `=SUM(E11:E26)+1` to `=SUM(E11:E26)` in E27.
+
+2. **Fix missing data rows:**
+   - Add missing revenue source or zero value in row 14 (Revenues sheet) or adjust totals to sum only existing rows (e.g., `=SUM(C9:C13)`).
+
+3. **Correct percentage formulas:**
+   - In Revenues sheet, update B9:B13 formulas to `=C9/$C$15` where C15 sums only actual data rows.
+   - In General State Financial Aid, ensure B25 sums correct values without +1 and percentages in C9:C23 are based on correct B25.
+   - In FTEE Calculation, remove incorrect divisions:
+     - D9 should be just credit FTEE (C9).
+     - G9 should be just non-credit FTEE (F9).
+     - D27 and G27 should sum credit and non-credit FTEE respectively, no division.
+     - I9 formulas for % of total FTEE are correct as `=H9/$H$27`.
+
+---
+
+### Summary:
+
+- Remove all unnecessary +1 additions in sums.
+- Ensure totals sum only actual data rows.
+- Fix percentage formulas to divide by correct totals.
+- Remove incorrect divisions in FTEE calculation columns.
+- This will correct totals and percentages to accurate values without circular references or rounding errors.

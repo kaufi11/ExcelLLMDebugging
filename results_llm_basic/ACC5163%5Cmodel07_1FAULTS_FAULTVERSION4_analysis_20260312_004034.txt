@@ -1,0 +1,39 @@
+Summary — key errors I found
+1) Cell F70 contains a hard‑coded constant "295" instead of using the expected cell references. This is wrong and will give incorrect Common Stock (new basis) on the consolidation worksheet.  
+2) Several "New Basis" formulas in the Consolidation area include an extra +Bnn term (e.g., F105:F117). That is inconsistent with the rest of the sheet (New Basis should normally be Old Basis + Dr. − Cr.). This will double‑count or add unintended amounts.  
+3) There are inconsistent formula patterns in the equity rows (some rows use B+C−D+E, others use C−D+E). That inconsistency will produce incorrect totals unless the inclusion/exclusion of column B is intentional for that row.
+
+Why these are errors (short)
+- F70: a literal "295" is almost certainly a typo. The Common Stock new balance should be derived from balance columns, not a fixed number.  
+- F105..F117: New basis should equal the Old Basis column plus any adjusting Drs minus adjusting Crs. Adding column B as well is not the standard formula and will misstate amounts.  
+- Inconsistent formulas across similar rows cause balance and proof mismatches later (proof-of-postings rows D76/E76 and D134/E134 rely on consistent calculations).
+
+Exact fixes (what to change)
+1) Fix F70:
+   - Replace whatever is in F70 with: =B70 + C70 - D70 + E70
+   - If the sheet design uses only Old Basis + Dr − Cr (no B column for that row), use =C70 + D70 - E70 instead. (Use the form that matches the rest of that section. Most other "Total Li & Eq" rows use B+C−D+E.)
+
+2) Fix New Basis formulas that improperly include column B:
+   - For the consolidation balance lines where New Basis should be Old Basis + Dr − Cr, replace formulas like =B105+C105+D105-E105 with =C105 + D105 - E105.
+   - Do this for F105:F117 (and any other F cells that include an extra +B term unnecessarily). After changing the top one, fill/copy down to apply consistently.
+
+3) Standardize equity rows:
+   - Decide the intended pattern for those rows:
+     - If those rows should include prior-period amounts located in column B, use =Bnn + Cnn - Dnn + Enn.
+     - If not, use =Cnn + Dnn - Enn.
+   - Apply the chosen pattern consistently to all corresponding F rows (e.g., F70, F71, F124–F131, F128–F131, etc.)
+
+How to verify after fixes (quick checks)
+- Search the workbook for the constant 295 (Ctrl+F) — if it appears in formulas, fix or investigate each occurrence.  
+- Recalculate and confirm the proof rows match:
+  - D76 should equal E76 (postings proof), and D134 should equal E134.  
+- Check that Total Assets (F118) equals Total Liabilities & Equity (F132) after fixes.
+
+Why this solution works (brief)
+- Replacing the hardcoded number with a formula makes the cell dynamic and correctly derives the new balance from the component columns.  
+- Removing the extra +B term (when inappropriate) ensures New Basis = Old Basis + Adjusting Dr − Adjusting Cr, which is the intended bookkeeping logic for these worksheets.  
+- Standardizing formulas prevents mismatches and makes validation (proof rows) reliable.
+
+If you want, I can:
+- Give a short list of every cell I recommend changing (explicit addresses) and the exact replacement formulas, or
+- Provide step‑by‑step instructions to use Excel’s Formula Auditing tools to find other inconsistent formulas.

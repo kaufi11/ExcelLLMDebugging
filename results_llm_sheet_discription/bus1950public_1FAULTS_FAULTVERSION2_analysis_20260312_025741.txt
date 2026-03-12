@@ -1,0 +1,49 @@
+Summary of the problems I found and simple fixes
+
+1) Inconsistent / wrong sheet references in grade formula
+- Problem: Some letter-grade IF formulas compare a student's total to another sheet's total-possible points (e.g. P12 in "M Noon" uses 'F Noon'!O$38; W 2 p.m. P27 uses 'M Noon'!O$38). That means different students use different maxima => wrong grades.
+- Fix: Make every grade formula compare to the total-possible on the same sheet (or a single central cell). Use an absolute reference so it never shifts: e.g.
+  =IF(O6>=$O$38*0.9,"A",IF(O6>=$O$38*0.8,"B",IF(O6>=$O$38*0.7,"C",IF(O6>=$O$38*0.6,"D","F"))))
+- Explanation: $O$38 locks column and row; every student on a sheet will compare to that sheet's O38. Replace any cross-sheet references with $O$38 (or replace O38 with a named cell like TotalPossible and refer to it workbook-wide).
+
+2) Strict > (greater-than) excludes exact boundaries
+- Problem: Current formulas use > so a student with exactly 90% gets a B not an A.
+- Fix: Use >= instead of > (see formula above).
+- Explanation: >= gives inclusive boundaries (>=90% → A).
+
+3) Summary rows (AVERAGE / MAX / COUNT) use inconsistent ranges — results incorrect
+- Problem: Across sheets the row39/40/41 formulas use different row ranges (B6:B37, B6:B23, B6:B30, etc.). Some COUNT cells are even hard-coded numbers (e.g., C41: 28).
+- Fix: Standardize the student-range on every sheet (for example B6:B36 if that is your roster), or use a dynamic range / named range. Example:
+  - Average: =AVERAGE($B$6:$B$36)
+  - Max: =MAX($B$6:$B$36)
+  - Count: =COUNT($B$6:$B$36)
+- Explanation: Every sheet must average/count the same set of student rows; hard-coded counts get stale when you add/remove students.
+
+4) Hard-coded counts / numbers in summary rows
+- Problem: Some row-41 cells are plain numbers rather than COUNT() formulas.
+- Fix: Replace literal numbers with COUNT formulas, e.g. replace 28 with =COUNT(B6:B37) (or your standardized range).
+- Explanation: Keeps counts accurate if you change the roster.
+
+5) Student ID cells are arithmetic formulas producing negative numbers
+- Problem: Many column A entries use formulas like =356-78-4365 which Excel calculates as arithmetic and yields negative numbers — probably not the intended student ID string.
+- Fix: Enter IDs as text or a text formula. Examples:
+  - As text: '356-78-4365 (leading apostrophe)
+  - Formula: ="356-78-4365"
+  - Or build from numbers: =TEXT(356,"000") & "-" & TEXT(78,"00") & "-" & TEXT(4365,"0000")
+- Explanation: Quoting or using an apostrophe prevents Excel from evaluating as math.
+
+6) Keep O38 (total possible points) authoritative and consistent
+- Problem: O38 is the sum of B38:N38 per sheet. If you want the same total possible across all sheets, either link each sheet's O38 to one master cell or use a workbook-level named cell.
+- Fix: Choose one sheet as master (e.g., 'M Noon'!O38) and in other sheets set O38 = 'M Noon'!O38; then use $O$38 (or the named cell) in grade formulas.
+- Explanation: Prevents small differences between sheets causing inconsistent grade cutoffs.
+
+Quick checklist to apply now
+- Replace all grade formulas with this copy-paste (modify row number):
+  =IF(O6>=$O$38*0.9,"A",IF(O6>=$O$38*0.8,"B",IF(O6>=$O$38*0.7,"C",IF(O6>=$O$38*0.6,"D","F"))))
+- Replace any cross-sheet references to O$38 with $O$38 (or a named "TotalPossible" cell).
+- Standardize row39/40/41 formulas across all sheets to the same student-range and replace any literal counts with COUNT().
+- Fix IDs that are formulas if they are meant to be text.
+
+If you want, I can:
+- Give you a sheet-by-sheet list of cells that currently reference the wrong O$38,
+- Provide the exact corrected formulas for each sheet and show which row ranges to standardize to.

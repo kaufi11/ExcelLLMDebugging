@@ -1,0 +1,44 @@
+I reviewed the formulas in Sheet1 and found a few clear errors / inconsistencies that will materially affect summary statistics. Summary and recommended fixes below.
+
+1) Obvious formula typo in I9
+- Current formula in I9: =B9*0.5+517*0.5
+- Effect: introduces a huge constant (517) and produces I9 = 258.498. This massively biases the I-column averages, stdevs and downstream results (e.g. I93, I94, I95, I96).
+- Likely intended formula: average of B9 and D9 (same pattern that other rows use). Correct formula should be either
+  - =0.5*B9 + 0.5*D9
+  - or =AVERAGE(B9,D9)
+- Action: replace the 517 constant with D9.
+
+2) Sharpe ratio row uses variance as denominator (incorrect)
+- Cells B96:K96 (and I96) are computed as =<average_row> / <variance_row> (e.g. B96 = B93 / B95).
+- Standard Sharpe ratio uses standard deviation (stdev) in the denominator, not variance. Using variance (σ^2) instead of σ gives an incorrect, inflated/deflated number and inconsistent units.
+- Correct formulas should use the stdev row (row 94), not the variance row (row 95). Example corrections:
+  - B96 -> =B93 / B94
+  - C96 -> =C93 / C94
+  - ...
+  - K96 -> =K93 / K94
+  - I96 -> =I93 / I94
+- Note: After fixing the I9 typo (item 1) the I-column summary and Sharpe will also change.
+
+3) Missing / blank input referenced by formulas (row 22)
+- Row 22 appears to be missing a value in B22 in the provided data export. Formulas in that row use B22 (for H22, I22, J22, K22). Excel treats an empty cell as zero in arithmetic, so the formulas evaluate, but:
+  - If B22 was supposed to contain a real value (not blank/zero) the results in H22/I22/J22/K22 are wrong.
+- Action: verify whether B22 should have a numeric value. If so, enter it; otherwise document that blanks are intentionally zero.
+
+4) Summary statistics are currently contaminated by the I9 error
+- Because of the I9 = 258.498, the I-column averages and variances are inflated:
+  - I93 (AVERAGE(I9:I91)) = 3.14811397788152 — unrealistic relative to other typical entries
+  - I94 (STDEV) and I95 (VAR) are likewise distorted
+  - As a result I96 (Sharpe as currently defined) and any measures using I-column summaries are invalid until I9 is fixed.
+- Action: fix I9, then recompute the summary rows (rows 93–96).
+
+5) Other notes / verification suggestions
+- The formulas that average B & C into H, or B & D into I, or B & E into J, or B & G into K are consistent across rows except for the I9 case noted above. No other cells with similar hard-coded constant (517) were detected in the exported area.
+- The workbook uses STDEV and VAR (sample functions) — that is OK if a sample statistic is desired. Be sure the choice STDEV vs STDEVP (and VAR vs VARP) matches your intended population/sample assumption.
+- After fixing the two issues above, re-check:
+  - row 93 (averages), row 94 (stdev), row 95 (variance) and row 96 (Sharpe corrected to use row94)
+  - any charts or downstream calculations that use the affected columns.
+
+If you want, I can:
+- provide the exact corrected formulas for each affected cell,
+- compute corrected values for the summary rows after making the suggested corrections (I can simulate the change to I9 and recompute B96:K96 as mean/stdev),
+- or produce a short script/list of cells to edit. Which would you prefer?

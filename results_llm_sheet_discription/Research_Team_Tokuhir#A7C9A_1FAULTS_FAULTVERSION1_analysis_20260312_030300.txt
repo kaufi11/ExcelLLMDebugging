@@ -1,0 +1,37 @@
+Errors found
+- A8 contains =A7+277 — accidental +277 causes ID jump (A8 = 282, then A9 = 283, …).
+- A28 uses =A26+1 (skipping row 27). This breaks the chain and is inconsistent with the intended +1 pattern.
+- A40 is a hard-coded 35 (no formula), so it doesn’t follow the running numbering and conflicts with earlier large numbers.
+
+Why this is a problem
+- The column is meant to be a sequential index. Those three anomalies break the sequence and make sorting, filtering or referencing unreliable.
+
+Quick fixes (if you just want the simple +1 chain restored)
+1. Put these corrected formulas:
+   - A8: =A7+1
+   - A28: =A27+1 (and if A27 should be numbered, put =A26+1 in A27)
+   - A40: =A39+1
+2. Copy the corrected formula down the column for all rows.
+
+Better, robust solution (recommended)
+Replace the fragile chain with a formula that:
+- auto-numbers only when a row has data (so blank rows stay blank),
+- cannot be broken by an accidental +277 or a manual value.
+
+Use this in A3 and copy down through the column:
+=IF(TRIM($B3)="","",COUNTA($B$3:$B3))
+
+What this does (simple explanation)
+- IF(TRIM($B3)="","", … ) — leaves the cell blank if the First Name (column B) for that row is blank.
+- COUNTA($B$3:$B3) — counts how many non-empty First Name cells appear from the top of the list down to the current row, giving a continuous 1,2,3… index for each populated row (skips blank rows automatically).
+
+Steps to apply the robust fix
+1. Select A3.
+2. Paste: =IF(TRIM($B3)="","",COUNTA($B$3:$B3))
+3. Drag/fill down to the last row (A40 or further).
+4. Verify numbers are continuous and that blank rows remain blank.
+
+If you prefer numbering based on any populated cell in the row (not just First Name), use:
+=IF(COUNTA($B3:$G3)=0,"",COUNTA($B$3:$B3))
+
+Any of these fixes will prevent accidental breaks and keep the index reliable.

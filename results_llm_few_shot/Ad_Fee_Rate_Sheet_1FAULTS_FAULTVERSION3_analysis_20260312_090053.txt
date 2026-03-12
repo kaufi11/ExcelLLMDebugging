@@ -1,0 +1,39 @@
+Summary — what's wrong
+- Many formulas show #REF! because one or more source cells were deleted or moved. #REF! means the formula points to a cell that no longer exists.
+- This breaks allocation multiplications and summary calculations so dollar and percent splits are wrong or blank.
+
+Faulty cells (from your sheet) — examples you must fix
+- O39, P39, Q39, R39 — contain =#REF!*percentage
+- K40, N40, O40 — contain =#REF!*percentage
+- S44 — =#REF!
+- P45, P50, P51, P53 (and similar P## formulas) — use (…)*#REF!
+- Any other cells that display #REF!
+
+Why it happened (short)
+- A cell that held a base amount (or totals) was deleted or moved. The formulas expected that base cell and now reference #REF!.
+
+How to fix (short, exact steps)
+1. Restore or replace the deleted base cell(s).
+   - If you still know the original base numbers, put them back into a dedicated cell(s). For example create a cell for each “base amount” used for allocations:
+     - Put Cost Consultant total = 69500 into a new cell (for example E39).
+     - Put Contract Total / Total Basic Services into a single cell (for example E62 already does this in your sheet).
+2. Replace #REF! in formulas with a proper absolute reference to the base cell(s) (or the actual number if you prefer, but a cell is better).
+   - Example fixes:
+     - O39: change =#REF!*0.0547  →  = $E$39 * 0.0547  (where E39 contains 69500)
+     - P39: change =#REF!*0.0109  →  = $E$39 * 0.0109
+     - K40 / N40 / O40: change =#REF!*0.713 etc. → = $E$40 * 0.713  (use the correct base for row 40)
+     - P45: change =(O45/100)*#REF!  →  =(O45/100)*$E$62  (use the contract total cell $E$62)
+     - P50 / P51: same pattern: =(O50/100)*$E$62 etc.
+     - S44: if intended to add row values, set =SUM(K44:R44)
+     - P53: replace #REF! with the correct referenced cell (example pattern: =P52 - $E$62 if that was intended) — verify intent and point to the right cell.
+3. Use named ranges or absolute addresses to prevent this in future:
+   - Name the contract total cell “ContractTotal” and use =(O45/100)*ContractTotal so moves/deletes don’t break formulas as easily.
+
+Quick checklist to repair now
+- Find each #REF! cell (Ctrl+F "#REF!") and decide which base it should point to.
+- Create a clear cell for each base amount used for allocations (e.g., CostConsultantTotal, ContractTotal).
+- Update formulas to reference those cells (use $…$ or named ranges).
+- Recalculate and verify row/column sums (SUM formulas) match expected totals.
+
+If you want, I can:
+- Provide exact replacement formulas if you confirm where each base amount should come from (e.g., confirm E39 = 69500, confirm which cell is the base for row 40, etc.).

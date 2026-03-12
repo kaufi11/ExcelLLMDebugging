@@ -1,0 +1,47 @@
+I reviewed the workbook. Here are the clear errors I found, with a short explanation and a simple fix for each.
+
+1) Sheet "Municipal" — F5
+- Faulty cell: F5 (shows FORMULA =690)
+- Error type: Typo / wrong formula
+- Explanation: F5 contains =690 (a hard-coded or mistyped “=690”) but the Request in E5 is 147,970. This almost certainly isn’t the intended Recommend value.
+- Fix: Replace with the intended recommend. If recommend should equal the request, use:
+  =E5
+  If the recommend is meant to be a fixed cap (like other rows that use 190000), enter that numeric cap instead.
+
+2) Sheet "Municipal" — missing Recommend values
+- Faulty cells: F4, F7, F10, F15, F18, F19, F20 (several blank Recommend cells)
+- Error type: Omission
+- Explanation: Those Recommend cells are blank, so F22 (=SUM(F2:F21)) undercounts the total Recommend.
+- Fix: Enter the intended recommend amounts. If you want Recommend to default to Request, put in each:
+  =E4, =E7, =E10, =E15, =E18, =E19, =E20
+  (Or enter the actual numeric values if different from Request.)
+
+3) Sheet "AHTF" — F14 (AHTF Recommend total)
+- Faulty cell: F14
+- Error type: Range / off-by-one in SUM
+- Explanation: F14 =SUM(F3:F13) excludes row 2 (F2). If F2 should be counted the total is wrong.
+- Fix: Include the full recommend range:
+  =SUM(F2:F13)
+
+4) Sheet "AHTF" — F10 contains text
+- Faulty cell: F10 ("Pending Feasibility Study")
+- Error type: Text in numeric column / inconsistent data type
+- Explanation: A textual status is in the Recommend column. SUM will ignore it (so the total may be misleading) and it prevents straightforward numeric work.
+- Fix: Replace with a numeric placeholder (0) until a numeric recommend is known, or keep the text but change the total to explicitly treat non-numeric as zero, e.g.:
+  =SUMPRODUCT(N(F2:F13))
+  or convert the status into a separate “Status” column and keep Recommend numeric.
+
+5) Sheet "AHTF" — E16/F16 use a hard-coded constant
+- Faulty cells: E16 and F16 (=2432890*0.15)
+- Error type: Hard-coded constant / maintainability risk
+- Explanation: The formula multiplies the literal number 2,432,890 by 15%. If that base amount changes, the formula won’t update.
+- Fix: Replace the literal with a reference to the cell that contains the base total. Example (if the base is in E20):
+  =E20*0.15
+  If the base is a different cell, point the formula to that cell instead.
+
+Optional / housekeeping checks (quick notes)
+- Many Recommend cells are a mix of =E# formulas and hard-coded caps (190000). That may be intentional, but be consistent: if default is to recommend the request, use =E# everywhere and override where needed.
+- Check any text in numeric columns (e.g., F10 in AHTF) and replace with numeric placeholders or move text to a status column.
+- After fixes, recalc the summary cells (Municipal!F22, AHTF!F14, County!E13 etc.) to confirm totals update.
+
+If you want, I can produce the exact list of cells to change (with copy‑paste formulas) or provide a compact VBA / Excel formula set to auto-fill Recommend = Request for all empty Recommend cells. Which would you prefer?

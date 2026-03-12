@@ -1,0 +1,38 @@
+I checked the formulas on the "Homework4 Estimating Reliabilit" sheet and found one clear formula error and several inconsistencies / fragile constructions that can cause wrong results if the sheet is edited. Summary and suggested fixes below.
+
+1) Clear formula error (must be fixed)
+- Cell E46 (mean rij if item deleted for one item) contains an obvious typo: its formula is
+  =(706+B39+B41+C39+C41+D41)/6
+  The +706 is erroneous — that produces the huge value shown (117.442…). Because E47 (Adjusted alpha if item deleted) uses E46, that result is also wrong.
+
+  Suggested correction (based on the Time 1 intercorrelation table and the intended "delete item 4" average of the 6 pairwise rijs among the remaining items 1,2,3,5):
+  Replace E46 with
+  =(C37 + D37 + F37 + D38 + F38 + F39) / 6
+  (these are the six correlations: Q1–Q2, Q1–Q3, Q1–Q5, Q2–Q3, Q2–Q5, Q3–Q5).
+  After fixing E46, recompute E47 (it will update automatically if the formula is left as is).
+
+2) Hard-coded constants (fragile / risk of inconsistency)
+- Many cells subtract hard-coded means instead of referencing the computed mean cells, e.g. D5 uses =B5-2.93333 rather than =B5-$B$9, F5 uses =C5-2 rather than =C5-$C$9, D23 uses =B23-2.777767 rather than referencing B27 etc.
+  Risk: if you change the data, the hard-coded constants may become incorrect.
+  Recommendation: replace hard-coded means with absolute references to the appropriate mean cells (e.g. D5 = B5 - $B$9, F5 = C5 - $C$9, D23 = B23 - $B$27, etc.).
+
+3) Minor labeling / wording inconsistencies / typos
+- Header in G22 reads "(x3-mne)sqrd" — likely should read "(xe-mne)sqrd" or similar (minor, but confusing).
+- N27/P27 are labelled "mean" but actually hold square roots of sums (they are =SQRT(N26) and =SQRT(P26)). Consider renaming or clarifying to "sqrt(sum squares)".
+
+4) Check the reversed-item calculation logic
+- H44 ("mean rij if revers q5") negates some correlations. Make sure only correlations that involve item 5 are negated (I did not detect a direct formula error, but this area is easy to get wrong — double-check which pairwise terms you negate). The formula structure looks intentional, but verify sign choices match the theoretical reversal.
+
+5) KR21 / KR20 labeling and use of variance
+- B104 shows =1-((B102*(5-B102))/(5*B103)) and F104 multiplies that by (5/(5-1)). Usually KR-21 is expressed with the k/(k-1) factor; you have both the uncorrected and corrected versions present. This is not an error but may be confusing. If B104 is intended to be KR21, include the k/(k-1) factor there or relabel B104 as "KR21 (no k/(k-1) factor)".
+- For KR-20 (B125) you use population variance (B124) — that is acceptable but be aware whether you want sample vs population variance for your reliability estimate.
+
+6) Other consistency checks to consider
+- Several "mean rij if item deleted" formulas (B46, C46, D46, F46) use cell references from the triangular matrix (sometimes using the symmetric counterpart cells). They appear consistent, but after fixing E46 you should:
+  - Recalculate and sanity-check all "mean rij if item deleted" entries to ensure they average the correct six pairwise correlations for the 4-item subset in each deletion case.
+  - Ensure the formulas consistently pick the same half (upper or lower) of the correlation matrix to avoid mixing missing/blanks and zeros.
+
+If you want, I can:
+- produce the exact corrected formulas for all the "mean rij if item deleted" cells (B46:F46) and the corresponding adjusted-alpha cells (B47:F47),
+- replace the hard-coded means with absolute references throughout,
+- and re-run the sheet to show corrected numeric results. Would you like me to apply those fixes and return the corrected formulas/values?

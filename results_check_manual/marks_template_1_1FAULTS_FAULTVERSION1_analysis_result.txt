@@ -1,0 +1,62 @@
+I inspected the formulas and values in the Marks sheet and found several formula errors and inconsistencies. Below I list each problem, where it occurs, why it is incorrect or risky, and a recommended fix.
+
+1) Incorrect denominator used to calculate interim % (X column)
+- Where: X10:X59 (example X10 = Z10*100/$AD$10)
+- Problem: $AD$10 currently contains 10. That makes Xn = Zn * 100 / 10 = Zn * 10, which is almost certainly wrong. The percentage denominator should reflect the "Total possible marks" (likely 100), not 10. AE10 contains the text "Total Possible marks" while AD10 holds the numeric 10 — appears mis-placed/incorrect.
+- Impact: Every X (Interim Mark %) is scaled incorrectly by factor 10.
+- Suggested fix: Put the correct total (e.g. 100) into AD10 (or change Xn to reference the correct cell that contains 100). Ensure the label and numeric total align (e.g. AE10 should be the label and AD10 the numeric total).
+
+2) Wrong average range for overall marks (Z60)
+- Where: Z60 formula = AVERAGE(Z10:Z30)
+- Problem: All other averages use the student range rows 10:59; Z60 only averages through row 30.
+- Impact: Z60 will not reflect the full student population.
+- Suggested fix: Change Z60 to =AVERAGE(Z10:Z59) to match the other averages.
+
+3) One incorrect row formula for the student index (D47)
+- Where: D47 formula =B47 (should be consistent with other rows)
+- Problem: All other Dn are =An (D10 =A10, D11 =A11, etc.). D47 is =B47, so it pulls the student's Name column instead of the student number.
+- Impact: D47 displays 0/blank or incorrect value and breaks consistency.
+- Suggested fix: Change D47 to =A47.
+
+4) Inconsistent / mismatched grade-threshold references and hard-coded thresholds
+- Where: Per-student grade formula (AA10..AA59) uses nested IFs referencing the AF21:AF28 cells (e.g. IF(X10>$AF$21,"A+",...)). The averages row Y60/AA60 uses hard-coded numbers (e.g. IF(X60>94.49,...)) rather than referencing AF21:AF28.
+- Problems:
+  - Mixed sources: some formulas use the AF threshold cells, others use hard-coded literals — this is inconsistent and error-prone.
+  - AF cells exist in AF21:AF28 (94.49, 89.49, ...), but AF29 (59.5) is present and used in sheet labels; some comparisons in nested IFs use $AF$28 = 59.49 while AF29 = 59.5 exists — thresholds appear inconsistent by 0.01 or misaligned rows.
+- Impact: Changing thresholds in AF21:AF28 will not update Y60/AA60 (and possibly other places), leading to conflicting grade assignments.
+- Suggested fixes:
+  - Standardize: make all grade-calculation formulas reference the same threshold cells (e.g. AF21:AF28) rather than hard-coding numbers.
+  - Check / unify the exact boundary values (use consistent rounding rules). Decide whether thresholds are inclusive (>=) or exclusive (>) and apply consistently.
+
+5) Boundary/comparison operator inconsistency (use of > vs >=)
+- Where: AA10..AA59 use IF(Xn>$AF$21,...); Y10 uses IF(P10>=$AE$7,"F",AA10), etc.
+- Problem: Threshold checks use strict greater-than (>) which makes equality fall into the lower bracket. That may or may not be intended. Separately, the attendance-forced-F check uses >=. This inconsistent use of > vs >= will cause ambiguous/incorrect assignment on exact boundary values.
+- Impact: A student with X = 94.49 will not get "A+" if threshold is 94.49 and check is >94.49; they would get the next lower grade.
+- Suggested fix: Decide whether thresholds should be inclusive on the top or bottom boundary (typical: >= top threshold) and modify nested IFs to use >= consistently (or adjust threshold numbers to avoid ties).
+
+6) Miscellaneous inconsistent/hard-coded items and data types
+- L9 and M9 are stored as text "10" (quotes) while other numeric weights are numbers; Excel will usually coerce text numerals to numbers in arithmetic but this is inconsistent and error-prone. Make them numeric.
+- AK15..AK19 (CountIF results) show values (0 or 50) consistent with formula, but some prefilled numbers (e.g. AK19 = 50) look like placeholders — verify these are formulas (I see AK19 formula is =COUNTIF(Y10:Y59,"F*") but current value 50 is odd).
+- Row/column labels for grade cutoffs use AD/AE/AF in a spread-out manner (AD21 label "A+", AE21 ">", AF21 numeric). This layout is somewhat fragile — consolidate or document.
+
+7) Z totals formula includes V (homework) column
+- Where: Zn = Rn+Sn+Tn+Un+Vn+Wn
+- Note: V9 weight is 0 (homework) so including V is OK; just confirm that including V in Zn is intended even if its weight is zero.
+
+8) AA60 / Y60 grade mapping duplication
+- Where: Y60 and AA60 both compute letter grade from X60. They both use the same hard-coded numbers and produce identical nested IFs; but AA per-student uses AF cells. This duplicates the logic and keeps it inconsistent.
+- Suggested fix: Point both to same AF thresholds or to a single grading function/cell to avoid divergence.
+
+Summary of immediate corrections I recommend:
+- Fix the AD10 denominator to the correct total (probably 100). Confirm AD10 and AE10 placements (label vs number).
+- Fix D47 to =A47.
+- Fix Z60 to average Z10:Z59.
+- Standardize grade thresholds: use one canonical range (e.g. AF21:AF28) and change all grade IF formulas (AA10:AA59, Y60, AA60) to reference those cells.
+- Decide and apply consistent >= vs > comparisons for grade boundaries.
+- Convert any numeric strings (e.g. "10" in L9/M9) to numbers.
+- Review other manually filled values that look like placeholders (AK19 = 50 etc.) and ensure they are formulas or intended constants.
+
+If you want, I can:
+- provide corrected formulas for the exact cells (text you can paste),
+- produce a small checklist to validate after changes,
+- or, if you upload a corrected copy, verify the fixes.

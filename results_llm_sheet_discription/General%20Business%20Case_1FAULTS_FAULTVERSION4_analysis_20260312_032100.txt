@@ -1,0 +1,30 @@
+Summary of the errors I found (short):
+
+1) Many variance formulas in STMT OF OPERATIONS are reversed (they show =Forecast - Actual instead of =Actual - Forecast). That makes the Variance column show wrong signs and breaks subtotal/total logic.
+
+2) Wrong formula in STMT OF OPERATIONS cell C10: it is =477-C9 (nonsense / typo). C10 should be Forecast Gross Profit = Forecast Net Sales (C8) minus Forecast COGS (C9).
+
+Why these matter (short):
+- Variance signs flipped will mislead reviewers and can make totals/net profit look wrong.
+- C10 error corrupts Gross Profit, downstream totals (A15/A41/A51/A53) and the Summary profit value pulled to SUMMARY!F26.
+
+What to fix (clear steps):
+
+A. Make all Variance (column E) formulas consistent: Variance = Actual − Forecast.
+- In STMT OF OPERATIONS change every E-cell formula to =A[row] - C[row].
+  - Examples you should correct explicitly: E7, E9, and the entire expense-block E17:E41, and E43, E48, E49, E52 (and any other E cells currently =C#-A#). A quick way: select E6:E53 (or the entire E column area used), set the formula in the top cell to =A6-C6 and fill down so each row becomes relative (E7 => =A7-C7, etc).
+
+B. Fix C10:
+- Change C10 from =477-C9 to =C8 - C9 (Forecast Gross Profit = Forecast Net Sales − Forecast COGS).
+
+C. Recalculate and reconcile:
+- After changes, recalc the workbook (F9) and verify:
+  - A51/A53 (Net Profit lines) now correct.
+  - SUMMARY!F26 should now equal STMT OF_OPERATIONS!A53.
+  - STMT OF_OPERATIONS totals (A15,A41,A51,A53 and C15,C41,C51,C53) behave sensibly.
+  - Optionally add a quick check cell: =SUM(E6:E53) vs expected or create helper column H: =E# - (A#-C#) to flag remaining mismatches.
+
+One‑line explanation of the solution:
+- Make the variance column consistently Actual minus Forecast, and fix the single typo in C10 (use C8-C9). That restores correct variance signs and correct gross‑profit/total calculations that feed the SUMMARY and balance checks.
+
+If you want, I can produce the exact fill-down formulas or a small VBA macro / Excel Find+Replace list to fix all reversed variance formulas automatically. Which would you prefer?

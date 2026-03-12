@@ -1,0 +1,79 @@
+Errors found:
+
+1. In sheet "database", cell H6 formula:
+   `=56400000000*1.01097683452934/(1+F6*0.42*R6*298)`
+   - This formula uses R6 which is 0.11, but R6 is a Grüneisen parameter and may not be intended here.
+   - The formula is inconsistent with other similar formulas in column H, which use a different approach or reference.
+   
+2. In sheet "database", cells H8 and N8:
+   - H8: `=H9` (references next row)
+   - N8: `=N9` (references next row)
+   - This creates a dependency on row 9, which is fine if row 9 is valid, but if row 9 changes or is deleted, it breaks.
+   - Also, row 9 has constant values, so this is okay but may be fragile.
+
+3. In sheet "database", cell H10:
+   - Formula: `=57760000000+241000000*100`
+   - This calculates to 57760000000 + 24100000000 = 81860000000, but in the "minerals" sheet, D10 (Kt) is 81860000000, so consistent.
+   - No error here.
+
+4. In sheet "database", cell H11:
+   - Formula: `=58300000000` (no formula, just a number)
+   - Inconsistent with other cells that use formulas or calculations.
+
+5. In sheet "database", cell H40:
+   - Formula: `=125000000001`
+   - This is one more than H39 (125000000000), which may be a typo or intentional.
+   - Check if this is a typo.
+
+6. In sheet "database", cells in column L (shear modulus) for rows 23 to 30:
+   - Formulas like `=L29*H23/H29` referencing L29 and H29.
+   - This means shear modulus for these minerals is scaled from hb (hornblende).
+   - This is okay if intended, but if L29 or H29 changes, it affects these values.
+
+7. In sheet "database", cells in column N (dlnG/dlnr) for rows 6,7,11,12,18,19,20,21,22,23,24,25,26,27,28,29,30,33,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56:
+   - Many have formulas like `=T6`, `=T7`, `=T11`, etc.
+   - This is fine if T column has correct values.
+
+8. In sheet "rocks", the sum of vol% columns B57, C57, D57, E57, F57, G57, H57 are formulas summing rows 5 to 56.
+   - Check if the sum of vol% is 100% or close to it.
+   - For example, in B57: `=SUM(B5:B56)`, check if it sums to 100 or not.
+   - If not 100%, user should adjust mineral modes.
+
+Summary of main errors and suggestions:
+
+- The formula in H6 of "database" sheet uses R6 (Grüneisen parameter) in a way that may be incorrect or inconsistent with other rows. Verify the formula logic and correct if needed.
+
+- Inconsistent use of constants vs formulas in column H (bulk modulus) in "database" sheet. Some cells have formulas, others have constants. For consistency, use formulas or constants consistently.
+
+- The formula references in "database" sheet (e.g., H8 referencing H9) create dependencies that may cause errors if rows are deleted or changed. Consider replacing with direct values or more stable references.
+
+- Check the sum of vol% in "rocks" sheet to ensure it sums to 100%. If not, adjust mineral mode percentages.
+
+Solutions:
+
+1. For H6 formula in "database":
+   - Verify if R6 should be used here.
+   - If not, replace R6 with the correct parameter or remove it.
+   - For example, if the formula is supposed to be similar to H13: `=175000000000/(1+F13*0.42*R13*298)`, then use R6 accordingly or correct.
+
+2. For inconsistent constants/formulas in column H:
+   - Decide whether to use formulas or constants.
+   - If formulas, apply the same formula pattern to all rows.
+
+3. For references like H8 = H9:
+   - Replace with direct values if possible.
+   - Or ensure that referenced cells are not deleted.
+
+4. For "rocks" sheet vol% sums:
+   - Check sums in B57, C57, etc.
+   - Adjust mineral mode values in rows 5-56 to sum to 100%.
+
+Explanation:
+
+- Using consistent formulas and stable references avoids errors when data changes.
+
+- Ensuring vol% sums to 100% is essential for accurate rock property calculations.
+
+- Avoiding circular or fragile references improves spreadsheet robustness.
+
+If you want me to provide exact corrected formulas or detailed fixes for specific cells, please specify.

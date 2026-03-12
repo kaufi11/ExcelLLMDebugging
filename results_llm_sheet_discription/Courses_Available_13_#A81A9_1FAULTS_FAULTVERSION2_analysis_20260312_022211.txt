@@ -1,0 +1,28 @@
+Findings (short)
+- A23 contains =+A22+808 — this is almost certainly a typo. It jumps the ID sequence by 808.
+- A314 is hard-coded to 1, restarting the ID sequence mid-sheet (produces duplicate/overlap).
+- The numbering method (=+Aprevious+1) is fragile: it breaks if someone accidentally types a wrong number (like +808), or if rows are inserted/deleted, or if you need to restart numbering in blocks.
+
+Quick fix (minimal changes)
+1. Fix the typo in A23: replace =+A22+808 with =A22+1.
+2. If A314 should continue the main sequence, replace the 1 in A314 with =A313+1 (or with =A312+1 depending on which previous row holds the last numeric ID above the header).
+
+Better, robust fix (recommended)
+Use a formula that always finds the last numeric ID above and adds 1. This ignores gaps in column A (header rows left blank) and prevents accidental big jumps.
+
+- Put this in the first ID cell of a block (A4) if empty:
+  A4 = 1
+- In the next ID cell (A5) and copy down only into the rows that should have IDs (do NOT paste into header rows):
+  A5 = LOOKUP(9.99999999999999E+307,$A$4:A4)+1
+
+Explanation
+- LOOKUP(9.999E+307,$A$4:A4) finds the last numeric value in A above the current row (it ignores blanks or text). Adding 1 gives the next ID. This prevents a single bad cell (like +808) from propagating wrong values and is robust if some rows have blank A (section headers).
+- Don’t paste the formula into header rows (like “Desktop Courses”, “SAP Courses”); leave those A cells blank. Paste only into the course rows.
+
+Notes
+- The =+ prefix (e.g. =+A4+1) is harmless — it works the same as =A4+1 — but it’s stylistically odd.
+- After changing formulas, scan column A for duplicates or a sudden large jump to ensure everything corrected.
+
+If you want, I can:
+- Give the exact formula to paste for rows A23 and A314 based on their surrounding rows, or
+- Produce a copy of column A with the corrected IDs applied for the whole excerpt.

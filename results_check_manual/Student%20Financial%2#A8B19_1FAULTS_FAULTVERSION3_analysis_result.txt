@@ -1,0 +1,32 @@
+I inspected the formulas in the workbook and found a few clear formula errors / inconsistencies (one root cause and one other wrong hard-coded value). Summary and exact fixes below.
+
+Summary of problems
+- H8 (Room and Board On-Campus, 2001–2002 column) contains =4 (value 4) instead of summing Room Only + Board Only; this causes multiple downstream totals to be wrong (H11, H12).
+- G36 (Required Fees, Out‑of‑State section, 12 & Above column) is a hard-coded wrong value (584) and does not use the same SUM pattern as the other columns; it should be the sum of the required-fees rows for that column. That wrong value makes G37 (Total Out‑of‑State Resident) incorrect.
+
+Details, reasons and suggested fixes
+
+1) Cell H8 — incorrect value/formula
+- Location: Sheet "Tution and Fees", cell H8 (Room and Board On‑Campus, 2001–2002)
+- Current: value = 4, formula stored as "=4"
+- Problem: other columns use Room Only + Board Only (e.g., G8 = G9+G10, I8 = I9+I10). H8 should follow same pattern but currently is a constant 4, so totals that depend on H8 are wrong.
+- Fix: replace with =H9+H10
+- Effect (recalculation):
+  - H8 → 2058 + 1806 = 3864
+  - H11 (Comprehensive tuition/room/board/fees In‑State) becomes =H5+H8+H7 = 854 + 3864 + 1097 = 5815 (currently 1955)
+  - H12 (Comprehensive tuition/room/board/fees Out‑of‑State) becomes =SUM(H6,H8,H7) = 7273 + 3864 + 1097 = 12234 (currently 8374)
+
+2) Cell G36 — hard-coded/wrong value (missing SUM)
+- Location: Sheet "Tution and Fees", cell G36 (Required Fees, Out‑of‑State section)
+- Current: value = 584, no formula
+- Problem: other columns compute required‑fees by summing the fee rows (e.g., D36 = SUM(D21:D29), E36 = SUM(E21:E29), F36 = SUM(F21:F29)). G36 being 584 appears to be incorrect (it equals tuition in that column) and causes the Out‑of‑State totals to be wrong.
+- Fix: replace with =SUM(G21:G29)
+- Effect (recalculation):
+  - G36 → SUM(G21:G29) = 619 (78.5 + 35 + 155 + 160 + 57.5 + 122.5 + 10 + 0.5)
+  - G37 (Total Out‑of‑State Resident) → =SUM(G34:G36) = 4519.5 + 619 = 5138.5 (currently 5103.5)
+
+Notes / recommendations
+- Both problems are simple data/formula consistency issues. H8 looks like a mistaken manual input (entered =4). G36 looks like an accidental paste of the tuition number or manual entry instead of using the same SUM formula used in other columns.
+- For consistency and to avoid future manual discrepancies, convert any hard-coded totals that equal sums to explicit formulas (e.g., F11 currently is a correct hard-coded total — consider changing it to =F5+F8+F7 so all columns follow the same formula pattern).
+- I did not find #REF!, #VALUE!, or other Excel error codes in the cells provided — the issues are incorrect constants / missing SUM formulas that produce wrong totals rather than Excel error values.
+- If you want, I can (a) provide an updated list of all affected cells and their corrected values after applying the fixes, or (b) generate the exact Excel formula text for any other cells you want standardized.

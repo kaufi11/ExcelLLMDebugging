@@ -1,0 +1,47 @@
+Summary of workbook (concise)
+
+Sheets:
+1) Q4 Homework
+- Purpose: stores per-assignment scores for 10 students and calculates each student’s Q4 homework total.
+- Layout: Row 1 headers: Assignment names in B1:G1; H1 = Total. Row 2 shows Points Possible for each assignment (B2:G2 = 100,25,25,25,50,75). Rows 3–11 list students (A3:A11) and their scores in B:G.
+- Key formulas:
+  - H2 = SUM(B2:G2) → total points possible for the homework category (300).
+  - H3:H11 = SUM(Bx:Gx) for each student (BUT H5 currently uses =SUM(B5:F5) — inconsistent/missing the Personal Shield column G5).
+- Note: H5 should be =SUM(B5:G5) to match other rows.
+
+2) Q4 Summary
+- Purpose: converts raw category totals into weighted Q4 scores and percent.
+- Layout: A1 header row (Category, Tests, Quizzes, Projects, Homework, Weighted Score, Weighted Average). Row 2 contains weight values (B2:E2 = 0.3, 0.1, 0.4, 0.2); F2 = SUM(B2:E2) (should equal 1.0).
+- Points Possible: B3:D3 (=300 each), E3 = 'Q4 Homework'!H2 (pulls homework points possible = 300).
+- Student rows A4:A12 list students; columns B:D contain category raw points, E pulls that student’s homework total from Q4 Homework (e.g. E4 = 'Q4 Homework'!H3).
+- Key formulas:
+  - F3 = B3*0.3 + C3*0 + D3*0.4 + E3*0.2 — (ERROR: C3 multiplied by 0 instead of 0.1).
+  - For each student row (F4:F12): =B#*0.3 + C#*0.1 + D#*0.4 + E#*0.2 (weighted score).
+  - G# = (F# / 300) * 100 → Q4 percentage out of 300.
+- Notes: Fix F3 to use C3*0.1 for correct category total weighted calculation. Verify the other F# formulas are consistent (they appear correct).
+
+3) Year Summary
+- Purpose: compiles the four quarterly percentages into a final average and letter grade.
+- Layout: Columns A–C student identifiers; D–G quarter percentages (D–F are Q1–Q3 numeric, G pulls Q4 from Q4 Summary column G: e.g. G2 = 'Q4 Summary'!G4).
+- Key formulas:
+  - H# = AVERAGE(D#:G#) → final average across four quarters.
+  - I# = nested IF grading scale: IF(H<60,"F",IF(H<70,"D",IF(H<80,"C",IF(H<90,"B",IF(H<101,"A"))))) → converts final average to letter.
+- Class summary row (row 11): averages for each quarter (D11:G11), H11 = AVERAGE(H2:H10), I11 uses same nested IF to letter-grade the class average.
+
+4) Chart of Quarter Grades
+- Presumably intended for a chart; no data details supplied.
+
+Key values & checks
+- Total points possible per quarter category: Tests/Quizzes/Projects = 300 each; Homework = 300 (sum of assignment points).
+- Weights sum = 1.0 (F2 = SUM(B2:E2)).
+- Two formula issues found:
+  1) Q4 Homework H5 = SUM(B5:F5) should be SUM(B5:G5).
+  2) Q4 Summary F3 uses C3*0 (should be C3*0.1) — likely a copy/paste or typo.
+- Final grade mapping: A >= 90, B 80–89.999..., C 70–79.999..., D 60–69.999..., F < 60.
+
+Recommended quick fixes
+- Change Q4 Homework H5 to =SUM(B5:G5).
+- Change Q4 Summary F3 to =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2.
+- Scan for any other inconsistent SUM ranges or copied formulas (H# rows and the Q4 Summary F# row for the category header are the places to double-check).
+
+If you want, I can produce corrected formulas for all affected cells or generate a short checklist to validate the workbook.

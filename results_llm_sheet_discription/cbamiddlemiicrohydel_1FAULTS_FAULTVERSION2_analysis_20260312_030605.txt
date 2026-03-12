@@ -1,0 +1,54 @@
+I checked the workbook description and found several clear errors (formula typos, inconsistent assumptions, and a few range mistakes). Below are the problems, why they matter, and exactly how to fix each one. Short and direct.
+
+1) Discount factor typo (critical)
+- Error: Cell R19 contains Q19/(1/1.12) (division by 1/1.12) instead of multiplying by 1/1.12.
+- Effect: DF in R19 (and every DF to the right because they depend on previous cells) is wrong (too large). All present values from that year onward (costs and benefits) are wrong.
+- Fix: Change R19 to =Q19*(1/1.12)  (or better =Q19/(1+12%) ). Then drag/fill R19 across to AA19 so the sequence is consistent.
+- Why: The discount factor should be previous DF divided by (1+rate). The current formula multiplies by 1.12 (inverse), which inflates future DFs.
+
+2) Inconsistent number of analysis years (off‑by‑one)
+- Error: Columns G:AA cover years 2000–2020 inclusive → 21 years, but the sheet header says analysis = 20 years.
+- Effect: Totals, PV sums, B/C ratio and NPV include an extra year (AA), producing incorrect final results.
+- Fix (choose one):
+  - If analysis really 20 years starting 2000: delete column AA or move end year to 2019 (G:Z = 2000–2019). Update all SUM ranges from G:AA to G:Z.
+  - If you want 2000–2020 (21 years): update header text to say 21 years and confirm assumptions reflect that.
+- Why: Either include the correct number of year columns or adjust formulas that aggregate years (SUM ranges) to match the intended period.
+
+3) Kerosene price / units inconsistent
+- Error: Assumptions say Rs.13 per litre (B52), but later calculations use Rs.50 per gallon (C42) and a note says Rs.60/gal (T15). These are inconsistent (1 gal = 4.54596 L).
+- Effect: Kerosene savings (major benefit line) will be wrong.
+- Fix: Pick one base unit (preferably Rs per litre). Example correct approach:
+  - Set a single cell, e.g. $B$KERO = 13 (Rs per litre).
+  - Use conversions where needed: price per gallon = $B$KERO * 4.54596 (so ~59.1 Rs/gal).
+  - Replace hard-coded 50 or 60 in formulas with the conversion cell (or use direct Rs/litre in all formulas).
+- Why: Mixed units/prices cause systematic over/under-estimation of kerosene savings.
+
+4) Discount-factor computation improvement (avoid propagation mistakes)
+- Suggestion: Replace the chained-multiplication approach with an explicit formula to avoid single‑cell typos:
+  - Put discount rate in a cell, e.g. F19 = 12% (or 0.12).
+  - Put G19 = 1 and use H19 = 1 / (1 + $F$19) and fill right, or use H19 = 1/(1+$F$19) and general formula for any year: =1/(1+$F$19)^(column_index- G column).
+- Why: Explicit power formula reduces risk of a single wrong cell corrupting many PVs.
+
+5) Average / range mistakes on household sheet
+- Error: AE13 uses AVERAGE(AE3:AE10) while most other averages use rows 3:11. That excludes the last household row.
+- Effect: Village average wiring cost (and any dependent totals) is wrong.
+- Fix: Change AE13 to =AVERAGE(AE3:AE11). Check all AVERAGE formulas to ensure the same row range (T3:T11, V3:V11, etc.) is used consistently.
+- Why: Missing a row biases the averages and any totals derived from them.
+
+6) Scraps / cleanup formulas could be clearer and safer
+- Current: AA29 = 0.02*G5 + 0.02*G6 (and AA17 = 0.1*G5 + 0.1*G6)
+- Issue: This is mathematically OK but hard to read and may be wrong if construction cost rows move.
+- Fix: Use AA29 = 0.02*(G5 + G6) and AA17 = 0.1*(G5 + G6) OR better, reference a named total construction cell (e.g. G_CONSTR = G5+G6) and use 0.02*G_CONSTR. Also confirm whether scrap/cleanup should be based on construction value in year 2000 (G5/G6) or on a later year — adjust references if needed.
+- Why: Parentheses or named references reduce risk of future mistakes.
+
+7) Sample / assumption inconsistencies (informational)
+- Problem: The household sample size in the Individ. sheet appears to be 9 rows (3..11) but assumptions sometimes refer to 11 households (washing machines) and village totals use 31 households. This is not a formula bug but a consistency issue.
+- Fix: Ensure you document clearly: sample size (n), village population (31), and which statistics are sample-based vs extrapolated. Check formulas that compute averages and projections to use the intended denominators and multipliers.
+
+How to verify after fixes
+1. Fix R19 and re-fill the DF row. Recalculate PV rows (G20:AA20 and G32:AA32).
+2. Confirm total PVs in C20 and C32, then recompute B/C and NPV (C38 & C39). Expect changes from previous values.
+3. If you correct kerosene price, check H23:AA23 and C30 totals — Kerosene savings will change.
+4. Check AE13 and any village wiring totals which depend on it.
+
+If you want, I can give the exact correction formulas for every affected cell (paste-ready) and recalculate NPV/BCR for you — tell me which choices you want (20 vs 21 years, kerosene price in Rs/L or Rs/gal, and the discount-rate cell location).

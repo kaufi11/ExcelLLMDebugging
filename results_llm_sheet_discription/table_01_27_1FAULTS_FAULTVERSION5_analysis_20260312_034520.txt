@@ -1,0 +1,26 @@
+Findings — main errors
+1) Cell D8 (row "Functionally", year 1992) uses subtraction: 4186-3424-4479-5125-3339-5690. That produces a negative number (−17,871) which is impossible for a count. This is a clear typo — it should be addition.
+
+2) Inconsistent formulas / suspicious entry:
+- Some cells mix hard-coded totals and component sums (e.g., many columns are direct summed constants, others precomputed). That is risky but not necessarily wrong.
+- G10 (row "Rural structurally", year 1995) begins with 1195 which is much smaller than the same component in other years — this looks suspicious and should be checked against the source data (it may be a data-entry typo).
+
+Quick fixes and why they work
+1) Fix D8 (obvious error)
+- Replace the formula in D8 with an addition version:
+  =4186+3424+4479+5125+3339+5690
+  or better:
+  =SUM(4186,3424,4479,5125,3339,5690)
+- Why: changing the minus signs to plus signs gives the correct positive subtotal (26243). After this change, dependent totals (D6 = D7+D8, D12 = D6+D9, D3 = D4+D5) will recalculate correctly.
+
+2) Verify G10 (possible typo)
+- Check the source value for the first component used in G10. If it should be, for example, 11950 or 11,95x instead of 1195, correct that single component.
+- Why: a single-digit error in a component can materially change totals; confirm with your source to be sure.
+
+Recommendations to avoid future errors (short)
+- Use cell references (cells that contain each component) and SUM ranges instead of manually typing long expressions with pluses/minuses. Example:
+  =SUM(Bx:Bx+5) or =SUM(B7:G7) depending on layout.
+- Standardize totals formulas across columns (e.g., always use =row4+row5 or always =SUM(range)). This reduces chance of typos.
+- After fixes, verify reconciliations: TOTAL = Urban + Rural, All deficient = Urban deficient + Rural deficient, Struct + Func = All deficient.
+
+If you want, I can provide the exact corrected value for D8 (26243) and show which totals will change after the fix, or produce a cleaned version of the sheet with consistent SUM formulas. Which would you prefer?

@@ -1,0 +1,79 @@
+Summary of workbook structure, contents and key formulas
+
+Overview / Logic flow
+- Purpose: produce occupant sensible/latent heat schedules at multiple detail levels and export DOE2.2-compatible schedule text.
+- Master data in sheet "Occupancy" (gains and day-counts). The most detailed schedule is on "Occ L3-WD-DU-LR". All other schedules are aggregated from L3 → L2 → L1 → L0 (single-zone).
+- DOE2.2 schedule strings are built on each sheet using TEXT(...) and concatenation of the 24 hourly fractions.
+
+Key values and assumptions (sheet: Occupancy)
+- Living sensible gain: F19 = 230 (BTU/person/hr)
+- Bedroom sensible gain: F20 = 210 (BTU/person/hr)
+- Living latent gain: F22 = 190 (BTU/person/hr)
+- Bedroom latent gain: F23 = 140 (BTU/person/hr)
+- Year/day counts for simulation year (cells F28:F31): weekday-day-use=125, weekend-day-use=57, weekday-no-day-use=126, weekend-no-day-use=57
+- Fractions from day counts:
+  - F33 = (F29+F31)/SUM(F28:F31)  (fraction weekends/holidays)
+  - F34 = (F28+F30)/SUM(F28:F31)  (fraction weekdays)
+  - F35 = (F28+F29)/SUM(F28:F31)  (fraction DayUse)
+  - F36 = (F30+F31)/SUM(F28:F31)  (fraction NoDayUse)
+- F38 = SUM('Occ L1-LR'!C16:C39) and F39 = SUM('Occ L1-LR'!D16:D39) — used to weight single-zone averages.
+
+Sheet-by-sheet (concise)
+
+1) Occ L3-WD-DU-LR (Detail level 3 — source of truth)
+- Most detailed 24-hour arrays for four combinations: DayUse vs NoDayUse × Weekday vs Weekend × Living vs Bedrooms.
+- Layout: columns for each combination (C:D:E:F and H:I:J:K). Rows 16–39 = hours 1–24 with fractional occupancy values (many explicit constants like 0, 0.5, 1, 0.67 etc).
+- A couple computed cells: H24 = (H23+H25)/2; others are constants.
+- Produces DOE2.2 day-schedule strings via TEXT(...,"0.0000") formulas.
+
+2) Occ L2-WD-DU (Detail level 2 — single-zone, combined LR+BR)
+- Layout: columns C:F hold four day-types: Occ-DU-WD, Occ-DU-WE, Occ-ND-WD, Occ-ND-WE (rows 16–39 = hours).
+- Each hourly value = sum of corresponding Living+Bedroom columns from L3 (e.g. C16 = 'Occ L3...'!C16 + 'Occ L3...'!D16).
+- Sensible/latent per-person averages referenced similarly to other sheets (F10/F11 formulas pulling from Occupancy).
+- Builds DOE2.2 strings for each day-type.
+
+3) Occ L2-WD-LR (Detail level 2 — multi-zone split by LR and BR, weekday/weekend)
+- Columns: C:D = Living/Bedrooms weekdays; E:F = Living/Bedrooms weekends.
+- Each hourly cell is a weighted combination of corresponding columns in L3: e.g. C16 = 'Occ L3...'!C16*Occupancy!$F$35 + 'Occ L3...'!H16*Occupancy!$F$36 (combines DayUse/NoDayUse fractions).
+- Produces schedule text blocks and week/annual schedule blocks.
+
+4) Occ L2-DU-LR (Detail level 2 — multi-zone split by DU/ND, but weekdays and weekends combined)
+- Columns: C:D = DayUse Living/Bedrooms; E:F = NonDayUse Living/Bedrooms.
+- Each hourly cell sums the two relevant L3 columns multiplied by Occupancy day-type fractions (F34/F33 or vice versa), e.g. C16 = 'Occ L3...'!C16*Occupancy!$F$34 + 'Occ L3...'!E16*Occupancy!$F$33.
+
+5) Occ L1-WD (Detail level 1 — single-zone distinguishing weekdays vs weekends)
+- Columns C (Occ-WD) and D (Occ-WE) with 24 hourly values.
+- Each hourly value is a weighted mix of L2 single-zone columns using DayUse/NoDayUse fractions (Occupancy!$F$35 / $F$36), e.g. C16 = 'OccL2-WD'!C16*Occupancy!$F$34 + 'Occ L1-WD'!D16*Occupancy!$F$33 (pattern throughout).
+- Produces DOE2.2 weekday and weekend strings.
+
+6) Occ L1-DU (Detail level 1 — single-zone distinguishing DayUse vs NonDayUse)
+- Columns C (Occ-DU) and D (Occ-ND) each = sum of corresponding living+bedroom L2 columns (C16 = 'OccL2-DU-LR'!C16 + ...D16).
+- DOE2.2 strings for DU and ND day types; also an annual week schedule that alternates DU/ND weekly (explicit week-by-week THRU lines for Yr2000).
+
+7) Occ L1-LR (Detail level 1 — multi-zone split Living vs Bedrooms)
+- Columns C (Occ-LR) and D (Occ-BR) with 24 hourly values, each computed from OccL2-DU-LR mixing DayUse/NoDayUse fractions: e.g. C16 = 'OccL2-DU-LR'!C16*Occupancy!$F$35 + 'OccL2-DU-LR'!E16*Occupancy!$F$36.
+- Provides sums used on main sheet (Occupancy F38/F39).
+- Produces DOE2.2 schedule text for LR and BR separately.
+
+8) Occ L0 (Detail level 0 — single-zone average)
+- Produces a single 24-hour schedule C16:C39 for single-zone models by weighting weekday and weekend schedules from Occ L1-WD: C16 = 'Occ L1-WD'!C16*Occupancy!$F$34 + 'Occ L1-WD'!D16*Occupancy!$F$33.
+- Sensible load per person (F9) = weighted average formula:
+  (Occupancy!F19*Occupancy!F38 + Occupancy!F20*Occupancy!F39) / (Occupancy!F38+Occupancy!F39)
+- Latent per person (F10) similar using F22/F23.
+- C41 = SUM(C16:C39) = total hours/person.
+- DOE2.2 schedule text is assembled from the 24 hourly fractions.
+
+Other notable items
+- Many sheets include DOE2.2-format strings assembled with TEXT(...,"0.0000") and concatenation to produce (1,24) day-schedule lines and schedule blocks (WEEK-SCHEDULE, THRU lines).
+- Aggregation pattern: L3 contains raw hourly profiles → L2 aggregates (combine LR/BR or DU/ND or WD/WE using Occupancy fractions) → L1 further combines into simpler day-type sets → L0 produces one averaged schedule and per-person BTU/hr values for single-zone models.
+- Cross-sheet dependencies are explicit (lots of formulas of form 'Occ L3...'!C16 and Occupancy!$F$35 etc).
+
+Potential issue to check
+- In Occ L1-WD sheet, D20 contains a leading negative sign in the formula:
+  D20 = -'OccL2-WD-DU'!D20*Occupancy!$F$35 - 'OccL2-WD-DU'!F20*Occupancy!$F$36
+  — this appears inconsistent with the surrounding positive-weighting pattern and may be a typo.
+
+If you want, I can:
+- produce a dependency map (sheet → sheets referenced),
+- extract the 24-hour averaged schedule numeric arrays for any sheet,
+- or validate the workbook for other inconsistent formulas.

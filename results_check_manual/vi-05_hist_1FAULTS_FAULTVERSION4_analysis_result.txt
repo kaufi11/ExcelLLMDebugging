@@ -1,0 +1,41 @@
+I inspected the formulas and calculated totals on each sheet. One clear formula error and a couple of minor inconsistencies were found.
+
+1) Incorrect range in Fall 2002 (sheet "Fall 2002 per credit hour")
+- Problem cell: H14
+- Current formula: =SUM(H10:H12)
+- Issue: H14 omits H13. All other equivalent subtotal cells in other columns/sheets use =SUM(...:H13). Because H13 (Non‑Resident Student Financial Aid) is not included, the H‑column subtotal and dependent totals are understated.
+- Effected dependent cells:
+  - H14 shows 4,486.46 (sum of H10:H12) but should include H13 as well.
+  - H21 uses =SUM(H14,H20) so it is understated by the value in H13.
+  - H25 =SUM(H21:H24) is also understated by H13.
+
+- Numeric impact (using the sheet's raw numbers):
+  - H10 = 4,391.26
+  - H11 = 46.40
+  - H12 = 48.80
+  - H13 = 219.555
+  - Correct H14 = SUM(H10:H13) = 4,706.015
+    - (current H14 = 4,486.46; difference = +219.555)
+  - Correct H21 = H14 + H20 = 4,706.015 + 398 = 5,104.015
+    - (current H21 = 4,884.46; difference = +219.555)
+  - Correct H25 = H21 + H23 + H24 = 5,104.015 + 8,367.89 + 418.39 = 13,890.295
+    - (current H25 = 13,670.74; difference = +219.555)
+
+- Recommended fix:
+  - Change H14 formula to =SUM(H10:H13)
+  - Recalculate H21 and H25 (they will update automatically if their formulas remain =SUM(H14,H20) and =SUM(H21:H24) respectively).
+
+2) Minor inconsistencies / rounding differences (not formula errors)
+- Some cells across sheets differ by 0.01 or by an extra decimal place (e.g., H13 in Fall is 219.555 while Spring shows 219.55). Examples:
+  - Fall G10 = 5,227.77 vs Spring G10 = 5,227.76 (0.01)
+  - Fall F23 = 11,456.07 vs Spring F23 = 11,456.06 (0.01)
+  - H13 in Fall: 219.555 (three decimals) vs Spring H13: 219.55 (two decimals)
+  - Several other F/G/H values show minor 0.01 differences or extra decimal places.
+- Recommendation: if consistency is required, standardize decimal precision across sheets and verify the raw data entries for those cells.
+
+3) Other formulas
+- I checked the other SUM ranges (B14, C14, D14, F14, G14, B20, etc.) and they are consistent and correct on the three sheets. Only the H14 in the Fall 2002 sheet is wrong.
+
+If you want, I can:
+- Provide an updated set of corrected values for the Fall 2002 sheet with H14/H21/H25 corrected to a uniform number format, or
+- Generate an Excel patch (list of cell updates) you can apply to fix the workbook.

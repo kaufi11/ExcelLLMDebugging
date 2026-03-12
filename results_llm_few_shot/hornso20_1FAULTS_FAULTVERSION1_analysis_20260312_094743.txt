@@ -1,0 +1,48 @@
+I reviewed the three problem areas. Below are the faults, brief explanations, and simple fixes.
+
+1) Sheet E20-9 (two copies)
+- Faulty cell: C11 (in the second file it is the hard-coded value 5)
+- Error type: Hard‑coding / logical error
+- Why: C11 should be the indirect cost hourly rate = total indirect costs ÷ direct labor hours. The sheet that shows "5" overrides the calculation and makes all downstream numbers wrong.
+- Fix: restore the formula
+  =SUM(C4:C6)/C2
+  Explanation: Sum the indirect costs (office rent + support staff + utilities) and divide by direct labor hours to get the hourly indirect rate. Leave C12 and other formulas as they are.
+
+2) Sheet P20-1B (and its duplicate)
+- Symptom / general error: many formulas are referencing the wrong columns (ledger columns are shifted). Finished Goods, WIP and COGS totals/transfer lines are placed or pointed into the wrong column (off by one), so debit/credit entries are recorded in the wrong ledger.
+- Examples:
+  - F14 =+E4+G6 — wrong column used. Finished Goods totals should be in the Finished‑Goods cost column (column E), not column F (which is the COGS job column).
+  - G15 =+F14 — Work‑in‑Process is referencing a cell in the COGS column instead of the Finished‑Goods column.
+  - G27 =+F26 — posting Cost of Goods Sold / Finished Goods is placed in the wrong column.
+- Error type: Reference/placement error (column offset)
+- Why: The layout uses three ledger areas (WIP: columns B–C, Finished Goods: D–E, COGS: F–G). Several journal/transfer formulas were written into/point to the wrong ledger column, so totals and transfers do not match the intended accounts.
+- Fix (how to correct):
+  - Move each formula so debits/credits sit in the correct ledger column (WIP costs → column C, Finished Goods costs → column E, COGS costs → column G).
+  - Replace the wrong formulas by shifting them one column left or right as required. Example corrections:
+    - Put the Finished Goods total in E14 (not F14). For example: E14 = SUM(E4,E?) or whatever finished‑goods cost rows exist (if only E4 then E14 = E4).
+    - Put the Work in Process entry in C15 (not G15). Example: C15 = E14 (to credit/debit WIP when goods are finished).
+    - Put the Finished Goods reduction when a job is sold in E27 (not G27): E27 = F26 (or = –F26 depending on presentation).
+  - General rule to apply: for any transfer/debit/credit line, make the debit appear in the account’s cost column (C for WIP, E for Finished Goods, G for COGS) and the credit in the corresponding opposite column. If you want, I can map every wrong cell to its corrected cell/formula — tell me whether you want full cell-by-cell corrections or if you prefer to fix by applying the "shift into correct ledger column" rule above.
+  - Explanation: keeping each ledger's amounts inside its dedicated columns avoids mixing balances between accounts.
+
+3) Sheet P20-3B (and its duplicate)
+- Faulty cells:
+  - I10: currently =+F14*H10
+  - I14: currently =+I10+F14+D14
+- Error type: Wrong reference / double counting
+- Why:
+  - I10 is supposed to allocate manufacturing overhead to THIS job based on that job’s base (F10) times the overhead rate (H10). Instead it uses F14 (the total of the overhead base for all jobs), so it applies the total base rather than the job’s base.
+  - I14 (Total Cost) adds F14 (total overhead base) again and so double‑counts. Total cost for the job should be (Direct Materials for the job(s)) + (Direct Labor total) + (Manufacturing overhead allocated to the job).
+- Fix:
+  - I10 -> use the job’s base:
+    =F10*H10
+    Explanation: multiply this job’s labor (or whatever base is in F10) by the overhead rate H10 to get OH assigned to this job.
+  - I14 -> sum materials + labor + overhead allocated (do not add F14):
+    =SUM(C10:C12)+D14+I10
+    Explanation: Total cost = Direct Materials (sum of C rows for the job batch) + Direct Labor total (D14) + Manufacturing Overhead allocated to the job (I10). Adjust the C-range if your materials rows differ.
+
+If you want, I can:
+- produce exact corrected formulas for every affected cell in P20-1B (map each wrong cell → corrected cell/formula), or
+- prepare a corrected copy of the workbook (you would need to provide it).
+
+Which would you prefer?

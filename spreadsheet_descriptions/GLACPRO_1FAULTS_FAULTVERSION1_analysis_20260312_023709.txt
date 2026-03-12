@@ -1,0 +1,44 @@
+Sheet: GLACPRO — purpose and layout
+- Purpose: Iterative valley-glacier model that computes ice-surface elevations and centerline ice thickness along a flow line from user inputs of bedrock elevation, shape factor and basal shear strength at regular up-ice distance intervals.
+- Sheet organization: header text and instructions in A1:A36, column headings in A33:J36, model rows in A37:A66 (profile points from 0 to 50,000 ft).
+
+Columns (inputs vs. outputs)
+- A — UPICE DIST. (ft): distance up-valley from terminus (input).
+- B — BEDROCK ELEVATION (ft): bedrock/ground elevation at each step (input).
+- C — SHAPE FACT. (unitless): shape factor (input; examples 0.6–1.0).
+- D — BASAL SHEAR (bar): effective basal shear strength (input).
+- E — Step Length (ft): computed as A(row) − A(previous row).
+  - Formula pattern: E(row) = A(row) − A(prev)
+- F — Change (ft): incremental change in ice-surface elevation over the step, computed from basal shear, step length, previous centerline thickness and shape factor.
+  - Formula pattern: F(row) = 22.1 * (E(row) / (H(prev) * C(row))) * D(row)
+  - Note: constant 22.1 is a model coefficient used throughout.
+- G — Calculated Elevation (ft): modeled ice-surface elevation (iterative cumulative sum).
+  - Formula pattern: G(row) = G(prev) + F(row)
+  - Initial G values in the first rows are set equal to the corresponding moraine crest column (I).
+- H — Centerline Thickness (ft): model ice surface minus bedrock.
+  - Formula: H = G − B
+- I — MORAINE CREST (ft): observed moraine-crest elevations (user can supply to constrain the model). Some rows have hard-coded example values (e.g., 9760, 9880, …).
+- J — Ice Thickness from Moraine (ft): difference between moraine crest and bedrock (I − B) when provided.
+  - Formula pattern: J = I − B (a few rows show a nonstandard entry in the example; see Notes).
+
+Key values and initial conditions
+- Distances: example nodes at 0, 2,000, 4,000, … up to 50,000 ft.
+- Example bedrock elevations (B37:B66) and example moraine crests (I37:I66) are populated as placeholders (Halfmoon Creek example).
+- Shape factor (C) and basal shear (D) are editable per step; example C values range 0.7–0.95, D from 0.4–1.0.
+
+Computation flow (iteration)
+1. At the first node(s), G is initialized from the provided moraine crest (I).
+2. For each subsequent row:
+   - Compute step length E from A.
+   - Compute incremental surface rise F using previous centerline thickness H(prev), current shape factor C, basal shear D, and E.
+   - Add F to previous G to get current G.
+   - Compute H = G − B.
+   - If a moraine crest I is present, J = I − B gives the observed thickness to compare with modeled H.
+
+Notes and potential issues
+- The model is explicitly iterative: F depends on H of the previous row, and G accumulates F.
+- The constant 22.1 is used in every F calculation; changing it will scale the modeled response.
+- Some example cells contain hard-coded values or unusual formulas (e.g., J41 shown as "553−B41" in the example). Verify those cells if you replace example data.
+- Upper‑case columns (A–D, I) are intended for user input per the instructions; G, E, F, H, J are computed.
+
+If you want, I can: (a) check the workbook for formula errors/inconsistencies, (b) update the model to use named ranges and consistent initialization, or (c) convert the iterative process to a table for easier copying down.

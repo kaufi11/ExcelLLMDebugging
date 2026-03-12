@@ -1,0 +1,60 @@
+I inspected the formulas in Sheet1 and found several inconsistent / likely-wrong range references and a few other issues you should check. Summary of problems and suggested fixes:
+
+1) MAX formulas that start at row 33 (probably a typo)
+- Cells:
+  - B69 =MAX(B33:B68)
+  - C69 =MAX(C33:C68)
+  - D69 =MAX(D33:D68)
+- Issue: other summary formulas (MIN, AVERAGE, STDEV) for those columns use the full data range B2:B68, C2:C68, D2:D68. Starting at row 33 ignores many rows (2–32) and is inconsistent.
+- Suggestion: change to:
+  - B69 =MAX(B2:B68)
+  - C69 =MAX(C2:C68)
+  - D69 =MAX(D2:D68)
+
+2) MAX / MIN / AVERAGE ranges for N and Q are inconsistent and in some cases include the summary row(s)
+- Cells:
+  - N69 =MAX(N17:N68)
+  - N70 =MIN(N17:N69)
+  - N71 =AVERAGE(N2:N68)
+  - N72 =STDEV(N2:N68)
+  - Q69 =MAX(Q17:Q68)
+  - Q70 =MIN(Q17:Q69)
+  - Q71 =AVERAGE(Q2:Q68)
+  - Q72 =STDEV(Q2:Q68)
+- Issues:
+  - MAX formulas for N and Q start at row 17 instead of row 2 (so rows 2–16 are omitted).
+  - MIN formulas for N and Q include the summary row(s) (N69 / Q69), i.e. N70 includes N69 and Q70 includes Q69 — that will fold the calculated MAX into the MIN calculation (usually unintended).
+  - AVERAGE/STDEV use N2:N68 and Q2:Q68, so ranges are inconsistent across summary stats.
+- Suggestions:
+  - Use consistent ranges that cover the intended data rows only (probably rows 2–68). For example:
+    - N69 =MAX(N2:N68)
+    - N70 =MIN(N2:N68)
+    - N71 =AVERAGE(N2:N68) (already this)
+    - N72 =STDEV(N2:N68) (already this)
+    - Q69 =MAX(Q2:Q68)
+    - Q70 =MIN(Q2:Q68)
+    - Q71 =AVERAGE(Q2:Q68) (already this)
+    - Q72 =STDEV(Q2:Q68) (already this)
+
+3) MIN results that look unexpected
+- Example: C70 =MIN(C2:C68) currently shows 0. If you expect a positive minimum (most C values are >=22), investigate whether there are zeroes in C2:C68 (empty cells are ignored by MIN, but explicit zeros will be returned). This may be a data-entry issue rather than a formula error. (Fix: locate any unintended zero values or adjust the MIN range if some rows should be excluded.)
+
+4) Inclusion of summary cells into stat ranges
+- As noted above, some MIN/MAX formulas include the computed summary cells (e.g. N70 uses N69, Q70 uses Q69). Including computed summary rows in other summary formulas is normally a mistake and can produce misleading results. Ensure summary formulas only reference raw-data rows.
+
+5) Individual cell formulas in column N (and some Q) are constant arithmetic (e.g., N2 =20+4, N3 =14+4, N22 =12/2+3, N27 =20+4, N28 =17+5/2, etc.)
+- These are syntactically valid, but they appear to be hard-coded arithmetic rather than references to other columns (for example, they don't use L + something). Confirm that these were intentionally entered as constants (maybe to reflect manual corrections) and not intended to reference other cells. If they are supposed to be computed from other columns, replace constants with cell references.
+
+6) Miscellaneous
+- Q27 =58+2+3 and similar multi-add formulas are fine, but check that combining multiple manual adjustments like this is intended.
+- STDEV uses STDEV() which in modern Excel maps to STDEV.S; confirm whether you want sample standard deviation (STDEV.S) or population (STDEV.P).
+
+Recommended next steps
+- Correct the inconsistent MAX/MIN ranges to consistently use the raw-data interval (likely rows 2:68).
+- Recalculate and verify B69/C69/D69/N69/Q69 etc. after fixing ranges.
+- Scan column C (and any column where MIN produced 0) for unintended zeros or misplaced values.
+- If some N-column entries were meant to be formulas based on other columns, replace the constant arithmetic with proper references.
+
+If you want, I can:
+- produce a list of the exact corrected formulas to paste in, or
+- show every formula cell (current) and a corrected version (CSV or plain list) for direct replacement. Which would you prefer?

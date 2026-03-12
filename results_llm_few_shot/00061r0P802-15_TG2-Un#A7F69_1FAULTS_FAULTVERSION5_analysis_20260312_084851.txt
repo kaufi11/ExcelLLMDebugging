@@ -1,0 +1,32 @@
+Summary — main problems found (short and fix for each):
+
+1) Wrong formula in A61 (big numbering jump)
+- Problem: A61 contains =A60+685 instead of +1, so row numbers jump and every subsequent A-row is incorrect.
+- Impact: Row numbering and any logic depending on sequential IDs is broken.
+- Fix: Replace A61 with =A60+1 and fill down the column (or use =ROW()-1 if header in row1).
+- Why this works: The sequence is supposed to increment by 1; correcting the formula restores a continuous ID series.
+
+2) Missing header for column I (misaligned address data)
+- Problem: There is no header in I1; the sheet shows H1 = Address and J1 = City. Many rows use both H and I for address lines, so the missing I1 makes the structure unclear.
+- Impact: Makes data inconsistent and hard to parse/export; users may think columns are shifted.
+- Fix: Add a header in I1 (e.g., "Address Line 2" or "Address (cont.)") and confirm address continuation values sit in column I. Move any misplaced cells so H = Address1, I = Address2, J = City, K = State/Province, L = Country, M = Zip, etc.
+- Why this works: A clear header keeps columns consistent and prevents misinterpretation or accidental shifts.
+
+3) Incorrect header name L1 ("CNTY") vs values (country)
+- Problem: L1 is labeled CNTY but contains values like "USA", "Germany" (these are countries, not counties).
+- Impact: Misleading header will confuse users/formulas/reports.
+- Fix: Rename L1 to "Country".
+- Why this works: Accurate headers make filtering, lookups and exports correct.
+
+4) Inconsistent address placement across rows
+- Problem: Some rows put the second address line in column I, some put it in column J or I is unused — inconsistent use of H/I/J for address lines.
+- Impact: Sorting/filtering/concatenation and mail merges will produce wrong addresses.
+- Fix: Standardize by moving secondary address parts into column I and city into column J. You can use a simple cut/paste or formulas to detect (e.g., if J contains a street-looking value move it).
+- Why this works: Consistent columns allow reliable formulas (CONCAT, VLOOKUP, mail merge).
+
+Optional cleanup suggestions (quick):
+- Replace manual incremental formulas with =ROW()-1 (if row1 header) in column A to avoid propagation errors.
+- Use conditional formatting to highlight cells with "?" or empty email cells (column E) so you can fill missing data.
+- If you need full address in one cell, add a helper column with =TRIM(H2 & " " & I2 & ", " & J2 & ", " & K2 & " " & M2).
+
+If you want, I can give the exact steps to apply the fixes (what to type/copy or a short macro) — tell me which you want fixed first.

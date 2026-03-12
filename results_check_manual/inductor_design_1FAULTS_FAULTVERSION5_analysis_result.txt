@@ -1,0 +1,44 @@
+I inspected all formulas on the Optimization sheet and the Answer Report and found one clear formula error (with consequential downstream errors) plus a few smaller inconsistencies / numerical issues. Summary & recommended fixes below.
+
+1) Critical formula error (must fix)
+- Cell: B29 (A_w, window area)
+- Current formula: =B11*(B14/2000)^2*H12*PI()
+- Why it's wrong: K_w (H12) is the window fill factor (fraction of the window area occupied by copper). The required window area = (total copper area) / K_w. The current formula multiplies by K_w instead of dividing by it, so the required window area is underestimated by a factor 1/K_w (here K_w = 0.5 ⇒ A_w is 0.5× what it should be).
+- Correct formula: =B11*(B14/2000)^2*PI()/H12
+  (i.e. N * area_of_one_wire ÷ K_w)
+- Effect of the error: B29 is too small, which propagates to B30 (t), B31 (l_wire), B32 (R), B33 (wire weight) and B39 (total weight), so resistance, wire mass and total mass are under-estimated.
+
+Estimated impact if corrected (approximate)
+- A_w (B29) will increase from ≈0.01023 m^2 to ≈0.0409 m^2 (×4 because K_w = 0.5).
+- t (B30) increases ≈4× (from ≈0.01043 m to ≈0.0417 m).
+- l_wire (B31) increases from ≈9,482 m to ≈11,032 m.
+- R (B32) increases from ≈120.42 Ω to ≈140.2 Ω.
+- Wire weight (B33) increases from ≈139.39 kg to ≈162.8 kg.
+- Total weight (B39 = B33 + B34) increases from ≈623.998 kg to ≈647.38 kg.
+
+2) Numerical precision / constraint status issues
+- Constraint A50 (d < l_c/10)
+  - Values: A50 (d) = 0.180871288640679, C50 (l_c/10) = 0.180870612460355
+  - d is larger than l_c/10 by ≈6.76×10^-7 m → the constraint is slightly violated (by a tiny amount). In the sheet the operator is shown as "<" while in the Answer Report the constraint is displayed as "<=" (see below about operator display). Recommendation: either relax or adjust the constraint (or allow small numerical tolerance) or enforce <= explicitly if solver expects that.
+- Constraint operator display inconsistency
+  - On the Optimization sheet some constraints are shown with "<" but in the Answer Report they appear as "<=" (e.g. A49/A50). This is just a presentation mismatch; check how the solver interprets these constraints (it usually uses <= or >=). Make sure the intended operator is used in the solver setup (<= vs < is effectively handled as <= with tolerances).
+- Very tight equalities
+  - L (B25) = 349.964998614611 vs L_obj (H11) = 350. The solver has forced L nearly exactly to the target — watch for solver numerical tolerances if you expect exact equalities.
+
+3) Minor / labeling issues
+- Cell B22 label "R_g (A^2/(N*m))" — the unit shown is odd/confusing (reluctance is often given as A/Wb or H^-1). Check unit annotation for clarity.
+- The Answer Report repeats some constraints and shows slightly different operator notation; that is a reporting/presentation inconsistency (not a formula error), but it can be confusing when reading solver output.
+
+4) Cells affected and that must be recomputed after fixing B29
+- B29 (fix formula as above)
+- Then recompute: B30, B31, B32, B33, B39 (and any constraints / slacks depending on those)
+- Re-check binding status of constraints (A47, A48, A49, A50 etc.) after recomputation — several statuses/slacks will change.
+
+5) Suggested immediate actions
+- Replace B29 formula with: =B11*(B14/2000)^2*PI()/H12
+- Recalculate the sheet (or re-run the solver)
+- Re-check constraint definitions (make operator selection explicit in solver) and verify small violations like A50; either tighten tolerances or adjust constraints to <= if needed.
+
+If you want I can:
+- apply the corrected formula and recompute the dependent values and give you the new full set of results (recomputed B29, B30, B31, B32, B33, B39, updated constraint slacks),
+- or scan the workbook for any other suspicious formulas or unit mismatches on other sheets.

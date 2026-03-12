@@ -1,0 +1,32 @@
+I checked the workbook and found three clear problems that will cause wrong numbers or bad reconciliations. Short fixes and why they matter are below.
+
+1) Cash-flow: H14 uses COUNT instead of SUM (wrong formula)
+- Problem: CF!H14 is FORMULA =COUNT(H11:H12). That returns the number of non-empty cells (probably 2), not the dollar amount of loss from continuing operations for that period.
+- Impact: CF!H34 (Net cash provided by continuing operations), CF!H60 (Net change in cash) and CF!H64 (Ending cash) all pull from H14, so those cash-flow and ending‑cash numbers are incorrect for that column.
+- Fix: Replace the formula in CF!H14 with a sum: =SUM(H11:H13) or =H11+H12+H13.
+- Why this fixes it: That returns the actual loss (or income) for the period instead of a count, restoring the correct reconciliation of loss → cash from operations → ending cash.
+
+2) Balance-sheet summary cells hard-coded (risk of mismatches)
+- Problem: Several items on the summary BS are constants (e.g., BS!D42 = 5634) instead of linking to the detailed roll-up on the BS Crib (e.g., BS Crib!D169 which sums the long-term debt components).
+- Impact: If the detailed crib changes, the summary won’t update and the Balance Sheet may not balance (or the D203 vs D100 check will show a difference).
+- Fix: Replace hard-coded summary values with direct links to the crib totals. Example: change BS!D42 from =5634 to = 'BS Crib'!D169 (or the correct crib cell that sums long‑term debt). Do this consistently for PP&E, long‑term debt, goodwill/intangibles, etc.
+- Why this fixes it: Keeps summary and detail consistent and ensures that changes in the crib automatically flow to the summary and to the totals reconciliation (D204 etc.).
+
+3) EPS / share‑count unit mismatch (possible sign/unit error)
+- Problem: Weighted average shares are stored in different formats/places (sheet shows “in thousands” in one place, and raw share counts in another: P&L K57 = 467,724 vs P&L K66 = 484,435,521). EPS formulas use K66 while some documentation says shares are in thousands. That looks inconsistent and can give wrong EPS.
+- Impact: EPS numerators (loss amounts) divided by the wrong denominator (thousands vs raw) will produce EPS off by ~1,000x or otherwise wrong; also using different share cells across QTD/YTD columns leads to inconsistent EPS comparisons.
+- Fix: Decide on one canonical shares cell and unit (either raw shares or thousands). Then:
+  - If shares are “in thousands”: convert denominator when needed (e.g., if numerator is in millions or dollars, ensure both numerator and denominator match units).
+  - Update EPS formulas to reference the same canonical cell (for example use the weighted-average shares cell on the P&L or BS crib consistently), or if you must use raw shares, divide the “in thousands” cell by 1,000.
+  - Example: if numerator is dollars and K57 is thousands, then EPS = (Loss in dollars) / (K57 * 1000). If numerator already uses thousands, remove the *1000.
+- Why this fixes it: Ensures EPS math is consistent and comparable across periods.
+
+Quick steps I recommend you perform now
+- Change CF!H14 to =SUM(H11:H13).
+- Recalculate CF H34/H60/H64 and confirm cash balances align to BS cash (BS!D15 or crib cash total).
+- On the BS summary replace hard-coded totals with links to BS Crib roll-ups (e.g., BS!D21 → 'BS Crib'!D59 or whatever the correct crib cell is; BS!D42 → 'BS Crib'!D169).
+- Audit EPS formulas: pick one shares cell and correct units; update K69/K70/K71/K72 (and corresponding QTD/YTD formulas) to reference that cell consistently.
+
+If you want, I can:
+- Give the exact formula replacements for the specific cells (I noted CF!H14 and candidate BS links).
+- Run through the EPS cells and show corrected formulas using the canonical share cell and unit conversions.

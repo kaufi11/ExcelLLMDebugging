@@ -1,0 +1,33 @@
+Good summary — I found the actual errors and give short fixes with explanations.
+
+1) E20-9 (2) — obvious formula typo
+- Error: C11 = SUM(C4:C6)*C2 (multiplying indirect costs by hours)  
+- Fix: change to C11 = SUM(C4:C6) / C2  
+- Why: Indirect hourly rate = total indirect costs ÷ total direct labor hours. Multiplying creates a huge wrong rate and breaks all downstream results.
+
+2) P20-3B — overhead/reference mistakes
+- Error A (wrong reference in an overhead cell): I10 = +F14*H10  
+- Fix: change to I10 = F10*H10 (or if the intent was to compute overhead once on the totals row, move =F14*H10 into the totals/summary cell instead)  
+- Why: Overhead on row 10 should be rate × that row’s direct-labor amount (F10). Using F14 (the total) either double-counts or misplaces the allocation.
+
+- Error B (incomplete SUM ranges / missing source rows): D14 = SUM(D10:D13) and F14 = SUM(F10:F12) reference cells that aren’t shown (D13, F11).  
+- Fix: adjust the SUM ranges to the actual populated rows, for example D14 = SUM(D10:D12) and F14 = SUM(F10:F12) if only rows 10–12 hold data.  
+- Why: Including blank or wrong rows gives incorrect totals; ensure the sum ranges match actual data rows.
+
+3) P20-1B — journal entries placed in wrong columns (column misalignment)
+- Problem: Header says columns B/C = Work in Process, D/E = Finished Goods, F/G = Cost of Goods Sold. Several journal formulas are written into F/G (COGS columns) instead of into D/E (Finished Goods) or B/C (WIP). Examples:
+  - F14 = +E4+G6 should be in E14 (Finished Goods cost), not F14.
+  - G15 = +F14 should be in C15 (Work in Process cost) and should reference E14 after you move it.
+  - F18 = +G9+G10+G11 should be in E18 (Finished Goods cost), and G19 = +F18 should be in C19 (WIP cost).  
+- Fix (example corrections):
+  - Put Finished Goods debit into E14: E14 = E4 + G6
+  - Put WIP credit into C15: C15 = -E14 (or =E14 if your sheet records credits as positives in column C)
+  - Put Finished Goods debit into E18: E18 = G9 + G10 + G11
+  - Put WIP credit into C19: C19 = E18
+- Why: Journal entries must go under the correct ledger columns so debits and credits show in the right accounts. Right now entries are being posted to the COGS columns, which misstates account balances.
+
+4) General housekeeping
+- Remove duplicate "(2)" sheets (E20-9 (2), P20-1B (2), P20-3B (2)) or mark them clearly as backups. Duplicates can cause confusion and copy errors.
+- After fixing formulas, recalc and check the final totals (predicted job cost, total bid, finished goods, WIP, COGS).
+
+If you want I can give the exact corrected formulas for every affected cell (ready to paste), or produce a short checklist you can use to correct the workbook step-by-step. Which do you prefer?

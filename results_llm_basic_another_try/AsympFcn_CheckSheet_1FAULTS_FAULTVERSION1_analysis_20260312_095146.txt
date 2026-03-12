@@ -1,0 +1,39 @@
+Errors found:
+
+1. In MasterMethod_Checks sheet, cell B6 formula: `=LOG(B4,B5)` is incorrect for calculating the critical exponent CE = log_b(a). The syntax for LOG is `LOG(number, base)`, so it should be `=LOG(B4, B5)` which is correct. No error here.
+
+2. In MasterMethod_Checks sheet, row 11 (and similar rows), column B formulas like `=A11/2` are suspicious because A11=0, so B11=0/2=0, which might cause division by zero or invalid calculations later.
+
+3. In MasterMethod_Checks sheet, row 19, cell B19 formula is `=A19/873` which is inconsistent with other rows where it's `=A#/2`. This looks like a typo or error.
+
+4. In SubstitutionMethod_Checks sheet, column D formulas like `=5*1+A10/LOG(A10,2)` are inconsistent with other rows where the multiplier changes (e.g., `5*$D$11 + A19/LOG(A19,2)`). This inconsistency may cause errors.
+
+5. In SubstitutionMethod_Checks sheet, column B formulas like `=$B$4*A10*LOG(LOG(A10,2),2)` for A10=1 will cause `LOG(LOG(1,2),2)` = LOG(0,2) which is undefined (log(0) is error). This will cause #NUM! errors for n=1.
+
+Solutions:
+
+1. Fix B19 in MasterMethod_Checks: Change `=A19/873` to `=A19/2` to be consistent.
+
+2. For rows where n=0 or n=1, avoid log of zero or log of log(1) errors by starting n from 2 or higher, or add error handling like `IF(n>1, formula, "")` to avoid invalid logs.
+
+3. In SubstitutionMethod_Checks, ensure consistent formulas in column D and check references like `$D$11`, `$D$12` etc. are correct and intended.
+
+4. For the log of log terms, add error handling to avoid log(0) or negative inputs, e.g., `IF(A10>1, formula, "")`.
+
+Explanation:
+
+- Logarithm of zero or negative numbers is undefined, so formulas like LOG(LOG(1,2),2) cause errors.
+
+- The inconsistent divisor in B19 (873 instead of 2) breaks the pattern and likely causes wrong results.
+
+- Consistent formulas and proper domain checks prevent errors and ensure correct calculations.
+
+Summary:
+
+- Correct B19 formula to `=A19/2`.
+
+- Start n from 2 in SubstitutionMethod_Checks or add IF checks to avoid invalid log inputs.
+
+- Verify all absolute references in formulas are intended and consistent.
+
+- Add error handling to log formulas to prevent #NUM! errors.

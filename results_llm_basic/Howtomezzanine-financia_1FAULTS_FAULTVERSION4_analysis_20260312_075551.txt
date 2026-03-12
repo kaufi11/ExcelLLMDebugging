@@ -1,0 +1,41 @@
+I checked both sheets and found the main issues. Short summary, fixes, and why they matter.
+
+1) Wrong operator in H14 (Services per sq ft)
+- Error: H14 = $C14 * $C$5 (multiplying total Services by Total Area)
+- Problem: H-column is “per sq ft”. Multiplying makes the per-sq-ft number huge and corrupts every subtotal that uses H14.
+- Fix: change to H14 = $C14 / $C$5
+- Why: dividing the total annual Services cost by Total Area gives the correct cost per sq ft.
+
+2) Inconsistent / incorrect total + markup calculation in column C and F (TOTAL CHARGE)
+- Error:
+  - C37 = SUM(C12:C35) * 0.9  (mysterious 0.9 multiplier)
+  - F37 = C37 + SUMPRODUCT(C12:C35, F12:F35)
+- Problems:
+  - C37 arbitrarily reduces the sum of costs by 10% (0.9) — that’s unexpected unless you intentionally want a 10% discount; it’s undocumented and likely wrong.
+  - F37 adds the SUMPRODUCT of costs*markup to C37 rather than applying each markup to its cost. That gives the wrong total charged amount when different items have different markups.
+- Fixes:
+  - If you want C37 = total of the base annual costs, use: C37 = SUM(C12:C35)
+    (remove the *0.9) — unless you intentionally want a 10% reduction (then document it).
+  - For the total after applying each item’s markup, replace F37 with:
+    F37 = SUMPRODUCT(C12:C35, 1 + F12:F35)
+    (this applies each item’s markup then sums)
+- Why: SUMPRODUCT(C, 1+F) computes sum of cost*(1+markup) for each line, which is the correct way to get the total charged amount when markups differ by line.
+
+3) Things to review after those fixes
+- H29, I29, J29 and H37/I37/J37 etc will update once H14 and the C/F37 fixes are made — re-check these totals.
+- Many other H-row formulas are correct (they mostly use $Cxx / $C$5); H14 was the single obvious multiplication typo.
+- C37’s 0.9 could be intentional for a business rule (e.g. vacancy allowance). If it is intentional, rename cell or add a note and adjust F37 accordingly:
+  - Example if 0.9 is intended to represent 90% billable factor, then F37 should be:
+    F37 = SUMPRODUCT(C12:C35, 1 + F12:F35) * 0.9
+  - But keep the multiplication applied consistently (either before or after markups) and document it.
+
+4) NPV formula (minor / stylistic)
+- The long IF(...) sequence in B85 works logically (it includes F80 for years 1..C65 and zeros after), but it’s long and error-prone. It’s not strictly wrong, but you can simplify or build a dynamic cash-flow range to make it cleaner. No immediate correction required unless you want to simplify.
+
+Action checklist (copy-pasteable):
+- Change H14 to: = $C14 / $C$5
+- Change C37 to: = SUM(C12:C35)    (or keep *0.9 only if that 10% reduction is intended and documented)
+- Change F37 to: = SUMPRODUCT(C12:C35, 1 + F12:F35)
+- Recalculate and check totals / NPV after changes.
+
+If you want, I can produce the exact replacement formulas for any other cells that still look wrong after these fixes or show how the numbers change if you want the 0.9 applied as a “billable factor.”

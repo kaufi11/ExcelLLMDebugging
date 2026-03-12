@@ -1,0 +1,38 @@
+Sheet name: PART Qs & Section Scoring
+
+Purpose / top metadata:
+- A1–A3: Title, PART type, program name ("Superfund Removal").
+- The sheet implements an OMB PART assessment split into four sections: Section I (Program Purpose & Design), Section II (Strategic Planning), Section III (Program Management), Section IV (Program Results).
+
+Layout / columns (A:G):
+- A: question number / section labels.
+- B: question text or goal/target labels.
+- C: Answer (Yes/No/N/A or Yes/No/Small Extent/Large Extent).
+- D: Explanation / rationale.
+- E: Evidence / data sources.
+- F: Weighting (numeric weights per question, mostly decimals like 0.2 or 0.1428/0.143, some zeros).
+- G: Weighted Score (formulas that convert the answer into a numeric contribution).
+
+Key formula patterns:
+- Sections I–III (binary Yes/No): G cells use IF to map answers to 1 or 0 and multiply by the weighting. Example: G6 = IF(C6="yes",(1*F6),IF(C6="no",(0*F6),"")).
+- Section IV allows gradations: G formulas map "yes" → 1*weight, "no" → 0, "small extent" → 0.33*weight, "large extent" → 0.67*weight. Example: G41 = IF(C41="yes",(1*F41),IF(C41="no",(0*F41),IF(C41="small extent",(0.33*F41),IF(C41="large extent",(0.67*F41),"")))).
+- Section totals: Each section has a weighting-check in column F and a weighted-score total in column G:
+  - Section I: F12 = IF(SUM(F6:F10)<>100%,"ERROR","100%"); G12 = SUM(G6:G10).
+  - Section II: F24 = IF(SUM(F16:F22)<>100%,"ERROR","100%"); G24 = SUM(G16:G22).
+  - Section III: F36 = IF(SUM(F28:F34)<>100%,"ERROR","100%"); G36 = SUM(G28:G34).
+  - Section IV: F56 = IF((F55+F54+F53+F45+F41)<>100%,"ERROR","100%"); G56 = G55+G54+G53+G45+G41.
+
+Notable values / content highlights:
+- Answers populated for most items (many "Yes" or "No"; Section IV includes "Small Extent" entries).
+- Typical weights: Section I uses 0.2 per question (5 questions). Section II & III use ~0.1428/0.143 per question (7 questions each). Section IV uses roughly 0.333 or 0.334 for three main items and two N/A items with weight 0.
+- Evidence fields cite statutes, CERCLA, CERCLIS, RFF report, Annual Plans, budget docs, etc.
+- G21 is set to the literal value 1 (FORMULA =1) rather than an IF formula — this will force a full weighted contribution regardless of C21.
+
+Potential issues to address (concise):
+- Weight-sum checks in F12/F24/F36/F56 compare the SUM(...) to 100% (text/percentage) while actual weights are decimals (e.g., 0.2, 0.1428) that sum to 1.0; these checks will return "ERROR" unless weights are entered as percentages (20%, 14.28%) or the checks are changed to compare to 1 or 100%. 
+- G21 is hard-coded as 1 (should likely follow the IF pattern to multiply by F21).
+- F56 uses an explicit sum of a subset of F cells instead of a contiguous range (risk of omissions if structure changes).
+- Some weights are approximated (0.1428 vs 0.143); consider consistent precision or using percentage formatting for clarity.
+
+Overall:
+- A single-sheet PART assessment with standard PART structure: question rows with answers, explanations and evidence, a weighting column, and weighted-score formulas that compute each question’s contribution and sum by section. Fix the weighting-checks and the noted hard-coded formula to ensure accurate totals.

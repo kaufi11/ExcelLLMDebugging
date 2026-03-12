@@ -1,0 +1,33 @@
+Summary of errors
+- Wrong divisor on one average: M42 contains =L42/347 (should be /10 or use COUNT). This makes that student's average totally wrong.
+- Many per-student averages use a fixed /10 (M3:M41, M43:M45). But several rows have missing homework cells (blanks). Dividing by 10 assumes 10 scores; blank cells are treated as zero only in L (SUM) but not counted properly for an average. That gives incorrect averages if a student actually has fewer than 10 scores or data were shifted/missing.
+- Some rows have missing values (likely mis-entry / shifted cells) — examples: row4 missing B?E?J etc; row25 missing B; row27 missing B; row28 missing H,K; row45 missing B,G,J,K. These cause sums/averages to be wrong or misleading.
+
+Why these are wrong (short)
+- Lx = SUM(Bx:Kx) will sum blanks as zero (so SUM is low if cells are blank).
+- Mx = Lx/10 forces dividing by 10 even when there are fewer real scores — under- or overstates the average.
+- M42 /347 is a typo and not meaningful.
+
+Simple solutions (pick one approach)
+
+Option A — preferred: calculate average from actual nonblank scores
+- Replace row-average formulas with =AVERAGE(Bn:Kn). This ignores blank cells automatically and gives the real average.
+  Example for row 3: change M3 to =AVERAGE(B3:K3). Fill down M3:M45.
+- Fix M42 to the same formula: =AVERAGE(B42:K42).
+- This also fixes M47 (overall average of M column) because each student average will be correct.
+
+Option B — keep SUM in L and compute average by count
+- Change Mx to =IF(COUNT(Bx:Kx)=0,"",Lx/COUNT(Bx:Kx)). This divides total by the number of entered scores.
+  Example: M3 = IF(COUNT(B3:K3)=0,"",L3/COUNT(B3:K3))
+- Replace M42’s /347 with the same formula.
+
+Data-cleaning step (recommended)
+- Check and fix missing/shifted entries (rows 4, 25, 27, 28, 45 etc.). Use Go To Special → Blanks to find empty cells in B3:K45 and confirm whether they should have values or the row’s values are shifted left/right.
+- If blanks mean a student missed a homework and should count as zero, keep SUM/COUNT method but fill missing with 0 or use =Lx/10 intentionally. If blanks mean "not applicable", use AVERAGE to ignore them.
+
+What to change now (exact quick actions)
+1. In M3 enter: =AVERAGE(B3:K3)
+2. Fill (copy) that formula down M3:M45 (this replaces the wrong /10 and the /347).
+3. Review highlighted blanks in B3:K45 and correct any mis-entered/shifting data.
+
+If you want, I can produce the exact list of rows with missing cells or give the IF/COUNT formula filled for every row. Which would you prefer?

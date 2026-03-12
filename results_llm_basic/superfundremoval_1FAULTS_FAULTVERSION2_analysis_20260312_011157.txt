@@ -1,0 +1,49 @@
+Summary — main errors found
+1. Many IF tests are case-sensitive and expect "yes" or "no" (lowercase) but the sheet answers are "Yes", "No", "Small Extent", etc. Those IF conditions therefore return "" (blank) instead of the intended weighted value. This breaks the weighted scores and totals.
+2. One clear formula bug: G21 uses 1/F21 (division) instead of 1*F21 (multiplication). That produces a huge, incorrect weighted score when C21 = "Yes".
+3. Section IV answer-string mismatches: cells use values like "Small Extent" / "Large Extent" / "No" with different capitalization than the IF tests ("small extent", "large extent", "no"), so those IFs also fail.
+4. Minor robustness issue: the "check that weights sum to 100%" formulas compare to 100% literal. That works in Excel but is fragile with rounding; use ROUND or compare to 1.0 for clarity.
+
+What to do (simple fixes)
+A. Make the IF tests case-insensitive and trim spaces. Replace formulas like:
+   =IF(C6="yes",(1*F6),IF(C6="no",(0*F6),""))
+with a robust version:
+   =IF(LOWER(TRIM(C6))="yes",F6,IF(LOWER(TRIM(C6))="no",0,IF(LOWER(TRIM(C6))="n/a",0,"")))
+Explanation: LOWER(TRIM(...)) converts " Yes " or "YES" to "yes", so the check works regardless of capitalization/extra spaces. Using F6 (not 1*F6) is the same but simpler.
+
+B. Fix the division typo in G21:
+   Replace =IF(C21="yes",(1/F21),IF(C21="no",(0*F21),""))
+with
+   =IF(LOWER(TRIM(C21))="yes",F21,IF(LOWER(TRIM(C21))="no",0,""))
+Explanation: Use multiplication (or simply return the weight F21) rather than dividing by F21.
+
+C. Fix Section IV multi-choice checks (Small/Large extent). For example G41, G45, G53 formulas can be rewritten as:
+   =IF(LOWER(TRIM(C41))="yes",F41,IF(LOWER(TRIM(C41))="no",0,IF(LOWER(TRIM(C41))="small extent",0.33*F41,IF(LOWER(TRIM(C41))="large extent",0.67*F41,""))))
+Explanation: This accepts "Small Extent" or "small extent" and applies the correct fraction of the weight.
+
+D. Make weight-sum checks robust (optional but recommended). Instead of:
+   =IF(SUM(F6:F10)<>100%,"ERROR","100%")
+use:
+   =IF(ROUND(SUM(F6:F10),4)<>1,"ERROR",1)
+Explanation: Rounding avoids tiny floating point rounding errors; returning numeric 1 is easier to use in calculations.
+
+E. Longer-term improvement (recommended)
+- Use Data Validation drop-down lists for the Answer column (C) with permitted values exactly matching the formula checks (e.g., Yes / No / N/A / Small Extent / Large Extent). That prevents mismatches and typos.
+- Alternatively use a lookup table (map answers to numeric multipliers) and a single VLOOKUP or INDEX/MATCH to compute the weighted score. Example mapping table:
+   "Yes" -> 1
+   "No" -> 0
+   "Small Extent" -> 0.33
+   "Large Extent" -> 0.67
+then G cell = VLOOKUP(TRIM(C6),map_table,2,0)*F6
+
+Quick examples (copy-paste ready)
+- Corrected generic Yes/No formula (use for G6:G10, G16:G22, G28:G34, etc.):
+   =IF(LOWER(TRIM(C6))="yes",F6,IF(LOWER(TRIM(C6))="no",0,IF(LOWER(TRIM(C6))="n/a",0,"")))
+- Corrected G21 (fix divide bug):
+   =IF(LOWER(TRIM(C21))="yes",F21,IF(LOWER(TRIM(C21))="no",0,""))
+- Corrected Section IV multi-choice (example for G53):
+   =IF(LOWER(TRIM(C53))="yes",F53,IF(LOWER(TRIM(C53))="no",0,IF(LOWER(TRIM(C53))="small extent",0.33*F53,IF(LOWER(TRIM(C53))="large extent",0.67*F53,""))))
+
+Final notes
+- After fixing the text-matching and the G21 division error, your weighted scores (G6:G34, G41:G56) and section totals (G12, G24, G36, G56) should calculate correctly.
+- If you want, I can produce the exact corrected formulas for every G cell in the sheet or provide a lookup-table approach (cleaner and easier to maintain). Which would you prefer?

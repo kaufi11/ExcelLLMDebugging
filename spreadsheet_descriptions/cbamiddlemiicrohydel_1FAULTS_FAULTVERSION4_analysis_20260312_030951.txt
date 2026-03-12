@@ -1,0 +1,89 @@
+Summary of workbook (concise)
+
+Workbook contains two sheets: "CBA" (project-level Cost–Benefit Analysis over 20 years) and "Individ. Hh. Analysis" (household-level survey + aggregation). Below is a brief, structured description of layout, key rows/cells, main formulas and important values/flags.
+
+1) General layout / timeline
+- CBA: Column headers E2: F2: then year columns G2:AA2 = 2000…2020 (20+1 columns). A/B columns used for S# and description lines. C columns hold row-level sums across the time horizon.
+- Discount rate used: 12% (DF rows).
+- Analysis period declared: 20 years (C2).
+
+2) Costs section (CBA sheet)
+- Block header: "Costs:" (row ~3–17).
+- Major items (row numbers as given):
+  - Construction: AKRSP contribution (A5/B5): G5 formula =240000/0.4825 (bringing 1993 Rs into 2000 prices). Community contribution (G6) =21780/0.4825.
+  - Operation & Maintenance (row 8): annual per-year formula repeated: 55200-(1200*12)-(600*12)+(500*12) (special additional values injected in some years; Q8 includes extra one-off damages: +10000+25000+(500*5)+50000+5000).
+  - Connection costs (row 9): H9 & I9 =500*15 (half households year1 & remainder year2).
+  - Household wiring (row 10): H10/I10 =4297*15; Q10 =4275*7.5 (a later replacement or subset in 2010).
+  - Tube lights & bulbs (rows 11–13): tube lights row 11 uses 5.67*30*50*6 repeated across years; tube unit replacement row 12 uses 5.75*1*30*120; energy-savers row 13 uses 4.22*30*12*15.
+  - Recycling transport/labour (row 14): repeated formula (500*2)+(60*2).
+  - Appliance purchases spread across specific years: washing machines, butter churners etc (rows 15–16 distributed in J/K/L etc).
+  - Environmental clean-up (AA17) =0.1*G5+0.1*G6 (appears only in 2020).
+- Row 18: Total costs per year: G18..AA18 = SUM(G5:G17) etc. C18 = SUM(G18:AA18) (total cost over period).
+
+3) Discounting costs / present value (CBA)
+- Row 19: Discount factors at 12%: G19=1; H19 = G19*(1/1.12); then iteratively H→I→J etc. (Note: U19 has a probable typo =T19*(1*1.12) but intended is *(1/1.12).)
+- Row 20: Present value of costs per year: G20 = G18*G19, H20 = H18*H19 etc. C20 = SUM(G20:AA20). G36/C36 repeat these PV totals in summary section.
+
+4) Benefits section (CBA)
+- Block header: "Benefits:" (rows 23–30).
+- Key benefit lines:
+  - Saving on kerosene (row 23): per-year formula (164-26)*30*13 repeated for most years.
+  - Saving on batteries (row 24): (7.44-0.78)*12*30*18 repeated.
+  - Profits from handicrafts (row 25): 300*12*30 repeated.
+  - Time-savings monetized (washing machines row 26 and butter-churning row 27): formulas ((11*10*52)/8)*60 and ((20*6*52)/8)*60 repeated across years.
+  - Scrap resale (row 28): 0.1*(tube cost)+0.1*(bulb cost) each year.
+  - Scrap value line (F29 / AA29): AA29 =0.02*G5+0.02*G6 (2% of initial costs) in 2020 cell only.
+- Row 30: Total benefits per year: G30..AA30 = SUM(G23:G29) etc. C30 = SUM(G30:AA30).
+
+5) Discounting benefits / present value (CBA)
+- Row 31: Discount factors at 12% (same method as row 19). Again iterative; AA31 computed.
+- Row 32: Present value of benefits per year: G32 = G30*G31 etc. C32 = SUM(G32:AA32). G35/C35 are repeats of PV benefits in summary.
+
+6) Summary outputs (CBA)
+- Present value of benefits = C32 (also G35 = SUM of year PVs).
+- Present value of costs = C20 (also G36).
+- Benefit/Cost ratio: C38 = C35/C36 (and G38 for column sums).
+- NPV: C39 = C35 - C36 (and G39).
+- Assumptions block (rows ~41–60) documents all unit values and behavioural assumptions used in formulas (e.g., kerosene price Rs 13/l, energy-bulb cost 15, tube cost 50, battery pair Rs 18, firewood Rs 70/maund, gas Rs 35/kg, AKRSP & community base years, maintenance breakdowns).
+
+7) Sensitivity tests
+- Rows A80–A85 list shock events and costs (e.g., headworks damage Rs10,000 year10; flood damage Rs25,000; refurb turbine year7 Rs50,000; re-wiring 25% houses in year10 using 4297*30 etc) — these correspond to the one-off cost items observed in the O&M row (Q8) and others.
+
+8) Individual Household Analysis sheet
+- Rows: Household observations (A3:A11: households 1–11) with columns capturing:
+  - Activities impacted (washing, ironing, cleaning lanterns, butter churning, handicrafts, education, radio, socialising) in B–J.
+  - Fuel use before (L–S) and today (P–S and T–AA for quantities): columns T..AA contain quantities/month or year; many values are numeric or formulas converting gallons to litres and batteries to Rs.
+  - Costs and appliance columns: AB average bill, AC tube lights count, AD energy savers count, AE wiring cost, AF when wired, AG..AO appliances owned.
+  - AP/AQ flags (more economical yes/no), AR comments.
+- Key formulas:
+  - Many household conversions use multiplier 4.54596 (litres per gallon) and battery price 18 (W*18).
+  - Several AE wiring cost cells are inflation-adjusted (e.g., AE3 =2500/0.797).
+  - Row 13: averages across households for quantities (T13, V13, X13, Y13, Z13, AB13, AC13, AD13, AE13 = AVERAGE of household cells).
+- Aggregation & valuations (lower block):
+  - Uses those household averages to compute village totals and monetary values:
+    - Kerosene: C34..C44 compute per-hh and village kerosene consumption and value (C40, C41) using conversion to gallons and Rs50 per gallon.
+    - Batteries: averages (C47–C57) calculate village battery consumption and value at Rs18/pair.
+    - Firewood: (C60–C70) use maunds and Rs70/maund to compute savings.
+    - Gas: rows C74–C77 compute current consumption & value at Rs35/kg.
+    - Electricity bill: AB13 average bill flows into C81–C83 for per-household and village annual bills.
+    - Bulbs/tubes: C86–C94 aggregate counts & annual replacement cost: tube light formula C88 = C87*50*6; bulbs C94 = C93*15.
+  - Wiring total: C112..C113 average wiring cost *31 households.
+
+9) Key constants / numeric values to note
+- Discount rate: 12%
+- AKRSP base contribution: Rs 240,000 (1993) adjusted by /0.4825 to year 2000.
+- Community contribution: Rs 21,780 adjusted similarly.
+- O&M base: Rs 55,200 p.a. with component adjustments in formulas.
+- Tube light: Rs 50, changed 6 times/year; energy-saver: Rs 15 changed monthly (formula uses 12 or 1 depending on interpretation).
+- Battery pair price: Rs 18; kerosene price used Rs 13/l earlier but in village valuation uses Rs50 per gallon (consistent conversion).
+- Firewood Rs 70/maund; LPG Rs 35/kg.
+
+10) Flags / potential issues (worth checking)
+- Discount factor row: U19 uses T19*(1*1.12) — likely a typo; should be *(1/1.12). Check row 19 and row 31 consistency across all years.
+- Some present-value multiplications (e.g., K20 uses K18*K19; many are correct but verify all are referencing matching DF cells).
+- One-off items appear embedded in O&M (Q8) and in AA17/AA29 referencing only G5/G6 (year 2000 values) — verify intended timing/indices.
+- Several hard-coded repeated formulas across years (good for transparency but error-prone if a year-specific value should change).
+
+If you want, I can:
+- produce a one-page map of the exact cell ranges and formulas in CSV or a concise annotated table, or
+- scan for formula inconsistencies (highlight cells that likely contain typos) and produce a corrected version of the discount factor row and flagged formulas.

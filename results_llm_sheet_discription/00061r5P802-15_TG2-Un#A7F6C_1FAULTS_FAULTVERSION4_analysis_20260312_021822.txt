@@ -1,0 +1,38 @@
+Summary of the errors
+1. Column A (row numbers) is broken:
+   - A38 is hard-coded / wrong ("=6") instead of continuing the sequence (should be A37+1). That drops the counter and creates duplicate / out‑of‑order numbers afterwards.
+   - There are blank rows (50–51) and at least one formula (A52 = A49+1) that jumps the chain; relying on “A(previous)+1” creates gaps and fragile sequencing when rows are inserted, deleted, or manually edited.
+2. Minor header inconsistency: J1 (Address line 2) is missing in the top-of-sheet column list (this can cause confusion when mapping address lines).
+
+Why this is a problem
+- The current approach depends on each row’s value in A being correct to produce the next. One bad manual value or blank row breaks the whole subsequent numbering. That leads to duplicates, missing numbers and unreliable indexing.
+
+Simple, robust solutions (pick one)
+
+A — Best for only numbering rows that have a name (recommended)
+- Put this formula in A2 and copy/fill down the whole column:
+  =IF(TRIM($C2)="","",COUNTA($C$2:$C2))
+- What it does: counts how many non-blank Name cells are in column C up to the current row, producing a running index only for rows with names. It does not depend on previous A cells, so manual edits or blank rows won’t break the sequence.
+
+B — If you want a simple row-based number regardless of blanks
+- Put this in A2 and fill down:
+  =ROW()-1
+- What it does: shows the worksheet row number minus the header row. This will give a number for every row (even blank ones).
+
+C — Quick manual fix to restore the original increment-by-one approach
+- Clear column A (remove all formulas/values).
+- Use Fill → Series (Home > Editing > Fill > Series) to create a linear series (start=1, step=1) across the used rows.
+- This is fine as a one-off but fragile: the series will break again if you insert/delete rows or manually change values.
+
+How to implement the recommended method (A) step-by-step
+1. Select cell A2.
+2. Enter: =IF(TRIM($C2)="","",COUNTA($C$2:$C2))
+3. Press Enter.
+4. Drag the fill handle down from A2 to A75 (or double-click the fill handle to auto-fill).
+5. Verify numbers are sequential and no duplicates exist; blank-name rows will show blank in column A.
+
+Extra cleanup
+- Fix header row: add J1 = "Address (line 2)" so everyone knows what column J is for.
+- After fixing numbering, check for any other manual values in column A and clear them if needed.
+
+If you want, I can produce the exact formula adjusted for your specific first/last rows (e.g., A2:A75) or show how to convert the current A column to the new formula in-place without losing data.

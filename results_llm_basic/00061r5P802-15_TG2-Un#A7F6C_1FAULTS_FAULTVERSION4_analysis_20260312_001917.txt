@@ -1,0 +1,39 @@
+Summary of the problems I found (short)  
+1) Column A (the “#” column) is broken: many cells show literal text like "FORMULA = A2 + 1" or "FORMULA =6" instead of a working formula/result. The sequence also jumps (A49 → A52), so the row numbers are wrong/inconsistent.  
+2) Column J has no header (J1 is blank) while rows use J for address line 2 — header labels are misaligned/missing.  
+3) Column M header is "CNTY" but the column contains countries (USA, Germany) — label is misleading (should be Country).
+
+Why these are problems (short)  
+- Numbering in A is unreliable (text, hard-coded, or referencing wrong rows); inserting/deleting rows will break numbering or produce duplicates.  
+- Missing header J makes it unclear what J contains and causes confusion when filtering/sorting.  
+- Misnamed header M can lead to wrong interpretation of data or wrong filtering/sorting.
+
+Quick fixes and clear explanations
+
+1) Fix the numbering in column A (recommended robust solution)
+- Replace the whole column A with a formula that always produces sequential row numbers regardless of row insert/delete:
+  - Put this in A2: =ROW()-1
+    - Explanation: ROW() returns the current row number. Subtracting 1 gives 1 on row 2, 2 on row 3, etc. It is robust to inserted/deleted rows and avoids chaining references.
+  - Copy (fill) that formula down as far as you need.
+- If you prefer to keep a formula that starts at an initial value in A2, use A3: =A2+1 and fill down – but this chaining can produce gaps if rows were deleted. ROW()-1 is simpler and safer.
+
+If some cells still show text like "FORMULA = A2 + 1"
+- Select column A, set Number Format to General (Home → Number → General).
+- If the cell contains an apostrophe prefix ( ' ), edit the cell and press Enter to re-evaluate, or use Find & Replace to remove leading apostrophes.
+- Easiest: overwrite the whole column by entering =ROW()-1 in A2 and filling down.
+
+2) Add a header for column J
+- Put a meaningful label in J1 (e.g., "Address 2" or "Street (line 2)").  
+  - Explanation: That makes the layout consistent (I = Address line 1, J = Address line 2, K = City, etc.) and prevents confusion when sorting/filtering.
+
+3) Fix the M1 header label
+- Change M1 from "CNTY" to "Country" (or "County" if you actually meant U.S. county).  
+  - Explanation: currently the entries are countries (USA, Germany), so "Country" is the correct, unambiguous label.
+
+Extra suggestion (data hygiene)
+- After fixing headers and numbering, sort or filter a few rows to check alignment. If you deleted rows earlier (A50–A51 missing), reinsert blank rows if needed and then fill column A down again to restore continuous numbering.
+- If you want numbers only where there is an entry in column C (Name), use in A2:
+  =IF($C2="","",ROW()-1)
+  This leaves A blank for empty name rows.
+
+If you want, I can give the exact sequence of keystrokes (or a small macro) to convert the entire column A and fix the header cell J1 and M1 automatically. Which would you prefer?

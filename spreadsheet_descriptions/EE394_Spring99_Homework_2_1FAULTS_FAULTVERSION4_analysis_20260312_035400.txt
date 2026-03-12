@@ -1,0 +1,33 @@
+Spreadsheet summary (Sheet1)
+
+Purpose
+- Computes distributed‐transmission‑line parameters and evaluates sending‑end voltages/currents (phasors) along a line at regular distance increments. Also computes load impedance, reflection coefficient (RhoV) and VSWR.
+
+Layout
+- Title: A1 = "EE394, Spring 1999, Homework #2".
+- Column A: labels / parameter names (rows 4–35 include inputs and derived quantities such as outer/inner radius, εr, VR, S, pf, frequency, increment, C, L, Z0, β, wavelength, P/Q, IR, load Z components, phasor A/B components, RhoV, VSWR).
+- Column B: primary inputs and derived scalar values:
+  - Key inputs: B4 outer/inner rad = 2.7; B5 relative permittivity = 2.5; B6 VR (kV rms) = 100; B7 Load S (MVA) = 10; B8 Load pf = 0.9 (lagging); B9 Frequency (Hz) = 60; B10 Increment (km) = 50.
+  - Derived constants: B12 C (F/m) = 2π·ε0·εr / ln(B4), B13 L (H/m) = 2·1e‑7·ln(B4), B14 Z0 (Ω) = SQRT(L/C), B15 β (rad/m) = 2π·f·SQRT(L·C), B16 wavelength (km) = 1/(f·SQRT(L·C))/1000, B17 1/sqrt(LC), B18 wave speed 1/sqrt(μ·ε), etc.
+  - Load and phasor values: B19 P (MW) = B7*ABS(B8); B20 Q (MVAr) conditional on power factor sign; B21 IR mag (A rms) = B7*1000/B6; B22 IR angle = -ACOS(B8) in degrees; B23/B24 real & imag parts of IR; B25–B27 load Z real/imag/magnitude; B28–B31 phasor A & B components (kV rms) used for RhoV calculations; B32–B34 RhoV (real, imag, mag); B35 VSWR = (1+B34)/(1-B34).
+
+Main table (rows 4–54)
+- Columns C and D: distance generation
+  - Cn = -(ROW()-4)*$B$10 (gives negative increments); Dn = -Cn (so D produces non‑negative distances in km: 0, 50, 100, ...).
+- Columns E / F: E = COS($B$15 * D * 1000) and F = SIN($B$15 * D * 1000) — cosine and sine of β·distance (β in rad/m, D converted to m).
+- Columns G / H: Real(VS) and Imag(VS) (kV) at each distance using the line equation: G = (B6*1000*E - B14*B24*F)/1000, H = B14*B23*F/1000. (G,H combined give VS phasor; I/J show mag/angle.)
+- Columns I / J: VS magnitude (kV rms) and VS angle (deg): I = SQRT(G^2+H^2), J = ATAN2(G,H)*180/PI().
+- Columns K / L: Real(IS) and Imag(IS) (A rms) at each distance: K = B23*E, L = B6*1000/B14*F + B24*E (then M/N mag/angle).
+- Columns M / N: IS magnitude and angle: M = SQRT(K^2+L^2), N = ATAN2(K,L)*180/PI().
+
+Repeating pattern
+- Rows 4–54 replicate the same set of formulas to produce the line‑profile table at successive distances (using the increment in B10). The table therefore gives VS and IS phasor components, magnitudes and angles for each distance step.
+
+Other sheets
+- Sheet2 and Sheet3 exist but no content was provided.
+
+Notes / units
+- Voltages in column B6 and VS outputs are in kV (rms). Currents are in A (rms). Distances are in km (converted to meters inside trig functions). Characteristic impedance Z0 in ohms; L in H/m; C in F/m; β in rad/m.
+
+Overall
+- The workbook sets up transmission‑line physical parameters from conductor geometry and material properties, computes load currents/impedances from MVA and power factor, and then computes sending‑end voltages/currents and standing‑wave metrics along the line at configurable distance increments.

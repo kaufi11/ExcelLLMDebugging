@@ -1,0 +1,41 @@
+Thanks — I reviewed both sheets and found the definite formula mistakes and a few odd formulas that can produce wrong totals. Short, clear fixes below.
+
+Summary of the real errors and fixes
+
+1) STEP 1 — Giving subtotal missed a row
+- Error: E33 = SUM(E29:E30) — excludes E31 (there are 3 giving rows E29:E31).
+- Fix: change to =SUM(E29:E31)
+- Why: leaving out row 31 undercounts the "giving" total used downstream.
+
+2) STEP 1 — Emergencies / Future Needs subtotal uses single cell only
+- Error: E43 = SUM(E42) — effectively just E42; should include E41 (Emergencies).
+- Fix: change to =SUM(E41:E42)
+- Why: otherwise the emergencies total is missing and E43 is wrong.
+
+3) STEP 1 — Future plans total uses only one cell
+- Error: M43 = M42 — ignores M41 (if used).
+- Fix: change to =SUM(M41:M42)
+- Why: ensures the "future needs/plans" total includes both rows and feeds correct saving totals.
+
+4) STEP 2 — Saving percent formula points to Giving
+- Error: F10 = H8/H6 (this re-uses the giving cell H8)
+- Fix: change to =H10/H6
+- Why: F10 should show saved % of income; pointing to H8 gives the wrong percent.
+
+5) STEP 2 — Taxes cell is incorrect
+- Error: H14 = 1 (hardcoded 1) and F14 = H14/H6 (therefore nonsense)
+- Fix: set H14 to the taxes withheld total from Step 1. For example:
+  H14 = 'STEP 1 OF 2'!G22
+  (leave F14 = H14/H6)
+- Why: H14 must contain the actual tax dollars (from Step 1) so F14 can compute the tax % of earnings.
+
+6) Minor / cosmetic (not strictly breaking, but worth cleaning)
+- I33 = SUM(G32+I32) and M33 = SUM(K32+M32) are unusual constructions. Replace with:
+  I33 = G32 + I32  (or =SUM(G32, I32))
+  M33 = K32 + M32  (or =SUM(K32, M32))
+- Why: SUM(G32+I32) works but is confusing; using direct addition or SUM with commas is clearer and less error-prone.
+
+Why these matter (short)
+- Wrong ranges or hardcoded values produce undercounts/overcounts in Step 1 totals (giving, saving, taxes). Step 2 pulls those totals to compute % allocations and the final budget. Any incorrect source value will cascade and produce wrong %s and a wrong final surplus/shortfall.
+
+If you want, I can produce a ready-to-paste list of the corrected formulas for each affected cell (or a small macro to apply them). Which would you prefer?

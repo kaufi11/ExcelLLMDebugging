@@ -1,0 +1,20 @@
+Findings (short):
+
+1) Faulty cell: K41
+- Error: Hard-coded value (5). All other section totals use formulas; this breaks the automatic roll-up and will make TOTAL PROJECT (K93 / C98) wrong if K42 changes.
+- Fix: Replace the 5 with a formula that sums that row's labor/travel/expense cells. Use either:
+  - =SUM(H41:J41)
+  - or simply =K42
+- Explanation: H41/I41/J41 already pull H42/I42/J42. Using =SUM(H41:J41) keeps the same pattern used elsewhere and updates automatically when K42 changes.
+
+2) Potential/likely error: Labor rates are zero
+- Cells: E5:E8 currently = 0.
+- Effect: Every labor cost formula like H15 = SUM(D15*$E$5, E15*$E$6, ...) will return $0 even when hours are entered — makes costs incorrect.
+- Fix: Enter the correct hourly rates in E5:E8 (e.g., E5 = hourly rate for Job Category 1, etc.), or link these to your master rate table.
+- Explanation: The H-column multiplies hours by these rates. If rates are zero, calculated costs are zero.
+
+Optional check (recommended):
+- Review any other hard-coded numbers (I43, J43, H43 show 0 — OK if intentional).
+- Ensure all section header totals (rows like 12, 14, 18, etc.) follow the same pattern (sum of H:J or sum of subrows) so D93..K93 roll up correctly.
+
+If you want, I can give a revised copy of the few formulas to paste in or scan the sheet for any other hard-coded values.

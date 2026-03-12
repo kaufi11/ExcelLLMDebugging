@@ -1,0 +1,46 @@
+I reviewed the P&L and Balance Sheet. I found a few clear errors and some risky hard‑coded values. Short summary, fixes and why:
+
+1) P&L — Total revenues (cell H9) is wrong
+- Problem: H9 contains 0 instead of summing the two revenue lines for Dec 31, 1999.
+- Impact: Every downstream profit / EPS cell in the H column (Income from operations H20, Income before tax H27, Net income H33, EPS H36/H39 etc.) is wrong.
+- Fix: Put the correct formula in H9:
+  =SUM(H7:H8)
+- Why: Keeps total revenues linked to the revenue lines so changes flow through automatically.
+
+2) P&L — Hard‑coded EPS / Pro‑forma cells and inconsistent formulas
+- Problems:
+  - H46 and H52 (and L46 / L52) are hard-coded numbers (0.05 / -0.05) instead of formulas using the net income and shares cells.
+  - F46 and J46 use denominators like 32703 / 32761 rather than a visible cell reference — that’s fragile.
+  - L44 is a hard-coded negative number instead of a formula (looks inconsistent).
+- Impact: Pro‑forma EPS can become inconsistent or out of date when underlying net income or share counts change.
+- Fix (two options):
+  a) Simple consistent formulas using the visible net‑income and share cells:
+     - H46 -> =H44/H37
+     - H52 -> =H50/H37
+     - L46 -> =L44/L37
+     - L52 -> =L50/L37
+     (Or substitute the correct pro‑forma diluted shares cell if you have a specific pro‑forma share count.)
+  b) Better: create a single cell that stores the pro‑forma diluted share count (e.g. cell X) and use =NetIncomeCell / X for each EPS cell. This makes denominators explicit and easy to audit.
+- Why: Always reference cells rather than entering calculated constants so values update automatically and are auditable.
+
+3) P&L — Hard-coded arithmetic in J17
+- Problem: J17 =12615-5000 is a typed calculation instead of referencing the source cells (and it’s harder to audit).
+- Fix: Replace with references to the cells that hold those amounts. For example, if 12,615 is in Jxx and the 5,000 write‑off is in J23, use:
+  =Jxx - J23
+- Why: Cell references prevent mistakes when values change and make formula logic visible.
+
+4) Balance Sheet — Inconsistent SUM ranges flagged (possible source of future error)
+- Problem: G13 is =SUM(G7:G12) while I13 is =SUM(I7:I11). One includes row 12, the other does not.
+- Impact: If G12/I12 is later populated, the two columns could diverge silently.
+- Fix: Make the ranges identical and explicit. If the intended current assets range is rows 7–11, change G13 to:
+  =SUM(G7:G11)
+  or if row 12 is meant to be included, change I13 to:
+  =SUM(I7:I12)
+- Why: Consistent ranges avoid asymmetric totals when rows are added later.
+
+Quick checklist for you to run after fixes
+- Replace any remaining hard‑coded numbers that are results of calculations with formulas that reference the source cells.
+- Recalculate / recheck H20, H27, H33, H36/H39 and all pro‑forma EPS after correcting H9.
+- Verify pro‑forma diluted share counts and put them in a dedicated cell so EPS formulas always reference that cell.
+
+If you want, tell me which exact cell holds the “12,615” value used in J17 and which pro‑forma share counts you intend to use (32703/32761 or something else) and I’ll give the exact formulas to paste into the sheet.

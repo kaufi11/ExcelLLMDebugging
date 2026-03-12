@@ -1,0 +1,48 @@
+Summary of errors (short) and how to fix them
+
+1) Week‑4 column (E7:E12) contains wrong formulas instead of actual week‑4 hours
+- Problem: E7, E8, E10, E11, E12 use =AVERAGE(B#:D#) and E9 uses =SUM(B9:D9). Week‑4 should be the hours worked in week 4 (a number), not an average or a sum of weeks 1–3.
+- Fix: Replace the formulas in E7:E12 with the actual week‑4 hours values for each employee (manual entry). If you have a source cell for week‑4, point E# to that single cell (e.g. =H7), but do NOT average or sum B:D.
+
+2) Overtime column (G7:G12) is incorrect / inconsistent
+- Problem: G contains manual values (mostly 0, one 5) instead of a formula that calculates hours over 40.
+- Fix: Put a formula to compute overtime hours: in G7 enter
+  =MAX(0, F7-40)
+  and copy down G7:G12.
+  Explanation: MAX(0,F-40) gives hours above 40 only.
+
+3) Gross pay formulas double‑count overtime and don’t apply overtime pay rate
+- Problem: Gross pay cells (C20:C25) use =(F+G)*Rate which both double‑counts overtime (G is part of F) and does not apply overtime premium.
+- Fix (typical payroll with 1.5× overtime): use either
+  =MIN(F7,40)*B20 + G7*B20*1.5
+  or equivalently
+  =(F7-G7)*B20 + G7*B20*1.5
+  Put this in C20 and copy down (adjust row numbers for each employee).
+  Explanation: MIN(F,40) pays up to 40 regular hours at normal rate; G hours are paid at 1.5× rate.
+
+4) Weekly totals use inconsistent ranges (include row 13)
+- Problem: B15 and C15 use SUM(...:B13/C13) and G15 uses G7:G13, but employee rows end at row 12. This may include blank/extra rows or accidental cells.
+- Fix: Change weekly total formulas to use rows 7–12 consistently:
+  B15 =SUM(B7:B12)
+  C15 =SUM(C7:C12)
+  D15 =SUM(D7:D12)
+  E15 =SUM(E7:E12)
+  F15 =SUM(F7:F12)
+  G15 =SUM(G7:G12)
+
+5) Check F (Total Hours) after fixing E (week 4)
+- Note: F7:F12 are SUM(B#:E#). Those totals are currently wrong because E had wrong formulas. After replacing E with real week‑4 hours, F will be correct. No change needed to the SUM formula itself.
+
+Quick list of corrected formulas (copy down where appropriate)
+- E7:E12 — replace formulas with actual week‑4 hours (values).
+- G7: =MAX(0, F7-40)  → copy down to G12.
+- C20 (Green gross pay): =MIN(F7,40)*B20 + G7*B20*1.5  → copy down for each employee (adjust F# and G# references to match the employee row referenced).
+- Weekly totals row:
+  B15 =SUM(B7:B12)
+  C15 =SUM(C7:C12)
+  D15 =SUM(D7:D12)
+  E15 =SUM(E7:E12)
+  F15 =SUM(F7:F12)
+  G15 =SUM(G7:G12)
+
+If you want, tell me the actual week‑4 hours (E7:E12) and I will show the corrected totals, overtime, and gross pay values.

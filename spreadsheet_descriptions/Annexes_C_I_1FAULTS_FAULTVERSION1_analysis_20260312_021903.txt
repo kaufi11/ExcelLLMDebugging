@@ -1,0 +1,54 @@
+Summary of workbook structure and key contents
+
+Overall layout & conventions
+- Most financial sheets use columns: B = line/item number, C = description, H = Original FFR forecast, I = Mid‑Year revised outturn, J = Variance (I–H), K = Variance % (IF(H=0,"N/A",(J/H)*100)), L = Reason for material variances. Many numeric cells are initialised to 0 (placeholders).
+- Repeated cross‑sheet header formula: several sheets set the college name from Declaration - AnnexC!C3 (e.g. annex e A4, annex f A4, annex g A1/A4, Annex h A6, Annex h(1) A6, Annex I A2).
+- Common formulas: totals via SUM ranges, variance J = I–H, % K uses IF to avoid division by zero returning "N/A".
+- Validation/reconciliation: specific cells flagged “THESE CELLS MUST BE ZERO” or “These cells should be zero” to check consistency between cashflow and balance sheet (examples: annex f H73/I73 formulas; annex g H25..T25 and T26; annex g T26 and T49 reference annex f balances for reconciliation).
+
+Sheet-by-sheet summary
+
+1) Declaration - AnnexC
+- Purpose: cover page/declaration and contact details.
+- Key cells: A1 title, C3 College Name (used by many other sheets), signature/date area at row 26 (Principal and Accountable Officer).
+
+2) Commentary - Annex D
+- Purpose: free‑text financial commentary for the Financial Forecast Update.
+- C3 is pulled from Declaration - AnnexC!C3. Prompts/instructions in A6–A11.
+
+3) annex e — Income and Expenditure Account (Consolidated)
+- Structure: line items in column C (Income rows 9–15; Expenditure rows 18–23; surplus rows 25,31,38 etc.).
+- Columns H/I/J/K/L as described above. Totals: H15/I15 = SUM(H9:H14)/SUM(I9:I14); H23/I23 = SUM(H18:H22)/SUM(I18:I22); H25 = H15–H23 (I25 analogous).
+- Many individual values initialized to 0; variance and percent formulas present throughout.
+- Includes bursary/hardship section (rows 56–61).
+- Uses IF(H=0,"N/A",...) for percent columns to avoid divide‑by‑zero.
+
+4) annex f — Consolidated Balance Sheet
+- Structure: Fixed assets (rows 7–13), Current assets (18–22), Creditors short/long term, provisions, deferred grants, endowments, reserves, totals.
+- Key formulas: totals via SUM, Net current assets H34 = H22–H32, Total assets less current liabilities H36 = H13+H15+H34, Total net assets H48 = H36–H43–H46.
+- Deferred grants H51:H55 SUM; Total Funds H68 = H55+H58+H66; cell H73 = H48–H68 (should be zero).
+- Percent variance logic same as annex e. Most numeric cells are 0 placeholders.
+
+5) annex g — Operating Cash Flow (Consolidated)
+- Two panels: ORIGINAL CASH FORECAST (columns H:S = Aug–Jul, T = total) and ACTUAL/REVISED FORECAST (same layout later starting row 28).
+- Rows: cash in (SFEFC funding, other grants, other cash), cash out (payroll, other payments, interest), net cash flow row 17/40, balances carried forward row 19/42.
+- Monthly totals use SUM across H:S; carry‑forwards chain (e.g., I18 = H19, J18 = I19, etc.).
+- Reconciliation checks: row 25 (per month) = Total financing – balance c/f (should be zero); T26 and T49 provide cross‑sheet reconciliation with annex f (e.g. T26 = T19 - ('annex f'!H20 + 'annex f'!H21), T49 similar for revised).
+- All monthly numeric cells initially 0.
+
+6) Annex H and Annex H(1)
+- Purpose: report impact of specific grant (Circular FE/54/02) on I&E and balance sheet.
+- Annex H has placeholders; Annex H(1) provides an example.
+- Example values in Annex H(1): Total funding I17 = 90,000 (£'000 as units shown); breakdown: Funding Council grants I21 = 60,000; Exceptional restructuring costs I23 = 40,000; Other operating expenses I25 = 20,000; Balance sheet: Cash at bank I31 = 30,000; Deferred capital grants I33 = 30,000.
+
+7) Annex I — Statement of underlying operating surplus/deficit
+- Pulls key items from annex e: Surplus after depreciation H11 = 'annex e'!I25, add back exceptional restructuring H14 = 'annex e'!I19, plus other one‑offs H17/H20, final underlying operating surplus H27 = SUM(H10:H26).
+
+Notable cross‑sheet links & checks
+- Many sheets reference Declaration - AnnexC!C3 for college name.
+- Annex I and Annex H / H(1) draw figures from annex e and annex f.
+- Reconciliation points: annex f H73 (Total Net Assets vs Total Funds), annex g H25..T25 and per‑month checks, and cells T26/T49 reconcile cash totals to annex f balance sheet lines (H20/H21 and I20/I21 references).
+
+Overall status
+- The workbook is a standard FFU template: structured income statement, balance sheet, cashflow (monthly), commentary, grant impact, and underlying surplus calculation.
+- Most numeric inputs are initialized to zero; variance and percent columns and reconciliation checks are implemented throughout to flag material changes and ensure accounting balance.

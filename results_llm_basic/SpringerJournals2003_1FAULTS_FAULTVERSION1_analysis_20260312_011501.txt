@@ -1,0 +1,30 @@
+Summary of the errors
+1) Column G formulas are text, not formulas — cells show "FORMULA =E2*F2" instead of an actual Excel formula (=E2*F2). Because of that no multiplication is calculated and G (and the G total) is wrong.  
+2) Column F (the "Subs." quantity) is mostly empty. Even if G formulas are corrected, blank F cells will produce zero totals.  
+3) One inconsistent formula: G25 uses =E25*61 (hard-coded 61) instead of =E25*F25 (inconsistent with all other rows).  
+4) The grand totals (F407 and G407) are also stored as text (see point 1) so they don't calculate.
+
+How to fix (quick, safe steps)
+1) Convert the G formulas from text to real formulas
+   - Select column G (G2:G404).  
+   - Do a Find & Replace (Ctrl+H):
+     - Find what: FORMULA =
+     - Replace with: =
+     - Click Replace All.
+   - While G is still selected set Number Format → General and press Ctrl+Alt+F9 to force full recalculation.
+   This will turn "FORMULA =E2*F2" into "=E2*F2" so Excel evaluates the multiplication.
+
+2) Fix the single hard-coded cell
+   - Change G25 from =E25*61 to =E25*F25 (or run a Replace for "*61" → "*F25" only for that cell).
+
+3) Populate column F (subscriptions) or correct the referenced column
+   - If the subscription quantities belong in column F, enter those numbers there. After step 1 the G column will automatically compute E*F for each row.
+   - If the quantities are in a different column, edit the G formulas to point to the right column (e.g., replace F2 with the correct cell).
+
+4) Fix the totals
+   - After G formulas evaluate, set F407 to =SUM(F2:F404) and G407 to =SUM(G2:G404) (remove any leading text). If they were affected by the Find/Replace they will now be correct. Use Ctrl+Alt+F9 to recalc.
+
+Why this works (short)
+- Excel evaluates expressions only when a cell contains a proper formula starting with =. The prefix "FORMULA " or cell formatted as Text prevents evaluation; replacing the text with "=" turns strings into formulas and Excel computes the results. Populating column F supplies the multipliers so totals are meaningful.
+
+If you want, I can give the exact Find/Replace commands to run, or produce a short VBA macro to fix everything automatically. Which do you prefer?

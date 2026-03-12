@@ -1,0 +1,45 @@
+Summary of errors I found and how to fix them — short & simple.
+
+1) Grand Total ranges omit the last option period
+- Error: Total LOE B70 = SUM(B68:H68) misses column I68 (Option 7). T&M B62 = SUM(B60:T60) likewise misses W60 (Option 7). Other sheets may have the same off-by-one range.
+- Fix: Expand the SUM range to include the final option column. Example:
+  - Total LOE: change B70 to =SUM(B68:I68)
+  - T&M: change B62 to =SUM(B60:W60)
+- Why: Otherwise final option hours are excluded from the grand total.
+
+2) Inconsistent escalation rate at Option 4 (0.023 vs 0.02)
+- Error: Many rows use N = K + (K * 0.023) (2.3%) while all other option steps use 0.02 (2.0%). This is probably a typo and makes Option 4 slightly larger than the rest.
+- Fix: Standardize to 2% (0.02) unless 2.3% was intended. Replace formulas like =K5 + (K5*0.023) with =K5 * 1.02 (or =K5 + (K5*0.02)).
+- Why: Keeps a consistent 2% chained escalation across all option periods.
+
+3) Manual value breaking the chain (JAD Facilitator)
+- Error: T&M H30 contains the hard-coded value 3 instead of the expected formula, breaking the chained escalation for that labor row.
+- Fix: Restore the formula (consistent with others). Example:
+  - H30 = E30 * 1.02  (or =E30 + (E30*0.02))
+  - K30 = H30 * 1.02, etc.
+- Why: A single manual cell will produce wrong option hours and wrong totals.
+
+4) Hard-coded repeated rows (Program Director / Program Manager)
+- Note: A43/A44 are repeated fixed values across columns (1040, 4160). This may be intentional; if not, convert them to the chained formulas like others:
+  - C43 = B43 * 1.02, D43 = C43 * 1.02, … etc.
+- Why: Using formulas keeps behavior consistent and prevents missed updates.
+
+Recommended improvements to prevent future errors (easy changes)
+- Use multiplication rather than addition for chains (cleaner & less error-prone):
+  - Example for Option 1: C14 = B14 * 1.02
+    Option 2: D14 = B14 * (1.02^2)
+    Option n: =B14 * (1.02^(n))
+- Store the escalation rate in one cell (e.g., $Z$1 = 1.02) and reference it:
+  - C14 = B14 * $Z$1
+  - D14 = B14 * ($Z$1^2)
+  - This lets you change the rate in one place.
+- Use Find → Replace to fix the 0.023 typos (search "*0.023" → replace "*0.02") but only after checking there aren’t any intended 2.3% cells.
+
+Quick checklist for you to apply now
+1. Fix grand totals to include Option 7 (I or W columns).
+2. Replace every "*0.023" at the Option 4 step with "*0.02" (unless explicitly required).
+3. Replace H30 (JAD Facilitator) value 3 with the correct formula: =E30*1.02 (or =E30+(E30*0.02)).
+4. Decide whether Program Director/Manager should be formula-driven; if yes, convert them to the chained formulas.
+5. Consider switching to =B*(1.02^n) or using a single escalation-rate cell for maintainability.
+
+If you want, I can produce the exact corrected formulas for a specific row (give me the row number), or a short macro / Find/Replace plan to fix all 0.023 instances and range sums across the workbook. Which would you like?

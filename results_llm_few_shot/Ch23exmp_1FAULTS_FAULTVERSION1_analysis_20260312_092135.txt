@@ -1,0 +1,30 @@
+Summary — main errors found
+1) Sheet "Formulas" — cell C18 is hard‑coded (207) instead of linking to the COGS schedule.
+2) Several totals in column F reference the wrong column cells (C37 missing, B41/B43 used instead of the actual month result columns), so those totals will be wrong or blank.
+
+Details and fixes
+
+1) Faulty cell: Formulas!C18
+- Error type: Hard‑coded / broken link
+- Problem: C18 should show August COGS from the COGS schedule (C34) so it updates if inputs change. Instead it contains the value 207.
+- Fix: Replace 207 with the formula:
+  =C34
+- Why: Keeps COGS consistent with the COGS schedule (Beginning Inventory + Purchases − Ending Inventory) and makes the model dynamic.
+
+2) Faulty cells: Formulas!F38, Formulas!F42, Formulas!F44 (and any similar F‑column totals that reference B/D/C mismatches)
+- Error type: Wrong cell references / misaligned columns
+- Problems:
+  - F38 currently =+E38+C37 — C37 does not exist/was never populated so the total is wrong.
+  - F42 currently =+D42+B41 and F44 =+D44+B43 — these reference B and D input columns instead of the month result columns used elsewhere (the model places month results in columns C and E).
+- Suggested fixes (change to sum the month result columns C and E for the same row):
+  - F38 → =C38+E38
+  - F42 → =C42+E42
+  - F44 → =C44+E44
+- Why: The months’ numbers are in columns C (August) and E (September) in this layout; totals in F should sum those result columns, not mix input columns (B/D) or nonexistent cells.
+
+Quick checklist to avoid similar problems
+- Don’t hard‑code values that should be calculated; link to the source cell (e.g., C18 → =C34).
+- Keep a consistent column convention for months (if results are in C and E, all row formulas that aggregate months should use C and E).
+- Use SUM(range) or explicit addition of the result columns so totals remain correct after structure changes.
+
+If you want, I can produce the exact corrected formulas for every F‑total row (or scan the sheet and list all misaligned references).

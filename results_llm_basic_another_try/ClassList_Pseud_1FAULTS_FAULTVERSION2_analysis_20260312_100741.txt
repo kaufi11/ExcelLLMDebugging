@@ -1,0 +1,46 @@
+Errors found:
+
+1. Homework sheet, row 5 (aya): Total formula =SUM(B5:J5) excludes K5 (HW10). It should be =SUM(B5:K5) to include all homework scores.
+2. Homework sheet, row 7 (Bluesky): Total formula =SUM(B7:K7) is correct, but row 7 pseudonym is "Bluesky" (capital S) while in Mid-term sheet it is "BlueSky" (capital S). This inconsistency can cause lookup errors.
+3. Homework sheet, row 9 (CAGIRL): Cell I9 has "x" (not received) which is text, but the total formula =SUM(B9:K9) will ignore text, so total may be incorrect or misleading.
+4. Homework sheet, row 15 (ISK): Cells D15 and H15, J15 have "x" or "HC" text, but total formula =SUM(B15:K15) will ignore these, possibly underreporting total.
+5. Homework sheet, row 19 (Laika): Cells E19 and F19 have "HC" text, total formula =SUM(B19:K19) ignores these, so total may be incorrect.
+6. Homework sheet, row 20 (Lodd): Cells E20, G20, H20 have "x" or "HC" text, total formula =SUM(B20:K20) ignores these.
+7. Homework sheet, row 21 (Lucky): Several "HC" in E21, F21, H21, total formula =SUM(B21:K21) ignores these.
+8. Homework sheet, row 28 (Paul): Cell J28 has "HC", total formula =SUM(B28:K28) ignores this.
+9. Homework sheet, row 32 (tech2): Cells D32, E32, F32 have "HC" or "x", total formula =SUM(B32:K32) ignores these.
+10. Homework sheet, row 37 (V.K.G): Cells F37 and H37 have "HC", G37 has "P", total formula =SUM(B37:K37) ignores these.
+11. Homework sheet, row 38 (veda): Cell E38 has 0, no error here but N38 has "P" which is text.
+12. Final sheet, row 7 (Bluesky): Total formula =SUM(B7:H7) includes column H which is empty or missing, should be =SUM(B7:G7).
+13. Final Grades sheet, rows with "HC" or "P" in columns D or G or elsewhere: The total formula =SUM(B#:E#) will error or miscalculate if D or other columns have text like "HC" or "P".
+
+Summary of main issue:
+- The total formulas use SUM over ranges that include text values ("HC", "P", "x") which are ignored by SUM, causing totals to be lower than expected or inconsistent.
+- Some totals exclude columns (like Homework row 5 excludes K).
+- In Final sheet, one total formula includes an extra column (H7).
+- Inconsistent pseudonyms (Bluesky vs BlueSky) may cause lookup mismatches.
+
+Solution:
+
+1. Replace text entries ("HC", "P", "x") in numeric columns with either zero or use a formula that treats them as zero for summation.
+   - For example, use SUMPRODUCT or array formulas that convert text to zero:
+     =SUMPRODUCT(--ISNUMBER(B4:K4)*B4:K4) or
+     =SUM(IF(ISNUMBER(B4:K4),B4:K4,0)) entered as array formula.
+   - Or use helper columns to convert text to zero.
+
+2. Correct the Homework total formula in row 5 to =SUM(B5:K5).
+
+3. Correct Final sheet row 7 total formula to =SUM(B7:G7).
+
+4. Standardize pseudonyms across sheets to avoid lookup errors.
+
+5. For Final Grades sheet, replace =SUM(B#:E#) with a formula that ignores text or use helper columns to convert text to zero before summing.
+
+Explanation:
+
+- SUM function ignores text but does not count it as zero, so totals are lower if text is present.
+- Using formulas that convert text to zero ensures all homework or exam scores are counted properly.
+- Including all relevant columns in totals ensures accurate sums.
+- Consistent pseudonyms ensure correct data matching across sheets.
+
+This will fix total calculation errors and improve data consistency.

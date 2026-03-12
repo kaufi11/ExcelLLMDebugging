@@ -1,0 +1,45 @@
+I reviewed the workbook summary and found a few clear formula/label errors that will make totals wrong or cause the statements not to tie. Short, clear items below with fixes and short explanations.
+
+1) Income sheet — Total Rental Income (L14)
+- Problem: L14 contains =1 instead of the correct formula.
+- Why it’s wrong: Total rental income for 2001 will be wrong and will feed incorrect totals to Total Income and Net Operating Income.
+- Fix: Change L14 to =L10+L13
+- Explanation: L14 should add Net Residential Rent (L10) and Net Commercial Rent (L13).
+
+2) OP_EXP (Schedule I) — Total Operating & Maintenance (L46)
+- Problem: L46 =SUM(L33:L44) (includes row 44) but the operating lines run L33:L43.
+- Why it’s wrong: L46 will include the wrong cell (possibly a blank or subtotal) and omit the intended last item if ranges are misaligned — subtotal is incorrect.
+- Fix: Change L46 to =SUM(L33:L43)
+- Explanation: Make the same row-range as the J-column total (J46 =SUM(J33:J43) ) so 2001 and 2002 totals match the same expense lines.
+
+3) Balance Sheet — TOTAL ASSETS (J36 and L36)
+- Problem: J36 and L36 read =SUM(J23:J35) / =SUM(L23:L35). That range is incorrect for TOTAL ASSETS.
+- Why it’s wrong: It likely double-counts or omits key sections (investment in real estate net + total other assets should be used). This will make Total Assets not equal Total Liabilities + Partners’ Equity.
+- Fix: Replace with a sum of Net Investment in Real Estate plus Total Other Assets. For example:
+  - J36 = J17 + J34
+  - L36 = L17 + L34
+  (Or =SUM(J17,J34) / =SUM(L17,L34))
+- Explanation: TOTAL ASSETS should equal Net Investment in Real Estate (the net of land, building, accumulated depreciation) plus TOTAL OTHER ASSETS (J34/L34).
+
+4) Balance Sheet — PARTNERS’ EQUITY (J52 / L52)
+- Problem: J52 =SUM(J51:J51) (and L52 similar) is nonsensical (sums a single cell) and likely not pointing to the rollforward total.
+- Why it’s wrong: Partners’ equity on the balance sheet will be wrong or not linked to the Partners’ Equity schedule, breaking the balancing check.
+- Fix: Make J52/L52 reference the Partners’ Equity total from the equity rollforward sheet (example):
+  - J52 = 'Stkhold.Equity'!O21
+  - L52 = 'Stkhold.Equity'!O15  (or the correct cell that holds the Dec 31, 2001 total)
+  Or, if equity lines are on the balance sheet itself, set J52 = SUM(range_of_equity_rows_on_balancesheet).
+- Explanation: The Balance Sheet must pull the total partners’ equity from the partners’ equity statement (or sum the equity rows). Then TOTAL LIABILITIES + PARTNERS’ EQUITY (J55) will correctly equal TOTAL ASSETS (J36).
+
+5) Presentation typo — Partners’ Equity sheet header
+- Problem: Header reads "YEARS ENDED DECEMBER 31, 2001 AND 2001".
+- Fix: Change to "YEARS ENDED DECEMBER 31, 2002 AND 2001" (or appropriate years).
+- Explanation: Typo only, but correct for clarity.
+
+Quick checklist to validate after fixes
+- After the fixes, check that for each year:
+  - Balance Sheet: J36 (Total Assets) = J55 (Total Liabilities + Partners’ Equity)
+  - Income: Total Rental Income (J14/L14) equals Net Residential + Net Commercial
+  - OP_EXP subtotals in J and L match (same row ranges)
+- If any totals still mismatch, trace precedents (Excel: select cell → Formulas → Trace Precedents) to find incorrect references.
+
+If you want, I can give the exact formula text you should paste into each cell, or produce a short macro to correct these cells automatically. Which would you prefer?

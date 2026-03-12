@@ -1,0 +1,24 @@
+I inspected the formulas and values on the "lab grades" sheet and found two clear inconsistencies and one potential data-entry issue. Summary and recommended fixes below.
+
+1) F27 uses SUM instead of AVERAGE
+- Problem: F27 contains =SUM(F7:F26) and returns 1936.56 (sum of the F column). All the other summary cells in row 27 are averages of their columns (B27, C27, D27, E27, G27, H27, I27, J27 use AVERAGE). Showing the sum here is inconsistent with the rest of the row (which is labeled "Average").
+- Recommendation: Replace with =AVERAGE(F7:F26) if you want the average percentage for column F. If you intentionally want the total points, keep SUM but change the row label to reflect "Total" rather than "Average".
+
+2) Missing / zero entry in H17 causing I17 to be low
+- Symptom: I17 has =AVERAGE(B17:H17) and a result of 75.7857142857143. The other cells for that student exist for B17..G17 and J17, but H17 is not present in the provided data (or is 0).
+- Analysis: The average value shown (75.7857) equals the sum of B17..G17 (530.5) divided by 7, i.e. Excel is counting 7 cells. That implies H17 contains a numeric 0 (or is explicitly 0 in the workbook). If H17 were truly blank, AVERAGE would ignore it and the average would be 530.5/6 = ~88.4167.
+- Recommendation: Check H17:
+  - If H17 should be blank (student missing quiz or not applicable), clear the cell (delete the 0) so AVERAGE ignores it, or change the formula to exclude H if appropriate.
+  - If H17 is legitimately 0, leaving it is correct but be aware it will reduce the average. If you want to treat zeros as "missing" rather than a score, use a formula that excludes zeros, for example:
+    - =AVERAGEIF(B17:H17,">0")  (averages only positive values)
+    - or explicitly average only the columns that should count (e.g. =AVERAGE(B17:G17) if H is not applicable)
+
+3) Minor / stylistic items to verify
+- Row 28 ("Highest Possible Score, %") contains 1s in B28:J28. That may be intentional as a weighting row, but it's ambiguous; confirm these are the intended values/weights.
+- Column I header text is "Avg (includes quizes)" — decide if you want to correct the spelling ("quizzes") or adjust header text for clarity.
+- AVERAGE formulas in column I use ranges B#:H# (i.e., they average the five exercises + two quizzes). Confirm that is the intended set of columns to include in the per-student average.
+
+If you want, I can:
+- give the exact corrected formulas to paste in (e.g., change F27 to =AVERAGE(F7:F26)),
+- scan for any other cells containing zeros that may be intended blanks, or
+- produce a version of the sheet that treats zeros as missing for averages.

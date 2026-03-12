@@ -1,0 +1,46 @@
+I inspected the formulas and reported values you provided for Sheet1 and found several formula errors / inconsistencies and a few places where the formulas are fragile (hard‑coded numbers, wrong ranges). Summary with cell-level details and suggested fixes:
+
+1) MODE for minutes (A8:A37)
+- Cell: F9 =MODE(A8:A37) with displayed value 0.
+- Problem: 0 is not one of the visible values in A8:A37; MODE should return the most frequent value or #N/A if there is no repeat (older Excel MODE) or use MODE.SNGL. The reported 0 is very likely incorrect (or indicates there are zeros or stray cells in the range).
+- Suggestion: Check the input range for stray zeros or blank-text-as-zero. Use =MODE.SNGL(A8:A37) (Excel 2010+) or confirm input cells; alternatively verify with =COUNTIF(A8:A37,0) and =COUNT(A8:A37).
+
+2) Count of observations vs. text (median / quartiles)
+- Cells / text: D15/D16 text says “Since there are 30 values, the median is the average of the 15th and 16th.” However the actual populated data in your A and B columns appears to be different (the sorted list shown in column B contains 26 values as listed).
+- Problem: The textual explanation assumes 30 observations but the data present (and/or Excel’s MEDIAN result) do not match that count. This causes inconsistency between the explanation and the computed median/quartiles.
+- Suggestion: Use =COUNT(A8:A37) to get the actual number of numeric observations, and update the text/explanation accordingly.
+
+3) Median inconsistency / incorrect pair used
+- Cell: F14 =MEDIAN(A8:A37) -> value shown 48.95. Text D18 says “Median = (45+52.9)/2 = 48.95.”
+- Problem: If the dataset has 26 (or another) observations, the median should be the average of the middle two for that count; the pair (45 and 52.9) corresponds to a particular pair of sorted positions but that pair does not match the sorted list indexing shown. The median value and the stated justification appear inconsistent with the actual sorted list shown in column B.
+- Suggestion: After confirming COUNT(A8:A37), check which sorted positions MEDIAN is actually averaging. If you want to be explicit, use =SMALL(A8:A37,k) to show the k-th order statistic(s).
+
+4) First and third quartiles incorrect
+- Cells: E29 (1st quartile) shows 7; E30 (3rd quartile) shows 70.4. Text D25–D29 indicates i = (25/100)*30 = 7.5, rounding up to i = 8 and “first quartile is the 8th value” (which would be the 8th sorted value).
+- Problems:
+  - The numeric values shown for the 1st and 3rd quartiles (7 and 70.4) do not match the sorted column B positions referenced in the comments (and do not match what QUARTILE or Excel’s QUARTILE.INC would return).
+  - The procedure uses “30 values” (see (2)) which is inconsistent with the actual number of nonblank numeric points in A8:A37.
+- Suggestion: Use Excel’s quartile functions to avoid index errors:
+  - =QUARTILE.INC(A8:A37,1) for Q1 (or QUARTILE.EXC if you prefer exclusive definition)
+  - =QUARTILE.INC(A8:A37,3) for Q3
+  Also verify COUNT(A8:A37) before doing positional calculations, and do not hard‑assume 30.
+
+5) Camera average excludes first row
+- Cell: B63 =AVERAGE(B43:B61) giving 654.2631579.
+- Problem: The camera price list starts at B42 (Agfa EPhoto CL30, $349) but the formula averages B43:B61 and omits B42. That will change the mean (and is inconsistent with the heading saying “Means” for the full table).
+- Suggestion: Change to =AVERAGE(B42:B61) if you intend to average all listed cameras. Verify ranges for the other columns too (C63 and D63 appear to use C42:C61 and D42:D61 — those include row 42 correctly).
+
+6) Hard-coded numbers in CV calculation for scores
+- Cell: D79 shows formula text =(8.672/178)*100 (value 4.8719).
+- Problem: the formula uses hard-coded rounded values rather than referencing the computed Std Dev and Mean cells (D75 and D78). Hard-coding can cause small rounding differences and is fragile.
+- Suggestion: Use =(D75/D78)*100 or =(ROUND(D75,3)/D78)*100 as desired.
+
+7) General recommendations / robustness
+- Use COUNT to confirm the number of nonblank numeric elements before using positional methods (median by positions, quartile by index).
+- Prefer built-in functions for quantiles: QUARTILE.INC or QUARTILE.EXC, PERCENTILE.INC, PERCENTILE.EXC depending on your definition.
+- Avoid hard-coded constants in derived formulas — reference computed cells so updates propagate automatically.
+- Check for stray zeros or text values that coerce to zero inside ranges used by MODE/AVERAGE/VAR/STDEV.
+
+If you want, I can:
+- Provide exact corrected formulas for the quartiles and mean (based on the ranges you actually want included).
+- Run specific checks (COUNT, COUNTIF for zeros, re-compute mode via MODE.SNGL) if you confirm which rows should be in each dataset.

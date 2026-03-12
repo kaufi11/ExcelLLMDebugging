@@ -1,0 +1,43 @@
+Sheet name
+- TAS — Staff Time Allocation Schedule for University of Glasgow.
+
+Layout / key columns
+- Header: A1 "UNIVERSITY OF GLASGOW", A2 "Staff Time Allocation Schedule".
+- Period: A4 "Period Covered - from", C4 start date (2004-08-01), E4 "to", F4 end date (2004-09-30). I4 labeled "Days"; J4 contains a UDF formula =_xludf.NETWORKDAYS(C4,F4) to compute working days between the two dates.
+- Identification: A5 "Department" with department name in C5 ("ACCOUNTING AND FINANCE"). A6 "Faculty" with C6 =VLOOKUP(C5,R7:T136,3,FALSE) — faculty is looked up from the mapping table in columns R:T. A7 is "Staff Number" (C7 is blank).
+- Main activity table: columns roughly:
+  - A = Activity (e.g. "Teaching", "Research", "Other")
+  - B = Category (funding source: "Publicly Funded", "Research Councils", "UK Industry", "Clinical Services", etc.)
+  - F = CORE hours (numeric or formulas)
+  - H = SUPPORT hours (numeric or formulas)
+  - I = TOTAL hours with formula I# = F# + H# (e.g. I13 = F13+H13)
+  - J = Proportion of total (typically J# = IF(I$39>0, I# / I$39, 0); some exceptions such as J14 uses IF(I$39>50,I14/I$39,50))
+- Aggregation rows:
+  - F15/H15/I15 are SUMs for rows 13–14 (F15 = SUM(F13:F14), etc.)
+  - F30/H30/I30 are SUMs for rows 17–29 (F30 = SUM(F17:F29), etc.)
+  - F37/H37/I37 are SUMs for rows 32–36
+  - F39/H39/I39 are grand totals: F39 = F15+F30+F37; H39 = H15+H30+H37; I39 = I15+I30+I37.
+  - J15/J30/J37/J39 compute each subtotal/total as a fraction of I$39 (IF(I$39>0,...)).
+  - F40/H40/I40 compute proportions of the grand totals (e.g. F40 = IF($I39>0,F39/$I39,0) etc.)
+- Special labels: A8 "NIL RETURN" — likely used when no hours to report.
+- Instruction / purpose text: A42–A53 and A46–A49 explain how supplied data will be used (Transparency Review, management information, retention policy: kept for two reporting periods = six years, etc.).
+
+Lookup / mapping table
+- Columns R (Department name), S (CODE), T (FACULTY). The table runs at least R7:T190 (examples: R7 "ACCOUNTING AND FINANCE", S7 300, T7 "Fac's of Law & Financial Studies & Social Sciences", continuing through many departments/units up to R190).
+- C6 uses VLOOKUP against this table to derive Faculty from Department.
+
+Notable formulas / functions
+- J4 uses a workbook UDF: =_xludf.NETWORKDAYS(C4,F4) (nonstandard NETWORKDAYS implementation).
+- VLOOKUP: C6 = VLOOKUP(C5,R7:T136,3,FALSE) (department → faculty).
+- Totals: I# = F# + H# throughout activity rows.
+- Subtotals: SUM ranges (F15, F30, F37, F39, etc.).
+- Proportions: column J and row 40: IF(I$39>0, numerator / I$39, 0) to avoid divide-by-zero; one atypical conditional in J14 (=IF(I$39>50,I14/I$I39,50)) which returns 50 if I$39<=50 (likely erroneous or intentional cap).
+
+Key cells to check / control
+- C4 / F4 (period dates) and J4 (days calculation) — ensure the UDF is available and correct.
+- C5 (Department) — drives C6 (Faculty) via VLOOKUP; mapping table must include the department name exactly.
+- F/H inputs for each activity (core/support) feed totals in I and proportions in J; grand total I39 is the denominator for all J% calculations.
+- Mapping table range used by VLOOKUP (R7:T136) — the mapping list actually continues beyond row 136, so verify VLOOKUP’s lookup range includes all entries if needed.
+
+Overall purpose and flow
+- The sheet collects staff hours by activity and funding category, separates core vs support hours, computes totals and the share of total hours per activity/category, and maps department names to faculty and internal codes via a lookup table. It includes explanatory text about use and retention of the data.

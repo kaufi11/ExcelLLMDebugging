@@ -1,0 +1,44 @@
+I reviewed the workbook. I found three clear errors and a few design issues that will cause inconsistent results. Short fixes and explanations below.
+
+1) Wrong hard-coded multiplier in Shipping (row 86)
+- Problem: E86 uses 0.583043333585248 (an unintended value). That breaks the Min savings calculation and the Avg/Total.
+- Why it’s wrong: All similar rows use 0.16 for the minimum (and 0.25 for maximum). That strange number looks like an accidental paste/converted cell value.
+- Fix (replace the formula in E86 and make G86 reference the max consistently):
+  - E86 = C86*C87*C88*0.16
+  - G86 = C86*C87*C88*0.25
+- Better: reference the cell that holds the user “Your Savings” or the Min/Max percent cells (e.g., E86 = C86*C87*C88*C89 if C89=0.16).
+
+2) Inventory cost section multiplies percentages instead of adding them (row 133)
+- Problem: E133 = C130*0.04*0.18 and G133 = C130*0.06*0.25 multiply two different %s (4%×18%, 6%×25%) — that yields an incorrect (much smaller) number.
+- Why it’s wrong: If the intent is to combine two independent savings effects (Method1 and Method2) you must add their dollar effects, not multiply their percentages.
+- Two options to correct depending on intent:
+  - If you want the combined dollar effect of both methods:
+    - E133 = C130*(0.04 + 0.18)   (or = C130*(MinMethod1 + MinMethod2))
+    - G133 = C130*(0.06 + 0.25)   (or = C130*(MaxMethod1 + MaxMethod2))
+    - I133 = (E133+G133)/2
+    - K133 = C130*(C131 + C133)   (if C131 and C133 contain the user-selected percents)
+  - If you intended separate alternative methods (choose one), make two separate rows (Method1 and Method2) and don’t combine them.
+- Pick the approach that matches your model; do not multiply the %s.
+
+3) Division-by-zero risk in Payback & ROI formulas
+- Problem: payback formulas divide by total savings (C255, E255, etc.). If any total is zero or blank you get #DIV/0.
+- Fix: wrap with an IF or IFERROR. Example:
+  - C262 = IF(C255=0, "N/A", ((C257+C258)/C255)*12)
+  - Or use IFERROR: C262 = IFERROR(((C257+C258)/C255)*12, "N/A")
+
+4) Consistency / maintainability improvements (recommended)
+- Problem: Many rows use hard-coded multipliers (0.16, 0.25, 1, 0) scattered through the sheet. This makes the sheet error-prone and causes inconsistencies (see C57 vs C89 differences).
+- Fix: Put Min%, Max% and “Your %” for each line into dedicated cells and reference those cells in the formulas. Example for receiver productivity:
+  - Put Min% in C12, Max% in another cell (e.g., C??). Then:
+    - E9 = C9*C10*C11*C12
+    - G9 = C9*C10*C11*C?(max cell)
+    - K9 = C9*C10*C11*C?? (your percent cell)
+- Benefit: easier to edit, removes mismatched hard-coded values, prevents accidental paste errors (like 0.583…).
+
+Quick checklist of cells to change right now
+- Change E86 from the odd number to: =C86*C87*C88*0.16 (and adjust G86 similarly)
+- Replace E133 and G133 (and K133) per option above (likely use addition instead of multiplication)
+- Wrap C262/E262/G262/I262 and C264/E264/G264/I264 with IF or IFERROR to avoid #DIV/0
+- Optionally replace hard-coded 0.16/0.25/etc with references to the “Range of Savings” cells.
+
+If you want, I can produce the exact corrected formulas for every affected cell and/or a small refactor (create central percent cells and update formulas) — tell me whether you want the “combine methods” option for inventory (sum both) or to keep them as alternatives.

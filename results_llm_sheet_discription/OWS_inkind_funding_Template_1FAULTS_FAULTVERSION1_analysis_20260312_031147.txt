@@ -1,0 +1,19 @@
+Findings (short)
+- Error: On the "In-kind contribution template" sheet cell F16 uses =COUNT(F5:F15) instead of summing the dollar amounts. This returns the number of filled numeric rows (e.g., 2) instead of the total labor dollar amount (e.g., 9,500).
+- Impact: G16 (running total) becomes the count value, and every downstream running total (G29, G41) and the grand total (F43) are wrong because they add that incorrect value.
+
+Why it's wrong (simple)
+- COUNT counts how many numeric cells exist in the range. It does not add the values.
+- You need SUM to add dollar amounts.
+
+Fix (step-by-step)
+1. Go to the In-Kind sheet.
+2. Select cell F16.
+3. Replace the formula =COUNT(F5:F15) with =SUM(F5:F15).
+4. Press Enter. Confirm G16 updates to the correct labor total and that G29, G41 and F43 update accordingly.
+
+Optional check
+- Verify the other section totals use SUM (F29 = SUM(F20:F28), F41 = SUM(F33:F40)) and that G29 = G16 + F29, G41 = G29 + F41, and F43 = G41 are correct.
+
+Why this solves it
+- SUM adds all line-item amounts to produce the proper section total. That corrects the running totals which are built from that section total, restoring correct grand totals.

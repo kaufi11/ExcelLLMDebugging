@@ -1,0 +1,43 @@
+Overview: workbook has three sheets — Q'back (quarterback efficiency), drug bust (arrest counts by year/age), and lookup (student scores with a grade scale). Below is a concise summary of structure, key formulas/values, and a few issues to check.
+
+1) Sheet: Q'back — "Quarterback Efficiency"
+- Headers (row 4): Quarterback, School, Attempts (C), Completions (D), Interceptions (E), Yards (F), TD (G), Completion % (H), Touchdown % (I), Interception % (J), Yards/Attempt (K), Points (L).
+- Data: rows 5:11 for 7 players (Bryant, Burchette, Durant, Gaither, Garrard, MacPherson, Rivers). Key raw values:
+  - Largest yardage: MacPherson 2,586 yds (F10).
+  - Most TDs: Rivers 17 (G11).
+  - Highest completion %: MacPherson ≈65.04% (D10/C10*100).
+  - Highest Yds/Attempt: Rivers ≈8.27 (F11/C11).
+- Formulas (typical pattern in rows 6–11):
+  - Hn = Dn/Cn*100 (Completion % as percent).
+  - In = Gn/Cn*100 (Touchdown % as percent).
+  - Jn = En/Cn*100 (Interception % as percent).
+  - Kn = Fn/Cn (Yards per attempt).
+  - Ln = Kn*8.4 + Hn + In*3.3 - Jn*2 (custom “Points” metric combining yards/att and the percent columns).
+- Issues / notes:
+  - Row 5 (Bryant) shows I5 as =G5/C5/100 while other rows use *100. That makes Bryant’s Touchdown % (and Points L5) incorrect relative to the others.
+  - The Points formula mixes percent-format cells (H, I, J are computed as percentages *100) with a yards/attempt scalar — be sure the intended units are consistent (if H/I/J are shown as percentages like 50, the formula is different than if they are decimals like 0.50). Decide whether H/I/J should be stored as fractions (e.g., =D/C) or percentages (D/C*100) and update L accordingly.
+
+2) Sheet: drug bust
+- Layout: Column A = Year (1970–2000 rows 3:33), B = ADULT arrest counts, C = JUVENILE arrest counts. Column E contains metadata.
+- Key metadata in column E (top rows): Bureau of Justice Statistics, filename drug.wk1, data source, author, contact, date of version, and a descriptive label "Estimated arrests for drug abuse violations by age group, 1970-2000".
+- No calculated fields shown (no totals or trends). Data is annual counts; check for missing E cells (some rows have no metadata — that is expected).
+
+3) Sheet: lookup
+- Headers (row 3): Student (A), four course columns B–E (Child Management 101, Psychology of seniors, Brewing Science, Taxidermy 200), F = Total /400, G = Average / 100, H = Letter Grade.
+- Student rows (A4:A9) with course scores in B:E (e.g., Spiggy Topes 20,35,80,60).
+- Grade scale (rows 11:18): F11 header Points / Letter mapping in columns F (points) and G (letter), entries: 45→F, 50→F, 55→D, 60→C, 65→B, 70→A, 75→A.
+- Missing formulas:
+  - Student Total (F4:F9) and Average (G4:G9) are not specified; expected formulas: F4 = SUM(B4:E4) and G4 = F4/4 (or =F4/400*100 if Average /100 is percent).
+  - Letter Grade should be derived via lookup (e.g., VLOOKUP or LOOKUP with the mapping table).
+- Notes: mapping thresholds appear coarse and overlapping (70 and 75 both map to A). Clarify intended threshold logic (e.g., >=70 = A, >=65 = B, etc.) and implement lookup accordingly.
+
+Recommendations (short)
+- Fix I5 to =G5/C5*100 to match other rows.
+- Decide whether H/I/J should be percentages (e.g., 48.7) or decimals (0.487). Convert all rows to the same convention and adjust L’s formula to match that convention.
+- On lookup sheet add:
+  - F4 = SUM(B4:E4) copied down,
+  - G4 = F4/4 (or =F4/400*100 if you want a percent),
+  - H4 = LOOKUP(G4, {thresholds}, {letters}) or VLOOKUP with an appropriately sorted table.
+- Consider adding summary stats (max yards, max TD, averages) on Q'back and a chart/trend on drug bust if desired.
+
+If you want, I can write the exact corrected formulas for each sheet (including the proper LOOKUP formula) and show how Points L should be computed once you confirm the intended percent units.

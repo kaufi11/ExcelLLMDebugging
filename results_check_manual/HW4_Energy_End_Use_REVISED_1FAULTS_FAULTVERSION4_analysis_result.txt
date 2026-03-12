@@ -1,0 +1,40 @@
+I reviewed the formulas in all sheets and found one clear formula error plus a few formula/system inconsistencies that produce incorrect results (many of them cascading from that one mistake). Summary of findings and recommended fixes:
+
+1) Major formula error — Johnson - Base sheet
+- Cell E26 currently contains: =COUNT(E19:E25)
+  - This returns 6 (the count of cells) but is used as the TOTAL (UA) in subsequent calculations.
+  - It should be the sum of the UA components, not a count. This single error produces many downstream nonsense values (negative balance point, negative delivered energy, negative fuel, negative bills, negative CO2, etc.).
+- Recommended fix:
+  - Replace E26 formula with =SUM(E19:E25).
+
+2) Cascading incorrect results (caused by E26 error)
+Once E26 is wrong, these cells become incorrect (non‑exhaustive list of cells that depend on E26 and currently show invalid results in Johnson - Base):
+- F19:F25 — "% OF LOSS" values (they divide by $E$26; using 6 yields meaningless percentages)
+- E27 (=E26-E20) — "UA NON-SOUTH" becomes negative (6 − 300 = −294)
+- D29 (=C15-(C16/E26)) — BALANCE POINT TEMP becomes −430 (nonsense)
+- C34 (=D29) and D34 (degree days at Tbal) — use the bad Tbal so D34 is huge/negative
+- D36 (=24*E26*D34), D37 (=D36/C13), D38, D39, C85, E85, C86, E86, E87, E99, E100, E101, E103 — many of the annual energy, cost and CO2 results are therefore incorrect
+
+3) Missing or blank input cell(s) used in formulas
+- C22 (walls area) is blank in all sheets. E22 is =C22/D22, so walls UA is computed as 0. If walls exist, C22 should have the proper area (or E22 formula adjusted). Recommendation: populate C22 with wall area or explicitly document that walls are zero.
+- C93 (CO2/lb per kWh for nuclear) is left blank intentionally — the sheet uses C93*E93/100 in C100. If you intend nuclear to contribute 0 CO2, consider entering 0 explicitly in C93 (safer/clearer). Current behavior (blank treated as 0) works but is ambiguous.
+
+4) Minor items / potential improvements
+- Conversion constant F9 = 3414 Btu/kWh — common value is ~3412 Btu/kWh; 3414 is acceptable if intentional, but note the small rounding difference.
+- IF logic in D38 and F38:
+  - D38 uses =IF(C13<1,D37/100000,0) to produce therms/year only if efficiency < 1. That works for gas (eff<1) but if you have other use cases it could hide values; consider computing therms unconditionally if cell semantics should always show therms.
+  - F38 uses =IF(C13=G34,D37/F9,0) to compute kWh/year only when furnace efficiency equals 1 (electric). These IFs are logical but make outputs conditional — be sure that is intended.
+- The degree-days interpolation formula in D34 appears consistent across sheets — verify the expected algorithm with course notes if you need a different method.
+
+5) Sheets where the formulas are correct
+- Johnson - More Efficient, Your Home - Base, and Your Home - More Efficient appear to have correct E26 formulas (=SUM(E19:E25)) and do not show the negative/cascading errors seen in Johnson - Base. The only outstanding issues in those sheets are the blank C22 (walls area) and the optional explicit C93 = 0 for nuclear.
+
+Actions to correct:
+- Edit Johnson - Base!E26 to =SUM(E19:E25).
+- Populate C22 with walls area (if applicable) in all sheets (or adjust formulas to handle missing wall area explicitly).
+- Optionally set nuclear emission C93 = 0 (for clarity).
+- After fixing E26, re-check balance point (D29), degree days (D34), and all annual energy, cost and CO2 cells to ensure values are now sensible.
+
+If you’d like, I can:
+- provide a specific list of all cells that currently contain obviously wrong values (with their current vs expected formula), or
+- produce the corrected Johnson - Base results (recomputed numbers) after changing E26 to =SUM(E19:E25) and filling C22 (if you tell me the wall area).

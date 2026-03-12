@@ -1,0 +1,60 @@
+Short summary of the problems I found and exactly how to fix them.
+
+1) Inconsistent / wrong ranges in the summary (MAX/MIN etc.)
+- Problems:
+  - B69 = MAX(B33:B68) and C69 = MAX(C33:C68) and D69 = MAX(D33:D68) start at row 33 instead of row 2 → they ignore many students.
+  - N69 = MAX(N17:N68) and Q69 = MAX(Q17:Q68) ignore rows N2:N16 and Q2:Q16.
+  - N70 = MIN(N17:N69) and Q70 = MIN(Q17:Q69) include the summary cells (N69/Q69) inside the MIN range.
+  - Ranges are inconsistent across columns → summary numbers are wrong or misleading.
+
+- Fix (exact formulas):
+  - B69: =MAX(B2:B68)
+  - C69: =MAX(C2:C68)
+  - D69: =MAX(D2:D68)
+  - G69 is OK (keep =MAX(G2:G68))
+  - N69: =MAX(N2:N68)
+  - Q69: =MAX(Q2:Q68)
+  - N70: =MIN(N2:N68)
+  - Q70: =MIN(Q2:Q68)
+  - Make same adjustments for any other summary cells that currently reference wrong start/end rows.
+- Why: summary formulas must use the full student data range (and must not include the summary rows) so MIN/MAX/AVERAGE/STDEV reflect the actual students.
+
+2) Many cells in column N and Q use hard-coded arithmetic rather than proper values or references; some are likely typos
+- Examples / problems:
+  - N10 = 17+5/2 — Excel evaluates it as 17 + (5/2) = 19.5. If you intended (17+5)/2 you need parentheses.
+  - N19 = 466+4 → result 470 which is impossible for HW4 (/25) — almost certainly a data-entry typo.
+  - Q formulas like Q40 = 78+2+5 evaluate but are not traceable to component cells.
+
+- Fixes:
+  - Replace constant arithmetic with the intended expression using parentheses when needed: if you meant the average of two numbers use =(17+5)/2. If you meant sum then keep =17+5.
+  - Better: store each component in its own cell and make N cells reference them (e.g., =X2+Y2 or = (X2+Y2)/2). That makes calculations auditable.
+  - Correct obvious typos (e.g., change N19 to the correct numbers — likely =16+4 or another small sum). Verify against source.
+
+- Why: parentheses matter for operator precedence; hard-coded sums hide the components and allow entry errors.
+
+3) Data anomalies / validation
+- Problems:
+  - Student IDs A16 and A68 are unusually large (98227577 and 99650185) — likely entry errors.
+  - HW4 (N) and Final (Q) have values outside expected ranges because of arithmetic typos (see N19).
+  - Some attendance/lecture columns are missing in some rows.
+
+- Fixes:
+  - Verify and correct suspicious IDs.
+  - Add Data Validation on score columns to catch out-of-range values:
+    - Example: select column N → Data → Data Validation → Allow: Decimal (or Whole number) between 0 and 25.
+  - Add Conditional Formatting to highlight values outside expected ranges (e.g., N > 25 or Q > expected max).
+  - Consider marking incomplete rows or required fields with an error check column (e.g., =IF(COUNTA(B2:Q2)<expected,"MISSING","OK")).
+
+4) Make the sheet robust (recommended)
+- Convert the table to an Excel Table (Select data → Insert → Table). Then use structured formulas like =MAX(Table[HW1]) so summary ranges update automatically when rows are added/removed.
+- Use structured references or named ranges instead of hard-coded row intervals to avoid copy/paste mistakes.
+- Use explicit functions: consider STDEV.S instead of STDEV (if you want sample standard deviation) for clarity.
+
+Quick checklist you can apply now
+1. Replace wrong summary formulas with the corrected ones shown above.
+2. Scan column N and Q for unusual results (very large numbers) and fix the arithmetic/typos (use parentheses where intended).
+3. Add Data Validation for score columns (set valid min/max).
+4. Convert to an Excel Table to prevent future range errors.
+5. Verify the two large student IDs manually.
+
+If you want, I can produce a corrected list of formulas for rows 69–72 for every affected column and show how to set up data validation and an example conditional formatting rule. Which would you prefer?

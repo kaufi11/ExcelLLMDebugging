@@ -1,0 +1,57 @@
+I checked all formulas you included and found several real errors and a few inconsistencies / fragile formulas. Summary with locations, explanations and fixes below.
+
+1) Wrong numeric constant used in a z‑score (definite error)
+- Cell: C115
+- Current formula: =(493-$B$125)/$B$128
+- Problem: 493 is a hard-coded constant; it should use the actual rating in B115 (2.14). This produces the huge incorrect value shown (≈602.695).
+- Fix: change to =(B115-$B$125)/$B$128
+
+2) Hard‑coded numbers instead of cell references (inconsistent / fragile)
+- Cell: D79
+- Current formula: =(8.672/178)*100
+- Problem: uses rounded numeric literals rather than the STDEV and Mean cells (D75 and D78). This is fragile (rounding/typo risk) and inconsistent with the other calculations that reference cells.
+- Fix: use cell references, e.g. =(D75/D78)*100
+
+3) MODE result suspicious / possible formula problem
+- Cell: F9 with formula =MODE(A8:A37) but shown result 0
+- Problem: 0 does not appear in the data sample you listed, so MODE returning 0 is suspicious. MODE returns 0 only if 0 is actually the most frequent value in the evaluated range (or if some cells contain numeric zeros). If there is no repeated value, older Excel shows #N/A; newer Excel has MODE.SNGL / MODE.MULT. This suggests either:
+  - There are zeros in the A8:A37 range (hidden/entered) that you did not expect, or
+  - Some cells contain formulas returning 0 or text interpreted as 0, or
+  - The saved workbook is corrupted in that range.
+- Checks / fixes:
+  - Confirm the count of numeric entries with =COUNT(A8:A37).
+  - Inspect A8:A37 for any zero values or formulas returning 0.
+  - If there is genuinely no mode, use an IFERROR wrapper or test first: =IF(COUNTIF(A8:A37,MODE(A8:A37))>1,MODE(A8:A37),"No Mode") or with modern Excel use =IFNA(MODE.SNGL(A8:A37),"No Mode").
+
+4) Incorrect/faulty quartile / median reasoning (inconsistency between text and data)
+- Location(s): text in Sheet1 (cells describing median, quartiles), and the implied index calculation for quartiles in column D/E (d.i uses 30)
+- Problems:
+  - The text repeatedly states “there are 30 values” and computes quartile index using 30 (i = (25/100)*30 = 7.5, round up to 8). However the A8:A37 range as given contains 26 numeric entries (many of your A- and B- column lists show 26 numbers). This is inconsistent.
+  - The quartile comment/value cells (E29/E30 etc.) appear inconsistent with the data shown.
+  - Because the count is not 30, the manual index calculation and the selected “8th value” etc. may be wrong.
+- Fixes / checks:
+  - Use =COUNT(A8:A37) to get the true number of numeric observations.
+  - Let Excel compute quartiles rather than hand‑indexing: =QUARTILE.INC(A8:A37,1) (or =PERCENTILE.INC(A8:A37,0.25)) for Q1, =MEDIAN(A8:A37) for the median, etc.
+  - If you want to use a manual index, compute i = 0.25*COUNT(A8:A37) rather than assuming 30.
+
+5) Minor: variance function choice / consistency
+- Cells: D73 uses =VAR(A71:A76)
+- Note: VAR computes the sample variance (n‑1 denominator). If you intended the population variance use VARP. This is not an error — only point out to verify intent.
+
+6) General consistency suggestions
+- Where a computed statistic is used in other formulas (e.g., mean and stdev used for many z‑scores), always reference the statistic cells (you do that for z‑scores, good). Avoid embedding rounded numeric literals (as in D79) — it creates potential rounding/consistency errors.
+- For mode, quartiles, percentiles use the modern explicit functions (MODE.SNGL / QUARTILE.INC / QUARTILE.EXC / PERCENTILE.INC) so behavior is explicit and compatible across Excel versions.
+- To detect hidden problematic values in A8:A37 (zeros, text coerced to numbers, empty strings) use these diagnostics:
+  - =COUNT(A8:A37) (numeric count)
+  - =COUNTA(A8:A37) (non-blank count)
+  - =SUMPRODUCT(--(A8:A37=0)) (count of zeros)
+
+Summary of concrete corrections to make now
+- C115: set to =(B115-$B$125)/$B$128
+- D79: set to =(D75/D78)*100
+- Replace manual quartile/percentile index math with =QUARTILE.INC(A8:A37,1) or =PERCENTILE.INC(A8:A37,0.25) and verify =COUNT(A8:A37)
+- Investigate why =MODE(A8:A37) returns 0 (check for zeros or formula-generated zeros); consider using =IFNA(MODE.SNGL(A8:A37),"No mode") or an explicit COUNTIF test.
+
+If you want, I can:
+- open the workbook and show the exact COUNT(A8:A37) and list any zero/blank cells in the A8:A37 range, and produce corrected formulas; or
+- produce a short patched version of the workbook with the three concrete fixes applied. Which would you like?

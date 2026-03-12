@@ -1,0 +1,25 @@
+Summary of the error
+- On sheet "Select Financial Data", cell J11 contains COUNT(J9:J10) instead of SUM(J9:J10).
+- That makes Cost of operations for 1995 equal to 2 (the count of numeric cells) instead of J9+J10 = 645,110. All downstream calculations in column J (gross margin J12, earnings from operations J14, earnings before taxes, net earnings, EPS, etc.) are therefore wrong for 1995.
+
+Why this is wrong (simple example)
+- J9 = 556,841 and J10 = 88,269 -> correct J11 = 556,841 + 88,269 = 645,110.
+- Total revenues J8 = 664,406 + 88,269 = 752,675.
+- Correct gross margin J12 = 752,675 − 645,110 = 107,565.
+- With COUNT, J11 = 2, so J12 = 752,675 − 2 = 752,673 (huge error cascading to later rows).
+
+Fix (step-by-step)
+1. Go to sheet "Select Financial Data".
+2. Select cell J11.
+3. Replace the formula =COUNT(J9:J10) with =SUM(J9:J10) (or copy J11 from a correct column and paste it into J11).
+4. Recalculate (Excel normally recalcs automatically). Verify J11 = 645,110 and J12 = 107,565.
+
+Why this fix works
+- SUM adds the numeric values (cost of sales + freight costs) as intended for Cost of operations; COUNT just counted numeric cells (2), which is not a monetary total.
+
+Additional recommendations (short)
+- Search the workbook for any other accidental COUNT used where SUM is expected (Find "COUNT(").
+- Make SUM ranges explicit and consistent (e.g., use SUM(B21:B24) rather than including header/blank rows like B20:B24) to avoid ambiguity.
+- Reconcile the "Select Financial Data" totals vs the "Statements of Earnings" sheet after the fix to ensure consistency.
+
+If you want I can: find any other COUNT errors across the workbook and list them, or recalc the corrected 1995 column and show the updated Net Earnings / EPS.

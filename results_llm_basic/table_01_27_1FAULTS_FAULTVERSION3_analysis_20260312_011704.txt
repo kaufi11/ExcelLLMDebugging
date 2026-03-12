@@ -1,0 +1,27 @@
+Summary of the errors I found
+- Cell D6 (Urban deficient bridges, total for 1992) contains 0 instead of the correct subtotal. It should be the sum of D7 (structurally urban) + D8 (functionally urban). This makes the "All deficient" total for 1992 (D12) wrong because it uses D6.
+- Inconsistent formula patterns (not strictly errors but risky): some totals use direct sums of sub-totals (e.g., B3 = B4+B5) while others use SUM of deeper rows (e.g., L12 = SUM(L13:L14)). That is OK mathematically but increases chance of errors if an intermediate row is overwritten (exactly what happened in D6).
+
+What to do (quick fixes)
+1. Fix the explicit error:
+   - Put this formula into D6:
+     =D7+D8
+   (or =SUM(D7:D8))
+   This will restore the urban-deficient subtotal for 1992 and correct D12 (All deficient for 1992).
+
+2. Make formulas consistent and safer:
+   - For each column, use one consistent pattern for totals. For example:
+     - TOTAL bridges row (row 3): =B4+B5 (or =SUM(B4:B5))
+     - Urban deficient total (row 6): =B7+B8 (or =SUM(B7:B8))
+     - Rural deficient total (row 9): =B10+B11 (or =SUM(B10:B11))
+     - All deficient (row 12): =B6+B9 (or =SUM(B6:B9) if you prefer grouping)
+   - Or always compute All deficient as =row7+row8+row10+row11 (less dependent on intermediate sums).
+
+Why this fixes it
+- D6= D7+D8 restores the missing urban-deficient subtotal. D12 is defined as D6+D9, so correcting D6 immediately corrects D12.
+- Using consistent SUM formulas reduces the chance an intermediate subtotal gets overwritten by a value (like the 0 in D6) and helps auditing.
+
+Extra quick check
+- After fixing D6, verify D12 and D3 for 1992 recalculate to the expected totals. If any other cell shows a plain number where a formula should be (e.g., any other "0" or a literal), replace it with the correct formula pattern shown above.
+
+If you want, I can give a single column formula set you can paste across all year columns to standardize everything.

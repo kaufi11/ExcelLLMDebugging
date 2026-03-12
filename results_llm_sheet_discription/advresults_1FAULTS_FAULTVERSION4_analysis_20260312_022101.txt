@@ -1,0 +1,46 @@
+I reviewed the workbook description and found multiple formula errors caused by copy/paste and inconsistent ranges. Below are the problems, why they break results, and simple fixes you can apply.
+
+1) Hard-coded value in Total Points (big bug)
+- Symptom: Pre-Teen K41 =SUM(F41,68,J41) — a literal 68 was entered instead of the Strut Place cell.
+- Why wrong: it injects a fixed number into totals so that contestant’s Total Points is incorrect and final ranking wrong.
+- Fix: replace the 68 with the correct cell reference (H41). Example:
+  - K41 → =SUM(F41,H41,J41)
+
+2) Inconsistent RANK ranges (many sheets)
+- Symptom examples:
+  - Pre-Teen J2 =RANK(I2,I2:I15) while modeling/strut use D2:D16 and G2:G16 (solo range misses row 16).
+  - Pre-Teen Final L2 =RANK(K2,K2:K13,1) but modeling/strut ranges go to row 16 (should include all contestants).
+  - Junior and Senior sheets: event RANK ranges go to D2:D30/G2:G30/I2:I30 but Final Place uses only K2:K5 or K2:K8 (too small).
+  - College K2 =RANK(J2,J2:J2,1) — final-place range references only the cell itself.
+- Why wrong: RANK must use the same full contestant range for each event. If ranges omit rows, places are computed among a smaller set and give wrong places/points; final-place ranges that don't include all totals give wrong rankings.
+- Fix (two options):
+  A) Use consistent absolute ranges that cover all contestants. Example (Pre-Teen assuming contestants in rows 2–16):
+     - Modeling place (E2): =RANK.EQ(D2,$D$2:$D$16,0)
+     - Strut place (H2): =RANK.EQ(G2,$G$2:$G$16,0)
+     - Solo place (J2): =RANK.EQ(I2,$I$2:$I$16,0)
+     - Total (K2): =SUM(F2,H2,J2)
+     - Final place (L2): =RANK.EQ(K2,$K$2:$K$16,1)
+     Note: use absolute ranges ($D$2:$D$16) so you can copy down safely.
+  B) Better: convert the data into an Excel Table (Insert → Table). Then use structured references that automatically expand as you add/remove contestants. Example with table column names [ModelingScore]:
+     - =RANK.EQ([@ModelingScore],Table1[ModelingScore],0)
+     - Final place: =RANK.EQ([@TotalPoints],Table1[TotalPoints],1)
+
+3) Mixed RANK ordering is intentional but must be documented
+- Fact: event RANK (no third arg or third arg 0) ranks higher score = better rank; final place uses order =1 because lower TotalPoints (sum of places) is better.
+- Recommendation: use RANK.EQ with explicit third argument (0 or 1) so intent is clear:
+  - Events: =RANK.EQ(score,score_range,0)
+  - Final: =RANK.EQ(total,total_range,1)
+
+4) Many template SUM rows (K40:K282 etc.)
+- Symptom: lots of SUM formulas prefilled for many rows beyond your current contestants.
+- Why caution: if any of those rows contain hard-coded wrong references (like the 68), they will propagate errors; also RANK ranges must match actual used rows.
+- Fix: keep template rows, but ensure their cell references are correct (no literals) and use table/dynamic ranges to avoid having to update RANK ranges when contestant count changes.
+
+Quick checklist to fix the workbook now
+1. Replace any literal numbers in SUM formulas (e.g., change 68 → H41).
+2. Standardize each sheet’s event-place formulas so every event uses the same absolute range endpoints (e.g., $D$2:$D$16, $G$2:$G$16, $I$2:$I$16).
+3. Set each sheet’s Final Place RANK range to include the full TotalPoints column for that sheet (e.g., $K$2:$K$16).
+4. Convert sheets to Excel Tables or use named/dynamic ranges so ranges auto-adjust as you add contestants.
+5. Optionally switch to RANK.EQ for clarity and use the 3rd argument explicitly.
+
+If you want, tell me which sheet(s) and exact contestant-row ranges (how many contestants per sheet) and I will produce the corrected formulas (copy-down ready) or give the exact Table-structured formulas.

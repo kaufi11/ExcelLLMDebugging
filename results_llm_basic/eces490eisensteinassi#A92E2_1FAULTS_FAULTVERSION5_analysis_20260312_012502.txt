@@ -1,0 +1,24 @@
+Summary of the error(s)
+- Cell G19 is wrong: it contains =468*F19 instead of the correct E19*F19. That single typo makes the entropy in G46 (SUM(G19:G44)) totally incorrect.
+- (Optional) many redundant individual formulas — this is not wrong, but fragile and easy to mistype (as happened).
+
+Why this is wrong (short)
+- Information content I(x) = -log2 p(x). Entropy contribution = p(x) * I(x). G19 should multiply the probability (E19) by its info content (F19). Multiplying by 468 produces a huge, meaningless number.
+
+How to fix it
+1. Correct the cell:
+   - Change G19 to =E19*F19
+
+2. (Recommended more robust approach) Replace the many intermediate cells with a single SUMPRODUCT formula so typos are harder to make:
+   - For the E‑column distribution use:
+     =-SUMPRODUCT(E19:E44, LOG(E19:E44, 2))
+   - For the A‑column distribution use:
+     =-SUMPRODUCT(A19:A44, LOG(A19:A44, 2))
+   - Or to compute entropy directly in G46: =SUMPRODUCT(E19:E44, F19:F44) (if you keep F19:F44)
+
+Quick check you can run after fixing
+- Verify each probability column sums to 1 (SUM(A19:A44) and SUM(E19:E44) should both = 1).
+- Verify entropy maximum formula is correct: 26*((1/26)*-LOG((1/26),2)) simplifies to -LOG(1/26,2) = LOG(26,2).
+
+One-line final fix
+- Change G19 to =E19*F19 (and optionally replace G46 with =-SUMPRODUCT(E19:E44,LOG(E19:E44,2)) for safety).

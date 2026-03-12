@@ -1,0 +1,64 @@
+I reviewed every formula you supplied. Most formulas compute the expected numeric results, but I found several real errors and a few spots that are fragile / inconsistent (unit conversions, wrong function or wrong factor). Below is a concise list of the problems I found, why each is a problem, and a recommended correction.
+
+1) E45 (Above y conversion) — wrong conversion factor
+- Current formula: =C45*100
+- Problem: C45 is given as 0.405 with unit "cm". To convert cm → m you must divide by 100 (or multiply by 0.01). Multiplying by 100 gives 40.5, which is off by factor 10,000 relative to meters and will break any downstream trigonometric / dimensionless arguments.
+- Fix: =C45/100  (gives 0.00405 m)
+- Rationale: downstream formula C47 uses E45 in a term with E42, E44, E43 where all should be in meters so E45 must be in meters.
+
+2) E114 (inconsistent/incorrect expression — probably inverted)
+- Current formula: =(2*(E113/(E111/E112)))
+- Problem: This formula computes 2 * E113 * (E112 / E111) (i.e. 2*a*L/λ if E112=a and E111=λ). Cell C115 below uses 2*E111*E113/E112*1000 (i.e. 2*λ*L/a*1000). E114 and C115 are not consistent with each other — one appears to have inverted a and λ. Given the context (single-slit width/spacing), C115's value ~1.59 mm looks correct; E114 value ~475.9 is likely wrong.
+- Likely fix (to match C115, in meters): =2*E111*E113/E112
+- Or if you want the mm value like C115: =2*E111*E113/E112*1000
+- Rationale: choose the form consistent with the physical formula you intend (2λL/a) and make explicit parentheses to avoid ambiguity.
+
+3) E133 (unit conversion factor wrong by factor 10)
+- Current formula: =C133*0.00000001
+- Problem: C133 is wavelength in nm. To convert nm → m multiply by 1e-9, not 1e-8. Using 1e-8 makes the wavelength ten times too large in meters, which propagates into E134/E135/C136 (all become 10× too large).
+- Fix: =C133*0.000000001  (or =C133/1e9 or =C133/POWER(10,9))
+- Rationale: 1 nm = 1e-9 m.
+
+4) C175 (probably wrong trig function — ATAN used instead of ASIN)
+- Current formula: =DEGREES(ATAN((C171/C172)))
+- Problem: C171 and C172 are refractive indices (glass n, water n). For many optics problems you want the critical angle or refraction angle, which typically involves arcsin(n2/n1) or arcsin(C172/C171), not arctan(n1/n2). ATAN(n1/n2) does not give the usual Snell's-law angle or the critical angle. The output 48.247° looks suspicious for "incident angle" relative to typical physics formulas.
+- Suggested fixes (pick based on intended meaning):
+  - If you meant angle from Snell's law for transmitted ray (θ1 = arcsin(n2/n1) for total internal reflection / critical angle): =DEGREES(ASIN(C172/C171))
+  - If you actually intended ATAN, document why (but likely ASIN is intended).
+- Rationale: verify which angle you need (Snell's law uses arcsin).
+
+5) Fragile / inconsistent unit conversions (not errors per se but error-prone)
+- Examples: E11 uses *0.000000001, E44 uses /POWER(10,9), many other cells use /1000, /100, /1000000, etc. Some formulas mix nm/mm/cm/m in different combos but rely on numeric cancellation (e.g. C26 = (C23*C24)/C22/1000). These produce correct numeric answers now, but are hard to read and easy to break.
+- Recommendation: standardize on SI (meters) in helper columns, or use explicit conversion factors in formulas (e.g. =C23/1e9 to get λ in m; =C22/1000 to get d in m; then use the SI values in all physics formulas). That reduces accidental factors-of-10 bugs.
+
+6) C26 (works numerically but unit-handling is nontransparent)
+- Current formula: =(C23*C24)/C22/1000
+- Comment: numerically gives the expected result, but the mixing of nm, m, mm and a trailing /1000 is fragile. Consider rewriting using explicit conversions (e.g. = (C23/1e9 * C24) / (C22/1000) ) → returns meters, or format final as mm by multiplying by 1000 explicitly.
+
+7) C95 (odd grouping but equivalent)
+- Current formula: =(0.5*C92)/(2*C91)
+- Comment: this equals 0.25*C92/C91 (i.e. λ/(4n)). That is likely what you intended; the formula is fine though unconventional. No action required unless you want clearer expression.
+
+8) C104 (check F vs F-1)
+- Current formula: =(C102-1)*(C101*POWER(10,-9))/2
+- Comment: you used F-1 rather than F. This may be intentional (e.g. t = (F-1)λ/2) depending on problem statement. Double-check you intended (C102-1) and not C102.
+
+9) Warning: ASIN domain risk (C166)
+- Formula: = (ASIN(2*E162/E161)-ASIN(2*E163/E161))*1000
+- Comment: ASIN arguments must be between -1 and 1. Current data are OK, but if spacing or wavelengths change the expression 2*λ/d can exceed 1 -> #NUM! error. Consider clamping/checking inputs or using error handling.
+
+Summary of concrete fixes to apply first (highest priority)
+- Change E45 to =C45/100
+- Change E114 to the correct expression consistent with C115 (likely =2*E111*E113/E112*1000 or =2*E111*E113/E112 if you want meters)
+- Change E133 to =C133*0.000000001 (or /1e9)
+- Re-evaluate C175: replace ATAN with ASIN if you intended Snell's-law/critical-angle calculation: =DEGREES(ASIN(C172/C171))
+
+Other suggestions
+- Standardize conversions (introduce columns for λ_m, d_m, L_m, y_m etc using explicit /1e9, /1000, /100, so all physics formulas use SI).
+- Add parentheses to all multi-term multiply/divide expressions so the order is explicit and easier to read.
+- Add small comments in cells or a legend documenting units chosen per column.
+
+If you want, I can:
+- produce corrected formulas replacing the flagged cells,
+- rewrite the whole sheet to use explicit SI helper columns (λ_m, d_m, L_m) and replace all physics formulas to use those SI cells so the sheet is robust, or
+- re-check any of the ambiguous physics formulas (C104, C175) if you tell me the intended physical formula.

@@ -1,0 +1,40 @@
+I reviewed the workbook formulas sheet-by-sheet and found a small number of real formula mistakes plus a few fragile / inconsistent constructions that may cause errors or confusion later. Below I list the definite errors first (with the exact cell, what’s wrong, and the corrected formula), then a few observations / recommendations about fragile or inconsistent formulas.
+
+Definite formula errors (must fix)
+- Sheet "Q1", cell E19
+  - Current formula: =$E$2/(1-$J19)^$E$1
+  - Problem: Denominator uses (1 - rate) instead of (1 + rate). All other discount formulas use (1 + rate). This is very likely a typo and gives an incorrect PV for that cell (it divides by 0.95 rather than 1.05).
+  - Correction: =$E$2/(1+$J19)^$E$1
+
+Other issues, inconsistencies and recommended fixes
+- Sheet "Q1" (all D4..G4, D5..G5, …)
+  - The discount formulas in column D use $D$1 as the exponent. In the sheet header D1 is blank (only E1=1, F1=2, G1=3 are populated). Relying on a blank cell being treated as 0 in exponent works in Excel (blank coerces to 0) but is fragile and not transparent.
+  - Recommendation: explicitly set D1 = 0 (Period 0) or replace references to $D$1 with an explicit 0 if you intend period 0. This makes the meaning explicit and avoids hidden behavior if someone clears the cell.
+- Sheet "Q1" (discount-rate references)
+  - Discount formulas use $J4 (for example) rather than $J$4; the column is fixed but the row is relative (so when copied down they reference the J value on the same row). This appears intentional, but it's a subtle mixed-anchoring style that can cause confusion if rows are moved or formulas copied incorrectly.
+  - Recommendation: if the rate in column J is intended to be fixed per row (which it is), keep it as $J4 (relative row) — but document the structure or use $J$4 in each row explicitly to avoid accidental copying mistakes.
+- Sheet "Q1 a-b, graph" vs sheet "Q1"
+  - There are two tables that calculate the same NPV curve; they use the same cash flows but different row orderings/indices. Values match mathematically but alignment of rates/rows differs between sheets. Not an error per se, but be aware when comparing rows between sheets.
+- Sheet "Q1 c-d, additional info"
+  - Cell G26: =IRR(B2:E2,22%) returns #N/A (this is shown in the sheet). This is not a spreadsheet error — IRR with that guess does not converge; Excel returns #N/A. If you want to show a meaningful result, use a different guess or use a root-finder on the polynomial.
+- Sheet "Q2" and "Q2 WITH DEPRECIATION" — use of blank period cells
+  - Several discount formulas use exponents like ^C6 where C6 is blank. As with Q1, Excel treats blank as zero. This works but is fragile/unclear. Recommendation: populate the period header cells C6..G6 explicitly (0,1,2,3) to make discount exponents explicit.
+- Sheet "Q2" (tax loss carry-forward logic)
+  - The carry-forward logic uses IF() tests and SUM ranges that include the carry-forward cell itself (e.g. E46 = IF(D47=0,SUM(D45:D47),0)). This works because the IF branch prevents circular evaluation in the current data, but it is conditional and could become circular if numbers change (e.g., if D45 >= 0 the formulas take different branches). Recommendation: simplify logic or document assumptions (that D45 < 0 for early years) to avoid accidental circular references later.
+- Sheet "Q3" — label / formula mismatch (minor)
+  - Cell E45: formula =1/(1-C43/C41). The text in the sheet says "EPS/Price = r*(1-PVGO/Price): Therefore, the number is 1/(1-PVGO/Price)". The formula uses C43/C41 (PVGO / Market Value), not PVGO / Price-per-share. If the intention was to use totals then C43/C41 is consistent; if the text intends per-share PVGO/Price-per-share you should compute PVGO per share and divide by price per share instead. This is a labelling/units mismatch rather than a calculation bug, but it can lead to misinterpretation.
+  - Recommendation: decide whether you are working in per-share terms (use PVGO_per_share / Price_per_share) or in totals (PVGO_total / MarketCap_total). Make the text consistent with the formula.
+- Sheet "Q4"
+  - Many formulas are fine. A small style oddity: some cells are entered as =5959000000 instead of just the number; this is harmless but inconsistent.
+
+Summary of action items I recommend you perform
+1. Fix the clear typo immediately:
+   - Q1!E19: change (1-$J19) to (1+$J19).
+2. Populate period header cells explicitly (D1 = 0) in sheet Q1 and the analogous C6..G6 on Q2 and other sheets so discount exponents are explicit and not reliant on blank-cell behavior.
+3. Decide and document anchoring strategy for rate cells (if each row uses the rate in column J of that row use $J4 as you have; otherwise use absolute $J$4).
+4. Review the tax-loss-carry-forward IF/SUM constructions and, if possible, rewrite them to avoid constructs that include the cell itself in the summed range — this will prevent circular references if the data pattern changes.
+5. In Q3, confirm whether PVGO ratio should be per-share or total-capital based and update the formula or the text for consistency.
+
+If you like, I can:
+- create corrected formulas and show an updated JSON snippet for the changed cells,
+- or produce a step-by-step edit list for an auditor to apply directly in Excel. Which would you prefer?

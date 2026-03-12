@@ -1,0 +1,43 @@
+### Errors Found:
+
+1. **MasterMethod_Checks Sheet:**
+   - In cell H19, the formula is `=LOG(A19,517)`. The base 517 is unusual and inconsistent with other rows which use base 2.
+   - In row 11 (A11=0), formulas like `=A11^$B$6` (C11) and `=LOG(A11,2)` (H11) will cause errors:
+     - `0^CE` is valid but `LOG(0,2)` is undefined (logarithm of zero).
+   - In column B (f(n) = A#/2), when A#=0 (row 11), f(n)=0, which might cause division by zero or invalid comparisons in other formulas.
+
+2. **SubstitutionMethod_Checks Sheet:**
+   - In column B (e.g., B10), formula uses `LOG(LOG(A10,2),2)`. For A10=1, `LOG(1,2)=0`, so `LOG(0,2)` is undefined and causes an error.
+   - In column C, formulas are inconsistent:
+     - For row 10, formula is `=$B$5*LOG(LOG(A10,2),2)` (missing multiplication by A10).
+     - For rows 11-18, formula is `=$B$5*A#*LOG(LOG(A#,2),2)` (includes A#).
+     - This inconsistency may cause incorrect bounds.
+   - In column D (T(n)), formula is `=5*1 + A#/LOG(A#,2)` for rows 10-18, but from row 19 onward, it references `$D$11`, `$D$12`, etc., which are values from previous rows, likely unintended.
+   - For small n (like 1), `A#/LOG(A#,2)` causes division by zero or undefined (log(1,2)=0).
+
+### Solutions:
+
+1. **MasterMethod_Checks:**
+   - Fix H19 formula: change `=LOG(A19,517)` to `=LOG(A19,2)` to be consistent.
+   - For row 11 (n=0), avoid log(0) by either:
+     - Starting n from 1 instead of 0, or
+     - Use `IF(A11=0, "", LOG(A11,2))` to avoid errors.
+   - Check if f(n) = A#/2 is appropriate for n=0 (usually n≥1 for Master Method).
+
+2. **SubstitutionMethod_Checks:**
+   - For `LOG(LOG(A#,2),2)`, ensure n≥2 to avoid log(0) or negative values inside log.
+     - Start n from 2 or add `IF(A#<2, "", formula)` to avoid errors.
+   - Make column C formulas consistent:
+     - For row 10, change `=$B$5*LOG(LOG(A10,2),2)` to `=$B$5*A10*LOG(LOG(A10,2),2)` to match other rows.
+   - Fix column D formulas:
+     - Remove references like `$D$11`, `$D$12`, etc., and use consistent formula for all rows, e.g., `=5*1 + A#/LOG(A#,2)`.
+   - For small n (like 1), avoid division by zero by starting n from 2 or use `IF(A#=1, "", formula)`.
+
+### Explanation:
+
+- **Logarithm domain:** Logarithm functions require positive arguments greater than zero. `LOG(0,2)` or `LOG(LOG(1,2),2)` are undefined and cause errors.
+- **Consistency:** Formulas for similar columns should be consistent to correctly compare bounds.
+- **Avoid division by zero:** When denominator can be zero (e.g., `LOG(1,2)=0`), handle with IF statements or start from valid n values.
+- **Correct base in LOG:** Using consistent base (usually 2) is important for correct calculations.
+
+Fixing these will make the sheet error-free and logically consistent for Master Method and Substitution Method checks.

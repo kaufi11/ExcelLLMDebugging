@@ -1,0 +1,22 @@
+Summary of the real error
+- Cell O95 (row "Set up costs") contains =SUM(E95-M95). That is wrong because E95 is empty/unused in this sheet; it should subtract the year-to-date forecast (M95) from the annual allocation in column D (D95). Because E95 is blank (treated as zero) the formula produces an incorrect negative value.
+
+Why it's wrong (simple)
+- SUM(E95-M95) evaluates as 0 - M95 (since E95 is blank) → wrong underspend.
+- The intended calculation across the sheet is always: underspend = annual allocation (D) minus forecast/period total (M). So O95 should use D95, not E95.
+
+Fix (what to change)
+- Replace the formula in O95 with:
+  =D95 - M95
+  (or, if you prefer the existing style, =SUM(D95-M95) — but plain subtraction is cleaner)
+
+Other clean-up recommendations (short)
+- Many cells use SUM(Dxx-Mxx) or SUM(Dxx+Mxx) — these work but are unnecessary. Use direct arithmetic (=Dxx-Mxx or =Dxx+Mxx) for clarity and to avoid typos.
+- Do a quick Find on the sheet for "=SUM(E" (or more generally any "=SUM(E" or "=SUM(" patterns) to catch accidental references to column E or other mistyped letters.
+
+How to check you've fixed it
+1. Edit O95 and enter =D95-M95, press Enter.
+2. Verify O95 now equals 3 - (value in M95). It should be a small positive/zero number consistent with other rows.
+3. Optionally run Find for "SUM(E" and review any hits.
+
+If you want, I can list any other formulas that use SUM with arithmetic so you can standardize them.

@@ -1,0 +1,25 @@
+I inspected every formula in the sheet you provided. Summary of issues, why they matter, and recommended fixes:
+
+1) Hard-coded constant in C19 (inconsistent with other rows)
+- Current: C19 value 10600, formula =212*50
+- Why it's a problem: Every other Academic row uses the pattern =Bxx*weight (e.g. C17 =B17*100, C18 =B18*75). C19 is the only one that uses literal 212 rather than referencing B19. If the count in B19 changes the C19 result will not update.
+- Recommended fix: replace the formula in C19 with
+  =B19*50
+
+2) Blank count cells will evaluate as zero (possible unintended zeros)
+- Many point formulas in column C depend on column B (C6:C13, C17, C18, C20:C22). If the corresponding B cells are blank they evaluate as zero and column C will show 0. This is expected behavior in Excel but is often a source of accidental zeros if the input counts were omitted.
+- Recommendation: either ensure B6:B13 and B17:B22 are populated, or wrap formulas to make missing inputs obvious, e.g.
+  =IF(B6="","",B6/10)
+  so an empty B6 yields blank instead of 0.
+
+3) Minor text/label issues (not formula errors but worth fixing)
+- A13 contains a typo: "Hours playng sports" → "Hours playing sports".
+- The "Total Points" labels are in column B (B14 and B23), while categories are in column A. This is fine but a slight layout inconsistency you may want to standardize.
+
+4) Aggregation checks
+- C14 =SUM(C6:C13) — correct for PT subtotal.
+- C23 =SUM(C17:C22) — correct for Academic subtotal, but note it includes the hard-coded C19 result; once C19 is changed to =B19*50 this will behave properly.
+
+If you want, I can:
+- Produce an updated workbook with C19 corrected and optional IF-wrapping to avoid accidental zeros,
+- Or scan for further stylistic/validation improvements (data validation on B columns, conditional formatting for blank inputs, etc.).

@@ -1,0 +1,41 @@
+Summary — what I found
+- Wrong constant/reference in one cumulative cell:
+  - Sheet "NPS Pollution", cell I32 contains the formula =47+H32 (wrong). It should add the current Awarded/Approved funds to the previous cumulative total.
+- Inconsistent use of Requested vs Awarded for cumulative totals:
+  - Sheet "Watershed Protection" (the table with $10,600,000 limit) uses column G (Project Funds Requested) for some I-column cumulative formulas (e.g. I7 = G7, I8 = I7+G8, etc.) but other rows use H (Approved/ Awarded). The I column is titled "Cumulative Total Project Funds Awarded" so it must always sum Awarded (H), not Requested (G).
+- Minor rounding mismatch:
+  - Sheet "Coastal NPS-Reg 4,8,9" row 18: G18 = 311,280.25 but H18 = 311,280 (0.25 difference). This looks like a data/rounding issue (not a formula bug) and may affect exact totals.
+
+Why these are errors
+- Cumulative totals should be based on the Awarded/Approved funds (column H). Using G mixes requested amounts into awarded totals and produces incorrect cumulative sums.
+- A hard-coded constant (47) or mis-typed reference breaks the running total and gives a wrong available-funding calculation for Project #612.
+- Rounding differences change final totals by small amounts and may confuse reconciliation.
+
+How to fix (short, exact steps)
+1. Fix the bad constant in NPS Pollution:
+   - In sheet "NPS Pollution" change I32 to:
+     =I31 + H32
+     or (safer) use a running SUM:
+     =SUM($H$7:H32)
+   - Copy the SUM-style formula down if you have more rows to ensure the running total is always cumulative from the table start.
+
+2. Make cumulative formulas consistent in Watershed Protection:
+   - In sheet "Watershed Protection" set the first cumulative cell to the first Awarded value:
+     I7 = H7
+   - For all subsequent rows in that table, use:
+     I8 = I7 + H8
+     I9 = I8 + H9
+     ... or use the SUM pattern in I7 and copy down:
+     I7 = SUM($H$7:H7)
+     then copy I7 down the I column for the whole table. This ensures the cumulative column always sums Awarded funds only.
+
+3. Check and fix rounding/data inconsistencies:
+   - On "Coastal NPS-Reg 4,8,9" make sure H18 matches the intended approved amount (311,280.25 vs 311,280). If approved funding was 311,280.25, update H18 to match. If the .25 was intentionally dropped, document it.
+
+Quick verification after fixes
+- The final I cell in each table should equal SUM of column H (approved funds) for that table. Use =SUM(H7:H[lastrow]) as a cross-check.
+- Compare "available funding" notes to the final cumulative to ensure they match expectations.
+
+If you want I can:
+- Provide the exact SUM formula to paste into each first cumulative cell for every sheet.
+- Generate a short macro to fix every I cell to =SUM($H$start:Hcurrent) and correct the I32 error automatically.

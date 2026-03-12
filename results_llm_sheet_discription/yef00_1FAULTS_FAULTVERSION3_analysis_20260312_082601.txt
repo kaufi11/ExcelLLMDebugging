@@ -1,0 +1,45 @@
+Summary — what’s wrong (short)
+- Several cells have ad‑hoc “+1” additions (Revenues!C11, General State Financial Aid!B21, FTEE!E27). Those artificially inflate totals by 1 and break exact consistency between sheets.
+- One formula hard‑codes a literal division instead of using the cell (FTEE!F14 = 829/600). That won’t update if the source cell (E14) changes.
+- A couple of cells use inline numeric sums instead of referencing component cells (Revenues!C9 = 9432730+111410104). This is fragile and obscures data provenance.
+- Because of the +1s and hard‑coding you can get totals or percent columns that don’t sum exactly to 100% (or that disagree across sheets).
+
+Why this matters (short)
+- The +1s and hard‑coding produce small but avoidable inconsistencies and make maintenance/error checking harder. Percentages and totals should be driven by cell references and proper rounding, not by manual offsets.
+
+How to fix it (step‑by‑step, simple)
+1) Remove the “+1” adjustments
+   - Revenues sheet: change C11 from =141577402+1 to =141577402 (or better: reference the cell containing 141,577,402).
+   - General State Financial Aid sheet: change B21 from =3684419+1 to =3684419 (or reference the correct source cell).
+   - FTEE Calculation sheet: change E27 from =SUM(E11:E26)+1 to =SUM(E11:E26).
+
+   Effect: totals and dependent percentages will no longer be off by one and the sheets will reconcile.
+
+2) Replace hard‑coded arithmetic with cell references
+   - FTEE Calculation: change F14 from =829/600 to =E14/600.
+   - Revenues (and any other cells where you see “9432730+111410104” or similar): put the parts in their own cells and use =SUM(cell1,cell2) or reference the combined cell. Example: if the two parts are in C9 and C9b, use =SUM(C9, C9b) or place each part in separate rows and sum.
+
+   Effect: values update automatically if the underlying input changes.
+
+3) Use consistent absolute references and rounding for percent columns
+   - Keep percent formulas like B9 = C9 / $C$15, B10 = C10 / $C$15, etc.
+   - To avoid tiny rounding drift, wrap percentages with ROUND, e.g. B9 = ROUND(C9/$C$15,4) (4 decimals for percentage formatting) or use =C9/$C$15 then format cell as % with desired decimal places.
+
+   Effect: percentages will display consistently and sum to 100.00% (modulo rounding).
+
+4) Verify SUM ranges
+   - Make sure total formulas only include the intended rows (no extra blank or header rows). Example: Revenues total should be =SUM(C9:C13) if rows 9–13 are the only revenue lines (your sheet currently sums C9:C14; check whether C14 is blank or undesired).
+
+One‑line corrected formula examples
+- Revenues!C11: =141577402 (or better, =SheetX!CellContainingThisValue)
+- General State Financial Aid!B21: =3684419
+- FTEE!E27: =SUM(E11:E26)
+- FTEE!F14: =E14/600
+- Any percent cell: =ROUND(C9/$C$15,4) and format as %.
+
+Final check
+- After these fixes, recalc workbook and confirm:
+  - Revenue percent column sums to 100% (or to 100% after rounding).
+  - General State Financial Aid total equals Revenues’ General State Financial Aid line.
+  - FTEE percent column (I11:I26) sums to 100% (or for I27 = 1 with formatting as %).
+If you want, I can produce the exact corrected formulas for every problematic cell or recalculate the affected totals/percents for you.

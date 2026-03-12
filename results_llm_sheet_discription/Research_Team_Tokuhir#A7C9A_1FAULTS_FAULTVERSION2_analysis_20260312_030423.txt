@@ -1,0 +1,43 @@
+Short answer — errors found
+- Column A numbering is inconsistent:
+  - A17 uses =679+1 (gives 680) instead of continuing the chain from the previous row.
+  - A28 uses =A26+1 while A27 is missing, so numbering jumps / skips.
+  - A40 is hard-coded as 35 instead of continuing from A39.
+  - Column A mixes hard-coded values and different formulas (A3 = 1, some =Aprev+1, one =679+1). That makes the sequence wrong and fragile when you insert/delete/sort rows.
+
+Why this is a problem
+- IDs are incorrect (680 in the middle, skipped numbers).
+- Inserting or deleting rows will break the sequence where formulas are inconsistent.
+- Sorting the table can either move formulas or give incorrect IDs depending on your approach.
+
+How to fix (two simple options)
+
+Option A — Quick manual fixes (minimal change)
+1. Restore any missing row if A27 was deleted (insert a blank row 27 if needed).
+2. Fix the three bad cells:
+   - Change A17 to =A16+1
+   - Change A28 to =A27+1
+   - Change A40 to =A39+1
+3. Fill (drag) the corrected formula down through the rest of column A so every cell uses Aprev+1 (except the first cell which can be 1).
+
+This keeps the simple +1 chain and fixes the immediate errors.
+
+Option B — Robust automatic numbering (recommended)
+1. In A3 enter a single, robust formula and fill down (avoids dependency on an exact previous formula):
+   - If you want a simple row-based number starting at 1 on row 3:
+     =IF($B3="","",ROW()-2)
+     (Put this in A3 and copy/fill down.)
+   - If you prefer numbering only when there is data in the row (using First Name column B as indicator):
+     =IF($B3="","",COUNTA($B$3:$B3))
+     (Put in A3, fill down.)
+2. Optional: if you want stable IDs that don't change if you sort rows, after generating the correct sequence copy column A and Paste Special → Values.
+
+Why Option B is better
+- One formula for the whole column, no accidental manual constants.
+- Handles blank rows (with IF check) and automatically numbers each data row.
+- Easier to maintain when inserting/deleting rows.
+
+Extra note
+- F1 contains the workbook title "Graduation" while the header row is B2:G2 — that's fine, not an error unless you intended a single merged title row.
+
+If you want, I can give the exact formula tuned for your file and produce the updated list of values for column A.

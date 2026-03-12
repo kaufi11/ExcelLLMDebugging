@@ -1,0 +1,44 @@
+Summary of the real errors I found and how to fix them (short & clear):
+
+1) Wrong weighting used for latent load per person (major formula bug)
+- Where it appears (examples): Occupancy!F10 (and the same formula cell repeated on multiple schedule-summary sheets: Occ L0 F10, Occ L1-WD F10, Occ L1-DU F10, Occ L2-WD-DU F11, etc.)
+- Wrong formula (current):
+  +(Occupancy!F22*Occupancy!F19 + Occupancy!F23*Occupancy!F20) / (Occupancy!F19 + Occupancy!F20)
+  (This multiplies the latent gains by the sensible gains and divides by the sum of sensible gains — incorrect.)
+- Correct formula:
+  +(Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- Why: you must weight the latent gains (F22 = living latent, F23 = bedroom latent) by the occupancy fractions (totals) in the living area and bedroom schedules (F38 and F39). The current formula accidentally uses F19/F20 (sensible gains) instead of the schedule sums, producing a wrong per-person latent value.
+- Fix: replace the incorrect formula everywhere it appears with the corrected version above.
+
+2) A hard-coded value placed in a schedule formula (breaks sums/logic)
+- Where: Sheet "Occ L2-DU-LR", cell E22 (row for hour 7).
+- Wrong value/formula: E22 = 7 (hard-coded instead of following the pattern)
+- Correct pattern (example of same-row formula on that sheet): E22 should be
+  =+'Occ L3-WD-DU-LR'!H22*Occupancy!$F$34 + 'Occ L3-WD-DU-LR'!J22*Occupancy!$F$33
+  (i.e. mirror the row pattern used in rows above/below on that sheet)
+- Why: that cell is part of a fractional schedule; a literal 7 is nonsensical (will make schedules invalid and break downstream schedule sums).
+- Fix: replace the 7 with the correct formula consistent with the other rows (use the same pattern as E16/E17 etc on that sheet).
+
+3) Inconsistent sheet-name references (possible #REF! errors)
+- Symptom: some formulas use sheet names with no space (e.g. 'OccL2-WD-DU') and other formulas use names with spaces (e.g. 'Occ L2-DU-LR'). If the actual sheet name does not match the reference exactly, Excel returns #REF!.
+- Why: Excel sheet references must match the exact sheet tab name. Mixed use of spaced and non-spaced names indicates copy/paste or renaming errors and can silently break links if you rename sheets.
+- Fixes (pick one consistent approach)
+  - Option A: Standardize sheet tab names to the no-space form (OccL2-...) and then use Find/Replace in formulas to remove spaces in the sheet references.
+  - Option B: Keep the spaced sheet names and use Find/Replace to add the space in all formula references (or re-enter the formulas).
+  - Tip: use Excel’s Find (match entire cell) for the wrong pattern or use the Name Manager / Define Names so formulas refer to names (safer).
+
+4) Minor typos in labels
+- Example: C10 on "Occ L1-LR" says "190 BTY/hr" — should be "BTU/hr".
+- Fix: correct the text label. (No functional impact.)
+
+Recommended quick check-list to apply fixes safely
+1. Make a copy of the workbook.
+2. Use the Find tool to locate formulas containing the wrong latent formula pattern (search for "*Occupancy!F22*Occupancy!F19*" etc). Replace with the corrected formula that uses F38/F39.
+3. Inspect "Occ L2-DU-LR" row 22, replace the hardcoded 7 with the consistent formula (copy from adjacent rows and adjust row number).
+4. Run Excel’s Trace Precedents / Evaluate Formula on the key summary cells (Occupancy!F9 and F10, and any downstream sums) to confirm values look reasonable.
+5. Fix sheet-name inconsistencies by standardizing names or updating references. After change, use Find for patterns like 'OccL2-' vs 'Occ L2-' to catch remaining mismatches.
+6. Optionally define 2–3 named ranges for the key occupancy totals (e.g. Occ_LR_hours = Occupancy!F38, Occ_BR_hours = Occupancy!F39) and rewrite the latent/sensible weighting formulas with names to prevent future mistakes.
+
+If you want, I can:
+- Provide the exact Find/Replace search & replace strings to fix the latent formula across the file, and
+- Give the exact formula to paste into Occ L2-DU-LR!E22 (and check neighboring cells). Which would you like me to do?

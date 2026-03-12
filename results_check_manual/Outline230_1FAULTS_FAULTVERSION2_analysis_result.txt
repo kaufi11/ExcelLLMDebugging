@@ -1,0 +1,49 @@
+I inspected the formulas you provided and flagged the formulas and layout items that look incorrect, inconsistent, or potentially fragile. Summary first, then details and suggested fixes.
+
+High-priority problem
+- Sheet1!D44 — incorrect increment
+  - Current formula: =16+D43
+  - Why it's a problem: every other #CL cell increments by 1 (e.g. D10 =1+D9, D11 =1+D10, …). D43 is 35, but D44 becomes 51 because of the +16. That causes every subsequent D cell (D45, D46, …) to be offset by +16 (they use =1+D44 etc.). This looks like a typo; likely intended: =1+D43. Fix: change to =1+D43 (or otherwise correct the intended offset).
+
+Other issues / inconsistencies (lower priority)
+- Duplicate hard-coded total vs calculated total (possible maintenance risk)
+  - Sheet1
+    - J65 has formula =SUM(J8:J64) (calculated total).
+    - J67 is a hard-coded 700 (constant).
+    - J68 =+J67-J65 (difference between manual constant and calculated total).
+  - Sheet2
+    - D23 =SUM(D2:D22) (calculated total).
+    - D24 =+Sheet1!J65 (pulls calculated total from Sheet1).
+    - D25 =+D23-D24 (difference).
+  - Why it matters: having both a hard-coded total (Sheet1!J67) and a calculated total (Sheet1!J65) invites accidental divergence. If you expect one canonical total, keep only the calculated value (or link everything to it). Recommendation: remove the manual 700 (J67) or make it a link to J65 so the sheet has a single source of truth.
+
+- Sum range possibly starts at an unexpected row
+  - Sheet1!J65 =SUM(J8:J64)
+  - Observation: Points actually begin in row 10 (J10 onwards in the snippet). J8 may be blank and the range works, but using J8 may include an unintended cell. Consider using a precisely intended start (J9:J64 or J10:J64) to avoid including a header or stray data in the future.
+
+- Unnecessary/use of unary plus in formulas (style inconsistency)
+  - Examples: many formulas use =+B2*C2 or =+D2+D3.
+  - These are not errors (Excel accepts them) but are stylistically inconsistent and can be confusing. Consider removing the leading '+' (use =B2*C2).
+
+- Date-increment formulas are fragile if an earlier date is missing
+  - Many date cells use =1+C(previous) to step one day forward.
+  - If the referenced previous cell is blank or not a date, the result will be 1 (Excel date 1900-01-01) or otherwise wrong. While the provided data shows valid dates in the chain, be aware that any break in the chain will produce incorrect dates. Recommendation: consider using explicit dates for week-start rows or wrap with IF to avoid propagating blanks (e.g., =IF(Cprevious="", "", Cprevious+1)).
+
+- Some zero/placeholder formulas reference blank rows
+  - Sheet2 has D10:D15 =+B10*C10 etc. If B10/C10 are empty, result is 0 which may be intended placeholders. Just confirming these are intentional.
+
+Minor style/clarity issues
+- Duplicate labels: "TOTAL POSSIBLE" appears twice (Sheet1 B65 and B67). That is confusing; keep only one label and one canonical total.
+- Sheet2 E3 currently computes =+D2+D3 while D3 itself is =+B3*C3; this is fine but redundant — consider computing a single total cell or adding comments.
+
+Recap of recommended changes
+1. Fix Sheet1!D44 to =1+D43 (unless the +16 was intentional).
+2. Remove or link the manual total in Sheet1!J67 to the calculated total J65 (avoid duplicate authoritative values).
+3. Tighten SUM ranges to the exact data rows (e.g., J10:J64 or confirm J8 is intentionally included).
+4. Remove leading '+' in formulas for consistency (optional).
+5. Protect date chains by using IF checks or explicit dates where appropriate.
+
+If you want, I can:
+- produce a list of every cell that uses =1+preceding (date increments) so you can inspect fragile links,
+- search the workbook for other outlier formulas like the =16+D43 pattern,
+- or give the exact corrected formulas and a patch file. Which would you prefer?

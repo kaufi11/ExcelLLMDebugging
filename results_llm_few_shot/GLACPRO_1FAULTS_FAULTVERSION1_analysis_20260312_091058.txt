@@ -1,0 +1,14 @@
+Summary of error
+- Faulty cell: J41
+- Problem: J41 contains a hard-coded wrong expression ("=553-B41") instead of subtracting the moraine crest (I41) from bedrock (B41). This gives a nonsense result (large negative thickness) and breaks any downstream checks.
+
+Fix
+- Replace the formula in J41 with:
+  =I41 - B41
+
+Why this fixes it (short)
+- J-col is supposed to be "Ice Thickness" = MORAINE CREST (I) minus BEDROCK (B). Using =I41-B41 restores the correct calculation and matches the pattern used in the other rows (J40, J42, etc.).  
+
+Suggested quick checks after fix
+- Copy J40:J42 (or the whole J-column pattern) down to ensure all rows use =Irow - Brow.
+- Scan column F formulas for any #DIV/0! errors—if any H(previous) = 0 you'll get a division error; seed rows (G37..G39) set thickness to zero intentionally, but your iterative F formulas start at row 40 where they use H39 (nonzero), so you should be fine.

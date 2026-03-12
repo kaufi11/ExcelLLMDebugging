@@ -1,0 +1,44 @@
+Summary of workbook structure and contents
+
+General
+- Workbook contains multiple sheets; only Sheet1 and Sheet2 populated with detailed gradebook data. Sheets 3–16 are present but empty.
+- Layout follows a standard gradebook: student info (name, ID), many assignment columns, project columns, lab/exam subtotals, and overall totals/percentages/letter grade.
+
+Sheet1 (SECTION 01 MW 11–11:50)
+- Header rows define categories and weights:
+  - Homework assignments in D1:S1 (10 points each). T column holds SUM(D#:S#) for assignment total.
+  - U column: % for homework (example U5 formula = T5/150*100 — homework max = 150).
+  - Lab / First & Second Research Project in Y:AF and AG:AO. AF1 = SUM(Y2:AF2); AO1 = SUM(AG2:AO2); AQ (per-row) = SUM(Y#:AP#) (AP appears used in many rows).
+  - AR column: project/lab % (e.g., AR5 = AQ5/350*100 — projects/lab max = 350).
+  - Exams grouped across BA:BS (subtotals BA, BF, BM, BS), BT = BA+BF+BM+BS; BU = BT/400*100 (exams max = 400).
+  - CE column: combined points = SUM(BZ:CD) where BZ = AQ (projects), CA = BT (exams), CB = T (homework). CF = CE/830*100 (overall percent with 830 total possible).
+  - CG column contains assigned letter grades (manually entered in many rows).
+- Student rows (A5:C19 etc): contain name, instructor, ID, then per-assignment scores in D:...:S; computed sums and percentages in T, U; repeated blocks for projects (Y:AO), labs/exams (AV:… BF/BM/BS groups) and overall totals (BZ:CE).
+- Key formulas (examples):
+  - Tn = SUM(Dn:Sn) — assignment sum.
+  - Un = Tn/150*100 — assignment %.
+  - AQn = SUM(Yn:APn) — projects/lab subtotal.
+  - ARn = AQn/350*100 — projects/lab %.
+  - BAn, BFn, BMn, BSn = SUM(...) — exam subgroups; BTn = BA+BF+BM+BS; BUn = BTn/400*100.
+  - BZn = AQn; CAn = BTn; CBn = Tn; CEn = SUM(BZn:CDn); CFn = CEn/830*100.
+- Summary row formulas (class averages): e.g., U22 = AVERAGE(U5:U21), AJ22 = AVERAGE(AJ5:AJ21), AR22 = AVERAGE(AR5:AR21), and other AVERAGEs for exam subgroups and overall CF22 = AVERAGE(CF5:CF21).
+- Notes: Some cells contain non‑numeric markers (X, x, #, +) which may break numeric calculations if included; many per-student formulas reference fixed denominators (150, 350, 400, 830).
+
+Sheet2 (SECTION 01 MW 10–11:50)
+- Same basic structure as Sheet1 but with different category totals/weights declared in header:
+  - T1 = 80 (homework total?), BS1 = 200 (exams total), AQ1 = 130 (projects total); CE1 formula = T1+BS1+AQ1.
+  - Many per-row formulas use absolute references to these header totals (e.g., U5 = T5/$T$1*100, AR5 = AQ5/$AQ$1*100, BU5 = BT5/$BS$1*100, CF5 = CE5/$CE$1*100).
+- Columns mirror Sheet1: assignment scores in D:S (T = sum), projects Y:AO (AQ = sum), exam and lab subtotals BA/BF/BM/BS (BT = sum), and combined CE and percentage CF.
+- Student rows C5:C17 (IDs) and many D:K etc scores, with per‑student SUM/percentage formulas analogous to Sheet1.
+- Summary rows compute class averages: U19 = AVERAGE(U5:U17), AR19 = AVERAGE(AR5:AR17), BA19, BF19, BM19, BU19, CF19 average formulas.
+- Additional grade distribution cells at T21:T25, AQ21:AQ25, AZ21:AZ25, etc. show grade cutoffs/counts (A=, B=, etc.) but many are placeholders.
+
+Overall observations / key values
+- Two populated section sheets with repeated blocks: Assignments (D:S), Homework total T, Homework % U; Projects/Lab (Y:AO, AQ subtotal, AR %); Exams/Other (AV:… groups BA/BF/BM/BS, BT subtotal, BU %); Overall combined CE and CF % dividing by total possible points (Sheet1 uses 830 total; Sheet2 computes CE1 = sum of header totals).
+- Many SUM and AVERAGE formulas automate per-student totals and class summary statistics.
+- Potential issues: non-numeric entries (X, x, #, +, text) in numeric columns; some inconsistent totals/weights between Sheet1 and Sheet2 — double-check denominators and header totals if you intend uniform weighting across sections.
+
+If you want, I can:
+- Produce a compact map (column-by-column) for one sheet,
+- Fix non-numeric markers that are breaking calculations,
+- Normalize weights across sheets and update formulas.

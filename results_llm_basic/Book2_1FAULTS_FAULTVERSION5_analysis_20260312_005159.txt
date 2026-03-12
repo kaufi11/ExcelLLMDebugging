@@ -1,0 +1,22 @@
+Summary of errors
+1) L29 is wrong: it shows FORMULA =COUNT(B29:K29) instead of =SUM(...). That makes L29 a small integer (number of scores) and breaks the total and average for row 29 and the summary rows that depend on it.
+
+2) Column M (Average) uses a fixed divisor of 10 (Mx = Lx/10). Many rows have missing homework cells, so dividing the sum by 10 gives a wrong average when fewer than 10 scores exist.
+
+3) Because of (1) and (2), the aggregate averages in L47 and M47 will also be incorrect.
+
+Quick fixes (exact formulas to use)
+- Fix row 29 total:
+  L29 = SUM(B29:K29)
+
+- Replace the current M formulas (M3:M45) with either:
+  Option A (best — simple): M3 = AVERAGE(B3:K3) and fill down to M45.
+  Option B (if you want to show blank when there are no scores): M3 = IF(COUNT(B3:K3)=0,"", L3/COUNT(B3:K3)) and fill down.
+
+Why these fixes work (short)
+- SUM(Bx:Kx) correctly adds all numeric homework scores; COUNT(Bx:Kx) only counts how many numeric scores there are.
+- AVERAGE(Bx:Kx) computes the mean of the present scores and ignores blanks automatically. Using Lx/10 assumes there are always 10 scores — that is not true here and yields incorrect averages.
+- Fixing L29 removes a bad value that propagates into the per-row and summary averages.
+
+Extra tip
+- After fixing formulas, re-check rows with missing entries to confirm whether they should be blank or zero. If a missing score should be treated as 0, enter 0 (or change COUNT to COUNTIF(...,">="&0) logic) — otherwise keep them blank so AVERAGE ignores them.

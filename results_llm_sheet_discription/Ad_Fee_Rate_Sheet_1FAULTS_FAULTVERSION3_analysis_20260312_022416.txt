@@ -1,0 +1,57 @@
+Summary of the problems I found
+1. Multiple #REF! errors (cells show #REF! in formulas: O39, P39, Q39, R39, K40, many in K40:O40, S44, P45, P50, P51, P52, P53 and others). These happen because the formulas point to cells that were deleted or moved. Any cell that contains #REF! breaks downstream calculations.
+
+2. Incorrect / fragile totals
+   - F62 (the “Percent” total) uses =+F60+F45. That is unusual and likely wrong — it should be the sum of all discipline percents (SUM(F36:F57)). If F62 is wrong, many percent-based allocations break.
+   - The sheet has a NOTE that “$ Amount should equal Total Basic Services / Contract Amount above.” E31 = E16+E29 (Total Basic Services), while E62 = SUM(E36:E57) (sum of discipline $ amounts). If E31 ≠ E62 the worksheet is inconsistent. With broken references #REF! in the discipline split area E62 or its dependent percents may be wrong.
+
+3. Formulas referencing non‑existent cell D21
+   - Some formulas use $D$21 (e.g., N41 = ($D$21-23000)*0.2297). D21 is not listed as containing a numeric $ Amount in the excerpt (E21 shows “Not applicable”) — so either D21 was removed or never populated. That produces wrong results or errors when expected.
+
+4. Hard-coded / inconsistent inputs
+   - Some rows use hard-coded single-cell sums or single-cell SUM ranges (e.g., SUM(S44:S44)) — not an error per se, but makes auditing harder.
+   - Large constants are entered in different places (e.g., L59 = 2,719,000). If these are intended to be single source-of-truth values they should be referenced consistently (not retyped).
+
+What caused it
+- #REF! occurs when referenced cells were deleted or replaced.
+- Other wrong results are due to formulas pointing to the wrong cells (e.g., F62 using F60+F45 instead of summing all percent rows) or referencing cells that were never populated (D21).
+
+How to fix it (short, actionable steps)
+1. Find and repair all #REF! formulas
+   - Use Excel: Home → Find & Select → Go To Special → Errors to list error cells.
+   - For each #REF! formula, use Trace Precedents (Formulas → Trace Precedents) to understand what original source it should point to.
+   - Replace #REF! with the correct cell reference. Typical fixes in this worksheet:
+     - If a formula multiplies a discipline/firm total by a percent, replace #REF! with the cell that holds that discipline total (example: change =#REF!*0.0547 to = $E$39 * 0.0547 if E39 = 69,500).
+     - If the intended source is the discipline fee cell (E36:E57), use those cells (absolute references $E$## if needed).
+
+   Example fix (common pattern in your sheet):
+   - O39 currently =#REF!*0.0547. If the cost-consultant total is in E39 (=69,500), change O39 to = $E$39 * 0.0547.
+   - Do the same for P39/Q39/R39 using the same $E$39 as base.
+
+2. Restore or repoint deleted cells like D21
+   - If D21 used to contain a numeric amount (e.g., wind analysis $ amount), restore that number or change formulas that reference $D$21 to reference the correct cell (maybe $E$21 or the cell that currently holds that amount).
+   - If that service is “Not applicable”, remove dependent formulas or change them to zero.
+
+3. Fix the percent total cell F62
+   - Replace F62 = +F60+F45 with =SUM(F36:F57). This guarantees the percent pool sums to 1 (or 100%) and prevents mis-sums.
+
+4. Reconcile E31 and E62
+   - After fixing #REF! and percent formulas, check:
+     - E31 (Total Basic Services / Contract Amount) = E16 + E29
+     - E62 (sum of discipline $ amounts) = SUM(E36:E57)
+   - If they differ, identify missing disciplines or an omitted value. Adjust E36:E57 (discipline $ amounts) or the phase values (D11:D15 and D19:D28) so E62 = E31 per the NOTE.
+
+5. Replace hard-coded constants with references
+   - If L59 (2,719,000) or other big numbers are authoritative totals, place them in a single named cell (e.g., cell $E$110 or name it “ProjectBudget”) and change other formulas to reference that single cell. This avoids inconsistency.
+
+6. Recalculate and verify
+   - After changes, press Ctrl+Alt+F9 to force recalculation, then verify:
+     - No #REF! or other error values remain.
+     - F62 sums to ~1 (or 100% depending on formatting).
+     - E31 equals E62 (or you understand and document why they differ).
+
+If you want, I can:
+- Give the specific replacement formulas for each #REF! cell you listed (I can map them if you confirm which cells hold the intended base amounts such as E39, E36, D21, L59, etc.).
+- Or produce a cleaned version of the critical formulas (example: a list like “O39 = $E$39*0.0547, P39 = $E$39*0.0109 …”).
+
+Which would you prefer? If you want the direct fixes, tell me the correct source cells for the discipline totals (for example: cost consultant total is in E39 = 69500; mechanical total is in D21 or other) and I’ll provide exact formulas to paste into each error cell.

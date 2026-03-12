@@ -1,0 +1,29 @@
+Summary of the problem I found
+- One or more "Number of Participants Per Class" cells (the BK column) were overwritten with a value (e.g. BK261 = 12) instead of the intended formula =SUM(F261:BG261). When BK cells are hard-coded the class-level and grand totals that depend on BK become incorrect.
+- This kind of overwrite breaks derived values: BL (student days), BM (public cost per class), BO (total actual costs/savings per class) and the bottom grand totals that sum those rows.
+
+Why this is wrong (short)
+- BK is supposed to automatically count participants in columns F:BG for that class. If you replace the formula with a number, that class's dependent calculations no longer update when the participant columns change and the grand totals are wrong.
+
+How to fix it (step‑by‑step, simple)
+1. Restore the BK formula for the affected rows:
+   - In BK261 (and any other BK cells that show a number instead of a formula) enter:
+     =SUM(F261:BG261)
+2. Copy that BK formula down (or up) for every class row that should have it (i.e. BK3, BK6, BK9, … BK264). Easiest: select a correct BK cell (one that shows formula), drag-fill or paste into the whole BK range for class rows.
+3. Recalculate (F9 or the sheet will recalc automatically if Excel automatic calculation is on). Verify BL (C * BK) and BM/BO rows change as expected.
+4. (Optional improvement) Replace many long manual aggregate formulas at the bottom with cleaner, easier-to-maintain formulas:
+   - Total participants (cell BK268 or equivalent): =SUM(BK3:BK264)
+   - Total student-days: =SUM(BL3:BL264)
+   - Total public cost: =SUM(BM4:BM265)  (or better, use SUMPRODUCT if BM isn't available)
+   - If you want a one-formula public-cost total directly: =SUMPRODUCT(BK3:BK264,D3:D264) if public cost is "per participant" or =SUMPRODUCT(BK3:BK264,$E$3:$E$264) if you need per-class cost structure — check which rate is per-participant vs per-class then choose appropriate ranges.
+
+Quick explanation of the optional SUMPRODUCT approach
+- SUMPRODUCT(range_of_participants, range_of_unit_costs) multiplies each class's participant count by that class's cost and sums them in one formula. This avoids long manual enumerations (SUM(F4+F7+...)) and is robust to inserted/deleted rows.
+
+How to find similar errors
+- Use Find (Ctrl+F) on the BK column (search for any BK cell that contains a number instead of a formula). Or select BK cells and check the formula bar for those rows.
+- You can also check the grand totals (bottom rows) and spot discrepancies: if the sum of BK rows does not equal the "Total Participants" cell, BK overwrites are likely.
+
+If you want, I can:
+- give the exact replacement formulas for the bottom summary cells (to replace the long SUM(lists) with SUM(BK3:BK264), SUM(BL3:BL264), SUMPRODUCT(...), etc.), or
+- scan the sheet for other overwritten formula cells (tell me which rows you suspect) and produce a short list of cells to fix.

@@ -1,0 +1,50 @@
+Summary of the problems (short)
+1. Many cells on rows 9–39 use SUM of the previous column (e.g. F9 = SUM(E9), G9 = SUM(F9), …). That creates a wrong “cascade” — every column ends up copying the value from the column to its left instead of showing that column’s own data.  
+2. Some cells SUM a single unrelated cell (e.g. E9 = SUM(E42)) instead of referring to the intended detail range or cell. SUM(single cell) is usually wrong if you meant a range or a direct reference.  
+3. One inconsistent formula: L19 = COUNT(K19). This is presumably a typo (COUNT of a single cell is meaningless here).  
+4. The totals row (row 40) repeats the cascade error: F40 = SUM(E40), G40 = SUM(F40), etc. Totals should sum each column’s daily values, not the previous total cell.  
+5. Possible header misplacement: K8 “member” and L8 “Specialist” look like they are below headers — check alignment.
+
+Why this is a problem (short)
+- Columns are pulling the wrong data (left-shifted) or a single unrelated cell. Totals therefore are incorrect. You may also have circular references or confusing chains if values depend on each other.
+
+Clear fixes (what to change) — short & exact
+
+1) Fix each daily category cell (rows 9–39)
+- If each daily cell should show data from the same column in a detailed area (for example row 42 is Day 1 detail), change E9..M9 from chained formulas to direct references to the correct source column. Example (Day 1 -> row 9 referencing row 42):
+  - E9 = E42
+  - F9 = F42
+  - G9 = G42
+  - H9 = H42
+  - I9 = I42
+  - J9 = J42
+  - K9 = K42
+  - L9 = L42
+  - M9 = M42
+- If the daily cell should sum several detailed rows, use a proper range, e.g. E9 = SUM(E42:E50) (adjust the range to your detail rows).
+
+2) Fix the inconsistent L19 formula
+- Replace L19 = COUNT(K19) with the correct expression that matches other rows (either a direct reference to the detail cell for that day like L19 = L52 or a SUM of a detail range). If it was intended to be a sum like other rows, use SUM over the proper source range (not COUNT).
+
+3) Fix the Totals row (row 40)
+- Replace the chained totals with column sums over the daily rows. Example:
+  - C40 = SUM(C9:C39) (already correct)
+  - D40 = SUM(D9:D39) (already correct)
+  - E40 = SUM(E9:E39) (already correct)
+  - F40 = SUM(F9:F39)
+  - G40 = SUM(G9:G39)
+  - H40 = SUM(H9:H39)
+  - I40 = SUM(I9:I39)
+  - J40 = SUM(J9:J39)
+  - K40 = SUM(K9:K39)
+  - L40 = SUM(L9:L39)
+  - M40 = SUM(M9:M39)
+
+4) General cleanup tips
+- Do not use SUM(cell) where you mean a direct reference — use =cell. Use SUM(range) when you want to add multiple cells.
+- Use Fill Right / Fill Down only after you have correct relative references. Example: set E9 = E42 (or SUM(E42:E50)), then copy that pattern across to fill F9..M9 but ensure references refer to the same columns (use relative references or fix with semi-absolute refs as needed).
+- Turn on Excel’s Error Checking (Formulas → Error Checking) and check for circular references (File → Options → Formulas → enable iterative only if you intend circular formulas).
+- If you have a detail table by day, consider SUMIFS to collect day-specific totals, e.g. =SUMIFS(Data[Count], Data[Day], $B9, Data[Category], "Games").
+
+If you want, tell me:
+- Where the detailed data is (which rows/columns are the source for each day/category), and I’ll give the exact formulas to put in rows 9–39 and the totals row so everything is correct.

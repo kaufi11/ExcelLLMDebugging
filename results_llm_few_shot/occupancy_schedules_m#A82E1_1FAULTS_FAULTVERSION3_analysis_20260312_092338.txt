@@ -1,0 +1,34 @@
+Summary — two kinds of errors found:
+
+1) Wrong formula used to compute the average latent load per person (copy/paste reference error)  
+2) A stray negative sign in one hourly aggregation formula
+
+Faulty formulas and fixes
+
+A. Latent load per person — wrong references
+- Problem: several sheets compute "Latent load per person" using Occupancy!F19 and Occupancy!F20 (the sensible gains) instead of using the schedule totals (Occupancy!F38 and Occupancy!F39). That produces a meaningless weighted average.
+- Where I found this pattern (examples): 
+  - Sheet "Occ L0" cell F10
+  - Sheet "Occ L1-WD" cell C10
+  - Sheet "Occ L1-DU" cell C10
+  - Sheet "Occ L2-WD-DU" cell F11 (and similar top-of-sheet latent formulas in other detail-level sheets)
+- Why it's wrong: you must weight latent gains (Occupancy!F22, F23) by the schedule totals (how many hours/people are in living vs bedroom), exactly like the sensible calculation did — not by the sensible-gain cells F19/F20.
+- Correct formula (replace the bad one with this):
+  = (Occupancy!F22 * Occupancy!F38 + Occupancy!F23 * Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- Short explanation: this averages latent BTU/person/hr across living and bedroom areas using the same schedule-weighting used for the sensible average.
+
+B. Typo with negative signs
+- Faulty cell: Sheet "Occ L2-WD-DU", cell D25 shows:
+  =-'Occ L3-WD-DU-LR'!E25-'Occ L3-WD-DU-LR'!F25
+- Problem: the formula subtracts both source cells (turning positive occupancy fractions into negative values).
+- Fix (make it a sum as intended):
+  ='Occ L3-WD-DU-LR'!E25 + 'Occ L3-WD-DU-LR'!F25
+- Short explanation: looks like a stray minus sign from a copy/paste. This should combine two fractional schedules (add them), not subtract.
+
+Quick checks after fixing
+- Confirm the corrected latent-per-person cells produce similar-magnitude results to sensible-per-person (they should be in the same ballpark but using Occupancy!F22/F23 values).
+- Check totals: Occupancy!F38 and F39 must be >0. If either is zero, avoid dividing by zero (you could guard with IFERROR or IF(...=0,...)).
+
+If you want, I can:
+- Provide a list of every sheet/cell that contains the incorrect latent formula (I found the pattern in multiple sheets and can enumerate them), or
+- Generate the exact replacement formulas and where to paste them.

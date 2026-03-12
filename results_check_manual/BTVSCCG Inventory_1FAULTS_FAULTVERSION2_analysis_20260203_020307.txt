@@ -1,0 +1,34 @@
+Summary — what I found
+- A hard error: cell H274 contains =COUNT(E274:G274). COUNT returns how many non-empty cells (not their numeric sum), so H274 will be wrong for a "Have Total".
+- Consistency problem across the workbook: some rows have had numeric values typed into the wrong columns (E–H) instead of into the source columns (I–M). The sheet’s formulas expect you to enter counts in I (Limited), J (Unlimited), K (First Patrol), L (Limited Foil) and M (Unlimited Foil) and then compute E/F/G/H from those. When values are placed directly into E–H or some cells had their formulas replaced, totals become inconsistent.
+- Minor issue (harmless but messy): some formulas use SUM on a single cell (e.g. =SUM(K2)). That works but is inconsistent with simpler =K2.
+
+Why these are problems (short)
+- COUNT(E274:G274) tells you “3 cells have something in them” — not “add the numbers”.
+- If you put numbers into E/F/G/H instead of I–M the calculated totals will be wrong or overwritten by formulas.
+- Inconsistent formulas make maintaining/correcting the sheet harder.
+
+How to fix (clear, short instructions)
+1. Restore the correct formulas (recommended canonical formulas). Put these in the header row formulas and fill down every sheet:
+   - E2 (Have) = I2 + J2
+   - F2 (Have First Patrol) = K2
+   - G2 (Have Foil) = L2 + M2
+   - H2 (Have Total) = E2 + F2 + G2
+   (In Excel you can use =SUM(I2:J2) / =SUM(L2:M2) / =SUM(E2:G2) if you prefer SUM; both work.)
+
+2. Fix H274 specifically: replace =COUNT(E274:G274) with =SUM(E274:G274) (or =E274+F274+G274).
+
+3. Move any manually-entered numbers into the correct source columns I–M.
+   - Example: if you earlier typed total "7" into E2 but it really is Unlimited copies, put "7" into J2 instead; remove the manual entry from E2 so the formula can compute it.
+
+4. Re-copy the formulas to all rows:
+   - Enter the correct formulas in row 2, then drag/fill down for the whole table (or double-click the fill handle). That will overwrite accidental manual edits to E/F/G/H and standardize behavior.
+
+5. Optional cleanup (recommended): search for any COUNT(...) in column H (or other unexpected formula changes) and replace with SUM as needed.
+
+Why this solution works (very short)
+- The formulas calculate totals from the source columns (I–M). Restoring them and entering source counts only in I–M ensures totals are always correct and consistent across sheets. Replacing COUNT with SUM fixes the one place where Excel was counting cells instead of summing values.
+
+If you want, I can:
+- Give the exact Insert/Fill steps for one sheet.
+- Provide a small Excel macro to reapply the four formulas to every table on every sheet automatically.

@@ -1,0 +1,52 @@
+Findings — the clear errors I found
+1) Wrong formula (typo) on row 11
+   - O11 is "FORMULA =E11+970". It should be the cumulative LPG formula =E11+J11 (Q1 LPG + Q2 LPG).
+   - Impact: the LPG cumulative (O11) is wrong and that error flows into Y11, AK11, AA11, category totals and the Grand Total.
+
+2) Possible / likely mis-aligned Q4 LPG column (AG) in some rows
+   - In many rows the Q4 block shows AE (diesel), AF (paraffin), AH (petrol) but AG (LPG) is empty — either those LPG values are legitimately blank/zero or the Q4 LPG values were accidentally deleted or shifted.
+   - Because the final annual LPG column AK is AG + Y, any missing AG values will make AK incorrect (or zero) and propagate to category and Grand Totals.
+
+3) Inconsistent formula style (minor, not strictly an "error" but a risk)
+   - Some cells use hard-coded arithmetic (e.g. C75 = 44762024+2009667) or isolated numeric constants inside formulas (the +970 above). These make auditing harder and increase risk of mistakes.
+
+How to fix (short steps)
+1) Fix the explicit formula error
+   - Change O11 from =E11+970 to =E11+J11.
+   - After that, fill/copy the correct O formula down the column (so every O-row is =E[row]+J[row]) to ensure consistency.
+
+2) Check Q4 LPG column alignment and fill missing data
+   - Inspect columns AE:AH for the Q4 input block. Confirm column AG contains the Q4 LPG values.
+   - If Q4 LPG data was shifted right into AH or deleted, restore or shift the values so AE=Diesel, AF=Paraffin, AG=LPG, AH=Petrol for every row.
+   - If AG should be blank for some rows, leave it blank (it will be treated as 0 by the =AG+Y formulas). If data exists elsewhere, move it to AG.
+
+3) Propagate and standardize formulas
+   - Ensure these patterns are used for every data row:
+     - G = SUM(C:F)
+     - L = SUM(H:K)
+     - M = C+H, N = D+I, O = E+J, P = F+K
+     - Q = G+L
+     - V = SUM(R:U)
+     - W = M+R, X = N+S, Y = O+T, Z = P+U
+     - AA = Q+V
+     - AI = AE+W, AJ = AF+X, AK = AG+Y, AL = AH+Z
+   - Copy these formulas down the rows (use Fill Down) rather than manually editing single rows.
+
+4) Replace single-cell arithmetic and find stray constants
+   - Use Find (look for "+" inside formulas or numeric literals inside formulas) or Go To Special → Formulas to find formula cells containing constants and correct them to use cell references or SUM ranges.
+   - Example: change C75 from =44762024+2009667 to a single calculated value or to a proper SUM() of reference cells.
+
+Why these fixes work (brief)
+- O11 is simply referencing the wrong thing (a number). Correcting it to =E11+J11 makes the LPG half-year cumulative correct; that change will ripple correctly to the later cumulative columns and category/Grand totals.
+- Restoring/aligning AG ensures Q4 LPG is included in AK (annual LPG totals). Blank/misplaced AG cells produce zeroes or wrong totals; putting LPG values in AG restores correct annual sums.
+- Standardized formulas and removing hard-coded numbers prevents mismatches introduced by manual edits, making future audits and copy-downs reliable.
+
+Quick checklist you can run now
+- In column O: confirm every cell formula =E[row]+J[row]. Fix rows that differ (like O11).
+- In column AK: confirm every cell formula =AG[row]+Y[row].
+- Scan AE:AH for rows where AG is empty but AH has a value that looks like LPG — if so shift AH→AG (and AH should be petrol).
+- Use "Show Formulas" (Ctrl+`) or Formulas → Evaluate Formula to spot other inconsistencies.
+
+If you want, I can:
+- Give the exact Excel Find expressions to locate formula cells with constants (e.g., search for "+[0-9]" in formulas), or
+- Produce a short VBA macro or step-by-step actions to automate checking & fixing the O/AK formula pattern across the whole sheet. Which would you prefer?

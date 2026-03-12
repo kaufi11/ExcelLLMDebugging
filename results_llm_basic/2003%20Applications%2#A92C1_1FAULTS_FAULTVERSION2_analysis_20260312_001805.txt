@@ -1,0 +1,29 @@
+I checked the workbook. I found three clear errors (plus one common spreadsheet risk). Short fixes and simple explanations below.
+
+1) Hatboro Borough — wrong Recommend value (Municipal!F5)
+- Problem: F5 contains =690 (almost certainly a stray typo) while the Recommend should match the Request (E5 = 147970) or follow the usual cap behavior.
+- Fix: Replace F5 with =E5 (or with the correct capped value if you intend to cap municipal recommends at 190000).
+- Why: =690 is clearly wrong (off by orders of magnitude). Using =E5 keeps the recommend equal to the request unless you intentionally cap it.
+
+2) AHTF — Recommended total excludes one row (AHTF!F14)
+- Problem: F14 is =SUM(F3:F13). That range omits F2, so the AHTF recommended total is missing the F2 amount.
+- Fix: Change F14 to =SUM(F2:F13)
+- Why: Totals must include all rows in the fund (rows 2–13). Using the correct range ensures every recommend is summed.
+
+3) AHTF — Continuum of Care uses a hard-coded constant (AHTF!E16 and F16)
+- Problem: E16 (and F16) show =2432890*0.15 (a hard-coded base number). If the total HOME/AHTF changes, the Continuum match will not update.
+- Fix: Replace both with references to the computed total. For example:
+  - E16 = E20 * 0.15  (where E20 is Total HOME/AHTF)
+  - F16 = F20 * 0.15  (where F20 should be the recommended total equivalent)
+- Why: Hard-coded numbers break when upstream totals change. Use formulas that reference the actual total so the match updates automatically.
+
+4) Quick quality check (possible formula-as-text)
+- Problem/Risk: Several cells are shown as “FORMULA =E2” etc. If any of these were entered as text (prefixed with an apostrophe or typed literally), they won’t calculate and will be excluded from sums.
+- Check/fix: Click any suspicious cell and verify the formula in the formula bar. If you see an apostrophe or the formula is plain text, re-enter it as a real formula (e.g., =E2).
+- Why: A formula typed as text looks like a formula but Excel treats it as text and it won’t contribute to totals.
+
+Optional: other housekeeping suggestions
+- Ensure any text notes in Recommend columns (e.g., "Pending Feasibility Study") are handled intentionally — SUM ignores text but it can hide missing numbers.
+- Consider making all “Recommend” cells consistent (either all =Request or explicitly capped at 190000) so totals are easy to audit.
+
+If you want, I can give you the exact cell edits to paste in, or produce a short checklist to validate all totals (e.g., check each sheet’s totals against the sum of visible recommendations).

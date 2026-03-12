@@ -1,0 +1,58 @@
+I checked the workbook and found a few clear formula errors (likely caused by copy/paste or range slip‑ups). Below are the problems, why they’re wrong, and the simple fixes.
+
+1) Wrong percent variance cell
+- Location: annex e, cell K68
+- Problem: K68 contains =K48 (copies a percent from a different line). That gives a meaningless % for “Total Funds.”
+- Fix: replace with the standard variance % formula used everywhere else:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Why: K68 must calculate J68 as a percent of H68 (not reuse K48).
+
+2) “Financed by” monthly totals use only July instead of summing months
+- Locations (original cash forecast): annex g
+  - T22 currently =S22 (should be the total across months H:S)
+  - T23 currently =S23
+  - T24 currently =SUM(T22:T23) — this depends on the wrong T22/T23
+- Locations (actual/revised forecast): annex g
+  - T45 currently =S45
+  - T46 currently =S46
+  - T47 currently =SUM(T45:T46)
+- Problem: T22/T23/T45/T46 only pick the last month (S) rather than the sum for the whole year, so total financing numbers are wrong.
+- Fixes (apply both to original and actual sections):
+  - T22 → =SUM(H22:S22)
+  - T23 → =SUM(H23:S23)
+  - T24 → =SUM(H24:S24)   (or keep =SUM(T22:T23) after you fix T22/T23)
+  - T45 → =SUM(H45:S45)
+  - T46 → =SUM(H46:S46)
+  - T47 → =SUM(H47:S47)   (or keep =SUM(T45:T46) after you fix T45/T46)
+- Why: totals in column T must sum all months (columns H:S), not copy one month.
+
+3) Balance rows: total column T references wrong cells
+- Locations: annex g
+  - T18 currently =H18 (opening balance total)
+  - T19 currently =H18 (closing balance total)
+  - T41 currently =H41
+  - T42 currently =S42 (inconsistent)
+- Problem: the T column for balance lines should show the July closing (or consistent total), not a stray H18 reference. Current formulas are inconsistent and produce wrong reconciliation figures.
+- Recommended fixes:
+  - For opening/closing balance rows use the July column (S) in T (this is consistent with other rows showing monthly chains):
+    - T18 → =S18
+    - T19 → =S19
+    - T41 → =S41
+    - T42 → =S42
+  - Alternatively, if you prefer column T to be the sum across months (less common for balances), use =SUM(H18:S18) etc. Choose one convention and keep it consistent.
+- Why: the T column should consistently represent the intended aggregation (monthly sum or final month); current mixed references break the cash reconciliation.
+
+Quick checklist to apply (copy/paste into Excel):
+- annex e!K68 =IF(H68=0,"N/A",(J68/H68)*100)
+- annex g!T22 =SUM(H22:S22)
+- annex g!T23 =SUM(H23:S23)
+- annex g!T24 =SUM(H24:S24)   (or leave SUM(T22:T23) after fixing T22/T23)
+- annex g!T45 =SUM(H45:S45)
+- annex g!T46 =SUM(H46:S46)
+- annex g!T47 =SUM(H47:S47)   (or leave SUM(T45:T46) after fixing T45/T46)
+- annex g!T18 =S18
+- annex g!T19 =S19
+- annex g!T41 =S41
+- annex g!T42 =S42
+
+If you want, I can produce a short macro or a list of exact cell edits you can paste into Name Box→Formula Bar to update them quickly.

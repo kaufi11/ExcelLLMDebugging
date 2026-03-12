@@ -1,0 +1,58 @@
+I reviewed the two worksheets and found several formula errors and inconsistencies on the FINANCIAL DATA & ANALYSIS sheet. Below are the problems, simple fixes (exact formulas you can paste), and short explanations.
+
+Summary of main problems
+- Many “total” cells only pull one column (G) instead of summing all sources (C+E+G).
+- Several weighted-average formulas use only C and E (ignore G).
+- At least one formula has a wrong cell reference (typo): C2 instead of C20.
+- One average-length cell contains a single-cell reference (E67) instead of a weighted average.
+
+Fixes (cell by cell)
+1) I10 (NUMBER OF HANDSETS)
+- Problem: =G10 (only one source)
+- Fix: =C10+E10+G10
+- Why: totals should sum all three data columns.
+
+2) I11 (PLANNED NO. OF HANDSETS)
+- Problem: =G11
+- Fix: =C11+E11+G11
+
+3) I16 (AVE. DURATION OF CALLS (SECS))
+- Problem: only uses C14 and E14 (ignores G14/G16)
+- Fix: =IF((C14+E14+G14)<>0,((C14*C16)+(E14*E16)+(G14*G16))/(C14+E14+G14),"")
+- Short alternative using the already calculated total I14:
+  =IF(I14<>0,((C14*C16)+(E14*E16)+(G14*G16))/I14,"")
+- Why: weighted average must include all call-count sources (C, E and G).
+
+4) I22 (AVE. DURATION OF CALLS for LONG DISTANCE)
+- Problem: =IF(C2+E20<>0,((C20*C22)+(E20*E22))/(C20+E20),"") — typo C2 and ignores G20
+- Fix: =IF((C20+E20+G20)<>0,((C20*C22)+(E20*E22)+(G20*G22))/(C20+E20+G20),"")
+- Or using the total cell I20: =IF(I20<>0,((C20*C22)+(E20*E22)+(G20*G22))/I20,"")
+- Why: C2 is a typo; need to include all data columns.
+
+5) I34 (AVE. DURATION for LONG DISTANCE TO MOBILES)
+- Problem: =IF(C32+E32<>0,((C32*C34)+(E32*E34))/(C32+E32),"") — ignores G32/G34
+- Fix: =IF((C32+E32+G32)<>0,((C32*C34)+(E32*E34)+(G32*G34))/(C32+E32+G32),"")
+- Or: =IF(I32<>0,((C32*C34)+(E32*E34)+(G32*G34))/I32,"")
+
+6) I61 (AVE. CALL LENGTH (SECS) for 1800)
+- Problem: =IF(C59+E59<>0,((C61*C59)+(E61*E59))/(C59+E59),"") — ignores G59/G61
+- Fix: =IF((C59+E59+G59)<>0,((C61*C59)+(E61*E59)+(G61*G59))/(C59+E59+G59),"")
+- Or: =IF(I59<>0,((C61*C59)+(E61*E59)+(G61*G59))/I59,"")
+
+7) I67 (AVE. CALL LENGTH (SECS) for 1300)
+- Problem: =E67 (just single cell)
+- Fix (consistent weighted average): =IF((C65+E65+G65)<>0,((C67*C65)+(E67*E65)+(G67*G65))/(C65+E65+G65),"")
+- Or: =IF(I65<>0,((C67*C65)+(E67*E65)+(G67*G65))/I65,"")
+
+General recommendation and tip
+- Consistency: For all totals use =Cnn+Enn+Gnn or =SUM(Cnn,Enn,Gnn). For weighted averages use the total cell (I##) as the denominator to make formulas clearer and less error-prone.
+- Short alternative using SUMPRODUCT (compact): example for I16 if your three ranges are contiguous:
+  =IF(I14=0,"",SUMPRODUCT(C14,E14,G14? — note: SUMPRODUCT expects ranges; use either explicit sum or SUMPRODUCT with ranges aligned)
+  (Because your data columns are separated, I gave explicit formulas above; you can convert to SUMPRODUCT if you reorganize columns into contiguous ranges.)
+
+Next steps
+- Replace the faulty formulas above.
+- Scan the sheet for other formulas that use only C+E (or only G) where totals exist — apply the same pattern.
+- After changes, test with sample numbers to confirm totals and weighted averages behave as expected.
+
+If you want, I can produce a corrected list of every formula on the FINANCIAL sheet (or a corrected .xlsx) — tell me which you prefer.

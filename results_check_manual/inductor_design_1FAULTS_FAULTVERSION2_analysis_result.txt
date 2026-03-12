@@ -1,0 +1,57 @@
+I checked the formulas and computed values in the Optimization sheet and compared them to the Answer Report. I found several formula/logic problems, unit inconsistencies and a number of mismatches between the Optimization sheet and the Answer Report. Below I list each issue, why it is a problem, the affected cells and suggested fixes.
+
+1) d (B21) appears to have a wrong / inconsistent value / units
+- Problem: B21 ("d (m)") is set to 3 (meters). All other linear dimensions (h B7 = 0.6715 m, w B8 = 0.2419 m, gap g B10 = 0.01809 m) are O(10^-1…10^-3) m. d = 3 m is implausible physically and inconsistent with the rest of the geometry/formulas.
+- Effect: This single out-of-scale value causes multiple downstream oddities (negative geometry, huge wire length, huge weight, violated constraints).
+- Suggested fix: Use consistent units for d (meters) and choose d < h and d < w (or at least d < l_c/10 where the constraint applies). Likely intended values are O(10^-1…10^-3) m (e.g. 0.03 m or 0.003 m) rather than 3 m. Confirm what d represents (window depth, frame dimension) and correct units.
+
+2) Negative coil thickness t (B30)
+- Formula: B30 = B29 / (2*(B7 - B21))
+- Observed value: B30 = -0.00219700834418848 (negative).
+- Why this is wrong: A negative thickness is physically impossible. It arises because denominator 2*(B7 - B21) is negative (B7 < B21 due to the large d).
+- Suggested fix: Fix B21 (see item 1). Also add a validity check (e.g., max(0, ...) or a constraint B21 < B7) or guard formula to avoid negative thicknesses.
+
+3) Large wire length, resistance and wire weight caused by B21
+- Cells: B31 l_wire, B32 R, B33 Wire weight
+- Cause: Because d is huge and t computed negative but B30 + B21 still ≈ B21, the per-turn length becomes ~4*(d - small), and l_wire and resulting R, wire weight blow up. That is why you see l_wire ≈ 148,595 m and R ≈ 1887 Ω, Wire weight ≈ 2184 kg — unrealistic.
+- Suggested fix: Correct B21 to a realistic value and re-evaluate. Optionally clip/validate intermediate geometry before computing these totals.
+
+4) Constraints / statuses inconsistent or wrong
+- Examples:
+  - A50 (d < l_c/10): A50 shows d (= B21 = 3) and C50 = B27/10 ≈ 0.18087 — the inequality 3 < 0.18087 is false, yet the optimization sheet marks this constraint "Binding". This is incorrect.
+  - A48 (R <= R_obj): B32 R = 1887.15775336802 and H14 R_obj = 133 — R is larger than required, so the constraint is violated (not satisfied). The worksheet shows "Not Binding" (and Answer Report similarly), which is misleading/wrong.
+  - Several other constraints in the Answer Report appear to have values that do not match the live cells (see item 5).
+- Suggested fix: Re-evaluate constraints after fixing B21. Ensure each constraint's status is recalculated properly. If the Answer Report is a saved snapshot, regenerate it from the corrected model.
+
+5) Answer Report values do not match current Optimization sheet values
+- Examples:
+  - Optimization B39 (Total weight) = 2668.95661717666, but Answer Report "Target Cell (Min)" shows Original & Final value = 623.997945954058. The Answer Report and current sheet are inconsistent.
+  - Optimization B27 l_c = 1.80870612460355, while Answer Report shows a related value 0.180871288640679 in its constraints table (looks like a factor-of-10 discrepancy).
+- Likely cause: The Answer Report was generated for a different design/variable set (different B21 or others) and was not updated after changes. It may also be showing scaled / derived values (some rows are reporting l_c/10 etc.) but the mismatch is large and confusing.
+- Suggested fix: Regenerate the Answer Report from the current worksheet after correcting B21/geometry. Keep the report in sync or include timestamp/version commentary.
+
+6) Physical/modeling assumptions to double-check (no formula error but worth verifying)
+- Inductance (B25): formula used is L = N^2 / R_g where R_g = g / (mu0 * A_c). This assumes core reluctance is negligible compared to the gap (i.e., core mu very large). That might be intended, but confirm the assumption.
+- B23/B24 (Phi_max and B_max): B_max being 1.19994 T is extremely close to B_sat (1.2 T). That is allowed but leaves almost no margin. Verify intent.
+- Fill factor K_w H12 is used; check whether multi-layer winding geometry is treated correctly (formula for t & l_wire assume specific packing/shape).
+
+7) Minor formula checks (these appear correct)
+- B22 R_g = B10 / (H8 * B9) — correct for gap reluctance.
+- B23 Phi_max = B11 * H9 * H8 * B9 / B10 — looks consistent with mu0*N*I*Ac/g.
+- B26 Vol_g = B10 * B9 — correct.
+- B28 Vol_c = B27 * B9 — correct.
+- B29 A_w = B11 * (B14/2000)^2 * H12 * PI() — treats B14 as mm diameter and converts to radius in m (B14/2000), then area per turn*Kw*N, that is consistent (verify B14 units are mm).
+- B32 and B33 computations convert Ohm/km and Kg/km correctly (divide by 1000) — formulas themselves are OK.
+
+Summary and recommended immediate actions
+1. Correct B21 (d) to a physically realistic value in meters and consistent with h and w. Make sure d < h and d < l_c/10 if those constraints are required.
+2. After fixing B21, re-evaluate B30..B39 etc. and confirm t is positive and geometric constraints are satisfied.
+3. Regenerate the Answer Report so it matches the current worksheet values.
+4. Add input validation constraints (e.g., B21 < B7, B21 < B8) or formula guards to prevent negative thickness or nonsensical geometry.
+5. Re-check constraint statuses after the above fixes (several constraints currently marked "Binding/Not Binding" do not reflect actual inequality satisfaction).
+
+If you want, I can:
+- suggest a plausible value for B21 (e.g., 0.03 m) and recompute the affected cells and show corrected numbers, or
+- recalculate the sheet with B21 set to a suggested value and show the new constraint statuses and final totals.
+
+Which would you prefer?

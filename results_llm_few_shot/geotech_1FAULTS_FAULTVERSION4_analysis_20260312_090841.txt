@@ -1,0 +1,47 @@
+I reviewed the two sheets and found the main functional errors and fragile places. Short summary first, then fixes and why.
+
+1) Cells that always return zero (likely unintended)
+- Where: Data Analysis row 3 (and some other rows) — examples: DD3, DE3, DF3, DI3, DJ3, DO3, DW3, DZ3 (you can search for IF(...,0,0)).
+- Problem: These formulas are IF(condition, 0, 0). No matter whether the condition is TRUE or FALSE the result is 0, so those course columns never contribute to the totals (EJ3 / EJ4 etc). This looks like a copy/paste or placeholder mistake.
+- Fix: Replace the second 0 (or the first 0) with the intended weight. For example, if J$2 should contribute 0.5:
+  - Replace: =IF(J$2="x",0,0)
+  - With:    =IF(J$2="x",0.5,0)
+- Why: the IF structure should return a numeric credit/weight when the course is selected ("x"), otherwise 0. Right now both branches are 0 so the column is ignored.
+
+2) Hard-to-maintain / error-prone SUM usage (style, not always incorrect but fragile)
+- Where: input-output I52 and J52 and many other SUMs use SUM(I5+I9+I10+...) or SUM(B4+B8+...). Example: I52 =SUM(I5+I9+I10+...).
+- Problem: SUM with a single arithmetic expression works, but it's confusing and error-prone (easy to accidentally type + instead of comma or include a cell twice). Also scattered cells mean you must manually update formulas when you add/remove lines.
+- Fix: Use either:
+  - SUM with comma-separated arguments: =SUM(I5,I9,I10,I21,...) or
+  - SUM of a contiguous range when possible: =SUM(I5:I46)
+  - Better: use structured ranges / helper flag column and SUMIF / SUMPRODUCT to calculate sums dynamically.
+- Why: clearer, less error-prone, easier to audit.
+
+3) IF comparing a text flag that may contain extra spaces / differing case
+- Where: many formulas use IF('input-output'!$I$48="Y",…).
+- Problem: user input could be "y", " Y", "n", etc. Excel comparisons are normally case-insensitive but will fail if there are accidental leading/trailing spaces.
+- Fix (robust): =IF(UPPER(TRIM('input-output'!$I$48))="Y", value_if_true, value_if_false)
+- Why: ensures "y", " Y", "y " all work as intended.
+
+4) Repeated manual IF blocks to count only >=4 values
+- Where: CM5, CM6, CM7 etc use long SUM(IF(AU5>=4,AU5,0)+IF(AV5>=4,...)+...) patterns.
+- Problem: These work but are long, hard to maintain, and prone to missing columns.
+- Fix: Replace with SUMPRODUCT or an array-friendly formula:
+  - Example (if AU5:CI5 is the evaluation range): =SUMPRODUCT((AU5:CI5>=4)*AU5:CI5)
+- Why: shorter, easier to audit and to extend when columns change.
+
+5) Possible label / reference mismatches (cosmetic but worth checking)
+- Where: input-output M2 and H3 both point to Data Analysis!A2 — make sure those duplicate links are intentional.
+- Fix: Confirm that every cross-sheet reference is pointing to the correct source cell (a quick way: use Formula → Trace Precedents or go to each linked cell and press Ctrl+[ to jump).
+
+Concrete next steps I recommend (quick checklist you can do now)
+1. Search the workbook for IF(...,0,0) and correct each to the intended weight where appropriate.
+2. Replace SUM(expression-with-pluses) with SUM(range) or SUM(list) and/or use SUMPRODUCT for conditional sums.
+3. Replace IF(I48="Y",...) with IF(UPPER(TRIM(I48))="Y",...) to avoid input mistakes.
+4. Replace the long manual IF≥4 summations with =SUMPRODUCT((AU5:CI5>=4)*AU5:CI5) (and copy down).
+5. Run Excel’s Evaluate Formula and Trace Dependents to confirm corrected cells flow into EJ3, EJ4 and the final totals.
+
+If you want, tell me:
+- which of the zero-IF cells (I can list all) should have what weights, and
+- whether you want me to provide exact replacement formulas (SUMPRODUCT versions) for a few specific rows (e.g., CM5, CM6, I52),
+and I’ll give the exact formulas.

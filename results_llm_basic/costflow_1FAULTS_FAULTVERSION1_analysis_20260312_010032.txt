@@ -1,0 +1,63 @@
+I reviewed the workbook. There are two types of problems: (A) sign / convention problems that make calculations confusing and error-prone, and (B) wrong/mis‑referenced formulas (and some missing formulas) on the Valuing Ending Inventory sheet. Below are the main errors with short fixes and short explanations.
+
+1) Global problem (both clarity and correctness)
+- Error: Inventory, purchases, and many balances are mixed between positive and negative values (e.g., Ending Inventory shown as “-150000”) and formulas rely on SUM across positive + negative values. This leads to confusing signs and many "= -cell" hacks (e.g., Year2 Beginning = -Year1 Ending).
+- Fix: Use consistent sign conventions:
+  - Inventory balances and purchases = positive numbers (150000, 500000, etc.)
+  - Sales = positive units (or explicitly mark as negative and handle consistently)
+  - COGS = computed as Goods Available for Sale − Ending Inventory (not SUM of positive + negative)
+- Explanation: Using positive inventory values and the standard relationship COGS = Goods Available − Ending Inventory removes the need for sign-flips and reduces errors and misreferences.
+
+2) Errors sheet — quick fixes
+- Error: Ending Inventory shown as negative; COGS uses =SUM(GoodsAvailable:EndingInventory) to subtract a negative.
+- Fixes (recommended):
+  - Change B11, D11, F11 to positive numbers (150000, 125000, 175000).
+  - Change COGS formulas from =SUM(B10:B11) to =B10 - B11 (and D12 = D10 - D11, F12 = F10 - F11).
+  - Change Year 2 Beginning Inventory formulas from =-B11 to =B11 (no sign flip).
+- Explanation: When Ending Inventory is positive, COGS must be GoodsAvailable − EndingInventory. This is simpler and avoids double-negatives/hidden sign errors.
+
+3) Valuing Ending Inventory sheet — misreferences and missing formulas (major issues)
+- Examples of wrong references:
+  - I8 (Beginning Inventory units) is =C10 (total beginning units) instead of =C8 (units for the first batch).
+  - K8 (beginning batch cost) is =E10 (total cost) instead of =E8 (cost of that batch).
+  - I11 (Ending Inventory units) = -I10 - SUM(C17:C18) produces a negative number (wrong sign / wrong operation).
+  - Several K-cells show “?” or are empty (missing formulas for ending inventory cost or COGS).
+- Fixes (apply to each costing method block):
+  - For each batch row use direct references to that row:
+    - I8 = C8, K8 = E8; I9 = C9, K9 = E9, etc.
+  - Totals:
+    - I10 = SUM(I8:I9)
+    - K10 = SUM(K8:K9)
+    - J10 = K10 / I10  (weighted average unit cost)
+  - Sales / Ending units:
+    - Make sales unit entries positive (C17 = 4000, C18 = 7000) and compute Ending units as:
+      - I11 = I10 - SUM(C17:C18)
+    - Alternatively (if sales remain negative), use I11 = I10 + SUM(C17:C18). But pick one convention and use it everywhere.
+  - Ending inventory cost and COGS:
+    - K11 (Ending inventory cost) = I11 * J10
+    - K12 (COGS) = K10 - K11
+- Explanation: Many cells were pointing to aggregated totals instead of the specific batch values. Fixing the references and computing ending units as GoodsAvailable − UnitsSold yields correct end cost and COGS.
+
+4) Perpetual / FIFO / LIFO sections: formula structure problems
+- Error: Many rows use intermediate cells incorrectly (e.g., F39 references, E/cell sums) and some cells use negative signs incorrectly (e.g., K41 = -E47).
+- Fix: Apply the same principles: keep units and costs positive, make Sold = positive quantity removed, compute remaining units as previous remaining + purchases − sold, compute cost of removed units explicitly (for FIFO/LIFO use the appropriate layer logic), and compute ending cost as sum of remaining layer units * unit cost.
+- Explanation: Perpetual methods require layer-by-layer tracking; wrong signs or referencing totals instead of layer cells will produce wrong ending balances.
+
+5) Short checklist to implement now (step-by-step)
+- Convert ending inventory numbers from negative to positive in Errors sheet and change COGS formulas to GoodsAvailable − EndingInventory.
+- Replace Year2 Beginning = -Year1 Ending with Year2 Beginning = Year1 Ending (after you make Ending positive).
+- On Valuing Ending Inventory:
+  - Replace any cell that references a total (E10, C10) in a batch row with the batch row’s own cells (E8, C8, E9, C9).
+  - Set totals = SUM(batch cells).
+  - Set ending units = goods available units − units sold (use positive sales) and ending cost = ending units * unit cost (periodic weighted average) or compute layer remaining for FIFO/LIFO.
+  - Fill K11/K12 (ending cost and COGS) as K11 = I11 * J10 and K12 = K10 − K11 (periodic weighted average).
+- Recalculate and check that:
+  - GoodsAvailableUnits = sum of batches.
+  - EndingUnits + UnitsSold = GoodsAvailableUnits.
+  - GoodsAvailableCost = COGS + EndingInventoryCost.
+
+If you want, I can:
+- (A) give the exact corrected cell formulas line-by-line for the Errors sheet (quick), or
+- (B) repair the Valuing Ending Inventory sheet with the corrected formulas for one method (weighted average periodic) and show the exact cell replacements.
+
+Which would you like me to output next?

@@ -1,0 +1,61 @@
+Overview
+- Workbook has two sheets: "Cost sharing template" and "In-kind contribution template". Each sheet follows the same three-block structure: Labor, Travel, and Other (or Hardware/Software/Data) with per-line cost formulas, section totals, and cumulative running totals in column G. Titles appear in C1 and a "Running Total" label in G3.
+
+Sheet: Cost sharing template
+- Layout:
+  - Columns: A = description/function, B = WBS task or duration, C = personnel / travel aspects / justification, D = unit rate or estimated cost, E = units (hours or # travelers), F = computed funding request, G = running total.
+  - Sections and key rows:
+    - Labor Funding Request (rows 4–16)
+      - Example lines:
+        - Row 5: Sr. Software Eng., Hourly 50, Hours 100 → F5 = D5*E5 → 50*100 = 5,000
+        - Row 6: Assoc. Software Eng., Hourly 30, Hours 150 → F6 = D6*E6 → 30*150 = 4,500
+      - Total labor (A16 / F16): F16 = SUM(F5:F15) → with the two items above = 9,500
+      - Running total (G16): G16 = F16 → 9,500
+    - Travel Funding Request (rows 18–29)
+      - Row 20 OWS Kickoff: D20 3,000, E20 1 → F20 = E20*D20 = 3,000
+      - Row 21 OWS Demo: D21 3,000, E21 2 → F21 = 6,000
+      - Total travel (F29): F29 = SUM(F20:F28) → 9,000
+      - Running total (G29): G29 = G16 + F29 → 9,500 + 9,000 = 18,500
+    - Other Expense Requests (rows 31–41)
+      - Row 33 Brand X Server CPU: D33 5,000, E33 1 → F33 = 5,000
+      - Row 34 XYZ Database Software (seat licenses): D34 3,000, E34 20 → F34 = 60,000
+      - Total other (F41): F41 = SUM(F33:F40) → 65,000
+      - Running total (G41): G41 = G29 + F41 → 18,500 + 65,000 = 83,500
+    - Grand Total (A43 / F43): F43 = G41 → 83,500
+
+Sheet: In-kind contribution template
+- Same structure as Cost sharing template; column meanings and section breaks mirror the first sheet.
+- Key differences / notable formulas:
+  - Labor lines:
+    - Row 5: Sr. Software Eng., D5 = 50, E5 = 100, but F5 uses FORMULA =571*E5 (not D5*E5). This appears to be an anomaly — it yields 57,100 instead of the expected 5,000.
+    - Row 6: Assoc. Software Eng., F6 = D6*E6 → 30*150 = 4,500
+  - Totals and running totals:
+    - Total labor (F16) = SUM(F5:F15) → with above values = 61,600
+    - G16 = F16 → 61,600
+    - Travel (same as Cost sharing): F29 = 9,000
+    - G29 = G16 + F29 → 61,600 + 9,000 = 70,600
+    - Hardware/Software/Data:
+      - F33 = 5,000; F34 = 60,000; F35 = 100 → F41 = SUM(F33:F40) = 65,100
+    - G41 = G29 + F41 → 70,600 + 65,100 = 135,700
+    - Grand Total (F43) = G41 → 135,700
+
+Formulas and ranges to note
+- Per-line labor/travel/expense computations: normally F = D * E (e.g., F5 = D5*E5, F20 = E20*D20).
+- Section totals: F16 = SUM(F5:F15), F29 = SUM(F20:F28), F41 = SUM(F33:F40).
+- Cumulative running totals in column G: G16 = F16, G29 = G16 + F29, G41 = G29 + F41.
+- Grand total uses G41 referenced into F43.
+
+Key values / computed totals (based on provided data)
+- Cost sharing sheet totals:
+  - Labor total: 9,500
+  - Travel total: 9,000
+  - Other total: 65,000
+  - Grand total: 83,500
+- In-kind sheet totals:
+  - Labor total (with anomalous F5 = 571*E5): 61,600
+  - Travel total: 9,000
+  - Hardware/Software/Data total: 65,100
+  - Grand total: 135,700
+
+Recommended action
+- Verify the F5 formula on the In-kind sheet (currently =571*E5). If intended, keep; if not, replace with =D5*E5.

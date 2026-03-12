@@ -1,0 +1,62 @@
+Summary of the problems I found (short) and how to fix each one. I give the exact formula to use and a plain-language explanation.
+
+1) Municipal sheet — wrong cell reference in Recommend for Hatboro (row 5)
+- Problem: Municipal!F5 = E6 (points to Hatfield request) instead of to row 5.
+- Fix: change Municipal!F5 to
+  =E5
+- Why: F5 should show the recommended amount for Hatboro (row 5). The current formula pulls the wrong row and under/over‑states the Recommend total.
+
+2) AHTF sheet — Continuum match uses a hard-coded base instead of referencing the HOME total
+- Problem: AHTF!E16 (and F16) use =2432890*0.15 (hard-coded number). If the HOME total changes, this won’t update.
+- Fix: replace with a reference-based formula. For example (uses the AHTF cell that already links to HOME total):
+  AHTF!E16 = E19 * 0.15
+  AHTF!F16 = E16   (or =E19 * 0.15 if you prefer)
+  or, explicitly:
+  AHTF!E16 = HOME!E11 * 0.15
+- Why: This makes the 15% match depend on the actual HOME total so it updates automatically.
+
+3) AHTF sheet — Recommend total (F14) excludes a row and ignores text
+- Problem A: F14 = SUM(F3:F13) excludes F2 (Canus Corporation), so the “Recommend” subtotal misses that recommendation.
+- Fix A: include F2 in the sum:
+  AHTF!F14 = SUM(F2:F13)
+- Problem B: AHTF!F10 contains the text "Pending Feasibility Study". SUM ignores text, so an intended numeric recommend in that cell (if entered later) would be excluded and the text can confuse users.
+- Fix B: Move comments/text to a separate column (e.g., column G) and keep F10 blank or numeric. If you must keep text, use a sum that explicitly sums only numbers:
+  AHTF!F14 = SUMIF(F2:F13,">=0")   (or =SUM(F2:F13) after converting comments to a note column)
+- Why: Include all numeric recommend rows and avoid silent exclusion of text from SUM.
+
+4) County sheet — Rehab totals double-counted in the County total
+- Problem: County sheet is summing:
+  - Municipal total: Municipal!E22 (E9)
+  - Non-Profit total: 'Non Profit'!E22 (E10) — THIS includes rehab projects that are also listed on the Rehab sheet
+  - Rehab total: Rehab!E8 (E11)
+  Because Non-Profit!E22 already includes the rehab entries, adding Rehab!E8 again double-counts those rehab requests in County total (E13).
+- Two simple fixes (pick one):
+  Option A (preferred): keep Non-Profit!E22 as-is and change County!E13 to subtract the Rehab subtotal:
+    County!E13 = E9 + 'Non Profit'!E22 + E12 - Rehab!E8
+  Option B: change County!E10 to exclude rehab before summing:
+    County!E10 = 'Non Profit'!E22 - Rehab!E8
+    then keep County!E13 = SUM(E9:E12)
+- Why: You must choose whether Rehab is a separate category or part of Non-Profit — but you cannot count the same projects twice. These formulas remove the duplicate Rehab amount so County totals are correct.
+
+5) General: text in numeric columns causes silent SUM issues
+- Problem: Cells like AHTF!F10 ("Pending Feasibility Study") are text in a Recommend column. SUM will silently ignore them and users may be misled.
+- Fix: Put any comments/notes in a separate column (G) or use NA()/0 in the numeric cell and store the note elsewhere. Optionally add a SUM formula that only sums numeric cells: =SUMIF(F2:F100,">=0")
+- Why: Keeps numeric calculations predictable and easy to audit.
+
+Optional check you should add (reconciliation cell)
+- Add a small audit cell on summary sheet to detect accidental double counting or missing ranges:
+  e.g. put:
+  = (Municipal!E22) + ('Non Profit'!E22) + (Rehab!E8) + (County!E6) - Rehab!E8
+  or simpler: add a "Check" cell that compares Total Requested (your final summary E13) with a recomputed authoritative sum and flags if they differ:
+  =IF(E13 = (Municipal!E22 + 'Non Profit'!E22 + County!E6 - Rehab!E8), "OK","CHECK")
+
+Recap (what to change right away)
+- Municipal!F5 → =E5
+- AHTF!E16 → =E19*0.15 (or =HOME!E11*0.15); AHTF!F16 → =E16
+- AHTF!F14 → =SUM(F2:F13) (and move any text out of column F)
+- County!E13 → =E9 + 'Non Profit'!E22 + E12 - Rehab!E8   (or set County!E10 = 'Non Profit'!E22 - Rehab!E8 and keep E13 = SUM(E9:E12))
+- Move comments from numeric columns into a dedicated notes column.
+
+If you want, I can:
+- Give the exact corrected totals after applying these fixes (I can compute the new totals for you), or
+- Provide the audit formula cells (copy/paste ready) to detect these issues automatically. Which would you prefer?

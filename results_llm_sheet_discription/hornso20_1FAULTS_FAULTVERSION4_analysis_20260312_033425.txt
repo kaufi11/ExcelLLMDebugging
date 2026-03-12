@@ -1,0 +1,38 @@
+I reviewed the three templates and their duplicate copies. Short summary of the actual errors, why they are wrong, and clear fixes:
+
+1) E20-9 — inconsistent indirect-cost range (real error)
+- What’s wrong: The two workbook copies disagree. E20-9 uses C11 = SUM(C4:C6) (includes Office rent). E20-9 (2) uses C11 = SUM(C5:C6) (excludes Office rent). The second version is missing Office rent from indirect costs.
+- Why it matters: excluding rent understates the indirect hourly rate, allocation rate, predicted job cost, markup and final bid.
+- Fix: Use the full indirect-cost range including rent. Change C11 to:
+  =SUM(C4:C6)/C2
+- Effect (numbers): With C11 = SUM(C4:C6)/C2 → C11 = (350,000+860,000+246,000)/16,000 = 91.00. Predicted job cost C14 = (140 + 91) * 220 = 50,820 (Total bid = 60,984). The (2) sheet results (46,007.50 / 55,209) are incorrect because they left out rent.
+
+2) P20-3B — confusing/fragile overhead calculation (logical error / risky forward reference)
+- What’s wrong: I10 = +F14 * H10 uses F14 (the total of all labor amounts) in a cell on row 10. That is a forward reference and it applies the entire-job labor total from a cell below. It’s fragile and hard to audit. Also it looks like overhead is being applied to the total labor dollars in one row instead of applied per-line (more standard and clearer).
+- Why it matters: hard to follow, risk of formulas pointing to the wrong totals; mistakes if rows are added/removed.
+- Fix (preferred, clearer): compute overhead rate separately, then apply it to each labor-row amount. Example:
+  - Put overhead rate in H10 as: =TotalOverhead / SUM(F10:F12)   (or calculate it explicitly where TotalOverhead is stored). If 375 is total overhead and SUM(F10:F12) is total labor base, use something like H10 = 375 / SUM(F10:F12)
+  - Change I10 to: =F10 * $H$10
+  - Change I12 to: =F12 * $H$10
+  - Remove the forward reference to F14 from I10.
+- Explanation: this applies overhead proportionally to each labor line and keeps formulas local and auditable. If you must put all overhead in one row, at least make that explicit (e.g., compute overhead_total = SUM(F10:F12)*Rate in a single dedicated cell, not as a forward reference).
+
+3) P20-1B — likely wrong source cells for transfer entries (logical mapping error)
+- What’s wrong: Some transfer entries look like they add figures from the Finished Goods column and COGS column together (example F14 = +E4 + G6). That mixes different ledgers and likely does not represent "transfer from WIP to Finished Goods" correctly.
+- Why it matters: journal/ledger transfers should move amounts from WIP (Work in Process) to Finished Goods using the WIP totals; summing values from unrelated columns (Finished Goods and COGS) is incorrect and will misstate balances.
+- Fix (conceptual, apply to each transfer row):
+  - For a completion that moves jobs from WIP to Finished Goods, set the Finished Goods debit cell equal to the WIP credit (i.e., reference the WIP total cell). Example:
+    F14 = C6   (if C6 is the WIP total of the jobs being completed)
+    G15 = -C6  (or if your sheet uses a paired credit column, place the matching credit there)
+  - For the other completion (jobs 4,5,6), similarly reference the WIP total (e.g., F18 = C10) instead of summing unrelated G-column cells.
+- Explanation: Always move amounts by referencing the originating account cell (WIP totals) to avoid double-counting or using unrelated account totals.
+
+4) Minor / cosmetic
+- Typo: B2 text “porfessionals” → fix to “professionals”.
+- Duplicated sheets: there are identical “(2)” copies — confirm whether duplicates are needed.
+
+If you want, I can:
+- Give the exact corrected formulas for every affected cell (I can list the corrected formulas for E20-9, P20-3B and the transfer rows in P20-1B), or
+- Edit a copy of your workbook and return the fixed file (if you can upload it).
+
+Which do you prefer?

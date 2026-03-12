@@ -1,0 +1,31 @@
+Findings (short)
+- Main error: L5 uses subtraction and wrong grouping — it should follow the same pattern as the other rows. That makes L5 produce a wrong cumulative score.
+- Omission: Column K (Pop Quiz #4) exists in the sheet but is never included in the L formula — likely an accidental omission if K should count.
+- Minor/expected: Many score cells are blank; Excel treats blanks as zero in these formulas. If blanks mean "missing" rather than zero, you should flag them.
+
+Why these are errors (one line each)
+- L5: somebody typed minus signs and different parentheses — that inverts contributions instead of adding them.
+- K not referenced: if Pop Quiz #4 is graded, not including K underweights students who took it.
+
+Corrected formulas (pick the one you need)
+
+1) If Pop Quiz #4 is NOT counted (keep current weighting):
+Use this consistent formula (decimal multipliers for clarity). Put in L2 and Fill Down:
+=B2/100 + (2*C2 + 2*E2 + H2)*0.0125 + (D2 + F2 + G2)*0.00735294117647059 + (I2 + J2)*0.0175
+
+2) If Pop Quiz #4 SHOULD be included with the other pop quizzes (add K):
+=B2/100 + (2*C2 + 2*E2 + H2)*0.0125 + (D2 + F2 + G2 + K2)*0.00735294117647059 + (I2 + J2)*0.0175
+
+How to fix it (steps)
+1. Decide on including K or not.  
+2. Enter the chosen corrected formula in L2.  
+3. Copy L2 down to L2:L59 (or double-click the fill-handle) to replace inconsistent formulas (this will fix L5).  
+4. Optional: use Conditional Formatting to highlight blank score cells (so you can review missing data).
+
+Notes / tips
+- If you want blanks to be flagged (not treated as zero), wrap checks like =IF(OR(B2="",C2=""),"Missing data", <formula>) or use conditional formatting to highlight cells in B:K that are blank.
+- If you want a safer formula that avoids #VALUE from stray text, wrap numeric parts with N(): =N(B2)/100 + ... or use IFERROR around the whole formula.
+
+If you want, I can:
+- Give the exact Fill Down command or an Excel macro to fix all rows, or
+- List the exact rows where B:K contain blanks so you can review missing inputs. Which do you prefer?

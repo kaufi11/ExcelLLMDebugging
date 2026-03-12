@@ -1,0 +1,46 @@
+I checked the workbook. There are several recurring errors (copy/paste mis‑references, a hard‑coded cell, and a few risky formulas). Below are the key problems, why they break the model, and simple fixes you can apply.
+
+1) Hard–coded beginning cash (critical)
+- Fault: Year 1, cell M6 = 5 (hard-coded).
+- Why wrong: Beginning‑of‑month cash must continue from the previous month’s end. Hard‑coding breaks the cash‑flow chain.
+- Fix: Replace M6 with a link to the previous month end: =L55
+- Explanation: Month 11 beginning = Month 10 end. Use the previous month’s B55/C55... mapping for each month.
+
+2) Beginning‑of‑month cash references inconsistent / off by one
+- Fault pattern: C6..N6 on Year1 and B6..N6 on Year2 contain inconsistent references (some point to wrong columns or use SUM(...) unnecessarily). This creates broken or circular links between months and between years.
+- Correct logic (apply to both years):
+  - Each month’s "Cash on hand (beginning)" = the prior month’s "Cash position end of month".
+  - Year 1 example: C6 = B55, D6 = C55, E6 = D55, …, N6 = M55.
+  - Year 2 example: B6 = 'Year 1'!N55 (Year2 month1 begins with Year1 month12 end), then C6 = B55, D6 = C55, …, N6 = M55 (all on Year2).
+- Explanation: This keeps the rolling cash position continuous and prevents circular/self references.
+
+3) Mis‑copied row totals (example)
+- Fault: Year 2 shows O20 = SUM(C22:N22) (looks like a copy shift); some O‑cells reference wrong row numbers.
+- Why wrong: Row totals must sum their own row (C: N) not another row.
+- Fix: For every "O" total cell check and use: =SUM(C20:N20) for row 20, =SUM(C21:N21) for row 21, etc.
+- Explanation: Copying formulas down/up incorrectly shifted some row references; correct them so each row’s total is the sum of its monthly cells.
+
+4) % of Sales (P column) inconsistent anchors / self‑division
+- Faults: Some P cells use O57/O57 or O57/O$57 inconsistently, or lack absolute references.
+- Fix: Standardize to Pxx = Oxx / $O$57 (absolute anchor to total sales cell). Example P17: =O17 / $O$57
+- Exception: For the row showing "Sales Volume" itself (O57) you can set P57 = 1 (100%) or =O57 / $O$57.
+- Explanation: Using $O$57 ensures every row divides by the same total sales cell. O57/O57 will always return 1 (or error if zero) which is misleading in other contexts.
+
+5) Variance % formulas risk divide‑by‑zero and are inconsistent
+- Fault: Variance cells use (D - C) / C but do not handle C = 0 and sometimes use inconsistent denominators.
+- Fix: Use a safe formula: =IF(C8=0, "", (D8 - C8) / C8) or =IFERROR((D8 - C8)/C8, "")
+- Explanation: Avoids #DIV/0 or misleading results; keeps reporting consistent: variance = (Actual - Budget) / Budget.
+
+6) Cosmetic / clarity issues: SUM around arithmetic
+- Fault: Many places use constructs like =SUM(B6+B14) or =SUM(B15-B54). They work, but are confusing.
+- Fix (optional, for clarity): use =B6 + B14 and =B15 - B54 or =SUM(B6,B14).
+- Explanation: Cleaner formulas reduce chances of future mistakes.
+
+Action plan (apply these three checks)
+1. Fix the hard‑coded cell: change Year1!M6 → =L55.  
+2. Rebuild beginning‑of‑month chain: on each sheet set each month’s begin = previous month’s end as shown above (and set Year2!B6 = 'Year 1'!N55).  
+3. Scan O‑column totals and P‑column % formulas row by row and correct to =SUM(C#:N#) and =O#/$O$57; wrap variance % formulas in IF or IFERROR.
+
+If you want, I can:
+- produce a short VBA macro or sheet of formulas to correct all beginning‑of‑month cells and all O/P rows automatically, or
+- produce a list of exact replacement formulas for every incorrectly‑copied cell (I will need permission to assume the intended mapping or you can tell me which rows you want fixed first).

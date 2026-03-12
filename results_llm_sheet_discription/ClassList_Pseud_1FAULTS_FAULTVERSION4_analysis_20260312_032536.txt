@@ -1,0 +1,54 @@
+Summary of the problems I found (short) and exactly how to fix each one.
+
+1) Homework: L19 contains the wrong formula/value
+- Problem: L19 is shown as "FORMULA =2" instead of summing the homeworks for Laika. That gives a wrong homework total.
+- Fix: Replace L19 with =SUM(B19:K19)
+- Why: All other homework totals use SUM(B#:K#). This restores correct total by summing the 10 HW columns.
+
+2) Final sheet: one total uses the wrong range (includes column H)
+- Problem: I7 is =SUM(B7:H7) but Final questions are only B:G. Including H is incorrect (H is unused/extra).
+- Fix: Change I7 to =SUM(B7:G7)
+- Why: Keeps all Final total formulas consistent and avoids pulling in unwanted/blank data.
+
+3) Text flags (HC, P, NG, x) are in numeric-score columns
+- Problem: Text like "HC", "P", "x", "NG" appears inside columns that otherwise hold numbers. SUM ignores text, so totals silently exclude those entries and you get understated totals (and invisible errors).
+- Fix options (pick one):
+  a) Best practice: move all flags into the dedicated Notes column (P) and clear the flag text from numeric cells. Put numeric zeros where you intentionally want zero.
+  b) If you must keep text in place, use a formula that sums only numeric entries, e.g.:
+     =SUMIF(B4:K4,">=-1E+99")  (or)
+     =SUMPRODUCT(--(ISNUMBER(B4:K4)),B4:K4)
+- Why: Explicitly summing numbers avoids silent mistakes and makes missing/flagged work obvious.
+
+4) Final Grades sheet: columns/labels are inconsistent with source sheets
+- Problem: Final Grades column headers and values are mixed up:
+  - Column B header says "Papers" but the numbers in B are actually the Homework totals (HOMEWORK L column).
+  - Column D labeled "Term" contains the Paper scores (HOMEWORK N column).
+  This makes the sheet confusing and drives human errors when someone manually edits numbers.
+- Fix:
+  - Either rename the headers to match the data (B = Homework total, D = Paper) OR change the sheet so each column pulls the intended source.
+  - Best: pull values automatically from source sheets using INDEX/MATCH (robust to row order), for example (put in Final Grades row 5 and copy down):
+    Papers (Homework total): =INDEX(Homework!$L$4:$L$42, MATCH($A5, Homework!$A$4:$A$42,0))
+    Paper (separate paper score): =INDEX(Homework!$N$4:$N$42, MATCH($A5, Homework!$A$4:$A$42,0))
+    Mid-term: =INDEX('Mid-term'!$L$6:$L$44, MATCH($A5, 'Mid-term'!$A$6:$A$44,0))
+    Final: =INDEX(Final!$I$4:$I$42, MATCH($A5, Final!$A$4:$A$42,0))
+  - Then compute Total: =SUM(B5:E5)
+- Why: Using direct lookups prevents manual copy/paste errors and keeps Final Grades consistent with source data.
+
+5) Final Grades: some Total cells contain letter grades (e.g., "F") instead of numeric totals
+- Problem: Some rows show "F" (or "P") in the Total column (F). That overwrites the numeric total cell and prevents consistent calculations and automatic grade assignment.
+- Fix:
+  - Put numeric Total in column F using =SUM(Bx:Ex) for each student.
+  - Put the letter grade in a separate column (e.g., column G). Compute it with a lookup of cutoffs, for example:
+    =LOOKUP(F5, $K$45:$K$83, $I$45:$I$83)
+    (assuming K45:K83 are the numeric cutoffs sorted ascending and I45:I83 are corresponding letter grades)
+- Why: Keeps totals numeric for sorting/summing, and separates numeric computation from human-readable grade letters.
+
+6) General consistency / safety recommendations
+- Use formulas (INDEX/MATCH or VLOOKUP) in the Final Grades sheet to import scores rather than typing them manually.
+- Keep flags (HC, P, x, NG) only in a dedicated Notes column. Do not place them inside numeric columns.
+- Ensure all subtotal/total formulas use the exact same column ranges (e.g., SUM(B#:K#) for all homework totals).
+- If some students are under Honor Code review and you don't want them counted in averages/totals, use an IF test, e.g.:
+  =IF($P5="HC", NA(), SUM(B5:E5))
+  or exclude them explicitly from class averages with AVERAGEIF/AVERAGEIFS.
+
+If you want, I can give the exact INDEX/MATCH formulas filled for the Final Grades sheet (one formula per column), and a small checklist to clean the flags (which cells to clear/replace). Which would you prefer?

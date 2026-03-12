@@ -1,0 +1,32 @@
+I inspected Sheet4 (classes) and the summary rows. I found three real problems that will give you wrong totals — and how to fix each one. Short and simple.
+
+1) Public Cost totals (row 268) use subtraction instead of addition
+- Problem: F268 (and G268:BG268) uses =SUM(F269-F270) (i.e. RISE Cost MINUS RISE Savings). Per your note (A25) Total Public Cost should be RISE tuition dollars + RISE savings, so the formula is the wrong sign.
+- Effect: All “Public Cost” totals and the public-cost grand total (BI268) are too small (they subtract savings instead of adding).
+- Fix: change each formula in F268:BG268 to add the two totals, e.g. replace =SUM(F269-F270) with =F269+F270 (or =SUM(F269,F270)). Then recalc BI268.
+
+2) One cell is hard-coded instead of using the standard formula (AV142)
+- Problem: AV142 contains a fixed number "6" instead of the pattern used in that row (most per-company totals use =<company_cell>*$E$<row>).
+- Effect: If the participants or the RISE cost for row 141 change, AV142 will not update and the class/company totals will be wrong.
+- Fix: Replace AV142 with the correct formula. For consistency with the other columns in that "Total" row use:
+  =AV141*$E$141
+(or =SUM(AV141*$E$141) if you prefer the existing style). Then copy across (if other columns are also wrong) or validate adjacent cells.
+
+3) Some BK (Number of Participants Per Class) cells are constants not formulas
+- Problem: BK is supposed to be =SUM(F#:BG#) for each class. I found at least one BK row with a hard number (example BK261 = 12) rather than the usual formula.
+- Effect: If any participant columns (F:BG) change, BK won't update and downstream totals that rely on BK (student days, BM, BL etc.) will be wrong.
+- Fix: For every BK row, put the formula:
+  =SUM(Fn:BGn)
+(where n is the class row). Then copy that formula down so every class BK cell is calculated, not fixed.
+
+Other notes (not fatal but tidy):
+- Many cells wrap simple arithmetic in SUM(), e.g. =SUM(C3*BK3) or =SUM(F3*$E$3). That works but is unnecessary. You can simplify to =C3*BK3 or =F3*$E$3 to make the sheet easier to read.
+- Several BN/other “Total” cells use =SUM(A-B) instead of plain =A-B. Functionally OK, but simpler forms are clearer.
+
+Quick checklist you can follow now
+1. Update F268:BG268 formulas to =F269+F270 (and similarly for G..BG).
+2. Replace AV142 with =AV141*$E$141 (and verify any other cells that are hard-coded in that row).
+3. Scan column BK and replace any cells that are numbers with =SUM(Fn:BGn).
+4. Recalculate workbook and verify BM, BO, BN and final grand totals (BI268, BH270, BI270) now agree with your expected totals.
+
+If you want I can give you the exact replacement formulas for specific cells (list the row numbers you want fixed) or prepare a small macro to correct all BK rows and the F268:BG268 row automatically.

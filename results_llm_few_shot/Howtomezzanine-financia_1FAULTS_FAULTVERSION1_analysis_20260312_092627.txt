@@ -1,0 +1,32 @@
+Summary — most important errors (how they break the model) and fixes:
+
+1) Fault: H12 references the wrong row
+- Current formula in H12: =$C13/$C$5
+- Problem: H12 should show Basic Rent per sq ft = C12 ÷ Total Area (C5). Using C13 (Rates = 0) makes the per-sq-ft column (H12) wrong and pulls down H29, H37 and all downstream totals.
+- Fix: change H12 to: =$C12/$C$5
+
+2) Fault: C37 has an unexplained 10% reduction
+- Current formula in C37: =SUM(C12:C35)*0.9
+- Problem: multiplying the sum by 0.9 artificially reduces total annual cost by 10%. That incorrect base value flows into Operating Costs (F78/C78 references), Total Charge (F37) and all breakeven / NPV calculations.
+- Fix: change C37 to the true sum (no 0.9 multiplier):
+  =SUM(C12:C35)
+
+3) Check/confirm Total Charge with markups
+- Current F37: =C37+SUMPRODUCT(C12:C35,F12:F35)
+- Explanation: after fixing C37 above, F37 will equal base costs + the monetary mark-up amounts (SUMPRODUCT). That is a valid way to compute total charge if F12:F35 are markup rates. If you instead want each item charged as cost*(1+markup) and then summed, use:
+  =SUMPRODUCT(C12:C35,1+F12:F35)
+- Action: pick the one that matches your intended logic. Either keep the existing F37 or replace it with the SUMPRODUCT(1+F) version.
+
+4) Optional improvement: simplify the NPV rows (robustness)
+- Current F85 uses many IF(...) arguments (one per year) — fragile and contains an extra period. It works but is hard to maintain.
+- Cleaner alternative (returns NPV of F80 for C65 years then subtracts initial investment):
+  =NPV($C$69,OFFSET($F$80,0,0,$C$65,1)) - $F$76
+- Use this if you want a shorter, maintainable formula.
+
+How these fixes affect results (brief)
+- Fixing H12 restores the correct per-sq-ft values for Basic Rent and corrects the H-column totals and any aggregates that depend on them.
+- Removing *0.9 from C37 restores the true total annual costs; this change corrects Operating Costs, Breakeven, Required Revenue, and NPV calculations.
+
+If you want, I can:
+- Provide an exact list of cells that will change value after these fixes, or
+- Produce corrected formulas for any additional rows you’re unsure about.

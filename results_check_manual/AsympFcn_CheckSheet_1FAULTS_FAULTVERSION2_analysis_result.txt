@@ -1,0 +1,85 @@
+I inspected the formulas in both sheets and found several formula errors and inconsistencies. Below I list the problems I found (by sheet and cell), explain why they are wrong, and give suggested corrections.
+
+MasterMethod_Checks
+
+1. Row with n blank / zero (A11)
+   - Problem: A11 is blank (treated as 0). That causes:
+     - C11 = A11^$B$6 → 0 (ok),
+     - D11 = B11/C11 → #DIV/0! (division by zero),
+     - H11 = LOG(A11,2) → error (LOG of 0 is invalid).
+   - Suggestion: start n at 1 (no zeros) or ensure A11 contains a valid starting n (>=1). Alternatively wrap formulas with checks to avoid computing LOG(0) or division by zero (e.g. IF(A11<=0,"",...)).
+
+2. B6 (Critical Exponent)
+   - Formula: =LOG(B4,B5)
+   - Comment: This is correct in Excel (LOG(number, base) → LOG(a, b) = log_b(a)). No change required unless you prefer the explicit form =LOG(B4)/LOG(B5).
+
+3. Wrong formula in B19 (inconsistent with pattern)
+   - Cell: B19
+   - Current formula: =A19*2 (value 16)
+   - All other B-row formulas are =A#/2; B19 appears to be a copy/paste error.
+   - Effect: B19 = 16 instead of expected 4; this makes the Big-Oh / Big-Omega tests on that row inconsistent.
+   - Suggested fix: change B19 to =A19/2.
+
+4. H11 and H-anywhere: LOG(A,2) possible domain issue
+   - Using =LOG(A#,2) is fine for A>=1, but for A<=0 or A=1 it may produce errors (LOG(1,2)=0 is ok, but LOG(0,2) and LOG(negative) error).
+   - Suggestion: ensure A# >= 1 or guard the formula: =IF(A#>0,LOG(A#,2),"")
+
+Small consistency note (not an error):
+ - Many IF formulas return text "TRUE"/"FALSE" rather than boolean TRUE/FALSE. That is valid but may be inconsistent if you mix types later.
+
+SubstitutionMethod_Checks
+
+1. Domain errors for small n (n <= 2)
+   - Cells: B10, C10, D10, and derived IFs on row 10
+   - Reason: expressions use LOG(LOG(n,2),2) and A/LOG(A,2). For n=1 and n=2:
+     - n=1: LOG(1,2)=0 → LOG(0,2) invalid → error
+     - n=2: LOG(2,2)=1 → LOG(1,2)=0 → LOG(0,2) invalid (and A/LOG(A,2) could be division by zero for n=1)
+   - Effect: B10 and C10 show #VALUE!/#NUM, D10 shows #DIV/0!, subsequent tests error.
+   - Suggested fix: set the sheet to start at n >= 3 (n0 >= 3). Alternatively guard formulas with IF to skip n<3 (e.g. =IF(A10<3,"", <formula>)).
+
+2. Incorrect / inconsistent formulas in column D (many rows)
+   - Expected formula (based on rows D11..D18): D# should be =5*1 + A#/LOG(A#,2) (i.e. =5 + A#/LOG(A#,2)).
+   - Problem: many later D cells were copied with absolute references to earlier D cells, producing formulas like:
+     - D19 = 5*$D$11 + A19/LOG(A19,2)
+     - D20 = 5*$D$11 + A20/LOG(A20,2)
+     - D21 = 5*$D$11 + A21/LOG(A21,2)
+     - D22 = 5*$D$11 + A22/LOG(A22,2)
+     - D23 = 5*$D$11 + A23/LOG(A23,2)
+     - D24..D28 reference $D$12
+     - D29..D33 reference $D$13
+     - D34..D38 reference $D$14
+     - D39 references $D$15
+   - Effect: these produce inflated/wrong values (e.g. D19 ≈ 38 rather than ≈ 8) because they multiply an earlier D value by 5 instead of using 5*1.
+   - Suggested correction: replace all D formulas (from D19 onward) with the intended row-relative formula, for example:
+     - D19 should be =5 + A19/LOG(A19,2)
+     - D20 should be =5 + A20/LOG(A20,2)
+     - etc.
+   - If the intended constant is actually 5*1 (i.e. 5), use 5 or $constant_cell rather than $D$11.
+
+   To summarize the exact D cells that should be corrected:
+     - D19, D20, D21, D22, D23 (currently reference $D$11)
+     - D24, D25, D26, D27, D28 (currently reference $D$12)
+     - D29, D30, D31, D32, D33 (currently reference $D$13)
+     - D34, D35, D36, D37, D38 (currently reference $D$14)
+     - D39 (currently references $D$15)
+   - Replace each of these with =5 + A# / LOG(A#,2) (or =5*1 + A# / LOG(A#,2)).
+
+3. Row 10 and 11 behaviour for B/C when LOG(LOG(...)) = 0
+   - B11 and C11 (n=2) produce 0 because LOG(LOG(2,2),2) = LOG(1,2) = 0 → asymptotic term = constant * A * 0 = 0. This is mathematically possible but tends to make asymptotic comparisons degenerate; better to start n >= 3.
+
+4. IF tests using text "TRUE"/"FALSE" and mixed case "True"/"False"
+   - Cells like G# use nested IFs returning the text "True"/"False" (capitalization inconsistent with other cells returning "TRUE"/"FALSE").
+   - Not strictly a formula error, but causes inconsistent display. Consider using boolean results or consistent text.
+
+General suggestions / defensive programming
+ - Add explicit starting-n validation (n0) and do not evaluate formulas for n < domain threshold. Example:
+   - Put n0 in a header and wrap row formulas: =IF(A#<$n$0,"", <formula>) so invalid n do not create errors.
+ - Use IFERROR or IF(conditions, ...) to prevent #DIV/0 and #NUM errors from propagating.
+ - When copying formulas down, avoid accidental absolute references to earlier result cells (like $D$11). Use relative references or anchor to the intended constant cell.
+
+If you want, I can:
+ - produce an explicit list of corrected formulas (one per affected cell),
+ - generate corrected formulas you can paste into the workbook,
+ - or produce an annotated list in CSV/text mapping wrong→correct for easy fix.
+
+Which would you prefer?

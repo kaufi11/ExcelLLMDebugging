@@ -1,0 +1,37 @@
+I inspected the sheet and found one clear formula error plus a few layout/consistency issues that increase risk of further mistakes. Summary and recommended fixes below.
+
+1) Wrong cell reference (actual formula error)
+- Cell: C35
+- Current formula: = $C$21 * $B20 * C29  (as stored: "=$C$21*$B20*C29")
+- Problem: $B20 does not exist / contains no data. As a result C35 evaluates to 0 and that error propagates to C47 and the model objective.
+- Correct formula: = $C$21 * $B19 * C29
+  - Rationale: the opportunity-cost calculations use the region's average-daily amount (B19 for Midwest) times the float days (C29) and cost of capital ($C$21).
+- Corrected value (if you change the formula): 0.085 * 24,000,000 * 4.2 = 8,568,000
+
+2) Propagated incorrect totals caused by (1)
+- With C35 currently 0, C47 = C35 + C41 = 0 + 1,350,000 = 1,350,000 (incorrect).
+- With corrected C35, C47 should be 8,568,000 + 1,350,000 = 9,918,000.
+- The model objective (H52) currently shows 17,570,000; that is inconsistent because it uses the incorrect C35/C47 values. With the corrected C35/C47 and the current assignment matrix, H52 (formula shown) should become:
+  - Fixed costs = SUMPRODUCT(B5:C5,B53:C53) = 20,000 + 30,000 = 50,000
+  - Assignment costs = SUMPRODUCT(B45:C47,B57:C59) = 33,638,000
+  - Corrected objective = 50,000 + 33,638,000 = 33,688,000
+
+3) Layout / potential confusion (recommendations)
+- Inconsistent use of columns B and C:
+  - At the top of the sheet columns B/C are labeled "Pennsylvania" / "California".
+  - In the "Check origination data" block row 16, B16 = "average daily" and C16 = "yearly checks" — i.e., columns B and C are being reused for different meanings. This is a likely source of mis-references (and appears to be how C35 got mistyped).
+  - Suggestion: Put region data (average daily, yearly checks) in separate dedicated columns (e.g., columns F:G or a small table with explicit headers) or add clear labels so formulas can't accidentally pick the wrong column.
+- Blank assignment cells (B58, B59) are left empty rather than explicit zeros:
+  - Excel treats blank as zero in SUM and SUMPRODUCT, but for clarity and to avoid confusion I recommend entering explicit 0's or data-validation (0/1) for assignment cells.
+- Mixed absolute references:
+  - The sheet uses a variety of mix/anchoring patterns ($B17, B$6, $C$21). They are mostly correct here, but for maintainability use consistent anchoring or named ranges (e.g., name cost_of_capital, avg_daily_Midwest) to prevent accidental errors when copying formulas.
+
+4) Other formulas I reviewed (no error found)
+- B27:C29 (total days float) formulas look correct (B$7 + B11 etc.)
+- B33:B35 formulas for Pennsylvania are fine (except C35 error noted)
+- Processing-charge formulas (B39:C41) appear to intentionally use the "yearly checks" numbers in column C (that is consistent with how the sheet is structured) — just be aware of the column re-use noted above.
+- Objective formula H52 is syntactically fine; its numeric result is currently incorrect only because an upstream cell (C35) is wrong.
+
+If you want, I can:
+- produce the exact cell edits (copy-pasteable formulas) to fix C35 and any other cells you want standardized, and
+- provide a small refactor suggestion (a table layout) to remove the column reuse and make the model safer.

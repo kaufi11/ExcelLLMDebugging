@@ -1,0 +1,54 @@
+Nice, I reviewed your layout and formulas. I found the real errors that will break the cash roll‑forward and a few risky/inconsistent formulas. Below is a short, clear list of the problems, why they matter, and the exact fixes to apply.
+
+1) Hard‑coded end‑of‑month value (critical)
+- Problem: Year 1!E55 is hard coded =3 (should be end‑of‑month cash for Month 3). That value is used by next month’s beginning cash (Year 1!F6 = SUM(E55)), so Month 4 beginning cash becomes 3 regardless of real results.
+- Why it breaks things: any downstream months (and Year 2 start) that roll forward from that month will be wrong.
+- Fix: Replace the 3 with the correct formula that computes the end‑of‑month cash for column E. Example (consistent with your pattern):
+  - Year 1!E55 → set to =E15-E54
+  (or if you prefer your existing style) =SUM(E15-E54)
+- Explanation: E55 must equal that month’s Total Cash Available (E15) minus Total Cash Paid Out (E54). Then the next month’s beginning cash will correctly pick up E55.
+
+2) Wrong total cell reference in Year 2 (mapping error)
+- Problem: On Year 2 the Payroll/Payroll Expenses line(s) were mis‑pointed: a cell intended to be O20 was set to SUM(C22:N22) (i.e., O22) instead of SUM(C20:N20).
+- Why it breaks things: Year totals (column O) and % of sales (P) will be wrong for that row and will corrupt subtotal rows that include O20.
+- Fix: Change the incorrect O‑cell to reference the same row’s months:
+  - Year 2!O20 → =SUM(C20:N20)
+  - Year 2!P20 → =IF($O$57=0,"", O20/$O$57)  (or =O20/O$57 to match your style)
+- Explanation: Each O cell must be the sum of that row’s month columns C:N. Fixing O20 restores correct row totals and the subtotals that depend on them.
+
+3) Inconsistent / fragile percent‑of‑sales formulas
+- Problem: Some percent‑of‑sales cells use slightly different references (example you flagged: Year 2 P57 = +O57/O57). Also many P columns are written as Oxx/O$57 (row anchor only).
+- Why it matters: inconsistent anchoring can cause wrong results if someone copies formulas horizontally or vertically; P57 being O57/O57 returns 1 which is ok for Sales line but looks like a mistake.
+- Fix / Recommendation:
+  - Standardize all % of sales formulas to use an absolute reference to the yearly sales total: =Oxx/$O$57 (or =Oxx/$O$57). Example: Year2!P17 → =IF($O$57=0,"",O17/$O$57)
+  - For the Sales row (row 57) keep =O57/$O$57 (this returns 1 / 100%).
+- Explanation: Using $O$57 prevents accidental changes when copying formulas and makes intent obvious. Wrap with IF or IFERROR to avoid #DIV/0!.
+
+4) Many SUM(...) wrapping single arithmetic expressions (style / clarity)
+- Problem: Formulas like =SUM(B15-B54) and =SUM(B6+B14) work but are confusing.
+- Why change: readability and lower risk of copy/paste errors.
+- Fix (optional but recommended):
+  - Replace =SUM(B15-B54) with =B15-B54
+  - Replace =SUM(B6+B14) with =B6+B14
+- Explanation: Simpler formulas are easier to audit and less likely to be misinterpreted by users.
+
+5) Variance sheets: divide‑by‑zero and referencing checks
+- Problems:
+  - Variance formulas are (% change) = (Actual - Budget) / Budget. If Budget is zero you get #DIV/0!. Also verify that the budget (Year 1) and actual columns are aligned exactly as intended before trusting variance numbers.
+- Fix:
+  - Replace e.g. =(D8-C8)/C8 with =IF(C8=0,"", (D8-C8)/C8) or =IFERROR((D8-C8)/C8,0) depending on how you want to show blanks or zero.
+  - Do a quick column alignment check for each variance block to ensure Actuals sit in the columns your formulas expect.
+- Explanation: Prevents #DIV/0! and makes variances more user‑friendly.
+
+6) Quick audit checklist (apply after fixes)
+- Check Year 1 row 55 for every month C55:N55: each should be =Cx15 - Cx54 (or pattern you use) — i.e., month end = Total Available - Total Paid.
+- Check Year 1 row 6 for every month C6:N6: each beginning cash should point to the previous month’s row 55 (e.g., F6 = E55).
+- Check Year 2 B6 should link to Year 1 N55 (end of Year 1), then C6 should link to B55 (current sheet), D6→C55, etc.
+- Verify every O (year total) cell is SUM(C:N) for that row.
+- Standardize P column formulas to =Oxx/$O$57 and add IF error handling as needed.
+
+If you want, I can:
+- Produce a one‑page list of exact cell formulas to paste (I will list exact cells and corrected formulas), or
+- Generate the IFERROR/IF wrapper versions for all variance formulas automatically.
+
+Which would you prefer?

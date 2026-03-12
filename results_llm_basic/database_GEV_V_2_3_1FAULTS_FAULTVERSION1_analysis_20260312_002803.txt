@@ -1,0 +1,41 @@
+Ho analizzato il file: ci sono alcuni errori/imperfezioni che influenzano i calcoli. Sintetizzo i problemi, la causa e la soluzione (breve e chiara).
+
+1) Riferimenti bloccati solo sulle righe 3:4 (ERRORE CRITICO)
+- Problema: molte formule nel foglio "calcoli" (es. B27, B28, B29, B33, D33, …) e B60/B61 usano intervalli tipo db!AN3:AN4, db!AP3:AP4, db!AX3:BG4, parametri!A1:A4 ecc. Questo funziona solo se il database ha 2 righe di dati (righe 3–4). Quando aggiungi record il conteggio/somma non aggiorna.
+- Effetto: conteggi e somme mostrano valori errati/non aggiornati.
+- Soluzione: usare intervalli su tutte le righe (colonne intere) o un intervallo dinamico/Tabella. Esempi di sostituzioni dirette:
+  - calcoli!B27 (n° serv mensili): =COUNTA(db!AN:AN)-1  (sottrai 1 per togliere header in riga 2)
+  - calcoli!B28 (h serv): =SUM(db!AP:AP)
+  - calcoli!B29 (n° sanzioni): =SUM(db!AX:BG)  (somma tutte le colonne sanzioni su tutte le righe)
+  - calcoli!B33 (flora): =SUM(db!AX:AX)
+  - calcoli!D35 (km macchina): =SUM(db!BK:BK)
+  - calcoli!B60 (Numero servizi): =COUNTA(db!A:A)-1
+  - calcoli!B61 (Numero GEV): =COUNTA(parametri!A:A)-1
+  (Adatta il -1 se l'header si trova in riga diversa; se non vuoi sottrarre header usare intervalli a partire da riga 3: db!A3:A1000 o converti la tabella.)
+
+2) Uso di COUNT al posto di SUM in una cella (errore logico)
+- Problema: visualizza_gruppo Q30 è =COUNT(M30:N30) mentre le altre righe usano SUM(Mx:Nx).
+- Effetto: Q30 restituisce il numero di celle non vuote (0–2) invece della somma dei valori.
+- Soluzione: sostituire con =SUM(M30:N30).
+
+3) Formule con “++” (errore di battitura, non grave ma da correggere)
+- Problema: in visualizza_gruppo le formule per le ore (colonna Q) sono scritte come =D7++G7+J7+M7 (doppio +).
+- Effetto: Excel interpreta comunque ++ come + (funziona), ma è confuso e poco pulito.
+- Soluzione: correggere in =D7+G7+J7+M7 (e analoghe nelle altre righe).
+
+4) Calcolo durata oraria poco robusto
+- Problema: calcoli!G15 usa (HOUR(F15-E15)*60+MINUTE(F15-E15))/60 — non gestisce bene casi con passaggio a mezzanotte e tronca i secondi.
+- Soluzione consigliata, più semplice e robusta (ore decimali):
+  - =IF(F15>=E15,(F15-E15)*24,(F15+1-E15)*24)
+  (Risultato in ore; formato cella come Numero con decimali.)
+
+5) Migliore pratiche raccomandate (consigli)
+- Converti l’intero DB in una Tabella Excel (Inserisci → Tabella). Le formule diventano più robuste e i ranges si aggiornano automaticamente.
+- Evita IF(...,TRUE,FALSE) ridondanti: IF(AND(...),TRUE,FALSE) può essere sostituito da AND(...).
+- Usa SUMIFS/COUNTIFS quando devi filtrare per anno/mese/GEV invece di somme su colonne intere, per ottenere statistiche corrette per gruppi/periodi.
+
+Se vuoi, posso:
+- Fornire la lista completa delle celle da correggere (sostituzione formula riga per riga).
+- Preparare le versioni corrette e pronte da incollare su ciascuna cella (ti do un elenco puntuale).
+
+Dimmi se preferisci che corregga tutte le formule (ti fornisco il testo esatto da incollare).

@@ -1,0 +1,60 @@
+I inspected the workbook formulas and found one clear, high-impact formula error plus several inconsistencies / questionable formula choices. Summary first, then cell-by-cell details and recommended fixes.
+
+High‑priority error (breaks totals)
+- Sheet: FTEE Calculation
+- Cell: F14 (row for NCC-04, Non-Credit FTEE)
+- Current formula: =+E14*600
+- Problem: This multiplies the non‑credit hours by 600 instead of dividing by 600 like every other row (should convert contact hours to FTEE by dividing by 600). That produces a huge number (219,700,200) and inflates F and H column totals by a factor of ~600, which in turn makes many row ratios meaningless (I14 ≈ 0.99966, many other I values near 0, D27 etc. distorted).
+- Correct formula: =E14/600
+- Effect when fixed: F14 will be ~610.278333 (366,167 / 600), H14 will be ~1,584.153333 (C14 + corrected F14), and the totals in F27, H27, I11:I26, D27, etc. will all return to sensible values.
+
+Other formula errors / inconsistencies and suspicious entries
+1) Manual “+1” adjustments
+- Sheet: Revenues by Source
+  - Cell: C11
+  - Current formula: =141577402+1
+  - Issue: cell is set by adding 1 to a hardcoded number. If this was to correct rounding/matching, it is not transparent and inconsistent with other entries.
+  - Suggestion: Replace with the actual final number (141577403) or derive it by formula from source components. Avoid ad-hoc +1.
+- Sheet: General State Financial Aid
+  - Cell: B21 (SWCC-14)
+  - Current formula: =3684419+1
+  - Issue / suggestion: same as above — use the proper hard value or compute consistently.
+- Sheet: FTEE Calculation
+  - Cell: E27 (total non-credit hours)
+  - Current formula: =SUM(E11:E26)+1
+  - Issue: +1 again. Remove the +1 and rely on SUM only, unless there is a documented reason for the +1 adjustment.
+
+2) Range endpoints include extra row(s)
+- Sheet: FTEE Calculation
+  - Several totals sum ranges include row 26 while the data appears to be rows 11–25 (e.g., B27 = SUM(B11:B26), C27 = SUM(C11:C26), F27 = SUM(F11:F26), H27 = SUM(H11:H26), etc.).
+  - Issue: Using B11:B26 is harmless if row 26 is blank, but inconsistent. Confirm intended last data row (25) and adjust ranges consistently to B11:B25 (or ensure row 26 is intentionally included).
+  - Suggestion: Standardize sums to the actual data range (B11:B25 etc.) to prevent accidental inclusion if row 26 later contains data.
+
+3) Division denominator references rely on totals that themselves are affected by the F14 error
+- Example: Many D# cells use =C# / H# and I# cells use =H# / $H$27. Because H14 is extremely large due to F14, those ratios are currently invalid. Fix F14 first; then re-check all ratios.
+- Suggestion: After correcting F14, audit D11:D25 and I11:I25 to ensure they reflect intended percentages (and formatting) and that totals sum to 1 where expected.
+
+4) Use of leading + in formulas
+- Multiple formulas use =+A1/B1 style (e.g., =+C9/$C$15). This is syntactically valid in Excel but unnecessary and inconsistent.
+- Suggestion: Not an error but for clarity and standardization remove the leading +.
+
+5) Minor / documentation items to review
+- Revenues by Source: B15 uses =SUM(B9:B14) even though percentages are only in B9:B13. This is OK if B14 is intentionally blank (Excel treats blank as zero) but consider using the exact range B9:B13 for clarity.
+- Expenditures by Function: B19 uses =SUM(B9:B18) though data is B9:B17. Same remark as above.
+- Check that any hard-coded totals (where used) match computed sums after the F14 fix and removal of +1 adjustments.
+
+Recommended immediate steps
+1. Correct the critical error: change F14 from =+E14*600 to =E14/600.
+2. Remove the unexplained +1 adjustments (C11 on Revenues by Source, B21 on General State Financial Aid, E27 on FTEE Calculation) or replace them with documented, explicit rounding corrections (e.g., ROUND(...) if needed).
+3. Recompute totals and verify:
+   - F27 (sum of non-credit FTEE) and H27 (total FTEE) should be rechecked.
+   - I11:I25 (percent of total) should sum to 1 (I27).
+   - D27 and other aggregate percentages should make sense once H27 and F27 are corrected.
+4. Standardize sum ranges to the precise data row range (e.g., B11:B25) to avoid accidental future inclusion of blank or new rows.
+5. Optionally remove leading + signs in formulas for readability.
+
+If you want, I can:
+- Apply the fixes and return the corrected formulas and the new computed totals (I can show the corrected totals for the FTEE sheet).
+- Or produce a short patch script (list of cell changes) you can apply manually.
+
+Which would you prefer?

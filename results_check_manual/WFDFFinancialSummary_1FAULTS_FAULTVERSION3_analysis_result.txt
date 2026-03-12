@@ -1,0 +1,89 @@
+I reviewed the workbook formulas you provided (sheets: "Financial summary", "Balance Sheet", "Stork - 2002 Expenditures", "Stork - 2002 Receipts") and found several formula errors / inconsistencies and a few questionable design choices that can produce incorrect totals or confusing results. Summary first, then details and suggestions.
+
+Summary of the main problems
+- Financial summary I27 (Total Expense for 2001) — the stored value (19324.50) does not match its formula (=SUM(I19:I25)). The formula's expected result is 19,124.50 (a 2,000.00 difference). This is a data/formula/value mismatch.
+- Balance Sheet does not balance for 2001 and 2002:
+  - 2001: TOTAL ASSETS (G7) = 53,151.23, TOTAL LIABILITIES & EQUITY (G15) = 53,651.23 → difference = +500.00
+  - 2002: TOTAL ASSETS (H7) = 55,494.10, TOTAL LIABILITIES & EQUITY (H15) = 65,478.20 → difference = +9,984.10
+  (1999 and 2000 columns appear balanced.)
+- Balance Sheet H12 (Retained Earnings, Dec 31 2002) uses the wrong formula/sign: H12 = G12 - G13 (currently). It should use prior retained plus current-year net (e.g. H12 = G12 + H13) — current formula gives incorrect retained earnings progression.
+- Many balance / breakout cells are hard-coded instead of linked to source totals (e.g. Checking Account / Money Market cells). This causes avoidable mismatches (and the tiny rounding differences seen in the "Difference" row).
+- Use of ROUND with questionable references (e.g. TOTAL ASSETS formulas use ROUND(E2+E6,5)) — E2 appears not to be a numeric value, so the formula is misleading and brittle.
+- Tiny but visible rounding remainders (e.g. E39, G39, I39 etc ≈ -0.0005948) caused by mixing unrounded and rounded values; these are cosmetic but indicate inconsistent handling of precision.
+
+Details, cell-by-cell (important items)
+
+1) I27 (Financial summary)
+- Cell: Financial summary!I27
+- Formula: =SUM(I19:I25)
+- Stored value: 19,324.50
+- Actual SUM(I19:I25): 8,238.33 + 8,054.12 + 447.17 + 2,384.88 + (blank) = 19,124.50
+- Discrepancy: 2000.00
+- Impact: drives Net Income I30 (=I15-I27) and Ending Cash I33, and therefore the Balance Sheet; this explains part of the later imbalance.
+- Action: inspect I19:I25 for hidden/rounded/overwritten values or check whether I27 was manually overridden. If a 2,000.00 expense belongs elsewhere (2002) it should not be in the 2001 sum.
+
+2) Balance Sheet — total mismatch (2001 & 2002)
+- 2001:
+  - Assets: Balance Sheet!G7 = 53,151.23 (formula ROUND(G2+G6,5))
+  - Liab & Equity: Balance Sheet!G15 = 53,651.23 (formula ROUND(G9+G14,5))
+  - Difference: +500.00 (equity > assets) → indicates an incorrectly placed 500 or an incorrect retained/net figure.
+- 2002:
+  - Assets: Balance Sheet!H7 = 55,494.10
+  - Liab & Equity: Balance Sheet!H15 = 65,478.20
+  - Difference: +9,984.10 (large imbalance)
+- Likely causes:
+  - The retained earnings/net income roll-forward logic is wrong (see H12 below).
+  - Some amounts are being included in equity but not in assets (or vice versa) because source links were not used consistently.
+
+3) Balance Sheet H12 (Retained Earnings for 2002) — wrong formula/sign
+- Cell: Balance Sheet!H12
+- Formula: =G12-G13
+- Interpretation: subtracts the previous-period net income (G13) from the prior-period retained (G12) — that is incorrect.
+- Correct progression: Retained_end = Retained_prior + Net_current.
+  - If G12 = retained at 2001 year-end and H13 = net income for 2002, then H12 should be = G12 + H13.
+  - Current formula uses G13 (net income for 2001) instead of H13 (net income for 2002) and uses subtraction instead of addition.
+- Effect: produces an inflated retained balance (and contributes to the balance-sheet mismatch).
+
+4) Hard-coded vs. linked balances (causes small mismatches)
+- Financial summary, "Checking Account" row:
+  - C35 = =C33 (linked)
+  - E35 = 69,161.82 (hard-coded value, not =E33)
+  - G35, I35, K35, M35 are also hard-coded numeric values
+- Financial summary, "Money Market" row:
+  - G36, I36, K36, M36 are hard-coded values
+- Because some of the breakdown accounts are not linked to the official Ending Cash/Inv. Balance (C33,E33,G33,...), the Difference row (C39,E39,...) shows small non-zero results (rounding) or larger inconsistencies if breakdowns are incorrect.
+- Suggestion: make each period's Checking Account and Money Market formulas reference Ending Cash (for example E35 = E33) or ensure the sum of balances equals the ending balance automatically.
+
+5) Use of ROUND with non-numeric references
+- Example: Balance Sheet!E7 formula =ROUND(E2+E6,5)
+  - E2 appears to be a label or blank, not a numeric amount; using it in the formula is confusing.
+  - Similar in F7/G7/H7 using F2/G2/H2.
+- Suggestion: if you only need total current assets (E6), use E7 = ROUND(E6,5) or ensure the other referenced cell really contains the item you intend to add.
+
+6) Tiny rounding residues in Difference row
+- Financial summary!E39, G39, I39, K39, M39 ≈ -0.0005948
+- Cause: mixing rounded display values with higher-precision stored numbers and summing them; then showing difference produces tiny floating-point residues.
+- Suggestion: use ROUND consistently in intermediate calculations or format to show fewer decimals; or wrap the difference formulas in ROUND(...,2) if cents-level accuracy required.
+
+7) Odd/inefficient formulas that are suspicious but not necessarily wrong
+- Financial summary!I19 is =8238.33 — a formula returning a literal; better to store as a numeric constant or link to source.
+- Financial summary!K21 uses =8821.24-118.52 — ok numerically, but inconsistent pattern (others are cell-level).
+- Stork sheets: D60 in Expenditures pulls Receipts sheet C43: good linking.
+
+Recommendations / Corrective actions
+1. Fix I27: verify the source values in I19:I25. If I27 was overwritten manually, restore the formula result or correct the row that incorrectly contains 2,000.00.
+2. Fix retained earnings roll-forward:
+   - Replace Balance Sheet!H12 = G12 - G13 with H12 = G12 + H13 (or use consistent references that reflect prior retained + current net).
+   - Check same logic for other year columns (e.g. G12 should be F12 + G13? verify the intended layout).
+3. Re-link the Checking Account and Money Market breakout cells to Ending Cash (E33, G33, K33 etc) instead of manually typing values, to ensure the Ending Cash equals the sum of its components. Example: E35 = E33 (or set E35 and E36 so SUM(E35:E37)=E33).
+4. Replace ROUND(E2+E6,5) with a clearer formula (e.g. =ROUND(E6,5)) unless E2 is meant to be a numeric add-in (confirm source).
+5. Run a totals reconciliation after the above fixes: Financial summary Ending Cash (row 33) must equal the sum of the component balances (rows 35:37) for every column; Balance Sheet TOTAL ASSETS must equal TOTAL LIABILITIES & EQUITY for every period.
+6. Clean up any cells that contain formulas that just return constants (like =8238.33) — either make them numeric constants or source them appropriately.
+7. If keeping cents-level accuracy, consider rounding intermediate totals consistently to cents (ROUND(...,2)) to avoid the micro-negative residues.
+
+If you want I can:
+- produce a short list of exact cell formulas to change (e.g. replace H12 with =G12+H13),
+- recompute corrected totals given your approval to change I27 (I need to know whether the 2,000 belongs in 2001 or was misplaced),
+- or provide a step-by-step reconciliation checklist you can run in Excel to find where the 2,000 and the 500/9,984 came from.
+
+Which follow-up would you like?

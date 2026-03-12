@@ -1,0 +1,121 @@
+I reviewed the formulas in the workbook and found several errors and inconsistencies. Below I list each item (sheet, cell, current formula), why it’s a problem, and a suggested correction.
+
+Summary of the most important problems
+- Several subtotal/total formulas sum inconsistent row ranges between the two year columns (J vs L). This will produce mismatched totals if values are entered.
+- Some cells contain hard-coded values where they should be sums (e.g., J13).
+- Some formulas reference cells that are not populated/are labels (e.g., J54 in the Income sheet).
+- A sign inconsistency between J62 and L62 in the Income sheet.
+- A textual/header inconsistency on the Statements of Partners’ Equity.
+
+Detailed findings and recommended fixes
+
+1) Sheet: OP_EXP
+- Cell: J46
+  - Formula: =SUM(J33:J43)
+  - OK (sums J33..J43)
+- Cell: L46
+  - Formula: =SUM(L33:L44)
+  - Problem: L46 sums through row 44 while J46 stops at 43. The ranges are inconsistent.
+  - Suggested fix: Make L46 match J46. For example: =SUM(L33:L43)
+
+Reason: totals for the two years should sum the same item rows. Including an extra row in one year but not the other will create mismatch or include a label row.
+
+2) Sheet: Bal Sht (Balance Sheets)
+- Cell: J36
+  - Formula: =SUM(J23:J35)
+  - Problem: This appears incorrect for "TOTAL ASSETS". The "TOTAL OTHER ASSETS" is J34 (SUM(J21:J33)) and the "NET INVESTMENT IN REAL ESTATE" label is at row 17 (G17). Summing J23:J35 likely misses or double-counts intended components and starts at J23 (which doesn't align with the labels).
+  - Suggested fix(s):
+    - If TOTAL ASSETS should be Net Investment in Real Estate + Total Other Assets, use: =J17+J34
+    - If the intent is to sum a contiguous block of numeric rows, adjust the range to the correct numeric rows (for example, =SUM(J17:J34)) depending on where the real data reside.
+
+- Cell: L36
+  - Formula: =SUM(L23:L35)
+  - Problem: Same issue as J36.
+  - Suggested fix: Mirror the correction applied to J36 (for example: =L17+L34 or =SUM(L17:L34) as appropriate).
+
+Reason: Total assets should combine the investment-in-real-estate net value and total other assets. The current SUM range appears to be misaligned with labels.
+
+- Cell: J52 and L52
+  - Formula: J52 = =SUM(J51:J51), L52 = =SUM(L51:L51)
+  - Problem: These are odd (summing a single cell). They may be intentional (simple reference) but it looks like a placeholder. Verify that J51 and L51 contain the value intended to be summed; if J51 is blank, J52 will be zero.
+  - Suggestion: Replace with a direct reference if clearer: =J51 (or leave if purposeful).
+
+3) Sheet: Income (Statements of Operations)
+- Cell: J13
+  - Formula: =6
+  - Problem: J13 is hard-coded to 6 instead of summing the corresponding Gross Potential Commercial Rent minus Vacancy (the L side uses =SUM(L11:L12)).
+  - Suggested fix: =SUM(J11:J12)
+
+Reason: Hard-coded value likely a leftover/test value; inconsistent with L13 which sums the two related rows.
+
+- Cell: J57 and L57
+  - Formula: J57 = =J51-J54 ; L57 = =L51-L54
+  - Problem: The formulas subtract cell J54 / L54. In this worksheet the extraordinary item description sits in B54, but J54/L54 appear to be empty (no numeric cell placed for the extraordinary item). That may be intended (zero), but if an extraordinary amount is to be recorded for 2002/2001 it must be entered in J54/L54.
+  - Suggested fix: Ensure any extraordinary items are entered in J54/L54. If the label is meant to be at a different column/row, fix the reference.
+
+- Cell: J62 and L62
+  - Formulas: J62 = =J57+J60 ; L62 = =L57-L60
+  - Problem: Sign inconsistency. J62 adds J60; L62 subtracts L60. Both should use the same sign convention.
+  - Suggested fix: Make L62 consistent with J62. For example: =L57+L60 (assuming cumulative effect is to be added in both years), or change J62 to match the intended logic for both years.
+
+Reason: Inconsistent sign between year columns will produce differing treatments of the cumulative effect.
+
+- General: verify presence / location of Depreciation (J47), Amortization (J49) and Extraordinary item (J54) values. Several downstream formulas (J51, J57, J62) depend on those cells existing with numbers; if those cells remain blank the resulting totals may be misleading.
+
+4) Sheet: Stkhold.Equity (Statements of Partners' Equity)
+- Header:
+  - Cell: G4 shows "YEARS ENDED DECEMBER 31, 2001 AND 2001"
+  - Problem: Typo: both years are 2001.
+  - Suggested fix: Change to "YEARS ENDED DECEMBER 31, 2002 AND 2001" (or whichever correct years are intended).
+
+- Cells that sum across K:M (e.g., O9 = SUM(K9:M9), O15 = SUM(K15:M15), O17 uses SUM(K17:M17))
+  - Note: These sums include the middle column (L). The layout appears to have partner columns in K and M with L being used for dollar signs or labels. Verify that including L in the SUM is correct; if L contains non-numeric labels/dollar-signs these SUMs are harmless (text ignored) but may be misleading. If L contains numeric values that should not be included, adjust the ranges.
+
+5) Sheet: Cash Flows
+- Cell: J45
+  - Formula: =SUM(J37:J42)
+  - OK
+
+- Cell: L45
+  - Formula: =SUM(L37:L44)
+  - Problem: L45 sums through row 44 while J45 sums to row 42. Inconsistent ranges.
+  - Suggested fix: Make L45 match J45. For example: =SUM(L37:L42)
+
+Reason: totals for investing activities must sum the same categories for both years.
+
+- Cell: J56
+  - Formula: =J54+J45+J34
+  - OK (depends on those three)
+- Cell: L56
+  - Formula: =L54+L45+L34
+  - OK (but will be wrong if L45's range is wrong)
+
+- Cell: J58
+  - Formula: =SUM(J56:J57)
+  - Note: J57 is "CASH AND CASH EQUIVILANTS BEGINNING OF YEAR" which appears to be a label row; ensure that the beginning-of-year cash balance is entered in J57 so J58 will produce ending cash correctly.
+
+Other / general observations
+- Several formulas reference ranges that include non-numeric label rows (e.g., some totals include rows that are headings). While Excel ignores text in SUM ranges, including heading rows makes the workbook fragile and more likely to contain off-by-one errors as rows are added/removed.
+- Many cells are zero (value 0) with formulas. Confirm whether those zeros are placeholders or intended results.
+- Several totals use different row ranges between column J and column L (years). These mismatches are the primary source of potential errors: make sure every paired total uses the exact same row range for both years.
+
+Action steps I recommend
+1. Correct the explicit mismatches I flagged:
+   - OP_EXP L46: =SUM(L33:L43)
+   - Bal Sht J36: replace with =J17+J34 (or =SUM(J17:J34) if data are contiguous); same for L36.
+   - Income J13: =SUM(J11:J12)
+   - Income L62: =L57+L60 (or change J62 to match intended sign convention)
+   - Cash Flows L45: =SUM(L37:L42)
+
+2. Verify and populate the cells used as inputs to totals:
+   - Enter extraordinary item amounts in J54/L54 if applicable.
+   - Populate Depreciation J47/J49 etc. or adjust formulas to reference the right cells.
+
+3. Scan the workbook for any other J vs L mismatched SUM ranges (use Find for SUM( and compare the ranges used in column J vs L equivalents).
+
+If you want, I can:
+- produce a list of every SUM formula and compare the J vs L ranges programmatically,
+- create corrected formulas and produce a changelist ready to apply,
+- or open the workbook and apply the fixes automatically and return a corrected file.
+
+Which of these would you like me to do next?

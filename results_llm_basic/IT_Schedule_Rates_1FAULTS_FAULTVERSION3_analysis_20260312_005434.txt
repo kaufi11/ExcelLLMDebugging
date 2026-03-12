@@ -1,0 +1,27 @@
+Summary — what’s wrong
+- Incorrect multiplier in EER SITE cell D21. It contains =B21*1.9640015287385 instead of multiplying by 1.04. That makes D21 (and therefore E21–H21) wrong.
+- Hard‑coded escalation (each formula uses *1.04). That’s brittle — changing the escalation requires editing many formulas.
+- Some rows have "added 8/02" text in column B (original year). If a formula ever points to those B cells it will error. (Currently those rows use fixed numbers in D, so they don’t error now, but it’s fragile.)
+
+Fixes (fast)
+1. Correct the obvious formula error:
+   - On EER SITE, change D21 to =B21*1.04
+   - That will automatically correct E21:F21:G21:H21 because they chain off D21.
+
+2. Make formulas easier to maintain (recommended):
+   - Put the escalation rate in one single cell (e.g., C3 = 0.04 or a named cell Escalation = 0.04).
+   - Replace row formulas with a reference to that cell. Example (for row 6):
+     - D6: =B6*(1+$C$3)  (or =B6*(1+Escalation) if you name the cell)
+     - E6: =D6*(1+$C$3)  (or copy D6 across so the relative references propagate)
+   - This way changing the escalation in one place updates all rates.
+
+3. Handle “added 8/02” rows safely:
+   - Replace the text in column B with the base numeric value (if available). If you need the note, put it in another column.
+   - Or use a protective formula: D? =IF(ISNUMBER(B?);B?*(1+$C$3);D?) — but preferable to store a clean numeric base rate in B.
+
+Why this works (short)
+- Fixing D21 removes the single-cell mistake and the downstream chained errors.
+- Using a single escalation reference removes duplication and the risk of inconsistent multipliers.
+- Keeping numeric base rates in B (or separating notes) ensures formulas can always calculate without #VALUE errors.
+
+If you want, I can give the exact formulas to paste (with absolute references or named cell) and a quick Excel macro to fix all rows at once. Which would you prefer?

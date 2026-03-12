@@ -1,0 +1,28 @@
+I reviewed the formulas in the sheet "CNH Capital Homework #2" and found one clear formula error plus some inconsistent referencing and a possible source-of-confusion in labels. Summary, recommended fixes and impact:
+
+1) Incorrect operator in cell C41 (clear error)
+- Current formula in C41: =$C19 / C$6
+- Expected formula: =$C19 * C$6
+- Reason: C41 is the "Midwest" check processing charge for California; it should be number-of-checks * per-check fee. Using division produces an incorrect (very large) processing cost.
+- Current value (wrong): 15,000,000 (4,500,000 / 0.3)
+- Correct value (after fix): 1,350,000 (4,500,000 * 0.3)
+- Impact: C47 (Midwest total opp. + processing) will change from 23,568,000 to 9,918,000 (C35 + corrected C41). The objective (H52) will change from 39,788,000 to 26,138,000 (reduction of 13,650,000).
+
+2) Inconsistent use of absolute references (potential risk)
+- Some formulas use $C17, $B17, $C$21, etc. (mix of fixed column or fixed both). This is not an immediate calculation error but is inconsistent and may lead to mistakes if formulas are copied/moved.
+- Recommendation: Use consistent absolute addressing where intended, e.g. $C$21 for fixed single-cell parameters (cost of capital), and review whether row/column locking is required for B17/C17 when formulas are copied.
+
+3) Headings / units are ambiguous (possible source of formula confusion)
+- Row 16: B16 = "average daily", C16 = "yearly checks". From formulas it appears:
+  - B17:B19 = average daily dollar amounts (used in opportunity-cost formulas)
+  - C17:C19 = yearly check counts (used in processing-charge formulas)
+- Recommendation: Clarify headers (e.g., "Avg daily dollars" and "Yearly number of checks") so future editors do not mix the two.
+
+4) Other formulas that are correct but worth confirming
+- Opportunity-cost formulas (B33:C35) use average-daily-dollar values (B17:B19) and total days (B27:C29) — these appear consistent.
+- Check-processing formulas for East & West (B39:C40 and B41) correctly use C17:C18:C19 as the yearly check counts (except C41 which is the division error noted above).
+- Objective (H52) and SUMPRODUCT structure is correct given the assignment matrix; it just uses the mistaken C41 result until corrected.
+
+If you want, I can:
+- Produce the corrected workbook (fix C41) and recompute all dependent cells,
+- Or produce a short list of exactly which cells to change (I already listed the main correction).

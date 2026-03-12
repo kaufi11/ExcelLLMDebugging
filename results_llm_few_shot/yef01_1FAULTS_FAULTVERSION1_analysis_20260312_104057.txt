@@ -1,0 +1,44 @@
+Summary: several cells contain wrong references or tiny manual adjustments (hacks) that produce incorrect values or mask rounding issues. Fix the reference errors and remove the +/- tiny offsets; use proper rounding or make the last percentage equal 1 - SUM(others) if you must force totals to 100%.
+
+Key errors and fixes
+
+1) FTEE Calculation — wrong cell reference
+- Faulty cell: C14
+- Error: formula is =20/24 (uses literal 20 instead of the hours cell)
+- Fix: use =B14/24
+- Why: C14 should convert the credit hours in B14 to FTEE. Using the literal 20 gives a wrong FTEE for ILCC-03 and breaks downstream totals/percentages.
+
+2) Artificial subtraction/addition of 1 or tiny decimals (bad practice)
+- Faulty cells (examples):
+  - Revenues by Source: C12 =147577404-1
+  - Expenditures by Category: B12 =ROUND((C12/$C$16),4)-0.0001
+  - FTEE Calculation totals: C28 =SUM(C12:C27)+0.02, F28 =SUM(F12:F27)+0.03, H28 =SUM(H12:H27)-0.02, I28 =SUM(I12:I27)+0.000002
+- Error: small manual offsets were added/subtracted to force totals to match exactly. They corrupt the true data.
+- Fix: remove the +/- adjustments. Use the correct raw formulas, e.g.:
+  - C12 → =147577404 (or better: reference the cell(s) that compose that number)
+  - B12 → =ROUND(C12/$C$16,4) (no -0.0001)
+  - Totals → C28 =SUM(C12:C27), F28 =SUM(F12:F27), H28 =SUM(H12:H27), I28 =SUM(I12:I27)
+- Why: manual offsets hide the real discrepancy and create inconsistent/incorrect numbers. Use rounding (ROUND) for display, or handle rounding-error distribution explicitly.
+
+3) Percentages/rounding — ensure totals behave correctly without hacking
+- Problem: rounding each % to 4 decimals can make the rounded sum ≠ 1 (100%).
+- Options to fix:
+  a) Keep exact formulas (e.g. =C10/$C$16) and format the cell to show 4 decimals (no ROUND). The SUM will be exact even though displayed sum may look slightly off.
+  b) If you must show rounded percentages that sum to exactly 1.00, compute all but the last percentage with ROUND, then set the last percentage = 1 - SUM(rounded_others). Example:
+     - For rows 10..16: B10 =ROUND(C10/$C$16,4), … B15 =ROUND(C15/$C$16,4)
+     - B16 (last) = 1 - SUM(B10:B15)
+- Why: this lets you present rounded values that add to 100% while preserving data integrity.
+
+4) Hard-coded sums instead of cell references (possible data-tracking problem)
+- Example: Revenues C10 =9595817+116896967
+- Issue: hard-coded numbers in formulas make the spreadsheet harder to audit and update.
+- Fix: place each component in its own cell and use SUM(cell1:cellN) or reference those cells instead of embedding numbers in the formula.
+- Why: makes the workbook maintainable and less error-prone.
+
+Notes and quick checklist to apply now
+- Replace C14 with =B14/24.
+- Remove any +0.02 / -0.02 / +0.000002 / -0.0001 / -1 hacks; restore the SUMs and percentage formulas to exact references.
+- Use ROUND only for display or use the "last-item = 1 - SUM(others)" technique if you must force rounded totals to 100%.
+- Replace hard-coded numeric additions with references to cells containing those numbers.
+
+If you want, I can produce the exact corrected formulas for every affected cell (I can list them row-by-row) or create the “last-percent adjustment” formulas for the relevant tables. Which would you prefer?

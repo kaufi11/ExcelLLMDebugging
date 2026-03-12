@@ -1,0 +1,68 @@
+I reviewed the workbook and found several concrete problems that will give wrong index, capacity and ROI numbers. I’ll keep this short and practical: I list the errors, explain why each is wrong, and give a clear, simple fix you can paste into the workbook.
+
+High‑priority errors (will definitely produce wrong results)
+1) Fisher / Laspeyres / Paasche index formulas use mismatched ranges
+- What’s wrong: multiple SUMPRODUCT/array formulas use ranges of different sizes or the wrong row offsets. Examples:
+  - fisher!D37 currently =SUMPRODUCT(C24:C27,D31:D34) — left side uses rows 24:27 while the right uses 31:34 and is missing the 5th density row. This pattern (missing/shifted rows) repeats across several columns (e.g. H37 uses G25:G28,H32:H35).
+- Why it breaks things: SUMPRODUCT requires corresponding vectors. Mismatched ranges cause incorrect arithmetic (Excel either silently multiplies the overlapping cells only or produces wrong aggregates), so your Laspeyres/Paasche/Fisher indices are wrong.
+- Fix (concept + example):
+  - Use the same number of rows for both vectors and make them correspond to the same product rows (64,128,256,512,1G). For example, if your revenue share vector for year D is D24:D28 and your price‑relatives for year D are D31:D35, then D37 (Laspeyres) must be:
+    =SUMPRODUCT(D24:D28,D31:D35)
+  - Do the same for all columns, consistently using five rows (not 4) for both arguments.
+  - Best practice: create named ranges (e.g. QtyShares, PriceRelatives) and use them to avoid offset mistakes.
+
+2) Paasche formula in fisher!D38 has an incorrect extra factor and inconsistent structure
+- What’s wrong: D38 uses a weird multiplication by *(1/(1-D28)) and mixes formula forms across columns. Other columns use the simpler 1/SUM(...) form but D38 is different.
+- Why it breaks things: Paasche index formula is being altered incorrectly and will give a very wrong value for column D.
+- Fix (correct standard Paasche form). Example (for column D):
+  - If quantities (weights) are D24:D28 and price relatives are D31:D35 a correct Paasche can be written as:
+    =1 / SUMPRODUCT(D24:D28, 1 / D31:D35)
+  - (Or use the normalized weights appropriately, but the important part is remove the stray *(1/(1-D28)) and use matching ranges.)
+
+3) Fisher (geometric) index mixing inconsistent components
+- What’s wrong: fisher!D39 is defined as =SQRT(D37*D38) — that is correct in form, but because D37 and D38 are wrong (see 1 & 2) the Fisher index is wrong.
+- Fix: correct D37 and D38 first (as above). Keep D39 =SQRT(D37*D38).
+
+4) Repeated / inconsistent hard-coded ranges across sheets ($ per bit, fisher, LEM)
+- What’s wrong: The same calculation is implemented in multiple sheets, but the ranges and offsets are inconsistent between sheets (so one sheet gives a correct number and another does not).
+- Why it breaks things: It makes it easy to have divergent results and hard to track errors.
+- Fix: centralize the core vectors (quantities, prices, price relatives, shares) in one place and reference them with named ranges. Replace duplicated ad-hoc range formulas with the named-range formulas.
+
+Other issues to watch and fix
+5) SUMPRODUCTs that skip the 1Gbit row (or other density rows)
+- Symptom: some SUMPRODUCTs use only four rows (64→256→512) or start/offset incorrectly.
+- Fix: Always include all five density rows wherever needed: e.g. use C24:C28 (not C24:C27) and matching D31:D35.
+
+6) Inconsistent use of absolute vs relative references
+- Symptom: some cells use mixed $ locks and others don’t (this commonly causes copying a formula across columns to reference the wrong column).
+- Fix: lock base‑period references with $ when copying across columns (or use named ranges).
+
+7) Strange extra multipliers or negative sign inconsistencies
+- Symptom: I saw several places with extra + or - signs (e.g. formulas like +(D11 - fisher!D49)/-fisher!D50 or -(G11 - fisher!G49)/-fisher!G50); these are legal but can hide sign mistakes.
+- Fix: simplify the sign usage (remove redundant +) and check intended algebra (use parentheses and explain the algebra in a cell comment).
+
+Concrete examples you can paste (these are generic replacements — adjust ranges if your rows differ):
+
+- Correct Laspeyres for column D (fisher sheet), replace the current D37 with:
+  =SUMPRODUCT(D24:D28,D31:D35)
+- Correct Paasche for column D, replace current D38 with:
+  =1 / SUMPRODUCT(D24:D28, 1 / D31:D35)
+- Correct Fisher for column D (leave as):
+  =SQRT(D37*D38)
+
+Repeat the same pattern for columns E..H (replace column letters).
+
+Quick checklist to implement now (5 minutes)
+1. Identify the five density rows used everywhere (64,128,256,512,1G). Confirm their row numbers (e.g. rows 24:28 in fisher).
+2. For every SUMPRODUCT or array formula that should use those five rows, change the ranges to exactly those same five rows in both arguments.
+3. Remove the stray factor "*(1/(1-D28))" in D38 (and similar stray terms elsewhere).
+4. After fixes, recalculate the workbook and check key outputs:
+   - fisher!D39..H39 (Fisher indexes) should be >0 and show smooth declines/increases.
+   - Capacity & Price and Static RoI sheets should update consistently.
+5. (Optional but recommended) Create named ranges for the five-rows vectors and use them everywhere.
+
+If you want I can:
+- produce the exact corrected formulas for every affected cell (I can generate them for all columns D..H and paste them here),
+- or prepare a short macro to replace the mismatched ranges automatically.
+
+Tell me whether you want (A) explicit corrected formulas for every affected cell (I will paste them), or (B) a small VBA macro to fix the inconsistent SUMPRODUCT ranges everywhere.

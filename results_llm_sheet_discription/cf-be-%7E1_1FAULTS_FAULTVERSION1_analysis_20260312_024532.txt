@@ -1,0 +1,44 @@
+Summary: I found 4 real errors that will produce wrong totals/analytics plus a common usability issue (divide-by-zero). Below are the errors, why they’re wrong, and the exact fixes to enter.
+
+1) Year 1 — L14 is hard-coded (wrong)
+- Problem: L14 (TOTAL CASH RECEIPTS for month 10) is set to 1 instead of summing that month’s receipt lines. This makes month 10 totals, percentages and any dependent cells wrong.
+- Fix: Replace the 1 with the correct SUM:
+  - L14 =SUM(L8:L13)
+- Why: Row14 must be the month‑total of rows 8–13. Using 1 breaks totals and downstream calculations.
+
+2) Year 1 — “Total Fixed Costs” and Break-even use wrong numerator
+- Problems:
+  - B63 (Total Fixed Costs) is =O54 - O23. O54 is total cash paid out (operating + other outflows) so O54 - O23 ends up including other non-fixed outflows (loan principal, capex, owner withdrawal). That is NOT just fixed costs.
+  - F64 (Break-even Sales) is = (O54 - O23) / B64 — uses the same incorrect numerator.
+- Fixes:
+  - B63 should reference the fixed-expense subtotal O47:
+    - B63 = O47   (or =SUM(O24:O46))
+  - F64 should use total fixed costs divided by contribution margin (use B63):
+    - F64 = B63 / B64
+- Why: Break-even = Total Fixed Costs / Contribution Margin. Using O54 - O23 inflated the fixed costs numerator with other outflows, mis-stating break-even.
+
+3) Year 2 — mis-pointing SUM on Payroll row (off-by-row)
+- Problem: On Year 2 you list row 20 (Payroll Expenses (Direct Labor)) but the O‑cell was given as SUM(C22:N22) (i.e., summing row 22) — an off‑by‑row reference. Any O‑column total that sums the wrong row gives incorrect totals and %s.
+- Fix: Correct the O cell to sum its own row:
+  - O20 =SUM(C20:N20)
+- Also: scan the Year 2 sheet for any other SUM(C##:N##) where the row number does not match the row being summarised (common off-by-one error after inserting/deleting rows). Use Find: "SUM(C" and visually check row numbers.
+
+4) Variance / percent-change formulas — DIV/0 risk
+- Problem: Many variance % formulas are (Actual - Plan) / Plan. If Plan = 0 this produces #DIV/0! errors.
+- Fix: wrap with IF or IFERROR. Example replacement:
+  - Old: =(D8 - C8) / C8
+  - New (recommended): =IF(C8=0, "", (D8 - C8) / C8)
+  - Or using IFERROR to keep blanks on errors: =IFERROR((D8 - C8) / C8, "")
+- Why: prevents #DIV/0! and shows blank (or NA, or 0) where plan is zero. Apply the pattern to all variance cells.
+
+Other notes (minor / optional)
+- Many cells use SUM() around a single cell (e.g., SUM(B55) or SUM(B15-B54)). These are harmless but unnecessary; replacing SUM(B55) with B55 or SUM(B15-B54) with B15-B54 makes formulas clearer.
+- Percent-of-sales formulas that use O$57 as denominator are correct assuming O57 is the sheet’s total sales. Verify O57 actually contains SUM(C57:N57) for each sheet.
+- After making the fixes above, recalc and verify that:
+  - Month 10 totals change when you fix L14.
+  - B63 and F64 reflect only fixed costs and sensible break-even.
+  - Year 2 totals line up month-by-month and chain properly to B6 (beginning cash).
+
+If you want I can:
+- Provide a short VBA macro or a Find/Replace checklist to locate other off-by-row SUMs automatically.
+- Produce exact replacement formulas for all identified variance cells (bulk IF wrapping).

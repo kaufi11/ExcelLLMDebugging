@@ -1,0 +1,42 @@
+Summary of the problems I see
+- Column F ("Subs.") is empty for almost every row. That makes column G (TOTAL) = E * F either zero or wrong.
+- Many G cells are stored/shown as text like "FORMULA =E2*F2" (not as real Excel formulas). If a cell contains text, it will not calculate.
+- A few cells in G are wrong values (example: G25 = 2) instead of the expected formula (=E25*F25).
+- Potential data-type issues: some numeric cells may be stored as text (preleading apostrophe or non-numeric characters), preventing SUM from working correctly.
+
+How to fix (short, actionable)
+1. Make the formulas real (if they are text)
+   - Select column G, open Find & Replace (Ctrl+H).
+   - Find: FORMULA =   Replace with: =
+     (or if the cells start with a single quote, Find ' (apostrophe) and Replace with nothing).
+   - Press Replace All. This converts "FORMULA =E2*F2" into a real formula =E2*F2.
+
+2. Populate column F (the subscription counts)
+   - If F should contain a number of subscriptions, fill those numbers into F2:F404.
+   - If you meant 1 subscription by default, either fill F with 1s, or change G formulas to:
+     =E2 * IF(F2="",1,F2)
+     so empty F is treated as 1.
+
+3. Fix the cells with wrong contents (example G25)
+   - Edit G25 and set it to =E25*F25 (or use the Fill Down after you've fixed row 2 formula).
+   - After step 1 you can copy a correct G formula downward: select a correct G cell, drag-fill down to apply to all rows.
+
+4. Convert text-numbers to real numbers (if SUM not working)
+   - Select columns E, F, G (or whole sheet).
+   - Data → Text to Columns → Next → Next → Finish. This often converts numeric text to numbers.
+   - Or use: select an empty cell, copy it, select the numeric-as-text range, Paste Special → Multiply.
+
+5. Verify totals
+   - Ensure F407 contains =SUM(F2:F404) and G407 contains =SUM(G2:G404) (they look correct).
+   - After the conversions above, confirm the sums update properly.
+
+Why these fixes work (brief)
+- Excel only calculates real formulas (starting with =) and only sums numeric values. If cells contain text ("FORMULA =...") or numbers-as-text, Excel treats them as text and does not compute with them.
+- Filling column F or handling blanks with IF ensures the multiplication E*F produces the intended total.
+- Converting text-numbers to numeric type lets SUM and arithmetic operate correctly.
+
+If you want, I can give:
+- the exact Find/Replace strings if the text varies, or
+- a one-shot formula to put in G2 and fill down that handles empty/malformed F values (for example: =IFERROR(VALUE(E2)*IFERROR(VALUE(F2),1),0)).
+
+Which one do you want next?

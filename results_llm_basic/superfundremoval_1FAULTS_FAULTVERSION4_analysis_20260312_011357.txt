@@ -1,0 +1,46 @@
+Summary of the errors I found and how to fix them (short & simple):
+
+1) Case-sensitivity in IF tests (many G cells)
+- Problem: formulas test for "yes"/"no"/"small extent"/"large extent" in lowercase (e.g. IF(C6="yes",...)) but the answers in C cells are "Yes", "No", "Small Extent", etc. Excel string comparisons are case sensitive in this usage, so the IF returns the FALSE branch (often "") and weighted scores are blank/incorrect.
+- Fix (robust): make the comparison case-insensitive. Example corrected formula for G6:
+  =IF(UPPER(C6)="YES",F6,IF(UPPER(C6)="NO",0,0))
+  Or shorter (checks first letter only):
+  =IF(LEFT(UPPER(C6),1)="Y",F6,IF(LEFT(UPPER(C6),1)="N",0,0))
+- Explanation: UPPER() normalizes text so "Yes"/"yes"/"YES" all match. Also return 0 instead of "" so sums behave predictably.
+
+2) Typo in G21 (wrong multiplier 704)
+- Problem: G21 =IF(C21="yes",(704*F21),IF(C21="no",(0*F21),"")) — the 704 is clearly a typo; it should be 1 (or just F21).
+- Fix:
+  =IF(UPPER(C21)="YES",F21,IF(UPPER(C21)="NO",0,0))
+- Explanation: removes the stray 704 which produced a huge incorrect weighted score.
+
+3) Multi-choice extent formulas (Small/Large extent) must also be case-insensitive
+- Problem: G41, G45, G53 etc test for "small extent" / "large extent" in lowercase. The sheet has mixed capitalization.
+- Fix example for G41:
+  =IF(UPPER(C41)="YES",F41,IF(UPPER(C41)="NO",0,IF(UPPER(C41)="SMALL EXTENT",0.33*F41,IF(UPPER(C41)="LARGE EXTENT",0.67*F41,0))))
+- Explanation: UPPER() handles capitalization; the formula assigns the correct fraction for "Small/Large Extent".
+
+4) Section total checks use exact equality to 100% (floating point rounding risk)
+- Problem: formulas like =IF(SUM(F6:F10)<>100%,"ERROR","100%") can return "ERROR" due to tiny floating-point rounding differences (0.999999 vs 1).
+- Fix (robust numeric and return real percentage):
+  =IF(ABS(SUM(F6:F10)-1)>0.0001,"ERROR",1)
+  Format cell as Percentage.
+- Apply same pattern to F24, F36, F56:
+  F24: =IF(ABS(SUM(F16:F22)-1)>0.0001,"ERROR",1)
+  F36: =IF(ABS(SUM(F28:F34)-1)>0.0001,"ERROR",1)
+  F56: =IF(ABS((F55+F54+F53+F45+F41)-1)>0.0001,"ERROR",1)
+- Explanation: Using ABS and a small tolerance avoids false ERROR from floating point and returns a numeric 1 (100%) you can format.
+
+5) Blank ("") results instead of zero can hide missing/incorrect results
+- Problem: many IF formulas return "" as the else result. Blank is text, SUM ignores it — this can mask incorrect logic.
+- Fix: return 0 instead of "" for the false/default branch so totals and checks behave normally. (See examples above.)
+
+6) Minor: use consistent weighting decimals or use percentages
+- Suggestion: store weights as percentage-format or more precise decimals (e.g. 0.142857 rather than 0.1428) and keep consistent rounding. This reduces small-sum differences.
+
+Quick checklist of cells to update (minimum):
+- Replace all G6:G10, G16:G22, G28:G34, G41, G45, G53, and any other IF comparisons that check C? text with UPPER()/LEFT(UPPER()) comparisons and make default 0.
+- Fix the G21 typo (remove 704).
+- Change F12, F24, F36, F56 to the ABS(...-1) tolerance check and return numeric 1 (format as %).
+
+If you’d like, I can produce the exact corrected formulas for every G cell in the sheet and the revised total formulas and paste them ready-to-drop into your workbook. Which would you prefer?

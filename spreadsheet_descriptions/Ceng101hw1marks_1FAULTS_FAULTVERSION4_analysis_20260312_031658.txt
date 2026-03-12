@@ -1,0 +1,59 @@
+Overview
+- Workbook contains 3 sheets; only Sheet1 has data (Sheet2 and Sheet3 are empty).
+- Sheet1 is a student grades/attendance table with one header row (row 1) and student records in rows 2–68 (with a few extra IDs in A16/A68 and some rows partially blank).
+
+Layout / columns (Sheet1)
+- A: Stdt ID
+- B: HW1 (/30)
+- C: HW2 (/40)
+- D: Exam1
+- E: exam2 bonus (decimal values like 0.5, 1.5, etc.)
+- F: 14/4/2003 (attendance/flag 0/1)
+- G: HW3 (/30)
+- H: 22/4/2003 (attendance flag)
+- I: 28/4/2003 (attendance)
+- J: lecture 4 (attendance)
+- K: lecture 5 (attendance)
+- L: lec3a (numeric)
+- M: lec3b (numeric)
+- N: HW4 (/25) — many cells contain simple arithmetic formulas (e.g., =20+4, =14+4, =17+5/2)
+- O: lec Q 5 (/10)
+- P: rep 2 (/10)
+- Q: Final exam — many entries numeric, some specified as formulas (e.g., =41+5, =58+2+3)
+
+Cell types and patterns
+- Most student cells are numeric values (scores or 0/1 attendance flags).
+- Columns N and Q include many simple constant arithmetic formulas rather than references (addition, occasionally division), e.g.:
+  - N2 =20+4, N3 =14+4, N10 =17+5/2, N19 =466+4 (an outlier)
+  - Q4 =41+5, Q7 =64+5, Q40 =78+2+5, Q57 =57+2+3
+- Some rows have missing columns (J/K/M not always present for every row).
+- A few unusually large Student IDs in column A (A16 = 98227577, A68 = 99650185) which may be data-entry issues.
+
+Aggregate formulas (summary rows)
+- Row 69: MAX calculations
+  - B69 = MAX(B33:B68)  (note: this uses B33:B68, not B2:B68)
+  - C69 = MAX(C33:C68)
+  - D69 = MAX(D33:D68)
+  - G69 = MAX(G2:G68)
+  - N69 = MAX(N17:N68)
+  - Q69 = MAX(Q17:Q68)
+- Row 70: MIN calculations
+  - B70 = MIN(B2:B68)
+  - C70 = MIN(C2:C68)
+  - D70 = MIN(D2:D68)
+  - G70 = MIN(G2:G68)
+  - N70 = MIN(N17:N69)  (note: range includes N69)
+  - Q70 = MIN(Q17:Q69)  (includes Q69)
+- Row 71: AVERAGE calculations
+  - B71 = AVERAGE(B2:B68), C71 = AVERAGE(C2:C68), D71 = AVERAGE(D2:D68), G71 = AVERAGE(G2:G68), N71 = AVERAGE(N2:N68), Q71 = AVERAGE(Q2:Q68)
+- Row 72: STDEV calculations
+  - B72, C72, D72, G72, N72, Q72 use STDEV on the same ranges as the averages (mostly B2:B68 etc.)
+
+Notable issues / data quality observations
+- Aggregate ranges are inconsistent: some MAX formulas start at row 33 instead of row 2; some MIN/MAX include the aggregate row (e.g., N70 uses N69), which can skew results.
+- Many column N and Q formulas are hard-coded arithmetic rather than calculated from component cells; some look erroneous (e.g., N19 =466+4).
+- Several missing attendance/lecture values across rows; some columns absent in specific rows.
+- A16 and A68 contain unusually large IDs — possible entry errors.
+
+Summary
+- Sheet1 is a flat table of student scores and attendance with per-student rows and per-assessment columns. The bottom (rows 69–72) contains statistical summary formulas (MAX, MIN, AVERAGE, STDEV) but with inconsistent ranges. Columns N and Q use many in-cell arithmetic formulas rather than references, and there are a few obvious data anomalies to review.

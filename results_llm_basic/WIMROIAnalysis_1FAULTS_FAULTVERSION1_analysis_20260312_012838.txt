@@ -1,0 +1,58 @@
+Summary — main problems found
+1) Typo that produces a huge wrong number
+- Cell G86 is =C86*C87*61*0.25. The literal "61" is wrong. That makes the Put/Ship "Max Savings" subtotal much too large and corrupts all downstream sums.
+
+2) Missing input cells (blank) → zero results
+- Several input cells used in formulas are empty so results evaluate as zero:
+  - C106 (Lift Truck Driver Rate/Hr.)
+  - C110 (Avg. Annual Maintenance Cost/Lift Truck)
+  - C111 (Avg. Annual Fuel Cost/Lift Truck)
+  - C112 (# of Lift Trucks)
+  - C113 (Range of Savings for maintenance, e.g. 0.16–0.44)
+  - C130 (Mean Warehouse Inventory Value)
+  - C135 (Average Profit/Turn)
+If these are not filled, E104, E110, E133, E135, K104, etc. will be wrong.
+
+3) Inconsistent use of percent cells (possible confusion / errors)
+- Some sections store the savings percent in the "C" column (e.g. C12 = 0.16) while others hard‑code 0.16/0.25 inside formulas or put the upper bound (0.25) in a different cell. This inconsistency makes it easy to get K (Your Savings) wrong and hard to update assumptions.
+
+4) Minor inconsistency
+- E259 =C259 but G259 and I259 are literal 3 (not a reference). Not critical but inconsistent; better to reference C259 throughout.
+
+How to fix (short steps)
+1) Fix the typo in G86
+- Replace the formula in G86 with:
+  =C86*C87*C88*0.25
+  (or, if you want to reference a percent cell, =C86*C87*C88+C? where C? holds 0.25)
+Reason: C88 is the hourly rate; "61" was an accidental constant.
+
+2) Populate the missing input cells
+- Enter appropriate values into:
+  C106 = Lift Truck Driver Rate/Hr. (e.g. 17.39)
+  C110 = Avg. Annual Maintenance Cost/Lift Truck
+  C111 = Avg. Annual Fuel Cost/Lift Truck
+  C112 = # of Lift Trucks
+  C113 = chosen savings % for maintenance (e.g. 0.16–0.44 or pick one)
+  C130 = Mean Warehouse Inventory Value
+  C135 = Average Profit/Turn
+Reason: Blank inputs become zero in multiplication and understate savings.
+
+3) Standardize percent inputs & formulas (recommended)
+- Create three labeled cells for each category: MinPct, MaxPct, YourPct (or a single area with Min/Max/Your columns), and update E/G/K formulas to reference those cells instead of hard coding numbers.
+  Example for Shipping Max:
+  - Put upper bound in cell (e.g.) C89_Upper = 0.25
+  - G86 = C86*C87*C88*C89_Upper
+Benefits: Easier to change assumptions and avoid accidental typos.
+
+4) Clean small inconsistencies
+- Change G259 and I259 to =C259 to keep parity.
+- Review other formulas that use literal constants (e.g. E133 uses 0.04 and 0.18) and consider referencing the percent cells instead.
+
+Why these fixes work (brief)
+- Replacing "61" with the hourly rate reference C88 returns the intended formula: staff × hours × $/hr × percent.
+- Filling blank inputs gives real numbers for the multiplications instead of zeros.
+- Referencing standardized percent cells prevents hard-coded typos and makes sensitivity changes safe and consistent.
+
+If you want, I can:
+- Give the exact list of all cells that should reference a single "YourSavingsPercent" cell (and update formulas),
+- Or provide the corrected formulas for all affected cells (including summaries) ready to paste. Which would you prefer?

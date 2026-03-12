@@ -1,0 +1,19 @@
+Summary — two problems found and how to fix them
+
+1) Typo in residual cell E14
+- Problem: E14 contains =(C14-411)^2 (uses constant 411).
+- Effect: produces a huge, wrong squared-residual that will dominate SSE and spoil any fit.
+- Fix: change E14 to =(C14-D14)^2 so it matches the other residual cells.
+
+2) SSE range wrong (cell E19)
+- Problem: E19 = SUM(E14:E18) but your residuals are in E12:E16. The sum is therefore missing E12 and E13 (and/or including blank rows).
+- Effect: B7 (which =E19) shows a wrong SSE and Solver will minimize the wrong objective.
+- Fix: change E19 to =SUM(E12:E16) (or =SUM(E12:E16) depending on your actual data rows). Then B7 will show the true SSE.
+
+Quick checklist after fixes
+- Verify E12:E16 all use (C - D)^2 (no other typos).
+- Ensure B7 = E19 (objective cell) and that Solver is set to minimize B7 by changing the parameter cells ($B$3:$B$6).
+- Recommended Solver constraints: theta_r < theta_s, alpha > 0, n > 1 (to keep physically meaningful parameters).
+
+Why this fixes it (short)
+- Fixing E14 removes the single huge outlier residual. Correcting the SUM range ensures SSE actually sums all residuals you intend to minimize. With both corrected, the objective cell reflects the true fit error and Solver will find the correct van Genuchten parameters.

@@ -1,0 +1,71 @@
+High-level summary
+- Workbook purpose: staffing level-of-effort (LOE) and pricing by labor category for a small-business set-aside procurement. Separate sheets for Total LOE, Fixed Price, Cost-type, and T&M-type task orders (plus an unlabeled "OPTION 4 J.25" sheet referenced).
+- Common structure: column A = Labor Category; subsequent columns represent Base Period and up to 7 option periods. Many option-period cells are calculated from the previous period by applying small increases (mostly +2% each option). Each sheet has period totals and a grand total.
+
+Sheet-by-sheet (concise)
+
+1) Sheet: Total LOE
+- Title/notes in A1–A10 describing LOE split: 29% Cost, 70% T&M, 1% FFP (Total = 100%).
+- Header row at row 13: Labor Category (A13) and columns B:I are Base Pd, Opt.1 … Opt.7.
+- Labor rows A14:A67 list many labor categories. Base hours are entered in column B for specific rows (examples below).
+- Option-period formulas: most option cells use a chained growth formula pattern, e.g. C14 = B14 + (B14*0.02); D14 = C14 + (C14*0.02) … up through I14. This is applied to most populated rows.
+- Exceptions / hard values:
+  - A14 Biostatistician B14 = 1240
+  - A18 Computer Programmer I B18 = 6240
+  - A20 Computer Programmer III B20 = 10,400
+  - A26 Data Analyst II B26 = 1,040
+  - A31/A32 Data Entry Operator I/II B31/B32 = 8,320
+  - A33 Graphics Specialist B33 = 100
+  - A43 Program Director B43 through I43 = 1,040 (same for all periods; entered as constants)
+  - A44 Program Manager B44 through I44 = 4,160 (constant across periods)
+  - A50 Systems Analyst II B50 = 12,480
+  - A51 Systems Analyst III B51 = 1,040
+  - A57 Task Manager B57 = 1,040
+  - A58 Technical Automation Specialist B58 = 4,160
+  - A59 Technical Information Specialist B59 = 6,240
+  - A60 Tech Writer B60 = 400
+- Totals: row 68 sums each period: B68 = SUM(B14:B67), C68 = SUM(C14:C67) … I68 similarly.
+- Grand total row B70: FORMULA =SUM(B68:H68) — note: this sums only B–H (Base + Opt 1–6) and excludes column I (Opt.7). Likely should be SUM(B68:I68).
+
+2) Sheet: Fixed Price
+- Header/notes indicate Fixed Price LOE = 1% of effort.
+- Columns: A labor category; B Base Period Hrs; C Unit Price; D Extended Price; then repeated blocks for Opt.1–Opt.7 (hours, unit price, extended price) through columns Y.
+- Option hours follow chained increments in blocks: E5 = B5 + (B5*0.02), H5 = E5 + (E5*0.02), K5 = H5 + (H5*0.02), N5 = K5 + (K5*0.023) (note 0.023 used for N column), then Q/T/W continue with +2% increments.
+- Extended Price columns exist (D, G, J, etc.) but the provided text does not show formulas for calculating extended price (presumably Hours * Unit Price).
+- Totals row A59: E59/H59/K59/N59/Q59/T59/W59 use SUM across the corresponding option-hour columns; a Grand Total row exists but formula not provided.
+
+3) Sheet: Cost Type Task
+- Header/notes: Cost-type LOE = 29% (cell C2 shows 0.29).
+- Layout similar to Fixed Price: A labor category; B Base Pd Hrs; C Hourly Rates; D Extended Price; repeated Opt columns through Y.
+- Option-hour progression: E7 = B7 + (B7*0.02); H7 = E7 + (E7*0.02); K7 = H7 + (H7*0.02); N7 = K7 + (K7*0.023) (again 0.023 at N); then subsequent options mostly +2%.
+- Totals: row 61 sums the option-hour columns (E61, H61, etc.). Extended price formulas for D/M/etc. not shown.
+
+4) Sheet: T&M Type (Time & Material / Labor Hour)
+- Header/notes: T&M LOE = 70%.
+- Layout: A labor category; B Base Pd; C Loaded Rates; D Extended Price; blocks for Opt.1–Opt.7 with the same pattern as other pricing sheets.
+- Option-hour/rate progression same chained +2% pattern with the N column often using +2.3% (0.023). Example special cases:
+  - Program Manager (row ~36) uses E36 = 600 + (600*0.02) (explicit 600 hardcoded rather than referencing B36).
+- Totals: row 60 has sums for many columns (B60 = SUM(B6:B59) etc.; E60/H60/K60/N60/Q60/T60/W60 sums option columns). Grand Total at B62 = SUM(B60:T60) (note: B60:T60 includes an odd range — T is Opt.6; W is Opt.7 — verify intended range).
+
+Common formula patterns and notes
+- Chained period increases: most option-period hours or rates are calculated sequentially from the prior period using +2% increments: Next = Prev * 1.02.
+- In many places the Opt.4 (N column) increment uses 2.3% (Prev * 1.023) instead of 2% — this appears repeatedly and should be verified if intentional.
+- Several rows use hard-coded constant hours across all periods (Program Director 1040, Program Manager 4160 in Total LOE; Program Director/Manager also present on other sheets).
+- Extended Price/Loaded Rate columns are present but explicit formulas multiplying hours × rate are not shown in the provided extract — confirm those are implemented as Hours * Rate in the workbook.
+- Total/grand total ranges should be verified:
+  - Total LOE grand total B70 = SUM(B68:H68) excludes Opt.7 (I68) — likely an off-by-one range.
+  - T&M grand total B62 = SUM(B60:T60) may not include all option columns (Opt.7 uses W); check intended range.
+
+Key values (selected)
+- LOE distribution: Cost 29%, T&M 70%, Fixed Price 1%.
+- Representative base-hours: Biostatistician = 1,240; Computer Programmer I = 6,240; Computer Programmer III = 10,400; Data Entry I/II = 8,320; Systems Analyst II = 12,480; Tech Info Specialist = 6,240; Program Director = 1,040; Program Manager = 4,160; Tech Writer = 400.
+
+Recommended checks
+- Confirm whether the 0.023 increment at Opt.4 is deliberate.
+- Ensure extended-price cells calculate Hours * UnitPrice/LoadedRate.
+- Fix grand-total sum ranges to include all option columns (ensure Opt.7 is included).
+
+If you want, I can:
+- Produce a corrected list of formulas to paste into the workbook (e.g., unified pattern to auto-fill all option columns),
+- Generate a short QA report highlighting each off-range or inconsistent formula, or
+- Provide an Excel formula snippet to compute extended prices and corrected grand totals.

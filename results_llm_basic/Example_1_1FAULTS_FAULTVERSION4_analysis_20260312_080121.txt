@@ -1,0 +1,26 @@
+I found three problems. Two are actual bugs that will give wrong scores; one is a design/improvement suggestion.
+
+1) Wrong function in Q4 Homework H5
+- Error: H5 =COUNT(B5:G5). COUNT returns how many numeric cells (gives 6), not the sum of the student’s points.
+- Why it matters: Q4 Summary pulls Q4 Homework!H5 for Evans’ homework total, so Evans’ Q4 and final grade are wrong.
+- Fix: Replace H5 with a sum:
+  =SUM(B5:G5)
+
+2) Wrong multiplier in Q4 Summary F3 (Points Possible → Weighted Score)
+- Error: F3 =B3*0.3 + C3*0 + D3*0.4 + E3*0.2 — C3 is multiplied by 0 instead of 0.1.
+- Why it matters: F3 should represent the weighted total points possible; using 0 removes the quizzes weight and mis-states the denominator or checks you might use.
+- Fix: Correct the 0 to 0.1 OR (better) use the weight cells so it’s robust:
+  =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+
+3) (Improvement) Hard-coded denominator in Q4 Summary G4:G12
+- Current: G4 =(F4/300)*100 — 300 is hard-coded. This works here only because each category’s points possible are 300 and weights sum to 1. It will break if Points Possible change.
+- Recommended fix: Divide by the weighted points-possible cell (F3) and use absolute reference:
+  =F4/$F$3*100
+  then fill down.
+
+Summary of required fixes to apply now:
+- Q4 Homework H5: change to =SUM(B5:G5)
+- Q4 Summary F3: change to =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+- Q4 Summary G4 (and G5:G12): change to =F4/$F$3*100 (use absolute $F$3, then fill down)
+
+These three changes will correct Evans’ homework total and ensure weighted calculations are correct and robust.

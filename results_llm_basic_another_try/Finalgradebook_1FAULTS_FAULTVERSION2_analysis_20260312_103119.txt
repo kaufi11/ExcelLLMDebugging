@@ -1,0 +1,57 @@
+Errors found:
+
+1. In Sheet1, column I (Final Grade: Number) formula is inconsistent:
+   - Formula: =(C3*0.125)+(D3*25)+(E3*25)+(F3*25)+(G3*12.5)
+   - Issue: Homework (C3) and Participation (G3) are multiplied by decimals (0.125 and 12.5), but Tests (D3), Midterm (E3), and Final (F3) are multiplied by 25, which is inconsistent with weights.
+   - Homework and Participation are likely percentages (0-100 scale), but Tests, Midterm, and Final are decimals (0-1 scale), so multiplying Tests by 25 inflates the score incorrectly.
+
+2. In Sheet3, column P (Student's Average) formulas have errors:
+   - Example: P4 formula =AVERAGE(D4,F4,H4,J4,L40) — L40 is incorrect, should be L4.
+   - Similar errors in other rows where last cell reference is incorrect (e.g., L41, L42, etc.).
+
+3. In Sheet3, row 14, column F (F14) formula is wrong:
+   - Formula: =331/$F$24
+   - Should be: =E14/$F$24 (E14 is the student's test score).
+
+4. In Sheet1, row 20 (Low Grade), column C (C20) formula:
+   - Formula: =MIN(C4:C18)
+   - Should be =MIN(C3:C17) to match data range of students.
+
+5. In Sheet1, row 21 (Class Average), column C (C21) formula:
+   - Formula: =MAX(C5:C19)
+   - Should be =AVERAGE(C3:C17) for class average.
+
+6. In Sheet1, column J (Final Grade: Letter), VLOOKUP uses TRUE() as last argument:
+   - Correct syntax is TRUE without parentheses.
+
+Solutions:
+
+1. Fix Final Grade formula in Sheet1 (I3 and down):
+   - Convert all components to the same scale before weighting.
+   - Since Homework and Participation are percentages (0-100), Tests, Midterm, and Final are decimals (0-1), convert Tests, Midterm, and Final to 0-100 scale by multiplying by 100.
+   - Then apply weights as decimals (e.g., 12.5% = 0.125).
+   - Correct formula example:
+     =(C3*0.125)+(D3*100*0.25)+(E3*100*0.25)+(F3*100*0.25)+(G3*0.125)
+   Explanation: Multiply Tests, Midterm, Final by 100 to get percentage, then multiply by weight.
+
+2. Fix Sheet3 column P formulas:
+   - Replace L40, L41, etc. with correct row number, e.g., L4, L5, etc.
+   - Example: P4 =AVERAGE(D4,F4,H4,J4,L4)
+
+3. Fix Sheet3 F14 formula:
+   - Change =331/$F$24 to =E14/$F$24
+
+4. Fix Sheet1 Low Grade formulas:
+   - Change C20 from =MIN(C4:C18) to =MIN(C3:C17)
+
+5. Fix Sheet1 Class Average formulas:
+   - Change C21 from =MAX(C5:C19) to =AVERAGE(C3:C17)
+
+6. Fix VLOOKUP formulas in Sheet1 column J:
+   - Change =VLOOKUP(I3,$K$5:$L$17,2,TRUE()) to =VLOOKUP(I3,$K$5:$L$17,2,TRUE)
+
+Summary:
+- Normalize scales in Final Grade calculation.
+- Correct incorrect cell references in averages and minimums.
+- Fix typo in test score division.
+- Remove parentheses in VLOOKUP TRUE argument.

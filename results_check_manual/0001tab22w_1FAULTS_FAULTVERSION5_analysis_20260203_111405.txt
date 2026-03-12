@@ -1,0 +1,39 @@
+Summary of problems I found
+- Wrong operator in O14 (Hospitality, lower level). The formula uses subtraction inside the parentheses: =SUM(100-(E14-G14-I14-K14-M14)). That produces 100 - (E14 - G14 - I14 - K14 - M14) instead of 100 - (E14 + G14 + I14 + K14 + M14). Result: O14 ≈ 164.7 instead of ≈ 4.1.
+- Misplaced / stray values in intermediary columns (F, H, Z, etc.). Example cells with unexpected numbers: F18, H18, F19, H19, F20, H20, Z22, Z23, Z24 (and H10, H14 present). These extra entries shift or duplicate data and can cause confusion and wrong totals if formulas ever change to use contiguous ranges.
+- Inconsistent/fragile formula style: many "Other" formulas use =SUM(100-(...)) which is harmless but odd; also many cells contain the text "n/appl" — these are text and will break aggregate formulas if included in a SUM range.
+
+What to change (quick fixes)
+1. Fix the Hospitality formula (O14):
+   Replace
+   =SUM(100-(E14-G14-I14-K14-M14))
+   with
+   =100 - SUM(E14,G14,I14,K14,M14)
+   or equivalently
+   =100 - (E14+G14+I14+K14+M14)
+
+2. Remove or correct stray entries in F, H and Z columns:
+   - Delete or move the values in F18, H18, F19, H19, F20, H20, Z22, Z23, Z24 (and any other non-header values in F, H, Z that don’t belong).
+   - If those numbers belong to the main columns, shift them into the correct column (E, G, I, K, M for lower level; S, U, W, Y, AA for upper level). If they’re duplicates, delete them.
+
+3. Replace SUM(100-(...)) with clearer formulas:
+   Replace constructions like =SUM(100-(E6+G6+I6+K6+M6)) by =100 - SUM(E6,G6,I6,K6,M6). That’s easier to read and less error-prone.
+
+4. Handle the "n/appl" text:
+   - If a percentage is not applicable leave the cell blank or use NA() and adjust formulas to ignore blanks (or use IFERROR/IF to prevent #VALUE!).
+   - Example safe formula for Other that ignores non-numeric inputs:
+     =100 - SUM(IFERROR(E14,0),IFERROR(G14,0),IFERROR(I14,0),IFERROR(K14,0),IFERROR(M14,0))
+
+How to verify after fixing
+- Other% should be between 0 and 100. Use a check formula: =IF(OR(O14<0,O14>100),"Error","OK")
+- Totals of percent columns (E+G+I+K+M) should sum to 100 (or close if rounding).
+- Check TOTAL UNIVERSITY rows (Q30/AF30 etc.) to ensure counts still add correctly.
+
+Why these fixes work (short)
+- O14 was mathematically incorrect because of minus signs; changing to 100 - SUM(...) corrects the arithmetic.
+- Removing stray values prevents misalignment and accidental exclusion/inclusion of numbers when you change formulas to ranges.
+- Using IFERROR or numeric-only SUM prevents text like "n/appl" from breaking calculations.
+
+If you want, I can:
+- Give the exact list of cells with stray data and suggested moves (if you confirm whether those numbers belong left or were duplicates), or
+- Provide corrected formulas for all "Other" cells (I can prepare them for paste).

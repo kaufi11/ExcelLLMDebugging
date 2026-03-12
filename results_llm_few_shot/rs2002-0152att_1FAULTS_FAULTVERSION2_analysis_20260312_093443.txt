@@ -1,0 +1,26 @@
+Summary — main errors found
+1) Sheet "NPS Pollution" — cell I32
+   - Fault: formula =47+H32 (typo). This adds a constant 47 instead of the previous running total.
+   - Fix: replace with =I31+H32 (or =SUM($H$7:H32) if you want a cumulative SUM formula). Explanation: cumulative column I must add the previous cumulative (I31) to the award in H32.
+
+2) Sheet "Watershed Protection" (the block starting at row 7) — cell I7 and several I cells below
+   - Faults: I7 =G7 (uses Requested Funds) and some I formulas use Gn (requested) instead of Hn (awarded). That makes the cumulative total add requested amounts or wrong values instead of awarded funds.
+   - Fix: make the cumulative column reference Awarded Funds (H). Use:
+     - I7 = H7
+     - I8 = I7 + H8
+     - copy I8 down the column
+     Or better (robust): set I7 = SUM($H$7:H7) and copy down. Explanation: cumulative totals should sum Awarded Funds (column H), not Requested Funds (column G).
+
+3) Sheet "Coastal NPS-Reg 1,2,3" — cell I43 (start of the second block)
+   - Fault: formula =I36+H43 references I36 (outside this new block) — likely wrong start point.
+   - Fix: if this is a new cumulative block start, set I43 = H43 (or use =SUM($H$43:H43)) and then copy the running total formula down (=I43+H44 etc). Explanation: each block should either restart its own cumulative or explicitly reference the correct prior total; using a far-away cell usually indicates a copy/paste error.
+
+General recommended repair (fastest and safest)
+- For each block where column I is the running cumulative of awards (column H), put this formula in the first data row of that block:
+  Ifirst = SUM($H$First:HFirst)
+  then copy that cell down. That avoids referencing wrong columns/cells and is resilient to row insertion.
+
+Why these fixes work (short)
+- Cumulative totals must add the Awarded Funds (column H) row-by-row. Using G (requested) or a hard-coded number breaks the logic. Using =I(previous)+H(current) or =SUM($H$start:Hcurrent) ensures correct running totals.
+
+If you want, I can give the exact formulas to paste for each faulty cell or produce a list of every I cell that looks wrong so you can correct them in one go.

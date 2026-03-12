@@ -1,0 +1,68 @@
+I reviewed the workbook and found several formula and design errors. Below are the main problems, why they are wrong, and simple fixes (short and easy to apply).
+
+1) Hard-coded constants instead of cell references
+- Problem: Many cells use literal numbers (e.g. =0.6*82906340) instead of referring to the cell that contains that number. If the source value changes the worksheet will not update correctly.
+- Example: World 1996, E4 =0.6*82906340
+- Fix: Reference the total cell: E4 should be =0.6*E2
+- Explanation: Always reference source cells (E2) so downstream calculations update automatically.
+
+2) Wrong cell used in rice N-removal formula
+- Problem: World 1996, E19 =710*(C19/100). That uses constant 710 instead of the rice production value.
+- Fix: Change E19 to =E8*(C19/100)
+- Explanation: N removed = production_of_rice * (%N). Use the cell holding rice production (E8).
+
+3) Multiplying by 67 instead of 0.67 (percentage/decimal confusion)
+- Problem: Several cells multiply by 67 when they clearly intend 67% (0.67). Example: World 1996 G33 =E33*67 (and many similar cells: G34, F45, etc.)
+- Fix: Replace *67 with *0.67, or better, reference a cell containing the fraction (e.g. put 0.67 in a named cell LossFraction and use =E33*LossFraction).
+- Explanation: 67 (as a whole number) is 6700% — use the decimal 0.67 for 67%.
+
+4) Outdated text/comments and inconsistent numbers
+- Problem: Cells that contain explanatory text (for example “0.60 * 82,906,340 = 49,743,804 MT in cereals”) do not match the formulas/values on the sheet (some show world totals from other sheets). This is confusing and error-prone.
+- Fix: Replace static text calculations with a formula cell showing the result, or update the comment to reference the correct cell value. Example: where you want the textual result, use =TEXT(0.6*E2,"#,##0") or simply show the numeric result in a proper result cell.
+- Explanation: Keep calculations in formula cells, not static text, so numbers stay consistent.
+
+5) Inconsistent use of the cereal-share and soil/fertilizer split constants
+- Problem: The spreadsheet repeats numbers like 0.6 (cereal share), 0.5 (soil vs fertilizer), 0.67 (loss fraction) all over. If you change one instance you may miss others.
+- Fix: Put constants in dedicated cells (e.g. B1 = 0.60 labeled "cereal_share", B2 = 0.50 labeled "soil_fraction", B3 = 0.67 labeled "loss_fraction") and reference those cells everywhere (e.g. =E2*cereal_share).
+- Explanation: Centralizing constants prevents inconsistent values and simplifies updates.
+
+6) Conceptual error: "N fertilizer savings per 1% increase in NUE" formula is wrong/unclear
+- Problem: Several sheets use formulas like =(E4*(0.343)-E28) which do not correctly compute fertilizer savings for a 1 percentage-point increase in NUE.
+- Correct approach (clear, correct formula):
+  - Let F = cereal fertilizer applied (cell E4)
+  - Let R = fertilizer N removed in cereals (cell E28)
+  - Current NUE = R / F
+  - If NUE increases by 0.01 (1 percentage point), new required fertilizer F_new = R / (NUE + 0.01)
+  - Savings = F - F_new
+- Excel formula (replace E4/E28 with your actual cells): = E4 - ( E28 / (E28 / E4 + 0.01) )
+- Explanation: You must recompute required fertilizer for the same removal at the higher NUE, then subtract from current fertilizer applied. The simple subtraction used in the sheet is not the correct physical relationship.
+
+7) A few more specific fixes you should apply immediately
+- World 1996:
+  - E4 → =0.6*E2
+  - E19 → =E8*(C19/100)
+  - G33 → =E33*0.67 (and any other *67 occurrences → *0.67)
+  - Replace E32 formula with the correct savings formula if the intention is "savings per 1 percentage point increase" (see point 6). Example: =E4 - ( E28 / (E28 / E4 + 0.01) )
+- Developed 96:
+  - E3 shows =0.6*E1 (good). Update the text label (B3) that still reads the old world number (49,743,804) — it doesn't match E1.
+- World 2002:
+  - D6 → =0.6*D4 (you already have this; check any static text like "82,421,368" — update or remove)
+  - Replace any instance of *67 with *0.67
+  - Use the savings formula from point 6 where you currently use D44 = (D6*(0.343)-D31) — that expression is unclear/wrong.
+
+8) General recommendations (quick wins)
+- Create a "Constants" area at top of each sheet (or one global sheet) with:
+  - cereal_share = 0.6
+  - soil_fraction = 0.5
+  - loss_fraction = 0.67
+  - use these named cells in formulas (example: =TotalFertilizer*cereal_share)
+- Use named ranges for key cells (TotalFertilizer, CerealFertilizer, FertilizerRemoved) so formulas are readable and less error-prone.
+- Replace hard-coded formulas in comments/text with formula-driven cells.
+- Audit all formulas that multiply by 67 to make sure they mean 67% and fix to 0.67 or a referenced cell.
+
+If you want, I can:
+- produce an exact list of all cells that currently multiply by 67,
+- create the corrected formulas and paste them ready-to-use,
+- or provide a corrected version of one sheet (World 1996) showing the exact changed formulas.
+
+Which would you prefer?

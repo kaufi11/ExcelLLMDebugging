@@ -1,0 +1,32 @@
+Short answer — the workbook has two real template bugs and one user-risk that will give wrong numbers:
+
+1) Bug: Other-activities grand total uses COUNT instead of SUM
+- Where: Seq Production Costs sheet, G21 is =COUNT(G19:G20).
+- Why it’s wrong: COUNT returns how many numeric cells exist (often "2"), not the dollar sum. That makes the One Year Total (B23) and any downstream sums wrong.
+- Fix: Replace G21 with =SUM(G19:G20)
+
+2) Downstream error caused by (1)
+- Where: Seq Production Costs, B23 =B21+D21+G21
+- Why wrong: Because G21 was a count (not dollars), B23 will be incorrect until G21 is fixed.
+- Fix: After fixing G21 to SUM, B23 will be correct (no change needed to B23).
+
+3) Risk / divide-by-zero and inconsistent total on Tech Dev and Bioinformatics sheets
+- Where: Tech Dev: B18 =B17/B6 (and B6 defaults to 0). Bioinformatics: B18 =B17/B6, B31 =B30/$B$6, B44 =B43/$B$6 (B6 defaults to 0).
+- Why it’s a problem: The template puts 0 in B6 (TOTAL COSTS) so the percent formulas return #DIV/0! or wrong percentages if the user forgets to enter the overall total. Also there’s no enforced link between B6 and the sum of subsections, so percentages can be inconsistent.
+- Fix options (pick one):
+  a) Manual: Enter the workbook’s TOTAL COSTS for the year into B6 (this is the intended use). Then the percent formulas work.
+  b) Formula-based (safer): Replace the percent formulas with an IF/IFERROR check so they don’t show errors if B6 is blank/zero. Example replacements:
+     - Tech Dev B18: =IF($B$6=0,"",B17/$B$6)
+     - Bioinf B18: =IF($B$6=0,"",B17/$B$6)
+     - Bioinf B31: =IF($B$6=0,"",B30/$B$6)
+     - Bioinf B44: =IF($B$6=0,"",B43/$B$6)
+  c) Auto-total alternative: If you want B6 to be computed from the sheet’s subsections instead of typed, set B6 = B17 + B30 + B43 (adjust references to the appropriate cells in the workbook), then keep percent formulas as-is.
+
+Extra check (not an error if intended, but be aware)
+- Seq Production cost-per-unit cells: B11 =B21/B10 and C11 =B21/C10 and D11 =D21/D10. These are consistent with the template’s intent (shotgun dollars / reads, shotgun dollars / Q20 bases, finished dollars / finished bases). Just be sure you understand which totals are being used — if you expect cost-per-Q20-base to use a different dollar total, update the numerator accordingly.
+
+Summary of exact edits to make now
+- Change Seq Production G21 to: =SUM(G19:G20)
+- (Optional but recommended) Protect percent formulas from divide-by-zero by using IF or IFERROR in Tech Dev and Bioinf percent cells, or ensure you enter a correct TOTAL in B6.
+
+If you want, I can produce the exact one-line formulas to paste into each problematic cell or scan for any other COUNT/SUM mixups in the workbook — tell me which you prefer.

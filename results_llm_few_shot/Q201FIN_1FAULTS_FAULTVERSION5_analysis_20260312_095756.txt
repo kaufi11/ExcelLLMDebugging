@@ -1,0 +1,23 @@
+Summary — the sheet has a few clear formula errors that cascade into wrong totals. Fix these three items first.
+
+1) Faulty cell: H9
+- Error: Uses COUNT(H7:H8) instead of SUM.
+- Why it’s wrong: COUNT returns the number of numeric cells (2) rather than total revenues, so all downstream lines in column H (H20, H27, H33, EPS, etc.) are incorrect.
+- Fix: replace formula with =SUM(H7:H8)
+
+2) Faulty cell: J17
+- Error: Hard-coded arithmetic ("=12615-5000") instead of referencing cells.
+- Why it’s wrong: Hard-coding breaks auditability and will not update if source amounts change. It also looks inconsistent with other columns that use cell references.
+- Fix: Replace the hard-coded expression with references to the actual source cells. Example (illustrative): =<cell_with_12615> - J23  (or if the 12,615 is in some cell Jx, use =Jx - J23). In short: reference the cells that hold the 12,615 and the write-off rather than typing numbers.
+
+3) Faulty cell: G13 (Total current assets)
+- Error: Range mismatch / includes a non-existent row: =SUM(G7:G12) while column I uses =SUM(I7:I11).
+- Why it’s wrong: G12 is not listed, ranges are inconsistent between columns and can make total assets (G22) wrong or not comparable to column I.
+- Fix: Make the ranges consistent. If current assets run G7:G11, change to =SUM(G7:G11). After fixing G13, recalc G22 (=SUM(G13:G20)) and G38 (=SUM(G31:G37)) — totals should then reconcile with Total liabilities & equity.
+
+Additional recommendations (short):
+- Any cell that currently contains arithmetic constants (e.g., J17, L44 showing "= -1526" as a hard-coded formula/value) should be replaced with references to source cells so the workbook updates correctly.
+- Use cell references for denominators in EPS formulas instead of literal numbers (e.g., avoid /32703 typed in formula; use a cell containing that share count) to prevent mismatches.
+
+If you want, I can:
+- Provide the exact corrected formulas and verify totals (assets = liabilities + equity and P&L subtotals) if you tell me which cells contain the "12,615" source and confirm the intended current-asset rows.

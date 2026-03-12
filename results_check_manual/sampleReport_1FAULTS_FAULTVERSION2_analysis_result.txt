@@ -1,0 +1,74 @@
+I reviewed the formulas on each worksheet and found several formula errors and inconsistencies. Below I list each issue I found (sheet, cell, current formula/value, why it’s wrong or suspicious, and a recommended fix).
+
+Summary of primary problems
+- Several sum ranges in the L (2001) column incorrectly include extra rows (off-by-one ranges).
+- The 2001 total for “TOTAL RENTAL INCOME” is hard-coded to 1 instead of using a formula; that propagates through many downstream totals.
+- A sign inconsistency for cumulative-effect line in the Statements of Operations (L column).
+- The Balance Sheet “TOTAL ASSETS” formulas do not reference the Net Investment in Real Estate + Total Other Assets (they sum an unrelated range).
+- Some odd/redundant single-cell SUM formulas and a textual year typo in the Partners’ Equity sheet.
+
+Detailed findings and recommended fixes
+
+OP_EXP sheet
+1) Cell L46
+- Current formula: =SUM(L33:L44)
+- Problem: The J-column counterpart sums J33:J43. The L-range goes one row too far (to row 44), so the two columns are inconsistent and L46 likely double-counts or picks up a different cell.
+- Recommendation: make it consistent with column J. Use:
+  =SUM(L33:L43)
+
+Income sheet
+2) Cell L14
+- Current value/formula: =1 (hard-coded 1)
+- Problem: J14 is =J10+J13 (TOTAL RENTAL INCOME). L14 should mirror that for 2001 (L10+L13). Hard-coded 1 will propagate wrong totals through many downstream lines.
+- Recommendation: replace with:
+  =L10+L13
+
+3) Propagation of the L14 error
+- Cells affected (depend on L14): L20, L32, L45, L51, L57, L62 (and any other totals that depend on these). Once L14 is fixed the downstream formulas will compute correctly (most are valid), so no further formula changes are needed except the one in item 4 below.
+
+4) Cell L62
+- Current formula: =L57-L60
+- Problem: Column J uses J62 = J57+J60 (cumulative-effect is added). L62 using subtraction is inconsistent with J62’s sign convention.
+- Recommendation: make sign consistent. Use:
+  =L57+L60
+
+Bal Sht sheet
+5) Cell J36 and L36 (TOTAL ASSETS)
+- Current formula J36: =SUM(J23:J35)
+- Current formula L36: =SUM(L23:L35)
+- Problem: The “TOTAL ASSETS” should be the sum of NET INVESTMENT IN REAL ESTATE (the value shown at G17 / row 17) plus TOTAL OTHER ASSETS (J34 / L34). The existing formulas sum an unrelated range (J23:J35) and likely omit the net investment line (row 17) while including parts that shouldn’t be included.
+- Recommendation: explicitly sum the net investment and the total other assets. Example:
+  J36 = J17 + J34
+  L36 = L17 + L34
+(If your net investment is not in J17/L17, adjust references to the correct cells.)
+
+6) Cell J52 and L52 (PARTNERS’ EQUITY)
+- Current formula J52: =SUM(J51:J51) (same pattern in L52)
+- Problem: SUM over a single cell is redundant and probably not the intended aggregation. If the intention is to sum multiple partner rows, adjust the range to include them. If the intention is simply to display J51, replace the SUM with a direct reference.
+- Recommendation: If partners’ equity is multiple rows (e.g., J51:J??), change the range accordingly. If it should be just J51, use:
+  J52 = J51
+  L52 = L51
+
+Stkhold.Equity sheet
+7) Cell G4
+- Current value: "YEARS ENDED DECEMBER 31, 2001 AND 2001"
+- Problem: Textual typo — both years are 2001; likely intended "2002 AND 2001".
+- Recommendation: correct to: "YEARS ENDED DECEMBER 31, 2002 AND 2001"
+
+Cash Flows sheet
+8) Cell L45
+- Current formula: =SUM(L37:L44)
+- Problem: J45 uses =SUM(J37:J42). L45’s range extends to row 44 (off-by-two relative to J), causing an inconsistent aggregate across columns and possibly including a label row (row 44) or other unintended cells.
+- Recommendation: make it consistent with column J:
+  =SUM(L37:L42)
+
+Other notes / checks
+- There is a pattern of a few L-column sums having an incorrect end row (L46, L45, etc.). After correcting the examples above, scan L-column subtotal formulas for any further off-by-one issues (compare each of these to its J-column counterpart).
+- Verify that any totals that should be explicit sums of specific subtotals (for instance, TOTAL ASSETS) reference the intended “subtotal” cells instead of arbitrary ranges. Using explicit references (e.g., =J17+J34) is safer and clearer than summing a wide range that might include labels or future rows.
+- The Partners’ Equity sheet uses test/validation formulas with IF(...,"off") — these may intentionally flag mismatches; keep them if intended. But verify the ranges used in those checks (O17 and O21) to ensure they reference the correct source totals.
+- After you fix the L14 (and other L-range) issues, recalc the workbook and check for #VALUE! or mismatched totals; if you have intentional negative values represented as parenthesis, ensure numeric cell formats are numeric and not text (I only reviewed formulas, not cell formatting).
+
+If you want, I can:
+- produce an exact list of every formula that differs between columns J and L (to find more mismatches),
+- generate corrected formulas for every affected cell,
+- or patch the workbook and save a corrected copy (I can edit if you provide access).

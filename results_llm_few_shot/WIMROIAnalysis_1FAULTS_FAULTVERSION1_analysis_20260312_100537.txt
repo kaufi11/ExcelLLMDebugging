@@ -1,0 +1,45 @@
+Summary — main problems found
+1) Typo that produces a wrong numeric result
+   - Faulty cell: G86
+   - Error: Formula uses the literal 61 instead of the rate cell C88 (typo).
+   - Shown faulty formula: =C86*C87*61*0.25
+   - Fix: =C86*C87*C88*0.25
+   - Why: 61 massively overstates Max Shipping savings; replacing with C88 uses the Shipper's Rate/Hr. input.
+
+2) Some "Your Savings" / subtotal formulas multiply percentage cells incorrectly
+   - Example: K133 = C130*C131*C133 multiplies two percentage cells (C131 and C133) together in addition to the inventory value (C130). That double-multiplies percentages and produces an incorrect (tiny) result.
+   - Likely intent: multiply inventory value by one chosen % (your %). So fix to one of:
+     - If C133 is your chosen %: =C130*C133
+     - If C131 is your chosen %: =C130*C131
+   - Why: multiplying two distinct % cells together is rarely intended and underestimates savings.
+
+3) Inconsistent use of hard-coded percentages vs. reference cells (maintenance / brittleness)
+   - Many formulas use hard-coded 0.16, 0.25, 0.44 etc (for min/max) while other formulas use nearby C‑cells. This is inconsistent and error-prone (hard to change ranges).
+   - Example: E9 =C9*C10*C11*0.16 but K9 = C9*C10*C11*C12 (where C12 is 0.16). If you change the percentage in the C cell later, some formulas will not update because they used the literal 0.16.
+   - Fix: Always reference the dedicated input cell for min/max/your % (e.g. replace 0.16 by the appropriate C‑cell like C12). Example corrected formulas:
+     - E9 (Min)  => =C9*C10*C11*C12  (if C12 = min %)
+     - G9 (Max)  => =C9*C10*C11*C??  (point to the correct max % cell)
+   - Why: makes workbook consistent, easier to maintain and less likely to hide wrong numbers.
+
+4) Missing / blank input cells causing zero or wrong totals
+   - Several source cells are blank (e.g. C106, C110, C111, C112, C113, C130, C135, etc.). Any formula that multiplies by a blank cell will return 0 (or an unintended result), making subtotals and payback calculations invalid.
+   - Fix: Populate required input cells with the correct values or add data-validation/defaults and change formulas to handle blanks (e.g. =IF(C106="",<prompt or default>,C106) or protect formulas against blanks).
+   - Why: totals and ROI measures depend on these inputs; blanks propagate zeros and give misleading payback/ROI outputs.
+
+Quick action plan (short & practical)
+1. Correct the explicit typo:
+   - Change G86 to =C86*C87*C88*0.25
+
+2. Standardize percent inputs:
+   - Create (or identify) a consistent set of input cells for Min%, Max% and Your% for each benefit line.
+   - Replace hard-coded numbers (0.16, 0.25, etc.) with references to those input cells.
+
+3. Fix incorrect multi-% formulas:
+   - Review K133 and any other Kxx formulas that multiply two percent cells; change them to multiply the base value by a single "Your %" cell.
+
+4. Fill required inputs:
+   - Go through the key input cells (C106, C110–C113, C130, C135, etc.), enter realistic values, then re-check subtotals E149, E151 and the payback (C262) / ROI (C264).
+
+If you want, I can:
+- Produce a short list of every cell that currently uses a hard-coded percentage (so you can replace them), and
+- Give the exact corrected formulas for the few problem areas (G86, K133 and a sample of standardized E/G/K rows). Which would you like me to do next?

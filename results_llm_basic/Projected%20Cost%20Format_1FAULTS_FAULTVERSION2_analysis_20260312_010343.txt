@@ -1,0 +1,50 @@
+I reviewed the three sheets and found the main formula / logic errors. Short, clear list of each error, why it’s wrong, and the fix.
+
+1) Wrong source used to calculate average Q20-base cost (Seq Production sheet)
+- Problem: C11 uses =B21/C10. That divides the shotgun Grand Total (B21) by Q20 bases (C10) — wrong numerator.
+- Fix: Use the Q20 grand total in column C: change C11 to =C21/C10
+- Why: Average cost per Q20 base must use the total dollars in the Q20 column (C21), not the shotgun column (B21).
+
+2) “Other activities” grand total uses COUNT instead of SUM (Seq Production sheet)
+- Problem: G21 =COUNT(G19:G20). COUNT returns the number of numeric cells (0–2), not their sum.
+- Fix: Change G21 to =SUM(G19:G20)
+- Why: Grand Cost Totals must sum the direct + indirect costs for the “Other” column.
+
+3) Year total across activities will be wrong if G21 is wrong (Seq Production sheet)
+- Problem: B23 =B21+D21+G21 relies on G21; with COUNT it underestimates totals.
+- Fix: After fixing G21 to SUM, B23 will be correct. (Alternatively use =SUM(B21,D21,G21) — same result.)
+- Why: The one-year total must add the three grand totals.
+
+4) Hard-coded 1’s in percent-total rows (C21, E21, H21)
+- Problem: C21, E21, H21 are set to 1 (constant). This masks errors if component percent cells don’t actually sum to 1.
+- Fix: Replace with calculated sums, e.g. C21 =SUM(C19:C20), E21 =SUM(E19:E20), H21 =SUM(H19:H20)
+- Why: Calculated totals detect mistakes and keep the sheet dynamic.
+
+5) Division-by-zero risk in Tech Dev and Bioinformatics sheets (and % rows)
+- Problem: B6 (TOTAL COSTS) is 0 on both sheets; percent rows use B17/B6 or B30/$B$6 etc → divide-by-zero error or #DIV/0!.
+- Fix: Either:
+  - Ensure B6 contains the actual total funds requested (i.e. enter the total there), OR
+  - Make the percent formulas safe, e.g. =IF($B$6=0,"",B17/$B$6) or =IFERROR(B17/$B$6,"")
+- Why: Percent of total must divide by a non-zero total; protecting with IF or IFERROR prevents errors and displays a blank or message until total is entered.
+
+6) (Optional, robustness) Protect against zero One-Year Totals in Seq Production averages
+- Problem: B11 and D11 divide by B10 and D10 respectively (possible zero).
+- Fix: Use guards: e.g. B11 =IF(B10=0,"",B21/B10) and D11 =IF(D10=0,"",D21/D10)
+- Why: Prevent #DIV/0! and make blanks when no projected reads/bases are entered.
+
+Summary of replacement formulas (copy/paste):
+- Seq sheet:
+  - C11: =IF(C10=0,"",C21/C10)
+  - G21: =SUM(G19:G20)
+  - C21: =SUM(C19:C20)  (and analogous E21 and H21)
+  - B23: =B21+D21+G21  (or =SUM(B21,D21,G21))
+  - B11: =IF(B10=0,"",B21/B10)
+  - D11: =IF(D10=0,"",D21/D10)
+- Tech Dev sheet:
+  - Either enter total in B6 manually OR change B18 to: =IF($B$6=0,"",B17/$B$6)
+- Bioinformatics sheet:
+  - Same approach for B18, B31, B44: wrap in IF($B$6=0,"", ... ) or ensure B6 is filled.
+
+That fixes the incorrect references (C11), the COUNT vs SUM error (G21), eliminates divide-by-zero problems, and makes totals/self-checks dynamic (replace hard-coded 1’s).
+
+If you want, I can produce the exact corrected formulas placed into every affected cell (ready to paste). Which format do you prefer?

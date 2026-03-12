@@ -1,0 +1,73 @@
+Summary — structure, contents and key formulas
+
+Overall flow
+- Input sheets (Tables G.4–G.8) record raw expense items by partner and category.
+- Table G.2 aggregates those items by partner and category (columns for Partner 1..20 + Total).
+- Table G.1 is the Budget Overview: you enter Contractual Budget and Leonardo da Vinci Grant figures; Expenditure Realised is pulled from Table G.2. Final totals are calculated automatically.
+
+Sheets (brief)
+
+1) Table G.1 — Budget Overview
+- Purpose: high‑level budget vs actuals by major headings (A. Staff Costs; B. Operating Costs with subitems; C. Subcontracting Costs; TOTAL).
+- User action: enter Contractual Budget (Euro) and Leonardo da Vinci Grant (Euro) figures for the project (cells under the B and C columns for the relevant rows).
+- Expenditure Realised (column D) is automated: D7, D8, D9, D11, D14–D19 pull specific totals from Table G.2 (e.g. D7 ='Table G.2'!$B9).
+- Sub‑totals and totals: B12/C12/D12 sum B7:B11 / C7:C11 / D7:D11; B20/C20/D20 sum subcontracting rows; B21/C21/D21 compute overall totals (B21 =SUM(B5,B12,B20), etc.).
+
+2) Table G.2 — Breakdown of Expenses already incurred by partner
+- Purpose: per‑partner aggregation (columns C4..V4 = partner numbers; B4 = Total).
+- Aggregation logic:
+  - Travel & Subsistence (rows 7–9) use SUMIF against Table G.4: e.g. C7 =SUMIF('Table G.4'!$C$5:$C$142,C4,'Table G.4'!$N$5:$N$142); row 9 sums the travel + subsistence rows.
+  - ICT (rows 10–12) pull from Table G.5.a, G.5.b, G.5.c with SUMIFs against each table’s partner column.
+  - Production (row 14) sums Table G.6 via SUMIF (note one hardcoded cell: F14 =4).
+  - Other (row 16) uses Table G.7 via SUMIF.
+  - Subcontracting (rows 19–24) use SUMIFs on Table G.8 columns (I..N).
+- Column B cells (Totals) are column sums across partner columns: e.g. B7 =SUM(C7:V7). Final TOTAL row (B26) =SUM(B17,B25) and per‑partner totals C26..V26 =SUM(part’s B17,B25).
+
+3) Table G.3 — Bank Transfers
+- Simple record table for contractor → partner payments (Partner No, Partner Name, Amount, Date, Currency). Manual data entry.
+
+4) Table G.4 — Travel and Subsistence Expenses (itemised)
+- Each row: travel cost (N), subsistence (O), with P = N+O (P5:P142 formulas). Total at top B2 =SUM(P5:P142).
+- These item rows feed Table G.2 via SUMIF on the partner number and the N/O/P columns.
+
+5) Table G.5.a — ICT: Connection, software & other costs
+- Inputs: Cost (E), Degree of use (%) (G). H = E*G (H6:H40). Total B3 =SUM(H6:H40).
+- Table G.2 pulls H (Total Costs) per partner by SUMIF.
+
+6) Table G.5.b — ICT: Equipment purchases
+- Depreciation: I = IF(G>=10000, G/60*F, G/36*F) where G is Purchase Cost and F is months of use; K = I*J (J = degree of use %). K total is used by Table G.2. (Rows K6:K40).
+
+7) Table G.5.c — ICT: Hired/leased equipment
+- I = (F * G) * H  (duration months * monthly cost * degree use). B3 =SUM(I6:I40). Table G.2 pulls I per partner.
+
+8) Table G.6 — Production Expenses
+- H = F * G (unit cost * degree use). B2 =SUM(H5:H39). Table G.2 pulls H per partner.
+
+9) Table G.7 — Other Expenses
+- H = F * G (unit cost * degree use). B2 =SUM(H5:H39). Table G.2 pulls H per partner.
+
+10) Table G.8 — Sub‑contracting Expenses
+- Itemised subcontracting cost (H) and package number (E). Columns I..N contain package‑based SUMIF logic (SUMIF against E to allocate H to package columns). Table G.2 uses SUMIF on Table G.8 to collect subcontracting totals per partner.
+
+11) Currency Codes
+- Static lookup list of currency 3‑letter codes → currency name (EUR included).
+
+12) Subsistence Rates
+- Lookup of country codes → per‑day rate (EUR). Used for reference when calculating subsistence.
+
+Key formulas & rules to note
+- Aggregation across sheets uses SUMIF ranges keyed by Partner No (consistent use of partner number columns).
+- Travel total per row: P = N + O (Table G.4).
+- Depreciation rule (equipment purchases): IF(purchase cost >= 10,000 → annualised over 60 months; else 36 months) then prorated by months and degree of use (Table G.5.b I & K).
+- Percent‑of‑use calculations: many tables multiply cost × degree_of_use (%) to get eligible project cost (G.5.a H, G.6 H, G.7 H, etc.).
+- Table G.1 Expenditure Realised column (D) is read‑only for users — values are auto‑pulled from Table G.2.
+
+Practical pointers
+- Enter itemised expenses in Tables G.4–G.8 with the correct Partner No; Table G.2 and then Table G.1 will update automatically.
+- Only fill Contractual Budget and Leonardo da Vinci Grant figures in Table G.1 as instructed — do not overwrite D column formulas.
+- Watch partner number consistency (C column in each detail table must match the partner columns used in Table G.2).
+
+If you want, I can:
+- produce a visual map of the inter‑sheet links,
+- identify which cells are safe to edit vs. locked,
+- or validate a sample partner’s end‑to‑end calculation.

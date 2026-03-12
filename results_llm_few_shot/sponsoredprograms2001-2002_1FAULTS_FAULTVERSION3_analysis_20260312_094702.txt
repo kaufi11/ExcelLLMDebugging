@@ -1,0 +1,24 @@
+Here are the clear errors I found, each with a short explanation and a simple fix.
+
+1) Faulty cell: H15
+- Error type: Range error (mechanical)
+- Why: H15 =SUM(H8:H14) omits the first row (H7) so the FY02 column total is missing row 7.
+- Fix: Replace with =SUM(H7:H14)
+- Why this fixes it: includes every data row in the FY02 total.
+
+2) Faulty cells: B10 and C10
+- Error type: Hard-coded constants / fragile formula
+- Why: B10 =1672298-748584 and C10 =2824612-1091293 use literal numbers instead of referring to cells. Hard-coding makes the sheet error-prone and hard to update.
+- Fix: Replace each constant expression with a formula that references the actual source cell(s). Examples:
+  - If the grand total (1,672,298) is in cell X (insert the correct cell), use =X - B9
+  - Or, if "Other Sponsors" is the remainder of a known group, compute it from the source list (example): =SUM(source_range_for_other_sponsors) or =GrandTotalCell - SUM(B7,B8,B9,B11,B12,B13,B14) (use the actual cells where the grand total is stored — avoid creating circular references).
+- Why this fixes it: cell references update automatically when numbers change; no hidden constants.
+
+3) Minor/text issue: Header text in F6/G6 reads "4rd Qtr." 
+- Error type: Typo (text)
+- Fix: Change to "4th Qtr." (or "4th Qtr FY01" / "4th Qtr FY02" consistently)
+- Why: Improves clarity and professionalism (no effect on calculations).
+
+If you want, I can:
+- Show the exact corrected formulas if you tell me where the grand totals (the 1,672,298 and 2,824,612) live, or
+- Scan for more subtle inconsistencies (e.g., verify each row's FY totals) and fix them.

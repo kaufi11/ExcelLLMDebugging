@@ -1,0 +1,68 @@
+I inspected the formulas you provided for both worksheets and found a number of actual errors and a number of inconsistencies/risky practices that can lead to incorrect results or confusion later. I list them below grouped by severity (definite errors first, then inconsistencies and risky patterns), with the exact cell addresses and recommended fixes.
+
+1) Definite formula error (wrong function)
+- Sheet1!T19
+  - Formula: =COUNT(D19:S19)
+  - Problem: All other rows use Tn = SUM(Dn:S n). COUNT returns the number of numeric cells (15) rather than the sum of the assignment scores. That produces an incorrect total and an incorrect percent in U19.
+  - Fix: Change to =SUM(D19:S19).
+
+2) Suspicious numeric data / negative values within SUM ranges
+- Sheet1!BE16 = -2
+  - Problem: Negative point inside BF16 = SUM(BB16:BE16). Likely data-entry error unless intentionally negative credit.
+  - Fix: Confirm whether BE16 should be negative; if not, correct to intended positive value.
+
+3) Text values inside ranges that are summed (SUM will ignore text)
+These cells contain text like "x", "X", "+ X", "x  #", "#" or "." inside numeric SUM ranges. SUM will silently ignore them — this may be intended (marking missing / excused) or it may hide data-entry mistakes.
+- Examples (non-exhaustive; there are many):
+  - Sheet1: BL7="X", BR7="x  #", BL15="+ X", BR15="x", BR6="#", BR9="#", AZ13="x", etc.
+  - Sheet2: AZ8="X", BE13="X", many AZ / BE / BL / BR cells contain "X" or "x".
+- Impact: The row totals (BMn, BSn, BTn etc.) will not include these cells. If they were supposed to be numeric (e.g., 0 or some score), totals will be wrong.
+- Fix: Replace text markers with explicit numeric codes (0 or NA) or handle them with IF/ISNUMBER wrappers if you need special behavior.
+
+4) Inconsistent SUM endpoints (AO vs AP)
+- Many student rows use AQn = =SUM(Yn:APn) while the header/summary uses AQ2 = =SUM(Y2:AO2) (sheet1) or AQ2 = =SUM(Y2:AO2) (sheet2). In other words some formulas sum through AO, others through AP.
+- Impact: If column AP is ever used (non-blank), some rows will include it and some won't. Currently AP appears blank so totals match, but it's inconsistent and fragile.
+- Fix: Decide whether the project total ends at AO or AP and standardize all SUM ranges (use a single absolute reference range or named range).
+
+5) Hard-coded denominators vs cell references (inconsistent)
+- Sheet1 percent columns for assignments use hard-coded 150 in formulas (e.g., U5 = T5/150*100).
+- Sheet2 uses absolute references (better): e.g., U5 = T5/$T$1*100 and ARn = AQn/$AQ$1*100
+- Impact: Hard-coded denominators are error-prone when you change totals (e.g., change number of assignments). The sheet1 approach mixes methods between sheets which is inconsistent.
+- Fix: Use absolute cell references for the denominators (for example, put total possible assignment points in a single cell and reference it as $T$1 or $AF$1).
+
+6) Summary / average ranges do not consistently match data ranges
+- Sheet1!U22 = AVERAGE(U5:U21) — student data appears to go through row 19 (U5:U19) not 21. Averaging empty cells is not harmful (they are ignored), but it is inconsistent and may hide omitted rows.
+- Sheet2 summary:
+  - BA19 = AVERAGE(BA5:BA16) — data appears to include BA17 as well. BA17 will be omitted from that average.
+  - Check other averages for off-by-one ranges (some averages use 5:17, others 5:18 etc.). Inconsistent endpoints across summary columns are present (review all averages).
+- Impact: Averages may include/exclude last row(s) inadvertently.
+- Fix: Standardize all summary averages to the exact data row range (e.g., U5:U19 or use structured references / named ranges).
+
+7) Mixed header values that may be confusing / inconsistent totals
+- Sheet1 header: T3 has value 80 but the assignment max used in U formulas is 150 (hard-coded). This is confusing: which is the assignment max — 80 or 150? (AF1 = 150 exists and Y2:AF2 sums to 150).
+- Sheet2 header: T1 = 80 while T3 = 90 (different numbers are shown in header area). Again confusing; sheet2 formulas correctly reference $T$1 in percentages, so T1=80 appears to be the intended denominator.
+- Fix: Consolidate header totals into a single clearly-labeled cell for each category and reference that cell in all percent formulas.
+
+8) Use of blank or inconsistent columns for the same concept
+- Some totals use different target columns (e.g., some student rows sum to BTn = BA..+ BF.. + BM.. + BS.. but the components BF.. sometimes include "BE" cells with "x" or "X"). The layout appears to rely on some columns being empty in some rows.
+- Fix: Clean up the layout and remove unused columns or use named ranges to avoid accidental mis-inclusion/exclusion.
+
+9) Extra-credit / final sum references include columns that may not exist or are blank
+- CEn formulas = SUM(BZn:CDn) — CDn often isn't shown in your extract (probably for extra credit). This is OK if intentional but be aware: if CD is not used in some rows, sums still work but the layout is inconsistent.
+- Suggestion: If CD is intended for extra credit, label it and ensure all rows use it consistently.
+
+10) Recommendations (summary of corrective actions)
+- Correct the definite error: change Sheet1!T19 from COUNT to SUM.
+- Replace hard-coded denominators (150, 400, etc.) with absolute cell references (single labeled cells for max points per category).
+- Standardize SUM ranges to the same endpoints for all student rows (use AO consistently or AP consistently).
+- Replace text placeholders inside numeric ranges with numeric codes (0 or NA), or explicitly handle them with formulas (e.g., IFERROR / IF(ISNUMBER()) wrappers), so SUM results are explicit.
+- Inspect and correct negative or unusual numeric entries (e.g., BE16 = -2).
+- Standardize average ranges in the summary rows so all averages use the same student row range.
+- Add a short legend in the spreadsheet that explains what "x", "X", "+ X", "#" mean if they are purposeful markers; otherwise convert them to numeric values or use a separate column for status.
+
+If you want, I can:
+- produce a list of every cell that contains text inside a numeric SUM range (i.e., every "x", "X", "#", "+ X", ".") so you can review them,
+- produce a single list of all cells where SUM/AVERAGE ranges differ from the header pattern (AO vs AP, etc.),
+- or (if you permit) generate corrected formulas (e.g., replace hard-coded denominators with referenced cells and fix T19).
+
+Which of those follow-up actions would you like me to run?

@@ -1,0 +1,51 @@
+I inspected the workbook and found several real problems (wrong ranges, wrong functions, sloppy syntax) that will produce incorrect totals or make the file fragile. Below are the main errors, short explanations and concrete fixes.
+
+1) Many summary formulas only reference rows 3:4 (too small)
+- Examples: calcoli!B27 =COUNT(db!AN3:AN4), calcoli!B28 =SUM(db!AP3:AP4), calcoli!B60 =COUNTA(db!A3:A4), many other SUM(...3:4) and SUM(...3:4) ranges.
+- Problem: these formulas only include two rows of the database. When you add more records they are ignored, so totals and counts are wrong.
+- Fix: expand the ranges to include the whole data area (or use full column references / an Excel Table / a dynamic named range).
+  - Example fixes:
+    - calcoli!B27 → =COUNT(db!AN:AN)  (or =COUNT(db!AN3:AN1000) if you prefer a limited range)
+    - calcoli!B28 → =SUM(db!AP:AP)
+    - calcoli!B60 → =COUNTA(db!A:A)-1  (subtract header row; or =COUNTA(db!A3:A10000))
+- Why: using the entire column or a long range ensures new rows are included. Best practice: convert db! into an Excel Table and use structured references.
+
+2) Incorrect function used (COUNT instead of SUM)
+- Example: visualizza_gruppo!Q30 =COUNT(M30:N30)
+- Problem: COUNT returns number of numeric cells, not the sum of hours. This will give wrong total hours.
+- Fix: use SUM:
+  - visualizza_gruppo!Q30 → =SUM(M30:N30)
+- Why: hours must be added, not counted.
+
+3) Unnecessary / messy double plus signs (harmless but confusing)
+- Examples: visualizza_gruppo!Q7 =D7++G7+J7+M7 (same pattern in Q8..Q18)
+- Problem: Excel accepts "+ +" as unary plus so the formula works — but it is poor style and can confuse maintainers.
+- Fix: clean to single plus:
+  - e.g. → =D7+G7+J7+M7
+- Why: clarity and avoiding accidental typos that could break when edited.
+
+4) Wide rectangular SUM ranges that likely are wrong (columns × rows)
+- Example: calcoli!B29 =SUM(db!AX3:BG4)
+- Problem: AX3:BG4 is a rectangle that sums two rows across many columns — probably not the intended operation (likely meant to sum a single column for many rows, or sum columns AX:BG for a single row).
+- Fix: decide intent and change accordingly:
+  - If you want sum of columns AX..BG for the filtered row set: =SUM(db!AX:BG) is invalid — instead sum each column vertically: e.g. =SUM(db!AX:AX,db!AY:AY,...). Better: restructure database and use SUMIFS.
+  - If you want sum of one column (e.g. AX) across all rows: =SUM(db!AX:AX) or =SUM(db!AX3:AX10000)
+- Why: ambiguous rectangles lead to wrong totals.
+
+5) Wrong source range for "number of GEV"
+- Example: calcoli!B61 =COUNTA(parametri!A1:A4)-1
+- Problem: parametri!A1:A4 is not the location of GEV names (A1 is “--------------” only). This will give an incorrect count.
+- Fix: point COUNTA at the real list of GEVs (looks like SetPar sheet stores GEV names around E7 etc). Example:
+  - calcoli!B61 → =COUNTA(SetPar!E7:E100)   (adjust exact range to where you store GEV names)
+- Why: COUNTA must reference the cells that actually contain the GEV names.
+
+6) General maintenance suggestions (short)
+- Convert the db sheet into an Excel Table (Insert → Table). Then use structured references (TableName[Column]) so totals automatically include new rows.
+- Replace hard-coded end-row ranges (3:1000) with Table references or dynamic named ranges.
+- Clean up visibly odd formulas (double ++) so future editors don't introduce errors.
+
+If you want, I can:
+- produce a list of exact cells to change (I can generate exact replacement formulas for every occurrence of the ...3:4 pattern),
+- or give a step-by-step to convert db! into a Table and update the key summary formulas to use the Table.
+
+Which would you prefer?

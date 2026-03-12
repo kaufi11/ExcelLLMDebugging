@@ -1,0 +1,34 @@
+Summary — main errors
+1) Q4 Homework — Evans (row 5) total is missing one column:
+   - H5 =SUM(B5:F5) — this omits G5 (Personal Shield). That makes Evans’ homework total too low and breaks downstream sheets.
+
+2) Q4 Summary — weighted-score formulas use the Projects column twice:
+   - F3:F12 use ...+D*0.4 + D*0.2 (D used for both project and homework). The last term should reference column E (homework). This gives wrong weighted scores and percentages for every student.
+
+Why it matters
+- The wrong H5 value flows into Q4 Summary E6 (Evans’ homework), so Evans’ score and the class calculations are incorrect.
+- The D→E mistake in column F gives every weighted total a wrong contribution from homework (it effectively doubles the Projects weight and ignores Homework).
+
+How to fix (quick copy-paste formulas)
+1) Fix Evans total (Q4 Homework, H5):
+   - Replace with: =SUM(B5:G5)
+
+2) Fix weighted-score formulas (Q4 Summary, F3:F12). Two good options:
+
+Option A — explicit weights (simple):
+   - In F3 (and copy down to F4:F12):
+     =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+
+Option B — use the weight row (more robust if you change weights):
+   - In F3 (and copy down):
+     =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+
+3) Make the percent formula clearer (optional but recommended)
+   - In G4 (and copy down) use the weighted maximum as the denominator:
+     =F4/$F$3*100
+   - This is safer/readable than hard-coding 300 and will update if you change Points Possible or weights.
+
+Checks after fixes
+- After fixing H5 and column F formulas, verify Q4 Summary E6 equals Q4 Homework H5 (Evans), and that G4..G12 percentages look sensible.
+
+That’s it — fix H5 and update the D→E reference in column F (or use the weights row). These two changes correct the cascade of errors.

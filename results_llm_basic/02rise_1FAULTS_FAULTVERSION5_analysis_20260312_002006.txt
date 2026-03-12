@@ -1,0 +1,43 @@
+I found three concrete errors that will make your totals and savings wrong. Short fixes and why they work below.
+
+1) Total Savings formulas use the wrong subtraction order (sign reversed)
+- Problem: the “Total Savings” rows (the row immediately after each class’s “Total” row) use formulas like:
+  =SUM(F4 - $D3 * F3)
+  That computes (RISE cost - public cost) × participants, so savings come out negative.
+- Correct formula: compute (public cost − RISE cost) × participants. For the Dreamweaver example (class row 3 / savings row 5) use:
+  =F3 * ($D3 - $E3)
+  or equivalently:
+  =$D3*F3 - F4
+- How to apply: For each class block, replace the formulas in the “Total Savings” row (F:BG for that row) with:
+  =<company_participants_cell> * ($D<class_row> - $E<class_row>)
+  then copy across columns. Repeat for every class block.
+- Why: public cost minus RISE cost per participant is the actual saving per participant; then multiply by participants.
+
+2) One hard-coded wrong multiplication in the MS Project totals (AU49)
+- Problem: AU49 currently shows:
+  =SUM(609*$E$48)
+  (609 is hard-coded and not the AU48 participants cell). That corrupts the class totals.
+- Fix: change AU49 to:
+  =AU48 * $E$48
+  (or =SUM(AU48*$E$48) to match neighboring formula style).
+- Why: the pattern for totals is (participants by company) × (RISE cost). Replace the literal 609 with the cell that holds that company’s participants.
+
+3) BK261 (Number of participants per class) was hard-coded
+- Problem: BK261 currently contains the value 12 instead of the normal formula:
+  =SUM(F261:BG261)
+  That will make any aggregates that depend on BK (student days, summary counts) incorrect.
+- Fix: set BK261 to:
+  =SUM(F261:BG261)
+- Why: BK should always be the sum of participant columns F:BG for that class so other class and grand totals stay correct.
+
+Quick steps to fix across the sheet
+- Fix the sign error in all “Total Savings” rows:
+  * Find formulas like =SUM(<TotalRowCell> - $D<classRow>*<participantCell>) and replace with =<participantCell>*($D<classRow> - $E<classRow>).
+  * Or search for the pattern “- $D” in your Savings rows and reverse the subtraction.
+- Fix the one hard-coded AU49 to use AU48 (and scan nearby totals for any other hard-coded literals).
+- Restore BK261 to =SUM(F261:BG261) (and scan BK column for any other BK cells that are not formulas).
+- After changes, recalc (F9 or full workbook recalc) and verify the Grand Totals (BO268 / BI269 etc) and the Companies sheet totals (E column = C - D) become consistent and positive for savings.
+
+If you want, I can:
+- give a short VBA macro or a Find/Replace recipe to replace the savings formula pattern across all class blocks automatically, or
+- produce the exact corrected formulas for the first few class blocks so you can copy them. Which would you prefer?

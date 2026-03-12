@@ -1,0 +1,41 @@
+Findings — the important errors
+1. Wrong SUM range in the district "Total Exams" row:
+   - F10 contains =SUM(F6:F9). It omits row F5 (the count of score 5) so the district total for that subject/year is too small by F5. (Example: F5=1, F6:F9=4 → F10 shows 4 instead of 5.)
+
+2. Several totals are hard‑coded (not formulas) or inconsistent:
+   - AI10 is entered as the value 19 rather than as =SUM(AI5:AI9).
+   - C44 and D44 (Davidson totals) are entered as values, while E44 etc. are formulas. There are other similar hard‑coded totals scattered through the sheet.
+   - E11 =SUM(E5:E7) looks suspicious: it sums only rows 5–7 while most totals sum rows 5–9. If E11 is supposed to be a full total it should be E5:E9.
+
+Why these are errors
+- Excluding the "5" row or hard‑coding totals breaks the automatic recalculation: if any grade counts change the totals, percent 3+ and mean‑grade results will not update correctly.
+- Inconsistent formulas also make auditing harder and increase the chance of future mistakes.
+
+Simple fixes (step‑by‑step)
+1. Fix the bad SUM range:
+   - Edit F10 and replace the formula with =SUM(F5:F9)
+
+2. Replace hard‑coded totals with SUM formulas:
+   - Change AI10 to =SUM(AI5:AI9)
+   - For any Total Exams cell that is a number (not a formula), replace it with =SUM(<that column>5:<that column>9). Example: C44 → =SUM(C39:C43) for Davidson block (use the correct block rows).
+     - Tip: For the district block (rows 5–9) use =SUM(<col>5:<col>9).
+     - For each school block use the five grade rows for that block (e.g., rows 39–43 for Davidson).
+
+3. Verify E11 and any other subtotal cells:
+   - If E11 should total rows 5–9, change to =SUM(E5:E9). If it intentionally sums only 5–7, add a comment to document that special case.
+
+4. Audit and make formulas consistent:
+   - In the Total Exams row(s) enter the correct SUM formula in the first column (for example C10 =SUM(C5:C9), or C44 =SUM(C39:C43)) and then copy/fill it right across the entire Total Exams row for that block. This reduces copy‑paste range errors.
+
+Quick checks to find other problems
+- Put this temporary formula next to each total to flag mismatches:
+  =IF(<TotalCell>=SUM(<col>5:<col>9),"OK","Mismatch")
+- Or use ISFORMULA to find hard‑coded totals:
+  =NOT(ISFORMULA(<TotalCell>)) — TRUE means it is a hard‑coded value.
+
+Why this fixes everything
+- Using the correct SUM ranges ensures every grade row (5–1) is included. Replacing hard‑coded totals with SUM formulas guarantees totals, percent 3+ and mean calculations update automatically when counts change. Copying one correct formula across reduces human error.
+
+If you want I can:
+- Provide a list of all Total Exams cells that are hard‑coded vs. formula and the exact cells with mismatched sums.
+- Generate the exact fill/copy sequence (which cells to edit) so you can fix the sheet in one pass.

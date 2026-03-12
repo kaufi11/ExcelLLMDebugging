@@ -1,0 +1,19 @@
+Summary — main errors found
+1) M3 has a clear typo: =L3/944 (should not divide by 944).  
+2) Most averages in column M (M3:M45) are calculated as Lx/10 (fixed divisor 10). Several rows have missing score cells in B:K, so dividing by 10 produces a wrong (too low) average.  
+3) Some rows have missing score cells (blanks) in B:K (examples: rows 4, 11, 25, 27, 28, 42, 45). SUM(B:K) treats blanks as zero, so L is reduced and M (with /10) is incorrect.
+
+Immediate fixes (copy down as needed)
+- Fix M3 typo:
+  Replace =L3/944 with =AVERAGE(B3:K3)
+- Replace every Mx =Lx/10 with either:
+  a) =AVERAGE(Bx:Kx)  — simplest (ignores blank cells and returns the average of the present numeric scores), or
+  b) =IF(COUNT(Bx:Kx)=0,"",Lx/COUNT(Bx:Kx)) — if you prefer to keep Lx and compute average as sum/count of numeric cells.
+
+Why this fixes the problems (short)
+- =AVERAGE(Bx:Kx) automatically ignores blanks, so the average is correct even if some scores are missing.  
+- Using COUNT(Bx:Kx) to divide the SUM uses the actual number of numeric inputs instead of a hard-coded 10.  
+- Fixing M3 removes the obvious typo divisor 944.
+
+Extra recommendation (optional)
+- Highlight rows where COUNT(Bx:Kx)<>10 (conditional formatting) so you can find and either fill missing scores or confirm blanks are intentional.

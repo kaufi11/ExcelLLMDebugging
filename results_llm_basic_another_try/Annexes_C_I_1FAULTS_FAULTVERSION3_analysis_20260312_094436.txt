@@ -1,0 +1,82 @@
+Errors found:
+
+1. **Division by zero in variance % formulas**:  
+   In sheets annex e and annex f, many variance % formulas use this pattern:  
+   `=IF(Hx=0,"N/A",(Jx/Hx)*100)`  
+   When the original forecast value (Hx) is zero, the formula returns "N/A" to avoid division by zero. This is correct behavior, no error here.
+
+2. **In annex g (Operating Cash Flow), circular references in balance b/f rows**:  
+   For example, in row 18:  
+   - I18 formula is `=H19`  
+   - J18 formula is `=I19`  
+   - K18 formula is `=J19`  
+   ... and so on, shifting references to the right.  
+   Similarly, in row 41:  
+   - I41 formula is `=H42`  
+   - J41 formula is `=I42`  
+   - K41 formula is `=J42`  
+   ... and so on.  
+   This creates a chain of dependencies that can cause circular references or incorrect carry-forward balances.
+
+3. **In annex g, inconsistency in totals for balance c/f (cash and overdraft)**:  
+   - T18 is `=H18` (should be sum or carry forward)  
+   - T19 is `=S19` (should be sum of T17:T18)  
+   - T42 is `=S42` (should be sum of T40:T41)  
+   This inconsistency may cause incorrect totals.
+
+4. **In annex g, formula in T26:**  
+   `=T19-('annex f'!H20+'annex f'!H21)`  
+   But in annex f, H20 and H21 are not defined in the provided data (likely blank or zero). This may cause incorrect reconciliation.
+
+5. **In annex f, formula in K68:**  
+   `=K48`  
+   This copies variance % from Total Net Assets to Total Funds, which may be incorrect if Total Funds variance % should be calculated separately.
+
+6. **In annex g, formula in T19:**  
+   `=S19` (should be sum of T17:T18)  
+   This is inconsistent with other columns and may cause errors in totals.
+
+Summary of main error:  
+- The carry-forward balances in annex g (Operating Cash Flow) are referencing the next column's balance c/f, causing circular or incorrect references.  
+- The totals in the last columns (T18, T19, T42) are inconsistent and may cause incorrect totals.  
+- Minor inconsistency in annex f variance % formula for Total Funds.
+
+---
+
+**Solution:**
+
+1. **Fix carry-forward balances in annex g:**  
+   Instead of shifting references to the right (I18 = H19, J18 = I19, etc.), use the previous month's balance c/f for each month. For example:  
+   - I18 should be `=H19` (balance c/f from previous month) is correct, but then J18 should be `=I19`, etc. This is a chain but can cause circular references if not carefully managed.  
+   Better approach: Use a consistent formula that references the previous month's balance c/f in the same row. For example:  
+   - I18 = H19 (OK)  
+   - J18 = I19 (OK)  
+   - K18 = J19 (OK)  
+   This is acceptable if the balance c/f rows (row 19) are correctly calculated as sum of net cash inflow/outflow + balance b/f.  
+   Ensure row 19 formulas are correct sums of row 17 and 18 for each column.
+
+2. **Fix totals in annex g:**  
+   For T18, T19, T42, use consistent sum formulas:  
+   - T18 = sum of H18:S18 (carry forward balances) or last month's balance c/f  
+   - T19 = sum of H19:S19 (closing balances)  
+   - T42 = sum of H42:S42 (closing balances actual/revised)  
+   This ensures totals are correct.
+
+3. **In annex f, recalculate variance % for Total Funds (K68):**  
+   Instead of `=K48`, use the formula:  
+   `=IF(H68=0,"N/A",(J68/H68)*100)`  
+   This calculates variance % based on Total Funds, not just Total Net Assets.
+
+4. **Check reconciliation formulas in annex g T26 and T49:**  
+   Verify that referenced cells in annex f (H20, H21, I20, I21) contain correct values. If these cells are blank or zero, update formulas or input data accordingly.
+
+---
+
+**Explanation:**
+
+- Carry-forward balances must reference the previous month's closing balance to avoid circular references and ensure correct cash flow tracking.  
+- Totals for rows summing multiple months should sum across all months, not just copy from one cell, to reflect accurate totals.  
+- Variance % should always be calculated as (variance/original)*100, not copied from unrelated cells.  
+- Reconciliation formulas must reference valid data cells; otherwise, they will produce incorrect results.
+
+Fixing these will ensure the financial forecast sheets calculate correctly and reconcile properly.

@@ -1,0 +1,55 @@
+Summary of the problems I found (short) and how to fix each one.
+
+1) Homework: Aya’s total excludes HW10
+- Error: L5 is =SUM(B5:J5) so it does NOT include column K (HW10). All other L# totals use B#:K#.
+- Result: Aya’s homework total is too small (HW10 is omitted).
+- Fix: change L5 to =SUM(B5:K5).
+- Why: SUM(B5:J5) misses one column; using the full range ensures all 10 HW scores are included.
+
+2) Homework (general): text codes inside numeric score columns
+- Error: text codes like HC, P, x, NG appear in B:K ranges (homework scores).
+- Result: SUM ignores those text values (treated as zero). That may be intended, but it can hide data-entry errors and give incorrect totals if you intended a different treatment.
+- Fixes (pick one):
+  a) Move all status codes into the existing P (note) column and keep B:K strictly numeric.
+  b) If you must keep codes in B:K, add a check column to flag rows with non-numeric entries, e.g. in M4:
+     =COUNT(B4:K4)<>COLUMNS(B4:K4)
+     (returns TRUE if any non-numeric present). Or more explicit:
+     =IF(COUNT(B4:K4)=10,"OK","Check scores")
+  c) Use conditional formatting to highlight non-numeric cells: use formula =NOT(ISNUMBER(B4)) and apply across B:K.
+- Why: separating codes from numeric cells prevents accidental silent omissions and makes totals reliable.
+
+3) Final sheet: one row uses wrong SUM range
+- Error: I7 (Bluesky) is =SUM(B7:H7) while every other Total uses =SUM(B#:G#).
+- Result: inconsistent formula; in this file H is blank so result currently may be the same, but it's a mistake and will break if H is later used.
+- Fix: change I7 to =SUM(B7:G7).
+- Why: totals should use the same columns (B:G) for Q1–Q6.
+
+4) Final Grades: non-numeric values in components and totals
+- Errors observed:
+  - Some component cells in column D (Term) or other columns contain "HC" or "P" instead of numbers.
+  - Some Total cells (column F) have letter "F" or other non-numeric entries instead of numeric sums.
+- Result: SUM(B#:E#) will ignore text, so totals may be misleading (treated as 0 for the text cell) or someone manually overwrote totals with letters.
+- Fixes:
+  a) Keep status codes ("HC","P") in the Note column (G) and make columns B–E numeric only.
+  b) Restore numeric values for totals and do not overwrite formula cells with letters. If you need to show a letter grade instead of a number automatically, use a separate column or conditional formula rather than replacing the numeric total.
+  c) To prevent mistaken totals when status codes are present, use a guarded total formula. Example: if you want TOTAL blank when Term is pending/HC:
+     =IF(OR(D4="P",D4="HC",G4="HC"),"",SUM(B4:E4))
+     Or to force the formula to only compute when all four components are numeric:
+     =IF(COUNT(B4:E4)=4,SUM(B4:E4),"Check")
+- Why: separating data (scores) from administrative flags prevents accidental loss of numeric totals and makes automated grade mapping reliable.
+
+5) Suggestion: add automated checks
+- Add a column on each sheet to flag rows with any non-numeric entries where numbers are expected:
+  =IF(COUNT(B4:K4)=COLUMNS(B4:K4),"OK","Non-numeric in scores")
+- Add a conditional format to highlight totals that differ from expected quick-check sums (optional).
+- Why: early detection of wrong ranges or text-in-score-cells saves errors before they propagate to Final Grades.
+
+Quick checklist to apply now
+- Change L5 on Homework to =SUM(B5:K5).
+- Change I7 on Final to =SUM(B7:G7).
+- Scan B4:K42 on Homework, B:C? ranges on other sheets for text codes; move codes to Note columns or replace with numeric placeholders as appropriate.
+- Replace any manually entered letters in totals (Final Grades column F) with formulas and use a separate column to show letter grades/flags.
+
+If you want, I can:
+- give you a single "audit" formula you can paste to flag all rows with problems, or
+- produce the exact COUNT/IF formulas to place on each sheet to find every non-numeric in scoring ranges. Which would you prefer?

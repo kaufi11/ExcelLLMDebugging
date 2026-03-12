@@ -1,0 +1,29 @@
+I inspected the workbook formulas and found one clear formula error plus a few consistency/style issues that can cause downstream calculation problems. Summary and recommended fixes below.
+
+1) Wrong function (likely a typo) — H12 on sheet "1"
+- Cell: Sheet "1"!H12
+- Current formula: =COUNT(H9:H11)
+- Current value: 3
+- Why it's wrong: All other columns in row 12 use SUM of the three category rows (e.g. C12 = SUM(C9:C11), D12 = SUM(D9:D11) …). COUNT returns the number of numeric cells (3) instead of the sum of their numeric values. H9:H11 contain large sales numbers, so H12 should be the total sales for that column, not 3.
+- Effect: Many downstream totals/ratios in column H are incorrect because they rely on H12 (via H15, H17, H19, H20, H22, H23, H29, H30, H33, H35, H36, etc.). Example: H15 = SUM(H12:H14) is wrong because H12 is 3; H17 references H15, and ratios like H20 use H17 as denominator — producing large negative ratios.
+- Recommended fix: replace the COUNT with SUM:
+  - New formula: =SUM(H9:H11)
+
+2) Inconsistent IF result types for zero-denominator handling
+- Locations: many ratio cells in sheet "1" (e.g. C20, D20, …, R20, C23…, C30…, C36…, C39…) return the text string "-  " when the denominator is zero: IF(C$17=0,"-  ",C19/C$17)
+- In sheet "2", similar IF formulas return "" (empty string) when denominator is zero: IF(C9=0,"",C10/C9)
+- Why it matters: returning a text string ("-  ") in some formulas and a blank string in others is inconsistent. Moreover returning text instead of a numeric error/NA or blank can break any further numeric aggregation or cause confusing results if those cells are referenced by other formulas.
+- Recommendations:
+  - Decide on a consistent approach: return blank "" (empty text), NA(), or keep a numeric 0 where appropriate.
+  - If you only want a display placeholder, use "" (IF(...,"",...)) or NA() (IF(...,NA(),...)) — NA() is useful because it signals a missing value and is easier to detect programmatically.
+  - If you prefer a visible dash, consider using cell number formatting or a separate display-only cell rather than returning text inside a numeric formula.
+
+3) Other notes / checks
+- I scanned the workbook for other COUNT occurrences and did not find other COUNT-instead-of-SUM mistakes in the provided ranges.
+- Some SUM formulas refer to empty cells (for example some C34 are blank) — these are harmless (SUM ignores blanks) but make sure intended adjustment amounts are present where needed (e.g. row 34 has a single value in G34 but other columns blank; that appears intentional).
+- After you fix H12, recalc/verify all dependent values in column H (H15, H17, H19, H20, H22, H23, H29, H30, H33, H35, H36, etc.) to ensure they match expected results.
+
+If you want I can:
+- produce a list of all cells that depend (directly or indirectly) on H12,
+- output the corrected values for column H after applying the fix,
+- or generate a uniform replacement string/formula for the IF-denominator checks (e.g. change all to IF(...,"",...) or IF(...,NA(),...)).

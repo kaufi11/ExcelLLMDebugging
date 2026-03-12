@@ -1,0 +1,58 @@
+I checked the formulas in both sheets and found several real errors and a few suspicious/inconsistent formulas you should review. Below is a concise list (cell → problem → why → suggested fix).
+
+P&L sheet
+
+1) H9
+- Current formula: =COUNT(H7:H8) (value = 2)
+- Problem: COUNT returns the count of numeric cells, not the sum of revenues. This makes H9 incorrect and propagates wrong results through H20, H27, H33, EPS, etc.
+- Fix: change to =SUM(H7:H8).
+
+2) Missing / blank H17
+- Observations: F17 = 2615, J17 = 7615 (formula =12615-5000), L17 blank, H17 is missing.
+- Problem: H17 is blank while corresponding cells in other columns have values; H18 uses SUM(H12:H17) and treats H17 as 0. This may be an omission (causes inconsistent comparatives).
+- Fix: verify the intended H17 amount and enter it (or explicitly set to 0 if correct).
+
+3) J17
+- Current formula: =12615-5000 (value = 7615)
+- Problem / suspicious: it hard-codes a subtraction of 5000 (same amount shown separately in J23 "Write-off of investment" = -5000). This may be intentional, but it looks unusual: you should confirm whether the -5000 should be subtracted here as well as shown in J23 (possible double-adjustment / inconsistent presentation).
+- Fix: review accounting treatment for the -5000. If the write-off is a separate line item (J23), J17 likely should be a single number (not subtracting J23 again); if J17 is meant to be net of that write-off, document/calc it consistently (refer to J23 or to a clear helper cell).
+
+4) Pro forma EPS rows (F46, F52, J46, J52, H46, H52, L46, L52)
+- Observations:
+  - F46 = +F44/32703 (uses hard-coded denominator 32703)
+  - F52 = +F50/32703 (same constant)
+  - J46 = +J44/32761, J52 = +J50/32761 (hard-coded)
+  - H46 and H52 are hard-coded values (0.05) rather than formulas; L46 and L52 are hard-coded -0.05.
+- Problem: inconsistent approach to denominators / use of hard-coded constants instead of referencing the appropriate weighted-average-shares cells. This is fragile (hard to audit) and inconsistent with basic/diluted EPS referencing F37/F40, etc.
+- Fix: either
+  - Replace hard-coded denominators with the appropriate cell references (e.g., refer to a cell that contains the pro‑forma weighted shares), or
+  - Document why pro forma shares differ (and put those pro‑forma share counts in dedicated cells and reference them).
+  - Also convert H46/H52/L46/L52 to formulas referencing the relevant pro‑forma share cells (unless they are intentionally fixed).
+
+5) Downstream impact from H9 error
+- Cells impacted: H20, H27, H33, H36, H39 and any EPS calculations in column H are currently incorrect because H9 is wrong. Once H9 is fixed these should be re-evaluated.
+
+Balance Sheet sheet
+
+6) G13
+- Current formula: =SUM(G7:G12)
+- Problem: there is no meaningful row G12 in the current assets list (current assets in column G are in G7:G11). I13 uses =SUM(I7:I11). G13 including G12 is inconsistent and looks like an off-by-one range error (maybe left-over from a deleted row). It currently returns the correct number only because G12 is blank/zero, but the range should be corrected for clarity.
+- Fix: change to =SUM(G7:G11) so it matches I13 and the logical list of current assets.
+
+7) (Related) consistency check: totals
+- G22 (=SUM(G13:G20)) and G38 (=SUM(G31:G37)) both equal 375,311, so totals reconcile. But because G13 references G12 incorrectly, keep that fix to avoid future errors if G12 becomes non-zero.
+
+Other notes / suggestions
+
+- Remove unnecessary unary plus (+) prefixes in formulas (e.g., =+F33/F37) — harmless but nonstandard.
+- Standardize whether sums refer to explicit ranges or to subtotal cells (e.g., total current assets is a subtotal cell; total assets sums that subtotal plus other asset rows — consistent approaches are easier to audit).
+- Consider replacing hard-coded constants used as denominators with clearly labeled cells that hold the share counts for each pro forma/presentation; then reference those cells in EPS formulas. This makes the model auditable and less error-prone.
+
+Summary (highest priority)
+- Fix H9 (COUNT → SUM). This is the single biggest formula error and it cascades to many cells.
+- Enter/verify H17 (missing).
+- Correct G13 range to SUM(G7:G11).
+- Review pro‑forma EPS denominators (replace hard-coded numbers with cell references or document their origin).
+- Inspect J17/J23 relationship (possible double-subtraction or inconsistent presentation).
+
+If you want, I can produce corrected formulas for the affected cells (and a short “after-fix” check) or return a version of the workbook with these fixes applied — tell me which you prefer.

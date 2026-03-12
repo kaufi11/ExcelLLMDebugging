@@ -1,0 +1,21 @@
+Summary of the error
+- On the Spring 2003 sheet cell H14 uses COUNT(H10:H13) instead of SUM(H10:H13).
+- COUNT returns how many numeric cells there are (4), not their total — so the Veterinary "Subtotal State Components" and every dependent total (H21, H25) are wrong.
+
+How it breaks the numbers (Spring 2003)
+- H10:H13 actual values: 4391.26 + 46.4 + 48.8 + 219.55 = 4706.01 (correct subtotal)
+- Current H14 (COUNT) = 4 (wrong)
+- Current H21 = H14 + H20 = 4 + 398 = 402 (wrong). Correct H21 = 4706.01 + 398 = 5104.01
+- Current H25 = H21 + H23 + H24 = 402 + 8367.89 + 418.39 = 9188.28 (wrong). Correct H25 = 5104.01 + 8367.89 + 418.39 = 13,890.29
+
+How to fix it (quick)
+1. Go to Spring 2003 sheet → cell H14.
+2. Replace the formula =COUNT(H10:H13) with =SUM(H10:H13).
+3. Press Enter — dependent totals will update automatically.
+
+Why this fixes it (short)
+- SUM adds the component fee amounts to give a subtotal. COUNT only counts how many numeric cells exist, so it produced 4 instead of the monetary subtotal. Changing to SUM restores correct subtotals and downstream totals.
+
+Optional cleanup
+- Scan the sheet for any other COUNT used where SUM is intended (same pattern could exist in other columns/years).
+- Apply consistent number formatting (2 decimals) so small rounding differences (e.g., 219.555) look consistent.

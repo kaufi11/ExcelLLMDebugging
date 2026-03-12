@@ -1,0 +1,41 @@
+Errors found:
+
+1. **Inconsistent ATAN2 argument order in angle calculations:**
+   - Columns J (VS angle), N (IS angle), and similar angle columns use `ATAN2(Gx, Hx)` or `ATAN2(Kx, Lx)` but the correct order for angle in degrees should be `ATAN2(imaginary, real)` i.e., `ATAN2(Hx, Gx)` or `ATAN2(Lx, Kx)`.
+   - Example: In J4, formula is `=ATAN2(G4,H4)*180/PI()`. It should be `=ATAN2(H4,G4)*180/PI()`.
+
+2. **Inconsistent formula in L40:**
+   - In L40, the formula is `=$B$23*F40` instead of `=$B$23*E40` like in other rows.
+   - This inconsistency will cause errors in current imaginary part calculations.
+
+3. **Use of absolute value in B19 (P MW):**
+   - Formula is `=B7*ABS(B8)`. If B8 is power factor (lagging), it should not use ABS but just multiply directly `=B7*B8` to get real power.
+
+4. **Potential circular references or incorrect references:**
+   - Many formulas reference cells like `$B$14` and `$B$24` which themselves depend on other calculations. Make sure these cells are correctly calculated before use.
+   - For example, B14 is `=SQRT(B13/B12)`, B24 is `=B21*SIN(B22*PI()/180)`. If these are zero or invalid, downstream formulas will error.
+
+Solutions:
+
+1. **Fix ATAN2 argument order:**
+   - Change all angle formulas from `=ATAN2(Gx,Hx)*180/PI()` to `=ATAN2(Hx,Gx)*180/PI()`.
+   - Similarly, change `=ATAN2(Kx,Lx)*180/PI()` to `=ATAN2(Lx,Kx)*180/PI()`.
+
+2. **Correct L40 formula:**
+   - Change `=$B$23*F40` to `=$B$23*E40` to be consistent with other rows.
+
+3. **Correct B19 formula:**
+   - Change `=B7*ABS(B8)` to `=B7*B8` to correctly calculate real power with lagging power factor.
+
+4. **Verify input parameters and dependent cells:**
+   - Ensure B12, B13, B14, B23, B24 have valid values before using them.
+   - Check that B14 (Z0) is not zero or invalid to avoid division errors.
+
+Explanation:
+
+- The ATAN2 function takes arguments as (y, x) = (imaginary, real) to calculate the angle correctly. Reversing these arguments gives wrong angles.
+- Consistency in formulas ensures correct calculations of real and imaginary parts.
+- Using ABS on power factor changes sign and magnitude incorrectly; power factor should be used as is.
+- Valid input parameters prevent errors propagating through formulas.
+
+Summary: Fix ATAN2 argument order, correct L40 formula, fix B19 power formula, and verify input values to correct errors.

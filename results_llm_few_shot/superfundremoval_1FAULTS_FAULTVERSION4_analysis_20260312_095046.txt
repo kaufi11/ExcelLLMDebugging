@@ -1,0 +1,20 @@
+Summary — main error found
+- Faulty cell: Sheet "PART Qs & Section Scoring", G21.
+- Problem: Typo in the weighted-score formula uses 704 instead of 1, so G21 = 704 * F21 rather than 1 * F21. That makes the weighted score huge and blows up the Section II total (G24).
+
+Fix (direct)
+- Replace the formula in G21 with the same pattern used in the other weighted-score cells. For example:
+  =IF(C21="Yes",F21,IF(C21="No",0,""))
+- Or exactly matching the original pattern:
+  =IF(C21="yes",(1*F21),IF(C21="no",(0*F21),""))
+
+Why this fixes it (short)
+- Each weighted score should be either the weight (when answer = Yes), zero (when No), or blank for N/A. Using 704 multiplies the weight by 704 instead of selecting the weight itself, so the section sums are wrong. Changing 704→1 makes G21 consistent and restores correct totals.
+
+Minor recommendation (optional but useful)
+- The "total section score" checks use exact equality to 100% (e.g., IF(SUM(F6:F10)<>100%,"ERROR","100%")). Because of rounding, exact comparisons can fail. Use a rounded/tolerance check to be robust, e.g.:
+  =IF(ROUND(SUM(F6:F10),4)<>1,"ERROR","100%")
+  or
+  =IF(ABS(SUM(F6:F10)-1)>0.0001,"ERROR","100%")
+
+If you want, I can scan the whole sheet and replace all weighted-score cells with a single consistent formula (and apply the safer total-check formula).

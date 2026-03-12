@@ -1,0 +1,20 @@
+I inspected the sheet formulas and found one clear formula error plus a couple of minor inconsistencies / improvements to consider.
+
+1) Wrong formula (bug)
+- Cell: F19
+- Problem: F19 contains the hard-coded formula/value "=2" while every other row in column F uses F = -LOG(E?,2). Because F19 is wrong, G19 (E19*F19) is also wrong and the G-column total (G46) is incorrect.
+- Fix: Change F19 to the same pattern as the other rows:
+  =-LOG(E19,2)
+- Effect of fix:
+  - Correct G19 (E19 * -LOG(E19,2)) = 0.348003680561918 (currently 0.217391304347826)
+  - Corrected G46 (SUM(G19:G44)) ≈ 4.26164451318344 (currently 4.13103213696935)
+
+2) Minor inconsistency (not an error)
+- Cell: C13 uses an explicit sum expression =C7+C8+C9+C10+C11. It is correct (gives H(A) = 2.14643934467102), but for consistency and maintainability consider using =SUM(C7:C11).
+
+3) Notes / observations
+- The left-hand 26-symbol distribution (A19:A44) and its entropy sum (C46 = SUM(C19:C44) = 4.63161566522559) are internally consistent.
+- The computed maximum entropy formula in C47 and G47 (=26*((1/26)*-LOG((1/26),2))) is correct (it simplifies to -LOG(1/26,2) = log2(26) ≈ 4.70043971814109).
+- After fixing F19, the entropy for the E-distribution (G46) will remain less than the maximum (G47), as expected.
+
+If you want I can (a) produce the exact updated workbook values after correcting F19, or (b) scan for similar hard-coded/accidental values elsewhere (I only found F19 as the outlier).

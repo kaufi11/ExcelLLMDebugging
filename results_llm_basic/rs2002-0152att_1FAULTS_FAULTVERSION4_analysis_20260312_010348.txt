@@ -1,0 +1,33 @@
+Summary of the errors
+- Many "Cumulative" formulas are summing the wrong column: they add the Project Funds Requested (column G) instead of the Approved/Awarded Funds (column H). This appears mostly on the "Watershed Protection" sheet (I7, I8, I9, I10, I11, I13, I14, I15, I16, I17, I18 …). That causes the cumulative totals to reflect requested money rather than awarded money.
+- One obvious formula typo on "Coastal NPS-Reg 1,2,3" sheet: I22 is =262+H22. That is wrong (262 is just a number) — it should add the previous cumulative cell + H22.
+
+Why these are wrong
+- The cumulative column is intended to show total awarded funds (the funding being counted against the limit). Using column G (requested) overstates the amount actually awarded when H < G.
+- A constant (262) in a cumulative formula breaks the running total and is not maintainable.
+
+How to fix (simple, safe methods)
+Option A — quick fix using running-sum pattern:
+1. On the sheet with the problem (e.g., "Watershed Protection"), go to cell I7 and put:
+   =H7
+2. In I8 put:
+   =I7 + H8
+3. Copy I8 down the I column for all rows. This will produce a correct running total of awarded funds.
+
+Option B — single-formula SUM that is easy to copy:
+1. In I7 put:
+   =SUM($H$7:H7)
+2. Copy that formula down the column. Each row will give cumulative sum of column H up to that row.
+
+Specific correction for the typo
+- On "Coastal NPS-Reg 1,2,3" replace I22 (=262+H22) with:
+  =I21 + H22
+  or better:
+  =SUM($H$7:H22) (if you adopt the SUM method)
+
+Suggested checklist to finish
+- Update all "Cumulative" formulas on every sheet so they reference H (Awarded/Approved Funds), not G.
+- Recalculate/scan rows where H < G to confirm the cumulative decreases relative to previous incorrect totals.
+- If you want a master check: after fixing, the final cumulative cell should not exceed the stated funding limit in the header.
+
+If you want, I can generate the exact formulas for every affected cell or provide a short VBA macro to correct all sheets at once. Which would you prefer?

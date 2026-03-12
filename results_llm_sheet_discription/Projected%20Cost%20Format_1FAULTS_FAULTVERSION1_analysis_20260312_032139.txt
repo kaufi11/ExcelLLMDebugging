@@ -1,0 +1,39 @@
+Short, clear summary of the errors and fixes.
+
+1) Sheet "Seq Production Costs" — incorrect Other Activities total
+- Error: G21 contains =COUNT(G19:G20). COUNT returns an integer count (0,1,2) not a dollar total. That integer is then added to dollar totals in B23 (=B21+D21+G21), producing an incorrect One Year Total.
+- Fix: Replace G21 formula with =SUM(G19:G20).
+- Why: SUM adds the monetary values from the Other Activities totals (G19 and G20) so B23 will be the true dollar sum of Shotgun + Finished + Other.
+
+2) Sheet "Tech Dev Costs" — % of Total divides by zero / inconsistent total
+- Symptom/error: B18 =B17/B6 will give #DIV/0 if B6 (TOTAL COSTS) is left 0 (template default). Also the sheet lacks a clear formula linking category sums, total direct, indirect, and sheet Total.
+- Fix (recommended reliable structure):
+  - Put B15 =SUM(B9:B14) (Total Direct Costs).
+  - Ensure B16 holds Indirect Costs (user input).
+  - Put B17 =SUM(B15,B16) (Total Tech Dev Costs).
+  - Put B6 =B17 (or B6 =SUM(B9:B16)) so the sheet-level TOTAL COSTS equals the computed total.
+  - B18 will then be B17/B6 and correctly return 1 (100%) or the correct percent if B6 is adjusted to a different grand total.
+- Why: This avoids divide-by-zero and makes totals consistent/automated (user only fills category rows).
+
+3) Sheet "Bioinformatics Costs" — same divide-by-zero and missing aggregation
+- Symptom/error: B18, B31, B44 divide by $B$6 which defaults to 0; that yields #DIV/0. B6 is not linked to the three block totals, so percent calculations are unreliable.
+- Fix (recommended):
+  - Keep block totals: B17 =SUM(B9:B16) (Infrastructure total — if not present add it), B30 =SUM(B22:B29) (Assembly total), B43 =SUM(B35:B42) (Annotation total).
+  - Set B6 =SUM(B17,B30,B43) so sheet TOTAL COSTS is the sum of the three blocks.
+  - Leave B18 =B17/$B$6, B31 =B30/$B$6, B44 =B43/$B$6 — they will now produce correct percentages.
+- Why: This links the sheet total to the three component totals and prevents division by zero.
+
+Quick checklist of exact formula changes to make
+- Seq Production Costs (Sheet1)
+  - G21: change =COUNT(G19:G20) → =SUM(G19:G20)
+- Tech Dev Costs (Sheet2)
+  - B15: enter =SUM(B9:B14)
+  - B17: change to =SUM(B15,B16)
+  - B6: set =B17 (or =SUM(B9:B16))
+- Bioinformatics Costs (Sheet3)
+  - B17: ensure =SUM(B9:B16)
+  - B30: ensure =SUM(B22:B29)
+  - B43: ensure =SUM(B35:B42)
+  - B6: set =SUM(B17,B30,B43)
+
+If you want, I can produce an updated mini-sheet (list of cells and final formulas) you can paste into your workbook to fix these automatically.

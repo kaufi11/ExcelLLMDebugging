@@ -1,0 +1,45 @@
+Summary: several formulas on the FINANCIAL DATA & ANALYSIS sheet are wrong. The root cause is twofold:
+1) Some totals/averages only use columns C and E (or only G) and omit column G entirely.  
+2) There are typos referencing the wrong cell (example: C2 instead of C20).
+
+Why this matters: omitting a source column or using the wrong reference gives incorrect totals and incorrect weighted averages (duration, average lengths, etc.).
+
+Concrete errors I found (representative list) and how to fix them
+
+1) Wrong totals (only taking one column)
+- I10 (NUMBER OF HANDSETS) — currently: =G10  
+  Fix: =C10+E10+G10
+- I11 (PLANNED NO. OF HANDSETS) — currently: =G11  
+  Fix: =C11+E11+G11
+
+2) Weighted-average formulas that omit column G (and one with a typo)
+- I16 (AVE. DURATION OF CALLS (SECS) for local calls) — currently uses only C & E:
+  Fix: =IF(I14<>0,((C14*C16)+(E14*E16)+(G14*G16))/I14,"")
+  Explanation: numerator = sum(volume * duration) across all three data columns; denominator = total calls (I14).
+
+- I22 (AVE. DURATION OF CALLS (SECS) for long-distance) — currently: =IF(C2+E20<>0,((C20*C22)+(E20*E22))/(C20+E20),"")
+  Problems: C2 is a typo; formula omits G.  
+  Fix: =IF(I20<>0,((C20*C22)+(E20*E22)+(G20*G22))/I20,"")
+
+- I34 (AVE. DURATION OF CALLS (SECS) for LD→mobiles) — currently uses only C & E:  
+  Fix: =IF(I32<>0,((C32*C34)+(E32*E34)+(G32*G34))/I32,"")
+
+- I61 (AVE. CALL LENGTH (SECS) for inbound 1800) — currently uses only C & E:  
+  Fix: =IF(I59<>0,((C61*C59)+(E61*E59)+(G61*G59))/I59,"")
+
+- I67 (AVE. CALL LENGTH (SECS) for inbound 1300) — currently: =E67 (or otherwise incorrect)  
+  Fix: =IF(I65<>0,((C67*C65)+(E67*E65)+(G67*G65))/I65,"")
+
+General rule / pattern to apply everywhere
+- Totals: I[row] = C[row] + E[row] + G[row]
+- Average cost per call: Iavg = IF(Itotal_calls<>0, Itotal_cost / Itotal_calls, "")
+- Weighted average duration (or any weighted mean): IF(Itotal_calls<>0, (C_calls*C_duration + E_calls*E_duration + G_calls*G_duration) / Itotal_calls, "")
+
+How to find & fix other instances quickly
+- Search formulas for occurrences of patterns "C" and "E" only (e.g., find formulas containing "C32+E32" or missing "+G").
+- Also search for obvious typos (e.g., "C2+" or other wrong row refs).
+- Standardize formulas by referring to the column I totals for denominators (easier & less error prone): e.g., denominator = I14 or I20 etc.
+
+If you want I can:
+- Give corrected formulas for every weighted-average cell in the sheet, or
+- Provide a small macro or Find/Replace list to replace the buggy patterns automatically.

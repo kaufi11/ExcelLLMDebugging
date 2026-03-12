@@ -1,0 +1,114 @@
+Errors found:
+
+1. **Division by zero in percentage variance formulas:**
+   - In annex e and annex f sheets, many percentage variance formulas use this pattern:
+     ```
+     =IF(H9=0,"N/A",(J9/H9)*100)
+     ```
+     When the original forecast (e.g., H9) is zero, the formula returns "N/A" to avoid division by zero.
+   - This is correct behavior, but if original forecast values are zero and actual or revised values are non-zero, the variance percentage is "N/A," which might be misleading or unhelpful.
+
+2. **In annex g (Operating Cash Flow), circular references in balance b/f rows:**
+   - For example, in annex g cell I18:
+     ```
+     =H19
+     ```
+     and in H19:
+     ```
+     =SUM(H17:H18)
+     ```
+     This creates a circular reference because H18 depends on I18, and I18 depends on H19, which depends on H18.
+   - Similar pattern repeats for subsequent months, causing circular references.
+
+3. **In annex g, inconsistent formulas in totals:**
+   - For example, in T18 (Balance b/f total):
+     ```
+     =H18
+     ```
+     But T19 (Balance c/f total):
+     ```
+     =S19
+     ```
+     This inconsistency may cause errors in total calculations.
+
+4. **In annex f, in cell K68 (Total Funds variance %), formula is:**
+   ```
+   =K48
+   ```
+   - This is a direct reference to a variance percentage in another cell, which is acceptable but may cause confusion if the referenced cell changes unexpectedly.
+
+5. **In annex g, cell T19 (Balance c/f total) formula is:**
+   ```
+   =S19
+   ```
+   - This references a single month instead of summing all months, which is inconsistent with other totals.
+
+---
+
+### Solutions:
+
+1. **For division by zero in variance % formulas:**
+   - Keep the `IF` condition to avoid errors.
+   - Optionally, add a note or conditional formatting to highlight when original forecast is zero to clarify "N/A" means no meaningful percentage.
+
+2. **Fix circular references in annex g balance b/f rows:**
+   - Change the balance b/f formulas to refer to the previous month's balance c/f instead of the next month's balance b/f.
+   - For example, in I18, use:
+     ```
+     =H19
+     ```
+     is correct only if H19 is not dependent on I18.
+   - Instead, set balance b/f for each month to previous month's balance c/f:
+     - I18 = H19
+     - J18 = I19
+     - K18 = J19
+     - and so on.
+   - But since H19 depends on H18, this creates circularity.
+   - **Better approach:** Set initial balance b/f (H18) manually or from data, then for subsequent months:
+     ```
+     I18 = H19
+     J18 = I19
+     ```
+     and ensure H19 is:
+     ```
+     =H17 + H18
+     ```
+     This is correct if H18 is input or static.
+   - If circular reference persists, enable iterative calculations or redesign logic to avoid circularity.
+
+3. **Fix inconsistent total formulas in annex g:**
+   - For totals like T18 and T19, use consistent summing formulas:
+     - T18 (Balance b/f total):
+       ```
+       =SUM(H18:S18)
+       ```
+     - T19 (Balance c/f total):
+       ```
+       =SUM(H19:S19)
+       ```
+   - This ensures totals represent the sum across all months.
+
+4. **In annex f, cell K68 referencing K48 is acceptable but clarify:**
+   - Add a comment or note explaining that K68 variance % is same as K48 variance % for transparency.
+
+5. **In annex g, fix T19 formula:**
+   - Change from:
+     ```
+     =S19
+     ```
+     to
+     ```
+     =SUM(H19:S19)
+     ```
+   - To correctly sum all months' balance c/f.
+
+---
+
+### Summary:
+
+- Division by zero handled correctly with IF statements; clarify "N/A" meaning.
+- Circular references in annex g balances cause errors; fix by adjusting formulas to avoid circularity or enable iterative calculations.
+- Totals in annex g should sum all months, not reference a single month.
+- Cross-sheet references should be documented for clarity.
+
+These fixes will improve accuracy and usability of the workbook.

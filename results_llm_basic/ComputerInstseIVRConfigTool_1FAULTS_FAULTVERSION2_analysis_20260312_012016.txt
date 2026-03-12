@@ -1,0 +1,53 @@
+I reviewed the sheet and found several incorrect formulas and inconsistent logic. Below are the problems (short), why they’re wrong, and exactly how to fix each one. Use the dollar-locked G$2 so copying works.
+
+1) Wrong constant in F5
+- Problem: F5 = PRODUCT(887,D5) — 887 is a stray hard-coded number.
+- Why: Should use the row quantity C5.
+- Fix: F5 = PRODUCT(C5,D5)  (or =C5*D5)
+
+2) Custom Programming (rows 78–81) — inconsistent dealer calculation
+- Problem: E78..E81 use PRODUCT(C#,175) (hard-coded 175) while D# = 195 and elsewhere dealer price uses G2 (0.75).
+- Why: Inconsistent/hard-coded value; likely intended to use the standard dealer multiplier.
+- Fix (recommended): E78 = PRODUCT(C78,D78,$G$2) and likewise for E79–E81. Client prices (F78..F81) remain PRODUCT(C#,D#).
+
+3) Warranty formulas (rows 85–86) — incorrect references and placement
+- Problems:
+  - D85 = PRODUCT(F82,0.09) and D86 = PRODUCT(F82,0.18) place totals into the NPL Price column.
+  - E85 = PRODUCT(F85,0.9) references F85 (circular-style logic) and uses 0.9 (not G2).
+  - F85 = PRODUCT(F82,C85,0.09) mixes total (F82) with quantity C85 and writes result into the client-price cell in an inconsistent way.
+- Why: These formulas mix totals and unit columns incorrectly and don’t follow the sheet’s normal pattern.
+- Clean, clear approach (pick one):
+  Option A (preferred — treat warranty as percentage of SOFTWARE TOTAL):
+   - Set C85 = 1 (or leave C85 as the desired quantity, e.g. 0/1).
+   - D85 = F$82 * 0.09         (unit price = 9% of software total)
+   - F85 = PRODUCT(C85,D85)    (client price = qty * unit)
+   - E85 = PRODUCT(C85,D85,$G$2) (dealer price = qty * unit * G2)
+   - Repeat for row 86 using 0.18 (18%) instead of 0.09.
+  Option B (if you want the client price directly):
+   - F85 = F$82 * 0.09
+   - E85 = F85 * $G$2
+   - (leave C85/D85 blank or use them consistently)
+
+4) Installation/Training dealer price formula (rows 91–94)
+- Problem: E91..E94 use PRODUCT(C#,1000) (hard-coded 1000) while D# = 1200. That doesn’t match the pattern (dealer = qty * price * G2)
+- Fix: E91 = PRODUCT(C91,D91,$G$2) and likewise E92, E93, E94.
+
+5) Totals for entire sheet (rows 82 and 109) — simplify and ensure full ranges
+- Problem: E109 = SUM(E82,E85:E108) and F109 = SUM(F82,F85:F108). These work but are non-standard and may omit rows if layout changes.
+- Fix (cleaner): 
+  - E109 = SUM(E82:E108)
+  - F109 = SUM(F82:F108)
+  - (Keep E82 = SUM(E4:E81) and F82 = SUM(F4:F81) as-is.)
+
+6) Miscellaneous / minor items to check
+- Row 5’s error fixed above.
+- PRODUCT(C73:D73) syntax (used in F73–F75) is acceptable (range product), but for consistency use PRODUCT(C73,D73) or =C73*D73.
+- Rows with D57 and D60 show "CALL" (text) — these are non-numeric. That’s OK if intentional, but will break any SUM/PRODUCT expecting numbers. If they should be numeric, replace with numeric value.
+- Several duplicate codes (1322-PROS repeated) are allowed but check if intended.
+
+Summary of recommended standard formula pattern
+- Dealer Price (E) = =C#*D#*$G$2  (or =PRODUCT(C#,D#,$G$2))
+- Client Price (F) = =C#*D#         (or =PRODUCT(C#,D#))
+- Use absolute reference $G$2 so copying down applies the same multiplier.
+
+If you want, I can produce a corrected list of exact formulas for every changed cell ready to paste, or a small macro that fixes all occurrences. Which would you prefer?

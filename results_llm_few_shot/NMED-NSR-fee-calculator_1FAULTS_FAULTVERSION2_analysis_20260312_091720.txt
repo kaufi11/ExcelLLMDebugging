@@ -1,0 +1,28 @@
+Found problems (short):
+
+1) Faulty cell: C23
+- Error: Hard-coded value (2) instead of using the number you enter in B23.
+- Why: The row is "NSPS (number of NSPS)" so the formula should multiply the user input (B23) by 2, not always return 2.
+- Fix: =IF(B23<>"",2*B23,0)
+- Explanation: If B23 contains a count, this returns 2 points per NSPS; otherwise 0.
+
+2) Faulty cells: C30 and C34 (not critical but brittle)
+- Error: They return "" (text) as the "else" outcome. Mixing text and numbers can break numeric tests or make formulas less reliable.
+- Why: SUM and comparisons usually treat "" as zero, but it’s safer to return numeric 0.
+- Fixes:
+  - C30: =IF(B31<>"",0,IF(B30<>"",20,0))  (or =IF(B31="",IF(B30<>"",20,0),0))
+  - C34: =IF(B35<>"",0,IF(B34<>"",10,0))  (or =IF(B35="",IF(B34<>"",10,0),0))
+- Explanation: These return numeric 20 or 10 when appropriate, otherwise 0. This avoids mixing text and numbers and makes SUM/>,OR tests reliable.
+
+3) Suggested improvement: F5 (displaying final fee)
+- Current: =IF(C43="N/A",C42,C43) — works but if C43 is blank it returns blank.
+- Better (robust): =IF(ISNUMBER(C43),C43,C42)
+- Explanation: If C43 is a numeric half-fee use it; otherwise show the full fee (C42). This avoids returning blanks or text.
+
+Summary of recommended edits to paste into the cells:
+- C23: =IF(B23<>"",2*B23,0)
+- C30: =IF(B31<>"",0,IF(B30<>"",20,0))
+- C34: =IF(B35<>"",0,IF(B34<>"",10,0))
+- (optional) F5: =IF(ISNUMBER(C43),C43,C42)
+
+These changes fix the incorrect hard-coded value and make the sheet consistently numeric so totals and logical checks behave correctly.

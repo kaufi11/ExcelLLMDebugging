@@ -1,0 +1,47 @@
+Spreadsheet overview (concise)
+
+General
+- Two sheets: "Example" and "Formulas". Both contain the same model and assumptions (the "Formulas" sheet appears to be a duplicate; one minor formula sign difference noted for Gross margin on that sheet).
+- Layout: column A holds labels; period headers are in row 16 (B16 = August, D16 = September). Calculation columns use C for August results and E for September results. Many cells use absolute references to the Assumptions block.
+
+Key assumptions (A1:A14 / B2:B14)
+- Base Sales = 184,000
+- % Sales Increase = 0.02 (2%)
+- Base Inventory Balance = 50,000
+- Additional end inventory = 20% of next period sales
+- Purchases as % of Sales = 60%
+- 7/31 Inventory = 80,000
+- October sales = 198,000
+- Monthly salaries = 15,000
+- Sales commission = 6%
+- Rent (cash) = 14,000
+- Depreciation = 3,000
+- Insurance expense (prepaid) = 1,000
+- Income tax rate = 30%
+
+Income statement (rows 17–27)
+- Sales revenue: C17 = ROUND(B2*(1+B3),-3) ; E17 = ROUND(C17*(1+B3),-3) — chain growth by 2%, rounded to nearest 1,000.
+- COGS (A18) references the COGS schedule result (C34 / E34).
+- Gross margin = Sales − COGS.
+- Operating expenses: salaries & commissions (B21 / D21) use ROUND($B$9 + $B$10 * Sales, -3); rent, depreciation, insurance use fixed assumption values; totals summed (C24 / E24).
+- Operating income = Gross margin − Operating expenses.
+- Income tax = ROUND(Operating income * $B$14, -3).
+- Net income = Operating income − Income tax.
+
+COGS schedule (rows 29–34)
+- Beginning inventory: C30 = B7 (7/31 inventory); E30 = C33 (prior period ending inv).
+- Purchases = ROUND(Sales * $B$6, -3).
+- Cost of goods available = Beginning inventory + Purchases.
+- Ending inventory = ROUND($B$4 + $B$5 * next period sales, -3). (C33 uses E17 as the "next period" for August; E33 uses B8 (October sales).)
+- COGS = Available for sale − Ending inventory.
+
+Rounding and linking rules
+- Many values rounded to thousands using ROUND(..., -3).
+- Inter-period links: sales growth is chained (C17 → E17), ending inventory references next period sales, and beginning inventory pulls prior period ending.
+- Several summary/working cells for cash collections/disbursements (rows ~36–46 and F-column) are placeholders: e.g., F38 = E38 + C37, F42 = D42 + B41, F44 = D44 + B43 (combine current + prior).
+
+Notes / quirks
+- Duplicate "Formulas" sheet mirrors "Example"; on that sheet A19 shows a negative sign in the Gross margin formula ("-C17-C18"), likely a typo compared to the Example sheet.
+- Ending inventory logic uses base inventory + percent of next period sales (not a percentage of current sales) — important for expected inventory levels.
+
+Overall: a two-period (August/September) income statement and COGS schedule driven by a small Assumptions block, with purchases as a % of sales, ending inventory set as base + 20% of next-period sales, operating expenses fixed or formula-driven, and taxes/NI rounded to thousands.

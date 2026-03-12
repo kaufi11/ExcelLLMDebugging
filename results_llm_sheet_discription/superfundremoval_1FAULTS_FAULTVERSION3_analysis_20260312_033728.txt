@@ -1,0 +1,52 @@
+Summary — errors found
+1) Wrong logic in G21 (Section II, row 21). That formula is inverted and will give 0 for "Yes" and the weight for "No" (opposite of intended).
+2) Formulas that test the text in column C are fragile: they rely on exact text (and could break with extra spaces, different capitalization or alternate answers).
+3) Weight-sum checks can return "ERROR" because of small rounding differences (floating point), even when the visible decimals sum to 1.00.
+4) Some cells in your description show formulas as text ("FORMULA =..."). If the same appears in the workbook, those are not active formulas.
+
+Fixes + short explanations
+
+1) Fix G21 (inverted IF)
+- Replace the bad formula:
+  =IF(C21<>"yes",(1*F21),IF(C21<>"no",(0*F21),""))
+- With a correct, consistent formula (simple):
+  =IF(C21="yes",1*F21,IF(C21="no",0*F21,""))
+Explanation: This matches the pattern used elsewhere — returns the weight when answer = Yes, zero when No, blank otherwise.
+
+Better (more robust) version using TRIM/LOWER to ignore case/extra spaces:
+  =IF(TRIM(LOWER(C21))="yes",F21,IF(TRIM(LOWER(C21))="no",0,""))
+
+2) Make answer-checking robust (avoid broken matches)
+- Problem: IF(Cx="yes",...) fails if Cx contains " Yes", "YES", "Small Extent" with different spacing/case, or user types slightly different text.
+- Solution: either
+  a) Add Data Validation (column C) with a dropdown list of allowed answers (Yes, No, N/A, Small Extent, Large Extent). This prevents typos.
+  b) Or change formulas to normalize the cell text, e.g.:
+     =IF(TRIM(LOWER(C6))="yes",F6,IF(TRIM(LOWER(C6))="no",0,""))
+Explanation: TRIM and LOWER make the tests case- and space-insensitive.
+
+3) Weight-sum validation tolerant of rounding
+- Current: =IF(SUM(F6:F10)<>100%,"ERROR","100%")
+- Problem: SUM(...) can be 0.9999999 or 1.0000001 due to floating point, causing false "ERROR".
+- Fix (use ROUND or tolerance):
+  =IF(ROUND(SUM(F6:F10),3)<>1,"ERROR","100%")
+  or
+  =IF(ABS(SUM(F6:F10)-1)>0.0001,"ERROR","100%")
+Explanation: Rounding or a small tolerance avoids false errors while still catching real mistakes.
+
+4) If formulas are showing as literal text
+- Problem: cells containing text like "FORMULA =IF(...)" will not calculate.
+- Fix:
+  - Remove any leading apostrophe (') and the word "FORMULA =" so the cell contains only the actual formula starting with =.
+  - Or re-enter the formula directly into the cell.
+Explanation: Excel treats text starting with a quote or non-equal text as plain text; formulas must start with = to be executed.
+
+Quick checklist to clean the sheet
+- Correct G21 as shown above.
+- Put Data Validation dropdown on column C (standardize allowed answers).
+- Replace per-question IF formulas with TRIM(LOWER(...)) versions (optional if you enforce validation).
+- Replace weight checks with ROUND or ABS tolerance formulas.
+- Scan for any formula-text entries, remove extra text/leading apostrophes and re-enter formulas.
+
+If you want, I can give:
+- A list of exact cells and the corrected formulas ready to paste, or
+- A one-click macro to fix all answer-check IF formulas to the robust TRIM+LOWER form.

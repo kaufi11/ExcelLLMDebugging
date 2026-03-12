@@ -1,0 +1,20 @@
+Findings (short)
+- Main error: cell A23 contains =+A22+808. That adds 808 to the previous number and causes a huge, incorrect jump (A23 = 827) breaking the sequential numbering for all rows below.
+- Other notes: using =+A4+1 is not an error (Excel accepts it) but the leading + is redundant. There are header rows inserted (e.g. "Desktop Courses") so some A cells are intentionally skipped — that’s OK if you want to keep headers.
+
+Why it's wrong
+- A23 should add 1 to the previous ID to continue the sequence. +808 was almost certainly a mistype, so every following row's ID is offset by +807.
+
+Quick fix (exact steps)
+1. Select A23.
+2. Replace the formula with =A22+1 (or =+A22+1 if you prefer the old style).
+3. With A23 selected, drag the fill handle (or double‑click it) down the column to reapply the corrected +1 sequence for all following rows.
+
+Alternative robust methods (optional)
+- Use a formula that ignores header rows and only numbers actual course rows, e.g. in A4:
+  - =IF(B4="","",ROW()-3)
+  This auto-numbers based on row position and leaves IDs blank when column B is blank.
+- Or use a running max to avoid accidental jumps:
+  - In the first ID row put 1, then in the next rows use =IF(B5="","",MAX($A$4:A4)+1)
+
+That’s it — fix A23 and then fill down; the numbering will be correct again.

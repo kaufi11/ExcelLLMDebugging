@@ -1,0 +1,48 @@
+I reviewed the 4 sheets and found the main problems. Short summary first, then exact fixes.
+
+Summary of errors (what, why, and fix)
+1) Total LOE — Grand Total excludes the last option (Opt. 7)
+   - Problem: B70 = SUM(B68:H68) — this sums only through Opt. 6 and misses I68 (Opt.7).
+   - Why it matters: Grand Total is understated (last period not included).
+   - Fix: change B70 to =SUM(B68:I68)
+
+2) T&M Type — Grand Total excludes the final option and uses wrong SUM range
+   - Problem: B62 = SUM(B60:T60) — that stops at column T and misses W60 (Opt.7).
+   - Why: totals for all periods are not included.
+   - Fix: change B62 to either
+     - =SUM(B60:W60) (quick) or
+     - =SUM(B60,E60,H60,K60,N60,Q60,T60,W60) (explicitly sums only the totals columns)
+   - I also found the same pattern risk on other sheets — check other Grand Totals (see item 4).
+
+3) Hard-coded / broken chain in T&M (single cell)
+   - Problem: H30 contains the constant 3 (a hard number) instead of the expected chained formula.
+   - Why: it breaks the +2% chaining for subsequent options (K30, N30, etc.) so those options are wrong.
+   - Fix: replace H30 with the proper chained formula used elsewhere, e.g.
+     - H30 = E30 + (E30 * 0.02)
+     (then K30 = H30 + (H30 * 0.02) will work as intended)
+
+4) Wrong increment percentage (typo 0.023 instead of 0.02) in many N‑column formulas
+   - Problem: On Fixed Price, Cost Type, T&M sheets several N‑column formulas are written like =K5+(K5*0.023) (and similar). Everywhere else the chain uses 0.02 (2%), so 0.023 is almost certainly a typo.
+   - Why: those N‑column values will be slightly larger (2.3% vs 2.0%), causing inconsistencies across periods and sheets.
+   - Fix: change all occurrences of "*0.023" to "*0.02" unless there's an intentional reason to use 2.3% for that specific option.
+   - How to fix fast: Use Find & Replace in formulas (Ctrl+H)
+     - Find: *0.023
+     - Replace with: *0.02
+     - (Or search for "0.023" and replace with "0.02"; review matches before committing.)
+
+5) Fixed Price sheet — missing consolidated Grand Total row
+   - Problem: I see totals per option (E59, H59, K59, N59, Q59, T59, W59) but no overall Grand Total cell/formula was provided.
+   - Why: you likely want a single grand total across all fixed-price option totals.
+   - Fix: add a Grand Total cell and formula, e.g.
+     - =SUM(E59,H59,K59,N59,Q59,T59,W59)
+     - Or =SUM(E59:W59) (but that includes intermediate columns; explicit sum is safer)
+
+Other notes / sanity checks
+- The "+2%" chaining pattern is used consistently for Opt.1, Opt.2, Opt.3, etc. Ensure that all chained cells follow the sequence (E -> H -> K -> N -> Q -> T -> W) and none are overwritten with constants.
+- If some options are intentionally different (e.g., one option should be +2.3%), document those cells so they are not accidentally replaced by the bulk Find/Replace.
+- After fixes, recalculate and compare Grand Totals before/after to verify the impact.
+
+If you want, I can:
+- Generate the exact list of cells containing "*0.023" so you can confirm them before replacing.
+- Provide the exact corrected formulas for any specific rows you care about (send the row numbers).
+- Or, if you upload the workbook, I can make the corrections and return it.

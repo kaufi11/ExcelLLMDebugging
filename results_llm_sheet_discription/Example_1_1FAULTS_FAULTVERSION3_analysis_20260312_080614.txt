@@ -1,0 +1,32 @@
+Summary of the problems
+- Q4 Homework, cell H5 (Evans total) is wrong: it contains =1 instead of summing the row. This makes Evans’s homework total 1 (should be 273) and causes wrong numbers downstream.
+- Q4 Summary, cell F3 (weighted "Points Possible" check) has a typo: it multiplies C3 by 0 (C3*0) instead of by the quiz weight 0.1. That makes the points-possible check =270 instead of 300.
+
+Why these matter
+- H5 error cascades: Q4 Summary E6 pulls Evans’s homework total from Q4 Homework!H5, so F6/G6 and Year Summary (Q4, final average, letter grade) are wrong for Evans.
+- F3 is used as a sanity-check (and could be used in other calculations). It should equal 300 when weights sum to 1.0.
+
+How to fix (exact formulas)
+1) Fix Evans total on Q4 Homework:
+   - Q4 Homework!H5 =SUM(B5:G5)
+
+2) Fix points-possible weighted calculation on Q4 Summary:
+   - Replace the faulty formula in Q4 Summary!F3 with either:
+     =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+   (This uses the weights in row 2 and will return 300.)
+
+3) (Optional, recommended) Make the student weighted-score formulas robust and easy to copy:
+   - In Q4 Summary column F (students), use:
+     =B4*$B$2 + C4*$C$2 + D4*$D$2 + E4*$E$2
+   - Copy down for F4:F12. This uses the row-2 weights so you can change weights in one place.
+
+4) (Optional alternative) If you prefer weighting category percentages (safer if category maxes differ), compute the final percent directly in G:
+   - Q4 Summary!G4 (example) =
+     (B4/$B$3*$B$2 + C4/$C$3*$C$2 + D4/$D$3*$D$2 + E4/$E$3*$E$2) * 100
+   - Copy down for all students. This weights each category by its percent-of-max rather than raw points.
+
+What happens after the fixes
+- Evans’s homework total becomes 273; Q4 Summary E6/F6/G6 update; Year Summary Q4 and averages/letter grade for Evans will update correctly.
+- F3 will read 300, matching total possible points when weights sum to 1.0.
+
+If you want, I can give the exact cell-by-cell corrected formulas (with $ anchors for copying) for all affected cells or convert the workbook to the percentage-based weighting approach.

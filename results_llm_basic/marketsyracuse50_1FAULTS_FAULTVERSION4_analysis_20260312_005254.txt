@@ -1,0 +1,21 @@
+Summary of the error
+- Row 25 (BEACON FEDERAL, a Thrift) has F25 = 1.21674489270828 * $E25. That is wrong. Thrift institutions are being weighted at 0.5 * deposits in this sheet (see other thrifts). The incorrect multiplier inflates F25, which makes F36 (weighted total), all market shares (G10:G33) and the HHI (H10:H36) incorrect.
+
+Why it matters
+- F36 (the denominator used to compute market shares) includes the bad F25. That shifts every G% and every H value, so the whole market-share and HHI results are wrong.
+
+Quick fix (one-step)
+- Replace F25 with: =0.5*$E25
+  - After that Excel will recalc F36, all G% cells (=F#/ $F$36*100) and HHI values correctly.
+
+Better, safer solution (prevent future errors)
+- Replace the hard-coded F formulas for the whole range with a rule that uses the Type column, e.g. put this in F10 and copy down to F33:
+  =IF($C10="Thrift",0.5*$E10,1*$E10)
+  or shorter:
+  =IF($C10="Thrift",$E10*0.5,$E10)
+- Benefits: no manual multiplier mistakes; if Type changes the weighting updates automatically.
+
+Check after fix
+- Verify F36 changed (downwards), then confirm each G cell =F#/$F$36*100 and H =G#^2. H36 should be the correct HHI total.
+
+If you want, I can give the exact formulas to paste into F10:F33 and fix F25 for you.

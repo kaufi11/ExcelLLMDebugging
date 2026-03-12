@@ -1,0 +1,42 @@
+Summary — I found 4 types of formula mistakes. Fixing them will make costs and revenue compute correctly.
+
+1) pricing sheet — wrong hard‑coded multiplier
+- Error: Cell pricing!C15 contains =519*Sheet1!$B$20
+- Why wrong: 519 is a hard code; it should multiply the number laid off in the same row (C5).
+- Fix: replace with =C5*Sheet1!$B$20
+- Tip: use absolute reference for the cost: =C5*Sheet1!$B$20 (or =C5*Sheet1!$B$20).
+
+2) Sheet2 — overtime cost formula references shifted (wrong Sheet1 cells)
+- Error: E16..E20 use Sheet1!B24, B25, B26, B27, B28 instead of the overtime rate cell.
+- Why wrong: when formulas were copied the Sheet1 reference moved; overtime cost must always use Sheet1!$B$23.
+- Fix (apply for rows 16→20): change each to:
+  E16 = E6 * Sheet1!$B$23
+  E17 = E7 * Sheet1!$B$23
+  E18 = E8 * Sheet1!$B$23
+  E19 = E9 * Sheet1!$B$23
+  E20 = E10 * Sheet1!$B$23
+- Tip: use Sheet1!$B$23 (absolute) so it does not change when copied.
+
+3) Sheet3 — cost rows reference the wrong sheet (Sheet2) for hiring
+- Error: B15..B20 on Sheet3 use Sheet2!B5..B10 (e.g. B15 = Sheet1!$B$19*Sheet2!B5).
+- Why wrong: costs are being multiplied by workforce/hire numbers on Sheet2 instead of the numbers on Sheet3.
+- Fix (apply for rows 15→20): point to the current sheet's decision variables, e.g.
+  B15 = Sheet1!$B$19 * B5
+  B16 = Sheet1!$B$19 * B6
+  ...
+  B20 = Sheet1!$B$19 * B10
+- Tip: you can also write =Sheet1!$B$19 * Sheet3!B5 to be explicit.
+
+4) Sheet3 — Total Revenue formula incorrect
+- Error: Sheet3!C24 = SUM(J5:J10)*31
+- Why wrong: multiplying the demand sum by 31 is arbitrary and does not match revenue calculation used elsewhere.
+- Fix: use SUMPRODUCT of demand × unit price. If the price column is on the "pricing" sheet (pricing!K5:K10), use:
+  Sheet3!C24 = SUMPRODUCT(J5:J10, pricing!K5:K10)
+  (If you add a price column on Sheet3, use SUMPRODUCT(J5:J10, K5:K10).)
+- Tip: keep one canonical price location and reference it with absolute sheet address.
+
+General recommendation
+- Use absolute references for constant input cells on Sheet1 (e.g. Sheet1!$B$19, Sheet1!$B$20, Sheet1!$B$23, Sheet1!$B$16) so copying formulas down/along will not shift the cost-rate cell references.
+- After fixing, re-check totals (Total Cost, Profit) to confirm numbers change as expected.
+
+If you want, I can produce the exact corrected formulas for every affected cell and a short checklist so you can paste them into the workbook. Which do you prefer?

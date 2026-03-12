@@ -1,0 +1,41 @@
+Summary — main problems I found
+1) Inconsistent / wrong ranges in the summary rows (rows 69–72).  
+   - Examples: B69 =MAX(B33:B68) but B70/B71/B72 use B2:B68. C69 and D69 have the same problem. N69 and Q69 use N17:N68 / Q17:Q68 while the AVERAGE/STDEV rows use N2:N68 / Q2:Q68.  
+   - Some MIN formulas include the summary row (e.g. N70 =MIN(N17:N69) includes N69), which is wrong and can create misleading results or circular references.
+
+2) Operator‑precedence mistakes in some N cells (HW4).  
+   - Formulas like =17+5/2 are evaluated by Excel as 17 + (5/2) = 19.5. If you intended the average (17+5)/2 you must add parentheses.
+
+3) Possible “formula as text” entries.  
+   - Several cells are shown as “FORMULA =20+4”. If the cell literally contains the text "FORMULA =20+4" it will not calculate; the real formula must start with = (e.g. =20+4).
+
+What this causes
+- Wrong maxima/minima/averages/stdev values because some input rows are left out or summary rows are accidentally included.
+- Wrong numeric results where parentheses are missing.
+- Some cells not calculating at all if formulas are stored as text.
+
+Concrete fixes (short)
+1) Make all summary ranges consistent — use the same input rows for every statistic. Example replacements:
+   - B69: =MAX(B2:B68)  (instead of B33:B68)
+   - C69: =MAX(C2:C68)
+   - D69: =MAX(D2:D68)
+   - G69 is OK =MAX(G2:G68) (leave as is)
+   - N69: =MAX(N2:N68)
+   - Q69: =MAX(Q2:Q68)
+   - N70: =MIN(N2:N68)  (do NOT include N69)
+   - Q70: =MIN(Q2:Q68)
+   - B70/B71/B72 etc: make sure they all use B2:B68; similarly for C, D, G, N, Q use the same 2:68 ranges.
+
+2) Fix operator precedence where needed:
+   - If you intended to average two numbers, write =(17+5)/2 not =17+5/2.
+   - Scan column N for any “+5/2” or similar and put parentheses if intended.
+
+3) Convert any literal text formulas to real formulas:
+   - Replace "FORMULA =20+4" (text) with =20+4 (so Excel computes 24). Remove any leading apostrophe or the word FORMULA.
+
+Recommended improvement (optional, one click safer)
+- Convert the data range into an Excel Table (Home → Format as Table). Then use structured references for summaries (automatically adjusts when you add rows) and avoids hardcoded row ranges.
+
+If you want, I can:
+- Provide an exact list of every summary cell you should change (I already gave the main ones), or
+- Produce the corrected formulas for every summary cell (B69:Q72) ready to paste. Which would you prefer?

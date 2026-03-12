@@ -1,0 +1,68 @@
+I reviewed the workbook formulas and checked cross-sheet references and totals. I found no broken Excel formulas, but I did find several inconsistencies and potential errors that could produce incorrect totals or confusing results. Items are grouped by sheet and include suggested fixes.
+
+1) Double‑counting between Non‑Profit and Rehab totals (affects County total)
+- Problem: County!E13 ("Total Requested") = SUM(E9:E12) where
+  - E9 = Municipal!E22 (Municipal total)
+  - E10 = 'Non Profit'!E22 (Non‑Profit total)
+  - E11 = Rehab!E8 (Non‑Profit Rehabilitation total)
+  Because several Rehab projects also appear in the Non‑Profit list (for example CADCOM '41514' Non Profit!E3 = Rehab!E2, Community Cupboard Non Profit!E4 = Rehab!E3, Resources for Human Development Non Profit!E17 = Rehab!E6), part of the Rehab total is already included in 'Non Profit'!E22. Summing both Non‑Profit and Rehab totals in County!E13 therefore double‑counts that overlapping amount (approx. 79,014 based on the three overlapping entries).
+- Effect: County!E13 (7693312.56) overstates the true requested total by the overlapping Rehab amounts.
+- Suggested fix:
+  - Decide whether Rehab projects should be included in the Non‑Profit list or reported only in Rehab. Then:
+    - Option A: Remove Rehab rows from the Non‑Profit list so 'Non Profit'!E22 excludes rehab, OR
+    - Option B: Change County!E13 to use a non‑overlapping aggregation (e.g., SUM of Municipal + Non‑Profit excluding Rehab + County) or use distinct named ranges. Explicitly document which totals are aggregated where.
+
+2) Municipal: inconsistent Recommendation in F5
+- Cell: Municipal!F5 = 730 (formula shown as "=730")
+- Problem: Almost all other recommendations either reference the request (e.g., =E2) or are a reasonable recommended amount. Municipal!F5 is a literal 730 while the request (Municipal!E5) = 147,970. This looks like a typo (maybe intended =E5 or 147,970 or a different recommended amount).
+- Effect: Municipal F total (F22) includes 730 for that row, likely an incorrect recommended amount.
+- Suggested fix: Confirm intended recommendation and either set Municipal!F5 =E5 or the correct recommended numeric value.
+
+3) Missing recommendations (blank F cells) and inconsistent use of =E#
+- Observation: For many rows the Recommend column is either:
+  - equal to the Request via formula (e.g., F2 = E2), or
+  - a hardcoded number, or
+  - blank.
+- Problem: Inconsistent pattern (some rows auto =E#, others blank or hardcoded) can cause confusion and hidden omissions in the recommended totals.
+- Examples: Municipal!F4, F7, F10, F15, F18–F20 are blank; Non Profit has many blank F cells (e.g., F3, F4, F9, F12, F17, F18). Rehab has F2, F3, F6 blank.
+- Suggested fix: Decide a standard approach (e.g., if recommendation = requested by default, set F# = E#; otherwise enter explicit recommended amounts). Fill blanks or document why blank.
+
+4) Use of SUM around a single cell (odd but not erroneous)
+- Cells: Non Profit!E28 = SUM(E27); Non Profit!F28 = SUM(F27); A few other single‑cell SUM usages.
+- Observation: These work but are odd stylistically (SUM of a single cell is redundant). Not an error, but could signal copy/paste or structural inconsistency.
+- Suggested fix: Use direct cell references (e.g., =E27) or widen range if you intend to include more rows.
+
+5) Text in numeric Recommend column preventing inclusion in SUM
+- Cell: AHTF!F10 = "Pending Feasibility Study" (text in Recommend column)
+- Effect: SUM(F3:F13) ignores text cells. If F10 is intended to be a numeric recommendation later, the current sum (AHTF!F14) will exclude it until changed. This may be intentional, but it’s a risk for accidental omission.
+- Suggested fix: If a numeric placeholder is needed, use 0 or a note cell separate from the numeric column. Alternatively keep text in a comment column and keep Recommend numeric.
+
+6) Hard‑coded constant used in Continuum of Care match
+- Cells: AHTF!E16 and AHTF!F16 use the formula =2432890*0.15
+- Problem: The base value 2,432,890 is hard‑coded. If the 2,432,890 figure should come from another cell (a maintained total), this hard‑coding can go out of sync.
+- Suggested fix: Replace the literal with a reference to the cell containing the source total (e.g., =SomeCell*0.15) or document why the literal is fixed.
+
+7) Range choices in AHTF F14
+- Cell: AHTF!F14 = SUM(F3:F13) — note it starts at F3, not F2
+- Observation: F2 has no Recommend value, so excluding it changes nothing at present. But it’s inconsistent (SUM(E2:E13) vs SUM(F3:F13)).
+- Suggested fix: Make the ranges consistent and deliberate: SUM(F2:F13) or SUM(F3:F13) with documentation why F2 is excluded.
+
+8) Cross‑sheet references: ensure intended inclusion/exclusion
+- A few totals reference other sheets correctly, but you should confirm the overall aggregation design:
+  - County!E9 = Municipal!E22 (includes Municipal)
+  - County!E10 = 'Non Profit'!E22 (Non‑Profit)
+  - County!E11 = Rehab!E8 (Non‑Profit Rehab)
+  - County!E12 = E6 (County total)
+  - County!E13 = SUM(E9:E12)
+- As noted in (1), this structure will double‑count any Rehab projects that are also in the Non‑Profit list. Confirm intended logic that Rehab totals are separate or already included in Non‑Profit total.
+
+Summary of highest‑priority corrections
+- Fix the double‑counting between Non‑Profit and Rehab in County totals (decide where Rehab should live and adjust references).
+- Correct Municipal!F5 (730 appears to be an error).
+- Replace hard‑coded constant 2432890 in AHTF!E16/F16 with a cell reference if it should be derived from another total.
+- Standardize Recommend column usage: fill blanks or use F# = E# consistently; remove or relocate text from numeric columns.
+
+If you want, I can:
+- produce corrected formulas (exact replacements) for the problematic cells,
+- suggest a new total layout that avoids double‑counting (e.g., Non‑Profit Net = Non‑Profit total minus Rehab subset; or have County sum Municipal + Rehab + County + Non‑Profit-only),
+- or create a short audit worksheet showing which rows appear in more than one category (to help detect duplicates). Which would you prefer?

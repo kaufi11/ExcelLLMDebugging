@@ -1,0 +1,70 @@
+I reviewed Sheet1 and Sheet2 and found several recurring errors that are causing wrong totals, # errors, and inconsistent percentages. Below are the main problems, why they happen, and short, actionable fixes.
+
+1) Wrong function used — COUNT instead of SUM
+- Example: Sheet1 T19 is =COUNT(D19:S19). COUNT just counts numeric cells; it does not add them.
+- Fix: Replace with a sum: =SUM(D19:S19)
+- Why: You want the total points for homework, not the number of non-empty numeric cells.
+
+2) Hard-coded denominators instead of referencing header totals
+- Examples (Sheet1): U5 = T5/150*100, AR5 = AQ5/350*100, BU5 = BT5/400*100
+- Issue: If the column header totals change (or differ between sections), these hard-coded numbers become wrong.
+- Fix: Use absolute references to the header/total cells that state the maximum points, e.g.:
+  - =T5/$T$1*100 (if T1 holds homework max)
+  - =AQ5/$AQ$1*100 (if AQ1 holds project max)
+  - =BT5/$BT$1*100 (if BT1 holds exams max)
+- Why: Makes formulas robust and consistent across sections/sheets.
+
+3) Non-numeric text in numeric ranges (x, X, ., "+ X", "x  #", etc.)
+- Problem: Text entries don’t sum and can produce #VALUE or cause partial results. Example cells: many BB..BR / AV..AZ ranges include "x", "X", ".", "+ X".
+- Fix:
+  - Replace these entries with 0 (or leave blank) if they mean “missed / zero”,
+  - Or use a standard code (e.g., NA) and treat it consistently,
+  - If you must keep text, wrap sums in IFERROR(e.g. =IFERROR(SUM(range),0)) or use a numeric-only SUM: =SUMIF(range,">=0").
+- Why: SUM ignores pure text but error-values or inconsistent entries break downstream formulas and averages.
+
+4) # or error values inside component ranges break aggregate sums
+- Examples: BR6 shows #, BR9 shows #, BF or BS sometimes return # because one of the contributing cells contains an error or text.
+- Fix:
+  - Find the source of the # (often a text in a numeric place or a divide-by-zero upstream). Correct the source (see #3), or protect the aggregate with IFERROR:
+    - e.g. change =SUM(BN6:BR6) to =IFERROR(SUM(BN6:BR6),0)
+- Why: An error in any cell in a SUM range propagates; IFERROR prevents an error from destroying totals.
+
+5) Off-by-one / inconsistent ranges in class averages and summary rows
+- Examples (Sheet2): BA19 =AVERAGE(BA5:BA16) but data exist through BA17; BF19 =AVERAGE(BF5:BF18) vs data to BF17, etc.; many summary averages use U5:U21 though data rows stop at row 17–19.
+- Fix:
+  - Adjust averages to the actual student rows (e.g. U22 should be =AVERAGE(U5:U19) for rows 5–19), or better: use dynamic ranges / structured tables to auto-expand.
+- Why: Averages that include empty rows or miss last row give incorrect class summary statistics.
+
+6) Inconsistent formula patterns across sheets
+- Example: Sheet2 uses $T$1 and $AQ$1 absolute refs for denominators (good). Sheet1 uses hard numbers (150, 350, 400). Also some SUM ranges differ between sheets.
+- Fix:
+  - Standardize formulas: reference the header maximum cells with absolute references (e.g. $T$1, $AQ$1, $BS$1) on all sheets.
+  - Use copy/paste of the correct formulas (from Sheet2 which is using $ references) into Sheet1 to keep behavior consistent.
+
+7) Individual cells with obvious data entry mistakes
+- Examples: single dots in numeric columns (AA13 has “.”), stray plus signs in numeric cells (BL15 “+ X”), or letters in numeric columns (BL7 “X”). These will break sums or produce wrong totals/averages.
+- Fix: Clean raw data: replace these with numbers or blanks. If they denote special status (excused/late), decide a numeric policy (0 or NA) and apply consistently.
+
+Quick checklist to fix the workbook (recommended order)
+1. Replace COUNT formulas where sums are needed:
+   - e.g. T19: =SUM(D19:S19)
+2. Clean data entries:
+   - Replace all “x”, “X”, “.”, “+ X”, “x  #” etc with 0 or blank (depending on your policy).
+   - Use Find & Replace (Ctrl+F -> Replace) to standardize.
+3. Replace hard-coded denominators with absolute header references:
+   - U5 -> =T5/$T$1*100
+   - AR5 -> =AQ5/$AQ$1*100
+   - BU5 -> =BT5/$BT$1*100
+   - And do the same across all rows and sheets.
+4. Repair any # errors by tracing precedents (Formulas -> Trace Precedents) and fixing their sources; wrap with IFERROR where appropriate:
+   - aggregate example: =IFERROR(SUM(BN5:BR5),0)
+5. Fix summary/average ranges to match actual student rows:
+   - e.g. change U22 from =AVERAGE(U5:U21) to =AVERAGE(U5:U19) (or to the final data row).
+   - Or convert the student area to an Excel Table and use structured references so averages auto-expand.
+6. Recalculate (F9) and re-check class totals, percentages, and letter grades.
+
+If you want, I can:
+- Give a short list of exact cell edits (I can generate a small patch) for Sheet1 rows 5–19 only,
+- Or provide a small VBA macro or Find/Replace steps to clean all “x/X/.” entries and fix the denominator references automatically.
+
+Which would you prefer?

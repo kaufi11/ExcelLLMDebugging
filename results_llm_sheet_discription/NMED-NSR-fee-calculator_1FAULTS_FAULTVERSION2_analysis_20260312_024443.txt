@@ -1,0 +1,25 @@
+Found two real errors and one reliability issue. Short fixes and why:
+
+1) Wrong/Hard-coded NSPS points — C23
+- Problem: C23 is just 2 (constant). It should calculate points based on the number of NSPS entered in B23.
+- Fix: replace with a formula that multiplies the count by 2, e.g.
+  =IF(B23<>"",2*B23,0)
+- Why: this makes C23 return 0 when no input and 2 points per NSPS when B23 contains a number.
+
+2) Formulas returning text "" instead of numeric 0 — C30 and C34 (and similar)
+- Problem: C30 and C34 use "" for the “else” result (blank text). That mixes numbers and text in the point columns and can cause unexpected behavior in other formulas or when you want to use SUM/logic consistently.
+  - C30 currently: =IF(B31="",(IF(B30<>"",20,0)),"")
+  - C34 currently: =IF(B35="",(IF(B34<>"",10,0)),"")
+- Fix: return 0 instead of "" so cells are always numeric. Suggested replacements:
+  - C30: =IF(B31="",IF(B30<>"",20,0),0)
+  - C34: =IF(B35<>"",0,IF(B34<>"",10,0))
+- Why: keeps all point cells numeric, avoids blank-text pitfalls and makes SUM/logic reliable.
+
+3) (Optional tidy) Make Total Points test simpler — C41
+- Current: =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+- Suggestion: use C36 directly as the conditional test (safer if you convert blanks to zeros):
+  =IF(C36>0,C36,SUM(C9:C31))
+- Why: clearer and avoids dependence on two separate cells.
+
+One-line summary:
+- Change C23 to =IF(B23<>"",2*B23,0). Change C30 and C34 to return 0 instead of "". Optionally change C41 to =IF(C36>0,C36,SUM(C9:C31)). These fixes make calculations correct and consistent.

@@ -1,0 +1,16 @@
+Summary — main error found
+- Faulty cell: Data Analysis!BH43 (listed in your sheet as BH43: FORMULA =7)
+- Error type: Hard-coded value / inconsistent formula
+- Why it's wrong: Every row's per-course contribution cells (AU:CI) use conditional formulas like =IF(Q$2="x",Q43,0) so a course only contributes when the course is selected. BH43 is a constant 7, so it always contributes 7 to CL43/CM43/B43 even when that course isn't selected. That inflates the "Learn Independently" totals and all downstream summaries that use B43 (for example B79 and any aggregated totals).
+- Fix (exact change): Replace the constant with the correct conditional formula:
+  BH43 → =IF(Q$2="x",Q43,0)
+- Effect of fix: BH43 will now only contribute Q43 when course Q is marked with "x". CL43 and CM43 (the per-course sum and the >=4 filtered sum), B43 and all later summaries that reference B43 will update to correct values.
+
+Other issues / tidy-up suggestions (short)
+- Many per-row helper columns use IF(...,0,0) or IF(...,0,0) (e.g. DD3, DE3, DF3). Those IFs always return the same result and look suspicious — review them to make sure the true/false branches are correct (maybe one branch should be a non-zero weight).
+- Several formulas use SUM with already-added arguments (e.g. =SUM(I5+I9+...). That works but is unconventional. You can simplify to =SUM(I5,I9,I10,...) or (if contiguous) =SUM(range).
+- To find any other accidental constants in the AU:CI blocks (same pattern as BH43), use Go To Special → Constants → Numbers while selecting columns AU:CI — any numeric constants you find should usually be conditional formulas instead.
+
+If you want, I can:
+- List any other constant cells in the AU:CI ranges,
+- Recalculate the downstream totals after fixing BH43 and show the corrected summary numbers.

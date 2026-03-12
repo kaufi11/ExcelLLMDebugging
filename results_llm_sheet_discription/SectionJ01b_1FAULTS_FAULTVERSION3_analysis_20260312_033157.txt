@@ -1,0 +1,67 @@
+Summary of the problems I found (short & clear)
+1) Grand totals exclude Option 7
+   - Total LOE B70 = SUM(B68:H68) — this leaves out I68 (Opt.7).
+   - T&M sheet B62 = SUM(B60:T60) — this leaves out W60 (Opt.7).
+   - Same risk exists on Cost and Fixed-Price sheets if their grand-total range stops before the final option column.
+
+2) Inconsistent option-step percent on some Option‑4 cells
+   - Most option increases use +2% (multiply by 1.02) but many Option‑4 (N columns) use +2.3% (multiply by 1.023). That is inconsistent and likely accidental.
+
+3) Hard-coded / incorrect reference in a chained formula
+   - Example: T&M E36 = 600+(600*0.02) instead of referencing B36. Hard-coded values won’t update if the Base Period value changes.
+
+4) Missing/unclear Extended Price formulas (Fixed Price & Cost sheets)
+   - Extended Price columns (D, G, J, etc.) are not shown as Hours × UnitPrice. If those are not implemented, dollar totals will be wrong.
+
+Quick fixes (exact formulas to paste / change)
+1) Fix the grand totals to include Option 7
+   - Total LOE B70: change to
+     =SUM(B68:I68)
+   - T&M grand total B62: change to
+     =SUM(B60:W60)
+     (or, if you prefer only the period totals, explicitly sum the period total cells:
+      =SUM(B60,E60,H60,K60,N60,Q60,T60,W60) )
+   - On Fixed Price and Cost sheets: make sure any grand-total formula sums through the last option column (typically column W or the column that holds Opt.7 totals).
+
+2) Standardize option-period increases to +2% (if that’s intended)
+   - Replace any formula like
+     =K5+(K5*0.023)
+     with
+     =K5*1.02
+   - Recommended pattern for chained growth across columns:
+     Opt1 = Base * 1.02
+     Opt2 = Opt1 * 1.02
+     ...
+     (use e.g. C14 = B14*1.02, D14 = C14*1.02 and fill right)
+
+3) Remove hard-coded numbers and use cell references
+   - Example (T&M sheet, Program Manager):
+     Replace E36 = 600+(600*0.02)
+     with
+     =B36*1.02
+   - Apply same fix anywhere a literal number is used instead of referring to the Base cell.
+
+4) Ensure Extended Price columns compute price = hours × rate
+   - Fixed Price sheet example:
+     - D5 (Base extended price) = B5*C5
+     - G5 (Opt1 extended price) = E5*F5
+     - J5 (Opt2 extended price) = H5*I5
+     - and so on for each extended price column
+   - Cost / T&M sheets: Extended price = Hours * HourlyRate (or Hours * LoadedRate) for each period column.
+
+Why these fixes solve the problems (brief)
+- Including Opt.7 in the sum ensures the Grand Total is the total of all periods — no off-by-one omission.
+- Standardizing the percent to 2% keeps the option escalation consistent and predictable; replacing addition forms with multiplication (Prev*1.02) is more compact and less error-prone.
+- Using cell references instead of constants keeps calculations dynamic — change the base value once and all options update automatically.
+- Explicitly computing extended price as Hours × Rate prevents wrong/missing dollar totals.
+
+Suggested implementation steps (quick)
+1. On each sheet find the grand-total cell and update the SUM range to include the final option column (I for Total LOE; W for the pricing sheets).
+2. Search for any formulas containing "*0.023" and confirm whether 2.3% is intended. If not intended, replace with "*0.02".
+3. Search for formulas that contain hard-coded numbers (like 600) and change them to reference the Base cell (e.g., B36).
+4. On Fixed Price / Cost / T&M sheets, inspect each Extended Price column and set them to Hours × Unit/Loaded Rate (copy across).
+5. After changes, recalc and compare grand totals to previous values to catch unintended changes.
+
+If you want, I can:
+- Produce a list of exact cells that appear wrong (I can parse all occurrences of SUM ranges ending before Opt7, every *0.023, and hard-coded numbers) — or
+- Provide a short macro (VBA) to automatically fix the grand-total ranges and standardize chained formulas. Which would you prefer?

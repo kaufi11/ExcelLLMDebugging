@@ -1,0 +1,35 @@
+I reviewed the workbook and found a few clear, fixable errors. Short answers with fixes below.
+
+1) Many cells show the literal text "FORMULA =…" instead of being real formulas (mechanical error)
+- Example places: Page 2 (A83, B83, G83, H83, I83, A84, B84, …), Page 3 (A154, B154, …), Page 4, Page 5, Page 6, etc.
+- Problem: the cells contain the characters "FORMULA =" then a formula text, so Excel will not evaluate them — they stay as text and do not update.
+- Fix (quick): 
+  - Select the affected range(s), set Number Format to General (Home → Number → General).
+  - Do Find & Replace: Find =FORMULA = (or "FORMULA =" depending on exact text) and Replace with = (i.e. replace the leading text "FORMULA =" with just an equals sign).
+  - Press Replace All. If some cells still show text, edit one cell (F2) and Enter to force recalculation, or run Ctrl+Alt+F9.
+- Why this works: removing the literal "FORMULA " leaves a real Excel formula starting with "=", which Excel will evaluate.
+
+2) Wrong operator in A-122 sheet, column C (sequence break) — mechanical/logical error
+- Faulty cell: A-122 sheet, C17 (shows: FORMULA =C16-1)
+- Problem: every other C-row increments by +1; C17 uses -1 so the numeric sequence goes off from that row onward.
+- Fix: change the formula to =C16+1 and fill-down the series for the rest of the C-column sequence.
+- Why this works: restores consistent incrementing (adds 1 each row) so the column numbers read correctly.
+
+3) Placeholder text used instead of an actual SUM formula (logical/placeholder error)
+- Example: I262 shows the word "sum" (and possibly other cells contain words like "sum" or "n/a" where a formula is expected).
+- Problem: a text placeholder prevents totals from calculating.
+- Fix: replace the placeholder with the correct SUM formula for the numeric column you intend to total. Example (if amounts are in column F rows 160–261):
+  - =SUM(F160:F261)
+  - Adjust the column and row range to match where your revenue figures actually are.
+- Why this works: real SUM formulas calculate totals; text placeholders do not.
+
+4) Quick checklist & tips to finish the cleanup
+- After replacing "FORMULA =" with "=", ensure cell format is General (text format prevents formula evaluation).
+- Search workbook for the word "FORMULA " and for other placeholders like "sum", "n/a", "req" — confirm which are intended as text vs formulas.
+- Use Find (Ctrl+F) → look in: Values to find cells that look like formulas but are text.
+- After fixes, press Ctrl+Alt+F9 to recalc the whole workbook and check for errors/#VALUE!/#REF!.
+
+If you want, I can:
+- give the exact Find/Replace string based on the exact literal in your file,
+- generate a short macro to fix all "FORMULA =" occurrences and re-evaluate cells,
+- or fix C-column and any other specific cells you point out. Which would you like?

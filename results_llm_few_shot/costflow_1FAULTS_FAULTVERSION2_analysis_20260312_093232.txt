@@ -1,0 +1,58 @@
+I reviewed the workbook and found several clear mechanical/logic errors in the Valuing Ending Inventory sheet that will make the inventory, COGS and averages come out wrong. Below are the key errors, why they’re wrong, and the simple fixes.
+
+1) Rows for Beginning Inventory and Purchase rows reference totals instead of the row values
+- Faulty: I8 =+C10, J8 =+K8/I8, K8 =+E10 (and similarly I9 =+D14, K9 =+E14)
+- Problem: the formulas point to the totals (C10, E10, E14, D14) instead of the row-specific cells (C8, E8, C9, E9). This mixes totals into the row calculations and breaks the average.
+- Fix:
+  - I8 -> =C8
+  - K8 -> =E8
+  - J8 -> =IF(I8=0,0,K8/I8)
+  - I9 -> =C9
+  - K9 -> =E9
+  - J9 -> =IF(I9=0,0,K9/I9)
+- Why: each row’s unit and extended cost must use its own row values; using totals creates circular/incorrect averages.
+
+2) Ending inventory units formula has wrong sign / wrong algebra
+- Faulty: I11 = -I10 - SUM(C17:C18)
+- Problem: sales are recorded in C17:C18 as negative numbers (-4000, -7000). With the current formula you double-negate and get the wrong ending units.
+- Fix: I11 -> =I10 + SUM(C17:C18)
+- Why: Units available (I10) plus the (negative) sales gives remaining units. Using an explicit + with negative sale values is clearer and correct.
+
+3) COGS units and cost formulas rely on the old negative-ending approach — change to explicit subtraction
+- Faulty: I12 = SUM(I10:I11) (this was used when I11 was negative); K11 and K12 were missing / “?”
+- Problem: once I11 is made a positive remaining-units number, SUM(I10:I11) becomes wrong (it adds available + remaining).
+- Fix:
+  - I12 (Units COGS) -> =I10 - I11
+  - J10 (Weighted unit cost) -> keep =IF(I10=0,0,K10/I10)
+  - K11 (Ending inventory cost) -> =I11 * J10
+  - K12 (COGS cost) -> =K10 - K11
+- Why: COGS (units) = units available - ending units; COGS (cost) = cost of goods available - ending inventory cost. Using explicit subtraction is less error-prone.
+
+4) Use defensive formulas for unit-cost division
+- Problem: dividing by zero can occur during setup.
+- Fix: replace unit-cost divisions with IF guards, for example:
+  - J10 -> =IF(I10=0,0,K10/I10)
+  - J8/J9 etc -> =IF(I8=0,0,K8/I8)
+- Why: prevents #DIV/0! while you are entering data.
+
+5) Missing / “?” cells (K11, K12 etc.)
+- Action: fill them using the fixes above (K11 = I11*J10; K12 = K10 - K11).
+- Why: those are required to compute COGS and averages.
+
+6) General note: consistent sign convention
+- Recommendation: decide whether sales are entered as positive quantities (and subtracted) or as negative quantities (and added). If sales are negative as in this sheet, keep formulas that add sales (I10 + SUM(C17:C18)). If you switch to positive sales, change formulas to I10 - SUM(C17:C18). Pick one approach and apply consistently.
+
+Summary of the main corrected formulas (copy/paste):
+- I8 = C8
+- K8 = E8
+- J8 = IF(I8=0,0,K8/I8)
+- I9 = C9
+- K9 = E9
+- J9 = IF(I9=0,0,K9/I9)
+- I11 = I10 + SUM(C17:C18)
+- I12 = I10 - I11
+- J10 = IF(I10=0,0,K10/I10)
+- K11 = I11 * J10
+- K12 = K10 - K11
+
+If you want, I can scan the other inventory sections (FIFO, LIFO, perpetual sections) for the same pattern of mistakes and produce the exact corrected formulas for those blocks too.

@@ -1,0 +1,29 @@
+Summary of problems found (short):
+
+1) Wrong function in sheet 1198 — H25
+- Error: H25 contains =COUNT(H9:H24). COUNT returns the number of numeric cells, not their sum.
+- Impact: The “Total Revenues” for 2003-04 (column H) on fund 1198 (and any roll-ups that include it) is incorrect, which makes summary totals wrong.
+- Fix: Change H25 to =SUM(H9:H24).
+- Why: SUM adds the revenue amounts; COUNT just counts how many numeric entries exist.
+
+2) Fragile / backwards “Carry Forward” formulas in each fund sheet (D6:E6:F6...):
+- Symptom: In fund sheets (1003, 1043, 1166, 1198, 1856) D6 is calculated as =E6 + D72 - D25 - D35, and E6 depends on F6, etc. That chains future columns into earlier years.
+- Problem: This is hard to read, easy to break and can produce wrong cumulative carry‑forwards if you insert/delete columns or change a value. It is likely backwards logically (each year should normally build on the previous year, not the next).
+- Recommended solution (clean, robust approach):
+  - Pick the true opening carry-forward for the first (leftmost) year (enter it in the leftmost column D6 if known; otherwise 0).
+  - Then for each subsequent year use the previous column’s carry-forward + that year’s net change. Example formulas (assuming columns are chronological D→E→F→G→H→I and “net change” = TOTAL EXPENDITURES - TOTAL REVENUES - NET TRANSFERS as currently used):
+    - E6 = D6 + E72 - E25 - E35
+    - F6 = E6 + F72 - F25 - F35
+    - G6 = F6 + G72 - G25 - G35
+    - H6 = G6 + H72 - H25 - H35
+    - I6 = H6 + I72 - I25 - I35
+- Why: Each year’s carry-forward becomes the next year’s opening balance; this left-to-right formula is intuitive, auditable and won’t silently depend on future columns.
+
+Quick action steps for you:
+1. Edit sheet 1198 cell H25: replace =COUNT(H9:H24) with =SUM(H9:H24).
+2. Review the Carry Forward row (row 6) in each fund sheet. If you intend chronological accumulation, replace the current chain (D6 referring to E6) with the left-to-right pattern shown above (enter an opening D6 then use E6 = D6 + … etc).
+3. After fixes, recalc and check Summary totals (Summary sheet D6:I6 and D26:I26, D63:I63) to confirm they now look correct.
+
+If you want, I can:
+- Produce the exact formulas to paste into each fund sheet row 6 based on the columns shown, or
+- Search the workbook for other occurrences of COUNT used where SUM should be used. Which would you like?

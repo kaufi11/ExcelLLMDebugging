@@ -1,0 +1,50 @@
+Summary of the problems I found (short):  
+- The running totals in column I are inconsistent and often summing the wrong column (G = Requested Funds instead of H = Awarded/Approved Funds).  
+- One cell contains a literal wrong value instead of a formula (Watershed Protection sheet I10 = 2).  
+- Some Approved Funds (H) values have been truncated/rounded (e.g. 311,280.25 → 311,280) causing small mismatches.  
+- The column header text is inconsistent/misleading: it sometimes says “Requested” while the sheet is clearly tracking awarded/approved funding.
+
+Why these are errors (short):  
+- Cumulative totals should sum the Awarded/Approved Funds (column H) to track how much of the funding limit has been committed. Summing G instead gives the wrong cumulative committed amount.  
+- A literal 2 in I10 breaks the running total for all rows below it.  
+- Rounding/truncation in H will make the cumulative total differ from the correct amount.  
+- Wrong header confuses users and can lead to further errors.
+
+How to fix them (simple step-by-step; apply per sheet where relevant):
+
+1) Make the cumulative column I consistently sum Approved/Awarded Funds (column H). Use a robust running-sum formula and copy it down:
+   - In the first data row of the table (example row 7) put:
+     =SUM($H$7:H7)
+   - Copy that formula down the whole column I.  
+   Explanation: SUM($H$7:H7) gives a running total of all H values from the first funded row down to the current row. This avoids accidental references to G and is easy to maintain.
+
+2) Replace any wrong hard-coded values (example: Watershed Protection I10 = 2) with the running-sum formula above so the running total is continuous.
+
+3) Fix any rows that currently reference column G (Requested) in column I:
+   - Replace those I formulas with the running-sum formula from step 1.
+   - Quick method: select column I for the table range, type the formula for the top row, then fill down.
+
+4) Fix rounding/truncation in Approved Funds (column H):
+   - If Approved H should exactly match the requested amount (G) or a precise awarded number, update H to the exact number (e.g. H18 = 311280.25 or set H18 = G18 if the approved is the full requested).  
+   - Ensure H is numeric (not text) and formatted to show required decimals.
+
+5) Correct the header label for column I so it matches what the column contains:
+   - Change heading to “Cumulative Total Project Funds Awarded (Funding Limit) …” if you are summing H (Awarded). This avoids confusion.
+
+Quick checklist for each sheet:
+- Are I formulas all =SUM($H$first:Hcurrent)? If not, fix them.
+- Are there any literal numbers in I? Replace with formula.
+- Do H cells match expected approved amounts (including decimals)? Fix any truncations.
+- Update I header to say “Awarded” if you sum H.
+
+Examples applied:
+- Watershed Protection sheet:
+  - Change I7 from =G7 to =SUM($H$7:H7)
+  - Change I8 from =I7+G8 to =SUM($H$7:H8)
+  - Change I9 … etc (or copy the formula down).  
+  - Replace I10 = 2 with =SUM($H$7:H10)
+
+- Coastal NPS-Reg 4,8,9:
+  - Update H18 to 311280.25 (if that is the correct approved number) so I totals are exact.
+
+That will make all cumulative totals correct, consistent, and explainable. If you want, I can generate the exact formula changes for each sheet/row range and a short macro to fix all I columns automatically. Which would you prefer?

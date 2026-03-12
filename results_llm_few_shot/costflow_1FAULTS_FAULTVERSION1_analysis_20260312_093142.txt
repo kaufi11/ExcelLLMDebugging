@@ -1,0 +1,48 @@
+Short answer — main errors, why, and exact fixes.
+
+1) Wrong row references (double‑counting totals)
+- Where: Valuing Ending Inventory sheet — I8, J8, K8 and I9, J9, K9.
+- Problem: those cells point to the beginning/purchase totals (C10, E10, C14, E14) instead of the row values (C8/C9, E8/E9). That makes per‑row unit costs and extended values wrong.
+- Fix:
+  - I8 = C8
+  - K8 = E8
+  - J8 = K8 / I8
+  - I9 = C9
+  - K9 = E9
+  - J9 = K9 / I9
+- Why: per‑row unit cost must use that row’s units and extended amount, not the totals.
+
+2) Ending units sign / missing ending-value and COGS formulas (periodic weighted average)
+- Where: I11, K11, K12 (Valuing Ending Inventory sheet); C27/D27/E27 in the Periodic weighted average block.
+- Problems:
+  - I11 currently = -I10 - SUM(C17:C18) (confusing/inverted signs). This yields wrong ending unit count.
+  - K11 and K12 are blank (?), so ending inventory value and COGS are not computed.
+  - C27 is = -I10 (negative) and D27/E27 use the wrong cells.
+- Fix:
+  - I11 = I10 + SUM(C17:C18)
+    - Explanation: I10 = units available; C17,C18 are sales with negative units; adding them gives ending units.
+  - K11 = J10 * I11
+    - Explanation: ending inventory value = weighted average unit cost (J10) × ending units.
+  - K12 = K10 - K11
+    - Explanation: COGS (cost of goods sold) = goods available cost (K10) − ending inventory value.
+  - In Periodic weighted average section:
+    - C27 = I10
+    - D27 = K10 / C27
+    - E27 = K10
+    - (Then D29, etc. that depend on these will compute correctly.)
+- Why: use straightforward algebra: Ending units = Available units − units sold (adding negative sales does that); Ending value = unit cost × ending units; COGS = total cost available − ending value.
+
+3) Inconsistent sign conventions and unnecessary negation
+- Where: many places use negative signs on inventory lines (e.g., B11 = -150000) and also use SUM ranges including those negatives. That can work but makes formulas hard to read and causes the inverted formulas above.
+- Recommendation/fix: pick a consistent convention:
+  - Keep “Units” and “Costs” for inventory and purchases positive.
+  - Represent sales/COGS as negative only in the Profit & Loss summary, or consistently use positive COGS and subtract where needed.
+  - Then simplify formulas (use SUM on positive ranges and subtract ending inventory explicitly).
+
+Quick checklist to apply now
+- Replace I8/I9/K8/K9/J8/J9 as above.
+- Replace I11, K11, K12 as above.
+- Fix C27/D27/E27 as above.
+- Scan other rows for the same pattern (cells that point to totals instead of the row’s own cell) and fix similarly.
+
+If you want, I can produce a corrected formula map (copy/paste list) for every affected cell or prepare a corrected version of the sheet step‑by‑step. Which would you prefer?

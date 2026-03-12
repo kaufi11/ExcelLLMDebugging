@@ -1,0 +1,38 @@
+I reviewed the formulas in the "Syracuse, NY" sheet. There is one clear formula/data inconsistency and a couple of best-practice suggestions.
+
+1) Incorrect / inconsistent cell
+- F12 contains =5 (i.e., the value 5). This is inconsistent with the column pattern:
+  - For rows where C = "Bank", F is set to =1*$E(row)
+  - For rows where C = "Thrift", F is set to =0.5*$E(row)
+  KEYCORP (row 12) is labeled "Bank" (C12 = "Bank") and E12 = 969798, so F12 should be =1*$E12 (i.e. 969,798). Because F12 is 5, G12 and H12 (and the totals F36/H36 and all relative percentages) are wrong.
+
+Effect of the error (summary):
+- Current F36 (sum of F10:F33) = 6,466,188.5 (this includes the erroneous 5).
+- If F12 is corrected to =1*$E12 (969,798), F36 becomes 7,435,981.5 (6,466,188.5 + 969,793).
+- All market shares (G10:G33), HHI components (H10:H33) and H36 (sum of H10:H33) will change when F12 is corrected.
+
+Recommended fix
+- Replace F12 with the correct formula:
+  =1*$E12
+  (or simply = $E12)
+- To prevent similar manual errors, replace the mixed formulas in F10:F33 with a single conditional formula (fill downward), e.g.:
+  =IF($C10="Thrift", 0.5*$E10, 1*$E10)
+  This uses the Type (column C) to decide half-or-full counting and avoids manual overwrites.
+
+2) Other checks (no errors found)
+- D36 = SUM($D$10:$D$33) is correct (203).
+- E36 = SUM($E$10:$E$33) is correct (8,232,933).
+- F36 = SUM($F$10:$F$33) is correct given current F values (but will change once F12 is fixed).
+- G# formulas use =$F#/$F$36*100 — this is consistent; G36 = SUM(G10:G33).
+- H# formulas use =$G#^2 — consistent if HHI is intended to be percent-squared.
+
+3) Suggestions / sanity checks
+- After correcting F12, recalc the sheet and verify:
+  - G36 still sums to 100 (should).
+  - H36 (HHI) will update; verify that you are using percent-squared (0–100^2 scale) intentionally rather than decimal-shares^2 (0–1 scale).
+- If you prefer HHI in the 0–10,000 scale, using percent shares squared is correct; if you want 0–1 scale, square the market share in decimal form (e.g., (F#/F$36)^2).
+- Consider protecting the F column or using the IF formula above to avoid accidental manual entries.
+
+If you want, I can:
+- Recalculate the sheet with F12 corrected and return the updated F36, all G# and H# values, and the new H36; or
+- Provide the exact corrected numbers for the entire table. Which would you prefer?

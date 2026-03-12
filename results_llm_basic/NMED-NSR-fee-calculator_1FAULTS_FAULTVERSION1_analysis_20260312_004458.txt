@@ -1,0 +1,30 @@
+Summary of the problems
+- C41 is wrong: it uses COUNT(C9:C31) instead of summing the points. COUNT returns the number of numeric cells (including zeros) which inflates the total points. C41 should return the total points (a SUM), not a count.
+- Some intermediate cells (C30, C34) return the empty string "" in some branches. That mixes text with numbers and can hide/alter results in numeric functions. Those should return 0 (numeric) when no points apply.
+
+Why this matters
+- COUNT counts numeric cells (0 is numeric and will be counted). Many point formulas return 0 when not applicable; COUNT will treat those as present and inflate the total.
+- SUM correctly adds the point values.
+- Returning "" (text) instead of 0 can cause inconsistent behavior (SUM ignores text, COUNT ignores it, comparisons may be ambiguous).
+
+Corrected formulas (replace the existing ones)
+
+- C41 (Total Points)
+  =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+
+- C30 (PSD Netting)
+  =IF(B31="",IF(B30<>"",20,0),0)
+
+- C34 (General Permit)
+  =IF(B35="",IF(B34<>"",10,0),0)
+
+Optional small improvement (keep current behavior for half-fee):
+- C43 can stay as:
+  =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))
+  (This is OK — it intentionally returns "N/A" when half-fee doesn't apply and a numeric half-fee when it does.)
+
+What this fixes
+- C41 will now calculate the actual sum of points rather than counting cells, so C42 (Fee = C41*C5) will be correct.
+- Changing "" to 0 in C30 and C34 ensures all point cells are numeric and behave consistently with SUM/COUNT and comparisons.
+
+If you want, I can show a minimal test (before/after) with sample inputs to demonstrate the difference.

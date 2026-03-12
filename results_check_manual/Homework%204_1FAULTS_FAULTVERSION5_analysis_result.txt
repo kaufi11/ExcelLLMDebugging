@@ -1,0 +1,33 @@
+I inspected the formulas in both sheets and found two concrete problems and one set of inconsistent/text entries. Summary and recommended fixes below.
+
+1) Sheet: "Early or Late" — Late Saver plan broken at row 36
+- Problem: Cell K36 contains the literal formula/value "=4" (value 4) instead of summing that row’s components. K36 should be the end balance for year 33 but has been overwritten with 4.
+- Effect: H37 is "=K36" so H37 and every subsequent Late-Saver row (H37:H48, J37:J48, K37:K48) are incorrect because they cascade from the wrong K36.
+- Correct formula: replace K36 with
+  =H36 + I36 + J36
+  (i.e., consistent with Kn = Hn + In + Jn used elsewhere).
+- Impacted cells to recompute after fix: H37:H48, J37:J48, K37:K48 and any downstream totals dependent on those cells (for example I49 sum uses I4:I48 unaffected, but the late plan ending balances and any comparisons are affected).
+
+2) Sheet: "Vanguard" — textual/invalid formulas in summary area
+- Problem: D15:D21 contain text strings that look like human-readable formulas (e.g. "= Ending Balance - Beginning Balance", "= $23,833.35 - $10,000", "= $13,833.35", "= (Ending Balance - Beginning Balance) / Beginning Balance", etc.). These are not valid Excel formulas (they reference words or formatted numbers with $ and commas) and therefore will not calculate automatically.
+- Recommendation: Replace the text with proper Excel formulas referencing the sheet cells. Example replacements (assuming:
+    - Beginning Balance is B4 (10,000)
+    - Ending Balance is F13 (23,833.3497411956))
+  - D15 (Capital Gain/(Loss)):
+    =F13 - B4
+  - D16 (show numeric result):
+    =F13 - B4
+  - D18 (Holding Period Return):
+    =(F13 - B4) / B4
+  - D19 (show numeric result):
+    =(F13 - B4) / B4
+  - Format the results as number / percent as appropriate (e.g., D18 as percentage).
+- Note: Do not include $ or comma formatting inside formulas; use cell references and then number-format the cell.
+
+3) Minor / intentional checks
+- B4 on "Early or Late" (Beginning balance in year 1) is blank — that behaves like zero in the formulas and appears intentional (early saver begins with deposits of 1000). If this was meant to be an explicit 0, you can set B4 = 0 for clarity.
+- The Vanguard derived results in D20/D21 (1.38 / 138%) are approximations. After fixing D18 to use actual cells, these will show the precise holding-period return (≈ 1.3833 = 138.33%).
+
+If you want, I can:
+- Generate the exact corrected formulas and list all cells that will change values after the K36 fix, or
+- Produce a patched workbook with the K36 fix and the corrected Vanguard summary formulas applied.

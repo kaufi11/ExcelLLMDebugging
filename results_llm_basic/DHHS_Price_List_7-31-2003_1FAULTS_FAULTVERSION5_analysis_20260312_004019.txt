@@ -1,0 +1,52 @@
+Found issues (short):
+
+1) Wrong formula (critical)
+- Cell G21 is =E21/0.5. That divides by 0.5 (×2) instead of using the intended 50% fee. Result is double what it should be and it cascades into H21, I21 and J21.
+
+Fix: replace G21 with
+=E21*0.5
+
+Explanation: dividing by 0.5 gives 40,000 for E21=20,000. Multiplying by 0.5 gives the correct 10,000.
+
+2) Inconsistent hard‑coded cells (maintenance / rounding risk)
+- Many F and G cells (e.g. F66, F75, F84, F85, F86, F87, F88, F89, F91, F92, F98, F111, F118, etc.) contain hard-coded numbers rather than the formula pattern used elsewhere (F = E*22%, G = E*rate). Hard-coded values cause mismatches if E changes and may have rounding differences (e.g. F118 = 6599 vs true 6598.90).
+
+Fix: replace hard-coded values with consistent formulas and, if desired, round:
+- For column F (support 1‑yr): in F8 (then fill down)
+=ROUND(E8*22%,2)
+(or =E8*22% if you want raw numbers)
+
+- For column G (fee rate): use a rule instead of hard-coding. If the rate is 20% except when the Type contains "Processor" (50%) use:
+=E8 * IF(ISNUMBER(SEARCH("Processor", D8)), 0.5, 0.2)
+Copy down.
+
+If you have more special cases (some Processor rows use 30% etc.), create a small rate table (example on a helper sheet):
+Type | Rate
+Processor | 0.5
+"Processor - IAS" | 0.3
+Default | 0.2
+Then use VLOOKUP or INDEX/MATCH to pick the correct rate.
+
+3) Cascade recalculation
+- After fixing formulas, recalc H,I,J to ensure consistency:
+H# = G# * 15%
+I# = G# * 7%
+J# = H# + I#
+
+How to apply quickly (step-by-step):
+1. Fix G21: select G21 → enter =E21*0.5 → Enter.
+2. Decide on standardized rules (F = E*22%; G rate based on D).
+3. Put the F formula in top F row and drag down.
+4. Put the G formula using IF(SEARCH()) or VLOOKUP and drag down.
+5. Put H,I,J formulas in top row and drag down.
+6. Use ROUND(...) where you want consistent decimal places.
+7. Recalculate (F9) or press Ctrl+Alt+F9 to force full workbook recalc.
+
+Why this fixes it:
+- G21 was a simple operator mistake; correcting it fixes all downstream cells.
+- Replacing hard-coded values with formulas prevents future mismatches when prices change.
+- Using a lookup/IF keeps the correct percentage logic per license Type and centralizes maintenance.
+
+If you want, I can:
+- produce the exact IF/VLOOKUP formula for your specific Type→rate exceptions, or
+- give a single fill-down formula set (F,G,H,I,J) you can paste for all rows. Which do you prefer?

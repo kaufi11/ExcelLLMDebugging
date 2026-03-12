@@ -1,0 +1,24 @@
+I checked the workbook and found a few clear mistakes (typos/wrong cell references). Short, simple fixes below.
+
+1) Fault: Table 2 — K69 (Variance % for "Total Funds") is wrong
+- Problem: K69 contains =K49 (it copies the percent from Total Net Assets) instead of computing % variance for Total Funds.
+- Fix: replace with =IF(H69=0,"N/A",(J69/H69)*100)
+- Why: K69 should show J69 as a percentage of H69 (same pattern used elsewhere), not reuse K49.
+
+2) Fault: Table 3 (Operating Cash Flow) — T26 (reconciliation with balance sheet) is wrong
+- Problem: T26 = T19 - ('Table 2.0 BS - Annex E'!H20 + 'Table 2.0 BS - Annex E'!H21 + 'Table 2.0 BS - Annex E'!H22). That subtracts investments and an extra item (unspent bursaries) as well as cash — so it does not correctly check closing cash against the balance sheet cash line.
+- Fix: change to compare closing cash to the balance-sheet "Cash at bank/in hand". For example:
+  T26 = T19 - 'Table 2.0 BS - Annex E'!H21
+- Why: T19 is the cash-flow closing balance; the reconciliation cell should match the balance-sheet cash line (H21). Summing H20/H22 is incorrect for this reconciliation.
+
+3) Fault: Table 1 — B31 (row numbering) has an obvious typo
+- Problem: B31 = B29+840 (should be increment by 1 like the other row-number formulas).
+- Fix: change to =B29+1
+- Why: it’s a simple labeling/numbering typo; it won’t usually affect numeric results but will break consistent row numbering and any routines that rely on those sequence numbers.
+
+Notes / Quick checks to run after fixes
+- After changing T26, verify T26 is zero (or explain any legitimate difference) — that confirms the cashflow <-> balance-sheet reconciliation.
+- After changing K69, visually check K69, J69 and H69 to ensure the percent displays correctly (format as % if desired).
+- Scan other cells that were manually set equal to other percent cells (e.g., any Kxx that equals a different Kyy) — the K69 error is a common copy/paste-type mistake and may have occurred elsewhere.
+
+If you want, I can give the exact Excel formulas you can paste into each cell (or produce a brief macro to apply the fixes).

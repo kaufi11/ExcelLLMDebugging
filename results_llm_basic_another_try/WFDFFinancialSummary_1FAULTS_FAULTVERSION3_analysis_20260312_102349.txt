@@ -1,0 +1,48 @@
+Errors found:
+
+1. **Circular Reference in Beginning Cash Balance (Financial summary row 4):**  
+   Beginning Cash Balance in E4, G4, I4, K4, M4 refers to the Ending Cash/Inv. Balance of the previous year (e.g., E4 = C33, G4 = E33, etc.). But Ending Cash/Inv. Balance (row 33) is calculated as Beginning Cash Balance + Net Income (row 30). This creates a circular reference because Beginning Cash depends on Ending Cash and vice versa.
+
+2. **Ending Cash/Inv. Balance (row 33) formula depends on Beginning Cash Balance (row 4):**  
+   Ending Cash = Beginning Cash + Net Income, but Beginning Cash is linked to previous Ending Cash, causing circular dependency.
+
+3. **Inconsistent or incorrect formulas in Ending Cash/Inv. Balance (row 33) and Beginning Cash Balance (row 4):**  
+   The chain of references is circular and will cause Excel to either show an error or require iterative calculation.
+
+4. **In Balance Sheet, Retained Earnings (E12, F12, G12, H12):**  
+   - E12 = 0, F12 = 63680.67, G12 = 53162.13, H12 = G12 - G13  
+   - Net Income (E13, F13, G13, H13) includes formulas linked to Financial summary net income (I30, K30).  
+   This is inconsistent because Retained Earnings should accumulate prior years' net income, but the formulas mix net income and retained earnings incorrectly.
+
+5. **In Stork - 2002 Expenditures sheet, formula in K21:**  
+   `=8821.24-118.52` is a hardcoded subtraction rather than summing actual expense entries, which is inconsistent with other rows that use SUM formulas.
+
+---
+
+**Solutions:**
+
+1. **Fix Circular Reference in Beginning Cash Balance and Ending Cash Balance:**  
+   - Beginning Cash Balance for each year should be the Ending Cash Balance of the *previous* year, not the same year.  
+   - For example, E4 (1999 Beginning Cash) = C33 (1998 Ending Cash) is correct. But for 1998 (C4), it must be a fixed starting balance, not linked to C33 (same year).  
+   - So, set C4 (1998 Beginning Cash) as a fixed input (15023.53), and for subsequent years, Beginning Cash = previous year's Ending Cash (e.g., E4 = C33, G4 = E33, etc.).  
+   - Ensure Ending Cash (row 33) = Beginning Cash (row 4) + Net Income (row 30) for the same year.  
+   This breaks the circular reference.
+
+2. **Correct Retained Earnings Calculation in Balance Sheet:**  
+   - Retained Earnings for a year = Retained Earnings previous year + Net Income current year.  
+   - For example, F12 (2000 Retained Earnings) = E12 + F13  
+   - G12 = F12 + G13  
+   - H12 = G12 + H13  
+   - Adjust formulas accordingly to accumulate net income properly.
+
+3. **Replace hardcoded formula in K21 (Stork - 2002 Expenditures) with SUM:**  
+   - Instead of `=8821.24-118.52`, sum the actual event expenses entries for 2002 from the detailed data.  
+   - This ensures accuracy and consistency.
+
+---
+
+**Explanation:**
+
+- Circular references occur when a formula refers back to itself directly or indirectly, causing calculation errors or infinite loops. Breaking the chain by fixing the initial year's Beginning Cash and linking subsequent years properly removes this issue.  
+- Retained Earnings must accumulate net income over years, so each year's retained earnings equals last year's retained earnings plus current year's net income.  
+- Using hardcoded calculations instead of summing detailed data risks errors and inconsistency; summing actual data ensures accuracy and easier updates.

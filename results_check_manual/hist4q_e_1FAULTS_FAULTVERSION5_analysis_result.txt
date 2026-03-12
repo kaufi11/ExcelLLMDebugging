@@ -1,0 +1,25 @@
+I inspected the formulas in both sheets and found one clear formula error plus a few inconsistencies/oddities you may want to tidy up.
+
+1) Definite formula error (likely a typo)
+- Cell: Sheet "1", H12
+- Current formula: =SUM(H10:H11)
+- Why it's wrong: All other quarter totals in row 12 sum the three product rows (office imaging products, computer peripherals, business information products) with a range like =SUM(G9:G11). H12 omits H9, so H12 only sums H10+H11.
+- Correct formula: =SUM(H9:H11)
+- Impact: Because H12 is wrong, H15 (Total of net sales in H), H17 (Net Sales), H35 (and all downstream calculations in column H that reference these totals and percentages) are incorrect for that quarter. This appears to be the source of the big discrepancy between the consolidated operating profit in sheet "1" column H and the consolidated total computed in sheet "2" column H.
+
+2) Inconsistencies (not errors but worth standardizing)
+- IF return values used in % formulas:
+  - Sheet "1" percent formulas (e.g. C20) use IF(...,"-  ",...) — they return the text "-  " when the denominator is zero.
+  - Sheet "2" percent formulas (e.g. C11) use IF(...,"",...) — they return an empty string when denominator is zero.
+  - Recommendation: standardize to one behavior (empty string or a consistent textual indicator) to avoid mixed data types across columns.
+- Use of SUM for single cells:
+  - Net income row (row 35 in sheet "1") uses =SUM(C33:C34) etc. This is harmless but inconsistent: if you expect C34 often to be empty, =C33 + C34 or explicit addition may be clearer. (Not a functional error.)
+- Minor: cumulative effect row (row 34 in sheet "1") only has a value in G34. That makes SUM(C33:C34) effectively just C33 in most columns — this is probably intentional, but worth confirming.
+
+3) Suggested quick checks after fixing H12
+- Recalculate column H totals (H15, H17, H19, H22, H23, H29, H30, H33, H35, H36) — they should align with the consolidated figures in sheet "2" column H (especially H38 consolidated operating profit).
+- Verify any unusually large S.G.&A or negative operating-profit numbers in column H once totals are corrected; these may be data issues rather than formula issues.
+
+If you want, I can:
+- Prepare a list of all cells that depend (directly or indirectly) on H12 so you can verify them quickly, or
+- Produce an updated copy of the workbook with H12 corrected and the recalculated values shown.

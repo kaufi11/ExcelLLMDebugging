@@ -1,0 +1,65 @@
+High-level overview
+- Workbook purpose: fiscal summary of Current Non‑Sponsored Funds (TFAC) across multiple fund sheets (1003, 1043, 1166, 1198, 1856) with a consolidated Summary sheet. Columns D–I represent fiscal years (D = 1999‑00 through I = 2004‑05 / budget). Report date shown on each sheet: 2003‑09‑22.
+
+Workbook structure (sheets)
+1. Summary
+   - Sections: Resources (a), Revenues (b), Transfers (c), Net Transfers (c subtotal), TOTAL NET RESOURCES (d = a+b+c), Expenditures (by function and by object class), TOTAL EXPENDITURES (e), ENDING BALANCE (d − e).
+   - Consolidation logic:
+     - Row-level aggregation mostly uses 3D formulas across sheets '1003':'1856' (e.g., D6 =SUM('1003':'1856'!D6:D6) for Carry Forward).
+     - Revenue and expenditure lines for each fund are linked to the fund sheet totals (e.g., Summary!D9 = '1003'!D25; Summary maps each fund row to that fund's Total Revenues cell).
+     - Transfers and expenditures totals are SUMs of the corresponding rows across sheets (e.g., Summary D30.. use =SUM('1003':'1856'!D41:D41) etc).
+   - Totals: TOTAL NET RESOURCES in row 26 sums carry forward, revenues, and net transfers (e.g., D26 = D24 + D14 + D6).
+
+2. Fund sheets (1003, 1043, 1166, 1198, 1856) — identical layout per sheet
+   - Header: fund name and columns for Actual/Projected/Budget years (D–I).
+   - Sections:
+     a) RESOURCES
+        - B6 Carry Forward: generally computed iteratively: D6 = +E6 + D72 − D25 − D35 (uses prior-year carry + prior-year ending balance minus revenues and transfers).
+        - G6 often contains the Period‑14 (current year) carry forward numeric.
+     b) Revenues (rows C9:C24): by revenue class (Tuition, Grants, External Sales, Investment Income, etc.). Total Revenues: C25 with D25 = SUM(D9:D24).
+     c) Transfers (rows C28:C34): includes Central Allocations, Non‑Mandatory transfers in/out. Net Transfers: C35 = SUM(D28:D34).
+     d) TOTAL NET RESOURCES: D37 = D35 + D25 + D6.
+     e) EXPENDITURES by Function Type (rows C41:C52) and by Object Class (rows C56:C71). Totals: C72 (sum of object class lines) and function totals C53 (sum of function lines).
+     f) ENDING BALANCE row: D74 = D37 − D72.
+
+Key formulas & patterns
+- 3D SUM across fund sheets: =SUM('1003':'1856'!<range>) used on Summary for roll‑ups.
+- Inter‑sheet direct links: Summary pulls each fund’s Total Revenues (fund!D25) and Total Expenditures (fund!D72) for building consolidated rows.
+- Carry Forward iterative formula on each fund: D6 = +E6 + D72 − D25 − D35 (rolls forward prior columns).
+- Ending balance formula is consistently Total Net Resources − Total Expenditures (D74 = D37 − D72).
+- Notable inconsistency: 1198!H25 uses =COUNT(H9:H24) (likely erroneous; others use SUM).
+
+Key numeric highlights (selected current / large values)
+- 1003 (Fund 1003)
+  - Carry Forward (G6): 21,451,645.94
+  - Central Allocations (D28): 85,170,272
+  - Non‑Mand. Transfers In (D32): 23,128,004.46; Out (D33): −24,127,835.09
+  - Large expenditures (object class): Salaries D56: 31,486,396.83; Utilities D66: 27,671,224.07
+  - Large negative/volatile Repair lines (e.g., D65, E65 negative in some years)
+- 1043
+  - Indirect Cost Recovery D13: 17,149,795 (and same as Central Allocation D28)
+  - Expenditures include large Operation & Maint. of Plant (D47 ≈ 17,149,815) and Repairs/Utilities heavy (D65, D66).
+- 1166
+  - Very large Internal Sales (D15): 43,821,749.30
+  - Non‑Mand. Transfers In/Out large and negative net transfers (D32 ≈ 31,002,514; D33 ≈ −40,739,894.44)
+  - Utilities and Repairs are very large (D66 ≈ 33,886,459; D65 are large negatives in several years)
+- 1198
+  - External Sales (D14): 2,296,535.62
+  - Non‑Mand. Transfers In (D32): 6,126,750.04; some years show large Out negatives (E33: −11,160,965)
+  - Mixed small balances in many categories
+- 1856
+  - Small fund: Carry Forward G6: 21,200; small revenues/transfers/expenditures.
+
+Anomalies / items to watch
+- 1198!H25 = COUNT(H9:H24) — inconsistent with SUM pattern; likely a mistake causing wrong projected revenue total.
+- Negative values in Repairs/Maintenance lines (1003, 1166) and large offsetting transfers — verify whether sign conventions are correct.
+- Several sheets have zero or missing budget columns (I) set to 0 — check whether budget data was intentionally absent.
+
+Overall layout / flow
+- Each fund sheet computes its own carry forward, revenues, transfers, total net resources, detailed expenditures, total expenditures, and ending balance.
+- The Summary sheet aggregates those fund-level totals via either direct links to fund totals or 3D SUMs across the fund sheets to produce consolidated resources, expenditures, and ending balances for the organization.
+
+If you want, I can:
+- Produce a dependency map (which cells feed which totals).
+- Flag every formula that looks inconsistent (e.g., COUNT vs SUM, unexpected signs).
+- Compute consolidated numeric totals for a specific fiscal year column.

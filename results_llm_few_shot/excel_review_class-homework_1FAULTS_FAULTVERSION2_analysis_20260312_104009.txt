@@ -1,0 +1,32 @@
+Here are the problems I found and how to fix them. Short and simple.
+
+1) Sheet Q'back — wrong completion percentage for Bryant
+- Faulty cell: H5
+- Error: H5 uses =D5/C5*180 (multiplies by 180 instead of 100). This inflates the completion % and therefore the Efficiency (L5).
+- Fix (repair formula): =D5/C5*100
+- Why: Completion % = Completions / Attempts × 100. Use 100 (percent), not 180. After fixing H5, L5 (which uses H5) will compute correctly.
+
+(If H5 was a copy-paste mistake, copy the corrected H5 down or re-enter the formula for each row: Hn = Dn/Cn*100.)
+
+2) Sheet lookup — missing/absent formulas for totals, averages and grade lookup
+- Faulty cells: F4:F9 (Total), G4:G9 (Average), H4:H9 (Letter Grade) are blank / not calculated.
+- Fix formulas:
+  - F4 (Total /400): =SUM(B4:E4)  — copy down F4:F9
+  - G4 (Average /100 = average per 100): =F4/4  — copy down G4:G9
+    - (Alternative if you want percent-of-400: =F4/400*100 — but F4/4 returns the average score out of 100 which matches your header.)
+  - H4 (Letter Grade using the lookup table): =VLOOKUP(G4,$F$12:$G$18,2,TRUE)  — copy down H4:H9
+    - Make sure the grade table in F12:F18 is sorted ascending and represents the lower-bound points for each letter (VLOOKUP with TRUE needs ascending order).
+    - Alternative robust formula: =INDEX($G$12:$G$18, MATCH(G4,$F$12:$F$18,1))
+
+- Why: Totals and averages must be calculated from the four course scores. The VLOOKUP (approximate match) returns the letter based on the numeric average and the threshold table.
+
+3) Sheet drug bust — metadata mixed into data rows
+- Problem: Column E contains document metadata and notes (filename, data source, contact, titles) interspersed with the year/age data rows. That mixes non-data into the table and will break analyses/charts/filters.
+- Fix: Move all metadata (E3:E10 etc.) out of the data table into a separate header/notes area or a separate sheet called "Metadata". Keep the data table strictly in columns A:C (Year, Adult, Juvenile) from row 3 down. If you need the metadata in the file, place it above the table or on a separate sheet.
+
+Summary of immediate actions
+- Change H5 to =D5/C5*100 and copy down if needed.
+- Add F4 =SUM(B4:E4), G4 =F4/4 and H4 =VLOOKUP(G4,$F$12:$G$18,2,TRUE) and copy each down for rows 4:9.
+- Move metadata from column E of "drug bust" to a separate place so the A:C table is clean.
+
+If you want, I can give the exact copy-down ranges or produce the corrected formulas for every affected row.

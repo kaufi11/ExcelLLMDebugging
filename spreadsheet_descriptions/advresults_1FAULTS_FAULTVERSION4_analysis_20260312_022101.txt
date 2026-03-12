@@ -1,0 +1,47 @@
+High-level overview
+- Workbook contains four contestant sheets by age division: Pre-Teen (10–12), Junior (13–15), Senior (16–24), and College.
+- Each sheet tracks three judged events (Modeling, Strut, Solo), computed places, normalized points, a Total Points column, and a Final Place rank.
+
+Common layout and formulas (all sheets)
+- Columns:
+  - Contestant identifier/name in column B (A contains numeric index).
+  - Modeling Score in a score column (D for most sheets; College uses C).
+  - Modeling Place: RANK(score, score_range) → gives place among that division.
+  - Modeling Points: PRODUCT(ModelingPlace, 0.5) → place × 0.5.
+  - Strut Score and Strut Place: strut score and RANK(strut_score, strut_range).
+  - Solo Score and Solo Place: solo score and RANK(solo_score, solo_range).
+  - Total Points (K or J depending on sheet): SUM(ModelingPoints, StrutPlace, SoloPlace).
+  - Final Place: RANK(TotalPoints, total_range, 1) — rank with order = 1 (ascending), so smaller totals get better (1st) place.
+
+Sample entries (first rows)
+- Pre-Teen:
+  - Taylor McCarthy: Modeling 162.5, Strut 160, Solo 165.3. Modeling Place computed by =RANK(D2,D2:D16); Modeling Points =PRODUCT(E2,0.5); Total =SUM(F2,H2,J2); Final =RANK(K2,K2:K13,1).
+  - Jamie Piechocki and Brittany Wardell similarly set up.
+- Junior:
+  - Brittany Dollinger, Melissa Gryn, Jessie Gudahl, Ashley Ramsey — same formula pattern (RANK ranges typically D2:D30, G2:G30, I2:I30).
+- Senior:
+  - Carol Ann Horowitz, Jeni Summers — same pattern; final rank uses K2:K8 range (order = 1).
+- College:
+  - Sarah Horowitz and Christine McCord — columns shifted: Modeling score in C, Modeling place in D, Modeling points in E; final total in J and final place in K.
+
+Bulk/template formulas
+- Many sheets include repeated SUM formulas down long ranges (e.g., K40:K282 on multiple sheets, J35:J277 on College) of the form =SUM(F#,H#,J#) or =SUM(E#,G#,I#). These appear to be copied template rows to accommodate many contestants.
+
+Issues / inconsistencies to review
+- Inconsistent RANK ranges:
+  - Pre-Teen solo place uses =RANK(I2,I2:I15) while modeling/strut use D2:D16 and G2:G16 — solo range likely should be I2:I16.
+  - Several sheets use RANK ranges that do not match the other event ranges or the visible contestant count (likely copy/paste range errors).
+- Strange literal value in formula:
+  - Pre-Teen K41 = SUM(F41,68,J41) contains a hard-coded 68 instead of H41 — probable typo.
+- College final-place ranges:
+  - K2 = RANK(J2,J2:J2,1) — range references only the cell itself; K3 uses J2:J6. These should be consistent and cover the full contestant total range.
+- RANK ordering:
+  - Individual event RANK functions (no third argument) give descending rank (higher score = better). Final place uses ascending (order = 1) because Total Points combine places (lower is better). This is consistent logically but should be documented to avoid confusion.
+
+Recommendations (brief)
+- Standardize ranges to match the active contestant rows (e.g., D2:Dn, G2:Gn, I2:In).
+- Replace the hard-coded 68 with the intended cell reference.
+- Ensure final-place RANK ranges cover all contestant totals on that sheet.
+- Add a short header note explaining that lower Total Points = better final place (hence RANK(...,1)).
+
+If you want, I can: (a) produce corrected formulas for the problematic cells you point out, or (b) generate a cleaned template with consistent ranges for each sheet. Which would you prefer?

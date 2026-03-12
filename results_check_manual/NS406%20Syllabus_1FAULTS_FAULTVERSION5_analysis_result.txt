@@ -1,0 +1,19 @@
+I inspected the formulas on Sheet1 and found one clear formula inconsistency plus a couple of points worth checking.
+
+1) Incorrect formula (likely a typo)
+- Cell C31
+  - Current formula: =1+617
+  - Current value: 618
+  - Why it's incorrect: every other row in column C is computed as the previous numbered row + 1 (e.g. C32 = 1 + C31, C30 = 1 + C28, etc.). C31 uses a literal constant (617) instead of referencing the previous C cell, which breaks the intended sequential numbering.
+  - Recommended fix: replace with =1+C30 (so the sequence continues normally). After that, C32:C49 (which already use =1+C31, =1+C32, ...) will recalc to the expected consecutive values (15,16,...).
+
+2) Pattern to be aware of (not strictly an error, but worth confirming)
+- Some rows intentionally skip a C cell because the row above has no number (example: C30 is =1+C28 because C29 has no entry in column C). This is fine if intentional, but confirm you want each numbered row to be computed from the immediate previous numbered row. If you want a robust formula that always uses the last nonblank above, consider using a formula based on LOOKUP or MAX over the range (e.g. =1+MAX(C$2:C30)) when filling new rows.
+
+3) Other observations (non-formula)
+- A25 date is 2003-02-07 while the rest are 2002 — not a formula issue but may be a data typo if unintended.
+- Several E cells (E4, E6, E8, E9, etc.) are populated while corresponding columns in those rows are empty; that may be intended but check layout.
+
+If you want, I can:
+- Provide the exact formulas to paste/enter to correct C31 and optionally convert the column to a more robust pattern (e.g. fill series, or replace formulas with =1+MAX(...)).
+- Generate a corrected sequence for C2:C49 and show the before/after values.

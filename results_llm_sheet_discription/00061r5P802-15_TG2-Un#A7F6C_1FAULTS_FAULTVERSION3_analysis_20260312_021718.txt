@@ -1,0 +1,31 @@
+Summary of problems
+1. Missing column header at J1 — the sheet headers jump from I1 to K1. That makes column purpose unclear and can misalign your mental mapping of fields.
+2. Column M is labeled "CNTY" but is being used for country names (USA, Germany) — label is misleading.
+3. Inconsistent / incorrect numbering in column A:
+   - A35 uses =A34+8 (creates an unintended jump).
+   - A52 uses =A49+1 (skips rows 50–51 and breaks the simple incremental pattern).
+   - The current approach (each A cell referencing the previous A cell) is fragile: inserting/deleting rows or accidental manual edits easily break the sequence.
+
+What to do (quick fixes)
+1. Add the missing header at J1
+   - Put a header like "Address line 2" or "Street 2" (or leave "Notes" if that better matches the content). This documents what J contains and prevents column confusion.
+
+2. Correct header M1
+   - Change M1 from "CNTY" to "Country" if that column stores country names.
+
+3. Fix the numbering in column A and make it robust
+   - Option A (number every row relative to sheet row): Put this in A2 and fill down:
+     =IF(TRIM($C2)="","",ROW()-1)
+     Explanation: ROW()-1 gives 1 on row2, 2 on row3, etc.; the IF(...C2) keeps A blank if the Name cell is blank.
+   - Option B (number only populated rows consecutively): Put 1 in A2, and in A3 enter and fill down:
+     =IF(TRIM($C3)="","",A2+1)
+     Explanation: This only increments when the Name (column C) is non-empty and ignores blank rows.
+   - Concrete fix for your immediate wrong formulas: change A35 to =A34+1 and change A52 to a correct relative formula (or simply replace the whole A column using one of the two robust formulas above and fill down).
+
+Why these fixes help
+- Adding J1 and renaming M1 remove ambiguity, allow consistent filtering/sorting, and prevent accidental misinterpretation.
+- Using a robust A-column formula (based on ROW() or previous value with an IF) prevents numbering gaps and protects against breakage from row inserts/deletes. Filling the corrected formula down ensures all rows follow the same rule.
+
+If you want, I can:
+- Give the exact sequence of keystrokes to replace column A with Option A or B and fill down,
+- Or produce a short macro to fix all A formulas and rename headers automatically.

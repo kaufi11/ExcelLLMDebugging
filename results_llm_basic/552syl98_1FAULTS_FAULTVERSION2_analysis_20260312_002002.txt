@@ -1,0 +1,36 @@
+Summary of errors I found (short):
+
+1) Wrong date formula in B18 — a typo that breaks every later date.
+2) Inconsistent/typo URLs in row 7 (A7 vs the rest of the row).
+3) Possible non-date in B12 (could cause date formulas to fail) — check this.
+
+Details + fixes (easy steps):
+
+1) B18 error
+- Problem: B18 contains =B15+663. That adds 663 days (about 1.8 years) by mistake. Because many later formulas depend on B18, almost every subsequent class date is shifted incorrectly.
+- Fix: Replace the formula with =B15+7 (or =B17+? depending on your intended pattern). Based on the pattern in the sheet (Mon/Wed/Fri with each Monday = previous Monday + 7), the correct formula is:
+  - B18 =B15+7
+- Why this fixes it: adding 7 moves to the next week's Monday (consistent with the other formulas). After correcting B18, all cells that reference B18 will recalc to the correct calendar dates.
+
+2) Row-7 URL typo
+- Problem: A7 = "http://ce.ecn.purdue.edu/~puenvhyd" while the many filled cells (G7, H7, …) read "http://ce.ecn.purdue.edu/~puevnhyd" (letters swapped). One of these is a typo/inconsistency.
+- Fix: Decide which spelling is correct (likely "~puenvhyd"). Then use Find & Replace (Ctrl+H):
+  - Find: puevnhyd
+  - Replace with: puenvhyd
+  - Scope: Sheet (or Entire Workbook if it appears elsewhere)
+- Why: Keeps URLs accurate and consistent; prevents broken links.
+
+3) Make sure B12 is a true Excel date/time
+- Problem: If B12 is plain text ("1998-01-12 00:00:00") Excel formulas like =B12+2 won’t produce proper date arithmetic.
+- Check & Fix:
+  - Click B12. If Excel doesn’t recognize it as a date, re-enter it as a date or use DATEVALUE to convert.
+  - Format cell as Date/Time (Format Cells → Date or Custom).
+- Why: All the +2 and +7 calculations rely on B12 being a proper date serial.
+
+Other notes (minor)
+- Formulas like =+B16+2 work — the leading + is unnecessary but harmless.
+- You have many repeated URL cells across columns. If that was accidental, remove the extra copies or keep one reference to reduce clutter.
+
+If you want, I can:
+- Give the exact Find/Replace steps to correct B18 and the URL
+- Provide a corrected list of the first 10 dates after the fix so you can verify results.

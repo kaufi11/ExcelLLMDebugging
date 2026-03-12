@@ -1,0 +1,39 @@
+I reviewed the workbook structure and formulas you gave. I found three concrete problems that are causing incorrect / inconsistent numbers — and I show a simple fix for each.
+
+1) 5‑Year Review (2002 column) is pulling the wrong cells / contains hard‑coded values
+- Problem: Several 2002 cells in the FIVE YEAR REVIEW sheet are not linked to the 2002 column on the Financial Statements sheet (they are either hard‑coded or are pointing at the E (2001) column). Example: C15 should show 2002 subscriptions from 'Financial Statements'!C54 but the sheet contains either a hard value or references E54. Same for C16 (other income), C32 (cash retained) etc. Because of this the 2002 totals and ratios in the 5‑Year sheet can be wrong.
+- Why it matters: Summary numbers and ratios pull from these cells and will be stale or inconsistent whenever the Financial Statements numbers change.
+- Fix (how to correct):
+  - Replace each C‑column formula in the Five Year sheet with an explicit link to the Financial Statements C column for the same line. Examples:
+    - C15 → ='Financial Statements'!C54
+    - C16 → ='Financial Statements'!C61
+    - C17 → =C15+C16 (or ='Financial Statements'!C74)
+    - C32 → ='Financial Statements'!C117
+    - C33 → ='Financial Statements'!C129
+    - C34 → ='Financial Statements'!C136
+  - After updating, recalc and verify totals/ratios.
+- Short explanation: Make 2002 summaries reference 2002 source cells (sheet C column) instead of hard values or the 2001 column so the summary always matches the source.
+
+2) Accumulated funds displayed twice but only one side is linked
+- Problem: In the Balance Sheet the Accumulated funds line (C29) correctly links to the note total at C330, but the 2001 side (E29) is a hard value (690,869) not a formula. That creates inconsistency and maintenance risk.
+- Fix:
+  - Change E29 to =E330 (so both years are linked to the note totals).
+- Short explanation: Use the note totals as the single source of truth; linking both year columns to the note keeps the Balance Sheet correct automatically.
+
+3) Cash flow / “Cash paid to suppliers and employees” uses hard numbers and inconsistent signs
+- Problem: C121 is entered as a manual arithmetic expression (= -26907 - 7561074). That hardcoded approach is error‑prone (there is an off‑by‑1 appearance in the values, and the value won’t update if the underlying payment schedule changes). The cash flow reconciliation (C122 etc.) becomes fragile.
+- Fix:
+  - Replace the manual expression with a formula that references the detailed payments or a payment total cell (or use SUM). Examples:
+    - If you have a payments range (say Payments!C10:C200): C121 → =-SUM(Payments!C10:C200)
+    - If the workbook doesn’t have a payments schedule, at minimum store the supplier/employee payments in one cell (e.g. X) and use C121 = -X so it’s not a hard constant.
+  - Verify C122 is calculated from C120 + C121 (i.e. C122 = C120 + C121) so the sign convention is consistent.
+- Short explanation: Don’t hardcode operating cash outflows; link them to the underlying data or sum ranges so the cash flow and the income statement remain in sync.
+
+Extra housekeeping suggestions
+- Replace isolated hard values with links so each subtotal has one source of truth (notes → balance sheet → summary).
+- Avoid typing arithmetic constants into important reconciliation cells. Use SUM ranges and named ranges for clarity.
+- Once you fix links, recalc the workbook and re‑check the balancing equations: Assets = Equity + Liabilities and Cash closing = opening + net change.
+
+If you want, I can:
+- produce exact replacement formulas for every wrong cell in the Five Year sheet (I’ll list each cell and the correct formula), and/or
+- show how to find all hard‑coded numbers that should be links (a short macro or Excel Find technique). Which would you prefer?

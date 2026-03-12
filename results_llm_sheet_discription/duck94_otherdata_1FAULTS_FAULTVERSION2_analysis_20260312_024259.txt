@@ -1,0 +1,39 @@
+Summary of the errors I found and simple fixes
+
+1) FRF sheet — column I is not calculated correctly
+- Problem: cells in column I show the text "FORMULA =SUM(H5-J5)" (not a real formula), and row 20 uses =SUM(H20-100) (hard-coded 100 instead of using J20). Result: column I does not compute the intended difference (water depth minus gauge depth) and row 20 is plain wrong.
+- Fix: Put a real formula in I5 and fill down. For example in I5 enter:
+  =H5 - J5
+  then drag (or double-click) the fill handle down the column to copy for all rows.
+  Also change I20 to:
+  =H20 - J20
+- Why this works: =H#-J# performs the subtraction directly and will update automatically if H or J change. Removing the literal "FORMULA ..." text makes Excel compute the value.
+
+2) Use of SUM() around a single subtraction is unnecessary (and confusing)
+- Problem: formulas like =SUM(H5-J5) work but are redundant and make troubleshooting harder.
+- Fix: use =H5 - J5 (simpler and standard).
+
+3) Text values / formatting may block calculation
+- Problem: if the cells contain the literal string "FORMULA =SUM(...)" or numbers are stored as text, Excel won't compute correctly.
+- Fix: after entering the correct formula, ensure column H and J are numeric. If numbers are text, select them and use Data → Text to Columns (Next→Next→Finish) or multiply by 1 (paste 1 in a cell, copy it, select numbers, Paste Special → Multiply) to coerce to numbers.
+
+4) Data anomalies to verify (not an automatic formula error)
+- Problem: odd coordinate/depth values (e.g. F23 = -927.3, G28 = -2400.81, F28 = 3934.96) look suspicious and may be unit/sign mistakes.
+- Fix: check the source/metadata for those rows and correct signs/units if needed. I can’t auto-fix these because intent is ambiguous.
+
+5) RHB sheets — question about number of pore-pressure sensors
+- Problem: cell asks "Are there 5 or 6 sensors...?" but the sheet lists PD0–PD5 (6 sensors) plus PA0 & PA1 (additional piezometers).
+- Fix / Clarification: PD0–PD5 = 6 PD sensors. If the question intent was how many PD sensors, answer = 6. Update the note cell to “6 PD sensors (PD0–PD5). PA0 & PA1 are additional piezometers.”
+
+6) Inconsistent date formatting
+- Problem: some sheets use day numbers (e.g. "23") and others full dates ("1994-07-04 00:00:00").
+- Fix: standardize the From/To columns to Excel dates. Use Data → Text to Columns or DATEVALUE to convert strings, then format cells as Date. This prevents downstream errors in filtering and calculations.
+
+Quick step-by-step (most important: fix column I)
+1. Go to FRF sheet.
+2. In I5 type: =H5 - J5 and press Enter.
+3. Drag the fill handle down to the last instrument row (or double-click it).
+4. Edit I20 to =H20 - J20 if it didn’t auto-update.
+5. Verify results; if you see text in H or J, convert those cells to numbers (Text to Columns or Paste Special ×1).
+
+If you want, I can produce the exact list of rows on FRF that will change value after the fix, or give a one-click VBA snippet to replace the whole column automatically. Which would you prefer?

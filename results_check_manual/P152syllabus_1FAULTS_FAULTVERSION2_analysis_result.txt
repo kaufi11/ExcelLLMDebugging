@@ -1,0 +1,27 @@
+I inspected the formulas on the workbook (sheet "schedule") and found one clear formula error plus a couple of inconsistencies you should review.
+
+1) Definite error
+- Cell C47: formula = $C$7+7*(A47-125)-125
+  - This is almost certainly a typo. With A47 = 11 the formula evaluates to a date in 2000 (2000-07-04) which is out of sequence. Likely intended formula is one of:
+    - =$C$7+7*(A47-1)  (follow the pattern used in earlier weeks) or
+    - =$C$7+7*(A47-1)-1 (if it should follow the -1 adjustment used later weeks)
+  - Fix this to the intended form so the date falls into the March/April 2003 sequence with the other week 11 rows.
+
+2) Inconsistent/possibly intentional offsets
+- From row 35 (week 8) onward many date formulas change from the earlier pattern:
+  - Earlier Tuesday formulas: =$C$7+7*(Axx-1)
+  - Earlier Thursday formulas: =$C$9+7*(Axx-1)
+  - Starting at week 8 many rows use: =$C$7+7*(Axx-1)-1 and =$C$9+7*(Axx-1)-1
+  - This -1 offset is applied consistently across weeks 8–16, so it may be intentional (e.g. to account for a break or schedule shift). If it was intentional, document why. If not, remove the -1 so all weeks use the same base calculation.
+
+3) General notes / suggestions
+- The scheme of using $C$7 as the Tuesday base and $C$9 (which is =C7+2) as the Thursday base is fine and logical. Keep using absolute $C$7/$C$9 anchors.
+- For clarity and maintainability consider:
+  - Put a named cell or comment indicating "base Tuesday date" (C7) and "base Thursday date" (C9) and document any -1 adjustments (spring break).
+  - If you need programmatic adjustments for holidays/week breaks, consider an explicit offset column or a table of exceptions rather than embedding manual -1 in many formulas.
+- I scanned other formula cells in "schedule" and the only formula that is obviously wrong is C47. All other formulas either follow the initial pattern or follow the -1 pattern (which is consistent within that block).
+
+If you want I can:
+- Propose corrected formulas for C47 and/or change all -1 weeks to a uniform approach,
+- Produce a patch (exact replacement formulas for the affected cells),
+- Or check any other sheet/formula details you care about.

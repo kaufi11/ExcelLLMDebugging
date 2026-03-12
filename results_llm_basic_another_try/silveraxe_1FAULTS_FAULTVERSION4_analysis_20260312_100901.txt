@@ -1,0 +1,62 @@
+Errors found:
+
+1. **HLOOKUP ranges and row index mismatch:**
+   - Example: Cell H15 formula `=HLOOKUP(B15,R2:AG3,2,TRUE)` looks up weight (170) in R2:AG3, but R2:AG3 only has 2 rows (2nd row is Agility Mod), so row index 2 is valid, but the weight values in R2:AG2 are 0,31,61,... which do not include 170. This causes HLOOKUP to return the last smaller value (probably 15361 or 122881), which is incorrect.
+   - Similarly, in H22: `=HLOOKUP(C22,R2:AG4,3,TRUE)` looks up Carrying Capacity in R2:AG4, but the 3rd row is HTH damage (R4:AG4), which is text and dice strings, not numeric thresholds. This will cause wrong or #N/A results.
+   - Also, in B19: `=HLOOKUP(B16,R5:AW15,2,TRUE)` looks up Strength (30) in R5:AW15, but row 2 of that range (row 6 of sheet) is 1, not the correct row for the intended data.
+
+2. **Inconsistent or incorrect row index in HLOOKUP:**
+   - The row index in HLOOKUP formulas is often not matching the intended data row.
+   - For example, in B19, C19, D19, E19, the row index varies (2,3,5,9) but the range is R5:AW15 (rows 5 to 15). The row index is relative to the range, so 2 means row 6, 3 means row 7, etc. But the data in those rows may not correspond to the intended attribute.
+
+3. **Negative Charisma value in R17: -100**
+   - Cell R17 has Charisma value -100, which is likely an error or placeholder. Charisma should be positive or zero.
+
+4. **Inconsistent data in Int HP Mod (R9:AW9)**
+   - R9 is 1, S9 is 0.7, which is decreasing, then increasing. Usually, these modifiers should be monotonic or consistent.
+
+5. **Formula in E15: `=ROUNDUP(B15/50,0)`**
+   - This is correct, but the label "Basic Hits" is ambiguous. It should be "Basic Hit Points" or clarified.
+
+6. **Formula in G15: `=HLOOKUP(B15,R2:AG3,2,TRUE)`**
+   - Weight is 170, but R2:AG2 has weight thresholds starting at 0,31,61,... up to 491521. 170 falls between 121 and 241, so it should return the corresponding Agility Mod in row 3. But row 3 is Agility Mod, so this is okay if the data is consistent.
+
+7. **Formula in H18: `=HLOOKUP(B18,R17:AN18,2,TRUE)`**
+   - B18 is Charisma 15, R17:AN17 is Charisma values, R18:AN18 is Reaction Mod. This seems okay.
+
+Summary of main errors:
+
+- HLOOKUP ranges and row indexes do not always match the intended lookup table rows.
+- Negative Charisma value (-100) is likely an error.
+- Some lookup tables have inconsistent or illogical data (e.g., Int HP Mod).
+
+---
+
+**Solutions:**
+
+1. **Fix HLOOKUP ranges and row indexes:**
+   - Ensure the lookup range includes the lookup row and the target row.
+   - Adjust the row index parameter to correctly point to the row containing the desired return values.
+   - Example: For H15, if looking up weight in R2:AG2 and returning Agility Mod in R3:AG3, use `=HLOOKUP(B15,R2:AG3,2,TRUE)` which is correct. But verify that weight values cover 170 properly.
+   - For H22, the lookup range should include the weight thresholds and the corresponding damage values, not dice strings. Possibly use a numeric damage table or adjust the lookup range.
+
+2. **Correct negative Charisma value:**
+   - Replace -100 in R17 with a valid Charisma value (e.g., 0 or 15).
+
+3. **Verify all lookup tables for consistency:**
+   - Ensure all modifier tables increase or decrease logically.
+   - Adjust values if necessary.
+
+4. **Clarify labels and formulas:**
+   - Rename "Basic Hits" to "Basic Hit Points" or similar.
+   - Confirm formulas use correct references.
+
+---
+
+**Explanation:**
+
+- HLOOKUP looks for a value in the first row of the range and returns a value from a specified row index within that range.
+- The row index is relative to the range, so if the range starts at row 5, row index 2 means row 6.
+- If the row index points to a row with unrelated data, the returned value will be wrong.
+- Negative or illogical data values cause errors or incorrect calculations.
+- Fixing these ensures formulas return correct attribute modifiers and stats.

@@ -1,0 +1,58 @@
+Summary of workbook structure, contents and key formulas (concise)
+
+Overview
+- Purpose: mineral property database and rock-property calculator that computes mineral elastic/thermo properties and aggregates them into rock velocities/densities using mixture bounds (Hashin–Shtrikman, Voigt, Reuss, VRH).
+- Units: molar mass (g/mol), molar volume (cm3/mol), density (kg/m3), moduli (Pa in database; GPa/ km/s shown in rock outputs), P in GPa, T in °C.
+
+Sheets
+1) database
+- Contents: master list of mineral phases (rows A5:A56). Columns:
+  - A: phase name; B: gram formula weight (gfw); C: molar volume (cm3/mol); D: density @298K (kg/m3); E: wt% H2O; F: thermal expansivity (/K); G, I, K, M, O, Q, S, U: notes/references; H: isothermal bulk modulus KT (Pa); J: KT' (dKt/dP); L: shear modulus G (Pa); N/T: Grüneisen/gamma related parameters; P: dG/dP (or formula); R: first Grüneisen parameter; etc.
+- Many cells are constants; several cells contain formulas that scale related constants (examples):
+  - Some KT entries: FORMULA = Base/(1+F*0.42*R*298) (thermo correction).
+  - Shear/bulk derivative relation: P (dG/dP) = (5*G)/(3*KT) in many rows.
+  - Several entries reference other rows (e.g., H8 = H9).
+- Note row A3 contains workbook version string (FORMULA ="version 11/08/03...").
+
+2) minerals
+- Purpose: computed mineral properties at specified P and T. Values overwritten by macro when P & T changed (note at D1/D2).
+- Input cells: A1 shows P(GPa) (B1=0.6), A2 T(°C) (B2=25). Macro required to change these.
+- Columns: B: alpha(T,0) (1/K), C: rho(T,0) (kg/m3), D: Kt(T,0) (Pa), E: G(T,0) (Pa), F: finite strain, G: Kt(T,P) (Pa), H: alpha(T,P), I: Ks(T,P), J: G(T,P), K: rho(T,P), L–N: Vbulk, Vp, Vs (km/s), O: Poisson's ratio.
+- All entries are computed from the database constants plus P,T. Example outputs for P=0.6 GPa, T=25°C: aqz rho=2648 kg/m3, Kt=3.712e10 Pa, G=4.48e10 Pa, Vp≈6.12 km/s, Vs≈4.09 km/s.
+
+3) rocks
+- Purpose: user-definable rock modal compositions (vol%) and aggregated rock physical properties.
+- Layout:
+  - Columns represent rock samples/facies (headings B4..H4 etc) with modal vol% per mineral listed down rows A5:A56.
+  - Yellow cells (user-editable) contain modal percentages and a few P/T/other inputs; green cells are calculated.
+  - Row 57 (for each rock column) contains SUM formulas (e.g., B57 = SUM(B5:B56)) to check totals.
+- Calculations / outputs:
+  - Rows 61–68: Hashin–Shtrikman average rock properties (H2O wt%, bulk density, Vp, Vs, K, G, Poisson's).
+  - Rows 76–96: Bounds (H-S max/min, Voigt, Reuss, VRH) for Vp, Vs, K, G etc.
+  - All aggregate properties are computed from mineral properties (from minerals sheet) combined with modal fractions using classical mixture rules (Hashin–Shtrikman, Voigt, Reuss, Voigt–Reuss–Hill).
+- Example rock outputs (for the displayed set): rho ≈ 3.08 g/cm3, Vp ≈ 7.04 km/s, Vs ≈ 3.87 km/s, K ≈ 90.94 GPa, G ≈ 46.18 GPa for column B.
+
+4) rock mineral modes
+- Library of modal proportions for many named rock types and metamorphic facies.
+- Layout: large matrix of mineral names (col A) vs many rock/type columns (E:..., P:..., etc). Many cells are numeric modal percentages; some are formulas (e.g., F16 = FORMULA =0.88*15).
+- Row 57 and other rows use SUM() formulas to total modes and check consistency.
+- Intended to copy/paste modal columns into the rocks sheet for quick rock creation.
+
+Key formulas & methods
+- Mineral-level formulas: thermal corrections to KT via factor 1/(1+alpha*0.42*gamma*298) and scaling relations between moduli and their pressure derivatives (e.g., dG/dP = (5*G)/(3*KT)).
+- Rock aggregation: Hashin–Shtrikman bounds (H-S max/min), Voigt (upper) and Reuss (lower) bounds, and Voigt–Reuss–Hill (VRH) averages are computed for K and G; then Vp and Vs are derived from bulk/shear moduli and density.
+- Many SUM() formulas in rocks and rock mineral modes to total modal abundances (row 57).
+
+User-editable vs calculated
+- database: primarily constants but editable (cells are not locked); changing these changes downstream computed properties.
+- minerals: outputs are overwritten by macro — user should not edit computed table (use macro to update P/T).
+- rocks and rock mineral modes: yellow cells (modal fractions and a few inputs) are user-editable; green/result cells are calculated.
+
+Practical notes
+- To recalc mineral properties for a new P & T run the macro referenced on minerals sheet (it updates all computed values).
+- Check each rock column’s SUM row to ensure modal percentages sum to ~100% (row 57).
+- Units and column headers are present in every sheet—verify whether moduli are displayed in Pa (database/minerals) or GPa (rock summaries).
+
+If you want, I can:
+- List the phases present and their key properties (density, KT, G) in one table.
+- Point out which exact cells are user-editable (yellow) vs formulas (green) for a given sheet.

@@ -1,0 +1,44 @@
+Summary of errors (short):
+
+1) Many cells in column I (FRF sheet) contain the literal text "FORMULA =SUM(H5-J5)" (etc.) instead of evaluated formulas.  
+2) Some formulas are wrong/typos — e.g. I20 has =SUM(482-J20) (uses 482 constant instead of the H20 cell).  
+3) Unnecessary use of SUM around a subtraction: =SUM(H5-J5) is awkward/ambiguous — use plain subtraction.  
+4) Possible header/column misalignment (repeated labels like "Gauge", duplicate "Depth(m)" headings) — this can cause wrong cell references.
+
+Why these are problems (short):
+- Text like "FORMULA =…" is not calculated by Excel, so you get no numeric result.  
+- Wrong constant/reference returns incorrect values.  
+- SUM(H-J) works only incidentally; plain subtraction (=H5-J5) is clearer and less error-prone.  
+- Misaligned headers lead to wrong formulas and misinterpreted data.
+
+How to fix (step-by-step, easy):
+
+A — Convert the literal formula text into working formulas
+1. Select the column (I) or the whole FRF sheet area with those "FORMULA …" entries.  
+2. Format cells to General (Home → Number → General).  
+3. Use Find & Replace:
+   - Find what: FORMULA =
+   - Replace with: =
+   - Click Replace All.
+   This turns "FORMULA =SUM(H5-J5)" into "=SUM(H5-J5)" which Excel will evaluate.
+
+B — Clean the formulas (recommended)
+4. Replace the SUM-subtraction with simple subtraction for clarity. Example:
+   - Change =SUM(H5-J5) → =H5-J5
+   - Change =SUM(H23-J23) → =H23-J23
+5. Correct typos like I20:
+   - Change =SUM(482-J20) → =H20-J20 (if you intended depth difference H20 minus J20).
+   Verify H20 actually holds the intended value before changing.
+
+C — Verify headers and references
+6. Check that column headers are aligned and not shifted by merged cells. Unmerge any merged header cells, confirm column labels match the data columns (Cross-shore, Longshore, Depth, Height off, etc.).  
+7. Spot-check a few calculations manually (e.g., H5 minus J5) to confirm the formula produces the expected numeric result.
+
+Extra checks:
+- If some cells still show text after Replace All, select them, press F2 then Enter (or use Data → Text to Columns) to force Excel to re-evaluate.  
+- Review odd values (e.g., F23 = -927.3) to confirm they are real data and not sign/entry errors.
+
+One-line checklist to fix quickly:
+- Format cells General → Find & Replace "FORMULA =" → "=" → Replace All → change =SUM(Hx-Jx) to =Hx-Jx where needed → correct any cell-reference typos (like 482 → H20) → verify headers.
+
+If you want, I can give the exact Replace string for any other pattern or generate a small macro to clean the whole sheet automatically. Which would you prefer?

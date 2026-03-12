@@ -1,0 +1,79 @@
+Hier die wichtigsten Fehler, kurze Erklärungen und einfache Lösungen (auf Deutsch, Excel-Formeln im deutschen Format):
+
+1) BUFORD (Student - Teacher), falscher Tausender/Dezimalpunkt
+- Fehler: Zelle E15 = 1.548 (soll 1.548 → 1548)
+- Erklärung: Dezimalpunkt statt Tausender; Zahl um den Faktor 1000 zu klein.
+- Lösung (sofortige Korrektur): ersetze manuell durch 1548 oder mit Formel:
+  - In Hilfszelle: =E15*1000
+  - Danach kopieren → Werte einfügen in E15.
+
+2) Kopfzeile für 1997-2000 blockiert/verschoben (Sheet Student-teacher)
+- Fehler: In Zeile 43 sind Spaltenbezeichnungen verschoben (H43 = "Teachers" statt "Average Daily" usw.)
+- Erklärung: Beschriftungen stimmen nicht mit den Daten-Spalten überein → Verwirrende Darstellung / falsche Interpretation.
+- Lösung: Kopf wieder richtig anordnen, z.B.:
+  - H43: "Average Daily"
+  - I43: "Teachers"
+  - J43: "Ratio"
+  (Einfach Text in diese Zellen schreiben / Spalten verschieben)
+
+3) Fehlende Summen/Totale (Student - Teacher)
+- Fehler: Totale für manche Jahre fehlen (z.B. B18/C18, E18/F18, H18/I18 sind nicht als SUM-Funktion hinterlegt)
+- Lösungsvorschlag (Beispiel für 1990-1991, Zeile 18):
+  - B18 (Attendance total 1990-91): =SUMME(B7:B17)
+  - C18 (Teachers total 1990-91): =SUMME(C7:C17)
+  - E18 (Attendance 1991-92): =SUMME(E7:E17)
+  - F18 (Teachers 1991-92): =SUMME(F7:F17)
+  - H18: =SUMME(H7:H17)
+  - I18: =SUMME(I7:I17)
+- Erklärung: Summen manuell ergänzen statt leere Zellen.
+
+4) University sheet — Zwei-Jahres-College SUM-Bereiche falsch
+- Fehler: Zelle C15..K15 referenzieren fälschlich Zeilen 5:14 (vierjährige Schulen) statt 12:14 (2-yr colleges)
+- Korrekte Formeln (für B15..K15; B15 ist bereits korrekt). Beispiele:
+  - C15 =SUMME(C12:C14)
+  - D15 =SUMME(D12:D14)
+  - E15 =SUMME(E12:E14)
+  - F15 =SUMME(F12:F14)
+  - G15 =SUMME(G12:G14)
+  - H15 =SUMME(H12:H14)
+  - I15 =SUMME(I12:I14)
+  - J15 =SUMME(J12:J14)
+  - K15 =SUMME(K12:K14)
+- Erklärung: falscher Summenbereich addierte zusätzlich die Four-Year-Zahlen.
+
+5) Teachers With Advanced Degrees — inkonsistente Prozent-Notation
+- Fehler: Frühe Jahre als "50.9" (Zahl = 50.9) später Jahre als Dezimal 0.469... → Mischung von Prozentwerten und Dezimalwerten.
+- Erklärung: Manche Werte sind in Prozent (z.B. 50.9 ≙ 50.9%) und andere als 0.469 ≙ 46.9% → inkonsistente Basis.
+- Lösung (vereinheitlichen auf Dezimal 0..1 und Format Prozent):
+  - Hilfsformel für jede Prozentzelle (z.B. B6): =WENN(B6>1;B6/100;B6)
+  - Danach Zellen als Prozent formatieren (Start → Zahlenformat → Prozent).
+  - Alternativ: für ganze Bereich „Suchen/Ersetzen“ oder „Inhalte einfügen“ mit Multiplizieren 0,01 für die >1-Werte.
+- Erklärung: Damit sind alle Werte einheitlich (0..1) und korrekt als Prozent darstellbar.
+
+6) Teachers total numbers mit Dezimalen / Nicht-ganze Zahlen
+- Fehler: Manche "Total No." zeigen Dezimalstellen (z.B. G13 = 1995.8)
+- Lösung: Ganzzahl runden:
+  - =RUNDEN(G13;0) oder dauerhaft: =GANZZAHL(G13) (je nach gewünschtem Rundungsverhalten)
+- Erklärung: Personenanzahlen müssen ganze Zahlen sein.
+
+7) SAT: offensichtliche Tippfehler mit fehlender Ziffer (z.B. D10 = 99, D11 = 100)
+- Fehler: Manche SAT-Zahlen haben 2- oder 3-stellige Werte, die unplausibel niedrig sind (vermutlich fehlende "9" vorne).
+- Lösungsvorschlag (Prüfung / automatische Korrektur-Vorschlag):
+  - Prüfe Quelle manuell. Falls es sich um fehlende führende "9" handelt, kann testweise korrigiert werden:
+    - =WENN(LÄNGE(D10)=2;WERT("9"&D10);D10)
+  - Gleiches für andere Zellen (z.B. D11).
+- Erklärung: Automatische Regel nur Hilfslösung — beste Lösung:Quelle prüfen und richtige Werte eintragen.
+
+8) Sonstige: Fragezeichen/Text in Zahlen (z.B. H13 "60?")
+- Fehler: Nicht-numerische Zeichen in Zahlzellen
+- Lösung: Entfernen des "?" oder ersetzen durch korrekten Wert; falls unsicher: prüfen Quelle.
+- Formelhilfe (zum Entfernen von nicht-numerischen Zeichen): =WERT(WECHSELN(H13;"?";""))
+
+Zusammenfassung / Vorgehensweise empfohlen
+- 1) Korrigiere offensichtliche Tippfehler (z.B. 1.548 → 1548; SAT falsch geschriebene 99 → prüfen).
+- 2) Vereinheitliche Formate (Prozent-Format bei Teachers adv degrees: Werte auf 0..1 bringen und als Prozent formatieren).
+- 3) Setze fehlende SUMME-Formeln (z.B. B18/C18, E18/F18, H18/I18 und University C15..K15).
+- 4) Entferne Texte/Zeichen aus Zahlzellen.
+- 5) Prüfe alle Änderungen an der Originalquelle (die automatische Korrektur kann Annahmen treffen).
+
+Wenn du willst, mache ich die Korrekturen direkt: gib mir Bescheid, welche Zellen ich automatisch umwandeln/simulieren soll (z.B. alle Prozentzellen B6:L16 vereinheitlichen; alle SUMMEN in Student-teacher einfügen; SAT-Spalte D automatische Korrektur für zweistellige Werte).

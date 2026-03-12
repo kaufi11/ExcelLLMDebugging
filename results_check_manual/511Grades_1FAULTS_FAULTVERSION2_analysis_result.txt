@@ -1,0 +1,50 @@
+I inspected the sheet formulas and values row by row. I found one clear formula error plus a few inconsistencies / fragile formulas that can cause wrong results or errors in edge cases. Summary and suggested fixes below.
+
+1) Clear error — wrong operator (causes huge final score)
+- Cell: O14
+- Current formula: =N14*$N$3
+- Problem: all other rows compute a relative score as Nrow / $N$3 (fraction of the maximum). O14 multiplies instead of dividing, producing the very large value 684,250 and propagating a huge BC14.
+- Fix: change to the consistent formula:
+  - =N14/$N$3
+
+After that BC14 (and BD14) will be sane again.
+
+2) Hard-coded grade letters (inconsistent with rest of sheet)
+- Cells with manual values (should be calculated by the same IF formula used elsewhere):
+  - BD9 (value "B-"; no formula)
+  - BD14 (value "B-"; no formula)
+- Most other BD cells use a nested IF based on BCx (for example row 4 uses):
+  - =IF(BC4>=0.915,"A",IF(BC4>=0.895,"A-",IF(BC4>=0.875,"B+",IF(BC4>0.815,"B",IF(BC4>=0.795,"B-",IF(BC4>=0.775,"C+",IF(BC4>0.715,"C",IF(BC4>=0.695,"C-","D")))))))))
+- Recommendation: replace the hard-coded BD9/BD14 with the same IF formula (copy from any BD row and adjust row number).
+
+3) Fragile SMALL(...) usage in "drop lowest 5" logic
+- Cells: ANx (example AN3, AN4,... use)
+- Formula pattern:
+  - =AMx - MIN(Px:ALx) - SMALL(Px:ALx,2) - SMALL(Px:ALx,3) - SMALL(Px:ALx,4) - SMALL(Px:ALx,5)
+- Problem: SMALL(range,k) will return a #NUM! error if there are fewer than k numeric entries in the range. If any student has fewer than 5 quiz scores entered in P:AL, that formula will error.
+- Recommendations:
+  - Ensure that P:AL always contains at least 5 numeric entries; OR
+  - Make the formula robust, e.g. only remove up to the number of scores present:
+    - One approach (pseudo-formula): if COUNT(Px:ALx)>=5 then keep current formula else subtract the COUNT lowest values. Implementing the latter is a bit more involved (use IF + COUNT + SUM(SMALL(...)) with dynamic k). If you want, I can provide a replacement formula that safely drops up to 5 smallest values even when there are fewer than five scores.
+
+4) Inconsistent absolute references (minor / maintainability)
+- Examples: O3 uses $N$3 (both column & row locked), AOx formulas use AN$3 (row locked but not column).
+- Not an immediate error for column-based copy down, but it is inconsistent and could cause unexpected changes if formulas are copied sideways. For clarity and robustness you could use $AN$3 (both locked) where AN3 is intended as a fixed denominator.
+
+5) Minor redundancies / oddities (no functional error)
+- BC formulas end with "-0.04*MIN(...)/1" — the "/1" is redundant.
+- AY formulas compute (AV+AW+AX)/100 — that’s fine but AW is frequently used; if AW were left blank it's treated as zero (OK but be aware).
+- Some rows produce component percentages > 1 (e.g., AT>1 or AY>1) — this may be intended (extra credit). Just confirm that >100% parts are desired behavior.
+
+6) Effect of the O14 error on downstream values
+- Because O14 was multiplied by $N$3, BC14 became extremely large (BC14 = 109,480.637...). That will make BD14 meaningless if BD14 were formula-driven; currently BD14 was hard-coded, so the mismatch is worse. Fixing O14 will correct BC14.
+
+If you want, I can:
+- Produce the safer AN formula that drops up to five lowest quiz scores robustly when fewer than five quizzes exist; or
+- Provide a single corrected copy of the BD IF formula you can paste down the BD column; or
+- Scan for any other specific rows you want validated.
+
+Summary of actions I recommend immediately:
+1) Fix O14 to =N14/$N$3.
+2) Replace BD9 and BD14 with the standard BD IF formula (copy from any BD that has it).
+3) Consider making AN formulas robust to low-count ranges (I can provide a formula).

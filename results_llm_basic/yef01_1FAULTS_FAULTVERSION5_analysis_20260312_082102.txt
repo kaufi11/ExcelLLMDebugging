@@ -1,0 +1,57 @@
+Thanks — I reviewed the sheets and found the main errors and poor practices that cause wrong totals / percentages. Short, clear list of problems and fixes below.
+
+1) Revenues by Source — wrong subtraction and bad total range
+- Error: C12 = 147577404-1 (the “-1” appears accidental and will make totals off by 1).
+- Error: Total formula uses SUM(C10:C15) while your data rows stop at C14 (this can hide a missing line or include a blank row).
+- Fix: remove the “-1” so C12 = 147577404. Change the total to SUM(C10:C14) (or adjust to whatever exact item range you actually have).
+- Why: accidental arithmetic and wrong ranges produce incorrect totals and therefore incorrect percent shares.
+
+2) Expenditures by Function — incorrect SUM range
+- Error: B20 = SUM(B10:B19) and C20 = SUM(C10:C19) but listed items end at row 18.
+- Fix: use SUM(B10:B18) and SUM(C10:C18) (or update the range to match actual data rows).
+- Why: mismatched ranges can omit or include unintended cells.
+
+3) Expenditures by Category — hacks & wrong total range
+- Errors:
+  - B12 uses =ROUND((C12/$C$16),4)-0.0001 (you’re subtracting a tiny value to force totals).
+  - Totals use SUM(B10:B15) / SUM(C10:C15) but listed items appear to be rows 10–14.
+- Fix:
+  - Remove the -0.0001. Use either =ROUND(C12/$C$16,4) (if you want a stored rounded value) or better: use =C12/$C$16 and set the cell format to show the desired number of decimals.  
+  - Fix the total ranges to match actual item rows, e.g. SUM(B10:B14) and SUM(C10:C14).
+- Why: subtracting tiny amounts corrupts data. Rounding / display formatting should be used to control presentation, not to “force” totals.
+
+4) FTEE Calculation — inconsistent formulas and manual tweaks (biggest problem)
+- Errors / bad practices found:
+  - Many rows have small ad‑hoc constants added/subtracted (+0.01, -0.02, +0.02, +0.03, -0.000001, etc.) to make totals sum to 1.0.  
+  - Inconsistent use of columns in the total: e.g. H14 = D14 + F14 while other rows use Cx + Fx. (That looks like a copy/paste error.)
+  - Totals C28, F28, H28, I28 have added/subtracted tiny constants (SUM(...)+0.02, SUM(...)-0.02, etc.).
+- Fix (apply to every college row):
+  - Credit FTEE (Cx) = Bx / 24
+  - Non‑credit FTEE (Fx) = Ex / 600
+  - Total FTEE (Hx) = Cx + Fx   (do NOT add +0.01)
+  - % of total (Ix) = Hx / H$28
+  - Total H28 = SUM(H12:H27) (no manual +/- tweaks)
+  - Totals for C28 and F28 should be plain sums: C28 = SUM(C12:C27); F28 = SUM(F12:F27)
+  - Remove any tiny adjustments in C28, F28, H28, I28 and in any row formulas.
+- Why: manual numeric hacks break data integrity. Use proper formulas and compute totals from raw values; use formatting/ROUND for presentation only.
+
+5) General clean‑up recommendations
+- Avoid writing literal additions like =9595817+116896967 in C10 — instead put the components in cells and use SUM(cellrange) so the workbook is auditable and easier to maintain.
+- If you want percentages to read nicely, use cell formatting (Percentage with 2–4 decimals) or use =ROUND(value,4) only where you must store a rounded value — do not alter source numbers to force total = 100%.
+- Check all SUM ranges to ensure they match your actual data rows (common off‑by‑one in your sheets).
+
+6) Example corrected formulas (copy/paste)
+- Revenues total: C16 = SUM(C10:C14)
+- Revenues percent for tuition: B10 = C10 / $C$16
+- Expenditures by Function total: C20 = SUM(C10:C18)
+- Expenditures by Category percent (no hack): B12 = C12 / $C$16 and format as Percentage
+- FTEE (example for row 12):
+  - C12 = B12 / 24
+  - F12 = E12 / 600
+  - H12 = C12 + F12
+  - I12 = H12 / $H$28
+- FTEE totals:
+  - H28 = SUM(H12:H27)
+  - I28 = SUM(I12:I27) (should equal ~1.0 if no rounding smoothing applied)
+
+If you want, I can generate a corrected list of exact formulas for every affected cell (I can output a cell-by-cell correction list or an updated sheet). Which would you prefer?

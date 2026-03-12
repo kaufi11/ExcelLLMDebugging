@@ -1,0 +1,40 @@
+Short answer first — main problems:
+- Several cells on Ap1/Ap2/Ap3 point to the wrong Rate!E## (i.e. the weighting cell). This is a copy/paste / offset error so some rows use E14/E17/E18 instead of E16/E19/E20.
+- Ap3!L20 contains the literal number 784 instead of the K20 cell reference, so it always returns 0.
+- Because Summary pulls values from Ap1/Ap2/Ap3, the wrong answers propagate there.
+
+Exactly where (all are on sheets Ap1, Ap2, Ap3):
+1. Proficiency section — wrong weighting reference:
+   - Cells L19 on Ap1, Ap2, Ap3 use Rate!E14 but should use Rate!E16 (they correspond to Rate!G16).
+2. Experience section — wrong weighting references:
+   - Cells L32 on Ap1, Ap2, Ap3 use Rate!E17 but should use Rate!E19 (they correspond to Rate!G19).
+   - Cells L33 on Ap1, Ap2, Ap3 use Rate!E18 but should use Rate!E20 (they correspond to Rate!G20).
+3. Typo constant:
+   - Ap3!L20 = IF(784=2, ... ) — should reference K20, not the number 784.
+
+What to change (fix formulas)
+- Replace Ap1!L19 formula with:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- Replace Ap1!L32 formula with:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- Replace Ap1!L33 formula with:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+- Make the exact same corrections on Ap2 and Ap3 (L19 → use Rate!E16; L32 → Rate!E19; L33 → Rate!E20).
+
+- Fix Ap3!L20 to use K20:
+  =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+
+Why this fixes it
+- Each B-row pulls a question text from Rate!Gxx. The corresponding weighting lives in Rate!Exx (same row). Some formulas were shifted and used the wrong E-row. Pointing each formula to the matching Rate!Exx restores the intended weight multipliers.
+- Replacing the literal 784 with the cell reference K20 allows the IF test to evaluate the user’s selected key, so the correct multiplier path is chosen.
+- Once corrected, Summary (which reads Ap# L##) will show the correct totals automatically.
+
+Optional improvement to avoid future copy/paste errors
+- Use a lookup instead of hardcoded Rate!E## in each formula. Example (proficiency pattern):
+  =IF(K16=2, INDEX(Rate!$E:$E, MATCH(B16, Rate!$G:$G,0))*0.33, IF(K16=3, INDEX(Rate!$E:$E, MATCH(B16, Rate!$G:$G,0))*0.66, IF(K16=4, INDEX(Rate!$E:$E, MATCH(B16, Rate!$G:$G,0))*1,0)))
+  This finds the correct Rate!E row based on the text in the B cell and prevents misalignment when rows are moved or copied.
+
+If you want, I can:
+- Provide exact corrected formulas for every Ap sheet (I listed Ap1; I will replicate to Ap2/Ap3 on request), or
+- Give the INDEX/MATCH formulas for every row so the file is robust to future edits.

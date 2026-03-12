@@ -1,0 +1,78 @@
+I inspected the formulas you included for Sheet1 and found multiple formula-range inconsistencies and a few other issues that are likely causing wrong/ambiguous results. Summary of the problems and recommended fixes follows.
+
+1) Inconsistent ranges used in Max/Min/Average/StDev summary rows
+- Problem: The MAX formulas in row 69 use different start rows than the corresponding AVERAGE/MIN/STDEV formulas in rows 70–72:
+  - B69 =MAX(B33:B68) but B71/B72 use B2:B68 and B70 uses MIN(B2:B68). (Inconsistent: MAX starts at row 33 but other stats start at row 2.)
+  - C69 =MAX(C33:C68) but C71/C72 and C70 use C2:C68.
+  - D69 =MAX(D33:D68) but D71/D72 and D70 use D2:D68.
+  - N69 =MAX(N17:N68) but N71/N72 use N2:N68.
+  - Q69 =MAX(Q17:Q68) but Q71/Q72 use Q2:Q68.
+
+- Why it matters: Using different row ranges for the same summary statistic set leads to inconsistent and misleading summaries. For example the MAX should be calculated over the same population used for the AVERAGE and STDEV unless you intentionally want different subsets.
+
+- Recommended fixes:
+  - Decide on a single range for each column (most likely B2:B68, C2:C68, D2:D68, N2:N68, Q2:Q68) and make all summary formulas use that same range (MAX, MIN, AVERAGE, STDEV).
+  - Example corrections:
+    - B69 -> =MAX(B2:B68)
+    - C69 -> =MAX(C2:C68)
+    - D69 -> =MAX(D2:D68)
+    - N69 -> =MAX(N2:N68)
+    - Q69 -> =MAX(Q2:Q68)
+
+2) Summary MIN formulas include summary cells (circular / contaminated ranges)
+- Problem:
+  - N70 =MIN(N17:N69) includes N69 (a summary cell) in the range.
+  - Q70 =MIN(Q17:Q69) includes Q69 (a summary cell) in the range.
+- Why it matters: Including computed summary cells in a MIN (or MAX or AVERAGE) range may distort the result and can create circular dependencies if the summary refers back to those cells.
+- Recommendation: Change those ranges to exclude the summary row(s). Use something like N2:N68 and Q2:Q68 (or whatever consistent data range you choose).
+
+3) Unexpected MIN values (possible zeroes or hidden data)
+- Observations:
+  - C70 shows value 0 while visible C cells in the sheet appear to contain numbers >= 22. MIN(C2:C68) returning 0 is unexpected.
+  - G70 shows 0 while the visible G values appear ≥ 2 in the data provided.
+- Possible causes:
+  - There may be explicit zero values in the range (not visible in the excerpt), or
+  - Some cells in the range contain formulas that evaluate to 0, or
+  - Cells contain text that Excel treats as 0 in numeric aggregation (rare) or non-numeric entries that affect results.
+- Recommendation:
+  - Inspect the C and G ranges for actual zeroes or formula-produced zeroes (use Go To Special → Constants or Formulas to locate numeric zeros).
+  - Confirm no hidden rows or cells (row 16, etc.) inside the range contain zeros.
+  - After cleaning, recompute MIN over the intended consistent range.
+
+4) Including different row starts (17, 33, etc.) appears accidental
+- Problem: Several summary formulas start at row 17 or 33 rather than row 2. Examples: N69 uses N17:N68, B69 uses B33:B68, etc.
+- Recommendation: If those different starts were accidental, change to use a single consistent data range (e.g., 2:68). If they were intentional (e.g., summary of a subgroup), add a note/label so it’s clear the statistic is for a subset.
+
+5) Use of hard-coded sums in Q and N instead of references (consistency/style)
+- Observation: Many cells in N and Q are written as simple arithmetic constants like =20+5 or =58+2+3. Those evaluate correctly but are inconsistent with other rows where components may be stored separately.
+- Recommendation: Prefer referencing component cells (for clarity and auditability) instead of hard-coded arithmetic where possible. If the purpose is to show the breakdown, keep both: component columns and a formula referencing them.
+
+6) Operator precedence could be ambiguous / inconsistent
+- Examples:
+  - N10 = "=17+5/2" (Excel computes 5/2 first, then adds 17 => 19.5). If the intention was (17+5)/2, the result would be different.
+  - Many rows use +5/2 or +5/2 patterns. If the intended operation is to add half of 5, current formulas are fine; if the intended operation is averaging, you need parentheses.
+- Recommendation: Use parentheses to make intent explicit. E.g.:
+  - If you want (17+5)/2 write =(17+5)/2
+  - If you want 17 + (5/2) write =17 + 5/2 (current form)
+
+7) Miscellaneous / suspicious individual entries (manual check recommended)
+- Q52 = 6.5 — unusually small compared with other Q values; verify that this is intentional and not a mis-typed cell (it’s in a final exam column Q).
+- A16, A68: very large ID values (98227577, 99650185) — not formula issues but possible data-entry outliers; check if intended.
+- Q27 = "=58+2+3" and Q40 = "=78+2+5" are fine but inconsistent style (mentioned above).
+
+Summary of concrete formula changes to consider (examples)
+- B69: change =MAX(B33:B68) → =MAX(B2:B68)
+- C69: change =MAX(C33:C68) → =MAX(C2:C68)
+- D69: change =MAX(D33:D68) → =MAX(D2:D68)
+- N69: change =MAX(N17:N68) → =MAX(N2:N68)
+- Q69: change =MAX(Q17:Q68) → =MAX(Q2:Q68)
+- N70: change =MIN(N17:N69) → =MIN(N2:N68)
+- Q70: change =MIN(Q17:Q69) → =MIN(Q2:Q68)
+- Re-check C70 and G70 unexpected zeros once ranges corrected; remove any unintended zero entries.
+
+If you want, I can:
+- Generate the exact corrected formulas for every summary cell (69–72) to make them consistent,
+- Scan the full workbook for numeric zeros or hidden rows in C and G ranges (I’d need the actual workbook run-time), or
+- Produce a small checklist you can run in Excel to locate the problematic zero entries (Go To Special, filter, check hidden rows, check for text in numeric cells).
+
+Which follow-up would you like?

@@ -1,0 +1,52 @@
+Sheet name
+- Silver Axe (single character sheet for Villains & Vigilantes 2nd Edition)
+
+Layout / major blocks
+- Header (A1): Game title.
+- Identity block (A2–H4): Identity fields — Identity (B2 Julia Cochran), Name (B3 Silver Axe), Side (H2 Evil), Gender (H3 Female), Level (H4 = 2), Age (J4 = 25), Experience (B4 = 0).
+- Powers / equipment (A5–A11): Powers list (magic handaxe + modifiers, Heightened Attack / Strength / Endurance / Agility entries), short flavor text (A6–A8).
+- Attributes (left column): Strength (B16 = 30), Agility (B17 = 34), Endurance (G16 = 12), Intelligence (G17 = 11), Charisma (B18 = 15).
+- Weight / basic hits (A15–E15): Weight (B15 = 170), Basic Hits formula in E15.
+- Large lookup tables (columns Q through AW / R through AG):
+  - Q2:AG2 (weight breakpoints) and Q3:AG3 (agility modifier per weight).
+  - R5:AW15 (attribute-value tables): many rows of per-attribute modifiers (e.g., Attr. Value row at Q5, Str/End/Agl HP mods, dmg mods, detection values, etc.). These are used with HLOOKUP calls to map attribute scores to modifiers.
+  - Q5–Q15 etc. provide HP/Acc/Dmg/Detect modifiers at many attribute breakpoints.
+- Derived stats / formulas (rows 15–27):
+  - Basic Hits: E15 = ROUNDUP(B15/50,0).
+  - Agility Mod: H15 = HLOOKUP(B15,R2:AG3,2,TRUE) (looks up agility modifier based on weight breakpoints).
+  - Hit Mod components: B19, C19, D19, E19 use HLOOKUP lookups into the attribute tables (R5:AW15) based on Strength, Endurance, Intelligence, Agility.
+  - F19 = PRODUCT(B19:E19) (combined hit modifier).
+  - Hit Points: H19 = (F19 * E15) + 0.49.
+  - Damage Mod: B20 = HLOOKUP(G17,R5:AW15,6,TRUE) + HLOOKUP(B17,R5:AW15,10,TRUE) (adds Intelligence- and Agility-based damage modifiers).
+  - Healing Rate: G20 = E15 * HLOOKUP(G16,R5:AW15,4,TRUE) (endurance-based heal × basic hits).
+  - Accuracy: B21 = HLOOKUP(B17,R5:AW15,11,TRUE).
+  - Power: G21 = SUM(B16:B17,G16:G17) (sum of core attributes).
+  - Carrying Capacity: C22 = ((B16/10)^3 + (G16/10)) * (B15/2).
+  - Base HTH Damage: H22 = HLOOKUP(C22,R2:AG4,3,TRUE) (looks up base hand-to-hand damage from carrying capacity vs. table).
+  - Movement Rates, Detection checks, Inventing points, etc.:
+    - Movement (C23 = SUM(B16:B17,G16)).
+    - Det. Hidden / Det. Danger lookups at B25 and G25 via HLOOKUP into the attribute tables.
+    - Inventing Points: C26 = (G17*10)*H4 (Intelligence ×10 × Level).
+    - Inventing: B27 = G17*3.
+- Narrative / biography (A34–A43): multi-cell text describing Julia Cochran / Silver Axe origin story.
+- Copyright (A46): author/credit.
+
+Key formulas / references to note
+- HLOOKUP is used extensively to map attribute scores or derived values (weight, carrying capacity) to modifiers via the wide tables in R:AW / R:AG.
+- ROUNDUP for Basic Hits (E15).
+- PRODUCT to combine hit modifier components (F19).
+- Arithmetic formulas for carrying capacity, hit points, healing rate, inventing points.
+
+Explicit visible key values
+- Weight: 170 (B15)
+- Basic Hits: computed E15 = ROUNDUP(170/50,0) → 4
+- Strength: 30 (B16)
+- Agility: 34 (B17)
+- Endurance: 12 (G16)
+- Intelligence: 11 (G17)
+- Charisma: 15 (B18)
+- Level: 2 (H4)
+- Inventing Points: formula (G17*10)*H4 → 11*10*2 = 220 (computable from sheet)
+
+Overall purpose
+- A compact character sheet that stores raw attributes, equipment/powers, and wide lookup tables for attribute-to-modifier mappings, then uses HLOOKUP and arithmetic formulas to compute derived combat stats (hit modifiers, hit points, damage, healing, carrying capacity, detection chances, inventing points, etc.). Narrative flavor text and legal/copyright info included.

@@ -1,0 +1,58 @@
+I inspected the formulas and values in "Table 22" and found several formula errors and data / layout inconsistencies. Below I list each issue, why it is a problem, and recommended fixes.
+
+1) Wrong sign in TOTAL UNIVERSITY (Lower-level) "Other" cell O30
+- Cell: O30
+- Current formula: =SUM(100+(E30+G30+I30+K30+M30))
+- Problem: it uses + instead of −, so it computes 100 + sum(...) and returns 189.7 (nonsense for an "Other" percentage).
+- Fix: change to =100-(E30+G30+I30+K30+M30) (or =SUM(100-(E30+G30+I30+K30+M30)) if you insist on the same style). That will produce the correct "Other" percent.
+
+2) Aggregate totals for 1998 (row 32) missing formulas
+- Cells: Q32 and AF32 show values but no formulas are present (other total rows use formulas).
+- Likely intended formula (pattern used for 2000 totals): Q32 should sum the Q cells for each college's 1998 row (Q8, Q12, Q16, Q20, Q24, Q28). AF32 should sum AF8, AF12, AF16, AF20, AF24, AF28.
+- Problem: hospitality 1998 (Q16 / AF16) contains text "n/appl", so a direct SUM(Q8:Q28) including Q16 would return an error or be inappropriate.
+- Fix options:
+  - If hospitality 1998 is truly "not applicable" and should be omitted from the total, make Q32 =Q28+Q24+Q20+Q12+Q8 (explicitly list the numeric cells), and AF32 =AF28+AF24+AF20+AF12+AF8.
+  - Or use a function that ignores text, e.g. =SUMIF(Q8:Q28,">=0") or =SUMPRODUCT(--(IFERROR(Q8:Q28,0))) depending on desired behavior.
+- Note: be explicit and consistent across all years about whether "n/appl" rows are excluded.
+
+3) Misplaced / stray numeric values in columns with no header (suspected column-shift)
+- Education rows (lower-level) contain extra numeric values in columns F and H:
+  - F18 = 24.7, H18 = 2.1
+  - F19 = 24.7, H19 = 2.1
+  - F20 = 24.7, H20 = 2.1
+- Problem: the table headers for lower-level percentages are at E (A), G (B), I (C), K (D), M (F/WF), O (Other). The Oxx formulas use E+G+I+K+M; the values in F and H are not used in those formulas — they are stray and likely indicate data were entered into the wrong columns (a column shift). These stray values may be incorrectly duplicated or hiding correct values.
+- Fix: Verify the original source data. Either:
+  - Move the F/H values to the correct columns if they were shifted, OR
+  - Remove them if they are accidental duplicates. Ensure the intended columns E/G/I/K/M contain the correct lower-level percentages.
+
+4) Stray value in Engineering upper-level (Z22)
+- Cell: Z22 = 4.5
+- Problem: upper-level header columns are S (A), U (B), W (C), Y (D), AA (F/WF), AC (Other). AC22 computes 100-(S22+U22+W22+Y22+AA22) and therefore ignores Z22. Z22 is an extra value not referenced anywhere and likely misplaced.
+- Fix: Verify whether 4.5 belongs in AA22 (F/WF), Y22, or another column. Move or remove it as appropriate. If it should be included in the upper-level category list, update AC22 formula accordingly.
+
+5) Missing / blank referenced cells (example: K28)
+- Row 28 lower-level formula: O28 = SUM(100-(E28+G28+I28+K28+M28))
+- K28 is not present in the parsed data (so presumably blank or zero). That may be intentional but could also mean a missing value.
+- Fix: Confirm whether K28 should have a value. If it was accidentally omitted, enter the correct cell; if it should be zero, a blank is acceptable but document it.
+
+6) Inconsistent formula style (minor)
+- Many cells use SUM around a single arithmetic expression, e.g. =SUM(100-(E6+G6+...)). This works but is unnecessary.
+- Recommendation: Replace expressions like =SUM(100-(...)) with =100-(...) for clarity, but this is not a functional error.
+
+7) Aggregate totals exclude rows that are "n/appl" — consistency check
+- 1999 TOTAL UNIVERSITY formulas (Q31, AF31) explicitly sum only colleges that have numeric data (they exclude Hospitality 1999 because those cells are "n/appl"). This is probably intentional but it is inconsistent with how 2000 totals are computed (which include all six colleges).
+- Recommendation: Document the intended behavior (exclude "n/appl" rows) and implement totals using explicit cell lists or SUMIF so future editors won't be confused. Example: =SUM(Q7,Q11,Q19,Q23,Q27) (explicit cells used) or =SUMIF(range,">=0").
+
+8) Floating-point presentation
+- Some computed "Other" values show tiny floating-point artifacts (e.g. 8.60000000000001). This is normal but can be formatted to a fixed number of decimal places for presentation consistency (Format Cells → Number → 1 or 2 decimals).
+
+Summary of immediate actions I recommend
+1. Correct O30 to use subtraction rather than addition.
+2. Remove/move stray values in F/H (Education rows) and Z22 (Engineering upper-level) after checking source data.
+3. Add formulas for Q32 and AF32 (1998 totals), using explicit cell lists or SUMIF to ignore "n/appl" text.
+4. Verify any blank referenced cells (e.g. K28) and fill if missing.
+5. Optionally clean up SUM wrappers and format decimals.
+
+If you want, I can:
+- Suggest the exact corrected formulas to paste in each problematic cell.
+- Produce a short list of cells to inspect/move (a “fix list”) that you or I can apply directly. Which would you prefer?

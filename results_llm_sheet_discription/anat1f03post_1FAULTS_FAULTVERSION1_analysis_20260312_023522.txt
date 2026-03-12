@@ -1,0 +1,29 @@
+Summary — found 4 problems, why they matter, and how to fix them:
+
+1) Wrong function in F56
+- Error: F56 = SUM(F36:F55). It should be the mean like the other columns.
+- Fix: replace with =AVERAGE(F36:F55)
+- Why: SUM inflates the Pract. 3 "mean" and makes the class totals/percent wrong.
+
+2) Inconsistent grade thresholds (>= vs >)
+- Error: Top table student grade formulas use >= (e.g. K6 =IF(J6>=89.9%...)) but many bottom-table student and both MEAN rows use > (e.g. K36 uses >; K26/K56 use >).  
+- Fix: Make all grade formulas identical and consistent. Recommended (copy down both tables and mean rows):
+  =IF(J#>=0.90,"A",IF(J#>=0.80,"B",IF(J#>=0.70,"C",IF(J#>=0.60,"D","F"))))
+  or if you want to keep their percent literals:
+  =IF(J#>=89.9%,"A",IF(J#>=79.9%,"B",IF(J#>=69.9%,"C",IF(J#>=59.9%,"D","F"))))
+- Why: Mixing > and >= changes the result for values exactly on the boundary (e.g. 89.9%). Use one consistent test (recommended: >= and round thresholds like 90%, 80%, etc.).
+
+3) Missing Pract.4 score in row 55
+- Error: G55 is missing; I55 =SUM(D55:G55) treats the blank as 0.
+- Fix: Enter the correct Pract.4 score in G55, or explicitly put 0 if that was intended.
+- Why: A blank cell may indicate missing data; leaving it blank changes the student's total and class averages.
+
+4) Attendance / % calculation caution (possible design issue)
+- Note: Column I and Class % are using only practicals (I = SUM(D:G) and J = I/400). This is consistent with the header "Total (w/o A/P)"—but if you intended to include attendance/participation you must change formulas:
+  - To include attendance: change I# to =SUM(D#:G#)+H# and change denominator 400 → 450 (update I3/I33 to 450 or use explicit divisor).
+- Why: If attendance should count, current percentages are understated relative to a 450-point total.
+
+Extra note about scores >100
+- Some practical scores exceed 100 (extra credit). That's okay if intentional, but percentages may exceed 100% unless divisor is adjusted or caps applied.
+
+If you want, I can give the exact corrected formulas for all affected cells and show where to copy them (or produce a corrected worksheet).

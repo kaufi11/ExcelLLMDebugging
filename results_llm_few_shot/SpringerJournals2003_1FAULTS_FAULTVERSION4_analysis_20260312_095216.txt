@@ -1,0 +1,21 @@
+Findings
+- Faulty cell: G25 (row "Annals of Hematology")
+  - Error type: hard-coded value / formula replaced by constant.
+  - Shown value: =2 (a constant) instead of line total.
+  - Problem: this gives a wrong line total and makes the grand total in G407 incorrect.
+
+Fix
+- Replace G25 with the correct formula:
+  =E25*F25
+
+Explanation (short)
+- Column G should be "Subs. rate × number of subs" for each row. G25 currently contains a constant (2) instead of calculating E25*F25, so that row and the SUM(G2:G404) are wrong.
+- After fixing G25, re-evaluate the totals (Excel will auto-recalculate if Automatic calculation is on).
+
+How to find any similar errors (quick)
+- Check column G for constants (cells that are not formulas):
+  - Select column G → Home → Find & Select → Go To Special → Constants (or use a helper column with =ISFORMULA(G2) copied down).
+  - Any TRUE for "not formula" are suspect — convert them to =Erow*Frow.
+- Also ensure column F (number of subscriptions) contains numeric values; blanks/ text will make E*F return 0 or an error.
+
+If you want, I can list all G cells that are constants or scan the sheet for other anomalies.

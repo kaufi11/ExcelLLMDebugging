@@ -1,0 +1,25 @@
+Summary — one clear error found:
+
+Faulty cell
+- Data!C12
+
+What’s wrong (short)
+- Its formula is hard-coded as = $C$4*(1+$C$5)^B12 + 56*$C$6 — the "56" is a typo/hard‑coded constant. All other rows use the random draw in column A (A12) as the additive error. C12 should use A12, not 56.
+
+Why it matters (short)
+- That single large wrong additive term creates an artificial outlier at time = 4 and will bias analyses (residuals, regression coefficients, R², ANOVA). It explains the anomalous point(s) and inflated residuals you see in the output.
+
+Fix (exact)
+- Replace the formula in C12 with the consistent formula used elsewhere, for example:
+  =$C$4*(1+$C$5)^B12 + A12*$C$6
+  (or =$C$4*(1+$C$5)^B12 + $C$6*A12)
+
+How to check for similar mistakes (quick)
+- Add a diagnostic column (say G) and copy this check down:
+  =IF(C8<>($C$4*(1+$C$5)^B8 + A8*$C$6),"Check","OK")
+  — any "Check" flags a mismatch between stored C and the expected formula result.
+
+Preventive suggestion (short)
+- Copy the correct formula from a working row (e.g., C8) and paste down the column to avoid manual edits; or use named ranges for A_noise and ErrorFactor to reduce typos.
+
+If you want, I can give the exact diagnostic formulas pasted ready for your sheet or update the impacted regression outputs after you fix C12.

@@ -1,0 +1,42 @@
+Findings — errors
+1. Cell D6 is wrong: it contains "607 + D8" instead of adding D7 + D8. That will give a wrong "Urban deficient bridges, total" for 1992.
+2. Several totals are stored as hard numbers (constants) instead of formulas (e.g., N3, N12 and many totals in J–N). That makes the sheet fragile: if any component changes the totals won't update.
+3. Inconsistent formula style (some totals use =A+B, others use SUM of other totals or long inline additions). Not an error per se, but it makes auditing and copying formulas error-prone.
+
+Why these are problems (short)
+- D6: wrong reference yields an incorrect subtotal and any downstream totals that depend on it.
+- Constants in totals: manual numbers can drift from their components and hide calculation errors.
+- Inconsistent formulas: increases chance of typos (like D6) and makes fill/copy operations unreliable.
+
+Fixes (step-by-step, simple)
+1. Fix D6
+   - Select D6, replace the formula with:
+     =D7+D8
+   - Press Enter. That corrects the 1992 urban-deficient subtotal.
+
+2. Convert hard totals to formulas (recommended)
+   - Replace constants with formulas so values always update. Key ones:
+     - N3 -> =N4+N5
+     - N12 -> =N6+N9
+     - For rows 3, 6, 9, 12, 13, 14 across all years, use formulas:
+       - Row3 (TOTAL): =Row4 + Row5 (e.g., B3 = B4+B5)
+       - Row6 (Urban deficient): =Row7 + Row8
+       - Row9 (Rural deficient): =Row10 + Row11
+       - Row12 (All deficient): =Row6 + Row9
+       - Row13 (Structurally total): =Row7 + Row10
+       - Row14 (Functionally total): =Row8 + Row11
+   - After entering for one column, fill/copy across B:N to ensure consistency.
+
+3. Replace long inline additions with SUM (optional but recommended)
+   - Where a cell uses long expressions like =24435+11890+21403+..., convert to a SUM of the component cells or a named range:
+     - If those values are component cells, use =SUM(cell1:cellN).
+     - If they are currently typed constants in that single cell, consider moving components into rows/columns and then use =SUM(range).
+   - This reduces typing errors and simplifies auditing.
+
+What to check after fixes
+- Recalculate or press F9 to ensure sheet updates.
+- Verify D12 (All deficient for 1992) and any yearly totals that used the wrong D6; they should change.
+- Spot-check a few years by manually computing one subtotal (e.g., B6 = B7+B8) to confirm formula correctness.
+
+One-line summary
+Fix D6 to =D7+D8 and convert manual totals to formulas (e.g., row3 = row4+row5, row12 = row6+row9) so totals always update and avoid future errors.

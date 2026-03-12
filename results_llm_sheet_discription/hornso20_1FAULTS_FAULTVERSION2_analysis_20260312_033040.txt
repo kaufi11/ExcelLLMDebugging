@@ -1,0 +1,31 @@
+Summary — I found two real errors. Fixes and simple explanations below.
+
+1) Sheet E20-9 (2) — incorrect indirect hourly rate (C11)
+- Error: C11 uses =SUM(C4:C6)/C3 (dividing total indirect costs by total direct labor dollars). It should be indirect costs per direct labor HOUR, so you must divide by hours (C2).
+- Why wrong: dividing by C3 (dollars) gives a meaningless rate (costs ÷ dollars) and makes all downstream numbers too small.
+- Fix: change C11 to =SUM(C4:C6)/C2
+- Result after fix:
+  - C10 = C3/C2 = 2,240,000 / 16,000 = 140.00
+  - C11 = (350,000+860,000+246,000) / 16,000 = 91.00
+  - C12 = C11 / C10 = 0.65
+  - C14 = (C10 + C11) * C8 = (140 + 91) * 220 = 50,820
+  - C16 = C14*0.2 = 10,164
+  - C17 = C14 + C16 = 60,984
+
+2) Sheet P20-3B (and copy) — overhead applied to wrong cell (I10)
+- Error: I10 = F14 * H10. That uses the total direct labor (F14) to compute overhead and puts the entire applied overhead on one row. Overhead should be applied row-by-row as (row labor × overhead rate).
+- Why wrong: it hides row-level overhead and misplaces the calculation; totals coincidentally match but detail is incorrect and not scalable.
+- Fix:
+  - Change I10 to =F10 * $H$10
+  - Fill I10 down through I12 (so I11 = F11*$H$10, I12 = F12*$H$10). Use absolute reference for H10 if you copy down.
+  - Change I14 (total cost) to sum the overhead column, e.g. =SUM(I10:I12) + F14 + D14 (instead of =I10 + F14 + D14)
+- Result after fix (using H10 = 375/250 = 1.5):
+  - I10 = 190 * 1.5 = 285
+  - I11 = (if F11 exists) F11 * 1.5 (if blank, zero)
+  - I12 = 720 * 1.5 = 1,080
+  - Total applied overhead = SUM(I10:I12) = 1,365
+  - Grand total I14 = 1,365 + 910 + 714 = 2,989 (same grand total, but now overhead is allocated correctly by row)
+
+Small note: leading plus signs (+) are harmless in formulas; they do not cause errors.
+
+If you want, I can produce the exact corrected formulas to paste into the workbook or check P20-1B for any label/formula misplacements (that sheet looks consistent numerically but some labels/cell columns are easy to misread).

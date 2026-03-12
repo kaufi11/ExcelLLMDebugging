@@ -1,0 +1,26 @@
+I inspected the formulas in the workbook and found one clear formula-range inconsistency.
+
+Summary of the problem
+- Sheet: "2001 - 1994"
+- Block: Spring 1998 (rows for Grades 3,4,5,6,7,8*,10)
+- Incorrect formulas:
+  - D60 currently =SUM(D53:D58) — it sums Tested for grades 3–8 only (omits Grade 10 at D59)
+  - E60 currently =SUM(E53:E59) — it sums Passing for grades 3–10 (includes Grade 10)
+- Result: the denominator (D60) excludes Grade 10 while the numerator (E60) includes Grade 10, so the All Grades percent (F60 = E60/D60) is wrong / inflated.
+
+Cells & values
+- D53:D59 (Tested): 247,323; 257,845; 254,014; 267,786; 271,678; 273,277; 235,748
+- E53:E59 (Passing): 179,748; 189,783; 200,759; 201,033; 200,188; 185,057; 162,901
+- Current D60 (SUM(D53:D58)) = 1,571,923
+- Current E60 (SUM(E53:E59)) = 1,319,469
+- Current F60 (E60/D60) = 1,319,469 / 1,571,923 = 0.839397985779202 (this is incorrect because D60 is missing Grade 10)
+- Correct D60 (SUM(D53:D59)) should be = 1,807,671
+- Correct F60 should be = 1,319,469 / 1,807,671 ≈ 0.729826 (approx.)
+
+Recommended fixes
+- Change D60 formula to include Grade 10:
+  - Replace D60 formula with: =SUM(D53:D59)
+- Keep E60 as =SUM(E53:E59) (it's already correct)
+- F60 will then be correct as =E60/D60 (≈ 0.729826)
+
+No other formula-range inconsistencies were found in the sheet blocks I checked; all other "All Grades" SUM formulas match their corresponding per-grade rows and the F values equal E / D for those blocks.

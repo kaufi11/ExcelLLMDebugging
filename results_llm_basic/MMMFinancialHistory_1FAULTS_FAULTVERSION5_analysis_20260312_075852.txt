@@ -1,0 +1,23 @@
+Findings (short)
+- Error: Cell J11 on the Select Financial Data sheet uses =COUNT(J9:J10) instead of =SUM(J9:J10).
+- Impact: That returns 2 (the count of numeric cells) rather than the sum of cost items (645,110). This makes J12 and every downstream result in column J (gross margin, earnings, taxes, net earnings, per‑share metrics) incorrect.
+
+Why it's wrong (simple)
+- COUNT counts numeric cells (returns 2 here). You need SUM to add the monetary amounts.
+
+How to fix (step-by-step)
+1. On the Select Financial Data sheet select J11.
+2. Replace the formula =COUNT(J9:J10) with:
+   =SUM(J9:J10)
+3. Press Enter and recalculate (F9) if automatic calculation is off.
+
+What will change (example)
+- Before fix: J11 = 2, J12 = J8 - J11 = 752,675 - 2 = 752,673 (wrong).
+- After fix: J11 = SUM(556,841 + 88,269) = 645,110, J12 = 752,675 - 645,110 = 107,565 (correct). Downstream rows (J14, J18, J21, J25, per‑share lines) will update accordingly.
+
+Additional recommendations (short)
+- Scan workbook for accidental uses of COUNT where you expect SUM (use Find: "COUNT(").
+- Prefer using explicit SUM ranges that match your layout or named ranges so future row/label shifts don't cause hidden errors.
+- Use Trace Precedents/Dependents to see where a bad input cascades.
+
+If you want, I can search the workbook for other functions used incorrectly and provide a fix list.

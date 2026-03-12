@@ -1,0 +1,36 @@
+Summary of problems found
+1) Wrong formula in A37:
+   - A37 contains =A36-1 instead of =A36+1. This makes the sequence drop at row 37, creates duplicate numbers and misnumbers all following rows.
+
+2) Fragile numbering method:
+   - Number column A is built by chaining (A3 = A2+1, etc.). That breaks if you sort, insert or delete rows (the numbers either move with the rows or get wrong values).
+
+3) Missing header in column I:
+   - Column I is used (secondary address lines) but I1 is blank. That breaks filtering, Table headers and exports.
+
+Optional data-quality notes (not errors in formulas but worth checking):
+   - Duplicate entries/emails (e.g., Joe/Joseph Paradiso appears twice).
+   - Many "?" email values and spelling inconsistencies (e.g., "Virgina").
+
+Fixes and how to apply them (short, clear)
+
+A) Quick repair (fix only the immediate error)
+   - Edit A37 and change the formula to =A36+1 then press Enter.
+   - The cascade (A38 etc.) will update and the sequence will be correct again.
+
+B) Better, more robust approaches
+   - If you want the number to always reflect the current row (i.e., renumber when you sort): replace column A with a row-based formula. In A2 put:
+       =ROW()-1
+     and fill down. This gives 1 in row2, 2 in row3, etc., and will always match the sheet row number.
+   - If you want the ID to be a permanent value attached to each record (so it does NOT change when you sort): convert the numbers to values. After generating the correct numbers, select column A → Copy → Paste Special → Values. That locks them in.
+
+C) Header fix
+   - Put a header name into I1 (for example "Address 2" or "Address line 2"). This restores consistent headers across H–M, improves filters and Table behavior.
+
+Why these fixes work (brief)
+- Changing A37 to +1 restores the arithmetic sequence so each row is one greater than the previous.
+- =ROW()-1 is stable and independent of adjacent-cell references, so it always produces the expected sequential index for the current row.
+- Converting to values prevents numbers changing on sort; choose this if the ID must stay tied to the person.
+- Adding a header makes the column part of the table/header row and prevents misalignment issues when filtering, exporting or converting to a Table.
+
+If you want, I can give the exact sequence/formula to put in A2 (for Excel 365/2021) to generate the whole column automatically (SEQUENCE) or provide a small macro to fix all numbers and lock them in. Which behavior do you prefer: renumber after sorting, or keep permanent IDs?

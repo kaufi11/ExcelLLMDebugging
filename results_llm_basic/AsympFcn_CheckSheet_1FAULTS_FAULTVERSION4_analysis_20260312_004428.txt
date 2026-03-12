@@ -1,0 +1,66 @@
+Summary — main problems I found
+1) You have n = 0 in row A11. That causes division-by-zero and LOG(0,…) errors (D11, C11, H11, etc.).  
+2) A typo in MasterMethod_Checks B19: =473/2 instead of =A19/2.  
+3) The Theta column (H11:H41) is wrong: it uses LOG(Axx,2) (log n) instead of showing the n^CE term (or n^CE * (log n)^k as appropriate).  
+4) In SubstitutionMethod_Checks:
+   - Row 10 C10 is missing multiplication by n (C10 = $B$5*LOG(LOG(A10,2),2) instead of $B$5*A10*LOG(LOG(A10,2),2)).
+   - Many D-row formulas use inconsistent absolute references ($D$11, $D$12, $D$13, etc.) instead of referencing one base-case cell. That makes the recurrence value inconsistent / wrong when copied.
+   - LOG(LOG(n,2),2) appears for small n (n=1); log(log(1)) is undefined so the formula errors for n ≤ 1.
+5) Minor: the CE formula would be safer as =LOG($B$4,$B$5) (absolute refs) to avoid accidental reference shifts.
+
+Why these are errors (short)
+- n = 0: 0^CE and division by 0 produce #DIV/0 or #NUM errors. Log(0) is undefined. Start n at 1 (or guards) for any log/power formulas.  
+- 473/2 is clearly a typo (gives a wrong f(n) value).  
+- Theta column should reflect the asymptotic candidate (n^CE times any polylog factor), not log(n) by itself.  
+- Missing *A10 and mixed absolute refs are copy/paste mistakes — they change the meaning of asymptotic comparisons and make the Big-Oh/Big-Omega tests invalid.  
+- log(log(n)) requires n>1 (in fact n>1 with base>1) — otherwise Excel returns errors.
+
+Concrete fixes (copy-paste these into the sheet)
+
+1) Remove the n=0 row or change it to n=1
+- Change A11 from 0 to 1 (and shift the rest down) OR delete the 0 row entirely.
+- This fixes C11, D11 and H11 errors immediately.
+
+2) Fix the typo in MasterMethod_Checks
+- Change B19 from =473/2 to:
+  =A19/2
+
+3) Make CE formula robust
+- In B6 set:
+  =LOG($B$4,$B$5)
+  (This computes log_b(a). Using absolute refs prevents it from moving when copying.)
+
+4) Fix Theta column in MasterMethod_Checks
+- If you want the numeric n^CE value there, set H11 (and copy down) to:
+  =C11
+- If the Theta term should be n^CE * (log n)^k, use (for k stored in a cell, say $B$8):
+  =C11 * (LOG(A11,2)^$B$8)
+- Remove the current LOG(Axx,2) formulas. Those are not the n^CE term.
+
+5) Substitution sheet fixes
+- Make a single base-case cell for T(1). For example put T(1) = 5 in cell $D$4 (or another clearly labeled cell). Then make every D-row use that single cell. Example:
+  - Put 5 in D4 and label it Base_T1.
+  - Set D10 (and copy down) to:
+    =$D$4*5 + A10/LOG(A10,2)
+    (or if recurrence is 5*T(1) + n/log n, use =5*$D$4 + A10/LOG(A10,2))
+  Adjust the 5 or the $D$4 reference according to the actual recurrence; the important part is to reference one base-case cell consistently.
+- Fix C10 (and row 10 variants) to include multiplication by n:
+  C10: = $B$5 * A10 * LOG(LOG(A10,2),2)
+  (Copy corrected pattern down.)
+- Replace the inconsistent absolute references in D19..D39 to the same absolute base cell (e.g. $D$4) rather than $D$11, $D$12, etc.
+
+6) Guard log(log(n)) against small n
+- Either start the n list at n=2 (change A10 to 2) or wrap formulas to avoid evaluating log(log) when n ≤ 1. Example guard:
+  =IF(A10<=1,"", $B$4*A10*LOG(LOG(A10,2),2) )
+  (This avoids #NUM errors for n≤1.)
+
+Quick checklist you can run to confirm sheet is fixed
+- No #DIV/0 or #NUM errors appear in column C, D, H after changes.  
+- B19 shows =A19/2 and displays numeric A19/2.  
+- B6 stays 1 when a=3, b=3 (CE correct), and if you change a or b the CE updates correctly.  
+- All D-row formulas in Substitution reference exactly one base T(1) cell (use absolute $).  
+- Big-Oh/Big-Omega IF checks now evaluate TRUE/FALSE reliably (no errors from invalid logs).
+
+If you want, I can:
+- Provide the exact corrected formula for every affected cell (I can list them row-by-row), or
+- Produce a small step-by-step edit script you can apply in Excel to fix all occurrences automatically. Which would you prefer?

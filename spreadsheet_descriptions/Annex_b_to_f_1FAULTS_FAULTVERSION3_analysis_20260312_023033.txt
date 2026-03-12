@@ -1,0 +1,63 @@
+Summary of workbook structure and contents
+
+Overall
+- Purpose: 2002 Financial Forecasts Update for a college: declaration, commentary, consolidated Income & Expenditure, Balance Sheet and Cash Flow schedules (Annexes B–F).
+- Common layout pattern in the financial tables: columns for Original FFR Forecast (H), Mid‑Year Update / Revised Outturn (I), Variance (J = I−H), Variance % (K = IF(H=0,"N/A",(J/H)*100)), and a free‑text L column for reasons where material.
+- Units: most monetary cells are in £000 (explicit in headers). Most numeric input cells are initialized to 0 and many totals are formula driven (SUM ranges).
+- Many rows use simple incremental row-number formulas in column B (e.g. B18 = B15+1) for numbering.
+
+Sheet: Declaration - Annex B
+- Purpose: signature/declaration page for the Financial Forecast Return.
+- Key cells: A1 title; Contact/College identification fields at A3/C3 and A5/C5–C9; contact details in A11/A13/A15 with text fields in C11/C13/C15; declaration text at A17–A19; signature fields at A26 (“Signed” in A26, text entry in B26), role in D26 (“Principal and Accountable Officer”), additional text in H26 and date in J26.
+- No complex formulas; mainly text and signoff fields.
+
+Sheet: Commentary - Annex C
+- Purpose: free‑text financial commentary for the FFU; must explain material changes from the original FFR.
+- Key cells: A1 title; C3 header “Financial Commentary”; A4 contains formula ='Table 1.0 I & E - Annex D'!A4 (pulls college name/title); instruction text at A6–A11 emphasizing completion.
+- No numeric calculations; area for narrative.
+
+Sheet: Table 1.0 I & E - Annex D (Income & Expenditure)
+- Purpose: consolidated Income & Expenditure account (group).
+- Structure: rows for Income (Funding Council grants, contracts, tuition fees, other grants, operating income, investment income) and Expenditure (staff costs, restructuring, other op. expenses, depreciation, interest) and downstream lines for surplus/(deficit), gains/losses on disposal, taxation, minority interest and historical cost adjustments.
+- Key formulas:
+  - Row variances: Jx = Ix − Hx
+  - Variance %: Kx = IF(Hx=0,"N/A",(Jx/Hx)*100)
+  - Totals: H15 = SUM(H9:H14), I15 = SUM(I9:I14), etc.; H23 = SUM(H18:H22); Surplus H25 = H15 − H23, I25 = I15 − I23, etc.
+  - Historical cost and carried forward calculations use SUM and simple additions/subtractions (e.g. H31 = H25+H28−H29).
+- Validation flags: many explanatory cells and conditional “material variance” reason column L.
+- Default numeric cells set to 0.
+
+Sheet: Table 2.0 BS - Annex E (Consolidated Balance Sheet)
+- Purpose: consolidated Balance Sheet.
+- Structure: Fixed assets (broken down by type), current assets (stocks, debtors, investments, cash, bursary balances), creditors due within one year, creditors due after one year, provisions, deferred capital grants, endowments, reserves and total funds.
+- Key formulas:
+  - Totals by section: H13 = SUM(H7:H12); H23 = SUM(H18:H22); H33 = SUM(H26:H32); Net current assets H35 = H23 − H33; Total assets less current liabilities H37 = H13 + H15 + H35.
+  - Total net assets H49 = H37 − H44 − H47 and Total funds H69 = H56 + H59 + H67.
+  - Variances: J = I − H; K = IF(H=0,"N/A", (J/H)*100).
+- Cross-check: H74 = H49 − H69 (cells flagged “THESE CELLS MUST BE ZERO”); same is computed for I74 and J74. This enforces net assets = total funds.
+- Default numeric cells set to 0.
+
+Sheet: Table 3.0 CF - Annex F (Operating Cash Flow)
+- Purpose: monthly cashflow schedule (two sections: ORIGINAL CASH FORECAST Aug–Jul and ACTUAL/REVISED FORECAST Aug–Jul).
+- Layout: monthly columns H (Aug) through S (Jul), total in T. Rows for cash in (SFEFC funding, other grants, other cash), cash out (payroll, other payments, interest), net cash inflow/outflow, balances b/f and c/f, financing (cash, overdrafts) and reconciliations.
+- Key formulas:
+  - Monthly totals: e.g. T7 = SUM(H7:S7); monthly row totals computed as SUM across categories (T10 = SUM(H7:H9) etc).
+  - Net cash flow per month: H17 = H10 − H15 + H16; monthly balance c/f H19 = SUM(H17:H18).
+  - Carry‑forward of balances: I18 = H19, J18 = I19, ... links balance b/f to previous month c/f.
+  - Reconciliation checks: per-month "These cells should be zero" H25 = H24 − H19 etc.; overall reconciliation T26 = T19 − ( 'Table 2.0 BS - Annex E'!H20 + 'Table 2.0 BS - Annex E'!H21 + 'Table 2.0 BS - Annex E'!H22 ) — ties cashflow closing balance to balance sheet cash components.
+  - In ACTUAL/REVISED section similar formulas mirror the original section and include T49 reconciliation to Table 2.0 I20/I21/I22, and differences between revised and original closing balances (rows 51–53 include percentage variance with IF checks for divide-by-zero).
+- Validation flags: rows titled “These cells should be zero” and reconciliation cells to balance sheet.
+- Default numeric cells set to 0.
+
+Key cross‑sheet links and checks
+- A1/A4 title and college name are pulled across sheets (Table 1 A1/A4 used by other sheets via formulas like ='Table 1.0 I & E - Annex D'!A1 and !A4).
+- Cashflow ↔ balance sheet reconciliations: Table 3 T26/T49 compare closing cash in Table 3 with cash components in Table 2 (H20/H21/H22 and I20/I21/I22).
+- Income & Expenditure summary drives other reports conceptually (but explicit numeric links are within each table).
+
+Notes / user actions required
+- Enter college identifying text and contact details on Declaration and Commentary sheets.
+- Populate the revised outturn (column I) and monthly actuals/forecasts in Table 3; variance columns J and K, totals and reconciliations are formula‑driven.
+- Complete narrative in Commentary for all material variances (> £50k and >10%) and provide reasons in L columns where applicable.
+- Resolve any non‑zero reconciliation cells (H74/I74, H25..H26 etc.) — these are checks that must be zero for consistency.
+
+If you want, I can: (a) generate a short checklist of inputs to complete the workbook, (b) highlight the specific cells you should fill first to unblock reconciliations, or (c) produce a compact map of the key reconciliation formulas with exact cell addresses. Which would you prefer?

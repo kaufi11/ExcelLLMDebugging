@@ -1,0 +1,42 @@
+Summary of the problems I found
+1) Duplicate / inconsistent PPE (property & equipment) subtotals
+   - The sheet computes Net PPE in two different places and the final Total Assets pulls the "second" set, so parts of the sheet use one PPE subtotal and the final total uses another. That creates mismatch and double/missing-accounting risk.
+   - Example: row D34 (Net property & equipment) is computed from D30 and D32, but the final total assets in D178 is built from D162 + D170 (a different group of rows) instead of using D34 (or D38). Net result: D178 may not equal the true assets subtotal used elsewhere.
+
+2) Validation cell(s) are using hard-coded values (false zero)
+   - H285 and H286 are hard-coded/formula set to the same number (3855164.52), so H287 (H285-H286) always shows zero even if computed assets ≠ computed liabilities.
+   - The real reconciliation check is implemented later (H289..H291) and compares D178 vs D283; but the visible "DIFF SHOULD = 0" (H287) is misleading/wrong.
+
+3) Possible stray / wrong references
+   - Some subtotal formulas reference different ranges inconsistently (e.g., totals that sum D24:D29 while the detail rows are D155:D161). Also A11’s Accounts Receivable uses D98 as the first term — ensure row 98 actually exists and is intended. These inconsistent ranges are the likely root cause of the imbalance.
+
+What to change (concrete fixes)
+1) Use one canonical Net Assets / Total Assets path
+   - Replace the D178 formula with the single top-level total that was already computed earlier. For example:
+     - Set D178 = D38 (or D178 = D18 + D22 + D34 + D36)
+     - Set E178 = E38 (or E178 = E18 + E22 + E34 + E36)
+   - Reason: row 38 already computes Total Assets as Total current assets + Restricted cash + Net PPE + Other assets. Re-using D38 prevents mixing two different PPE groups.
+
+2) Fix the validation cells to use live totals
+   - Make H285 = D178 and H286 = D283 (do not hard-code the number).
+   - Keep H287 = H285 - H286 (or simply set H287 = D178 - D283).
+   - Reason: this makes the visible "DIFF SHOULD = 0" cell actually reflect the computed difference.
+
+3) Clean up duplicate/incorrect subtotals
+   - Pick one consistent set of property & accumulated depreciation rows and remove or re-point the duplicate ones. Concretely:
+     - If rows 155–161 (D162) and 165–169 (D170) are the correct PPE and accumulated depreciation, then ensure Net PPE (the single Net PPE cell used by totals) is computed as D162 + D170 and used everywhere; OR
+     - If rows 24–32 (D30/D32/D34) are the intended set, change D178 to use D34 (or D38), and change any formulas that point at D162/D170 to point at the single set.
+   - Reason: duplicated totals produce inconsistent results and make reconciliation hard.
+
+4) Verify stray references (quick checks)
+   - Check A11 formula references (D98 etc.). If D98 does not exist or is from an earlier layout, change A11 to sum the actual AR lines (e.g., =SUM(D99:D113)) so no phantom reference is used.
+   - Scan other subtotal formulas that use ranges like D24:D29 vs D155:D161 and make them consistent.
+
+Why this fixes it (short)
+- Using one source of truth for Net PPE and for Total Assets guarantees D178 (Total Assets) is calculated consistently and will match D283 (Total Liabilities & Capital) when the ledger balances.
+- Making the reconciliation cells reference D178 and D283 removes the false "zero" created by hard-coded numbers and gives you a real balance check.
+- Removing duplicate subtotals avoids double counting or omitted lines that cause assets ≠ liabilities.
+
+If you want, I can:
+- Give the exact cell formulas to paste in (e.g., change D178 to =D38; H285 to =D178; H286 to =D283; H287 to =H285-H286) and show before/after expected numbers, or
+- Walk through which duplicated rows to delete or repoint, if you paste the specific values of D30, D34, D162, D170, D38 so I can confirm which set is correct.

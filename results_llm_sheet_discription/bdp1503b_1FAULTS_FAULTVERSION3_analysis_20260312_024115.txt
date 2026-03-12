@@ -1,0 +1,18 @@
+Findings (short)
+- Real error: G19 contains =SUM(D19-E19). D19 is blank/undefined; it should reference C19. Because of this G19 shows 0 instead of 2.
+- Consequence: Administration remaining subtotal (G24) and any totals that use G24 (e.g. campaign remaining G61 if built from G subtotals) will be understated by 2 (£k).
+- Minor/style issues (not breaking results): many cells use =SUM(Cx-Ex) or =SUM(C10+C24+...) — these work but are unnecessary and make the sheet harder to read.
+
+Fix (one-step)
+1. Edit G19 and replace the formula with:
+   =C19-E19
+
+Optional cleanup (recommended)
+- Replace all G line-item formulas of the form =SUM(Cx-Ex) with =Cx-Ex for clarity.
+- Replace total formulas like =SUM(C10+C24+...) with =SUM(C10,C24,...) or simply =C10+C24+... (both clearer and standard).
+- If blank E cells are intended to be zero, you can leave them blank (Excel treats blanks as 0 in arithmetic), or enter 0 explicitly for clarity.
+
+Why this fixes it
+- G19 must subtract the annual allocation in C19 from year-to-date in E19. Using D19 referenced a blank cell so Excel returned the wrong remaining amount. Changing to C19-E19 produces the correct remaining value (2), which corrects the administration subtotal and any downstream totals that depend on it.
+
+If you want, I can provide a corrected list of the affected cells and their new values (G19, G24, G61, etc.).

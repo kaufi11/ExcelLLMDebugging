@@ -1,0 +1,23 @@
+Findings (short)
+- One clear formula error: cell O95 is =SUM(E95-M95) but should reference D95, not E95.
+- Because E95 is blank (0), O95 currently calculates 0 − M95 = −3. It should be D95 − M95 = 3 − 3 = 0.
+- That incorrect −3 flows into the ESI subtotal (O99) and any roll‑ups using O99, giving wrong totals.
+
+Why this is wrong (simple)
+- The formula uses the wrong column letter (E instead of D). Excel treats blank E95 as 0, so the underspend shows the negative of the forecast instead of the difference from the revised allocation.
+
+Fix (step‑by‑step)
+1. Select cell O95.
+2. Edit the formula and replace E95 with D95. Make it either:
+   - =D95-M95
+   or, if you want to keep the original style,
+   - =SUM(D95-M95)
+3. Press Enter. Excel will recalc O95 and the subtotal O99 automatically.
+
+What the fix does
+- O95 will change from −3 to 0 (since D95 = 3 and M95 = 3).
+- O99 (and any totals including O99) will be corrected (they should no longer be off by −3).
+
+Extra recommendations (quick)
+- Remove unnecessary SUM() wrappers around single arithmetic ops (use =D95-M95 rather than =SUM(D95-M95)) to reduce typos and improve readability.
+- Do a quick search for formulas containing "SUM(E" or for SUM(...-Mx) to check for other similar misreferences.

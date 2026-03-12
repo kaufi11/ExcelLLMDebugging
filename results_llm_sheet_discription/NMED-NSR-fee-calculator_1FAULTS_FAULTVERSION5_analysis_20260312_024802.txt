@@ -1,0 +1,30 @@
+Summary of the errors and quick fixes
+
+1) Main bug — "Other Actions" (C36) always used instead of the detailed points
+- Problem: C34 is hard-coded as 7 (C34 = 7). Because C34 is >0 always, the Total Points formula
+  C41 = IF(OR(C34>0,C35>0), C36, SUM(C9:C31))
+  will always be true and return C36. That means the sheet always uses the "Other Actions" total and ignores the per-action points (C9:C31).
+- Fix: Make C34 conditional on the user's input for General Permit (B34). Replace C34 with:
+  =IF(B34<>"", 7, 0)
+- Why this fixes it: now C34 will be 7 only when the user marks B34 (General Permit). C41 will correctly choose between C36 and the sum of the detailed items according to user input.
+
+2) Numeric/blank inconsistency in PSD Netting (C30)
+- Problem: C30 currently returns "" (text) when B31 is not blank:
+  =IF(B31="", (IF(B30<>"",20,0)), "")
+  Returning "" mixes text with numeric cells and could confuse totals/other calculations.
+- Better formula (keeps numeric outputs only):
+  =IF(B31<>"", 0, IF(B30<>"", 20, 0))
+- Why: Always returns numbers (0 or 20), so SUM and other numeric logic behave predictably.
+
+Optional improvement (safer total-fee selection)
+- Current final-fee cell (F5) uses text "N/A" in C43 and then checks C43="N/A". That works but mixes text with numbers. A clearer alternative is to make C43 numeric or blank and change F5 to a numeric check:
+  - Make C43: =IF(B34<>"", "", IF(B38<>"", C42/2, ""))
+  - Make F5: =IF(ISNUMBER(C43), C43, C42)
+- Why: keeps fee cells numeric and avoids reliance on string comparisons.
+
+Quick checklist for changes to apply
+- Change C34 to: =IF(B34<>"",7,0)
+- Change C30 to: =IF(B31<>"",0,IF(B30<>"",20,0))
+- (Optional) Replace text "N/A" logic in C43 / F5 with numeric/ISNUMBER approach.
+
+If you want, I can give the exact modified formulas to paste into the cells (or a one-line list of all formulas).

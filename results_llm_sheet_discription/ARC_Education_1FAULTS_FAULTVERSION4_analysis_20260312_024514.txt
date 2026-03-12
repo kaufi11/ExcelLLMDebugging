@@ -1,0 +1,66 @@
+Good — I reviewed the workbook and found the main, actionable errors. Short list (each item = problem → why it's wrong → simple fix + short explanation).
+
+1) Wrong function used for a total (Student‑teacher sheet)
+- Problem: F56 =COUNT(F45:F55) — COUNT returns number of numeric cells, not the sum of teachers.
+- Fix: Replace with =SUM(F45:F55).
+- Why: Teachers column should be totaled (sum of teacher counts), not counted.
+
+2) Incorrect SUM ranges in "university" two‑year totals
+- Problem: Row 15 formulas (C15, D15, … K15) use SUM(C5:C14) etc — they include the four‑year college rows (B5:B8) instead of summing only the two‑year college rows.
+- Fix: Change each to sum rows 12:14. Example:
+  - C15 => =SUM(C12:C14)
+  - D15 => =SUM(D12:D14)
+  - … through K15 => =SUM(K12:K14)
+- Why: Totals must only add the two‑year colleges (rows 12–14), not the whole block.
+
+3) Misplaced decimal / wrong scale (Student‑teacher, BUFORD row)
+- Problem: E15 = 1.548 but neighboring ATT values are ~1,500 (H15 = 1540). 1.548 is almost certainly a misplaced decimal.
+- Fix: Replace with 1548 (or correct value from source). If many were scaled by 1/1000, multiply by 1000: =ROUND(E15*1000,0).
+- Why: Attendance should be whole‐number counts (not 1.548). Check other low outliers similarly.
+
+4) Ratios stored as text like "16-1"
+- Problem: Ratio cells contain "16-1" (text) so you cannot compute with them (AVERAGE, MIN, charts).
+- Fix: Create a numeric ratio column (e.g., convert "16-1" to 16). Use formula:
+  =VALUE(LEFT(D7, FIND("-", D7)-1))
+  or manually enter numeric ratios. Then use that numeric column for calculations.
+- Why: Text prevents numeric operations.
+
+5) Inconsistent percent formats and fractional totals (Teachers adv degrees)
+- Problems:
+  - Percent columns are mixed: some show 50.9 (meaning 50.9%) while later blocks show 0.469... (decimals). In the 1995–2000 block, totals (Total No.) are non‑integers (1995.8).
+- Fix:
+  - Standardize percent display: if decimals are fractions (0.469), format as Percentage or multiply by 100: =B21 (formatted as %).
+  - For totals that became fractional because of percent × staff, round to whole numbers: =ROUND(your_formula,0) or use INT if truncation desired.
+- Why: Percents should be consistent (either 0.469 = 46.9% formatted, or 46.9 stored). Staff counts must be whole numbers.
+
+6) Truncated/wrong scales in State test and SAT sheets
+- Problem examples:
+  - State test: columns B–C scores ~215, but columns D–K show values like 57, 53 — inconsistent scale (looks like different metric or misaligned data).
+  - SAT: some cells have 2‑ or 3‑digit numbers like 99 or 100 where surrounding values ~900–1000 (likely missing a leading '9' or data truncated).
+- Fix:
+  - Verify source data and re‑import/realign columns. Quick checks:
+    - Filter each year column for values outside expected range (e.g., for reading/math expect ~200–260; flag <100).
+    - For SAT, flag any values <700 as suspicious (depending on era) and compare with source.
+  - Correct entries from original source or restore leading digits if you can identify a pattern (e.g., missing leading "9").
+- Why: These look like import/scale or alignment errors; automatic fixes are risky — verify original data.
+
+7) Non‑integer "Total No." values in several places
+- Problem: Total counts in personnel tables show decimals (e.g., 1995.8) — counts must be integers.
+- Fix: Wrap the calculation in ROUND(...,0) or use INT/ROUNDUP as appropriate:
+  =ROUND(original_formula,0)
+- Why: People counts cannot be fractional.
+
+Suggested quick sanity‑checks to find other problems
+- Use conditional formatting to highlight:
+  - Cells <10 in Attendance columns (should be 100s–1000s).
+  - Cells containing "-" in Ratio columns (text).
+  - Non‑integer values in columns that must be whole numbers (Teachers, Total No.).
+- Use FILTER or sort to find "**" placeholders and treat as NA (or blank) before re‑summing.
+- Where you change formulas to SUM, recalc and compare totals to source totals to verify correctness.
+
+If you want, I can:
+- Provide the exact cell edit commands (one by one) to paste into Excel,
+- Produce corrected formulas for all identified bad totals (I can list them),
+- Or prepare a short VBA macro to fix COUNT→SUM, fix the university totals, convert ratio text to numeric, and round totals.
+
+Which follow‑up would you like?

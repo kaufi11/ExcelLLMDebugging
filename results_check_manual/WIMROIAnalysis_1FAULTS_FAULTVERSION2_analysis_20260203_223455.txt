@@ -1,0 +1,49 @@
+I reviewed Sheet1 and found the main errors, their effects, and simple fixes. Short and to the point:
+
+1) Wrong constant in Shipping (big numeric error)
+- Problem: E86 = C86*C87*C88*0.583043333585248  
+  That 0.583... is wrong (it produces a huge over‑estimate). The intended low‑end savings multiplier should be 0.16 (or the cell that stores the low %).
+- Fix: replace the formula in E86 with either
+  - =C86*C87*C88*0.16
+  or (better, if you want to use the “Your/Range” cell)
+  - =C86*C87*C88*C89
+- Why: other productivity lines use 0.16 for the minimum savings. Using the correct percentage fixes the inflated result and downstream subtotals.
+
+2) Missing / blank input cells in the Warehouse & Inventory blocks (these make those savings zero)
+- Problem: Several required data cells are blank, so formulas return 0. Examples:
+  - C106 (Driver's Rate/Hr. – used by E104/K104)
+  - C110, C111, C112 (maintenance, fuel, # lift trucks – used by E110/G110/K110)
+  - C130 (Mean Warehouse Inventory Value – used by E133/G133/K133)
+  - C135 (Average Profit/Turn – used by E135/G135/K135)
+- Fix: Enter the correct numeric inputs for those cells (or a realistic zero if not applicable). After entering the values the E/G/I/K results and the subtotals will calculate properly.
+- Why: formulas multiply these inputs; blank = 0 makes the whole term zero and understates savings.
+
+3) Incorrect formula structure for “Reduce Carrying Costs” (E133/G133)
+- Problem: E133 = C130*0.04*0.18 and G133 = C130*0.06*0.25 — these multiply by two percentages instead of applying a single low/high savings percentage. This likely under/over‑calculates or is simply not what the labels indicate.
+- Fix: Use a single percentage for the low and high cases. For example:
+  - E133 (min) = C130 * 0.18
+  - G133 (max) = C130 * 0.25
+  - I133 = (E133+G133)/2
+  - K133 = C130 * C133 (if C133 is the user‑selected / “your” %)
+- Why: label says “Range of Savings = 18-25%” — you should multiply inventory value by 18% or 25%, not by an additional 4%/6% factor.
+
+4) Hard‑coded percentages scattered through sheet (maintenance & clarity)
+- Problem: Many formulas hard‑code % values (0.16, 0.25, 0.44, etc.) rather than referencing the range cells (like C12, C17, C23, etc.). This makes maintenance error‑prone (as with the E86 example).
+- Fix (recommendation): Change formulas to reference the appropriate range cells (where those cells exist). Example:
+  - Replace =C9*C10*C11*0.16 with =C9*C10*C11*C12 (or better: determine separate min/max cells and reference those).
+- Why: referencing the range cell makes it easy to change assumptions in one place and prevents mismatches/copy‑paste errors.
+
+5) Minor: confusing summary column layout (not technically breaking, but confusing)
+- Observation: The detailed sections use columns E (min), G (max), I (avg), K (your). The summary section shifted those to columns C (min), E (max), G (avg), I (your). The formulas do correctly pull the intended values, but the shifted column layout is confusing and increases risk of mapping errors.
+- Fix (optional): Align summary headers and summary columns with the detail columns (e.g., use the same column positions) or clearly label them so future edits don’t swap min/max by accident.
+
+Quick action checklist you can follow now
+1. Correct E86 to =C86*C87*C88*C89 (or *0.16).  
+2. Populate blank input cells: C106, C110, C111, C112, C130, C135 (and any other blank Data cells that should have numbers).  
+3. Change E133 and G133 to single‑percentage formulas (E133 = C130*0.18, G133 = C130*0.25) and set K133 to use the “your %” cell.  
+4. Replace hard‑coded percentages with references where possible (e.g., use the range cells).  
+5. (Optional) Reconcile/standardize summary column positions to match detail columns.
+
+If you want, I can:
+- provide an exact list of every formula that hard‑codes a percent so you can convert them to references, or
+- create the corrected formulas on the sheet for you (tell me which cells you want me to update).

@@ -1,0 +1,34 @@
+Summary — one clear formula error that breaks several totals
+
+Faulty cell
+- Sheet "SG1" cell F53
+
+What’s wrong (short)
+- F53 uses COUNT(F7:F51). COUNT returns how many numeric cells there are, not the sum of the 2002 entries. So F53 is a count, not the subtotal of 2002 entries. That makes any dependent cells (percent change and totals) wrong.
+
+Where the error propagates
+- SG1!G53 (= (F53-E53)/E53) — percent change uses the wrong F53 subtotal.
+- SG1!F63, G63 (and any totals/percent rows that include F53) — these totals use F53 so they are wrong.
+
+Fix (what to put)
+- Replace SG1!F53 with:
+  =SUM(F7:F51)
+
+- After that confirm SG1!G53 stays:
+  =(F53-E53)/E53
+  (or use IFERROR to avoid #DIV/0 if E53 = 0):
+  =IFERROR((F53-E53)/E53, "")
+
+- Ensure SG1!F63 is:
+  =SUM(F53:F61)
+  (it already is; it will be correct once F53 is fixed)
+
+Why this fixes it (short)
+- SUM(F7:F51) gives the total number of 2002 entries (what the subtotal row should show). COUNT returned only the number of cells with numbers, not their total value. Using SUM corrects the subtotal so percent-change and grand totals compute correctly.
+
+Extra checks (recommended, brief)
+- Replace any hyphen ("-") used as a value with 0 or a blank cell. Text like "-" causes unexpected results in SUM/COUNT and in percentage calculations.
+- Use IFERROR around divisions to avoid errors when denominators are zero:
+  =IFERROR((NewNumerator)/(Denominator), "")
+
+If you want, I can scan the workbook for more COUNT-vs-SUM or division-by-zero issues and list them.

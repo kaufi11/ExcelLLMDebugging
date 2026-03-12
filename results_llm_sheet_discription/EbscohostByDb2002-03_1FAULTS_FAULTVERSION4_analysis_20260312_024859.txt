@@ -1,0 +1,23 @@
+Findings
+- Error found: KauCC cell E20 contains =COUNT(C20:D20) instead of =SUM(C20:D20). COUNT returns the number of numeric cells (2), not their sum (112), so the per-database Total for Image Collection is wrong.
+- Potential robustness issue: Campus total E29 is calculated as =SUM(C29:D29). That works (it adds full-text total + PDF total) but is less transparent than summing the per-database E column (E10:E28). If any E-row is wrong (like the COUNT), someone might sum E10:E28 and get a different result than the current E29.
+
+Short fixes (easy)
+1. Fix the immediate error:
+   - In KauCC cell E20 replace the formula with:
+     =SUM(C20:D20)
+   or simply:
+     =C20+D20
+
+2. Make totals robust and consistent (recommended):
+   - Change KauCC E29 to:
+     =SUM(E10:E28)
+   - Do the same on every sheet (use E10:E28) so the campus total always equals the sum of per-database totals.
+
+Extra checks (quick)
+- On each sheet, search for any other COUNT(...) in the E10:E28 range and replace with SUM(...) if found.
+- Optionally add a check column or use conditional formatting to flag rows where E# <> C# + D#.
+
+Why this fixes it (brief)
+- COUNT counts numeric cells; SUM adds their values. Replacing COUNT with SUM makes E20 show 112 instead of 2.
+- Using E29 =SUM(E10:E28) ensures the campus total reflects the per-database totals (and will reveal any per-row formula errors).

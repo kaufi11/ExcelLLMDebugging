@@ -1,0 +1,27 @@
+I checked the sheet. There are two clear, concrete errors and one likely logic/lookup risk. Short fixes and explanations below.
+
+1) Wrong lookup in Base HTH Damage (cell H22)
+- Error: H22 uses the carrying-capacity cell C22 as the lookup_value:
+  H22 = HLOOKUP(C22, R2:AG4, 3, TRUE)
+- Why it’s wrong: the HTH damage table in R2:AG4 is keyed by WEIGHT (row 2), not carrying capacity. You should look up the character’s weight (B15), not C22.
+- Fix: change H22 to
+  =HLOOKUP(B15, R2:AG4, 3, TRUE)
+- Explanation: this finds the weight bracket for the character (B15) in the weight row (row 2 of the table) and returns the corresponding HTH damage value from the 3rd row of the table (row 4 on the sheet).
+
+2) Mismatched HLOOKUP table rows — risk of wrong values if table layout changes
+- Issue: you use several HLOOKUPs against the big R5:AW15 block and pass hard-coded row_index numbers (2,3,5,6,9,10,11). Those row_index numbers are "relative" to the R5 top row. If you or someone inserts/deletes rows inside that block the indexes will no longer point to the intended attribute row and will silently return wrong results.
+- Suggested safer practice / fix:
+  - Either replace those HLOOKUP + numeric row_index calls with INDEX/MATCH which is explicit, for example for B19 (Strength HP-mod):
+    =INDEX(R6:AW6, MATCH(B16, R5:AW5, 1))
+    (here R5:AW5 is the Attribute Value header row, R6:AW6 is the Str HP Mod row)
+  - Or name the rows (or use OFFSET with named ranges) so your HLOOKUP row_index values are obvious and stable.
+- Why: INDEX/MATCH selects the correct row explicitly and is resilient to row insert/delete and easier to read/maintain.
+
+3) Minor check (not necessarily an error, but verify intent)
+- H15 (Agility Mod) = HLOOKUP(B15, R2:AG3, 2, TRUE) — this looks up weight (B15) in the weight row and returns the agility penalty from row 3. That is consistent with the sheet intent (encumbrance -> agility). Just verify you intended to use the weight-to-agility mapping in R2:AG3. If so, leave it.
+
+Summary of concrete action items
+- Change H22 to =HLOOKUP(B15, R2:AG4, 3, TRUE).
+- Consider rewriting the HLOOKUPs against R5:AW15 with INDEX/MATCH or named ranges to avoid hard-coded row_index fragility.
+
+If you want, I can provide the INDEX/MATCH replacements for every HLOOKUP in B19:F21 (and any other lookups) so the sheet is robust.

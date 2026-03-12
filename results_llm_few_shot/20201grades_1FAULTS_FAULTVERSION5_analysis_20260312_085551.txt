@@ -1,0 +1,32 @@
+Summary — main errors found
+1) Sheet1!T19 — Wrong formula
+- Fault: T19 = COUNT(D19:S19). COUNT returns the number of numeric cells, not their sum.
+- Effect: T19 is a small integer (count) instead of the total points for that student. That wrong value feeds CB19 (CB19 = T19) and all downstream %/overall calculations (U19, CA19, CE19, CF19, etc.), so the student's totals and averages are wrong.
+- Fix: Replace with a sum:
+  =SUM(D19:S19)
+- Why: SUM adds the assignment points; COUNT does not.
+
+2) Data-entry / text placeholders inside numeric ranges
+- Fault: Several numeric ranges that are summed include text like "x", "X", "+", "#" or "." (examples: BG7:BL7, BR7, BR9, BL15, AL7, AZ13, etc.). SUM ignores text so totals may silently omit intended values; if those placeholders were meant to represent 0 or missing points, it's better to use numeric zeros or a standard marker.
+- Effect: Totals may be ambiguous or misleading; other formulas that expect numbers may show unexpected results.
+- Fixes (choose one):
+  - Replace text placeholders with 0 (recommended if they mean zero).
+  - Or use a consistent numeric code (e.g., -1) and document it, or a comment explaining meaning.
+  - If you must keep a text marker, make totals explicit with error-trapping, e.g.:
+    =SUMIF(range,"<>x",range)  (not ideal)  
+  - Best: clean the data so SUM ranges contain only numbers.
+
+Other recommended cleanups (not strictly errors but will prevent mistakes)
+- Use absolute references for denominators if you want a single source of truth (example: many rows use hard-coded 150 or 350). Replace with $T$1 or $AQ$1 etc where appropriate (Sheet2 already uses $T$1 and $AQ$1 — make Sheet1 consistent).
+  Example: change U5 from =T5/150*100 to =T5/$T$1*100 if T1 holds the assignment total (prevents errors if the total changes).
+- Check any rows where SUM ranges include the cell itself (circular) — I didn’t find an obvious circular reference other than the earlier examples you fixed previously; keep an eye out when you see totals like =SUM(C1:C4) in a cell within the range.
+
+What to do now (step-by-step)
+1. Change Sheet1!T19 to =SUM(D19:S19).
+2. Replace all "x", "X", "+", "#", "." text placeholders inside numeric columns with 0 (or a documented numeric code).
+3. Recalculate / recopy formulas (Excel will update dependent cells).
+4. Optionally standardize denominator references to absolute cells ($T$1, $AQ$1, $BS$1, $CE$1) so future edits are safer.
+
+If you want, I can:
+- Give a list of every cell that contains non-numeric placeholders inside sum ranges, or
+- Produce the exact corrected formulas for any other specific rows you point to.

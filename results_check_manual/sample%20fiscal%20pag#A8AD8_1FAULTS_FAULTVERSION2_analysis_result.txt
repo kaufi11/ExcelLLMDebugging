@@ -1,0 +1,49 @@
+I inspected the formulas and values in the workbook you provided and found a small number of clear formula mistakes / suspicious values that can propagate through the Summary. Below are the issues (by sheet + cell), the reason they are suspicious, the likely impact, and suggested fixes.
+
+High-confidence errors
+
+1) Sheet 1198 — Total Revenues (H25) uses COUNT instead of SUM
+- Cell: 1198!H25
+- Formula found: =COUNT(H9:H24)
+- Why it's wrong: H25 is the "Total Revenues" cell; other funds use SUM(H9:H24). COUNT returns the number of non-empty cells (16 here) instead of summing revenue amounts.
+- Impact: Summary pulls 1198!H25 (Summary H12) so the Summary's H‑column totals (and any further totals that include that value) are incorrect in the H (Projected) column.
+- Suggested fix: Change 1198!H25 to =SUM(H9:H24) (or the correct aggregation for that column).
+
+Suspicious / likely data-entry mistakes (duplications that look unintended)
+
+2) Sheet 1043 — large duplicated values in object-class rows
+- Cells: 1043!G65, 1043!F66, 1043!H66 (and similar occurrences in that vicinity)
+- What I observed:
+  - 1043!G65 = 22073880 (this matches 1043!G25 — the fund's total revenues / central allocation)
+  - 1043!F66 = 20517114 (matches 1043!F25)
+  - 1043!H66 = 22073880 (again duplicates a totals number)
+- Why it's suspicious: These cells sit under "Repairs, Maintenance & Supplies" and "Utilities" (object class rows). Values that large and identical to the fund totals look like accidental copy/paste of totals into expenditure detail rows rather than correct expenditures.
+- Impact: Summary lines that sum those rows across funds (for example Summary D54 and D55 and related columns) will be distorted if these are incorrect.
+- Suggested checks/fixes:
+  - Verify the intended numbers for 1043!G65, 1043!F66 and 1043!H66; if accidental, replace with the correct values or with formulas that sum the appropriate detail rows (e.g., =SUM(range) if applicable).
+  - Search the 1043 sheet for other cells that exactly equal the fund totals (D25:E25:F25:G25:H25 or D28:E28:...) and confirm whether those are intended.
+
+Other observations / potential issues to review
+
+3) Rounding / floating artifacts
+- Example: 1043!F6 and others show 2.03000000119209 instead of 2.03
+- Why: Floating point representation; not an error in logic but can look odd in reports.
+- Suggested: If presentation matters, use rounding (e.g., =ROUND(...,2)) where appropriate.
+
+4) Carry-forward formula pattern
+- Many sheets compute Carry Forward (column D6 etc) with a formula using next-column value (e.g., =+E6+D72-D25-D35).
+- This is consistent across sheets, but it is unusual (D6 depends on E6). Confirm this is intentional (it may be a carry-forward calculation using next year’s cell) — not necessarily an error but worth verification.
+
+5) Mixed use of direct values and formulas
+- Several detail rows are hard-coded numbers rather than SUM formulas. That can be fine, but if the detail is supposed to be calculated from other cells, it can lead to inconsistencies. Where a row is intended to be an aggregation, prefer SUM formulas to avoid manual copying errors.
+
+Summary of recommended actions (prioritized)
+1. Correct 1198!H25 from COUNT(...) → SUM(...).
+2. Inspect 1043!G65, 1043!F66, 1043!H66 (and nearby object-class cells) — verify against source detail; correct accidental copies.
+3. If final presentation requires neat numbers, apply rounding where floating artifacts are visible.
+4. Review carry-forward formulas (D6 pattern) to confirm they reflect your intended accounting logic.
+5. Where totals should be computed, ensure SUM is used rather than manual values to reduce risk of copy/paste errors.
+
+If you want, I can:
+- produce a short list of all cells whose value equals a particular totals cell (to find further accidental duplicates), or
+- produce a suggested set of corrected formulas (e.g., the exact formula to paste into 1198!H25 and the 1043 cells) if you confirm the intended logic for the 1043 object-class rows.

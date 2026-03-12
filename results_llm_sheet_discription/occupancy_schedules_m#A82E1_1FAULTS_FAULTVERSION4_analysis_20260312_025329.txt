@@ -1,0 +1,25 @@
+Summary — I found two real errors and one recommended fix. Short fixes and why:
+
+1) Typo causing a negative occupancy value
+- Where: Sheet "Occ L2-WD-DU", cell D34.
+- Wrong formula (typo): =-'Occ L3-WD-DU-LR'!E34-'Occ L3-WD-DU-LR'!F34
+- Correct formula: ='Occ L3-WD-DU-LR'!E34+'Occ L3-WD-DU-LR'!F34
+- Why: All other hourly aggregation cells add the two source columns. The leading minus signs make the cell subtract both source values, producing a negative occupancy fraction (incorrect physically and will corrupt all aggregated schedules that use this column).
+- How to fix: Edit D34 and replace the two minus signs with plus signs (or re-type the formula to match the pattern used in the other rows).
+
+2) Wrong weighting references for latent per-person average (mixes cells incorrectly)
+- Where: Sheet "Occ L0", cell F10 (Latent load per person).
+- Wrong formula: =+(Occupancy!F22*Occupancy!F19+Occupancy!F23*Occupancy!F20)/(Occupancy!F19+Occupancy!F20)
+  - This multiplies latent gains (F22,F23) by the sensible gains (F19,F20) and divides by the sensible gains — clearly the wrong weighting references.
+- Correct formula (consistent with how sensible F9 is computed): =(Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- Why: The per-person average should weight the living vs bedroom per-person latent gains by the total person-hours in living and bedroom schedules (Occupancy!F38 and Occupancy!F39), same approach used for the sensible average in F9. Using F19/F20 (the per-person sensible values) is a mix-up and yields meaningless numbers.
+- How to fix: Replace F10 with the formula shown above. After fixing, verify the units/values are sensible and similar in scale to F9.
+
+Quick checks to run after fixes
+- Recalculate workbook and check no negative occupancy fractions remain in any schedule.
+- Verify Occupancy!F38 and F39 are positive (SUM of Occ L1-LR columns) and that Occ L0 F9 and corrected F10 are numerically reasonable.
+- Scan the Occ L2-* sheets for any other formulas that begin with a minus sign; correct any accidental leading negatives to plus if they should be additions.
+
+If you want I can:
+- Provide a one-line Excel formula you can paste into D34 and F10.
+- Give a quick list of cells to scan for similar minus-sign typos.

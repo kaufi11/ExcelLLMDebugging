@@ -1,0 +1,18 @@
+I inspected the formulas on Sheet1. I found one clear formula error and one potential inconsistency you may want to confirm is intentional.
+
+1) Incorrect formula (actual bug)
+- Cell: X5
+- Current formula: =(COUNT(R5:V5)-MIN(R5:V5))/(COUNT(R5:V5)-1)
+- Problem: it uses COUNT(...) where SUM(...) is intended, so it computes (count - min)/(count-1) instead of (sum - min)/(count-1). That yields -17.5 and causes the student's Final Grade (AE5) to be wrong.
+- Correct formula: =(SUM(R5:V5)-MIN(R5:V5))/(COUNT(R5:V5)-1)
+- Effect of correcting: X5 becomes 95.25 (instead of -17.5) and AE5 recalculates to 87.7225 (instead of 59.535).
+
+2) Potential inconsistency to review (might be intentional)
+- Columns I, Q and X: averages are calculated by dropping the lowest score with the pattern (SUM(range)-MIN(range))/(COUNT(range)-1).
+- Column AD (Test Average): uses =AVERAGE(Y#:AB#) and does not drop the lowest test.
+- If the grading policy is to drop the lowest score for Homework / Classwork / Quizzes but not for Tests, this is fine. If you intended to treat Tests the same way (drop the lowest), AD should use the same drop-lowest formula: =(SUM(Y#:AB#)-MIN(Y#:AB#))/(COUNT(Y#:AB#)-1).
+
+3) Minor suggestion (robustness)
+- The final grade formula in AE uses C$1, K$1, S$1, Z$1 for weights. Consider using absolute references $C$1, $K$1, $S$1, $Z$1 to fully lock the weight cells in case formulas are copied into other columns in future.
+
+If you want, I can produce corrected formulas for all affected cells (X5 and AE5 recomputed, and optional formula change for AD rows) or supply a small macro/Find+Replace to fix X5 across similar mistakes.

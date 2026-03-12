@@ -1,0 +1,51 @@
+Summary of workbook (concise)
+
+Sheets
+- input-output — User-facing sheet listing course rows, targets and comparisons plus controls.
+  - Columns C–F: course codes and flags (e.g., CE1030 in C10; D10 = x etc.).
+  - Columns H–I: pull course names / outcome totals from Data Analysis (H# = 'Data Analysis'!A#, I# = 'Data Analysis'!B#).
+  - Column J: target values per row (numeric benchmarks).
+  - Column K: comparison formula =IF(I#>J#,"Over","Under").
+  - Cells I48: Include-all-extents toggle (Y/N). O49: displays =IF(I48="Y","INCLUDES ALL EXTENTS","ONLY CONSIDERS 4 AND 5 EXTENTS").
+  - I52: actual sum of selected outcome totals =SUM(I5+I9+I10+I21+I31+I38+I42+I43+I44+I46+I45).
+  - J52: sum of corresponding targets =SUM(J5+J10+J9+J21+J31+J38+J42+J43+J44+J45+J46).
+  - Many cells (M3:S?) mirror specific Data Analysis outputs (course lists, distributions).
+
+- Data Analysis — Calculation engine. Large matrix of competencies (rows 4:45) vs course columns (D:AR and duplicates CX:EI).
+  - Row1 (D1:AR1 etc): course column headers (CE1030, CE2000, …).
+  - Row2 (D2:AR2): source of 'x' flags from input-output (e.g., D2 = 'input-output'!D10, E2 = 'input-output'!D11...). These flags drive inclusion.
+  - Rows 4–45: competency statements with per-course extent ratings (1–5) in columns D:AR (static ratings).
+  - For every competency row:
+    - AU#:CI# cells are inclusion columns: AU# =IF(D$2="x",D#,0) etc. (i.e., include the course's rating only when that course is selected).
+    - CL# = SUM(AU#:CI#) — total included extents (includes all extents).
+    - CM# = SUM( IF(AU#>=4,AU#,0) + ... ) — totals counting only extents >=4 (used when only 4–5 extents should count).
+    - B# on Data Analysis is set by input toggle: e.g., B5 =IF('input-output'!$I$48="Y",CL5,CM5). So if I48="Y" the model uses CL (all extents), otherwise CM (only 4/5 extents).
+    - C# = B# / $B$46 (percent of total).
+  - B46 = SUM of major category totals (B4+B8+B9+B20+B30+B37+B41+B42+B43+B44+B45) — used as denominator for percentages.
+  - Numerous helper columns CX:EI on Row3 etc compute course-equivalent weights via IF(D$2="x",weight,0) patterns and EJ1/EJ3 = SUM(CX3:EI3) give aggregated course-equivalent sums.
+  - Several cells output course-code text or "-" depending on selection: e.g., CP3 =IF(D2="x","CE 1030","(no CE 1030 )"), CP5 =IF(L2="x","CE 3010","-"), etc.
+  - Summary table at A64:A87 pulls selected percentage/score cells (C# and B#) into a compact overview and numeric C-column totals (C77:C87).
+
+Key formulas / logic (high-level)
+- Course selection is driven by 'x' flags in Data Analysis row2 pulled from input-output D/F columns.
+- Per-competency inclusion:
+  - Include-all-extents toggle (input-output!I48) controls whether each competency uses CL# (all included ratings) or CM# (only ratings >=4).
+- Percentages = B# / B46.
+- Comparison on input-output: K# =IF(I#>J#,"Over","Under") to show whether actual outcome exceeds target.
+- Totals: input-output I52 and J52 compare actual sum of selected outcome totals vs sum of targets.
+
+Important cells/values to check quickly
+- input-output!I48 — toggle controlling inclusion mode (Y = include all extents).
+- Data Analysis!B46 — total denominator for percentage calculations.
+- Data Analysis!CL# and CM# — included-sum and high-extent-only sums for each competency.
+- input-output!I# — pulled outcome totals from Data Analysis (used for comparisons against targets in J#).
+- input-output!O49 — message indicating which inclusion mode is active.
+
+Overall layout and flow
+- input-output is the user input and report sheet: pick courses (via 'x' flags), set I48, view outcome totals and compare to targets.
+- Data Analysis holds the competency × course rating matrix and does the inclusion, weighting and summation calculations, returning totals and percentages back to input-output.
+- The model uses many repeated IF(D$2="x",value,0) structures so adding/removing an 'x' toggles inclusion across all competency rows.
+
+If you want, I can:
+- Produce a compact dependency map (which input flag affects which competency totals).
+- Extract the key summary numbers (B46, I52, J52, top Over/Under rows) from the current snapshot.

@@ -1,0 +1,41 @@
+Summary of workbook structure and contents
+
+Sheets
+- Example — primary worksheet with assumptions, two-period operating schedule (August / September), COGS schedule, and placeholders for collections/disbursements and July estimates.
+- Formulas — duplicate of Example that records formulas; mostly identical content (one cell difference noted below).
+
+Assumptions (A1:A14 / B2:B14)
+- Key inputs (constants): Base Sales = 184,000; % Sales Increase = 0.02; Base Inventory Balance = 50,000; Additional End Inv = 20% of next period sales; Purchases as % of Sales = 0.6; 7/31 Inventory = 80,000; October sales = 198,000; Monthly Salaries = 15,000; Sales commission = 0.06; Rent (cash) = 14,000; Depreciation = 3,000; Insurance (prepaid) = 1,000; Income tax rate = 0.30.
+
+Period layout
+- Period headers in row 16: B16 = August, D16 = September (period results occupy columns B/C for one period and D/E for the next; actual formulas are in C and E for sales, etc.).
+- Income statement lines (Sales revenue, COGS, Gross margin, Operating expenses, Operating income, Income tax, Net income).
+
+Key formulas and links
+- Sales revenue:
+  - August (C17): =ROUND(B2*(1+B3), -3) — base sales grown by % increase, rounded to thousands.
+  - September (E17): =ROUND(C17*(1+B3), -3) — grows prior period sales by same rate.
+- Cost of goods sold (main line):
+  - C18 / E18 reference the COGS schedule results (C34 / E34).
+- Operating expenses:
+  - Salaries & commissions (B21 / D21): =ROUND($B$9 + ($B$10 * [current period sales]), -3).
+  - Rent, Depreciation, Insurance are fixed (refer to assumption cells $B$11, $B$12, $B$13).
+  - Totals (C24 / E24) use SUM of the expense rows.
+- Taxes and net income:
+  - Income tax: =ROUND(Operating income * $B$14, -3).
+  - Net income: Operating income - Income tax.
+- COGS schedule (A29:A34)
+  - Beginning inventory: August uses 7/31 inventory (C30 = B7); subsequent period beginning (E30) = prior ending (C33).
+  - Purchases: =ROUND([current sales] * $B$6, -3) (C31 / E31).
+  - Ending inventory: =ROUND($B$4 + ($B$5 * next period sales), -3). Note: C33 uses E17 as the “next period” sales; E33 uses B8 (October sales) per the sheet.
+  - COGS: =Cost of goods available for sale (SUM beg inv + purchases) - Ending inventory (C34 / E34).
+- Collections / Disbursements and other cash schedule lines exist (A37:A46) with a few summary formulas (e.g., F38 = E38 + C37; F42 = D42 + B41; F44 = D44 + B43) but many cells are placeholders / not fully populated.
+- Linking / navigation: Some row labels B36/D36 link to B16/D16 respectively (B36 = +B16; D36 = +D16).
+
+Notable details / discrepancies
+- The Formulas sheet mirrors Example and preserves the same formulas; one difference shown: Formulas!C18 displays “207” (a value) instead of a reference to C34 — likely a manual override or pasted value.
+- Ending inventory for September (E33) uses October sales (B8) as its “next period” sales input.
+- Rounding is applied frequently (ROUND(..., -3)) to round results to the nearest thousand.
+
+Overall layout
+- Top-left contains assumptions; main body presents a two-period pro forma income statement with an embedded COGS schedule; right/lower area contains nascent cash/working-capital schedules and July estimate placeholders. The Formulas sheet is a direct copy intended to show/formula-check the same structure.

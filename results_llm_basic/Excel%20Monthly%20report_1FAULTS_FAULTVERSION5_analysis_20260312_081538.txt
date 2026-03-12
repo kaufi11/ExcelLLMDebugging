@@ -1,0 +1,32 @@
+Summary of the problems
+- Many day/service cells (D9:M39 and some others) contain wrong formulas instead of the raw counts. Examples: E9 =SUM(E42), F9 =SUM(E9), G9 =SUM(F9) … these are chained/shifted references and not the actual data. That makes numbers propagate incorrectly.
+- Some formulas reference the wrong row/cell (E9 → E42) or even a constant (G19 =SUM(5)). Those are typos/wrong references.
+- The totals row (row 40) is incorrect for many columns: E40 is correct (SUM(E9:E39) in your listing) but F40 =SUM(E40), G40 =SUM(F40) … etc — each is summing the previous column’s total instead of summing the column’s daily values.
+
+Why this is wrong (short)
+- Day/service cells should hold the counts (or a formula that sums that day’s services). Instead they reference other totals, so values ripple and are wrong.
+- Totals must sum the day-range for their column (e.g., D40 =SUM(D9:D39)). Summing another total or a single wrong cell gives incorrect totals.
+
+How to fix (simple step-by-step)
+1. Clear wrong formulas from the day/service grid:
+   - Select D9:M39 and press Delete to remove the incorrect formulas. Those cells should contain the daily counts (entered manually) or direct formulas that sum that row if needed.
+2. Put the correct day total in column C:
+   - In C9 enter: =SUM(D9:M9)
+   - Fill or copy C9 down through C39.
+3. Put the correct column totals in row 40:
+   - C40: =SUM(C9:C39)
+   - D40: =SUM(D9:D39)
+   - E40: =SUM(E9:E39)
+   - … continue similarly through M40: =SUM(M9:M39)
+   - You can enter D40 and then drag the formula across to M40 to auto-adjust columns.
+4. Fix any stray wrong cells:
+   - Replace E9 =SUM(E42) with either the actual value or clear it.
+   - Replace G19 =SUM(5) by entering the actual value or clearing it (do not use SUM(5)).
+   - Inspect any other cell that references an unexpected row (like row 42) and correct or clear it.
+
+Quick tips
+- If you want the sheet to automatically calculate each day’s Total #, use C9 =SUM(D9:M9) and copy down; leave D–M for data entry.
+- Use relative ranges when copying (as above) so formulas adjust properly.
+- Use Excel’s Evaluate Formula or Trace Precedents (Formulas tab) to find cells pointing to wrong places.
+
+If you want, I can give you the exact corrected formulas for every cell shown, or make a small corrected template you can paste into your workbook. Which would you prefer?

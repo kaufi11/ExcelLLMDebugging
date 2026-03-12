@@ -1,0 +1,53 @@
+Short summary of the problems I see
+- Many formulas show #REF! because one or more source cells were deleted or moved. (#REF! appears in K40, O39:P39:Q39:R39, S44, S40, P45, P50/P51/P52, P53, etc.)
+- Some formulas reference the wrong column/cell (e.g. formulas use $D$21 when the sheet shows related data in column E or column K; or hard-coded numbers like 69500 were used instead of referencing the row $ amount).
+- Percent values are inconsistently stored/used (cells show 71.3, 10.01, 7.51 etc but formulas sometimes expect decimals like 0.713).
+- Totals / allocation formulas are inconsistent: some allocations multiply a missing base (causing #REF!), others use hard-coded constants instead of referencing the discipline $ amount (E##). This will make E62 (sum of discipline $) not match E31 (Total Basic Services) if not fixed.
+
+Why these produce wrong results
+- #REF! breaks dependent calculations and prevents any row/column totals from being calculated correctly.
+- Wrong cell references (D21 vs E21 or a deleted cell) make calculations use blank/incorrect numbers.
+- Using 71.3 as a number instead of 0.713 (or a properly formatted % cell) yields results 100× too large (or formulas dividing by 0.713 when the cell contains 71.3 will be wrong).
+- Hard-coded numbers (69500, 69500*0.6811) won’t update if you change the discipline $ amount in column E.
+
+Concrete fixes (short, exact)
+1) Replace every #REF! with the intended input cell (preferable: the discipline $ amount in column E or the Total Basic Services cell E31).
+   - For rows that allocate a discipline $ across firms (K:R for a given row), use the discipline $ cell for that row. Example (for row 39):
+     - Replace K39 = 69500*0.6811 with = $E39 * 0.6811
+     - Replace L39 = 69500*0.01 with = $E39 * 0.01
+     - …and so on for M39:R39, then S39 = SUM(K39:R39)
+   - For rows that allocate a firm’s percent of the entire contract, use the Total Basic Services cell (E31). Example (replace #REF! used as “total”):
+     - P45 currently =(O45/100)*#REF! → change to =(O45/100)*$E$31
+     - P50, P51, etc. similar: =(O50/100)*$E$31, etc.
+
+2) Fix deleted/moved references like $D$21:
+   - Confirm where the value that was intended for D21 now lives. If the base value is in E21 or K21, change formulas to use that exact cell. Example:
+     - If the amount is in K21 (you show K21 = 27000), change ($D$21-23000)/0.713 to =($K$21-23000)/0.713
+   - If you don’t know which cell is the base, search for formulas using $D$21 and replace with the correct source (most likely a cell in column E or K).
+
+3) Use the same authoritative “Total Basic Services” cell everywhere (best practice):
+   - Decide which single cell is the master total (recommend E31 = Total Basic Services / Contract Amount).
+   - Replace every formula that multiplies by the contract total with $E$31 (absolute reference $E$31).
+   - Optionally create a named range TotalBasic = $E$31 and use =TotalBasic in formulas (prevents future #REF! if rows shift).
+
+4) Make percent cells consistent:
+   - If you want O15 (71.3) to represent 71.3%:
+     - Either change the cell to 71.3% (enter 71.3% or 0.713 and format as %), or
+     - Change formulas that reference that cell to divide by 100. Example: if O15 contains 71.3 (not %), use =O15/100 in formulas.
+   - Better approach: enter percent values as true percentages (0.713 displayed as 71.3%).
+
+5) Verify column consistency for $ amounts:
+   - Your phase $ amounts live in column D but discipline $ amounts live in column E. Confirm intended layout and change formulas to reference the correct column. For example E16 = SUM(D11:D15) is correct if phase $ are in D; discipline $ totals should be in E and must sum to E31.
+
+Quick checklist you can run now (one pass)
+- Find all #REF! with Ctrl+F → fix each to point to either $E## (row’s $ amount) or $E$31 (total) as appropriate.
+- Replace hard-coded multipliers (69500, etc.) with references to the row $ cell: use E39, E40, E41, etc.
+- Search formulas for $D$21 and decide correct source; update to that cell.
+- Format percent cells as % or update formulas to divide by 100.
+- After these fixes, add a reconciliation cell: =E62 - E31 (should be zero). If not zero, inspect which discipline $ (E36:E57) or phase $ (D11:D15) are wrong.
+
+If you want, I can:
+- List every cell that currently contains #REF! and give the exact replacement formula (I can produce the corrected formulas row-by-row), OR
+- Produce a corrected mini-step script of exact formula edits to paste into the sheet.
+
+Which would you like?

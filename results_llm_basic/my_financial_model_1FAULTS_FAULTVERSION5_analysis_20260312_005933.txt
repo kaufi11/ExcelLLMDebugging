@@ -1,0 +1,38 @@
+I found several clear errors that will skew results (big ones: revenue and depreciation). Below are each error, why it’s wrong, and the exact fix + short explanation.
+
+1) Total revenue is missing Street Sales
+- Where: Income!E12:P12
+- Problem: Each total cell is SUM(E10:E10) etc — that only includes Online Sales (E10) and omits Street Sales (E11).
+- Fix: change each column’s Total formula to include both rows. Example for column E:
+  - Replace Income!E12 =SUM(E10:E10) with =SUM(E10:E11)  (or =E10+E11)
+- Why: Total revenue must add online + street sales. Current totals understate revenue and that error flows to gross/net profit and all downstream sheets.
+
+2) Sugar-price growth references wrong input cell
+- Where: Income!F8:P8 (and probably the whole sugar-price row)
+- Problem: the formulas use $D$7 (the lemon-price growth cell) instead of the sugar growth-rate cell ($D$8).
+- Fix: change those formulas to reference $D$8. Example for F8:
+  - Replace =E8*(1+$D$7) with =E8*(1+$D$8)
+- Why: sugar price escalation was tied to the lemon-rate, so sugar costs are wrong. Use the correct growth-rate cell for sugar.
+
+3) Advertising/Marketing column chain is misaligned
+- Where: Income!I25, J25, K25, ... (the chain in row 25)
+- Problem: some cells point to the wrong prior column (e.g. I25 =F25 instead of =H25). That creates a shifted/incorrect pattern.
+- Fix: either:
+  - Make every future year explicitly equal to the first-year value using absolute reference, e.g. F25 = $E$25, G25 = $E$25, etc; or
+  - Fix the chain so each cell references the immediate left (F25 = E25, G25 = F25, H25 = G25, I25 = H25, …).
+- Why: misreferenced cells give incorrect annual fixed-cost values and will distort totals.
+
+4) Long-term asset original value points to a liability (huge error → wrong depreciation)
+- Where: Balance Sheet!D8 (Original Value of Long Term Assets)
+- Problem: D8 = D14 (that cell is the Lear Jet loan/ liability). As a consequence Depreciation uses the loan amount as the asset base → massively wrong depreciation and everything that depends on it.
+- Fix: set D8 to the correct asset original value. Two safe options:
+  - If the asset purchase is the -100,000 cashflow shown in Cashflow!D9, use: =-Cashflow!D9 (this converts the negative cash outflow to a positive asset value), or
+  - Enter the correct amount directly, e.g. =100000
+- Why: Depreciation and the balance sheet must be based on the asset cost, not a loan number. Fixing D8 corrects depreciation (Depreciation!D6) and all downstream balances.
+
+Optional check / tidy-ups (minor)
+- Revenue Total row E12:P12 use of SUM(E10:E10) is unnecessary — use SUM(E10:E11) or direct addition.
+- Where growth rates are used across rows, consider grouping rate inputs in a single “Inputs” area and reference them consistently (e.g. use $D$4 for price inflation or named ranges) to avoid similar misreferences.
+- Scan other copy/paste chains (fixed costs, COGS rows) for similar off-by-column links (we flagged advertising but you may have others).
+
+If you want, I can produce the exact replacement formulas for every affected cell (I’ll list each cell and its corrected formula) or create named-rate inputs and show a fix that reduces future copy/paste errors. Which would you prefer?

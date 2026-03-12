@@ -1,0 +1,31 @@
+Summary — main errors found, fixes and short explanations:
+
+1) Faulty cell: E14
+- Error type: Typo / wrong reference
+- Problem: Formula is =(C14-411)^2 — uses constant 411 instead of the predicted value D14.
+- Fix: = (C14 - D14)^2
+- Why: SSE should square the residual (observed minus predicted). Using 411 gives a huge wrong residual.
+
+2) Faulty cell: E19
+- Error type: Range/omission error
+- Problem: =SUM(E14:E18) — this sums the wrong range (misses E12,E13,E15,E16 and includes E17:E18 which are unrelated/blank).
+- Fix: =SUM(E12:E16)   (or, to be robust, =SUM(E:E) if column only holds residuals)
+- Why: SSE must sum all residual squares for the fitted points (rows 12–16 here).
+
+3) Faulty cells: D12:D16 (Theta vG formulas)
+- Error type: Potential operator/precedence error (and robustness)
+- Problem: current expression uses $B$5*(-B12)^$B$6 (etc.). Excel may parse exponent precedence with the unary minus incorrectly when B12 is negative, or it can produce #NUM if a negative base is raised to a non-integer power.
+- Fix (safer formula): = $B$3 + ($B$4 - $B$3) / ( (1 + $B$5 * (ABS(B12))^$B$6) ^ (1 - 1/$B$6) )
+  Apply the same replacing B12 by the respective row cell (B13, B14, ...).
+- Why: The van Genuchten model uses |h| (absolute suction). Using ABS() avoids sign/precedence errors and prevents #NUM when raising to non-integer powers.
+
+4) Note about B7 (SSE shown there)
+- B7 = E19 — OK, but because E19 was wrong, B7 was wrong. Fixing E19 fixes B7.
+
+Quick checklist to apply in the sheet:
+- Replace E14 with =(C14-D14)^2.
+- Change E19 to =SUM(E12:E16) (or =SUM(E:E) if safe).
+- Update D12:D16 to use ABS of pressure like shown above.
+- Recalculate / run Solver again after fixes.
+
+That will correct the residual calculations and avoid exponent errors in the model formula.

@@ -1,0 +1,46 @@
+Summary — main errors and fixes (short)
+
+1) Q'back sheet — Wrong formula (and percent inconsistency)
+- Error: I5 is wrong: it reads =G5/C5/100 while all other touchdown % cells use *100. That makes Bryant’s Touchdown % and Points (L5) far too small.
+- Quick fix: change I5 to:
+  =G5/C5*100
+
+- Consistency note (important): Columns H, I, J are written as "percent numbers" (formula uses *100). If you leave them that way, keep them as Number (or General) format so L's formula (which expects those larger numbers) works as intended. Alternatively, better practice is to store H/I/J as TRUE percentages (decimals) and format as Percentage — if you do that you must also adjust the Points formula. Pick one approach:
+
+  Option A — Minimal (keep current design)
+  - H5: =D5/C5*100
+  - I5: =G5/C5*100  (fix)
+  - J5: =E5/C5*100
+  - K5: =F5/C5
+  - L5: =K5*8.4 + H5 + I5*3.3 - J5*2
+  - Copy these down rows 5:11.
+  - Make sure H:I:J cells are Number (not Percentage) so the math in L matches the displayed numbers.
+
+  Option B — Cleaner (use real Percent formatting)
+  - Change H/I/J to decimals and format as Percentage:
+    H5: =D5/C5
+    I5: =G5/C5
+    J5: =E5/C5
+  - Adjust Points (L) to use the decimal percentages converted back to the original scale:
+    L5: =K5*8.4 + H5*100 + I5*100*3.3 - J5*100*2
+    (simplifies to =K5*8.4 + H5*100 + I5*330 - J5*200)
+  - Copy down. This is clearer for display (Excel % formats) but you must use the revised L formula.
+
+2) lookup sheet — missing formulas and grade lookup
+- Missing student totals, averages, and letter grade formulas. Add:
+  - F4 (Total /400) =SUM(B4:E4) and copy down through F9.
+  - G4 (Average /100) =F4/4 and copy down (this gives average per course out of 100).
+  - H4 (Letter Grade) use a lookup against your table F12:G18. Example (robust, works with an ascending threshold column F12:F18):
+    =VLOOKUP(G4,$F$12:$G$18,2,TRUE)
+    or
+    =LOOKUP(G4,$F$12:$F$18,$G$12:$G$18)
+  - Copy H4 down.
+
+- Note: Your grade table has overlapping/duplicate thresholds (e.g., 70 → A and 75 → A). Make sure the thresholds represent the intended cutoff logic (VLOOKUP with TRUE returns the largest threshold <= lookup value).
+
+3) drug bust sheet
+- No calculation errors detected. Column E holds metadata — that's fine. If you need calculations (totals, charts, trends), say so and I can provide formulas/charts.
+
+If you want, I can:
+- Provide the exact formulas for all Q'back rows (5:11) converted to Option A or B and a copy/paste-ready list.
+- Provide a cleaned grade threshold table and an IFERROR wrapper for the lookup.

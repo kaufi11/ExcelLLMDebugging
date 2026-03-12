@@ -1,0 +1,88 @@
+I inspected all formulas in the provided sheet and found several incorrect formulas, unit/scale inconsistencies, and a few places where the formula intent does not match the label. Below I list each issue (cell), why it’s wrong or inconsistent, and a recommended correction (with rationale and a suggested corrected formula). I grouped similar problems together.
+
+Summary of the definite problems (with recommended fixes)
+1) E42 (and anything that uses E42, e.g. C47)
+- Problem: E42 = C42*1000 (C42 = 0.184 mm). That produces 184 (no unit) — this is the wrong conversion factor. In later formulas (C47) E42 must be in meters so the argument of trig functions is dimensionless. Using 184 causes a huge wrong numeric result.
+- Fix: Convert mm → m, not mm → µm. Use:
+  E42 = C42 * 0.001
+  (or =C42/1000)
+- Then check dependent formula C47. Better to write C47 with explicit parentheses:
+  C47 = POWER( COS( PI() * E45 * E42 / (E44 * E43) ), 2 )
+  (with E45, E42, E44, E43 all in meters the argument of COS is dimensionless.)
+
+2) E133 (and dependent E134, E135, E136)
+- Problem: E133 = C133 * 0.00000001 (1e-8). This converts 423 to 4.23e-6 — wrong by a factor 10. Correct conversion nm → m is *1e-9.
+- Fix:
+  E133 = C133 * 0.000000001
+  (or =C133/1e9)
+- Consequence: E134, E135, E136 should be recalculated after fixing E133. Their formulas are OK structurally (E134 uses E133), but numeric values will change.
+
+3) C104 (in #10) — inconsistent with the label E101
+- Problem: E101 reads "t = Fλ/2" (implies t = F * λ / 2). But C104 calculates (C102-1)*(C101*1e-9)/2 (i.e. (F−1) * λ/2). Using F−1 is inconsistent with the written relation.
+- Fix: Decide which is correct. If the intended formula is t = F * λ / 2 use:
+  C104 = (C102) * (C101 * 1e-9) / 2
+  (or =C102 * C101 / 1e9 / 2)
+  If (F−1) was intentional, update E101 text to "t = (F−1)·λ/2".
+
+4) E114 vs C115 (in #11) — reciprocal and unit mismatch
+- Problem: E114 = (2*(E113/(E111/E112))) simplifies to 2 * E113 * E112 / E111 (units: m). C115 = 2*E111*E113/E112*1000 simplifies to 2 * E111 * E113 / E112 * 1000 — these expressions are reciprocals (E112/E111 vs E111/E112) and are not consistent. They are giving very different numeric results (475.886 vs 1.5905). They cannot both be correct.
+- Likely intent: C115's value (≈1.5905) looks like a small length in mm; E114's value (≈475.886) looks unphysically large. Most probable correction is that E114 was written using a reciprocal by mistake.
+- Fix (make them consistent). If the intended quantity is the same as C115 (mm), set:
+  E114 = 2 * E111 * E113 / E112 * 1000
+  (or rewrite logically and keep one canonical formula). Alternatively if E114 was intended to be in meters, compute C115 from E114 (C115 = E114*1000), but the current E114 is the reciprocal so you must choose one consistent formula and apply correct conversions.
+
+5) C175 (critical/incident angle)
+- Problem: C175 = DEGREES( ATAN((C171/C172)) ). Using ATAN(n_glass / n_water) is incorrect for Snell's-law / critical angle. For the critical angle (glass→water) you need arcsin(n2 / n1) with n2 ≤ n1.
+- Fix: Use ASIN of ratio (n2/n1). Assuming C171 = n_glass (n1) and C172 = n_water (n2):
+  C175 = DEGREES( ASIN( C172 / C171 ) )
+- Example: with C171=1.49, C172=1.33 that yields ≈63.2° (current formula gives ~48.25°, which is wrong).
+
+6) E16, C16, D16, E17 (units and labeling mismatch) — #1
+- Problem: E16 = E14 * E12 * E11 produces a value in meters (product of n * L (m) * λ (m)). But D16 is labeled "cm" whereas E16 is in meters. Then C16 = (E16/E17)*100 — since E17 = E13 (0.00052 m) the ratio E16/E17 is dimensionless; multiplying by 100 turns it into a percentage. The “cm” label on D16 is misleading and the C16 formula likely not what the label "To the nth fringe" expects.
+- Fix options (pick one based on intent):
+  - If E16 should be in meters and you want the number of fringes: set C16 = E16 / E17  (unitless) and change D16 to blank or "unitless".
+  - If you want number expressed as a percentage of slit spacing: keep C16 = (E16 / E17) * 100, but change D16 to "%" (not "cm").
+  - If E16 was meant to be in cm, change E16 to =E14*E12*E11*100 and keep D16 = "cm". Then adjust C16 accordingly.
+- Recommendation: Use consistent SI units (keep E16 in m), set C16 = =E16/E17 and label D16 as unitless (or "fringe count").
+
+7) C47 formula parentheses / clarity
+- Problem: C47 = POWER(COS(PI()*E45*E42/E44/E43),2) works in Excel because division is left associative, but it’s clearer and less error-prone to group the denominator:
+  C47 = POWER( COS( PI() * E45 * E42 / (E44 * E43) ), 2 )
+- And ensure E42 is in meters per issue (1) above.
+
+8) Miscellaneous conversions (style/inconsistency)
+- Several conversions use different ways to express 1e-9 (0.000000001 vs /POWER(10,9) vs /1e9). These are not errors but inconsistent style; not urgent but consider standardizing to /1e9 or *1e-9 for clarity.
+- E11 and E111 use 0.000000001 (fine). E44 uses /POWER(10,9) (fine). E133 used 1e-8 — that was the actual error pointed out above.
+
+9) Minor: C26 and C31 (rechecked)
+- I originally flagged C26 as suspicious, but on re-check: C26 = (C23*C24)/C22/1000 is numerically correct for giving thickness in mm (given C23 in nm, C24 in m, C22 in mm). So C26 and the linked C31 are acceptable as-is. No change required there.
+
+10) C95 formula (works but odd-looking)
+- C95 = (0.5*C92)/(2*C91) is equivalent to C92/(4*C91). Numeric result is correct; consider simplifying for clarity:
+  C95 = C92 / (4 * C91)
+
+Recap of suggested corrected formulas (copy/paste ready)
+- E42: =C42 / 1000
+- C47 (explicit grouping): =POWER(COS(PI()*E45*E42/(E44*E43)),2)
+- E133: =C133 / 1000000000
+- C104 (if using t = F * λ / 2): =C102 * (C101 / 1000000000) / 2
+- E114 (make consistent with C115 if you want result in mm): =2 * E111 * E113 / E112 * 1000
+  OR if you want E114 in m and C115 in mm then make C115 = E114 * 1000 (after correcting E114 to not be reciprocal).
+- C175 (critical angle): =DEGREES(ASIN(C172 / C171))
+- C16 (if you want number of fringes): =E16 / E17  (and change D16 to "unitless")
+- Optionally simplify:
+  C95: =C92 / (4 * C91)
+- Standardize unit-conversion notation to e.g. /1e9, *1e-9 etc for readability.
+
+What to check after applying corrections
+- Recalculate dependent cells after E42 and E133 fixes (several downstream cells depend on them: C47, E134–136, etc).
+- Decide on the correct physical formulas for E114/C115 (which quantity is desired) and update both consistently.
+- Verify labels in Dxx columns so they match the actual units the cell values use (especially D16, D26, D31, D115, D136, etc.).
+- Review any comments/text cells that assert formulas (e.g. E101 text) and make sure they match the implemented formula.
+
+If you want I can:
+- produce a patch / list of exact cell edits to apply (with corrected formulas),
+- or open and rewrite the problematic formulas in the file (if you give me write access),
+- or recalc the corrected numeric results for the affected cells and list them here.
+
+Which would you prefer?

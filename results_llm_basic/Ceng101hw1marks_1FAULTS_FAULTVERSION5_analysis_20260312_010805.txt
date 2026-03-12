@@ -1,0 +1,36 @@
+Summary — what’s wrong
+- Several MAX and MIN summary formulas use the wrong row ranges, so the reported maxima/minima exclude many students:
+  - B69 =MAX(B33:B68) should include B2:B68 (same problem for C69 and D69).
+  - N69 =MAX(N17:N68) and Q69 =MAX(Q17:Q68) start at row 17 and ignore rows 2–16.
+  - N70 =MIN(N17:N69) and Q70 =MIN(Q17:Q69) use the wrong start row and even include the summary cell (N69/Q69) in the MIN range.
+- Some cell formulas in column N (and elsewhere) look like typos or will produce impossible scores relative to the column heading (e.g. N1 = "HW4 (/25)"):
+  - Example: N5 =269+5 evaluates to 274 which is impossible for a /25 item — likely a data-entry error.
+- Ambiguous operator precedence in some formulas (e.g. =17+5/2). Excel does division before addition, so =17+5/2 = 19.5, but you may have intended (17+5)/2 = 11.
+
+How to fix (short)
+1. Fix the summary ranges so they cover every student row:
+   - B69: =MAX(B2:B68)  (replace B33:B68)
+   - C69: =MAX(C2:C68)
+   - D69: =MAX(D2:D68)
+   - N69: =MAX(N2:N68)
+   - Q69: =MAX(Q2:Q68)
+   - N70: =MIN(N2:N68)
+   - Q70: =MIN(Q2:Q68)
+   (Verify similar corrections if any other summary formulas use wrong starts/ends.)
+
+2. Correct the bad data/formula entries:
+   - Inspect N5 (and any N row with apparent wrong totals). Replace the typo with the correct numbers or an intentionally capped formula.
+   - To prevent invalid totals exceeding the stated max (25), change column-N formulas to cap at the maximum, e.g.:
+     - =MIN(25, part1 + part2)
+     - Example: if N5 should be sum of cell X and Y, use =MIN(25, X+Y).
+
+3. Fix operator-precedence issues by adding parentheses when needed:
+   - If you mean (17+5)/2 put = (17+5)/2, not =17+5/2.
+
+Prevention and best practice (short)
+- Use consistent ranges (prefer named ranges, e.g. Scores_HW1 = B2:B68) and reference names in summary formulas.
+- Add Data Validation on score columns to restrict entries (e.g. whole numbers between 0 and 25 for HW4).
+- Use formulas that cap totals automatically with MIN(maxValue, calculatedSum).
+- Scan for outliers (conditional formatting) to catch typos like 269 quickly.
+
+If you want, I can give the exact corrected formulas for every summary cell and a recommended capped formula for column N — tell me whether column N is always the sum of two specific cells or free-text.

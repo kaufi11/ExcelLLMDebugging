@@ -1,0 +1,55 @@
+I reviewed the CBA sheet and found a few real errors and some inconsistencies that will materially change the results. Short, actionable list below: what is wrong, why it’s wrong, and the exact fix (Excel formula) + a short explanation.
+
+1) Wrong discount factor in column I (costs)
+- Error: I19 = H19*(249/249.2492) (this is incorrect / random).
+- Why: discount factors must be successive divisions by 1.12. That stray ratio breaks the chain and distorts PV from 2002 onward.
+- Fix: replace I19 with =H19/1.12 and then fill (drag) that cell across to AA19.
+- Explanation: use H19/1.12 for each next year (or H19/(1.12^n)). Better: set G19=1, H19=G19/1.12, then drag right so all years use the same rule.
+
+2) O&M (operation & maintenance) formula inconsistent with the stated assumptions
+- Error: H8 (and the same repeated across years) is =55200-(1200*12)-(600*12)+(500*12). That arithmetic does not reflect the written adjustments in the assumptions.
+- Why: assumptions say: no chowkidar, operator now Rs1,200/month, large repairs average Rs1,500/month (not the original numbers). The sheet should sum the component costs for the adjusted scenario, not subtract/add pieces from 55200.
+- Fix: compute O&M from components. For example, if components are Operator 1,200/mo, Large repairs 1,500/mo, Maintenance & supplies 1,000/mo, Channel maintenance 600/mo, use:
+  = (1200+1500+1000+600)*12
+  (enter this in H8 and copy across years; add other one-off events where they occur e.g., in Q8 you already add extra items).
+- Explanation: building O&M from components ensures the adjustments in assumptions are correctly applied and is clearer than subtracting from the old total.
+
+3) Re-wiring (year-10) uses wrong unit price
+- Error: Q10 = 4275*7.5 (wrong unit price 4,275).
+- Why: assumptions use 4,297 per household (AE entries and earlier formulas use 4,297).
+- Fix: change Q10 to =4297*7.5 (or use =4297*(30*0.25) if you prefer explicit 25% of 30).
+- Explanation: year-10 re-wiring (25% of 30 households = 7.5 households) should use the same unit cost as the wiring assumptions.
+
+4) Tube-light cost / replacement inconsistency (assumptions vs formulas)
+- Error: A50/A89 text conflicts: one place says tube light unit = Rs.170 once a year; elsewhere formulas use Rs.50 changed 6 times/year (H11: =5.67*30*50*6).
+- Why: conflicting assumptions will give very different benefit/cost figures for bulbs/tubes.
+- Fix: pick the correct assumption and make it consistent:
+  - If tube-light = Rs50, 6 replacements/year (as formulas currently assume), update the assumptions text to Rs50 & 6 replacements; OR
+  - If tube-light = Rs170 once/year, change H11..AA11 to =5.67*30*170*1.
+- Explanation: make the assumption and formulas match. Decide whether price is 50 (x6) or 170 (x1) and update all tube-light formulas or the text.
+
+5) Discount-factor generation: use a robust formula (prevents single-cell manual errors)
+- Recommendation: replace the whole DF row with a formula you can fill across. Put in G19: =1 and in H19: =G19/1.12 then drag across. Or use:
+  =1/(1.12^(COLUMN()-COLUMN($G$19)))
+  which you can paste in every year cell and it will produce correct DF automatically.
+- Explanation: prevents copy/paste mistakes and keeps DF consistent.
+
+6) One-off costs in 2020 (environmental cleanup AA17 and scrap AA29) — check intention
+- Note: AA17 = 0.1*G5+0.1*G6 and AA29 = 0.02*G5+0.02*G6 — they reference G5/G6 (year-2000 construction costs). That is mathematically OK if you intend “10% (or 2%) of original construction cost” and put that amount in 2020. But:
+  - If you intended to take 10% of the construction amount as recorded in 2000 and then bring it forward or discount it to 2020, you must either inflate or discount correctly. If you intended 10% of the construction value AS RECORDED IN 2020, then reference AA5 and AA6 (the 2020 cell values) instead.
+- Action: confirm intention and either leave as-is, or change to =0.1*(G5+G6) (same mathematically) or to =0.1*(AA5+AA6) if you meant 10% of 2020 values.
+
+7) Minor range / averaging issues in household sheet
+- Example: AE13 uses AVERAGE(AE3:AE10) but AE data exist in AE3:AE11 — include AE11 in the range: =AVERAGE(AE3:AE11).
+- Action: scan other AVERAGE/SUM ranges to ensure they include all intended rows (common copy/paste omission).
+
+Final quick checklist to correct and re-run the model
+- Fix I19 to =H19/1.12 and fill to AA19 (or use the robust DF formula).
+- Replace H8 (and copies across) with the component-sum version: =(1200+1500+1000+600)*12 — then add one-off event adjustments in the relevant year cells (Q8 already adds damage/refurb costs).
+- Change Q10 to =4297*7.5 (or =4297*(30*0.25)).
+- Resolve tube-light unit price/frequency conflict: pick one assumption and update formulas or the assumptions text so they match.
+- Check all other manually entered year formulas for stray typos (like the 249/249.2492 case) — use fill/drag instead of typing different formulas column-by-column.
+
+If you want, I can:
+- produce the exact corrected formulas for every affected cell (I19..AA19, H8..AA8, Q10, H11..AA11 or the changed set), or
+- prepare a corrected copy of the sheet (list of cells changed + new values) — tell me which option you prefer.

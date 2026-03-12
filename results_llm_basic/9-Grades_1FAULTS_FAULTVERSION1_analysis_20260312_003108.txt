@@ -1,0 +1,56 @@
+I inspected the workbook and found a set of recurring, easy-to-fix errors that are causing wrong totals and wrong percentage calculations. Summary first, then exact fixes.
+
+Main problems (what and why)
+- Inconsistent SUM ranges in “Total” rows. Some totals include rows 9:29, others 9:30, others 10:30, etc. (example: D31 =SUM(D9:D30) while B31 =SUM(B9:B29)). That makes some column totals include or exclude extra rows and gives wrong totals.
+- Hard‑coded value where a SUM should be. Example: M31 = 1 (hard-coded) on the University Total sheet. A single hard-coded 1 will break any aggregation/calculation that uses that cell.
+- Some totals (e.g., O31) start at the wrong row (O31 =SUM(O10:O30)). Wrong starting row omits a grade row.
+- Division formulas that compute percentages reference C24 without absolute references and include a leading “+” (Sheet1 D1..D22). Also inconsistent/fragile referencing can produce #DIV/0 or incorrect percentages.
+- Blank cells where zeroes are expected. Blank cells in grade columns mean SUMs may be lower than they should be; blanks should be explicit zeros if they are valid zeros.
+- Result: columns that should sum to 1.00 (100%) do not because of the above mistakes.
+
+Concrete fixes (short, exact, do these)
+1) Standardize the grade rows and fix all TOTAL formulas to use the same row range.
+   - Decide the exact grade rows (in your files grade rows are the letter lines). For the top “University Total (by Semester and Class Level)” sheet the grade rows are B9:B29 (A..X).
+   - Replace each “Total” formula so it always sums exactly those grade rows in that column. Example fixes on that sheet:
+     - B31 --> =SUM(B9:B29)
+     - C31 --> =SUM(C9:C29)
+     - D31 --> =SUM(D9:D29)
+     - E31 --> =SUM(E9:E29)
+     - F31 --> =SUM(F9:F29)
+     - G31 --> =SUM(G9:G29)
+     - H31 --> =SUM(H9:H29)
+     - I31 --> =SUM(I9:I29)
+     - J31 --> =SUM(J9:J29)
+     - K31 --> =SUM(K9:K29)
+     - L31 --> =SUM(L9:L29)
+     - M31 --> =SUM(M9:M29)  (fixes the hard-coded 1)
+     - N31 --> =SUM(N9:N29)
+     - O31 --> =SUM(O9:O29)
+   - Apply the same principle to each departmental sheet: use the same (correct) start and end row for the grade rows on that sheet. Example: on a department sheet where grades occupy rows 8–29, set the total row to =SUM(B8:B29) etc.
+
+2) Remove hard-coded totals (replace with SUM).
+   - Search for any cells with a single “1” or other constant where the Total row should be a SUM (we saw at least M31 = 1). Replace with the proper SUM (see 1).
+
+3) Fix Sheet1 division formulas (percent of total).
+   - Change formulas D1..D22 from =+C1/+C24 to =C1/$C$24 (and copy down). Use absolute reference ($C$24) so the denominator is fixed. Remove the leading “+” which is harmless but messy.
+   - Example: D1 --> =C1/$C$24 ; D2 --> =C2/$C$24 ; etc.
+
+4) Replace blanks with 0 where appropriate.
+   - Wherever a numeric cell is blank but should be treated as zero (grade percent = 0), enter 0 (or use formulas that treat blanks as zero: =IF(ISNUMBER(cell),cell,0)). This ensures SUMs are correct.
+
+5) Verify and test
+   - After the changes, verify each column’s Total row equals ~1.000 (allow small rounding differences). If a column still does not sum to 1, use:
+     - =1 - SUM(range) to see the shortfall and then scan the column for missing/blank cells or mis-entered values.
+   - Use Find (Formulas → Show Formulas) to scan for inconsistent SUM ranges if you have many sheets.
+
+Why this will fix the workbook (brief)
+- Consistent SUM ranges ensure each column sums the exact same set of grade rows (so totals are comparable and correct).
+- Removing hard-coded numbers re-establishes correct aggregation logic.
+- Fixing the denominator references makes percentage computations stable and portable.
+- Filling blanks with 0 prevents accidental omission from totals.
+
+If you want, I can:
+- Provide a short VBA macro to automatically fix all SUMs to a chosen row range across all sheets,
+- Or generate a checklist of every cell/formula I’d change if you prefer a manual approach.
+
+Which would you like?

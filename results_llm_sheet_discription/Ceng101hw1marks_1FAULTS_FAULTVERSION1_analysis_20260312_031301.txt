@@ -1,0 +1,53 @@
+Summary of the errors
+1. Inconsistent / wrong summary ranges:
+   - MAX row (row 69) uses different start rows than the other summaries. Example: B69 = MAX(B33:B68) while AVERAGE/MIN/STDEV use B2:B68. So the MAX ignores rows 2–32.
+   - Some MIN formulas include the summary cells themselves. Example: N70 = MIN(N17:N69) includes N69 (the MAX), and Q70 = MIN(Q17:Q69) includes Q69. That will distort MIN results.
+
+2. Ambiguous arithmetic in many student cells (column N and some Q):
+   - Cells like N10 = 17+5/2 evaluate as 17 + (5/2) = 19.5 because of operator precedence. If the intent was (17+5)/2, current formula is wrong.
+   - Many N and Q entries are constant arithmetic formulas (e.g., =20+4) rather than clear numeric values or references; this is not an error per se but is error-prone and hard to audit.
+
+How these errors affect results
+- MAX in row 69 can be wrong (too low) because it ignores many student rows.
+- MIN in row 70 can be wrong (too large) because it may include MAX cells from row 69.
+- Ambiguous formulas (operator precedence) produce unintended values if parentheses are missing.
+
+Simple fixes (exact formulas to enter)
+1. Make all summary ranges consistent and exclude the summary rows. Replace the summary formulas with these (examples):
+   - B69: =MAX(B2:B68)
+   - C69: =MAX(C2:C68)
+   - D69: =MAX(D2:D68)
+   - G69: =MAX(G2:G68)
+   - N69: =MAX(N2:N68)
+   - Q69: =MAX(Q2:Q68)
+
+   - B70: =MIN(B2:B68)
+   - C70: =MIN(C2:C68)
+   - D70: =MIN(D2:D68)
+   - G70: =MIN(G2:G68)
+   - N70: =MIN(N2:N68)
+   - Q70: =MIN(Q2:Q68)
+
+   (AVERAGE and STDEV you already have mostly correct — make sure they also use the same B2:B68, C2:C68, D2:D68, G2:G68, N2:N68, Q2:Q68 ranges.)
+
+2. Fix ambiguous arithmetic by adding parentheses where intended. Examples:
+   - If you meant average of 17 and 5: change =17+5/2 to =(17+5)/2
+   - If you intended 17 + (5/2), leave as is — but document it. Review any N cells with +/2, - or / to confirm intended grouping.
+
+3. Make student constant formulas transparent:
+   - Option A (recommended for clarity): Replace formulas like =20+4 with the single value 24 (select cell → Copy → Paste Special → Values).
+   - Option B: If those numbers are computed from other cells, rewrite formulas to reference those cells (better long-term).
+
+Better long-term suggestions
+- Convert the data range into an Excel Table (Insert → Table). Then use structured references for summaries (Table[HW1]) so ranges expand/contract automatically and you avoid accidentally including summary rows.
+- Use consistent start/end rows for all summary operations or dynamic named ranges (OFFSET/INDEX) to prevent off-by-one inclusions later.
+
+Quick checklist to fix now
+1. Update the MAX/MIN formulas as shown above.
+2. Fix MIN formulas that currently include row 69 (remove row 69 from the range).
+3. Scan column N and Q for formulas with +/2 or other mixed operators and add parentheses if grouping was intended.
+4. (Optional) Paste-as-values for N and Q student formulas that are just constants.
+
+If you want, I can:
+- Give you the exact Replace/Find expressions to update multiple formulas at once, or
+- Provide the Table / INDEX formula to make the summary ranges dynamic.

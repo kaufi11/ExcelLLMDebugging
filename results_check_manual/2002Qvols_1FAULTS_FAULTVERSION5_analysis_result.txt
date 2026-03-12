@@ -1,0 +1,63 @@
+I inspected the formulas you supplied for Sheet2 and checked them for obvious errors, broken references, and inconsistent patterns. Summary first, then details and recommended fixes.
+
+Summary
+- One definite formula error: O11 uses a literal 970 instead of summing the expected cell (J11). Fix: O11 should be =E11+J11.
+- One likely data/column misalignment: row 36 (the "Independent LPG Marketers" block) has a value in AG36 while AE36 is blank; the quarter-to-date / cumulative formulas (AI36..AL36) use AE36/AF36/AG36/AH36 consistently but AE36 is empty while AG36 holds a value — this looks like the row's AE:AH inputs are shifted/mis‑placed.
+- Several cells use hard-coded arithmetic (literal additions) instead of referencing cells (in particular some cells in row 75). This is inconsistent with the rest of the sheet and is fragile.
+- I also flagged a few other unusual items (negative values, empty component cells being summed) that are not formula errors per se but worth review.
+
+Detailed findings and recommended fixes
+
+1) Clear formula bug
+- O11
+  - Current formula: =E11+970
+  - Observed value: 970
+  - Why it's wrong: In virtually every other row O# is computed as =E# + J# (quarter cumulative for the LPG product). Using 970 as a literal breaks consistency and makes the cell insensitive to any change in J11.
+  - Recommendation: Change O11 to =E11+J11
+
+2) Likely data/column misalignment (needs review)
+- Row 36 ("Independent LPG Marketers")
+  - Observations:
+    - AG36 = 2169328 (nonzero), while AE36 and AF36 and AH36 are blank.
+    - AI36 is computed as =AE36+W36 and evaluates to 0 (AE36 blank).
+    - AK36 is computed as =AG36+Y36 and therefore picks up the AG36 value (2169328).
+  - Why this is suspicious: The pattern for the right‑hand summary block (columns AE:AH → AI:AL) is consistently:
+      AI# = AE# + W#
+      AJ# = AF# + X#
+      AK# = AG# + Y#
+      AL# = AH# + Z#
+    - For row 36 AE36 is blank but AG36 contains a value. That means AI36 will not include the value in AG36 (it will instead be included in AK36). Likely AE36 and AG36 are mis-entered (data placed in the wrong column) or AE36 should have the value and AG36 should not.
+  - Recommendation:
+    - Verify the source data for row 36. If the diesel/AF/AG/AH quarter-4 totals belong in AE36/AF36/AG36/AH36 respectively, move the AG36 value into the correct column (AE36) if that's the intended product. Alternatively, if AG36 is correct then accept the resulting AI..AL outputs — but ensure consistency with other rows.
+
+3) Hard‑coded arithmetic instead of cell references (inconsistent)
+- Row 75
+  - C75 formula: =44762024+2009667 (hard-coded sum)
+  - D75 formula: =6179061+352427
+  - H75 formula: =53720988+807225
+  - I75 formula: =6478500+101700
+  - Why suspicious: Everywhere else the spreadsheet tends to reference the component cells rather than hard-coding arithmetic. Hard-coded formulas are fragile and inconsistent with the sheet's design (makes auditing harder).
+  - Recommendation: Replace these expressions with references to the source cells where those component numbers are stored (if they exist), or at least add comments documenting why these are literal combinations.
+
+4) Cells summing blanks or negatives (review items)
+- Several source-input cells (E#, J#, AG#, etc.) are blank or negative in some rows (for example J9 = -31560, E60 = -1496201, AG79 = -5903). These are not formula errors, but you should confirm whether negative and blank inputs are expected.
+- Cells that sum ranges that include blank cells (e.g., SUM(C6:F6) when D6 or E6 is empty) are valid in Excel, but verify that blanks are intentional.
+
+5) Other minor items to consider (not strictly errors)
+- Many totals use consistent patterns (G = SUM(C:F), L = SUM(H:K), M=C+H, etc.). That is good.
+- The overall grand totals (AI133, AJ133, AK133, AL133) are formed by explicit additions of category subtotals (AI15+AI25+...) rather than a SUM over a contiguous range; this is okay but can be brittle if rows are inserted/removed. Consider converting those to SUM over a contiguous block (e.g., =SUM(AI15:AI132)) if the range is contiguous and stable.
+- Some text typos in labels (e.g., "Independant") — not a formula issue, but could be corrected for cleanliness.
+
+Summary of recommended actions
+1. Fix O11: change formula to =E11+J11.
+2. Review row 36 (AE36..AH36 and AG36): move/confirm data so the AE:AH input columns align with the AI:AL summary formulas.
+3. Replace hard-coded arithmetic formulas (examples: C75, D75, H75, I75) with cell references or document why they are literal sums.
+4. Review negative or blank source values where they appear to ensure they are intended.
+5. Consider using contiguous SUM ranges in category grand totals for robustness.
+
+If you want, I can:
+- Produce a short script/patch (list of corrected formulas) you can apply to the workbook.
+- Scan again and output all cells whose formulas contain literal numbers (e.g., "+970" or "+2009667") for manual review.
+- Check any other sheet(s) in the workbook.
+
+Which of these would you like me to do next?

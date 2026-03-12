@@ -1,0 +1,51 @@
+Kurz zusammengefasst — gefundene Fehler und einfache Lösungen (Deutsch / Excel-Formeln):
+
+Fehler 1 — Inkonsistente Summenbereiche (doppelt/fehlend)
+- Problem: In der Tabelle "University Total (by Sem.)" sind die Summen in Zeile 31 nicht alle über denselben Datenbereich. Z.B. D31..N31 summieren bis Zeile 30 statt bis Zeile 29 → falsche/zu große Summen.
+- Wirkung: Manche Spalten werden falsch aufsummiert (Doppeltzählung oder Einbeziehung einer Zwischensumme).
+- Lösung: Einheitliche Bereiche verwenden (Zeilen 9 bis 29). Ersetze die fehlerhaften Formeln durch:
+
+Beispiele (German-Excel-Format):
+- D31: =SUMME(D9:D29)
+- E31: =SUMME(E9:E29)
+- F31: =SUMME(F9:F29)
+- G31: =SUMME(G9:G29)
+- H31: =SUMME(H9:H29)
+- I31: =SUMME(I9:I29)
+- J31: =SUMME(J9:J29)
+- K31: =SUMME(K9:K29)
+- L31: =SUMME(L9:L29)
+- M31: =SUMME(M9:M29)   (aktuell war dort „1” hart eingegeben)
+- N31: =SUMME(N9:N29)
+- O31: =SUMME(O9:O29)   (aktuell war dort ANZAHL(...) – falsch)
+
+Fehler 2 — Falsche Funktion ANZAHL statt SUMME
+- Problem: O31 verwendet ANZAHL(O9:O30) — ANZAHL zählt nur Werte, summiert aber nicht Prozent-Anteile.
+- Lösung: Verwende SUMME statt ANZAHL:
+
+- O31: =SUMME(O9:O29)
+
+Fehler 3 — Harteingaben statt berechnete Summen
+- Problem: M31 war hardcodiert mit 1. Dadurch stimmt die Gesamtsumme nicht mit den anderen Spalten überein.
+- Lösung: siehe oben M31 =SUMME(M9:M29)
+
+Fehler 4 — Divisionen auf Sheet1 sollten absolute Referenz haben
+- Problem: Auf "Sheet1" ist z.B. D1 =+C1/+C24. Beim Kopieren kann sich die Bezugszelle verschieben; außerdem ist die Schreibweise mit + unnötig.
+- Lösung: Nutze absolute Referenz für den Divisor, sauberer Ausdruck:
+
+- D1 (und analog D2:D23): =C1/$C$24
+- Allgemein für Zeile n: Dn = Cn/$C$24
+
+Fehler 5 — Leertexte / "N/A" in Daten prüfen
+- Problem: Textwerte wie "N/A" stören evtl. weitere Berechnungen (z. B. Mittelwerte oder COUNTA).
+- Lösung: Wenn Du nur Zahlen zusammenrechnen willst, SUMME ignoriert Text; aber für Prüfungen / Prozentprüfungen verwende Kontrollformeln, z. B.:
+
+- Prüfen ob Spalte B (Zeilen 9–29) auf 1 summiert: =WENN(RUNDEN(SUMME(B9:B29);3)=1;"OK";"Summe ≠ 1")
+
+Kurz-Erklärung warum das hilft:
+- Einheitliche Summenbereiche verhindern doppelte Einrechnung oder Auslassungen.
+- SUMME statt ANZAHL summiert tatsächlich Prozentwerte.
+- Absolute Referenz ($C$24) verhindert Fehler beim Kopieren von Formeln.
+- Prüfformel findet schnell Spalten, deren Summe nicht ~1 ist (auf Rundungsfehler achten).
+
+Wenn du möchtest, korrigiere ich alle betroffenen Zellen automatisch (Liste der zu ändernden Zellen ausgeben oder die Änderungen direkt vorschlagen).

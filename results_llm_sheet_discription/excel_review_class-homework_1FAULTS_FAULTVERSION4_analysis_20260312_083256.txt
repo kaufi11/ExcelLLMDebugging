@@ -1,0 +1,43 @@
+Short answers — errors, why they matter, and fixes.
+
+1) Wrong cell reference in Q'back Completion % (H5)
+- Error: H5 is =D5/C6*100 but should use attempts in row 5 (C5). Using C6 pulls Burchette's attempts and gives Bryant the wrong completion %.
+- Fix: Change H5 to =D5/C5*100. Then copy/fill down (other rows already use their own row).
+
+2) Inconsistent use of percentages in the Points formula (column L)
+- Issue: H, I, J are calculated as percentages (e.g., 48.7) but the Points formula mixes those percent-values directly with yards/attempt. That may be intended, but often you want proportions (0–1) in calculations.
+- Two clear, easy choices:
+  a) Keep H/I/J as percentages (0–100). Then correct H5 as above and leave L formulas as-is:
+     L5 = K5*8.4 + H5 + I5*3.3 - J5*2
+  b) Use proportions (recommended for consistent math): compute rates as proportions (no *100) and format as Percentage, then use proportions in Points:
+     - H5 = D5/C5
+     - I5 = G5/C5
+     - J5 = E5/C5
+     - K5 = F5/C5
+     - L5 = K5*8.4 + H5 + I5*3.3 - J5*2
+    (If you prefer explicit percent display, format H:I:J as Percentage — they remain 0–1 underlying values.)
+- Pick one approach and apply it consistently across rows 5:11.
+
+3) lookup sheet: missing formulas for Total, Average, and Letter Grade
+- Add these formulas in row 4 and copy down:
+  - F4 (Total /400): =SUM(B4:E4)
+  - G4 (Average /100): =F4/4
+  - H4 (Letter Grade using the grade table F12:G18): =VLOOKUP(G4,$F$12:$G$18,2,TRUE)
+    - Make the lookup range absolute when copying: $F$12:$G$18
+    - Ensure the grade thresholds in F12:F18 are sorted ascending (they are).
+- Copy F4:H4 down for all students.
+
+Quick recap of exact corrected formulas to enter (then fill down):
+- Q'back row 5 (and copy down):
+  H5 = D5/C5*100   (or =D5/C5 if you choose proportions)
+  I5 = G5/C5*100   (or =G5/C5)
+  J5 = E5/C5*100   (or =E5/C5)
+  K5 = F5/C5
+  L5 = K5*8.4 + H5 + I5*3.3 - J5*2   (or same formula if using proportions — but ensure H/I/J match the chosen scale)
+
+- lookup row 4 (copy down):
+  F4 = SUM(B4:E4)
+  G4 = F4/4
+  H4 = VLOOKUP(G4,$F$12:$G$18,2,TRUE)
+
+Want me to: (A) correct all formulas for you with one consistent approach (percent vs proportion), or (B) calculate the corrected Points for the Q'back rows and show the results?

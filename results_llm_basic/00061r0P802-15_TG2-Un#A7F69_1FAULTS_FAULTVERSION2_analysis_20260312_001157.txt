@@ -1,0 +1,41 @@
+Summary of problems found
+1) Wrong formula in A37
+- A37 contains: =A36 - 1
+- It should increment the sequence, not decrement it. Because of the minus sign the numbering becomes incorrect (you get a duplicate smaller number at row 37 and every number from there is off).
+
+2) Missing column header for column I (possible alignment/confusion)
+- Your header list shows H1: Address then J1: City — there is no I1. Several rows use column I (e.g. I30, I33) which makes it unclear what I holds (Address line 2? Building?).
+- This is not a calculation error but will cause confusion when filtering/sorting or when other users read the sheet.
+
+Other minor issues
+- Several email cells contain "?" (e.g. E26, E31, E53, E54). These are missing data, not formula errors.
+
+How to fix (simple steps)
+1) Fix the numbering:
+- Replace the formula in A37 with:
+  =A36 + 1
+- Then fill (drag) that corrected formula down column A for all subsequent rows (A38, A39, …) so the sequence updates correctly.
+
+2) Better (more robust) ways to keep automatic sequential numbers
+- If you want a simple sequence based on row number (no gaps):
+  Put this in A2 and fill down:
+    =ROW()-1
+  (Adjust the -1 if your header row or starting row is different.)
+- If you want numbers only when a Name is present (skip blanks), put this in A2 (or A3 depending on your start) and fill down:
+    =IF($B2="","",MAX($A$1:A1)+1)
+  or, starting from A2 =1, in A3 use:
+    =IF($B3="","",A2+1)
+  These prevent numbering blank rows.
+
+3) Fix the header confusion for column I
+- Add a descriptive header in I1 (e.g. "Address line 2", "Building", or "Dept") so the columns are clear and sorting/filtering behaves correctly.
+
+4) Clean up missing emails
+- Replace "?" with blanks or the correct addresses, or use a data validation / filter to list missing entries.
+
+Why this fixes it (short)
+- Changing A37 to +1 restores the intended increment so each row increases by 1; filling down ensures all later cells follow the same rule.
+- ROW()-based or IF-based formulas are robust to row inserts/deletes and to blank rows, preventing future broken sequences.
+- Adding the missing header prevents misinterpretation of data and errors when sorting/filtering.
+
+If you want, I can give the exact formula to paste into A3 and show the Fill Down sequence or produce a ready-to-paste formula (ROW()-1 or IF version) tailored to your worksheet. Which do you prefer?

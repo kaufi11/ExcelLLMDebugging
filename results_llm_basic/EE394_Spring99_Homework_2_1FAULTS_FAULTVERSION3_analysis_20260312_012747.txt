@@ -1,0 +1,33 @@
+Summary — I found two classes of errors:
+
+1) ATAN2 argument order is wrong everywhere
+- Problem: Excel's ATAN2(y,x) expects (y, x) = (imaginary part, real part). The sheet uses ATAN2(real, imag) in many cells (e.g. J4, J5, …, N4, N5, … and B32/B33). That returns the wrong phase (angle) values.
+- Effect: All reported phase angles (VS angles, IS angles, IR/IS angles, RhoV angles, etc.) are incorrect.
+
+Fix (apply to every ATAN2 instance):
+- Change ATAN2(G#,H#) → ATAN2(H#,G#)
+  Example: J4 should be:
+    =ATAN2(H4, G4) * 180 / PI()
+- Change ATAN2(K#,L#) → ATAN2(L#,K#)
+  Example: N4 should be:
+    =ATAN2(L4, K4) * 180 / PI()
+- Change ATAN2(B28,B29) → ATAN2(B29,B28) and ATAN2(B30,B31) → ATAN2(B31,B30) in B32/B33
+  Example corrected B32:
+    =SQRT((B28^2+B29^2)/(B30^2+B31^2)) * COS( ATAN2(B29,B28) - ATAN2(B31,B30) )
+  And B33:
+    =SQRT((B28^2+B29^2)/(B30^2+B31^2)) * SIN( ATAN2(B29,B28) - ATAN2(B31,B30) )
+
+How to apply quickly:
+- Use Find (ATAN2() occurrences) and edit each to swap the two cell arguments.
+- Or copy a correct example row (where you fix J#, N#, B32/B33) and fill down / replace as needed.
+
+2) One incorrect cell reference (typo)
+- Problem cell: K40 is = $B$23*F40 while every other K# is $B$23*E#. That looks like a typo and gives wrong Real(IS) at that row.
+- Fix: Change K40 to:
+    =$B$23 * E40
+
+Why these fixes are needed (short):
+- Phase = atan2(imaginary, real). Using the wrong order reverses the inputs and yields incorrect angles. Fixing the order corrects all angle outputs derived from your computed real and imaginary parts.
+- The K40 typo produces an erroneous real current value at row 40; using E40 (cosine component) matches the pattern and correct math.
+
+If you want, I can produce a short list of exact replacement formulas for the first few rows (4–10) so you can paste them in and fill down.

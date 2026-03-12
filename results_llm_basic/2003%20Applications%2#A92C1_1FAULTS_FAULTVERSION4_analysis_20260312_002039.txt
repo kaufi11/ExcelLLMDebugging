@@ -1,0 +1,30 @@
+I checked the workbook. I found two clear formula errors and one risky formula practice. Below are the problems, why they are wrong, and the simple fixes.
+
+1) Municipal sheet — wrong cell reference (definite error)
+- Where: Municipal!F5 currently =E6
+- Problem: F5 should recommend Hatboro’s request (E5), but the formula points to E6 (Hatfield). This returns 26,000 instead of 147,970.
+- Fix: Change Municipal!F5 to =E5
+- Why: That makes the recommended amount match the request for row 5 (or you can replace with the intended recommended cap).
+
+2) AHTF sheet — hard‑coded constant instead of referencing the total (definite error)
+- Where: AHTF!E16 and AHTF!F16 are set to 2432890*0.15 (hard‑coded 2,432,890)
+- Problem: That number is a literal, not linked to the AHTF total. If the AHTF total (E14) changes, the 15% calculation won’t update.
+- Fix: Replace with formulas that reference the actual total:
+  - AHTF!E16 → =E14 * 0.15
+  - AHTF!F16 → =F14 * 0.15 (or if the recommended match equals the request, set F16 = E16)
+- Why: This makes the 15% match dynamic and correct whenever E14/F14 change.
+
+3) AHTF sheet — SUM range excludes first row of recommends (risky/likely oversight)
+- Where: AHTF!F14 is =SUM(F3:F13)
+- Problem: That sum excludes F2 (Canus), even though SUM of F2:F13 would be safer/consistent. If you later enter a numeric recommend in F2, it won't be included.
+- Fix: Change AHTF!F14 → =SUM(F2:F13)
+- Note: F10 contains text ("Pending Feasibility Study"). SUM will ignore text, but if you want to show that as non‑numeric explicitly (and keep the sum clean), leave it as text or replace with 0 and a comment.
+
+Quick checklist you can run through:
+- Search for formulas that reference a single hard‑coded number (like 2432890) and replace with a cell reference.
+- Scan SUM ranges to ensure they include the intended rows (off‑by‑one errors are common).
+- Check any recommendations cells pointing to the wrong row (like F5) — they should normally reference the same row’s Request (E#) unless intentionally capped.
+
+If you want, I can:
+- Produce the corrected formulas for every affected cell and a short macro to apply them.
+- Scan the workbook for other similar off‑by‑one or hard‑coded errors.

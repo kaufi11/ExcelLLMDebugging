@@ -1,0 +1,20 @@
+I checked the workbook. I found two clear formula faults and a recommended cleanup to prevent future breakage.
+
+1) Wrong sign in Operating profit — Sheet1 (row 9), column H
+- Fault: H9 = H6 + H8 (adds SG&A instead of subtracting it).
+- Why wrong: Operating profit should be Gross profit minus SG&A. All other year-cells in row 9 use =<gross>-<SG&A> except H9.
+- Fix: Change H9 to =H6 - H8 (or re-fill the correct pattern across the row, e.g. enter =C6-C8 in C9 and fill right).
+- Effect: Restores correct operating profit for 1997 and downstream calculations (income before taxes, net income, ratios).
+
+2) Hard-coded total in Business machines total for 1992 — Sheet4 (C8)
+- Fault: C8 contains a hard value (1498336) while D8..N8 use formulas (=SUM(D5:D7) etc).
+- Why wrong: Mixing a hard-coded total with formula totals is risky (inconsistency if source rows change) and breaks pattern-checking.
+- Fix: Replace C8 with the formula =SUM(C5:C7) (or =C5+C6+C7) and then fill right to ensure consistency.
+- Effect: Keeps totals consistent and automatically updates if any of the component rows change.
+
+3) Recommended robustness improvement (optional)
+- Many totals are built by summing several individual cells with patterns like =C6-C8, =SUM(C12:C14), etc. If rows are inserted/deleted the explicit ranges can break.
+- Suggestion: Where appropriate, use structured ranges or full-block sums (e.g., use named ranges or tables, or convert each logical block into an Excel Table and use column references) so formulas auto-adjust if rows are inserted.
+- Also do a quick pattern-check: for any row that is the same calculation across years (e.g., Gross profit = Revenue - Cost, Operating profit = Gross - SG&A), pick one correct cell and Fill Right to overwrite any accidental deviations.
+
+If you want, I can give you the exact Excel commands or a short macro to (a) fix H9 and (b) replace C8 and then scan the sheet for similar deviations and report them.

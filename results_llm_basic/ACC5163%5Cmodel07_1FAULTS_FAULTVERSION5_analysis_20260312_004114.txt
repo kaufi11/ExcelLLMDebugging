@@ -1,0 +1,22 @@
+I found a clear formula error and one likely source of future errors. Short answers and fixes:
+
+1) Obvious error — Retained earnings formula uses a literal 264
+- Location: cell F72 (Ret. earnings row on the push‑down worksheet).
+- Current formula (wrong): =(264-D72+E72)
+- Why it's wrong: every other equity line uses the beginning balance from column C (the "Old Basis" / beginning balance). "264" is a hard-coded number (probably a typo) so F72 is not using the retained earnings beginning balance and will give the wrong results and break totals that depend on it.
+- Fix: replace the 264 with C72 (or absolute $C$72 if you want to lock it). Correct formula: =(C72-D72+E72)
+- How to change in Excel: select F72, edit formula bar, replace 264 with C72, press Enter. Recalculate (F9) to confirm totals adjust.
+
+2) Possible reference issues to the PUSH‑DOWN area from the CONSOLIDATION area
+- Example pattern: consolidation cell C105 =($F$54), C106 =($F$55), etc.
+- Risk: If the intention was to pull values from the other worksheet (a separate sheet named e.g. "PUSH‑DOWN"), these formulas are missing the sheet name. As written they refer to cell F54 on the same sheet. If your push‑down data is on a different worksheet you must include the sheet name, e.g.
+  - ='PUSH-DOWN'!$F$54
+- Action: verify whether the consolidation area is intended to reference the push‑down rows on the same sheet or on a different sheet. If different, update the formulas to include the correct sheet name.
+
+Quick checklist after fixes
+- Update F72 as above.
+- Scan for other hard-coded numbers in formulas (e.g., any other occurrences like "264") and replace with the correct cell references.
+- If consolidation should pull from another worksheet, add the sheet name to those references.
+- Recalculate and verify proof lines (D76/E76 and D134/E134) balance.
+
+If you want, I can list every cell with a hard-coded numeric literal inside a formula (to check for other typos) or provide the exact formula edits for the consolidation references if you tell me whether push‑down is on the same sheet or a different sheet.

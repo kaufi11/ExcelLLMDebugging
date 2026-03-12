@@ -1,0 +1,17 @@
+I checked the workbook formulas (Sheet1 main table plus summary sheets). Only one clear formula mistake/inconsistency stands out; everything else is syntactically consistent and the summary formulas reference the expected totals.
+
+1) Wrong arithmetic operator in O11 (Total for % APPLY)
+- Current formula in O11: =L11-M11-N11
+- Expected/consistent formula for that column (same pattern used in other rows): =L11+M11+N11
+- Effect: O11 evaluates to -9.3 and P11 to -0.31 (negative), which is inconsistent with all other rows and will distort any averages/medians/percentages that include O11 (for example: P11, O35, O36, P35, and any summary cells averaging or medians over the O3:O32 range).
+
+Recommendation: change O11 to =L11+M11+N11. Then P11 (=O11/$O$33) and all downstream aggregates will return consistent positive values.
+
+2) Minor note about AF33
+- AF33 is =SUM(Z33:AD33). That yields 225 (85 + blank AA33 + 75 + blank AC33 + 65) — equivalent to Z33+AB33+AD33. This works correctly but is slightly fragile/less explicit because it relies on blank cells in AA33 and AC33. If you prefer clarity, use =Z33+AB33+AD33.
+
+3) Downstream impact of the O11 error
+- Cells directly affected by O11 being wrong: P11 (O11/$O$33).
+- Aggregates / summary statistics that include O11 (and therefore currently biased) include row 35 (Averages) and row 36 (Medians) for column O and any computed percentages/averages that use P or O ranges (for example P35, P36, and any reports built from those ranges).
+
+No division-by-zero errors or other broken formulas were detected. If you want, I can (a) produce a corrected copy of the few affected aggregate numbers after fixing O11, and (b) scan for any other logical inconsistencies you suspect beyond formula syntax.

@@ -1,0 +1,47 @@
+I checked the three sheets and found the clear formula/data errors and how to fix them. Short, simple fixes and explanations below.
+
+1) Sheet E20-9 — wrong hard‑coded value
+- Error: Cell C11 (Indirect cost hourly rate) on the second version is a hard coded 5. It should be calculated from the indirect-cost totals and hours.
+- Why it’s wrong: C11 should equal (Office rent + Support staff salaries + Utilities) / Direct labor hours. The hard value produces wrong allocation and wrong job cost/bid.
+- Fix: Replace 5 with the formula
+  =SUM(C4:C6)/C2
+- Result & explanation: This gives the correct indirect hourly rate (total indirect costs ÷ total direct labor hours). All downstream results (C12, C14, C16, C17) will then be correct.
+
+2) Sheet P20-3B — wrong cell reference for applied overhead
+- Error: Cell I10 has the formula =F14*H10. That uses the total labor (F14) instead of that row’s labor amount.
+- Why it’s wrong: Overhead for the row should be applied to that row’s labor amount (F10), not to the sum of rows (F14). Using F14 inflates overhead and causes the totals (I14) to be wrong.
+- Fix: Change I10 to
+  =F10*H10
+  Also check any other I## rows – each row’s overhead amount must be row-specific (F11*H11, F12*H12) if applicable.
+- Extra small cleanup: change D14 to sum only the used material rows to avoid accidental blanks:
+  =SUM(D10:D12)
+- Result & explanation: Applying the overhead rate to each row’s labor amount produces the correct overhead amounts and the correct total job cost in I14.
+
+3) Sheet P20-1B — journal amounts placed in wrong columns (misalignment)
+- Symptom/error: Journal debit/credit amounts are being entered in the wrong cost column group. Example: the "Finished Goods Inventory" debit is in F14 (the job column of group (c)) instead of in the Finished Goods cost column (E). Similarly credits to Work in Process are in the wrong column.
+- Why it’s wrong: The sheet header groups show three separate cost columns:
+  - Work-in-Process cost = column C
+  - Finished Goods cost = column E
+  - Cost of Goods Sold cost = column G
+  Journal debits must appear in the correct group's cost column so debits/credits line up properly.
+- How to fix (examples):
+  - For "To record completion of Jobs 1,2 and 3":
+    - Put the Finished Goods debit into E14:
+      E14 = E4 + G6
+    - Put the Work-in-Process credit into C15:
+      C15 = E14
+  - For "To record completion of Jobs 4,5 and 6":
+    - E18 = G9 + G10 + G11
+    - C19 = E18
+  - For "To record cost of job 5 in expense" (COGS):
+    - If debit is Cost of Goods Sold, put the amount in G26 (COGS cost column) or G27 depending on line setup, and credit Finished Goods in E27:
+      E27 = F26  (credit Finished Goods cost column)
+      G26 = F26  (debit COGS cost column)
+- Result & explanation: Moving the amounts to the correct cost column group makes the journal entries balance visually and numerically. It also prevents misreading and ensures any automated sums per account (columns C, E, G) are correct.
+
+Quick checklist so you can correct the sheets:
+- E20-9: restore C11 formula to =SUM(C4:C6)/C2.
+- P20-3B: change I10 to =F10*H10 (and check similar cells), change D14 range to D10:D12.
+- P20-1B: move journal debit/credit amounts to the proper cost columns: WIP → column C, Finished Goods → column E, COGS → column G. Update formulas accordingly (examples given above).
+
+If you want, I can produce the exact corrected formulas placed into each affected cell (I can list every changed cell) or show the before/after numbers for verification.

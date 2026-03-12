@@ -1,0 +1,27 @@
+Findings — the error
+- Row 6 is wrong: D6 contains =E6 * 1.49351631165241 but every other MEEC Price uses =En * 0.7.
+- Consequence: with E6 = 19.99 the current D6 ≈ 29.86; the correct MEEC price at 70% should be 19.99 * 0.7 = 13.993 (≈ 13.99).
+
+Cause
+- Likely a data‑entry or paste mistake: wrong multiplier inserted in that single formula.
+
+Quick fix (one cell)
+1. Replace D6 with =E6*0.7
+2. Press Enter. D6 will become ≈ 13.99.
+
+Better, robust fix (apply to whole column and prevent repeats)
+1. Put the rate (0.7) in a single cell, e.g. G1 = 0.7 and name it MEEC_Rate (optional).
+2. In D2 enter =E2*$G$1 (or =E2*MEEC_Rate if you named it).
+3. Fill down D2:D429 (drag the fill handle or select D2:D429 and choose Fill Down). This guarantees every row uses the same multiplier.
+
+Audit to find other bad formulas
+- In F2 enter and fill down:
+  =IF(ROUND(D2,2)=ROUND(E2*$G$1,2),"OK","CHECK")
+- Any "CHECK" flags a mismatch to inspect.
+
+Formatting & safety tips
+- Format columns D and E as Currency (2 decimals) for clear reading.
+- Turn on Calculation -> Automatic to ensure formulas recalc.
+- Optionally protect column D so formulas can’t be overwritten accidentally.
+
+If you want, I can give you the exact steps to fill down or the VBA to correct the single wrong multiplier across the sheet.

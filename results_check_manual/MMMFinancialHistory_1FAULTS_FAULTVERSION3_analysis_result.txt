@@ -1,0 +1,35 @@
+I inspected the formulas you provided and found one definite formula error plus a few other inconsistencies / fragile references that you should review.
+
+1) Definite formula error (typo)
+- Sheet: Select Financial Data
+- Cell: J12
+- Current formula: =J8-78
+- Problem: the formula subtracts the literal number 78 instead of subtracting the Cost of operations (J11). The value shown (752597) matches J8(752675) − 78, so this is clearly a typo.
+- Correct formula (recommended): =J8-J11
+- Impact: this incorrect value cascades to downstream calculations in column J, e.g.:
+  - J14 (Earnings from Operations) uses J12 and J13 so is incorrect,
+  - J18 (Earnings before taxes...), J21, J25 (Net Earnings), the per-share figures in J32/J39, etc. — all should be recomputed after fixing J12.
+
+2) Off-by-one / unclear SUM ranges (recommendation)
+- Sheet: Select Financial Data
+- Cells: B25, C25, D25, E25, F25, G25, H25, I25, J25, K25
+- Current formula pattern: e.g. B25 =SUM(B20:B24)
+- Comment: the row containing the “Earnings before extraordinary item and cumulative effect” is B21 (not B20), so SUM(B20:B24) includes a header/blank row. Blank cells are treated as zero so the numeric result may be correct now, but it's fragile and confusing.
+- Recommendation: change to SUM(B21:B24) (and the same for other columns) to make the intent explicit and to avoid accidental inclusion of a wrong row if rows are shifted later.
+
+3) Chained cross-column references in Cash Flow (fragile, but not strictly an error)
+- Sheet: Cash Flow
+- Cells: B42, C42, D42, ... J42
+- Pattern: B42 =C44, C42 =D44, D42 =E44, …, J42 =K44; K42 is a constant (2084)
+- Comment: this is a long chain where each "beginning of year" cell references the next column's "end of year" cell. It is not a calculation error as long as K42 remains constant, but it is fragile and harder to follow/debug. If any of those end-of-year cells are changed or moved, the whole chain can break or produce unexpected values.
+- Recommendation: consider replacing the chain with explicit references to the correct prior-year end-of-year cell (e.g., B42 should point to the previous-year end-of-year cell explicitly) or populate beginning-of-year values directly.
+
+4) General consistency checks / suggestions
+- I scanned formulas for other accidental numeric literals in formulas (like the “78” in J12). No other obvious literal constants inside subtraction/addition formulas were found in the provided ranges.
+- Many SUM formulas include blank rows (e.g. some Net Earnings SUM ranges include an extra header row). While these currently evaluate correctly (blank = 0), they reduce clarity and increase risk if rows are inserted/deleted later. I recommend normalizing SUM ranges to start/end exactly on data rows.
+- Because the J12 error cascades, please re-evaluate all column J outputs (and any reports/charts that consume those figures) after the fix.
+
+If you want, I can:
+- produce the exact corrected values for the affected J-column cells after fixing J12, or
+- generate an updated list of recommended corrected formulas (and updated values) for all affected cells, or
+- apply the fixes directly to the workbook and return it. Which would you prefer?

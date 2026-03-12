@@ -1,0 +1,42 @@
+I reviewed the formulas in all four sheets and found one definite formula error, plus a few inconsistencies/omissions that are likely to cause confusion or incorrect results. Summary first, then details and suggested fixes.
+
+Summary of problems found
+- Definite error (wrong operator):
+  - Johnson - Base: C47 uses division instead of multiplication. It should be =C46*C10, not =C46/C10. This currently doubles the reported monthly gas range cost.
+
+- Missing / likely-omitted input:
+  - The wall AREA cell (column C for "walls") is blank (so E23 = C23/D23 returns 0). That is likely unintended — several sheets leave the walls area empty.
+
+- Inconsistent layout across sheets (not wrong per se, but error-prone):
+  - Input locations for length/width/height and the conversion cells are placed in different columns between the sheets (e.g., Johnson - Base uses length in C6, More Efficient uses it in C5). This causes the same conceptual formulas to reference different column addresses across sheets (which the author has adapted, but it makes the workbook fragile).
+  - Similarly, the price-of-gas and price-of-electricity cells appear in different columns between sheets. Many formulas reference C9, C10 or C11 depending on sheet — the correct cell is used in each sheet, but this inconsistency is a maintenance risk.
+
+Details and recommended fixes
+
+1) Johnson - Base: gas-range monthly cost
+- Problem cell: C47
+- Current formula: =C46/C10
+- Why it's wrong: C46 is therms/month for the range (10.2). C10 is the price of natural gas ($/therm, 0.7). The cost should be therms * $/therm, not therms ÷ $/therm.
+- Correct formula: =C46*C10
+- Effect: current value 14.5714 (10.2 / 0.7) is incorrect; corrected value should be 7.14 (10.2 * 0.7).
+
+2) Missing walls AREA (causes E23 = 0)
+- Problem cells: C23 (walls area) is blank in multiple sheets while E23 contains =C23/D23.
+- Effect: UA contribution for walls is calculated as 0 because area is blank. If walls area was intended to be non-zero, add the area value into the appropriate C23 cell for each sheet.
+- Recommendation: supply the walls area in C23 (for each sheet) or change the formula to reference the correct cell if the area was placed elsewhere. If there truly are no walls (unlikely), add a comment/explanation.
+
+3) Inconsistent input cell positions across sheets (maintenance risk)
+- Examples:
+  - Johnson - Base length/width/height are in C6/C7/C8 while Johnson - More Efficient uses C5/C6/C7.
+  - Price-of-gas is in C10 in some sheets, in C9 in others; electricity price sometimes in C10 or C11.
+- Effect: formulas within each sheet appear to be adjusted to the sheet’s layout, so current calculations are internally consistent, but it’s easy to introduce errors when copying or comparing sheets.
+- Recommendation: normalize layout across sheets or convert frequently used values (length, width, height, price-of-gas, price-of-electricity, btu/kWh) to named ranges (e.g., PriceGas, PriceElec, BtuPerKwh). Using named ranges would remove fragile column/row dependence and avoid mistakes like the one above.
+
+4) Miscellaneous
+- Percent-of-loss formulas (F20:F26 etc) divide by $E$27 (TOTAL UA). If E27 were ever zero, those formulas would produce divide-by-zero errors. Not currently an issue (E27 > 0), but worth noting for robustness.
+- The IF formulas that compute therms or kWh for electric heating rely on exact equality of efficiency cells to a “flag” cell (e.g., IF(C14=G35,...)). That exact-equality check can be fragile (floating-point or manual edits). Consider explicit flags (True/False) or named boolean cell to choose heating fuel type.
+
+If you want, I can:
+- Fix the Johnson - Base C47 formula for you (and recalc the dependent totals).
+- Add the missing walls area value if you tell me the intended area.
+- Propose a normalized layout or add named ranges and update formulas across all sheets to use them.

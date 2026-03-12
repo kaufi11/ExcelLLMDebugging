@@ -1,0 +1,62 @@
+I inspected the workbook formulas and found several clear formula errors / inconsistencies that will materially affect results (plus a few smaller issues/oddities). Summary of the problems and recommended fixes below.
+
+High-severity (will change results)
+
+1) Income! row 12 ("Total") only includes Online sales, not Street sales
+- Example: Income!E12 = SUM(E10:E10) (and the same pattern F12:P12).
+- Problem: E12 currently equals the online-sales cell only (E10). Street sales (E11) are omitted, so Total revenue, Gross Profit and all downstream calculations that use E12 etc are too low.
+- Fix: change each column's formula to include both rows 10 and 11, e.g.
+  - E12 = SUM(E10:E11) (and likewise F12 = SUM(F10:F11), etc.)
+
+2) Income! Sugar price row uses wrong inflation input
+- Example: Income!F8 = E8*(1 + $D$7). The sugar-price growth should reference $D$8 (the sugar inflation), not $D$7 (the lemon price inflation).
+- Problem: sugar price projections (F8..P8) are tied to D7 (lemon inflation) instead of the sugar inflation cell D8; if D8 is changed the sugar price formulas will not follow it.
+- Fix: update F8..P8 to use $D$8, e.g. F8 = E8*(1 + $D$8), and copy across.
+
+Medium-severity (likely incorrect / inconsistent patterns)
+
+3) Depreciation! cumulative depreciation row has a missing / inconsistent step
+- Observations: K11 = J11 + K7 (cumulative) but there is no L11 formula; M11 = M7 (not cumulative). The cumulative pattern is broken (L11 is missing/never set to K11+L7).
+- Problem: total accumulated depreciation should be cumulative each year (L11 should be = K11 + L7, M11 = L11 + M7, etc.), but the sheet does not do that consistently.
+- Fix: make the "Total Depreciation" row cumulative across each column, e.g.
+  - E11 = E7
+  - F11 = E11 + F7
+  - G11 = F11 + G7
+  - ... L11 = K11 + L7, M11 = L11 + M7, etc.
+
+4) Depreciation!C5 references Balance Sheet text cell rather than numeric original-value cell
+- Example: Depreciation!C5 = 'Balance Sheet'!C8 — Balance Sheet!C8 contains the header text "Original Value", not the numeric asset value.
+- Problem: this is inconsistent (likely a copy/paste / addressing mistake). Depreciation calculations elsewhere use D8 correctly, so this is probably benign but confusing.
+- Fix: if you intend to show the numeric original value on Depreciation sheet, point C5 at 'Balance Sheet'!D8 (or the intended numeric cell).
+
+5) Balance Sheet D8 links Original Value to D14 (a loan/liability cell)
+- Example: Balance Sheet!D8 = D14
+- Problem: D14 is the "Lear Jet Finance Co." value (1000000). Linking the asset original value to a liability cell is suspicious and may be accidental. If the intent is to set original asset value explicitly, store it directly there (do not link to D14 unless intended).
+- Fix: set D8 to the intended asset original value (or to a proper input cell). If the asset purchase was financed by D14, separate those concepts (asset original value vs loan amount).
+
+Lower-severity / stylistic issues (won't produce #ERROR but are inconsistent)
+
+6) Many single-cell SUMs: SUM(E10:E10), SUM(E14:E14), etc.
+- Not an error but unusual / prone to mistakes. See the Total row pattern problem above.
+
+7) Depreciation!F6 uses a forward reference: =IF(E8>0,E8,0)
+- Behavior: this puts prior-year "end" value into the next-year "beginning" field — it works but is a forward reference and a bit fragile/obscure. It's not technically wrong but could confuse maintainers.
+- Suggestion: either compute "Beginning value" directly as previous column's end (explicitly reference previous column) or keep but add a comment.
+
+8) Simple Income sheet: some cells hard-code values as formulas like =266 or use identical copy formulas (=E4). Not an error but inconsistent modeling approach — consider standardizing to input cells or links.
+
+Impacts to watch for
+- The Total/revenue error (item 1) propagates to Gross Profit (row 19), Net Profit (row 33), Annualized numbers, Cashflow and Balance Sheet equity/retained earnings. Fixing the totals will change large swathes of the model.
+- The sugar-price inflation error (item 2) will change sugar COGS projections (row 16) and thus margins slightly.
+- The depreciation cumulative error (item 3) will affect accumulated depreciation, balance sheet carrying value and related flows.
+
+Suggested immediate action
+1. Correct Income!E12..P12 to SUM(Ex10:Ex11).
+2. Correct Income!F8..P8 to reference $D$8 (not $D$7).
+3. Fix Depreciation!L11..P11 so "Total Depreciation" is cumulative across all years.
+4. Review Balance Sheet D8 and Depreciation!C5 to ensure they point to the intended input cells (and not to header text or to a liability cell by mistake).
+5. After fixes, recalculate and inspect retained earnings / cash and total-assets = total-liabilities+equity reconciliations.
+
+If you want I can:
+- produce the exact corrected formulas for each affected cell (copy/paste),
+- or apply the fixes directly and output the corrected workbook (if you can accept file changes).

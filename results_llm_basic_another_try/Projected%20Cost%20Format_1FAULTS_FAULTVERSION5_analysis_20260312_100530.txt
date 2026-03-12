@@ -1,0 +1,74 @@
+Errors found:
+
+1. **Sheet: Seq Production Costs (Sheet 1)**
+   - Cell **G21** formula: `=COUNT(G19:G20)` is incorrect.
+     - Explanation: G19 and G20 contain cost values (numbers), but COUNT counts numeric entries, so it returns how many cells have numbers, not the sum.
+     - This should be a SUM, not COUNT, to add the "Other Activities" costs.
+   - Cell **B23** formula: `=B21+D21+G21` is incorrect.
+     - Explanation: B21 and D21 are totals for Shotgun and Finished costs, but adding D21 directly to B21 and G21 is mixing different categories (bases vs reads).
+     - The sum should be the total cost for all activities, so it should sum the grand totals of Shotgun, Finished, and Other Activities costs properly.
+     - Since B21 and D21 are totals for different categories, adding them directly is wrong.
+
+2. **Sheet: Tech Dev Costs (Sheet 2)**
+   - Cell **B18** formula: `=B17/B6` will cause a division by zero error if B6 = 0.
+     - Explanation: B6 is total costs requested; if zero, division by zero error occurs.
+     - Need to ensure B6 is not zero before dividing or handle zero case.
+
+3. **Sheet: Bioinformatics Costs (Sheet 3)**
+   - Cell **B18** formula: `=B17/$B$6` same issue as above.
+   - Cell **B31** formula: `=B30/$B$6` same issue.
+   - Cell **B44** formula: `=B43/$B$6` same issue.
+   - All these divide by B6 which is zero, causing errors.
+
+---
+
+**Solutions:**
+
+1. **Seq Production Costs Sheet:**
+   - Change **G21** formula from `=COUNT(G19:G20)` to `=SUM(G19:G20)`
+     - This correctly sums the costs for "Other Activities."
+   - Change **B23** formula from `=B21+D21+G21` to `=B21+D21+G21` only if these are all costs in the same units.
+     - But since B21 and D21 are totals for Shotgun and Finished costs (different categories), adding them directly is likely incorrect.
+     - Instead, if B21, D21, and G21 represent costs for Shotgun, Finished, and Other Activities respectively, and all in dollars, then summing them is correct.
+     - If not, clarify units. Assuming all are costs, keep formula as `=B21+D21+G21`.
+     - If errors persist, verify that D21 is cost total (not basepairs).
+   - Verify that D21 is cost total, not basepairs:
+     - D21 formula is `=SUM(D19:D20)` which sums costs for Finished Basepairs.
+     - So D21 is cost total for Finished Basepairs.
+     - So summing B21 (Shotgun cost), D21 (Finished cost), and G21 (Other Activities cost) is correct.
+     - So keep B23 formula as is after fixing G21.
+
+2. **Tech Dev Costs Sheet:**
+   - Modify **B18** formula to avoid division by zero:
+     - Use `=IF(B6=0, 0, B17/B6)`
+     - This prevents errors when total costs (B6) are zero.
+
+3. **Bioinformatics Costs Sheet:**
+   - Similarly, modify formulas **B18**, **B31**, and **B44** to:
+     - `=IF($B$6=0, 0, B17/$B$6)`
+     - `=IF($B$6=0, 0, B30/$B$6)`
+     - `=IF($B$6=0, 0, B43/$B$6)`
+   - This prevents division by zero errors.
+
+---
+
+**Summary:**
+
+| Sheet                  | Cell  | Error                                  | Fix/Formula Change                             |
+|------------------------|-------|----------------------------------------|-----------------------------------------------|
+| Seq Production Costs    | G21   | Uses COUNT instead of SUM               | Change to `=SUM(G19:G20)`                      |
+| Seq Production Costs    | B23   | Summing costs from different categories; verify units | Keep as `=B21+D21+G21` if all are costs       |
+| Tech Dev Costs          | B18   | Division by zero if B6=0                | Change to `=IF(B6=0,0,B17/B6)`                 |
+| Bioinformatics Costs    | B18   | Division by zero if B6=0                | Change to `=IF($B$6=0,0,B17/$B$6)`             |
+| Bioinformatics Costs    | B31   | Division by zero if B6=0                | Change to `=IF($B$6=0,0,B30/$B$6)`             |
+| Bioinformatics Costs    | B44   | Division by zero if B6=0                | Change to `=IF($B$6=0,0,B43/$B$6)`             |
+
+---
+
+**Explanation:**
+
+- Using SUM instead of COUNT ensures numeric values are added, not just counted.
+- Division by zero errors occur when denominator is zero; wrapping division in IF prevents errors by returning zero or an alternative.
+- Confirming units before summing ensures meaningful totals.
+
+This will fix calculation errors and avoid errors in the sheet.

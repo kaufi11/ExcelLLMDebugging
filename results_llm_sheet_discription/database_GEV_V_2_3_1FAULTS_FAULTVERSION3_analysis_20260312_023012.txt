@@ -1,0 +1,52 @@
+Thanks — I reviewed the workbook extract and found the main mistakes, their cause and easy fixes. Short and clear:
+
+1) Wrong function used in one total (visualizza_gruppo)
+- Error: Q31 = COUNT(M31:N31) — COUNT counts numeric cells, it does NOT sum values. This gives a wrong total for June sanctions/hours.
+- Fix: replace with a SUM:
+  - Q31 → =SUM(M31:N31)
+- Why: SUM adds the numeric values; COUNT only counts how many numeric cells are occupied.
+
+2) Typoed “++” in several monthly total formulas (visualizza_gruppo)
+- Symptom: formulas look like =D7++G7+J7+M7 (this appears on Q7,Q8,...)
+- Action: replace double plus with single plus for clarity and safety:
+  - e.g. =D7+G7+J7+M7
+- Why: Excel often tolerates a double + (interpreting + as unary plus) but it's a typo that can confuse maintainers and might hide other mistakes. Clean it.
+
+3) Time-difference formula can give wrong result at midnight / when end < start (calcoli)
+- Error: G15 = (HOUR(F15-E15)*60 + MINUTE(F15-E15))/60
+  - Problems: returns wrong values if service crosses midnight (end time earlier than start) and is fragile.
+- Robust fix (handles overnight and empty cells):
+  - G15 → =IF(OR(E15="",F15=""),"",MOD(F15-E15,1)*24)
+  - Or, if you prefer an IF version: =IF(OR(E15="",F15=""),"",IF(F15>=E15,(F15-E15)*24,(F15+1-E15)*24))
+- Why: (F15-E15)*24 gives hours directly; MOD(...,1) handles negative serials when time crosses midnight.
+
+4) Many summary/count formulas are limited to only rows 3:4 (calcoli and counts)
+- Symptom: formulas like COUNT(db!AN3:AN4) or SUM(db!AP3:AP4) reference only two rows — the workbook will only consider those two records.
+- Fix: expand to cover the whole data area or use whole columns / a proper Table / dynamic named range. Examples:
+  - For total number of services: B60 → =COUNTA(db!A:A)-1 (if A1 is header), or =COUNTA(db!A3:A1000)
+  - For sums: replace SUM(db!AP3:AP4) with SUM(db!AP:AP) or SUM(db!AP3:AP1000)
+- Why: you need formulas to cover the full database range so new records are included.
+
+5) Possibly incorrect / suspicious ranges for sanctions total (calcoli)
+- Symptom: B29 = SUM(db!AX3:BG4) — that sums a rectangular block (many columns × rows), perhaps not the intended single-column sums.
+- Check & fix: verify which columns you meant to sum. If you meant to sum all sanction columns for rows 3..n, use e.g. =SUM(db!AX3:BG1000) or sum individual columns separately (preferred for clarity).
+- Why: the current range may include unintended cells.
+
+6) GEV count formula may use wrong range (calcoli)
+- Symptom: B61 = COUNTA(parametri!A1:A4)-1 — likely not the correct zone for GEV names
+- Fix: point COUNTA to the actual GEV name list (e.g. SetPar!E7:E100 or parametri!A?:A?)
+  - Example: =COUNTA(parametri!A3:A100) (adjust to where you keep the GEV names)
+- Why: counting the wrong range will give wrong number of GEVs.
+
+Summary of recommended immediate edits (copy-paste):
+- visualizza_gruppo Q31: =SUM(M31:N31)
+- visualizza_gruppo Q7 (and similar rows): replace =D7++G7+J7+M7 with =D7+G7+J7+M7
+- calcoli G15: =IF(OR(E15="",F15=""),"",MOD(F15-E15,1)*24)
+- calcoli B60 (total services): =COUNTA(db!A:A)-1  (or use a fixed large range)
+- Adjust any SUM/COUNT that only references rows 3:4 to cover full db range (AP3:AP1000 or AP:AP etc).
+
+If you want, I can:
+- produce the exact list of cells that reference only rows 3:4 (so you can change them all), or
+- give a ready-to-paste set of corrected formulas for every affected cell.
+
+Which would you prefer?

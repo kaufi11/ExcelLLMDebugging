@@ -1,0 +1,55 @@
+I checked the sheet and found several concrete errors (and a few bad practices that will break the sheet if you change data). Below are the problems, explanations, and simple fixes. I kept each item short and gave exact replacement formulas where useful.
+
+Major errors and fixes
+
+1) Many hard‑coded means (breaks if data change)
+- Problem: cells use numbers like 2.93333, 2, 2.777767, 3.166667 etc inside deviation formulas (e.g. D5 = B5-2.93333, F5 = C5-2, D23 = B23-2.777767, etc.). If you change scores the sheet will not update.
+- Why it’s wrong: means should be calculated from the data, not typed in. Hard‑coding prevents dynamic updates and causes wrong deviations/correlations later.
+- Fix: always calculate means and reference them. Example corrections:
+  - B9: replace =8.8/3 with =AVERAGE(B5:B7) (or =B8/COUNTA(B5:B7))
+  - C9: replace =6/3 with =AVERAGE(C5:C7)
+  - Replace D5:D7 formulas with =B5 - $B$9 (copy down)
+  - Replace F5:F7 formulas with =C5 - $C$9 (copy down)
+  - In Problem 2 do the same: set B27 = AVERAGE(B23:B25), C27 = AVERAGE(C23:C25), K27 = AVERAGE(K23:K25), L27 = AVERAGE(L23:L25) and change all deviation cells to subtract those mean cells (e.g. D23 = B23 - $B$27, F23 = C23 - $C$27, M23 = K23 - $K$27, O23 = L23 - $L$27).
+- Explanation: this makes deviations and all downstream sums/correlations update automatically.
+
+2) Typo in Problem 4: cell E46 contains "706 + …"
+- Problem: E46 reads something like =(706+B39+B41+C39+C41+D41)/6 — the "706" is nonsense/typo.
+- Why it’s wrong: it inflates the mean‑if‑item‑deleted and thus yields a wrong Adjusted Alpha for item 4.
+- Fix: replace the 706 with the correct cell reference (the missing correlation). If E46 is intended to average the six pairwise correlations remaining when item 4 is deleted, set E46 to the sum of the six appropriate off‑diagonal correlation cells divided by 6. For example (adjust to your actual layout):
+  = (B39 + B40 + B41 + C39 + C41 + D41) / 6
+  — or manually sum the six correlation cells that correspond to the four remaining items after deleting item 4.
+- Explanation: remove the numeric typo and use correct cell references so the item‑deleted mean is correct.
+
+3) B104 (KR‑21) missing the k/(k‑1) multiplier
+- Problem: B104 = 1-((B102*(5-B102))/(5*B103)) — this lacks the k/(k-1) factor of KR‑21.
+- Why it’s wrong: standard KR‑21 includes k/(k-1). Without it you underreport the reliability.
+- Fix: replace B104 with the proper KR‑21 formula:
+  = (5/(5-1)) * (1 - ((B102 * (5 - B102)) / (5 * B103)))
+  (you already have this in F104 — move it to B104 or use the formula above)
+- Explanation: k/(k-1) scales the statistic correctly for number of items.
+
+4) Inconsistent/unclear formulas for split‑half and correlation blocks
+- Problem: many correlation and split‑half deviation formulas hard‑code means (same issue as #1). Also some square‑root cells (N27, P27) are unnecessary and/or inconsistent.
+- Fix: compute all subtest means with AVERAGE and use those cells for deviations; compute sums of squares with SUM of squared deviation column; compute correlation as
+  = SumCrossProducts / (SQRT(SumSqX) * SQRT(SumSqY))
+  (which you already do in B11/B29/K29 — just ensure the underlying deviations reuse the mean cells).
+- Explanation: this reduces chances of mismatched values and makes the Spearman–Brown prophecy use live correlations.
+
+5) Minor typos / labels (not fatal but confusing)
+- G22 label "x3-mne" is a typo; rename to "xe-mne".
+- Some average formulas use SUM(...)/3 instead of AVERAGE(...). AVERAGE is clearer.
+- In Problem 4 the selection of off‑diagonal cells when computing mean rij and item‑deleted means is easy to get wrong — use clear helper ranges or named ranges.
+
+Quick checklist to apply (one‑minute fixes)
+- Replace all hard‑coded means with =AVERAGE(range) and make deviations reference those mean cells.
+- Fix E46 by removing "706" and summing the correct correlation cells (divide by 6).
+- Replace B104 with the full KR‑21 formula including (k/(k-1)).
+- Scan all "…-2.93333" style formulas and make them reference the mean cell (use $ absolute referencing where needed).
+- Recalculate and verify final reliabilities.
+
+If you want, I can:
+- Provide the exact corrected formulas for every problematic cell (I can list them row/column), or
+- Return the corrected numeric results after I apply the fixes mentally (or you can paste a shorter extract and I’ll show exact replacements).
+
+Which would you prefer?

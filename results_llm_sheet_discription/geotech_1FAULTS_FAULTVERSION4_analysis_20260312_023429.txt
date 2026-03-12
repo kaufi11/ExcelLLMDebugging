@@ -1,0 +1,46 @@
+I reviewed the workbook and found the main problems plus a couple of little issues that will cause wrong results or confusion. Short fixes and explanations below.
+
+1) Toggle (Include all extents) is case-sensitive — causes wrong totals
+- Problem: The workbook expects I48 = "Y" but the user has entered "y" (lowercase). Many formulas test I48 = "Y" (e.g., B5, B6, O49). Because Excel string comparison is case-sensitive in your IF tests, the test returns FALSE for "y" and the sheet uses the "only 4 & 5 extents" branch even though the user intended the "include all extents" option.
+- Effect: B# values, the summary and O49 message are wrong (they use CM# instead of CL#).
+- Fix (recommended, robust): change the IF checks to be case-insensitive. Example change for each B-cell formula:
+  - Replace
+    =IF('input-output'!$I$48="Y", 'Data Analysis'!CL5,'Data Analysis'!CM5)
+  - With
+    =IF(UPPER(TRIM('input-output'!$I$48))="Y",'Data Analysis'!CL5,'Data Analysis'!CM5)
+  - Do the same for O49:
+    =IF(UPPER(TRIM(I48))="Y","INCLUDES ALL EXTENTS","ONLY CONSIDERS 4 AND 5 EXTENTS")
+- Alternative quick fix: make the user enter a capital Y, but the UPPER(TRIM(...)) change is safer.
+
+2) Over/Under test treats equality as "Under"
+- Problem: comparison formulas like =IF(I5>J5,"Over","Under") return "Under" when actual = target (I5 = J5). That may be unexpected.
+- Fix(es):
+  - If equality should count as success: use >=:
+    =IF(I5>=J5,"Over","Under")
+  - If you want three states (Over / Match / Under):
+    =IF(I5>J5,"Over",IF(I5=J5,"Match","Under"))
+- Apply the chosen fix to all K# comparison cells.
+
+3) Toggle logic repeated many times — make it maintainable
+- Problem: You have the same IF(I48="Y",CL#,CM#) repeated for many rows. This works but is hard to edit and likely to miss some cells.
+- Suggestion: create one helper cell (e.g., Data Analysis!Z1 or input-output!I49) that normalizes the toggle:
+  - e.g., input-output!I49 formula: =IF(UPPER(TRIM(I48))="Y",TRUE,FALSE)
+  - then replace many formulas with: =IF('input-output'!$I$49,CL5,CM5)
+- Benefit: easier to maintain and eliminates missed instances.
+
+4) Minor: user-facing messages and link formulas
+- O49 message and other checks should use the UPPER(TRIM(...)) fix above so the message matches the actual mode.
+- Some cells use SUM with a single argument that is a plus-expression (for example SUM(I5+I9+...)). This works, but it's cleaner and less error-prone to use SUM(I5,I9,I10,...) or SUM(range).
+
+5) Possible mis-link / audit note (non-blocking)
+- I noticed Data Analysis!A2 is linked to input-output!D9. That may be intentional, but often A2 is used as a header; double-check that A2 points to the intended cell. If not intended, replace the formula with the correct label or value.
+
+Quick checklist of what to change now
+- Update toggle comparisons to UPPER(TRIM(I48))="Y" (or implement helper TRUE/FALSE cell).
+- Update K column comparison formulas to >= (or 3-state IF) as you prefer.
+- Update O49 to use UPPER/TRIM too.
+- Optionally replace SUM(A+B+...) with SUM(A,B,...) for clarity.
+
+If you want I can:
+- Provide a one-shot list of exact cells to edit (I can produce the exact replacement for each B# if you want).
+- Or give a single helper-cell solution and the smaller edits to point all B# formulas to that helper.

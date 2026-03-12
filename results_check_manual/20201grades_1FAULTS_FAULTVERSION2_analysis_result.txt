@@ -1,0 +1,43 @@
+I reviewed the formulas in both sheets and noted places where formulas are wrong, inconsistent, or likely to produce unintended results. I grouped findings into definite formula errors (needs correction) and inconsistencies / risky practices (should be fixed to avoid future errors).
+
+Definite formula error
+- Sheet1!T19
+  - Problem: T19 uses =SUM(E19:S19) while every other student row uses =SUM(D#:S#).
+  - Effect: D19 (Review) is excluded from the total, so T19 is too low and U19 (percent) is wrong.
+  - Fix: Change to =SUM(D19:S19) (consistent with the rest of the sheet).
+
+Inconsistencies / risky formulas that should be cleaned up
+- Range endpoint inconsistency for research-project totals (AQ cells)
+  - Many student rows in Sheet1 use AQn = =SUM(Yn:APn) while the header row (row 2) uses AQ2 = =SUM(Y2:AO2).
+  - Risk: currently AP cells are blank so sums match, but if AP is later used the header/row formulas will diverge.
+  - Recommendation: pick one correct endpoint (AO or AP) and use it consistently (or remove the unused AP column). Update AQ2 and all AQ# formulas to the same range.
+
+- Text values inside numeric SUM ranges
+  - Examples (Sheet1): BL7 = "X", BL15 = "+ X", BR7 = "x  #", BR6 = "#", etc. Many SUM(...) ranges include those columns (BM#, BS#, BM# etc).
+  - Effect: SUM ignores text so the numeric sums may be silently different from what the sheet author expects (e.g., placeholder "X" may have meant 0 but could later be replaced with a number).
+  - Recommendation: replace placeholders with 0 or use a clear numeric sentinel, or use data validation/comments to avoid accidental text in numeric ranges.
+
+- Mixed absolute/relative denominators across sheets
+  - Sheet1 assignment totals use 150 as the divisor (U# = T#/150*100). Sheet2 uses an absolute $T$1 ($T$1=80) and uses $AQ$1 for project totals. This is OK if intentional, but be aware the divisor differs from sheet to sheet (should reflect different total points).
+  - Suggestion: if totals are subject to change, use header cells (e.g., $T$1, $AF$1, etc.) consistently for percent calculations rather than hard-coded numbers so changes in point totals propagate correctly.
+
+- Header cells that calculate from row 2
+  - Examples: Sheet1!AF1 =SUM(Y2:AF2), AO1 =SUM(AG2:AO2). These are computing "maximum" points from row 2. This is OK if row 2 is the canonical definition row, but it's easy to confuse headers and data.
+  - Suggestion: make a dedicated "points" row or named ranges and reference those explicitly to avoid accidental inclusion/exclusion of cells.
+
+- Some SUM formulas use slightly different ranges for the same conceptual group
+  - Example: In Sheet1 BA3 =SUM(AV3:AZ3) — AZ3 is included there; in some rows AZ is not present or contains text. Ensure the same set of lab/exam columns are summed for all students.
+  - Recommendation: standardize the exact ranges used for Assignments / Projects / Labs / Exams across all rows.
+
+- Average formulas include ranges that extend beyond the last student row
+  - Examples: Sheet1!U22 =AVERAGE(U5:U21) even though the last student row with data appears to be row 19 (not a problem per se because AVERAGE ignores blanks, but it is confusing).
+  - Suggestion: tighten ranges or convert to dynamic named ranges (so averages reflect exactly the students present).
+
+Other notes (not necessarily errors)
+- Many aggregate formulas (BZn, CAn, CEn, CFn etc.) appear consistent and the overall totals (CE4 = SUM(BZ4:CC4) on Sheet1 and CE1 on Sheet2) align with the component parts.
+- Where SUM is used over ranges that currently mix numeric and text placeholders, confirm intended semantics (should placeholder be 0, NA, or excluded).
+
+If you want I can:
+- Produce a list of every formula that differs from the pattern used for the rest of the rows (so you can see all off-by-one ranges),
+- Generate corrected formulas (e.g., update T19 and normalize AQ ranges) and show before/after,
+- Or return a version of the workbook with the corrections applied.

@@ -1,0 +1,57 @@
+Sheet name and purpose
+- Single sheet: "CNH Capital Homework #2". It builds a lockbox-location optimization model comparing two candidate lockboxes (Pennsylvania, California) to serve three customer regions (East coast, West coast, Midwest). It computes operating and opportunity costs, then formulates an assignment/selection model.
+
+Data / inputs (top area)
+- Lockbox cost parameters (cols B–C):
+  - Fixed annual cost: Pennsylvania = 20,000 (B5), California = 30,000 (C5).
+  - Check processing charge per check: PA = 0.20 (B6), CA = 0.30 (C6).
+  - Clearing & processing float (days): PA = 1.5 (B7), CA = 1.0 (C7).
+- Mail float days between regions and lockbox locations:
+  - East coast: to PA B11 = 2.3, to CA C11 = 3
+  - West coast: to PA B12 = 3, to CA C12 = 2.2
+  - Midwest: to PA B13 = 3.5, to CA C13 = 3.2
+- Check origination (per region):
+  - Labels: column B = average daily checks, column C = yearly checks (row 16 heading).
+  - East: B17 = 20,000,000 (avg daily), C17 = 2,500,000 (yearly)
+  - West: B18 = 30,000,000, C18 = 3,500,000
+  - Midwest: B19 = 24,000,000, C19 = 4,500,000
+- Cost of capital (required return): C21 = 0.085
+
+Calculated sections (middle area)
+- Total days float per region/lockbox (rows 25–29):
+  - Formula examples: B27 = B$7 + B11 (clearing float + mail float to PA). Equivalent for other cells (C27, B28, C28, B29, C29).
+- Opportunity cost of float (rows 31–35):
+  - Example formula: B33 = $C$21 * $B17 * B27 (cost of capital * checks * total days float). Equivalent in other columns/rows.
+- Check processing charge (rows 37–41):
+  - Example formula: B39 = $C17 * B$6 (intended to compute checks * per-check fee). (See notes below on formula inconsistencies.)
+- Combined opportunity + processing costs (rows 43–47):
+  - Example: B45 = B33 + B39; C45 = C33 + C39, etc.
+
+Model (lower area)
+- Decision variables:
+  - Open lockbox j: B53 (PA) and C53 (CA). Current values: B53 = 1, C53 = 1 (both open).
+  - Assign region i to lockbox j: B57:C59 is the assignment matrix. Current values:
+    - East: B57 = 1, C57 = 0 (assigned to PA)
+    - West: B58 = 0, C58 = 1 (assigned to CA)
+    - Midwest: B59 = 0, C59 = 1 (assigned to CA)
+- Objective function (cell H52):
+  - H52 formula: =SUMPRODUCT(B5:C5, B53:C53) + SUMPRODUCT(B45:C47, B57:C59)
+    - First term = sum of fixed costs for opened lockboxes.
+    - Second term = sum over regions and lockboxes of combined (opportunity + processing) cost * assignment indicator.
+- Constraints (right of assignment):
+  - Row sums (D57:D59) use SUM(Bx:Cx) and RHS in E57:E59 = 1 (each region assigned to exactly one lockbox).
+  - Column sums (B60, C60) are SUM of assignments per lockbox; RHS B61 = 3 * B53, C61 = 3 * C53 (enforces assignments only if lockbox opened — here using 3 as #regions).
+
+Notes / issues to check
+- Some formulas appear inconsistent or contain likely typos:
+  - B39 and C39 reference $C17 (absolute reference to C17) for check counts; likely should reference the appropriate cell with that region’s check count (e.g., B17 for Pennsylvania column or the yearly checks column consistently).
+  - B41 formula shown uses =$C19*B$6 (again locks to C19) and C41 references =$C20*C$6 (C20 does not exist) — these look incorrect and should be reviewed/fixed so each processing-charge cell multiplies the correct region’s check count by the per-check fee in the lockbox column.
+  - Check that "average daily" vs "yearly checks" usage is consistent in opportunity-cost and processing-charge formulas (currently some formulas use B17, some use C17; ensure units match: opportunity cost should use average daily checks * days * cost of capital or yearly checks appropriately).
+- Ensure assignment/column RHS multiplier (3 * B53) matches model logic (#regions = 3); this enforces that if a lockbox is open it can accept up to 3 assignments — acceptable if intended.
+
+Overall layout summary
+- Top: input parameters (costs, floats, check volumes).
+- Middle: calculated costs (total days float, opportunity cost, processing fees, combined costs) by region and lockbox.
+- Bottom: optimization model (binary open variables, assignment matrix, objective function, and constraints) with current solution shown (both lockboxes open; East→PA, West→CA, Midwest→CA).
+
+If you want, I can: (a) correct the identified formula typos, (b) normalize units (daily vs yearly) so all cost computations are consistent, or (c) compute the numeric objective value and show breakdown. Which would you like?

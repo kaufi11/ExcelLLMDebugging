@@ -1,0 +1,33 @@
+I checked all three sheets. Below are the errors I found, why they’re wrong, and the simple fixes (with short explanations).
+
+1) Sheet "Q'back"
+- Faulty cells: I5:I11 (Touchdown %)
+- Error: Typo / scale error — the formula divides by 100 instead of multiplying by 100 (e.g. =G5/C5/100). That makes touchdown % 1/100th of its real value and breaks the Points (L) calculation.
+- Fix: Replace with =G5/C5*100 and copy down (or use =G5/C5 and format the cell as Percentage).  
+  Example: in I5 put: =G5/C5*100
+- Why this fixes it: The other percent columns (H and J) are expressed as percent *100, so I must be on the same scale. Using *100 yields a correct percent (e.g. 2.86%), so the L formula (which expects percent values) returns correct results.
+
+2) Sheet "drug bust"
+- Faulty item: mixed metadata/text inside the data table and missing Year header.
+- Error: Column E contains file/source notes and explanatory text in the same rows as numeric data (E3..E10), and A2 (Year header) is missing. This contaminates the numeric table and will break sorting/filters/charts.
+- Fix:
+  - Move all metadata (filename, data source, author, contact, notes, etc.) out of the data rows into a separate area (e.g., put metadata in cells above the table or on a separate sheet).
+  - Add a proper header row: put "Year" in A2, "Adult" in B2, "Juvenile" in C2, and keep the numeric data in A3:C33 as a contiguous table.
+- Why: Data must be in a clean contiguous table (one header row + numeric rows) for accurate analysis, charts, sorting and formulas.
+
+3) Sheet "lookup"
+- Faulty cells: F4:F9, G4:G9, H4:H9 (no formulas)
+- Error: Totals, averages and letter grades are not calculated — the student rows are missing formulas.
+- Fix (enter and copy down):
+  - Total (F4): =SUM(B4:E4)  — (Total out of 400)
+  - Average (G4): =F4/4       — (Average out of 100)
+  - Letter grade (H4): =VLOOKUP(G4,$F$12:$G$18,2,TRUE)
+    - Make sure the lookup table in F12:F18 (points thresholds) is sorted ascending for approximate match.
+- Why: F gives total points, G converts that to a 0–100 average, and VLOOKUP with TRUE returns the letter grade based on the threshold table.
+
+Extra quick checks / tips
+- On Q'back: after fixing I column, format H,I,J as Percentage (or leave as numbers 0–100 consistently) so the L formula remains consistent.
+- Ensure numeric cells are stored as numbers (not text). If you see left-aligned numbers or errors, convert them to numeric.
+- When copying formulas down, use relative references as shown — they’re already set up for row-by-row copy.
+
+If you want, tell me which sheet you want me to produce the exact corrected formulas for and I’ll paste them ready to copy into your workbook.

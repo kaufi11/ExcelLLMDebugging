@@ -1,0 +1,25 @@
+Short summary of errors
+1) Typo in Bulk compost row 19: C19 uses =A19+(B19*24)-1.48 but should divide the hour by 24 (Bn/24). That makes the "start" value huge/wrong for that row.  
+2) Inconsistency between sheets: "Bulk compost" uses offset 1.48 while "Treatments" uses 1.71. That may be intentional, but if you want a common baseline for plotting/comparison it will give a shifted X axis.
+
+Fixes + explanation (easy)
+1) Fix the typo (quick):
+- Change cell C19 to:
+  =A19 + (B19/24) - 1.48
+Why: hours are recorded as decimal hours. To convert hours to fractional days you must divide by 24. Multiplying makes the fractional-day huge and wrong.
+
+2) Make offsets consistent / easier to manage (recommended):
+- Put the offset in a single cell (e.g., Bulk sheet cell F1 = 1.48; Treatments F1 = 1.71) or use a named range called Offset.
+- Then use formulas like:
+  =A4 + (B4/24) - $F$1
+Why: avoids manual typing errors and makes it obvious and easy to change later. If you want both sheets to use the same baseline, set both F1 cells to the same value.
+
+3) Optional: format column C as Date/Time (if you want readable timestamps)
+- Select column C → Format Cells → Custom → e.g., m/d/yyyy h:mm or [h]:mm as needed.
+Why: Excel stores fractional days; formatting shows proper dates/times on charts/labels.
+
+How to check for other typos (quick audit)
+- Use Find (Ctrl+F) to search for "*24)-" or "*/24" mistakes, or check column C formulas with Formulas → Show Formulas.
+- Or copy column C formulas to a helper column and confirm they all have "/24" not "*24".
+
+If you want, I can give the exact Find/Replace or a small VBA snippet to fix any pattern-based mistakes across the workbook.

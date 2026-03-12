@@ -1,0 +1,38 @@
+Short summary of the errors I found and how to fix them.
+
+1) Wrong function in L31
+- Error: L31 is =COUNT(H31:K31) but should be the Q2 total (sum of H:K). COUNT returns the number of numeric cells (wrong result).
+- Fix: Replace L31 with =SUM(H31:K31).
+- Why: Q2 totals everywhere else use SUM(H:K). COUNT gives a small integer (1–4) not the liters total.
+
+2) Quarter‑4 header/subheader misalignment
+- Error: The Q4 header/sub‑headers on row 4/5 are sitting at AI:AL (labelled "2002 FOURTH QUARTER - OCTOBER TO DECEMBER" and product names), but the actual Q4 raw product data for each row is in AE:AH and the cumulative cells are in AI:AL. In other words the header is offset to the right and does not sit over the AE:AH Q4 data columns. This is a layout/labeling mismatch and will confuse readers (headers don’t match the data under them).
+- Fix (pick one):
+  - Option A (recommended, non‑destructive): Move the Q4 header and subheader left so they sit above the Q4 data:
+    - Cut AI4:AL5 and paste/take them to AE4:AH5 (so "2002 FOURTH QUARTER" and the 4 product labels sit over AE:AH).
+    - Leave AE:AH (the Q4 numbers) as they are and leave AI:AL as the cumulative-after-Q4 columns.
+  - Option B: Move the Q4 data columns right into AI:AL instead of moving the header (more invasive; will change many formulas).
+- Why: Headers must sit above the columns they describe; moving the header left fixes the visual mapping without touching the calculations (which already use AE:AH as the Q4 input).
+
+3) Possible wrong references to AG in some AK formulas (spot check)
+- Observation: Many rows calculate AK = AG + Y (AG = Q4 LPG, Y = prior cumulative). If AG is sometimes blank because a Q4 LPG value was omitted, the formula effectively treats it as zero (no Excel error), but if AG was intended to be another column (due to header misplacement) the AK results will be wrong.
+- Fix: After you fix the header alignment (item 2) re‑scan AK formulas and ensure AG is indeed the Q4 LPG column and that AG has the intended values. If AG should be a different column because of layout differences, update the AK formulas accordingly.
+
+4) Data values that look suspicious (not formula errors but should be checked)
+- Examples: negative values in J9 (-31,560), T9 (-9,600), E60 (-1,496,201), the negative S36 etc.
+- Action: Verify source data for those cells. If negatives are valid adjustments, keep them; if not, correct the raw numbers.
+
+Checklist of steps to perform in Excel (short, actionable)
+1. Fix L31:
+   - Select L31, enter =SUM(H31:K31) and press Enter.
+2. Fix header alignment:
+   - Select AI4:AL5 → Cut → select AE4 → Paste (so the Q4 title and product labels now sit over AE:AH).
+   - Check merged cells / formatting and reapply if needed.
+3. Validate formulas:
+   - Use Find (Ctrl+F) to search for COUNT( in the sheet and replace erroneous ones (expected only SUM).
+   - Spot‑check formulas for AK = AG + Y etc. Confirm AG contains Q4 LPG values.
+4. Validate suspicious numbers (negatives) with source data.
+
+If you want, I can:
+- Provide the exact cells that will change numerically after each fix (if you attach a small export or confirm whether you want header moved or data moved),
+- Or give a short VBA script to correct L31 and search/replace COUNT → SUM where appropriate.

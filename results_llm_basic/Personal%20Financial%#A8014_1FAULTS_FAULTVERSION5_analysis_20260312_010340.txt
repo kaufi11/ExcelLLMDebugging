@@ -1,0 +1,54 @@
+I reviewed both worksheets and found several real problems (wrong references, hard‑coded values, and some odd SUM usage). Below are the concrete errors, the fix (exact formula to use), and a short plain-English explanation for each.
+
+1) STEP 2 — SAVING percent uses the wrong cell
+- Error: Cell F10 =H8/H6
+- Fix: Change F10 to =H10/H6
+- Why: F10 should calculate the percent that SAVING (cell H10) is of total earnings (H6). The current formula divides by the giving amount (H8) instead, producing a wrong percent.
+
+2) STEP 2 — TAXS cell is hard-coded as 1
+- Error: Cell H14 contains 1 (hard-coded) while F14 expects H14 to be tax dollars
+- Fix: Change H14 to link the taxes withheld total on Step 1, e.g.
+  H14 ='STEP 1 OF 2'!G22
+- Why: Tax dollars should come from the Step 1 totals (G22). A constant “1” makes the tax percent (F14) meaningless.
+
+3) STEP 1 — Giving subtotal omits row 31
+- Error: Cell E33 =SUM(E29:E30)
+- Fix: Change to =SUM(E29:E31)
+- Why: The TOTAL line should include E29, E30 and E31. Omitting E31 excludes one of the gift lines from the total.
+
+4) STEP 1 — Bad SUM() usage for combining totals (use clearer syntax)
+- Errors: I33 =SUM(G32+I32) and M33 =SUM(K32+M32)
+- Fixes (either option):
+  - Use plain addition: I33 =G32+I32 and M33 =K32+M32
+  - Or use SUM with separate arguments: I33 =SUM(G32,I32) and M33 =SUM(K32,M32)
+- Why: SUM(G32+I32) works but is confusing/atypical (it sums a single evaluated expression). Use clearer formulas so future editors won’t be confused.
+
+5) STEP 1 — TOTAL GIVING sums across many unrelated columns
+- Error: Cell M35 =SUM(E33:M33)
+- Fix: Sum the three category totals (E33, I33, M33) explicitly:
+  M35 =SUM(E33,I33,M33)
+- Why: E33:M33 includes many blank/label cells across columns E–M; you want the three TOTAL cells only. Summing only those avoids accidental inclusion of unrelated cells.
+
+6) STEP 1 — FUTURE / SAVING subtotals reference single cell or wrong range
+- Error examples: E43 =SUM(E42) and M43 =M42; then M45 =SUM(E43:M43)
+- Fixes:
+  - E43 =SUM(E41:E42) (include both rows)
+  - M43 =SUM(M41:M42) (sum the PLAN values)
+  - M45 =SUM(E43,I43,M43) (sum the category totals explicitly)
+- Why: Summing single cells or copying a single cell (M43=M42) is fragile / likely wrong. Use ranges that include all intended rows and then sum only the category totals.
+
+7) STEP 2 — TOTALS that sum many columns in one row (inconsistent pattern)
+- Observation: In several places step 2 uses formulas summing many different H-rows (e.g., H32 =SUM(H19:H31) is fine) but other aggregate cells (M43, M45) were set to sum broad ranges across columns or single cells. Use consistent pattern: sum down the column for each category, then sum the category totals explicitly across columns. Example:
+  - Keep H32 =SUM(H19:H31)
+  - Keep H43 =SUM(H35:H42)
+  - Then M43 =H32+H43+H50+M18+M28+M40 (this already exists) — but ensure M18, M28, M40 are correct totals from their sections.
+
+General recommendations (to avoid future errors)
+- Always point percent formulas (F‑columns) at the matching dollar cell in the H‑column (e.g., F10 -> H10/H6).
+- When summing "totals" across columns, explicitly list the total cells (SUM(E33,I33,M33)), do not use wide ranges across labels.
+- Replace hard-coded numbers (like H14 =1) with links to their source totals.
+- Use consistent syntax: prefer SUM(A,B) or A+B rather than SUM(A+B).
+
+If you want, I can:
+- produce the exact corrected formulas for every affected cell and the minimal list of cells to change, or
+- provide a corrected copy (list of edits) you can paste into Excel. Which would you prefer?

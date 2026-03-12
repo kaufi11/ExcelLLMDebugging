@@ -1,0 +1,62 @@
+Overview: The workbook is a consolidated historical financial report (years 1992–2003). Columns are years across the top; rows are line items (amounts mostly in millions of yen). The model relies heavily on SUM and IF wrappers for totals and percent-of-sales to avoid divide-by-zero. Many consolidated totals are built by summing segment rows on other sheets. Footnotes indicate adoption of new sales-recognition accounting standards and a 2001 presentation change for loss on disposal.
+
+Sheet-by-sheet summary (concise)
+
+- Sheet 0 — Table of Contents
+  - A simple index of pages/sheet titles (Consolidated Statements of Income, Balance Sheets, Cash Flows, Sales by Product/Region, Segment info, CapEx, R&D, Financial indexes, Employees). Contains a timestamp (B25).
+
+- Sheet 1 — Consolidated Statements of Income (Millions of yen)
+  - Years: 1992–2003 (columns C:N).
+  - Key rows: Net Sales (row 4), Cost of sales (5), Gross profit (6) = Net Sales − Cost of sales, S.G.&A. (8), Operating profit (9) = Gross profit − S.G.&A., Other income/expenses (12–14) summed (row 15), Income before tax (16) = Operating profit + Other, Income taxes (18), Minority interests (19), Income before cumulative effect (20), cumulative effect (row 21, L21=3692), Net income (22) = Income before cumulative effect + cumulative effect.
+  - Percent-of-sales rows (7,10,17,23) use IF(columnNetSales=0,"-  ",value/NetSales).
+  - EPS (basic/diluted) in yen shown (rows 27–28).
+  - Key values: 2003 Net sales = 3,198,072; 2003 Net income = 275,730 (matches cash flow net income). Average USD rate 2003 = 115.6 yen.
+  - Note: row H6 appears to have a formula error (H6 = H5−H5) — should be H4−H5 like other years.
+
+- Sheet 2 — Consolidated Balance Sheets (Millions of yen)
+  - Assets (current and noncurrent): Cash & equivalents, marketable securities, receivables, inventories, etc. Total current assets (row 11) and total assets (row 16) computed with SUM ranges.
+  - Liabilities: current liabilities (short-term loans, trade payables, income taxes, accrued expenses, other), totals (row 25), long-term debt, pension liability, other noncurrent liabilities, total liabilities (row 29).
+  - Equity: minority interests (row 30), common stock, paid-in capital, retained earnings, AOCI, treasury stock, total stockholders' equity (row 37) = SUM(equity rows).
+  - Balancing row: Total liabilities and stockholders' equity (row 38) = SUM(total liabilities, minority interests, total equity).
+  - Key 2003 values (examples): Cash & cash equivalents 2003 = 690,298; major PP&E 2003 = 846,433.
+
+- Sheet 3 — Consolidated Statements of Cash Flows (Millions of yen)
+  - Operating activities: Net income plus adjustments (depreciation, gains/losses, deferred tax, working capital changes). Net cash provided by operating activities (row 17) = SUM(net income and adjustments range).
+  - Investing activities: Capital expenditure (row 19, negative), proceeds from disposals, marketable securities and investments flows; net cash used (row 25) = SUM(range).
+  - Financing activities: long-term debt proceeds/repayments, short-term loan changes, dividends, other; net cash from financing (row 32) = SUM(range).
+  - Effect of FX (row 33), net change in cash (row 34) = SUM(operating, investing, financing, FX). Cash at beginning (row 35) and end (row 36) computed by sum.
+  - Free cash flow (row 38) = operating (row 17) + investing (row 25).
+
+- Sheet 4 — Sales by Product and Region (Millions of yen)
+  - Product breakout: Business machines (office imaging, peripherals, info products), Cameras, Optical & other; per-year product totals via SUM formulas.
+  - Region breakout (lower part): Japan + Overseas (Americas/Europe/Other) with overseas totals and overall totals via SUM.
+  - Notes repeating the accounting change footnote.
+
+- Sheet 5 — Segment Information by Product (Millions of yen)
+  - Detailed segment profit, assets, depreciation, capital expenditure by product group (Business machines, Cameras, Optical & other, Corporate/Eliminations).
+  - Consolidated rows (C33–C38 etc) are computed by summing the segment rows (e.g., consolidated net sales = SUM of segment net sales).
+  - Percent-of-sales calculations use IF tests like other sheets.
+
+- Sheet 6 — Segment Information by Geographic Area (Millions of yen)
+  - Regions: Japan, Americas, Europe, Others, Corporate/Eliminations; shows net sales, operating profit, % of sales and assets by region for 1996–2003.
+  - Consolidated rows sum region components (SUM of E5, E10, E15, E20, E25 etc).
+
+- Sheet 7 — Capital Expenditure, R&D, Financial Indexes, Employees (various units)
+  - CapEx and depreciation totals (rows 5–8); R&D expenditure and R&D/Net sales ratio (rows 11–12).
+  - Financial indexes: ROA, ROE, sales/total assets (turnover), equity/total assets, total debt/total assets, inventories (days), interest coverage, net interest (expense) (rows 14–21).
+  - Market data: year-end stock price, PER, PBR, shares outstanding, market cap (rows 23–27).
+  - Number of employees (rows 30–36), with overseas subtotals computed by SUM.
+
+Common formula patterns and cross-sheet links
+- Totals are built with SUM over column ranges (e.g., =SUM(C6:C10), =SUM(D5:D7)).
+- Percent and ratio rows use IF to avoid division by zero: =IF(reference=0,"",numerator/reference) or similar.
+- Consolidated totals are frequently derived by summing segment rows on other sheets (e.g., Sheet5 consolidated net sales = SUM of segment net sales).
+- Balance sheet balancing uses SUM of liabilities, minority interests and total equity to match total assets.
+
+Notes and data quality flags
+- Accounting change footnotes (FASB EITF 00‑14, 00‑22) and a 2001 reclassification of disposal losses are repeated on several sheets.
+- One inconsistency found: Sheet1 H6 formula equals H5−H5 instead of H4−H5 (likely a typo causing gross profit for 1997 to be zero).
+
+If you want, I can:
+- Verify arithmetic reconciliations for a specific year (e.g., check that assets = liabilities + equity for 2003).
+- Extract a small table of key metrics across years (Net sales, Net income, EPS, Cash, Total assets).

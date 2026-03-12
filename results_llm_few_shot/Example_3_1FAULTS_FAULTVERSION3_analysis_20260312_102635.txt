@@ -1,0 +1,27 @@
+Summary — 3 errors found. Short fixes and why:
+
+1) Sheet "Q4 Homework" — Cell H5
+- Fault: =SUM(B5:F5) — omits column G (Personal Shield).
+- Effect: Evans' Q4 total is too low; every sheet linking to this value will be wrong.
+- Fix: =SUM(B5:G5)
+
+2) Sheet "Q4 Summary" — Column F (F3 and F4:F12)
+- Fault: each formula uses D*0.2 instead of E*0.2. Example (wrong): =B4*0.3+C4*0.1+D4*0.4+D4*0.2
+- Effect: the 20% weight is applied to Projects (D) twice and Homework (E) is ignored → all students' weighted scores are wrong.
+- Fix (simple): change last term to use E, e.g.
+  - F4: =B4*0.3 + C4*0.1 + D4*0.4 + E4*0.2
+  - Copy down for F4:F12 and fix F3 similarly (use E3 for the 0.2 term).
+- Better (robust): replace with SUMPRODUCT and absolute weights so you can copy once:
+  - F4: =SUMPRODUCT(B4:E4,$B$2:$E$2) and copy down.
+
+3) Sheet "Q4 Summary" — Column G (G4:G12)
+- Fault: divides by hard-coded 300: =(F4/300)*100. If Points Possible change, this breaks.
+- Fix (stable): =(F4/$F$3)*100 (use $F$3 which holds the weighted max) — copy down.
+- Or: =(F4/SUMPRODUCT(B$3:E$3,$B$2:$E$2))*100
+
+Notes / explanation in one line:
+- H5 omitted a column so the student total was wrong.
+- F formulas multiplied the wrong category for the 20% weight; use E for the 0.2 term or SUMPRODUCT to avoid manual errors.
+- Replace hard-coded denominators with references to the calculated max (F3) so percentages stay correct if category totals change.
+
+If you want, I can give the exact cells to paste these formulas into and show how to copy them down.

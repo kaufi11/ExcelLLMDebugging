@@ -1,0 +1,21 @@
+Summary — found 1 clear error
+
+- Cell Sheet 1, H12 has the wrong formula:
+  - Current: =SUM(H10:H11)
+  - Should be: =SUM(H9:H11)
+
+Why it's wrong
+- H12 is "Business machines total" but the formula omits H9 (Office imaging products). So the total for that column (2001 2nd quarter) is missing H9 and is therefore too small by exactly H9 (247,326).
+- That incorrect H12 flows into H15 (Total net sales) and every downstream calculation that references net sales (H17, H19, H22, % rows, income, etc.), so all those figures in column H are understated by 247,326.
+
+Fix (easy)
+1. On Sheet "1" select cell H12.
+2. Replace =SUM(H10:H11) with =SUM(H9:H11).
+3. Press Enter and recalculate (Excel usually recalculates automatically).
+
+How to verify
+- After the fix H12 should equal 247,326 + 272,577 + 49,971 = 569,874 (matches the Business machines net sales on Sheet "2", H9).
+- H15 and all dependent rows in column H should increase by 247,326. Use "Trace Dependents" or Show Formulas to confirm propagation.
+
+Prevention tip
+- Use formula consistency checks across columns (compare formulas across the row) or reconcile totals between sheets (e.g., Sheet2 business-machine net sales vs Sheet1 sums) to catch similar typos.

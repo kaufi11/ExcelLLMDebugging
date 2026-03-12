@@ -1,0 +1,29 @@
+Summary — main problems I found
+- G21 contains the constant 2 instead of the expected formula E21*F21. That will make the G-sum (G407) incorrect.
+- Several G cells may be inconsistent (hard‑entered numbers or missing formulas) instead of the uniform formula =E#*F#. If any G is hardcoded or blank the totals will be wrong.
+- If some F cells are text/empty (or contain words like "incl.") the product E*F will return 0 or error and the totals will be wrong.
+
+Quick fixes (do these)
+1. Fix the specific wrong cell:
+   - Put this into G21: =E21*F21
+
+2. Make every G cell consistent:
+   - In G2 enter: =IF( AND( ISNUMBER($E2), ISNUMBER($F2) ), $E2*$F2, 0 )
+   - Fill/copy that formula down from G2 to G404.
+
+3. Ensure totals cover the correct rows:
+   - F407: =SUM(F2:F404) (you already have this — keep it)
+   - G407: =SUM(G2:G404) (you already have this — keep it once G2:G404 are corrected)
+
+4. Make sure F values are numeric:
+   - Remove text like "incl." or convert those cells to numeric counts. Use =VALUE(...) where appropriate or manually correct.
+   - To find non-numeric F cells quickly: on a spare column put =NOT(ISNUMBER(F2)) and fill down — any TRUE needs fixing.
+
+Why this fixes it (short)
+- G should always be E*F. Hardcoded values or missing formulas break that rule and make the SUM(G2:G404) wrong.
+- The IF + ISNUMBER wrapper prevents errors when F or E are blank or non-numeric and makes totals predictable (=0) until you supply correct numbers.
+- Verifying F is numeric ensures the multiplication actually computes a monetary total rather than being silently ignored.
+
+If you want, I can:
+- Give a one‑click macro to apply the corrected G formula down the column and highlight non-numeric F cells.
+- Scan the sheet for any other hardcoded G values and list their addresses.

@@ -1,0 +1,42 @@
+Summary — main errors found
+1) Inconsistent use of daily vs yearly check counts:
+   - Opportunity-cost formulas (B33,B34,B35 and C33,C34,C35) reference the B17:B19 cells (the "average daily" column), while the check-processing charge formulas (B39:C41) use the C17:C19 cells (the "yearly checks" column). This mixes units and produces wrong annual costs.
+
+2) Hard-coded / wrong float cell:
+   - C29 (Midwest → California total days float) is hard-coded as 5 instead of computing it from clearing float + mail float. It should be C$7 + C13 (not 5).
+
+3) Minor: inconsistent absolute references ($) (not an error by itself, but makes copying fragile). Use full absolute refs like $C$17 and $C$21 where appropriate.
+
+Fixes (what to change) — short, exact formulas
+1) Use yearly checks (column C) in all annual cost calculations. Replace opportunity-cost formulas with these:
+   - B33: =$C$21*$C$17*B27
+   - C33: =$C$21*$C$17*C27
+   - B34: =$C$21*$C$18*B28
+   - C34: =$C$21*$C$18*C28
+   - B35: =$C$21*$C$19*B29
+   - C35: =$C$21*$C$19*C29
+
+2) Fix the hard-coded float:
+   - C29: =C$7 + C13
+
+3) Make processing-charge formulas consistently absolute (recommended):
+   - B39: =$C$17*B$6
+   - C39: =$C$17*C$6
+   - B40: =$C$18*B$6
+   - C40: =$C$18*C$6
+   - B41: =$C$19*B$6
+   - C41: =$C$19*C$6
+   (Or use =$C$17 etc if you prefer full locking.)
+
+Why these fixes
+- Opportunity cost is an annual cost. Using average-daily checks (B17) without converting to annual, while processing used annual checks (C17), mixes units and gives incorrect magnitudes. Use the same (yearly) check counts everywhere or consistently convert daily→yearly (multiply daily by ~365).
+- C29 being hard-coded breaks the symmetry and will give wrong opportunity-cost values for Midwest→California (C35).
+- Using absolute references ($C$17, $C$21) prevents accidental reference shifts when copying formulas.
+
+Quick check after fixes
+- Recalculate the intermediate tables (B27:C29, B33:C35, B39:C41, B45:C47).
+- Objective (H52) will then correctly sum fixed costs for opened lockboxes + the annual assignment costs.
+
+If you want, I can:
+- Recalculate and show the corrected numbers,
+- Or convert everything to use daily counts consistently (daily → annual conversion) and give a single consistent interpretation.

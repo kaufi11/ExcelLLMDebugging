@@ -1,0 +1,25 @@
+Findings (short)
+- One clear formula error: O11 is wrong. It multiplies where every other O-row divides. That makes O11 enormous and skews all summary stats (Average, StdDev, counts that use O4:O46).
+- Consequence: All cells that reference the O column (O47, O48, O49–O53, etc.) are affected until O11 is fixed.
+
+What’s wrong (simple)
+- O11 contains:
+  (SUM(B11:F11)+SUM(G11:M11)+N11) * (COUNT(B11:F11)*100+COUNT(G11:J11)*15+COUNT(K11:M11)*30+COUNT(N11)*150) * 100
+  The middle operator is "*" (multiply). It should be "/" (divide) — same structure as the other rows.
+
+Fix (copy‑paste this into O11)
+=(SUM(B11:F11)+SUM(G11:M11)+N11) / (COUNT(B11:F11)*100 + COUNT(G11:J11)*15 + COUNT(K11:M11)*30 + COUNT(N11)*150) * 100
+
+How to apply safely
+1. Replace the formula in O11 with the corrected one above.
+2. To be consistent, copy the correct formula from any good O cell (for example O4) down the whole O4:O46 range (or paste the corrected O11 formula into O11 then fill down if needed). This avoids any other stray typos.
+3. After fixing, check O47:O53 and O48 — the summary stats will update to correct values.
+
+Optional robustness tip (avoid #DIV/0 and blank-final issues)
+Use an IF to avoid division by zero, e.g.:
+=IF((COUNT(B11:F11)*100+COUNT(G11:J11)*15+COUNT(K11:M11)*30+COUNT(N11)*150)=0,"", (SUM(B11:F11)+SUM(G11:M11)+N11) / (COUNT(B11:F11)*100+COUNT(G11:J11)*15+COUNT(K11:M11)*30+COUNT(N11)*150) *100)
+
+Why this works (one-liner)
+The formula should compute total points earned divided by total possible points, multiplied by 100. Multiplying instead of dividing gives a huge wrong score; replacing "*" with "/" restores the intended percent calculation.
+
+If you want, I can give you a single consolidated formula to paste into O4 and fill down that is more explicit and safer (handles blanks/zero denominators).

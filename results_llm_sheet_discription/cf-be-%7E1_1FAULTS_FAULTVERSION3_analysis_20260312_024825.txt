@@ -1,0 +1,72 @@
+Summary of the problems I found (short):
+1. Beginning‑cash row (row 6) references are inconsistent / shifted and sometimes use SUM or COUNT on a single cell. That breaks the month-to-month carry‑forward of cash.
+2. Some Year‑2 formulas are mis‑placed (rows/columns shifted). Example: payroll/row formulas assigned to O22 when they belong in O20/O21 etc.
+3. COUNT(D55) used instead of SUM or a direct cell link (returns count of numbers, not a value).
+4. % of Sales / denominator inconsistencies and many formulas divide by zero risk (no IFERROR/guard).
+5. Many unnecessary SUM(...) wrappers around single-cell formulas (not an error but hides mistakes and is fragile).
+6. Variance sheets: beginning cash and some references are wrong/shifted (same pattern as above) and variance formulas have no divide‑by‑zero protection.
+
+Why these matter (short):
+- If beginning cash for month N is not equal to month N‑1 ending cash, the cash flow rollforward is wrong and month‑end balances cascade incorrect numbers across the whole workbook.
+- Misplaced row formulas mean totals (O columns) and % figures are computed on the wrong lines.
+- COUNT instead of SUM (or direct reference) will return 0 or 1 and corrupt beginning cash values.
+- Division by zero will produce #DIV/0! and wrong %s.
+
+Concrete, easy fixes (apply to Year 1, Year 2 and variance sheets):
+
+1) Fix beginning‑of‑month links (row 6)
+- Rule: Month N beginning cash = previous month’s "cash position end of month" (row 55). Month 1 beginning cash should be the Start‑up input cell (user input).
+- Implement:
+  - If column C = Month 1, set C6 = B6 (the Start‑up cash input cell).
+  - For Month 2 and on, set D6 = C55, E6 = D55, F6 = E55, … etc.
+- Excel example to put in D6 and copy right:
+  =C55
+- For Year 2 start of year put in C6 (first month column for Year 2):
+  ='Year 1'!N55
+  (then D6 = C55, E6 = D55 ...)
+
+2) Replace COUNT(...) and single-cell SUM(...) with direct cell links
+- Find formulas like =COUNT(D55) or =SUM(B55) and replace with =D55 or =B55 respectively.
+- COUNT is wrong here; it returns "1" if numeric instead of the numeric balance.
+
+3) Correct mis‑placed row totals in Year 2
+- Scan rows 17–22 and 24–46 in Year 2 and ensure each row’s O column formula is SUM of that row across C:N:
+  e.g. O20 should be:
+  =SUM(C20:N20)
+  (If you see O22 used for O20’s formula, move it to O20.)
+- Same for any other rows where the SUM has been assigned to the wrong row number.
+
+4) Standardize %‑of‑sales denominators and protect against divide‑by‑zero
+- Use absolute reference to the total sales cell for the year if needed (O$57) and make % formulas consistent:
+  P17 (example) = O17 / O$57
+- For variance %s use an IFERROR or IF guard to avoid #DIV/0:
+  e.g. instead of =(D8-C8)/C8 use:
+  =IF(C8=0,"", (D8-C8)/C8 )
+  or
+  =IFERROR((D8-C8)/C8,"")
+
+5) Clean up unnecessary SUM wrappers
+- Replace expressions like =SUM(B6+B14) with =B6+B14 (cleaner and avoids accidental ranges).
+
+6) Variance sheets: fix beginning cash & ensure correct month mapping
+- Apply same beginning-cash rule: each variance sheet should point to the correct Year1 plan cell for the "Plan" column and the Actual column to the real actuals. Also ensure the "Beginning cash" cell in each Variance sheet uses the plan value for that month (e.g. C6 = 'Year 1'!C6) or actual where appropriate.
+- Use the safe variance formula (see step 4).
+
+Quick checklist of the first corrections you should make (do these first):
+- In Year 1:
+  - C6 = B6 (start‑up cash input)
+  - D6 = C55 ; E6 = D55 ; F6 = E55 ; ... N6 = M55
+  - Replace E6 COUNT(...) with =D55 if that was intended.
+- In Year 2:
+  - C6 = 'Year 1'!N55 (Year‑1 month‑12 end) or the correct Year‑1 month cell for starting cash
+  - Then D6 = C55 ; E6 = D55 ; etc.
+  - Fix O20,O21,O22 (and any other row where the O‑column SUM is on the wrong row).
+- In all variance sheets:
+  - Fix beginning‑cash cells to reference correct Year‑1 planned cells or actuals.
+  - Replace all variance formulas with IF(C<>0,(Actual-Plan)/Plan,"") or IFERROR(...,"").
+
+If you want, I can:
+- Provide a small list of exact cell formulas to paste (I will produce them for Year 1 and Year 2 columns C:N and the common variance formula), or
+- Generate a corrected sheet example showing the corrected formulas for rows 6, 14, 15, 54, 55 and O/P columns.
+
+Which do you prefer?

@@ -1,0 +1,21 @@
+Summary of the error
+- Row 29 (QA) has N29 hard-coded to 7 instead of summing the weekly cells (B29:M29).
+- Because of that, the row-total column (N) includes 7 but the weekly column totals (B35:M35) do not — so the grand column total N35 does not reconcile with the sum of the weekly totals (SUM(B35:M35)). In short: one number is sitting in the Totals column but not in any week column → mismatch.
+
+Why this is wrong
+- All other activity rows use N = SUM(B:M). QA is the only exception, so category/overall subtotals will be inconsistent or misleading.
+
+How to fix (easy steps)
+1. Change N29 to a proper sum formula:
+   - Enter formula in N29: =SUM(B29:M29)
+2. Put the 7 hours into the appropriate week(s) instead of only in the total. For example:
+   - If the 7 belongs to Week 4, put 7 in B29 (and leave B29:M29 otherwise zero), or
+   - If it should be distributed, enter the week-by-week numbers so SUM(B29:M29) = 7.
+3. Verify totals:
+   - Check that SUM(B35:M35) = N35 (they should match after the fix). You can test with a quick formula: =SUM(B35:M35)-N35 — result should be 0.
+
+Optional improvements (recommended)
+- Use the same SUM pattern everywhere (no hard-coded totals).
+- Add a reconciliation cell with =IF(SUM(B35:M35)=N35,"OK","Mismatch") to catch similar issues quickly.
+
+That will correct the data inconsistency and make all weekly and total sums reconcile.

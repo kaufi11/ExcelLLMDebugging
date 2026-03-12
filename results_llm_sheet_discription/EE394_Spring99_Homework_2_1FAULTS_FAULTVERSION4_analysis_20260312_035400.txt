@@ -1,0 +1,31 @@
+Thanks — I inspected the sheet and found the clear mistakes and a possible modelling issue. Short, direct fixes and explanations below.
+
+1) Many ATAN2 calls have the arguments reversed (wrong phasor angles)
+- Problem: ATAN2 in Excel is ATAN2(y,x) where y = imag, x = real. The workbook mostly uses ATAN2(real,imag). That produces wrong angles and wrong quadrants for VS, IS, RhoV, etc.
+- Where: every cell like J4, J5,... J54 and N4..N54 (VS and IS angle columns), plus angle uses inside B32/B33 and similar places.
+- Fix: swap the two arguments. Example replacements:
+  - J4: change =ATAN2(G4,H4)*180/PI()  → =ATAN2(H4,G4)*180/PI()
+  - N4: change =ATAN2(K4,L4)*180/PI()  → =ATAN2(L4,K4)*180/PI()
+  - B32 (part of RhoV): replace ATAN2(B28,B29) with ATAN2(B29,B28) and ATAN2(B30,B31) with ATAN2(B31,B30).
+- Why: ATAN2(imag,real) gives the correct phasor angle (argument of complex number). Using the wrong order computes arctan(real/imag) which flips/rotates the angle and misplaces the quadrant.
+
+2) Typo in one cosine argument (single-cell error)
+- Problem: E21 is =COS($B$15*D21*1922) while every other row uses *1000 to convert km→m. That 1922 is a typo and gives an incorrect phase at row 21.
+- Fix: change E21 to =COS($B$15*D21*1000)
+- Also check any other rows for similar accidental constants.
+
+3) Potential (intent) error for current magnitude IR (check 3‑phase vs single‑phase)
+- Problem: B21 = B7*1000/B6 computes I = S*1000 / V. If S is MVA and V is kV this gives I (A) only for single‑phase. For three‑phase systems the correct formula is I = S(MVA)*1000 / (√3 * V(kV)).
+- Action: confirm whether the problem is single‑phase or three‑phase. If three‑phase, change B21 to:
+  - =B7*1000/(SQRT(3)*B6)
+- Why: three‑phase line current uses √3 in the denominator.
+
+4) Minor: using ABS in P (B19) and sign logic in Q (B20)
+- Note: B19 = B7*ABS(B8) forces P positive even if pf was entered negative (leading). B20 uses IF(B8>0, +sqrt, -sqrt) to sign Q. This may be OK depending on your sign convention; just confirm you intended those conventions.
+
+Quick checklist for correction:
+- Replace every ATAN2(a,b) that uses (real,imag) with ATAN2(imag,real).
+- Fix E21’s 1922 → 1000.
+- Confirm single‑phase vs three‑phase and adjust B21 if needed.
+
+If you want, I can produce a list of exact cell changes (find/replace style) for all affected cells so you can paste them into Excel. Which would you prefer?

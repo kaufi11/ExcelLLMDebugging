@@ -1,0 +1,50 @@
+I inspected the formulas and values on sheet "PHYS102-0101". No obvious #VALUE!/ #REF! type errors appear in the supplied JSON (i.e., there are no formulas that obviously evaluate to an error), and most arithmetic formulas (simple fractions and multiplications) evaluate to the values shown. However there are a number of inconsistencies and a few suspicious cells you should review. Summary and recommendations follow.
+
+Summary — what I checked
+- Verified cells that include a formula and confirmed (by inspection) that the formula appears to produce the shown numeric value.
+- Looked for inconsistent formula patterns where the same kind of score is sometimes calculated and sometimes hard-coded (or calculated differently).
+- Checked the class-average row (row 105) formula ranges.
+
+Findings — inconsistent / suspicious formulas
+1. Mixed use of hard-coded numbers vs formulas for identical calculations
+   - Many columns are handled inconsistently: some rows compute a percentage from raw/maximum (e.g., E6 "=27.5/35*100"), while other rows in the same column contain direct numeric values (no formula). This makes the sheet hard to maintain and error-prone. Examples:
+     - Column E (the first homework/score column): some rows use formulas (E6, E7, E13, E15, etc.) but many rows are plain numbers (E9, E10, E11, …). Same issue in columns F, G, I, M, N, R, S, etc.
+   - Recommendation: choose a single canonical calculation for each column (e.g., raw / max * 100) and apply the same relative formula to every student row, then drag-fill down.
+
+2. Hard-coded fraction results instead of using the fraction formula (rounding differences)
+   - R64 has formula "=93.3" (explicit number by formula) while most other R rows use "=14/15*100" returning 93.333333… . Using a truncated literal like 93.3 deviates from the consistent calculation and introduces small rounding differences.
+   - Several other rows show truncated values (e.g., R17 value 93.3) but do not include the fraction formula. Prefer the fraction formula (=points/max*100) rather than entering a rounded literal.
+
+3. Inconsistent patterns for the "double" F-column entries
+   - Some F cells are computed with "*2" on a raw (half-)point value, e.g. F15 "=34.5*2", F23 "=21.5*2", F29 "=31.5*2", F55 "=27.5*2", F64 "=37.5*2", F75 etc. Other rows in column F are raw percentages or plain numbers. Ensure the factor-of-2 conversion is intentional and applied uniformly if F represents a scaled quantity. If the intended calculation is (raw / max) * 100, prefer that instead of ad-hoc "*2" conversions.
+
+4. A few cells where the formula is present but written differently (parentheses, spacing) — not an error but inconsistent style
+   - Example: I15 uses "=(31/40)*100" while others use "=31/40*100". Both work identically, but consistent style is clearer.
+
+5. Some single-value "formula" entries that are redundant or suspicious
+   - Examples: S8 has formula "=100" (equivalent to entering 100); R64 = "=93.3" as noted. These are not errors but are inconsistent with the general approach elsewhere.
+
+6. Average row references look correct but verify expectations
+   - Row 105 averages use ranges E6:E104, F6:F104, … U6:U104. That matches the student rows supplied (6..104). If you expect a different student range (e.g., more rows), update the ranges accordingly.
+   - Note: average formulas ignore text and blanks; if columns contain a mix of formulas and text or string placeholders, results may be impacted. Consider using AVERAGEIF or cleaning non-numeric entries if needed.
+
+Specific cells you should review (suggested priority)
+- R17 (value 93.3, no formula) — many other R rows use "=14/15*100". Consider changing to "=14/15*100" for consistency.
+- R64 (formula =93.3) — change to "=14/15*100" or the appropriate fraction if it represents points/15.
+- Any F cells using "*2" (e.g., F15, F23, F29, F55, F64, F75, F77, F83, F95, etc.) — verify the intended conversion. If the column should be percent, convert with (raw/max)*100 instead of ad-hoc multiplication.
+- Any other cells in a column that are a number but other rows in that column use a fraction formula — decide on a uniform approach and standardize.
+
+Recommendations / next steps
+1. Standardize formulas for each score column:
+   - e.g., if column E is "points out of 35", set E6 formula = (raw_points_cell)/35*100 and copy it down for all rows. Use relative references to raw point cells as needed.
+2. Replace hard-coded or truncated numbers (like "=93.3") with the consistent fraction formula to avoid rounding inconsistencies.
+3. Use consistent formatting (number of decimals) for percentage columns so small differences are not confusing.
+4. If some students legitimately have special scoring rules (e.g., F column scaled differently), document that in a note or use a helper column to show the raw-to-scaled transformation.
+5. Optionally convert the first header rows/columns to named ranges (or use a structured table) so you can fill consistent formulas down easily and prevent oversight.
+
+If you want, I can:
+- produce a detailed list of every cell that contains a literal numeric value where the same column contains a formula in other rows (to help you standardize),
+- or propose a canonical set of formulas for each column (E .. U) to copy down,
+- or generate a corrected version of the sheet with consistent formulas (if you supply the raw-raw-score columns to reference).
+
+Which would be most helpful?

@@ -1,0 +1,56 @@
+I reviewed the formulas on all four sheets and checked consistency of inputs, calculations and outputs. Summary of problems, oddities and recommended fixes (grouped by severity):
+
+1) Clear formula typo that affects results (high priority)
+- Sheet: Johnson - Base
+- Cell: C19 (ceiling AREA)
+- Current formula: =34*C6 (this produces 34*50 = 1700)
+- Problem: this is inconsistent with every other sheet, where ceiling area is =C5*C6 (=30*50 = 1500). The 34 looks like a typo. Because UA and totals include E19, this single bad formula propagates into E19, % loss (F19), E26 (TOTAL UA), the balance point (D29), annual energy (D36), fuel needed (D37) and downstream totals.
+- Suggested fix: change C19 to =C5*C6 (or to the explicit numeric 1500 if intended).
+- Effect if fixed: E19 will become 150 (instead of 170), E26 will match the other sheets (2098.947...), and the downstream energy/fuel/cost values will change accordingly.
+
+2) Missing wall area input / incomplete walls calculation (medium priority)
+- Sheets: All (Johnson and Your Home, both Base & More Efficient)
+- Cells: C22 (walls area) is empty on all sheets. E22 = =C22/D22 therefore evaluates to 0. That means there is no UA contribution from walls (E22=0), which is probably incorrect unless intentionally omitted.
+- Problem: if walls are supposed to contribute to heat loss, the walls area (C22) must be computed / entered. At minimum E22 returns 0 because C22 is blank; this leads to underestimated total UA (E26).
+- Suggested approach:
+  - If you want total wall area: C22 = 2*(C5 + C6) * C7  (perimeter * height)
+  - If you want wall UA excluding windows: E22 = (C22 - (C20 + C21)) / D22  (wall area minus windows divided by wall R-value)
+  - If windows are part of C21 and C20 already, subtract them before dividing by R-value.
+- Note: current C21 and C20 appear to be window areas and together sum to 1600 (in sheets with C5=30,C6=50,C7=10), so total wall area (1600) = south windows (300) + non-south windows (1300). That suggests C22 being blank is likely oversight.
+
+3) Inconsistent / fragile logic to detect fuel type (logic issue)
+- Sheets: All
+- Cells: D38 and F38
+  - D38 formula: =IF(C13<1, D37/100000, 0)
+  - F38 formula: =IF(C13=G34, D37/F9, 0) with G34 = 1
+- Explanation:
+  - These formulas use furnace efficiency (C13) to decide which energy units to produce (therms vs kWh). Using C13 as a proxy for fuel type is fragile:
+    - If you ever have an electric heater with efficiency slightly different than exactly 1 (floating point rounding) these IF checks may behave incorrectly.
+    - The IF(C13<1, ...) assumes that any efficiency < 1 means combustion fuel (therms). That's OK for current inputs but not explicit.
+    - The equality IF(C13=G34,...) uses an exact equality test on floating point numbers, which can be unreliable.
+- Suggested improvement:
+  - Add an explicit fuel-type or "fuel = gas/electric" flag cell (TRUE/FALSE or text), and base the IF on that flag rather than on the numeric C13 value.
+  - Or use a tolerance test if you must compare floats (e.g. =IF(ABS(C13-G34)<0.0001, ...)).
+
+4) Minor labeling / copy-paste inconsistencies (low priority)
+- Several sheets beyond Johnson still show the header "JOHNSON HOUSE CO2 EMISSIONS" (A97) even in "Your Home" worksheets. Not a formula error but confusing.
+- In a number of places cells that are labels and units are present in different columns across sheets; not incorrect but inconsistent formatting.
+
+5) Hard-coded constants and opaque tests (note)
+- E25 uses =0.018*C8*C14 to compute infiltration (constant 0.018). This is OK if intended, but document the basis for that factor.
+- D38 divides by 100000 (therm = 100,000 Btu) and F38 divides by F9 (3414 Btu/kWh). Those are fine, but again are hard-coded constants — consider centralizing conversion constants so changes are easier.
+
+6) Checks that look correct (for completeness)
+- C21 = (C6+C6+C5)*C7: this gives 2*width + length times height = 1300 in your example. At first glance it looks odd (why not 2*(length+width)?) but because C20 (south windows) is C5*C7=300 and C21 is intended to represent windows on the other walls, their C20 + C21 = 1600 which equals total wall area 2*(C5+C6)*C7 (1600). So C21 appears intentional and consistent (not an error).
+- Weighted CO2 generation calculation in C100 is consistent and sums to the expected weighted emission factor.
+
+Summary of recommended actions
+1. Fix the obvious typo: on Johnson - Base change C19 to =C5*C6.
+2. Populate C22 (walls area) and compute E22 properly (include/exclude windows as you intend).
+3. Replace the IF tests that use furnace efficiency to detect fuel type with an explicit fuel-type flag or more robust logic.
+4. Update labels that still say "JOHNSON" if they refer to "Your Home".
+5. Optionally consolidate physical conversion constants (100000, 3414, 0.018, etc.) into dedicated cells so they are not repeated.
+
+If you want, I can:
+- compute the corrected numbers for Johnson - Base after fixing C19 (and optionally C22) and show the deltas to the present outputs; or
+- suggest exact new formulas for C22/E22 based on how you want to treat windows (subtract or separate).

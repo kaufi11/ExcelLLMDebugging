@@ -1,0 +1,39 @@
+Summary of the problem
+- Many “Total” rows use inconsistent SUM ranges (off-by-one errors) and at least one total is hard-coded (not calculated). That causes totals that are wrong (do not sum to 1 / 100%) and inconsistent results between columns/sheets.
+
+Concrete examples (easy to find)
+1) Sheet "University Total", row 31:
+   - B31 = SUM(B9:B29) but D31 = SUM(D9:D30), E31 = SUM(E9:E30) … and O31 = SUM(O10:O30).  
+     (Some columns sum rows 9–29, others 9–30, and O starts at row 10 — that omits O9.)
+   - M31 is the value 1 (hard-coded) instead of a SUM formula.
+
+2) The same pattern appears repeatedly in many department sheets (Totals rows across many sheets use different start/end rows for different columns). Example types:
+   - Some columns are summed B8:B29 while others use B8:B30 or B8:B28.
+   - Some totals ranges accidentally include or exclude a totals row in the data block (risking double counting or omission).
+
+Why this is wrong (short)
+- Totals must cover the same set of data cells across all columns so percentages are comparable and the grade-distribution totals sum to 1 (100%). Off-by-one or inconsistent ranges omit or double-count categories. Hard-coded totals break any change/update to source data.
+
+Fix (what to change)
+1) Decide the correct data row range for each block (for example: rows 9 through 30 in the "University Total" block). Use that same first and last row for every column in the block.
+2) Replace inconsistent SUM formulas with a consistent one. Example (for "University Total", row 31):
+   - B31 (and copy across to O31) -> =SUM(B9:B30)
+   - M31 -> =SUM(M9:M30) (replace the hard-coded 1)
+   - O31 -> =SUM(O9:O30) (fix the missing row 9)
+
+3) For each department sheet: change every Total formula so column totals all use the same row range (the exact rows depend on that sheet’s data block). Example pattern: =SUM(B8:B29) should match every column in that totals row (if the block is rows 8–29).
+
+Quick ways to implement (fast & safe)
+- Select the totals cell for the first column, edit to the correct SUM(range). Then drag the fill handle (copy) across the totals row — Excel will adjust the column but keep the same rows.
+- Replace any hard-coded totals (like M31 = 1) with the matching SUM formula.
+- After fixing, add a small verification cell: =SUM(B31:O31) (or the equivalent totals-row sum) — it should return 1 (or 100%) within rounding.
+- Optional but safer: convert each data block to an Excel Table or define a Named Range for the grade rows, then use =SUM(TableName[Column]) or =SUM(GradeRows) so formulas stay consistent.
+
+One-line checklist to verify
+- All totals rows use identical start and end row numbers across columns.
+- No totals are manually typed numbers.
+- Grand-sum of totals = 1 (or 100%) within rounding.
+
+If you want, I can:
+- Produce the exact list of faulty cells across every sheet and give the corrected formula per cell, or
+- Provide a small VBA macro to standardize all SUM formulas in every totals row to a chosen row range. Which would you prefer?

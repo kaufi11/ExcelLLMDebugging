@@ -1,0 +1,40 @@
+Summary — I found 3 concrete errors that will give wrong totals or incorrect recommendations. Fixes are short and exact.
+
+1) Wrong value in Municipal F5
+- Problem: Municipal!F5 shows "FORMULA =730" (static 730). It looks like it was intended to be the recommendation = the requested amount (E5 = 147,970). This produces a wrong F total.
+- Fix: Replace Municipal!F5 with =E5 (or enter the correct recommended amount).
+- Why: Keeps consistency (recommend = request) and makes F22 (SUM of recommendations) correct.
+
+2) Double counting of Rehabilitation projects in County total
+- Problem: County!E13 (Total Requested) sums Municipal total, Non‑Profit total and Rehab total via:
+  - E9 = Municipal!E22
+  - E10 = 'Non Profit'!E22
+  - E11 = Rehab!E8
+  Then E13 = SUM(E9:E12). But many Rehab projects (CADCOM, Community Cupboard, Resources for Human Development, etc.) also appear on the Non Profit sheet, so adding Rehab!E8 on top of 'Non Profit'!E22 duplicates those amounts.
+- Fix (pick one):
+  a) If Rehab entries are a subset of Non Profit: remove the Rehab subtotal from County total. Change County!E13 to =SUM(E9,E10,E12) or use =E9+E10+E12 — i.e. do not include E11.
+  b) If Rehab should be counted separately: remove the rehab rows from the Non Profit sheet so they only live on Rehab sheet, and keep County formula as-is.
+- Why: Prevents double counting and makes the county-level "Total Requested" accurate. Choose the single authoritative source for each project (either Non-Profit OR Rehab).
+
+3) AHTF recommended-total formula excludes row 2 (and there is a text value)
+- Problems:
+  - AHTF!F14 is shown as =SUM(F3:F13). That excludes F2 (Canus Corporation) if/when F2 gets a numeric recommendation.
+  - AHTF!F10 contains text "Pending Feasibility Study" (non-numeric). Excel ignores text in SUM, but a text entry can be confusing / break expected numeric totals.
+- Fix:
+  - Change AHTF!F14 to =SUM(F2:F13) so it includes every recommend cell in that block.
+  - Replace or annotate AHTF!F10: if you need it in the sum later, put a numeric placeholder (e.g., 0) and keep the note in a comment cell; otherwise keep text but be aware SUM will ignore it.
+- Why: Ensures the Recommend total (F14 and downstream F18) truly reflects all numeric recommendations.
+
+Quick action steps (copy/paste formulas)
+- Municipal!F5 → =E5
+- County!E13 → =SUM(E9,E10,E12)  (if you choose to exclude Rehab subtotal)
+- AHTF!F14 → =SUM(F2:F13)
+
+Optional best practice recommendations
+- Keep each project on one sheet only (or flag duplicates) and use SUMIFS on a master list to avoid double counting.
+- Convert text recommendations (like "Pending…") to comments or a separate status column; keep F columns numeric for sums.
+- Use consistent currency formatting.
+
+If you want, I can:
+- produce corrected formulas for the whole workbook,
+- or decide which option for Rehab/Non‑Profit you prefer and update all summary formulas accordingly.

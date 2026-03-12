@@ -1,0 +1,47 @@
+Spreadsheet: Sheet "Syracuse, NY"
+
+Purpose / layout
+- A single market-share table (header in B1–B9) listing 24 institutions (rows 10–33) and summary totals (row 36). Notes appear in B39–B47 describing geography and data dates.
+- Columns:
+  - A: rank/ID
+  - B: Institution name
+  - C: Type (Bank or Thrift)
+  - D: Number of offices
+  - E: Deposits ($000s)
+  - F: Weighted deposits (accounts for thrift treatment)
+  - G: Market share (%) (based on weighted deposits)
+  - H: HHI contribution (square of market share)
+
+Key formulas and logic
+- F (weighted deposits):
+  - For Banks: F = 1 * E (i.e., full value)
+  - For Thrifts: F = 0.5 * E (thrifts counted at 50%)
+  - These are implemented as e.g. F10 = 1 * $E10 or F18 = 0.5 * $E18.
+- G (market share %): Gx = $Fx / $F$36 * 100 (each row’s weighted deposits divided by total weighted deposits). Note: row 12 shows an inconsistent formula (G12 = $F12/$F$36/100) which appears to be a typo (should be *100).
+- H (HHI component): Hx = (Gx)^2 (squares the percentage-market-share value).
+- Totals (row 36):
+  - D36 = SUM($D$10:$D$33) — total offices
+  - E36 = SUM($E$10:$E$33) — total deposits
+  - F36 = SUM($F$10:$F$33) — total weighted deposits
+  - G36 = SUM($G$10:$G$33) — should equal 100 (sum of % shares)
+  - H36 = SUM($H$10:$H$33) — HHI (sum of squared % shares)
+
+Key values (computed from the sheet)
+- E36 (Total deposits, $000s): 8,232,933
+- Sum of thrift deposits (E) used at 50%: 1,593,903 ($000s)
+- F36 (Total weighted deposits, $000s): 7,435,981.5
+- Example market shares (G):
+  - ALLIED IRISH BANKS (row 10): F = 1,615,351 → G ≈ 21.72%
+  - HSBC (row 11): F = 1,037,304 → G ≈ 13.95%
+  - KEYCORP (row 12): F = 969,798 → G ≈ 13.04%
+  - FLEETBOSTON (row 13): F = 903,344 → G ≈ 12.15%
+  - J.P. MORGAN CHASE (row 14): F = 644,391 → G ≈ 8.67%
+
+Notes / observations
+- The sheet treats thrifts at 50% of deposit value by design; this is implemented across F for thrift rows.
+- G12 appears to have a stray “/100” (should be *100 like the other G formulas) — fix that cell to ensure correct % for KEYCORP.
+- H squares the percentage (so HHI is on the percent-squared scale; interpret accordingly).
+
+If you want, I can:
+- Recompute every G and H value and give the full table of percentages and HHI contributions, or
+- Fix the G12 formula and re-evaluate totals/H36.

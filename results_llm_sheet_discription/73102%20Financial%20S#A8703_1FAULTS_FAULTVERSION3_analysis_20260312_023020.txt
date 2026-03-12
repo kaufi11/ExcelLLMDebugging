@@ -1,0 +1,29 @@
+Summary of the error
+- The property & equipment block is duplicated (one set at rows ~24–34 and a detailed set at rows ~155–175). The top summary (D30 → D34 → D38) points to the wrong (empty/placeholder) rows, so Net Property & Equipment (D34) is pulling only accumulated depreciation (negative) and giving an incorrect net PPE in the upper asset section. The detailed total (D162) and accumulated depreciation (D170) are correct and are used in the final detailed total (D178), so the final Balance Sheet at the bottom balances — but the upper "Total assets" (D38) / net PPE (D34) are wrong/inconsistent.
+
+Why this is wrong
+- D30 is =SUM(D24:D29) but the actual detailed PPE amounts are in D155:D161 and already summed into D162. Because D30 is effectively empty, D34 = D30 + D32 becomes (0 + D170) → a negative number (accumulated depreciation alone), so the top-of-sheet asset subtotal is incorrect and inconsistent with the detailed totals.
+
+How to fix (short steps)
+1. Option A (recommended, minimal change):
+   - Change D30 formula to point to the detailed PPE total:
+     - Replace D30 formula with =D162
+   - Change E30 similarly: =E162
+
+   This makes D30 equal to the detailed total and keeps the existing D34 = D30 + D32 logic working.
+
+2. Option B (alternate, explicit):
+   - Replace D34 formula with =D162 + D170 (and E34 with =E162 + E170).
+   - (Or replace D30 with =SUM(D155:D161) and E30 accordingly — same effect.)
+
+3. After making the change:
+   - Recalculate and check D38 (D18 + D22 + D34 + D36) — it should now match D178 (the detailed TOTAL ASSETS).
+   - Check the balance check (H291 or H287) — difference should be zero.
+
+Apply the fix to both 2002 and 2001 columns (D and E).
+
+Why this solution works
+- It makes the top summary reference the same detailed PPE numbers that the detailed section already uses (no double counting, no orphan/placeholder ranges). That removes the mismatch (net PPE showing only negative depr) and ensures the top-of-sheet totals are consistent with the detailed totals used for reconciliation.
+
+Extra suggestion
+- Delete or hide the unused placeholder property rows (24–29) or clearly label them so future edits don't accidentally point to the wrong block again.

@@ -1,0 +1,41 @@
+Here are the clear errors I found, each with a short explanation and the fix.
+
+1) Sheet: OP_EXP — Cell L46
+- Fault: Range off by one / double‑count risk.
+- Shown formulas: J46 =SUM(J33:J43) but L46 =SUM(L33:L44)
+- Fix: change L46 to =SUM(L33:L43)
+- Why: J46 and L46 should sum the same rows for 2002 vs 2001. L46 currently includes one extra row (44) and misses row 43, producing a mismatched total.
+
+2) Sheet: BAL SHT — Cells J36 and L36 (TOTAL ASSETS)
+- Fault: Wrong range / wrong components used.
+- Shown formulas: J36 =SUM(J23:J35) and L36 =SUM(L23:L35)
+- Fix: change to J36 =J17+J34 and L36 =L17+L34
+- Why: Total Assets should be Net Investment in Real Estate (cell at G17 row) plus Total Other Assets (cell at G34). Summing J23:J35 omits the Net Investment and mixes unrelated lines.
+
+3) Sheet: INCOME — Cell L14 (TOTAL RENTAL INCOME, 2001 column)
+- Fault: Hard‑coded constant instead of formula.
+- Shown formula/value: L14 =5
+- Fix: change L14 to =L10+L13  (or =SUM(L10:L13) if you also have other rent lines)
+- Why: L14 must total Net Residential Rent and Net Commercial Rent for 2001. A fixed 5 is wrong and breaks downstream totals.
+
+4) Sheet: CASH FLOWS — Cell L45 (NET CASH PROVIDED BY (USED IN) INVESTING ACTIVITIES, 2001)
+- Fault: Range mismatch / off‑by‑one compared to 2002 column.
+- Shown formulas: J45 =SUM(J37:J42) but L45 =SUM(L37:L44)
+- Fix: change L45 to =SUM(L37:L42)
+- Why: J45 and L45 should sum the same set of investing rows for each year. L45 currently includes extra rows (37–44 instead of 37–42), giving inconsistent results.
+
+5) Sheet: STKHOLD.EQUITY — Header line and suspicious formula
+- Fault A (header): Wrong year text.
+  - Shown: "YEARS ENDED DECEMBER 31, 2001 AND 2001"
+  - Fix: change to "YEARS ENDED DECEMBER 31, 2002 AND 2001"
+  - Why: Typo — it should show two different years.
+- Fault B (calculation): J52 =SUM(J51:J51) is suspicious/redundant.
+  - Shown: J52 =SUM(J51:J51)
+  - Fix: if intent is to show the single-line amount, replace with =J51; if intent is to sum a block of partner equity rows, change the range to the correct rows (for example =SUM(J9:J15) or whatever the partner‑equity block is).
+  - Why: SUM of a single cell is redundant and often indicates a wrong/misplaced range.
+
+How to proceed
+- Make the formula edits above. After each change, recalc and verify totals flow through linked totals (Income → Net Income → Cash Flows → Balance Sheet).
+- If any of the "fix suggestions" for ranges (especially in Balance Sheet partner‑equity areas) are ambiguous for your specific layout, tell me which rows contain the actual Net Investment and Partner Equity values and I will give the exact corrected formulas.
+
+If you want, I can produce an exact list of cell-by-cell replacements you can paste into Excel.

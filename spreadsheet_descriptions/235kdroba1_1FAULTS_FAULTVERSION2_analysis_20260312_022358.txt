@@ -1,0 +1,66 @@
+Summary of workbook structure and key formulas (concise)
+
+Sheet1 — Main student table (rows 2: headers; rows 3–32: students; row 33: class maxima / totals; rows 35–36: statistics)
+- Top section headers: G1 = "HOMEWORK", T1 = "EFFORT PARTICIPATION", AB1 = "TESTS", AI1 = "FINAL GRADE".
+- Row 2: column headers (wide set of components). Major groups (columns):
+  - A: Students
+  - B:D: Decimal (three sub-scores: PV, NS, COMP)
+  - E:F: Total Decimals / Decimals %
+  - G:I: Fraction sub-scores; J: Total Fraction; K: Fraction %
+  - L:N: % Sense / % Comp / % Apply; O:P: Total / Total %
+  - Q: Linkage (single value)
+  - R:S: Total Homework and Homework %
+  - T:W: Effort/Participation components (Att, Part., Disp, Peer)
+  - X:Y: Effort total and % (X = SUM(T:W); Y = X / $X$33)
+  - Z, AB, AD: Test raw components (Z, AB, AD); AA, AC, AE: their %s (each divided by respective $Z$33, $AB$33, $AD$33)
+  - AF: Total Tests (AF = Z+AB+AD); AG: Test % (AF / $AF$33)
+  - AI: Total in Class (AI = R + X + AF); AJ: Total Percentage (AI / $AI$33)
+
+- Repeated per-student formulas (rows 3–32):
+  - E = B + C + D (sum of decimal sub-scores)
+  - F = E / $E$33 (normalize to class max in E33)
+  - J = G + H + I ; K = J / $J$33
+  - O = L + M + N ; P = O / $O$33
+  - R = B+C+D+G+H+I+L+M+N+Q (sum of all homework-related columns) ; S = R / $R$33
+  - X = SUM(T:W) ; Y = X / $X$33
+  - AA = Z / $Z$33 ; AC = AB / $AB$33 ; AE = AD / $AD$33
+  - AF = Z + AB + AD ; AG = AF / $AF$33
+  - AI = R + X + AF ; AJ = AI / $AI$33
+
+- Row 33 (TOTAL / maxima):
+  - B33:D33, G33:I33, L33:N33, Q33 = 10 (per-subscore maxima)
+  - R33 = 100 (homework total max)
+  - T33 = 10; U33:W33 = 5 (effort sub-maxima); X33 = SUM(T33:W33) = 25
+  - Z33 = 85 ; AB33 = 75 ; AD33 = 65 ; AF33 = SUM(Z33:AD33) ; AI33 = R33 + X33 + AF33 (overall class maximum)
+  - Many student % columns divide by these absolute totals (e.g., $E$33, $J$33, $R$33, $X$33, etc).
+
+- Summary statistics (rows 35–36):
+  - Row 35: AVERAGE for each column over B3:B32 etc (e.g., B35 = AVERAGE(B3:B32))
+  - Row 36: MEDIAN for each column over the same ranges.
+
+Notes / anomalies:
+- Column formulas are highly repetitive and rely on absolute references to row 33 maxima ($E$33, $J$33, $R$33, $X$33, $AF$33, $AI$33).
+- One possible inconsistency: AC8 is listed as "AB8*$AB$33" (multiplication) while other ACn cells are division by $AB$33 — likely a typo.
+
+Other sheets (concise)
+- Sheet2 — Component averages (single-row summary):
+  - B2 Homework 0.9344 ; C2 Participation 0.956 ; D2 Tests 0.8359 ; E2 Final Grade 0.8861
+- Sheet3 — Averages by representation:
+  - B2 Decimals 0.94 ; C2 Fractions 0.9367 ; D2 Percentages 0.9247 ; E2 Total 0.9344
+- Sheet4 — Averages split between decimals/fractions/percentages and totals:
+  - B2:I2 include decimal/test/fraction/percentage averages and H2 = Total HW 0.9344 ; I2 = Total Test 0.8359
+- Sheet5 — Example student + class average:
+  - Row2: student J with component fractions (B2 0.947 etc); Row3: class averages matching Sheet2.
+- Sheet6 & Sheet7 — Small lookup/weight tables (coefficients):
+  - Sheet6: decimal/test/fraction/percent weights (e.g., Decimal HW 0.9633 ; Decimal Test 0.9059 ; Percent Test 0.82 ; Percent Test avg 0.8615)
+  - Sheet7: Effort/Participation 0.972 ; Decimal HW 0.9633 ; Fraction HW 0.95 ; Percent HW 0.93
+- Sheets 8–16 — present but empty/placeholders.
+
+Overall purpose and flow
+- Sheet1 is the central, per-student scoring ledger: raw sub-scores are summed to category totals, normalized to class maxima in row 33 to produce % columns, then homework + effort + tests are aggregated to produce per-student total in AI and final percentage in AJ.
+- Other sheets present precomputed aggregates/coefficients and quick summaries (class averages, breakdowns by representation, example student).
+
+If you want, I can:
+- Produce a compact formula map (e.g., show the exact formula used for Final Grade AJn),
+- Check for formula inconsistencies (like AC8) and fix them, or
+- Create a cleaned summary sheet with the final normalized scores only. Which would you like?

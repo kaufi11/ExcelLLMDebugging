@@ -1,0 +1,33 @@
+Summary — main errors found on "Tution and Fees" (plus one suspicious duplicate in "Financial Aid 2") and how to fix them.
+
+1) Room & Board (F8) inconsistent with its components
+- Problem: F8 = 4892 (hard‑coded) but F9 + F10 = 2466 + 1806 = 4272. F8 should be the sum of Room Only + Board Only.
+- Effect: F8 disagrees with F9/F10 and gives an inconsistent Comprehensive In‑State (F11) and Out‑of‑State (F12) totals.
+- Fix: replace the hard value in F8 with the formula:
+  =F9+F10
+  After you do that, dependent totals (F11, F12) will update automatically.
+- Note/choice: If F11 (7228) is known to be correct and the components are wrong, instead change F9 or F10 to match the intended components. But the recommended approach is to make F8 = F9+F10 so the sheet stays consistent and automatic.
+
+2) Room & Board (H8) uses a hardcoded value instead of the component cell
+- Problem: H8 contains =H9+733 (733 is hardcoded). The correct board component is in H10.
+- Effect: H8 is wrong (will not equal H9+H10) and makes H11/H12 wrong.
+- Fix: change H8 to:
+  =H9+H10
+
+3) Out‑of‑state required fees (G36) hardcoded incorrectly
+- Problem: G36 = 584 (hardcoded). Other columns use SUM(D21:D29), SUM(E21:E29) etc. The correct required‑fees total for G should be the sum of G21:G29.
+- Likely intended value: =SUM(G21:G29) (which equals 619 given the items listed).
+- Fix: replace G36 with:
+  =SUM(G21:G29)
+  This will correct G37 (Out‑of‑state total) which sums tuition + required fees + room/board.
+
+4) Suspicious duplicate totals in Financial Aid 2 (data check)
+- Observation: PELL total C6 (2002) = 5,129,088 and C7 (2000) is the same number. That duplication may be a data-entry mistake.
+- Recommendation: Confirm source numbers for 2000 vs 2002 and correct if one is a copy/paste error.
+
+General recommendations / how to check
+- Use formula auditing (Formulas → Show Formulas; Trace Precedents/Dependents) to find hardcoded totals that should be sums.
+- Replace hardcoded intermediate totals with formulas so changes in components automatically propagate.
+- After edits, verify totals (e.g., F11, F12, G37, etc.) to make sure they match expected published totals or recheck source data.
+
+If you want, I can list exactly which cells will change values after the fixes and show the recalculated totals.

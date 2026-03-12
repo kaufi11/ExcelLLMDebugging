@@ -1,0 +1,18 @@
+Findings (short)
+- Error: G19 contains =468*F19 (typo). It should be the entropy contribution p * (-log2 p) like the other G cells.
+- Effect: that single wrong cell will massively skew the sum in G46 (H(A) for Distribution 2).
+
+Fix (step-by-step)
+1. Edit G19 and replace =468*F19 with =E19*F19.
+2. Fill G19 down to G44 (or verify G20:G44 are =E20*F20 ...).
+3. Recalculate; G46 (SUM(G19:G44)) will then give the correct entropy for Distribution 2.
+
+Why this fixes it (simple)
+- Each symbol’s entropy contribution is p * (-log2 p). Column G is supposed to hold E*F. Using 468 (a constant) multiplies the info content by a huge number instead of the probability, so the total sum is wrong.
+- After replacing with =E19*F19 the contributions are correct and the SUM yields true H(A).
+
+Quick improvements (optional)
+- Compute total entropy with one formula: =SUMPRODUCT(E19:E44, F19:F44) or =SUM(E19:E44 * -LOG(E19:E44,2)) (entered normally in Excel).
+- For max entropy use =LOG(26,2) instead of the longer expression.
+
+If you want, I can give the corrected numeric value for H(A) after the fix.

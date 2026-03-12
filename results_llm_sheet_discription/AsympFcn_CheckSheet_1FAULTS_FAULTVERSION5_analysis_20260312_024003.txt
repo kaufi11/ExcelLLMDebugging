@@ -1,0 +1,62 @@
+Short summary of problems and simple fixes.
+
+MasterMethod_Checks sheet — errors & fixes
+1) Row with n = 0 causes div/LOG-by-zero errors
+   - Why: C11 = A11^CE gives 0^1 = 0, then D11 = B11/C11 divides by zero; H11 = LOG(0,2) is undefined.
+   - Fix (pick one):
+     - Remove the n=0 row and start n at 1; OR
+     - Make formulas skip n<=0. Example formula pattern (replace your formulas with these):
+       - C11: =IF($A11>0, $A11^$B$6, "") 
+       - D11: =IF($A11>0, B11/C11, "")
+       - E11: =IF($A11>0, $B$7*C11, "")
+       - F11: =IF($A11>0, B11<=E11, "")
+       - G11: =IF($A11>0, E11<=B11, "")
+       - H11: =IF($A11>0, LOG($A11,2), "")
+   - Explanation: avoid undefined operations by conditioning on n>0. Using boolean expressions (B11<=E11) returns TRUE/FALSE directly (better than IF(...,"TRUE","FALSE")).
+
+2) Typo in H19: LOG base = 517
+   - Why: H19 currently =LOG(A19,517) — clearly a wrong base (typo).
+   - Fix: change to =LOG(A19,2) (same as other rows).
+   - Explanation: keeps consistency (log base 2) and prevents wrong numeric outputs.
+
+Optional improvement (recommended)
+- Use logic comparisons instead of string IFs: e.g. F11: =B11<=E11 and G11: =E11<=B11. That's simpler and avoids text values.
+
+SubstitutionMethod_Checks sheet — errors & fixes
+1) Asymptotic expression uses LOG(LOG(n,2),2) which fails for n=1
+   - Why: LOG(LOG(1,2),2) = LOG(0,2) is undefined.
+   - Fix (pick one):
+     - Start your n list at n>=2; OR
+     - Guard the formula: e.g.
+       - B10: =IF($A10>1, $B$4*$A10*LOG(LOG($A10,2),2), "")
+       - C10: =IF($A10>1, $B$5*$A10*LOG(LOG($A10,2),2), "")
+   - Explanation: prevents domain errors for small n.
+
+2) C10 (and maybe similar cells) missing multiplication by n
+   - Why: C10 shows =$B$5*LOG(LOG(A10,2),2) while B10 uses $B$4*A10*... — inconsistent; asymptotic form is c2 * n * log(log n).
+   - Fix: change C10 to =$B$5*$A10*LOG(LOG($A10,2),2)
+   - Check other C rows and fix any that omit *A#.
+
+3) Recursive T(n) (D column) uses hard-coded absolute references ($D$11, $D$12, etc.) that are inconsistent / incorrect
+   - Why: formula like D19 = 5*$D$11 + A19/LOG(A19,2) points to a fixed cell rather than the T(n/2) row. This gives wrong recursion values and is brittle.
+   - Fix: compute T(n) by looking up the row for n/2. Two good approaches:
+     - Use VLOOKUP (requires that A column includes the n/2 rows exactly, ideally use powers of two):
+       - Drow formula: =IF($Arow=1, <base-value>, 5 * VLOOKUP($Arow/2, $A$10:$D$39, 4, FALSE) + $Arow/LOG($Arow,2))
+     - Or INDEX/MATCH:
+       - =IF($Arow=1, <base-value>, 5 * INDEX($D$10:$D$39, MATCH($Arow/2, $A$10:$A$39, 0)) + $Arow/LOG($Arow,2))
+   - Example for row where A=10 (assuming base T(1)=1): =IF($A19=1,1, 5*VLOOKUP($A19/2,$A$10:$D$39,4,FALSE) + $A19/LOG($A19,2))
+   - Explanation: this finds the actual T(n/2) numeric result instead of pointing to an arbitrary absolute cell. If your n list contains non-integer halves, decide whether to use INT($Arow/2) or ensure inputs are powers of two.
+
+4) Boolean results returned as strings "TRUE"/"FALSE"
+   - Why: IF(...,"TRUE","FALSE") returns text, not actual boolean. That can break further logical checks.
+   - Fix: Replace IF(...) pattern with direct comparisons or return booleans:
+     - Example: E10: =B10<=D10 ; F10: =D10<=C10 ; G10: =AND(E10,F10)
+   - Explanation: booleans are simpler and correct for logical chaining (AND, IF, etc.).
+
+Quick recommended actions (minimum changes to make sheet reliable)
+- Master sheet: delete n=0 row (start at n=1), fix H19 to LOG(A19,2), replace IF(...) returning text with direct comparisons.
+- Substitution sheet: fix C10 to include *A10, start n at >=2 (or guard log formulas), replace all hard-coded $D$nn recursion references with a VLOOKUP/INDEX(MATCH) formula that finds T(n/2), and change IFs that return text to boolean comparisons / AND.
+
+If you want, tell me:
+- which option you prefer for handling small n (start at n>=1/2? or guard with IF?), and
+- whether your n-series are powers of two — I will give the exact corrected formulas you can paste into the sheet.

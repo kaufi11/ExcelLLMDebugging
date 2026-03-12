@@ -1,0 +1,29 @@
+Summary — what’s wrong
+- Unit mismatch: some “Transfers Offsite / Recycled / Incinerated” numbers are in raw pounds while the rest of the 2003 sheet is in millions of pounds. That makes totals (column O, and comparisons with column F) look far too large for some years (e.g. 1999–2000).
+- Misaligned stray values: cells G20 and H20 on the 2003 Report contain numbers that don’t belong there (they break the expected column layout and hint at a paste/shift error). Duplicate Year columns (A and J) also make it easy to mis-reference rows.
+
+Why this is a problem
+- Mixing units (pounds vs millions of pounds) produces meaningless sums and ratios.
+- Misplaced cells shift data left/right so formulas reference wrong values or the sheet shows numbers in the wrong columns.
+
+How to fix (short and concrete)
+1. Decide on a single unit (recommended: millions of pounds).
+2. Convert any raw‑pound source values to millions by dividing by 1,000,000. Example:
+   - If the source cell is 7,501,933 pounds, the cell in the report should be =7501933/1000000 → 7.501933.
+   - In practice, change direct pasted pound values to formulas referencing the source / 1,000,000 (e.g. K20 = '2002 Report'!F56/1000000).
+3. Remove the stray cells G20 and H20 (clear them) or move them to their correct columns in the source. Verify every row’s columns B–F and K–O are the correct series for that year.
+4. Fix and verify totals:
+   - Total releases column F = SUM(Bx:Ex) (already correct in examples).
+   - Total offsite column O = SUM(Kx:Nx) — make sure the formula sums the same unit (millions).
+5. Clean-up:
+   - Keep one year column (either A or J). If you must keep both, ensure formulas always reference the correct row/year.
+   - Recalculate and spot-check several years to confirm scales now match (e.g., F and O should both be values in the same order of magnitude).
+
+Quick checks to run after fixing
+- Pick a year (e.g. 2000). Sum B+C+D+E and confirm equals F (same units).
+- Sum K+L+M+N and confirm equals O (same units).
+- Compare F and O scales — they should be comparable (both in millions), not one in millions and the other in millions-of-millions.
+
+If you want, I can:
+- Give exact formulas for each problematic cell (I can map specific source cells to target cells if you tell me which sheet/row each transfer value should come from).
+- Prepare a small list of the rows that look like they contain raw‑pound values so you can convert them.

@@ -1,0 +1,35 @@
+Summary — main problems found
+1. Many "Cumulative Total" (column I) formulas are summing the wrong column (Project Funds Requested — column G) instead of the Awarded/Approved Funds (column H). This gives wrong cumulative commitments.
+2. There are a few hard‑coded/wrong references (a literal 923) and one-off formula mistakes that break the running total.
+3. Minor data mismatch: some Requested (G) and Awarded (H) numbers differ by rounding (e.g. 311,280.25 vs 311,280) — check source if that matters.
+
+What to fix (concise per sheet)
+
+- Sheet: Watershed Protection (the block with I7..I18)
+  Fault: I7 = G7, I8 = I7+G8, etc. The cumulative column uses G (requested) not H (approved).
+  Fix: Put this in I7:
+    =SUM($H$7:H7)
+  and fill/copy down column I for all rows. (Or use I7 = H7 and I8 = I7+H8 and copy down.)
+
+- Sheet: CALFED Watershed
+  Fault: I31 = I30+923 (literal "923" — wrong/hard-coded).
+  Fix: Replace I31 with:
+    =I30+H31
+  Then copy I31 formula down for subsequent rows (so all I rows reference H).
+
+- Sheet: (any other sheet blocks you saw with cumulative formulas using G — e.g. parts of "CALFED Watershed" and other "Watershed" sections)
+  Fault: inconsistent use of G vs H and some first-row formulas pointing to G or G7/G8.
+  Fix (general): Make every cumulative total in column I a running sum of Awarded Funds (H). Use the single pattern and copy down:
+    First cumulative row (row X): =SUM($H$X:HX)
+    Next rows: copy that down (it automatically becomes =SUM($H$X:HX+1), etc.)
+
+Why this fixes it (short)
+- The column I header is "Cumulative Total Project Funds Awarded (Funding Limit)". That must accumulate actual Awarded/Approved Funds (column H). Summing G (requested) inflates the committed amount and misreports available balance.
+- Using SUM($H$start:Hcurrent) gives a correct running total that is robust to insertions/rows and avoids hard‑coded numbers.
+
+Extra suggestions / checks
+- Replace any hard-coded numbers (like 923) with cell references (H31).
+- If you want to show cumulative committed funds even when some H are blank, use =SUM($H$7:H7) — blank or zero values are handled.
+- If rounding matters, reconcile G vs H source figures (e.g. 311,280.25 vs 311,280).
+
+If you want, I can produce the exact list of cells to change and the corrected formulas for every row in every sheet. Which sheets should I output the cell-by-cell fixes for?

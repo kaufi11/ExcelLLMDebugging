@@ -1,0 +1,49 @@
+I reviewed the workbook and found several real formula errors and a few inconsistent/typo references. Below are the key problems, short explanations, and exact fixes (one-line formulas) you can paste into the workbook.
+
+1) Production-capacity constraint (wrong division of overtime)
+- Faulty cells: Pricing sheet N5:N10 (each period row)
+- Problem: Formula uses 40*D + (E/4) - I — it only divides overtime by labor-hours-per-unit, not the total hours. You need to convert total available hours to units before subtracting production.
+- Fix (put in N5 and fill down): =(40*D5 + E5) / Sheet1!$B$21 - I5
+- Why: total available hours = 40*workforce + overtime; units available = total hours / labor-hours-per-unit (Sheet1!B21). Then subtract production.
+
+2) Inventory balance (double-count / wrong terms)
+- Faulty cells: Pricing sheet O5:O10 (and same pattern on Sheet2/Sheet3 O5:O10)
+- Problem: Current formulas include the current-period inventory (F5) on the RHS and extra +G or -G terms — this double-counts and yields incorrect balances.
+- Recommended standard inventory balance (replace O5 and fill down):
+  =F4 + I5 + H5 - J5 - G5
+- Why: period t inventory = previous inventory + production + subcontract - demand - current stockout (adjust if your stockout convention differs). Remove the -F5 inside RHS (that was wrong).
+
+3) Overtime cost formulas reference wrong parameter cells (typos)
+- Faulty cells: many cost-block formulas on Sheet2 and Sheet3 (examples: Sheet2 E15, E16, E17... shown as =+E5*Sheet1!B24 or =+E7*Sheet1!B25 etc)
+- Problem: They reference B24/B25/B26... on Sheet1; overtime cost/hour is in Sheet1!B23. Some references point to nonexistent B25..B28.
+- Fix: Change all overtime-cost cells to reference Sheet1!$B$23. Example (Sheet2 E15):
+  =E5 * Sheet1!$B$23
+- Why: E# is overtime hours; multiply by overtime cost/hour (Sheet1!B23). Fix all occurrences.
+
+4) Hard-coded / wrong cell used in Sheet3 F16
+- Faulty cell: Sheet3 F16
+- Problem: Formula is =534*Sheet1!$B$17 (534 is a hard-coded number instead of the period's inventory cell).
+- Fix: =F6 * Sheet1!$B$17
+- Why: F16 should use the inventory cell for that period (F6), not a fixed number.
+
+5) Revenue formula wrong on Sheet3
+- Faulty cell: Sheet3 C24
+- Problem: =SUM(J5:J10)*31 — this multiplies total demand by 31 and ignores price per period.
+- Fix: =SUMPRODUCT(J5:J10, K5:K10)
+- Why: Revenue = sum of (demand * price) per period.
+
+6) Total-cost range inconsistency (check intended inclusion of material)
+- Faulty cells: Pricing C22 vs Sheet2 C22 vs Sheet3 C22
+- Observation: Some total-cost sums use SUM(B15:I20) (includes Material) and others use SUM(B15:H20) (omits Material). Decide whether material costs (column I) should be included. If yes, use:
+  =SUM(B15:I20)
+- Why: be consistent — include material cost if it belongs in total cost.
+
+Quick checklist to apply across sheets
+- Replace N formulas everywhere with (40*D + E)/Sheet1!$B$21 - I (and fill down).
+- Replace O formulas with previous-inventory + production + subcontract - demand - stockout (and fill down).
+- Fix every overtime-cost formula to use Sheet1!$B$23.
+- Replace any hard-coded numbers (like 534) with the proper cell reference for that period.
+- Correct Sheet3 revenue to SUMPRODUCT of demand and price.
+- Make total-cost ranges consistent (decide whether material should be included).
+
+If you want, I can produce the exact find/replace list (every cell address and replacement formula) and a short VBA macro to fix all of them at once. Which would you prefer?

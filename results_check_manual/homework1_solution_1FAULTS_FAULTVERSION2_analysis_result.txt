@@ -1,0 +1,25 @@
+I checked every formula in Sheet1. There is one clear formula error that causes the whole Grower 4 (column E) result column to be wrong and to propagate to downstream calculations.
+
+1) Wrong function in E14
+- Current formula: E14 = SUM(E3:E12) (result 26.6)
+- Label says "Average weight of incoming bird in kg" so this should be an AVERAGE, not a SUM.
+- Effect: All dependent cells E15:E19 use E14, so they are far too large (e.g. E15 = 0.8*E14 → 21.28 instead of ~2.128).
+
+Suggested fix:
+- Change E14 to =AVERAGE(E3:E12).
+- After changing E14 the dependent cells will update to reasonable values (for reference, with that change E14=2.66, E15=2.128, E16=2.378, E17=1.995, E18=2.49375, E19=0.11575).
+
+2) Note about the overall-average cell F14
+- Current formula: F14 = AVERAGE(B3:E12) (this gives the average across all 40 data cells).
+- That is mathematically equivalent here to AVERAGE(B14:E14) (each grower has the same number of shipments), so F14 is correct numerically.
+- For clarity/consistency with other column averages you may prefer to use =AVERAGE(B14:E14) so F14 is clearly the average of the four per-grower averages.
+
+3) Minor numeric-display note (not an error)
+- Some results show long floating-point tails (e.g. B19 = -0.0190000000000001). That's normal binary floating precision. If you want cleaner display, wrap results with ROUND(...,n) or format cells to fewer decimal places.
+
+Summary of recommended immediate edits:
+- Change E14 to =AVERAGE(E3:E12).
+- (Optional) Change F14 to =AVERAGE(B14:E14) for clarity.
+- Optionally apply ROUND or number formatting for presentation.
+
+If you want, I can show the corrected values for E14:E19 and re-check cascading results, or provide an updated formula list with ROUND applied.

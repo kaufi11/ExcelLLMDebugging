@@ -1,0 +1,46 @@
+Summary of problems found (short):
+
+- Q4 2003 — D14 uses COUNT(D9:D12) instead of SUM, so Free cash flows shows “4” instead of the sum. This breaks the totals and the H14 % change.
+- Many H-column “Change” cells (especially H11) are hard-coded or blank/0 instead of using a percent-change formula.
+- Q3 2003-4 Qtr — L11 contains the text/formula "= -80+40" (a hard-coded expression) instead of the proper value or a proper link.
+- Q1 2003 — J6 label is wrong ("Six Months Ended June 30" on a March 31 sheet). Also H9 and H12 percent-change formulas will divide by zero because F9 or F12 = 0.
+- General: several percent-change formulas do not guard against division-by-zero and will show #DIV/0! (or produce misleading results when prior-period value is zero or negative).
+
+What to change (exact fixes and why):
+
+1) Fix D14 on Q4 2003
+- Replace: =COUNT(D9:D12)
+- With: =SUM(D9:D12)
+Why: COUNT returns the count of numeric cells (4), not the sum of amounts. SUM gives the intended Free cash flow total.
+
+2) Fix any H-column percent-change cells (use one of these patterns)
+- If you want a blank when prior = 0:
+  =IF(F9=0,"",(D9-F9)/F9*100)
+- If you prefer N/A instead of blank:
+  =IF(F9=0,NA(),(D9-F9)/F9*100)
+- If you want percent of magnitude (use ABS of denominator):
+  =IF(F9=0,"",(D9-F9)/ABS(F9)*100)
+Apply the appropriate formula to H9, H11, H12, H14 etc on each sheet (change the row reference to the row in that sheet).
+Why: Protects against divide-by-zero and makes the intent clear. It also ensures H11 (accounts receivable securitization) calculates the % change instead of showing 0.
+
+3) Fix the hard-coded arithmetic in Q3 2003-4 Qtr L11
+- Replace the text/formula "= -80+40" with the correct historical value (or link it to the proper source cell).
+- If the intended result is -40 and that is the correct historical number, put -40; if the correct historical number is -130 (or something else), use that.
+Why: Hard-coded math strings cause confusion and may be wrong for audit trail. Use real values or links.
+
+4) Fix Q1 2003 header J6 (and confirm cumulative column)
+- Change J6 from "Six Months Ended June 30" to the proper label for the column (follow the pattern used in other quarters: Q1 = "Three Months Ended Mar. 31" or if column J is meant to be YTD, make it "Three Months Ended Mar. 31" or "Year-to-date ended Mar. 31" — pick the correct descriptive text).
+- Verify numbers in that column (J9,J11,J12,J14) correspond to the labeled period and correct if necessary.
+Why: The header is inconsistent and likely indicates copied/incorrect period totals.
+
+5) Audit percent-change signs and interpretation
+- Note: Percent-change formulas using negatives can give unintuitive signs (example: going from -32 to -100 yields +212.5% by the formula (new-old)/old). Decide if you want that behavior or prefer using ABS in the denominator for "magnitude" reporting. Change the formula accordingly (see 2).
+
+Quick checklist to apply now:
+- Change any COUNT to SUM where totals are needed (Free cash flow totals).
+- Replace hard-coded expressions with numeric values or cell links.
+- Standardize H-column formula to IF(Fx=0,"",(Dx-Fx)/Fx*100) and copy across all sheets/rows.
+- Correct Q1 header J6 and confirm J-column values match the header.
+- Recalculate and verify H14 totals after fixing D14 on Q4.
+
+If you want, I can give a list of the exact cell-by-cell replacement formulas for every sheet (e.g., Q4 D14 -> =SUM(D9:D12); Q4 H11 -> =IF(F11=0,"",(D11-F11)/F11*100); etc.). Which would you prefer?

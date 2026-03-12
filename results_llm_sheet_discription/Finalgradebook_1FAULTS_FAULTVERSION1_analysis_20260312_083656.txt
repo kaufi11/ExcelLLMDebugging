@@ -1,0 +1,62 @@
+Summary — main problems I found, why they break the sheet, and simple fixes.
+
+1) Sheet3 — many per‑student AVERAGE formulas point to wrong cells; one division has a typo
+- Problems:
+  - P4..P18 should average that student’s five test percent cells (D, F, H, J, L) but many Pn formulas reference L40..L54 (wrong row) so they return wrong values or #REF.
+  - F14 is =510/$F$24 (typo) instead of dividing that student’s test points (E14) by the curve value.
+- Fix (apply to each student row 4:18):
+  - Replace Pn with: =AVERAGE(Dn,Fn,Hn,Jn,Ln)
+    - Example: P4 = AVERAGE(D4,F4,H4,J4,L4) ; copy down to P18.
+  - Fix F14 to: =E14/$F$24
+- Why: the P cells feed Sheet1 Tests column — wrong P values make the final grade wrong.
+
+2) Sheet1 — summary rows use incorrect ranges / functions
+- Problems:
+  - Low Grade (row 20) uses MIN(C4:C18) etc — wrong row window (students are in rows 3:17).
+  - Class Average (row 21) uses MAX or wrong ranges (e.g., C21 = MAX(C5:C19)) instead of AVERAGE over the student rows.
+- Fix (use rows 3:17 consistently). Examples:
+  - High Grade row19:
+    - C19 = MAX(C3:C17)
+    - D19 = MAX(D3:D17)
+    - E19 = MAX(E3:E17)
+    - F19 = MAX(F3:F17)
+    - G19 = MAX(G3:G17)
+    - I19 = MAX(I3:I17)
+  - Low Grade row20:
+    - C20 = MIN(C3:C17)
+    - D20 = MIN(D3:D17)
+    - E20 = MIN(E3:E17)
+    - F20 = MIN(F3:F17)
+    - G20 = MIN(G3:G17)
+    - I20 = MIN(I3:I17)
+  - Class Average row21:
+    - C21 = AVERAGE(C3:C17)
+    - D21 = AVERAGE(D3:D17)
+    - E21 = AVERAGE(E3:E17)
+    - F21 = AVERAGE(F3:F17)
+    - G21 = AVERAGE(G3:G17)
+    - I21 = AVERAGE(I3:I17)
+- Why: Using wrong ranges gives misleading max/min/average figures for the class.
+
+3) Final grade formula on Sheet1 — inconsistent appearance (but easy to standardize)
+- Current formula example: I3 =(C3*0.125)+(D3*25)+(E3*25)+(F3*25)+(G3*12.5)
+  - C (homework) is a 0–100 average (Sheet2 P). D/E/F/G are decimals 0–1 (Sheet3 P and midterm/final/participation).
+  - The existing multipliers are chosen to produce points out of 100, but the mix is confusing (0.125 vs 12.5 vs 25).
+- Recommended clear/correct formula (produces Final Grade on 0–100 scale; copy down I3:I17):
+  - I3 = (C3/100)*12.5 + D3*25 + E3*25 + F3*25 + G3*12.5
+  - (Equivalent numeric result to your intent, but explicit that homework is converted from 0–100 to a 12.5‑point contribution.)
+- Why: this is clearer/readable and guarantees the final grade sums to 100 max.
+
+4) VLOOKUP letter grade check
+- J3 uses =VLOOKUP(I3,$K$5:$L$17,2,TRUE()) — this is fine if:
+  - K5:K17 are sorted ascending (they are),
+  - I3 is on the same numeric scale as the K thresholds (i.e. 0–100). After applying the I3 fix above, thresholds are compatible.
+- If you ever switch I values to 0–1 decimals, you must convert the K thresholds accordingly.
+
+Quick checklist you can paste into Excel:
+- Replace each Sheet3 Pn with: =AVERAGE(Dn,Fn,Hn,Jn,Ln)  (n = 4..18)
+- Change Sheet3 F14 to: =E14/$F$24
+- Change Sheet1 I3 to: =(C3/100)*12.5 + D3*25 + E3*25 + F3*25 + G3*12.5  — copy down to I17
+- Update Sheet1 summary formulas as shown above (use rows 3:17 consistently)
+
+If you want, I can generate the exact formula list to Paste → Replace for every affected cell (I3:I17, P4:P18, all summary cells). Which format do you prefer?

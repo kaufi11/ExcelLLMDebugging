@@ -1,0 +1,47 @@
+Summary — main problems
+1) Wrong sign in Gross margin (Formulas sheet):
+   - Faulty cell: C19
+   - Error: =-C17-C18 (should subtract C18 from C17)
+   - Fix: =C17-C18
+   - Why: current formula negates sales and then subtracts COGS, giving a wrong negative gross margin.
+
+2) Operating-expense rows and totals are misaligned (mixed columns):
+   - Symptoms: Salary formulas are in B21/D21 while totals are in C24/E24 but those totals use ranges like SUM(B21:B24) or SUM(D21:D24). That mixes columns and causes wrong totals.
+   - Fix approach (two options):
+     a) Re-align the monthly expense rows so each month’s rows live in the same column (preferred).
+        - Put Salaries/Commission, Rent, Depreciation, Insurance for August into C21:C24, for September into D21:D24, etc.
+        - Then set totals in the same column: C24 =SUM(C21:C24), D24 =SUM(D21:D24), etc.
+     b) If you cannot move cells, correct the totals to sum the actual cells that contain the expenses (less desirable because layout remains confusing).
+   - Example corrected formulas after re-aligning months to contiguous columns:
+        C21 =ROUND($B$9 + $B$10 * C17, -3)
+        C22 =$B$11
+        C23 =$B$12
+        C24 =$B$13       (or C24 =SUM(C21:C23) if you want C24 to be insurance then C25 =SUM(C21:C24))
+        C25 =SUM(C21:C24)   (operating expense total)
+   - Why: mixing columns means totals use wrong numbers (or blanks), producing wrong operating income and downstream numbers.
+
+3) Ending inventory should reference next-period sales — check the next-period reference:
+   - Principle: EndingInventory_thisMonth = ROUND(BaseInventory + AdditionalPct * Sales_nextMonth, -3)
+   - Action: After you fix month columns to be contiguous, set:
+        C33 =ROUND($B$4 + $B$5 * D17, -3)   (if D17 is next month)
+        D33 =ROUND($B$4 + $B$5 * E17, -3)   etc.
+   - Why: some cells currently point to the wrong sales cell (or skip the correct next-month column) because months are misaligned.
+
+4) Many downstream formulas depend on the above (COGS, gross margin, operating income, tax, net income). Fixing 1–3 will correct them. Examples:
+   - C30 = previous month ending inventory (ok once months are contiguous)
+   - C31 =ROUND(C17 * $B$6, -3)
+   - C32 =SUM(C30:C31)
+   - C34 =C32 - C33
+   - C25 =C19 - C24
+   - C26 =ROUND(C25 * $B$14, -3)
+   - C27 =C25 - C26
+
+Quick checklist to repair the model (do this in order)
+1. Put months into contiguous columns (e.g., C = Aug, D = Sep, E = Oct).
+2. Move each month’s expense rows into that month’s column (salaries, rent, depreciation, insurance).
+3. Correct totals to SUM the same-column cells (e.g., C24 =SUM(C21:C24)).
+4. Fix C19 to =C17-C18 (and any other gross margin cells similarly).
+5. Ensure Ending Inventory formula uses the next-month Sales cell (C33 uses D17, etc.).
+6. Confirm COGS schedule uses beginning inventory = prior-month ending inventory (C30 = previous column’s C33).
+
+If you want, I can give a corrected small example with exact formulas for columns C/D/E laid out consistently — tell me which column you want to represent August/September/October and I’ll produce the exact formulas to paste.

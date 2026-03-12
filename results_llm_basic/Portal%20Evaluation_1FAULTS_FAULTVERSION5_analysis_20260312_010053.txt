@@ -1,0 +1,32 @@
+Findings (short)
+- Cell I21 is wrong: its formula is =H21*116 instead of =H21*C21. That produces 116 (or another wrong large number) and inflates the Oracle portal weighted total and the grand total.
+- A secondary issue: some weighted-score cells appear entered as plain values (for example R8 shown as 2) rather than using the same formula pattern. That risks inconsistency if weights or scores change.
+
+Cause and effect (short)
+- The I21 typo multiplies the score by 116 instead of the weight in C21 (which is 3). With H21 = 1, I21 should be 3; with =H21*116 it gives 116, adding +113 incorrectly to Oracle’s total and any sums that include I21.
+
+Fix (very short)
+1. Replace the formula in I21 with:
+   =H21*C21
+2. Make the other weighted-score columns consistent. Use these formulas and fill down:
+   - Column I (Oracle): =H# * C#
+   - Column L (uPortal): =K# * C#
+   - Column O (CleverPath): =N# * C#
+   - Column R (SharePoint): =Q# * C#
+   (Replace # with the row number and fill for rows 8:43.)
+3. Recalculate (or press F9) so I44/L44/O44/R44 and the summary totals update.
+
+How to check/prevent
+- Turn on Show Formulas (Ctrl+`) to scan for inconsistent formulas quickly.
+- Use Excel’s Formula Auditing → Trace Precedents to confirm each WS cell points to the correct score and weight.
+- Replace any hard-coded WS values by formulas so changes to scores/weights auto-update.
+
+Example numbers
+- With H21 = 1 and C21 = 3:
+  - Wrong value: =H21*116 → 116
+  - Correct value: =H21*C21 → 3
+  Oracle total will drop by 113 after fix.
+
+If you want, I can:
+- Give the exact list of WS cells to re-fill and a one-click fix (a short macro), or
+- Check for any other accidental hard-coded numbers if you can share the actual file.

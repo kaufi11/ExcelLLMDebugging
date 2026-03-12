@@ -1,0 +1,51 @@
+Summary of the main problems I found (short, concrete) and how to fix each:
+
+1) Double‑counting rehabilitation projects (big problem)
+- What’s wrong: Some rehab projects appear in both the Non‑Profit sheet and the Rehab sheet (e.g., CADCOM, Community Cupboard, Resources for Human Development). The County sheet then includes both the whole Non‑Profit total (NonProfit!E22) and the Rehab total (Rehab!E8) when it calculates Total Requested (County!E13). That double‑counts the rehab amounts.
+- Why it matters: Your grand total is overstated by the amount of the rehab projects that appear in both lists.
+- Fix (pick one of these approaches):
+  a) Remove rehab rows from the Non‑Profit totals: change NonProfit!E22 so it sums only rows that should be in Non‑Profit (exclude the rehab rows), e.g. use a helper column or SUM of explicit ranges: =SUM(E2:E21) but skip the rehab rows (or change E22 to =SUM(E2:E21)-Rehab!E8 if Rehab!E8 is entirely included in NonProfit!E22).
+  b) Or change County’s Total Requested (County!E13) to subtract Rehab!E8 once: =Municipal!E22 + NonProfit!E22 + County!E6 - Rehab!E8 (or use cell references you already have: =E9+E10+E12 - E11).
+- Recommendation: I prefer option (a) (keep NonProfit!E22 as the true non‑rehab total) so each sheet totals only its own unique projects.
+
+2) Municipal “Recommend” column errors / inconsistent values
+- What’s wrong: Municipal column F is inconsistent:
+  - F5 is a literal 730 (should be based on E5).
+  - Several Recommend cells are blank while others are set to =E# or capped at 190,000.
+  - It looks like you cap recommendations at 190,000 for large requests, but the column is not implemented uniformly.
+- Fix: put a single consistent formula in F2:F21. If the rule is “recommend equals request but capped at 190,000 (and NF = 0)”, use:
+  - In F2 and fill down: =IF(C2="NF",0,MIN(E2,190000))
+  - Or if NF rows should remain blank use: =IF(C2="NF","",MIN(E2,190000))
+- Also replace the incorrect F5 value with the formula above.
+
+3) AHTF Recommend total formula uses wrong range
+- What’s wrong: AHTF F14 is documented as =SUM(F3:F13). That excludes F2 (Canus) and may omit other recommend cells.
+- Fix: change to =SUM(F2:F13) (or explicit range of all Recommend cells in that table). If F10 is text ("Pending Feasibility Study") and shouldn’t be summed, make sure F10 is blank or 0, or adjust the sum to ignore text (SUM will ignore text anyway).
+
+4) Hard‑coded reference in Continuum of Care calculation
+- What’s wrong: AHTF!E16 =2432890*0.15 uses the literal 2,432,890. If that total changes you must remember to update this cell.
+- Fix: reference the cell that holds the total instead of the hard number. Example:
+  - If 2,432,890 is AHTF total in E14, use =E14*0.15 (or wherever the total lives). This keeps the % calculation dynamic.
+
+5) Possible omission of ESG or HOME from “Total Requested”
+- What to check: County!E13 sums Municipal, Non‑Profit, Rehab, County totals only. Make sure that is the intended Grand Total — if you need to include ESG (NonProfit!E28) or HOME totals (HOME!E11) or AHTF totals, add those cells explicitly.
+- Fix: modify County!E13 to include any additional categories you intend to include, e.g. =Municipal!E22 + 'Non Profit'!E22 + Rehab!E8 + County!E6 + 'Non Profit'!E28 + HOME!E11 (only include the ones you want).
+
+Quick list of exact cell changes to make now
+- Municipal column F (apply formula for full column F2:F21):
+  - Put in F2 and fill down:
+    =IF(C2="NF",0,MIN(E2,190000))
+- Fix F5 (replace 730 with the formula above).
+- NonProfit!E22: decide whether to exclude rehab rows. If you choose to remove rehab from NonProfit total, change E22 accordingly (either by listing ranges or subtracting Rehab!E8).
+  - If Rehab!E8 is fully included in NonProfit!E22, temporary quick fix for County total: change County!E13 to:
+    =E9+E10+E12+E6 - E11
+    (that is Municipal + NonProfit + County + Rehab? — adjust to correct logic per your structure)
+- AHTF F14: change to =SUM(F2:F13)
+- AHTF E16: change to =E14*0.15 (or to reference the cell that stores 2,432,890)
+- Review County!E13 and add HOME!E11 and/or ESG!E28 if those funds are intended to be part of the "Total Requested".
+
+If you want, I can:
+- Give the exact revised formulas for every affected cell in one pasteable block, or
+- Produce the single consolidated fix (one formula per sheet) and indicate which rows to change.
+
+Which would you prefer?

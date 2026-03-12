@@ -1,0 +1,77 @@
+I reviewed the workbook formulas and found several formula errors and inconsistencies. Below I list the problematic cells, explain why each is a problem, and give recommended corrections.
+
+Summary of the main issues
+- One clear sign error: H14 on the "FTEE Calculation" sheet uses subtraction instead of addition, which produces a negative total FTEE for NCC-04 and distorts totals and percentages that reference H14/H27.
+- Several totals reference ranges that include a (nonexistent/blank) row 26 or row 14 (blank). That is not an error per se, but it is inconsistent and can hide mistakes; tighten the ranges to the actual data rows.
+- There are multiple manual “+1” adjustments added into cell formulas (e.g., C11, B21, E27). These are inconsistent hacks to force totals to match and should be removed; use correct ranges or rounding instead.
+- Because of the H14 sign error and the +1 adjustments, row-level and totals-level percentages (C27/H27, F27/H27, and D/G column percentages) do not consistently sum or reconcile.
+
+Detailed items (sheet / cell / issue / recommended fix)
+
+1) Sheet: FTEE Calculation
+- H14
+  - Current formula: =-C14-F14
+  - Issue: This produces a negative total FTEE for NCC-04 (H14 = -1,584.153333...), while all other rows compute Hn as Cn + Fn. The negative value makes D14 and G14 negative and causes the overall H27 total to be wrong (it becomes smaller by twice the intended H14).
+  - Recommended fix: Change to =C14+F14 (or =+C14+F14 to match style). After fixing, D14 and G14 will be positive fractions and the totals will reconcile.
+
+- E27
+  - Current formula: =SUM(E11:E26)+1
+  - Issue: The explicit “+1” artificially increases the reported contact hours sum. This is an inconsistent manual adjustment and will not be reflected in F27 (which is SUM(F11:F26) = SUM(E11:E26)/600) unless F27 also had a corresponding hack.
+  - Recommended fix: Change to =SUM(E11:E25) or =SUM(E11:E26) without +1. Prefer using the exact rows in the data (likely E11:E25) rather than including a blank row 26.
+
+- B27, C27, F27, H27 totals use ranges including row 26 (B11:B26, C11:C26, F11:F26, H11:H26)
+  - Issue: Your data appears to go only from row 11 to row 25. Including row 26 (blank) is harmless but inconsistent and may mask missing data rows. Also after fixing H14, H27 should equal C27+F27; currently it does not because of the negative H14 and the +1 in E27.
+  - Recommended fix: Adjust totals to use the exact data range (e.g., SUM(B11:B25), SUM(C11:C25), SUM(F11:F25), SUM(H11:H25)). After fixing H14 and removing +1, verify H27 = C27 + F27 and I27 sums to 1.
+
+- General inconsistency caused by H14 and E27:
+  - Symptom: C27 + F27 = 75,579.441666... while H27 = 72,411.135; the difference (≈ 3,168.306667) equals twice the magnitude of the erroneous H14 (-1,584.153333 * 2). That confirms H14's sign error is the main cause of mismatch between column sums.
+  - Action: Fix H14 and remove +1; then re-check that D27 = C27/H27 and G27 = F27/H27 and that D27 + G27 ≈ 1 (allowing rounding).
+
+2) Sheet: FTEE Calculation (other manual +1 adjustments)
+- B21 or SWCC-14 (row 23?) and similar:
+  - B21 is entered as =3684419+1 (value shown 3,684,420)
+  - C11 uses =141577402+1 in another sheet (see below)
+  - Issue: These “+1” additions exist in a few cells (B21, C11 on Revenues By Source, E27). These are manual tweaks that change source numbers and may be intended to force totals to match rounding. They are inconsistent and can be misleading.
+  - Recommended fix: Remove the +1 from these cells. If rounding is required to match a reported total, handle via ROUND functions on the totals or adjust presentation not the raw data.
+
+3) Sheet: Revenues by Source
+- C11
+  - Current formula: =141577402+1 (value displayed 141,577,403)
+  - Issue: Manual +1 to source number. This is the same pattern as above; it’s a manual adjustment instead of properly summing/rounding.
+  - Recommended fix: Replace with the proper source value (141,577,402) or pull directly from a consistent source range or use rounding on totals if needed.
+
+- B15 and C15 ranges
+  - Current formulas: B15 = SUM(B9:B14), C15 = SUM(C9:C14)
+  - Issue: Your revenue rows are B9:B13 and C9:C13 (C14/B14 blank). Using B14/C14 is harmless but inconsistent.
+  - Recommended fix: Use SUM(B9:B13) and SUM(C9:C13) to be explicit about the rows with data. (Not required, but clearer.)
+
+4) Sheet: Expenditures by Function
+- B19 and C19
+  - Current formulas: B19 = SUM(B9:B18), C19 = SUM(C9:C18)
+  - Issue: Data rows are B9:B17 and C9:C17; B18/C18 are blank. Using B18/C18 isn’t harmful, but be consistent.
+  - Recommended fix: Change to SUM(B9:B17) and SUM(C9:C17) to match actual data.
+
+5) Sheet: Expenditures by Category
+- B15 and C15
+  - Current formulas: B15 = SUM(B9:B14), C15 = SUM(C9:C14)
+  - Issue: Data rows are B9:B13 and C9:C13; B14/C14 blank. Again, harmless but inconsistent.
+  - Recommended fix: Use SUM(B9:B13) and SUM(C9:C13).
+
+6) Sheet: General State Financial Aid
+- C9:C23 formulas are =B9/$B$25 where B25 = SUM(B9:B23)
+  - Note: This is OK (not circular) but be aware each Cn depends on B25 which depends on the B column values. No change required unless you want to avoid the minor dependency style.
+
+Other minor notes and suggestions
+- Many formulas use redundant unary plus signs (e.g., =+C11/H11). These are not errors — Excel ignores the + — but they are inconsistent stylistically. Not required to change.
+- Wherever you see manual "+1" adjustments (and the negative H14), those should be removed and replaced by correct summing/rounding or by reconciling the source data. Manual per-cell adjustments break auditability.
+- After you correct H14 and remove +1 hacks, recalc and verify:
+  - H27 should equal C27 + F27 (total FTEE equals sum of credit + non-credit FTEE).
+  - Percent columns that use Hn/H27 and H11/$H$27 should sum to 1 (or to 100%) within rounding.
+  - Totals (B27, C27, H27, etc.) should be consistent and match the source dataset.
+
+If you want, I can:
+- Provide an exact list of corrected formulas to paste in (e.g., H14 -> =C14+F14, E27 -> =SUM(E11:E25), B27 -> =SUM(B11:B25), etc.), or
+- Produce a corrected version of the workbook (I can supply a list of all replacements to run), or
+- Recalculate and report the corrected totals/percentages after applying these fixes.
+
+Which would you prefer?

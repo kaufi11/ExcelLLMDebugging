@@ -1,0 +1,29 @@
+Summary of problems
+1) O46 is wrong — copy/paste error:
+   - Current O46 numerator uses COUNT(...) instead of SUM(...). That makes the overall percent for row 46 (and any dependent summaries) incorrect.
+
+2) Inconsistent weighting for students with blanks:
+   - The overall formula for O4:O46 uses COUNT(...) in the denominator. COUNT ignores blank cells, so if a student has missing (blank) scores the denominator shrinks and their percent is calculated only from submitted items (missing items are effectively excluded instead of being treated as zero). That will inflate percentages for students who skipped items if you intended missing = 0.
+
+Corrective actions (simple, exact fixes)
+
+A — Fix the O46 typo
+Replace O46 with the correct pattern used in the other rows:
+= (SUM(B46:F46) + SUM(G46:M46) + N46) / ( COUNT(B46:F46)*100 + COUNT(G46:J46)*15 + COUNT(K46:M46)*30 + COUNT(N46)*150 ) * 100
+
+B — Make Overall treat missing as zeros (recommended)
+If you want each student graded out of the full course total (missing = 0), replace O4:O46 with a fixed-denominator formula and copy down. Total course points = 5 exams*100 + 4 OWL*15 + 3 OWL*30 + final*150 = 800. Use:
+= (SUM(B4:F4, G4:M4, N4) / 800) * 100
+
+(Then copy that formula down O4:O46; fix O46 first if you prefer.)
+
+Alternative (keep current behavior)
+- If you intentionally want the percentage to be "points earned ÷ points possible for items submitted" (i.e., exclude blanks), keep the COUNT-based denominator — but ensure blanks are truly intentional and not accidental. Also correct O46 as in A.
+
+After fixes
+- Recalculate/copy formulas for O4:O46 (so O47/O48 and grade distribution counts update correctly).
+- If you use the fixed denominator, the A/B/C/D/F distributions in rows 49–53 for column O will reflect the corrected Overalls.
+
+If you want, I can:
+- Recompute a few example rows with the fixed formula so you can see the difference, or
+- Provide a single formula that treats blanks as zero but still allows for occasional extra-credit columns. Which would you prefer?

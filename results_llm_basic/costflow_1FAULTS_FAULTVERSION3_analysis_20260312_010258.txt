@@ -1,0 +1,70 @@
+I reviewed the workbook and found several consistent problems (wrong references, missing formulas, and confusing sign conventions). Below are the key errors, why they’re wrong, and short, practical fixes you can apply.
+
+Summary of main problems (short):
+- Many formulas point to the wrong cells (off-by-row/column references).
+- Some required formulas are missing (marked “?”).
+- Ending inventory and COGS are stored/used with negative signs inconsistently, causing confusion and errors.
+- Text cells are being referenced where numeric values are expected (e.g., D25 = D6).
+- Average/COGS calculations (periodic vs. perpetual sections) use wrong inputs or order of operations.
+
+Concrete errors + fixes (easy to implement)
+
+1) Wrong beginning inventory references (Valuing Ending Inventory sheet)
+- Problem: I8 is set to =C11 (C11 is not the beginning units). That yields wrong beginning units and breaks all downstream averages.
+- Fix: Set beginning-unit cells to the actual beginning rows:
+  - I8 = C8
+  - K8 = E8
+  - I9 = C9
+  - K9 = E9
+- Why: K10 and J10 (total cost / avg unit cost) must be calculated from the actual beginning purchase rows.
+
+2) Missing / wrong formulas for ending inventory and COGS (periodic weighted average)
+- Problem: K11 and K12 are “?” (no formulas). I11 also uses a confusing sign: I11 = -I10 - SUM(C17:C18).
+- Fix (periodic weighted average):
+  - I10 = SUM(I8:I9) (total units available) — ensure this is correct
+  - I11 (Ending units) = I10 + SUM(C17:C18) — because C17/C18 are negative for sales; this yields the correct positive ending units
+  - J10 (avg unit cost) = K10 / I10
+  - K11 (ending inventory $) = I11 * J10
+  - K12 (COGS $) = K10 - K11
+- Why: Periodic avg requires total cost and total units available; ending units × average unit cost = ending inventory; COGS = total cost − ending inventory cost.
+
+3) Inconsistent sign convention for ending inventory and COGS (Errors sheet)
+- Problem: Ending Inventory entered as negative in B11 (-150,000), then Year 2 beginning inventory uses -B11 to get positive — this is inconsistent and error-prone. Also some formulas use SUM(B10:B11) relying on negative sign.
+- Fix (cleanest approach):
+  - Make ending inventory a positive number (e.g., B11 = 150000, D11 = 125000, F11 = 175000).
+  - Change COGS formulas from SUM(B10:B11) to =B10 - B11 (same for D/F). That’s clearer: Goods Available for Sale − Ending Inventory = COGS.
+  - Year 2 beginning inventory: B27 = B11 (no sign flip).
+- Why: Store inventory amounts positive; calculations become intuitive and less error-prone.
+
+4) Text references used as numeric inputs (Errors sheet)
+- Problem: D25 = D6 and D26 = D7 (D6 contains label “Understating”, D7 contains “Year 1 Inventory”). Those are labels, not numbers.
+- Fix: Replace these with the proper numeric references. For example, if D25 is intended to copy the “Correct” heading from B25, use a label (not a formula) or point to the numeric cells that matter. Do not use text label cells inside numeric calculation ranges.
+- Why: Text-to-number references either return text (breaking intended numeric displays) or break calculations.
+
+5) Off-by-row references in FIFO/LIFO/perpetual sections
+- Problem: Many formulas reference cells like I8 via absolute references or wrong rows (for example many J*/K* cells use K8, K9 etc but upstream inputs were wrong). Examples: H8/I8/I9 chain, J8 uses K8/I8 but both were misreferenced.
+- Fix: Rebuild the flows systematically:
+  - For each purchase row, make Units in column I (or consistent units column) equal to the purchase units in column C of that row.
+  - For each purchase row, make Extended cost in K equal to C * D (units × unit cost).
+  - For running totals where you need units available use SUM over the correct purchase rows.
+  - For FIFO/LIFO perpetual ending inventory rows, compute using the actual remaining units from the purchase rows (use explicit references to the rows that remain).
+- Why: Perpetual FIFO/LIFO depends on the actual layer quantities and costs; any misreference invalidates the whole schedule.
+
+6) Using SUM with negative inventory entries is fragile
+- Problem: Many formulas rely on negative numbers in inventory rows (e.g., B11 is negative). This works but is fragile and confusing.
+- Fix: Use positive balances and explicit subtraction (GoodsAvailable - EndingInventory) or use ABS only where needed.
+- Why: Reduces risk of double-negatives and makes model easier to audit.
+
+Quick checklist you can run to fix the workbook now
+1. Make all beginning and ending inventory amounts positive (no leading minus signs).  
+2. Replace COGS formulas with explicit subtraction: COGS = GoodsAvailableForSale − EndingInventory.  
+3. In the valuation sheet, set each purchase row’s unit and extended cost to the actual purchase row (I8=C8, K8=E8, etc.), then recompute totals: I10 = SUM(I8:I9), K10 = SUM(K8:K9), J10 = K10/I10.  
+4. For periodic weighted average: I11 = I10 + SUM(C17:C18), K11 = I11 * J10, K12 = K10 − K11.  
+5. Remove formulas that point to text labels (e.g., D25 = D6) and instead use either static labels or correct numeric links.  
+6. Scan for any cells with “?” and replace with the appropriate formula from above patterns.
+
+If you want, I can:
+- produce the exact corrected formulas for every affected cell (I can list them row-by-row), or
+- modify a copy of your workbook and return a corrected version (you’d upload the file).
+
+Which would you prefer?

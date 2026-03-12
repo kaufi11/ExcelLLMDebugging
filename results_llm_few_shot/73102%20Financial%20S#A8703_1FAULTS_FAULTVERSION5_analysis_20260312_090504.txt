@@ -1,0 +1,28 @@
+Summary of the problem
+- The sheet has two different "property & equipment" subtotals: row 30 (D30/C30/E30) and row 162 (D162/C162/E162). The detailed fixed-asset lines are in rows 155–161, but many higher-level formulas (Net property D34, Total current assets/Total assets flows) reference row 30. Row 30 is summing the wrong (empty/outdated) range (D24:D29), so Net property (D34) and the asset totals are wrong and the balance (Assets vs Liabilities & Capital) will not reconcile.
+
+Faulty cells (examples)
+- D30, C30, E30 — "Total property and equipment" use =SUM(D24:D29) etc. Those rows are not where the detailed asset amounts live.
+- D34, C34, E34 — "Net property and equipment" use =D30+D32 (or =E30+E32, etc). Because D30 is wrong, D34 is wrong.
+- This propagates to Total Assets and the sheet-level reconciliation (D178 / D283 / H291).
+
+Why this is wrong (short)
+- The detailed asset amounts are in rows 155–161 and their subtotal is D162. Row 30 is summing a different (older/empty) range, so the sheet is mixing two different groupings and under/over‑counts assets.
+
+Quick fixes (pick one)
+Option A — fix the subtotal (recommended)
+1. Change D30 to =SUM(D155:D161) (and C30 =SUM(C155:C161), E30 =SUM(E155:E161)).
+2. Keep D34 = D30 + D32 (and C34/E34 unchanged). This restores the intended flow: gross PPE (row 30) → less accumulated depreciation (row 32) → net PPE (row 34).
+
+Option B — fix the net formula (minimal change)
+1. Change D34 to =D162 + D32 (and C34 = C162 + C32, E34 = E162 + E32).
+This corrects net PPE without changing row 30. Use this only if you prefer not to change the row-30 formula.
+
+What to check after fix
+- Recalculate and verify H291 (or the sheet reconciliation cell) becomes 0 (Assets = Liabilities & Capital).
+- Scan for any other subtotals that reference the older 24:29 ranges and correct them if present (they will cause similar mismatches).
+
+Likely cause
+- Rows were moved/inserted or a layout change left some subtotal formulas pointing to the old ranges (24–29) while the detail moved to 155–161.
+
+If you want, I can list every cell that currently points to the wrong 24:29 range and give exact replacement formulas.

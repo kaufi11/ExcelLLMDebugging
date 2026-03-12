@@ -1,0 +1,50 @@
+Summary of errors (short)
+- Many cells in the FRF sheet column I show the text "FORMULA =SUM(H#-J#)" (and one "FORMULA =COUNT(H20-J20)") instead of actual formulas. They are text labels, not calculations.
+- One formula uses COUNT instead of a subtraction (=COUNT(H20-J20)) — wrong function for computing H–J.
+- Dates/“From/To” fields are inconsistent across sheets (some are day numbers like 23, some are full datetimes like 1994-07-04 00:00:00). Mixed formats will break date calculations.
+- RHB sheets ask “Are there 5 or 6 sensors…?” — the sheet is ambiguous because IDs (PD0–PD5) exist but the metadata/question is unclear.
+
+What the errors cause
+- Column I values do not show the intended "height off bottom" (H − J) because the cells are text.
+- The COUNT formula (if active) would not compute height; if kept as text it does nothing; if made active it still would return wrong results.
+- Mixed date formats prevent correct date arithmetic, filtering, sorting, or creating durations.
+- Ambiguous sensor counts make inventory and downstream data processing unreliable.
+
+How to fix (step-by-step, simple)
+1) Replace the text formulas in FRF sheet with real formulas
+   - Select I5, enter: =H5 - J5
+   - Drag/FILL down for all rows that should compute H − J.
+   - For the bad row with COUNT (I20), replace with =H20 - J20.
+   - If you prefer SUM, use =SUM(H5,-J5) but =H5-J5 is simplest and clearer.
+
+2) If the cells still show text after step 1 (because they were text-formatted or prefixed with "FORMULA " or an apostrophe)
+   - Use Find & Replace: Find "FORMULA =" (including the space), Replace with "=". Then ensure cells are not text-formatted:
+     - Home → Number Format → General, then double-click a cell and press Enter (or press Ctrl+Enter) to re-evaluate.
+   - Or paste the working formula down as described in step 1 (that forces Excel to store a formula).
+
+3) Make sure H and J are numeric
+   - If any H or J show "N/A" or text, either remove those entries or use an IF to avoid errors, e.g.:
+     - =IF(AND(ISNUMBER(H5),ISNUMBER(J5)),H5-J5,"")
+   - This prevents #VALUE! if J or H are text.
+
+4) Fix inconsistent dates
+   - Decide on one date format (recommended: real Excel date/time).
+   - Convert cells that contain day numbers (23, 30, 12, etc.) to dates (for example, if these are days in August 1994 use =DATE(1994,8,B7) or enter full dates).
+   - Use Text to Columns or DATEVALUE if cells are text datetimes like "1994-07-04 00:00:00".
+   - Ensure the column is formatted as Date/Date-Time.
+
+5) Resolve the RHB sensor-count ambiguity
+   - Count the pore-pressure sensors programmatically to remove doubt:
+     - To count rows whose ID starts with "PD": =COUNTIF(A10:A17,"PD*")
+     - To count rows whose Type contains "Pressure": =COUNTIF(M10:M17,"*Pressure*")
+   - Update the note text (D19:D20) with the actual count or remove it once verified.
+
+Why these fixes work (one-liners)
+- Replacing the text with =H#-J# gives Excel a real formula and returns the numeric difference.
+- Removing the "FORMULA =" text and ensuring cell format is General turns those cells back into working formulas.
+- Converting dates to real Excel dates allows arithmetic and consistent sorting/filtering.
+- Counting IDs or types with COUNTIF gives an objective sensor count.
+
+If you want, I can:
+- Provide the exact Find & Replace patterns and a one-line macro to fix all I-column entries at once.
+- Build the COUNTIF formulas for the RHB sheets and return the sensor count. Which do you prefer?

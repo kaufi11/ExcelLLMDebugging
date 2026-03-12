@@ -1,0 +1,26 @@
+I checked the workbook. I found three clear formula mistakes (two are duplicates across sheets). Short explanation + fix for each:
+
+1) Wrong % calculation for "Total Funds" (annex e and annex f)
+- Fault: K68 = K48 (copies the % for Total Net Assets) instead of calculating the % variance for Total Funds.
+- Why it’s wrong: K68 should show J68 as a % of H68, not reuse another cell's result. This gives an incorrect variance% and can hide real mismatches.
+- Fix (replace K68 with): =IF(H68=0,"N/A",(J68/H68)*100)
+- Apply the same fix on both annex e and annex f (both currently point to K48).
+
+2) Reconciliation with balance sheet in annex g (two cells)
+- Faults:
+  - T26 = T19 - ('annex f'!H20 + 'annex f'!H21)
+  - T49 = T42 - ('annex f'!I20 + 'annex f'!I21)
+- Why it’s wrong: those formulas subtract only Investments (H20/I20) + Cash (H21/I21). The template label says "cash as in balance sheet inc short term investments and bursary/hardship funds" — that total is already calculated on annex f as H22 / I22 (Total Current Assets or the specific "cash as in balance sheet" line). Using H22/I22 is clearer and less error-prone.
+- Fixes:
+  - T26 = T19 - 'annex f'!H22
+  - T49 = T42 - 'annex f'!I22
+
+3) Underlying operating surplus sum range (Annex I)
+- Fault: H27 = SUM(H10:H26)
+- Why it’s wrong: H10 is a header/label cell (not part of the items to sum). Including H10 is harmless if it's text, but it's sloppy and could hide errors if H10 ever becomes numeric.
+- Fix: H27 =SUM(H11:H26)
+
+Optional check (recommendation)
+- After making the fixes, recalc and verify the " THESE CELLS MUST BE ZERO " checks (H73/I73/J73 etc and the cashflow zero checks in annex g). Those checks will confirm no other linking errors remain.
+
+If you want, I can give the exact cell-change list you can paste into Excel or a short macro to fix all three problems.

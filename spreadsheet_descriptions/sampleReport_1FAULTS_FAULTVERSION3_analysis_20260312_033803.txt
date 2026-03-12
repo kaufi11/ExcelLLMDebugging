@@ -1,0 +1,74 @@
+Overview
+- Workbook contains five financial-statement style sheets: OP_EXP (Schedule I — Operating Expenses), Bal Sht (Balance Sheets), Income (Statements of Operations), Stkhold.Equity (Statements of Partners’ Equity), Cash Flows (Statement of Cash Flows).
+- Layout convention: column J holds 2002 amounts, column L holds 2001 amounts. Columns I and K are used as currency/“$” labels.
+
+Sheet-by-sheet summary
+
+1) OP_EXP (Schedules of Project Operating Expenses)
+- Sections: Administrative, Utilities, Operating & Maintenance, Marketing & Leasing, Tax & Insurance.
+- Each section lists expense line items (column B) with currency labels in I/K and amounts in J (2002) and L (2001).
+- Section totals use SUM over the section ranges:
+  - Total Administrative: J23 = SUM(J9:J21), L23 = SUM(L9:L21)
+  - Total Utilities: J30 = SUM(J26:J28), L30 = SUM(L26:L28)
+  - Total Operating & Maintenance: J46 = SUM(J33:J43), L46 = SUM(L33:L44) (note L-range extends to row 44)
+  - Total Marketing & Leasing: J58 = SUM(J49:J55), L58 = SUM(L49:L55)
+  - Total Tax & Insurance: J69 = SUM(J61:J67), L69 = SUM(L61:L67)
+- Contains placeholders for dollar signs and many blank $ amount cells. Includes auditor note at G72.
+
+2) Bal Sht (Balance Sheets)
+- Sections: Investment in Real Estate (land, building, CI, furniture, less accumulated depreciation → net investment), Other Assets (cash, receivables, reserves, deposits, capitalized costs).
+- Totals:
+  - Total Other Assets: J34 = SUM(J21:J33), L34 = SUM(L21:L33)
+  - Total Assets: J36 = SUM(J23:J35), L36 = SUM(L23:L35) (note these ranges reference rows for net investment + other assets)
+- Liabilities list (mortgage, A/P, accrued items, due to GP, deposits). Total Liabilities: J49 = SUM(J40:J48), L49 = SUM(L40:L48).
+- Partners’ Equity section with total formula placeholders: J52 = SUM(J51:J51) (odd single-cell sum), J55 = J49 + J52, L55 analogous.
+- Some zero placeholders for Limited Partner Receivable and Syndication Costs; includes notes references.
+
+3) Income (Statements of Operations)
+- Income section: Gross potential tenant and subsidy rent, vacancy, net residential and commercial rent:
+  - Net Residential: J10 = SUM(J7:J9), L10 = SUM(L7:L9)
+  - Net Commercial: J13 = SUM(J11:J12), L13 = SUM(L11:L12)
+  - Total Rental Income: J14 = J10 + J13; L14 = 748 + L13 (hard-coded +748 — flagged)
+- Total Income: J20 = SUM(J14:J19), L20 = SUM(L14:L19).
+- Operating expenses pulled from Schedule I lines (J23:J28); Total Operating Expenses: J29 = SUM(J23:J28), L29 = SUM(L23:L28).
+- Net Operating Income: J32 = J20 - J29.
+- Partnership & Financial expenses: J42 = SUM(J35:J40).
+- Net income progression:
+  - Before depreciation/amortization: J45 = J32 - J42
+  - Net income before extraordinary: J51 = J45 - J47 - J49
+  - After extraordinary & cumulative items: J57 = J51 - J54; J62 = J57 + J60
+- Several placeholders for depreciation, amortization, extraordinary items.
+
+4) Stkhold.Equity (Statements of Partners’ Equity)
+- Columns K = General Partner, M = Limited Partner, O = Total (sums across K:M).
+- Rows for opening balances, capital contributions, net income, year-end balances.
+- Key formulas:
+  - O9 = SUM(K9:M9)
+  - O11 = SUM(K11:M11), O13 = SUM(K13:M13)
+  - Year-end balances: K15 = SUM(K9:K13), M15 = SUM(M9:M13), O15 = SUM(K15:M15)
+  - Consistency checks using IF: O17 = IF(SUM(K17:M17)=SUM(O9:O15), SUM(O9:O15),"off") and similar O21 check.
+- Note: sheet header reads “YEARS ENDED DECEMBER 31, 2001 AND 2001” (typo).
+
+5) Cash Flows (Statement of Cash Flows)
+- Sections: Operating activities (net income reconciliation with depreciation/amortization, working capital changes), Investing activities (capex, capitalized costs, reserve movements), Financing activities (capital contributions, mortgage proceeds/payments).
+- Key formulas:
+  - Net cash from operating: J34 = SUM(J9:J32) (sums reconciliation lines)
+  - Net cash from investing: J45 = SUM(J37:J42)
+  - Net cash from financing: J54 = SUM(J48:J51)
+  - Net increase (decrease) in cash: J56 = J54 + J45 + J34
+  - Cash ending: J58 = SUM(J56:J57) (adds beginning balance)
+- Includes supplemental disclosure line for cash paid for interest.
+
+Key observations / potential issues (quick)
+- Column mapping: J = 2002 amounts, L = 2001 amounts; I and K are label columns with “$”.
+- Several formulas include oddities/hard-coding:
+  - Income!L14 = 748 + L13 (hard-coded 748)
+  - Bal Sht: J52 = SUM(J51:J51) (redundant/single-cell sum)
+  - OP_EXP: L46 sums to L44 though the J-range ends at J43 (possible off-by-one)
+- Header typo on Stkhold.Equity (2001 repeated).
+- Many cells are placeholders (currency labels or blank) — actual numeric data not present in the excerpt; totals rely on numeric entries in J and L columns.
+- Several cross-references to notes (e.g., Notes 2, 3, 5, 9, 14) indicate supporting schedules/footnotes expected.
+
+If you want, I can:
+- Validate formulas for off-by-one or range errors and propose corrected ranges.
+- Generate an error-check list (e.g., hard-coded values, single-cell SUMs) and suggested fixes.

@@ -1,0 +1,36 @@
+Summary of errors
+1) Faulty formula in J14
+   - Current: =IF(I$39>50,I14/I$39,50)
+   - Problem: The logic and fallback value are wrong. It checks >50 (should check >0) and returns 50 when false (nonsensical for a ratio). Looks like a typographical error.
+
+2) Inconsistent / fragile references to the grand total (I39)
+   - Examples: J13 =IF(I$39>0,I13/I$39,0) (locks row only), F40 =IF($I39>0,F39/$I39,0) (locks column only), many others use different mixes of $.
+   - Problem: Inconsistent use of absolute references will produce incorrect results if formulas are copied or moved. It also makes auditing harder.
+
+Optional (minor) note
+   - J39 =IF(I$39>0,I39/I$39,0) always returns 1 when I39>0 (since it divides the cell by itself). That may be intentional (total = 100%) but is redundant—could be simplified.
+
+Fixes (simple and safe)
+1) Correct J14:
+   - Replace with: =IF($I$39>0,I14/$I$39,0)
+   - Why: checks total > 0, returns the proper proportion of row I14 to the grand total, and returns 0 if total is zero.
+
+2) Standardize the grand-total reference everywhere to absolute $I$39
+   - Replace occurrences like I$39, $I39 or plain I39 with $I$39 in formulas that must always refer to the grand total cell.
+   - Example corrections:
+     - J13 -> =IF($I$39>0,I13/$I$39,0)
+     - J15 -> =IF($I$39>0,I15/$I$39,0)
+     - F40 -> =IF($I$39>0,F39/$I$39,0)
+     - H40 -> =IF($I$39>0,H39/$I$39,0)
+     - I40 -> =IF($I$39>0,I39/$I$39,0)  (or =IF($I$39>0,1,0) if you want a clearer total percent)
+   - Why: $I$39 locks both column and row so all formulas always divide by the intended grand total, safe for copying and clearer.
+
+3) Optional simplify J39 (if you want clearer intent)
+   - Replace =IF($I$39>0,I39/$I$39,0) with =IF($I$39>0,1,0) or simply =1 (if you always want total = 100% and I39 will be >0).
+
+Quick checklist to apply
+- Change J14 immediately (it’s definitely wrong).
+- Do a find/replace or manually update formulas that reference the total so they use $I$39.
+- Recalculate and verify that all row proportions sum to 1 (or 100%) in the totals row.
+
+If you want, I can produce a list of every cell in column J and F:H40 that should be changed and give exact replacement formulas.

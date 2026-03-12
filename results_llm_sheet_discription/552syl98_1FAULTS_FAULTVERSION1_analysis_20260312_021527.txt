@@ -1,0 +1,16 @@
+Findings — the error
+- Cell B36 has the wrong formula: it is =B33-7. That produces dates that jump backwards and causes all dates from row 39 onward to be incorrect (they reference B36).
+- Intended schedule: rows proceed Fri -> next Mon is +3 days, then +2, +2 within the week. B36 should follow B35 (the previous Friday).
+
+Fix (quick)
+1. Change B36 to:
+   =B35+3
+2. Keep B37 and B38 as they are (they are =B36+2 and =B37+2 respectively). They will then become the Mon/Wed/Fri break dates.
+3. No other changes needed — B39 (=B36+7) and subsequent formulas will now produce the correct continuation.
+
+Why this fixes it (simple)
+- Your pattern is Fri -> next Mon = +3 days, then Mon->Wed = +2, Wed->Fri = +2. B33-7 was subtracting a week from a Monday date instead of advancing from the prior Friday, which shifted the calendar backward by a week. Using B35+3 follows the actual weekday gap and restores the correct sequence.
+
+Other minor notes (optional)
+- Leading plus signs in formulas (=+B16+2) are harmless but redundant — you can remove the leading plus.
+- The repeated URL in many single cells (G6:IV6, G7:IV7) is inefficient. If it's intended as a wide header, select the range and use Merge & Center (or Center Across Selection) and put the URL in one cell.

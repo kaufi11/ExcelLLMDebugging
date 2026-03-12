@@ -1,0 +1,20 @@
+Summary — main error found (short and clear)
+
+1) Faulty cell: SG1!F53
+- Error type: Formula/mechanical error.
+- Problem: F53 is =COUNT(F7:F51). COUNT returns the number of numeric cells, not the sum of entries for 2002. This gives a count (e.g. 45) rather than the total entries value, so any downstream calculations that use F53 (SG1!G53, SG1!F63, SG1!G63, Totals/percent changes) are wrong.
+- Fix: Replace the formula with =SUM(F7:F51)
+
+2) Dependent errors (will be corrected once #1 is fixed)
+- SG1!G53 currently =(F53-E53)/E53 uses the wrong F53. After fixing F53 to SUM, G53 will show the correct change %.
+- SG1!F63 (=SUM(F53:F61)) and SG1!G63 (=(F63-E63)/E63) are also wrong now because they use the incorrect F53; they will be correct after the F53 fix.
+
+Additional recommendation
+- Some cells in the F column (e.g. SG1!F44) contain text "-" instead of a numeric 0 or a blank. SUM will ignore text, but if you expect a zero you should replace "-" with 0 (or leave blank and treat as missing). Do not use "-" for numeric cells if you intend them to be summed.
+
+What to do (copy-paste)
+- Change SG1!F53 to:
+  =SUM(F7:F51)
+- Optionally replace "-" entries (e.g. F44) with 0 or blank.
+
+That will correct the totals and percentage-change calculations in SG1 (and the Totals in SG1 that depend on them).

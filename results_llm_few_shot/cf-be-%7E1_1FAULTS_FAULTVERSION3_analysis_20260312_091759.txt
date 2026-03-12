@@ -1,0 +1,53 @@
+Summary — main problems I found and how to fix them (short & simple)
+
+1) Wrong function used (logical bug)
+- Problem: Year 1, D6 = COUNT(D55)
+- Why: COUNT tells how many numbers are in D55 (returns 1), not the cash amount.
+- Fix: replace with a direct reference: D6 = D55  (or =SUM(D55) if you insist on SUM)
+
+2) Beginning-of-month cash links are inconsistent / point to wrong cells
+- Problem: Row 6 (C6..N6) and the Year‑2 equivalents use formulas like =SUM(B55), =SUM(C55), or refer to the wrong sheet/cell (some refer to same-sheet cells that are not the prior month end). In Year‑2 many C6/D6/etc point to Year‑2 cells instead of Year‑1 end-of-year values.
+- Why: Beginning-of-month cash should equal the previous month’s “CASH POSITION END OF MONTH” (row 55), or for Year‑2 month1 it should pick up Year‑1 month12.
+- Fix (pattern): For every month column use the previous column’s row55.
+  - Example (on a single-year sheet): In D6 put =C55, in E6 put =D55, etc. For month1 (first month column) point to startup/opening cash as appropriate.
+  - Example (Year‑2 month1): B6 = 'Year 1'!N55 (carry forward Year‑1 month12). Then C6 = 'Year 1'!C55? — usually you want Year‑2 month2 beginning = Year‑2 month1 end, so set the whole chain consistently.
+
+3) Mis‑aligned totals / wrong row references (mechanical)
+- Problem: Some Oxx cells are shifted (e.g. in Year2 the Payroll Expenses row shows O22 where O20 is expected; there are stray O21/O22 entries).
+- Why: Rows appear shifted or copied incorrectly so totals/subtotals sum wrong ranges.
+- Fix: Audit rows 17–22 and make sure each row’s O column formula is SUM(C#:N#) for that same row number. Example: O20 should be =SUM(C20:N20), O21 = =SUM(C21:N21), etc.
+
+4) Inconsistent / incorrect variance formulas
+- Problem: Variance formulas are inconsistent across the Var sheets (some use (D–C)/C, others use (C–B)/B). Also some divide by zero risk.
+- Why: Inconsistent column mapping of Budget vs Actual leads to wrong % change values.
+- Fix (standardize): Decide which column is “Budget” and which is “Actual” and use one formula pattern with zero-check:
+  - Example if C = Budget and D = Actual:
+    - Variance =IF(C=0,NA(),(D-C)/C)
+  - Replace all different formulas with that consistent formula.
+
+5) Unnecessary use of SUM() around single arithmetic expressions (style)
+- Problem: Many cells use SUM(B15+B14) or SUM(B15-B54). These work but are confusing.
+- Fix (cleaner): Use plain arithmetic:
+  - =B15+B14  or  =B15-B54
+  (Not an error but makes the sheet clearer and reduces copying mistakes.)
+
+6) Self-referencing % formulas that look wrong (check intention)
+- Example: P57 = +O57/O$57 in some sheets divides O57 by O$57 (same cell) — yields 100% for sales row (that may be intended). If it wasn’t intended, change the denominator to the correct total-of-sales cell.
+- Fix: If row is “Sales Volume” then % of sales = O57 / total sales (which for that row equals 100%); otherwise change denominator to the true total.
+
+How to proceed (recommended quick checklist)
+1. Fix D6 (COUNT → direct reference).
+2. For row 6 on each sheet, change each month cell to reference the previous month’s row55 (and for Year‑2 month1 link to Year‑1 month12).
+   - Example single-year chain: C6 = B55, D6 = C55, E6 = D55, … N6 = M55
+   - Year‑2 month1: B6 = 'Year 1'!N55
+3. Correct O20/O21/O22 misplacements — make each O-row sum the same row’s C:N range.
+4. Replace all variance formulas with a single consistent formula:
+   - =IF(BudgetCell=0,NA(),(ActualCell-BudgetCell)/BudgetCell)
+5. Replace odd SUM(...) uses like SUM(B15-B54) with =B15-B54 (for clarity).
+6. After changes, recalc and verify subtotals and that month-to-month beginning = prior month end.
+
+If you want, I can:
+- Give an exact cell-by-cell list of corrected formulas for row6 and for specific misaligned O20/O21/O22 cells, or
+- Produce a short macro / find-and-replace plan to fix the repeated problems across all sheets.
+
+Which would you prefer?

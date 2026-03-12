@@ -1,0 +1,52 @@
+I inspected the formulas in "Homework4 Estimating Reliabilit" and found the following formula errors and inconsistencies. For each issue I give the cell(s), what is wrong, why it matters, and a suggested fix.
+
+1) Wrong / hard-coded cross-product in Problem 1
+- Cells: H5 (and as a consequence H8 and B11)
+- Current: H5 contains =5 (constant). H8 = SUM(H5:H7) -> 5.120002 and B11 (rxx') = 2.1329 (>1).
+- Problem: H5 should be the cross-product (x1 - mean1) * (x2 - mean2) for subject 1. A hard-coded 5 inflates the numerator of the correlation and yields an impossible reliability > 1.
+- Fix: change H5 to =D5*F5. Then re-evaluate H8 and B11.
+
+2) Mislabel / confusing use of SQRT in Problem 2 (split-half)
+- Cells: N27 and P27
+- Current: N27 = SQRT(N26), P27 = SQRT(P26) but the row label is "mean" (A27 / J27 show "mean").
+- Problem: these cells compute square roots of summed squared deviations (i.e., square root of the sums), not means. The label "mean" is misleading. (Also elsewhere the correlations are computed using sqrt of sums which is fine, but the label should reflect SD / sqrt(sum squares).)
+- Fix: change the label to "SD (sqrt(sum squares))" or "sqrt(sum squares)" (or, if you intended standard deviations, divide by n or n−1 appropriately before taking SQRT).
+
+3) Inconsistent use of sample vs population variance (KR21 vs KR20)
+- Cells: B103 vs B124 and related KR21/KR20 formulas
+- Current:
+  - B103 (Sample variance) = (C100 - (B101/5)) / 4  — sample variance (divide by n−1 = 4).
+  - B124 (Population variance) = (C121 - (B122/5)) / 5 — population variance (divide by n = 5).
+  - B104 contains the unadjusted KR21 expression 1 - ((B102*(5-B102))/(5*B103)); F104 applies the k/(k−1) correction.
+  - B125 uses B124 in KR20: =(5/(5-1))*(1-((J113)/B124))
+- Problem: KR20 and KR21 use the variance of test scores (σ^2_X). One should be consistent about whether that variance is the sample variance (n−1) or population variance (n). Using sample variance for KR21 and population variance for KR20 is inconsistent and can produce confusing / non-comparable results.
+- Recommendation: decide whether you want sample or population variance for reliability estimates (typically one uses sample variance s^2 for sample-based estimates). If you want sample variance for both, change B124 to sample variance:
+  - Suggested: B124 = (C121 - (B122/5)) / 4
+  Then B125 will be computed with the same variance basis as KR21.
+  If you intentionally used population variance for KR20 (and sample variance for KR21), add a comment in the sheet explaining the difference.
+
+4) Label / heading inconsistencies and minor typos
+- Cells/areas:
+  - A27, J27 labeled "mean" while N27/P27 are SQRTs (see #2).
+  - A102 shows "Averag Student Score" (typo).
+  - G22 header "(x3-mne)sqrd" appears to be a typo/wrong label (should be "(xe-mne)^2" or similar).
+- Fix: correct the textual labels to reflect what each cell actually contains (mean, SD, squared deviation, etc.) and fix typos.
+
+5) Possible check: mean inter-item correlation selections in Problem 4
+- Cells: B44 (mean rij), H44 (mean rij if reverse q5), B46..F46 (mean rij if item deleted)
+- Note: these formulas manually sum the 10 unique off-diagonal correlations (and their sign changes when reversing q5). I did not detect a specific incorrect cell reference, but because the terms are entered manually it's easy to introduce an omission or duplication. I recommend:
+  - Recompute the mean off-diagonal correlations using explicit ranges or a reproducible formula to avoid missing/duplicated terms (e.g., create a symmetric matrix range and average the upper triangle programmatically).
+  - Verify the sign switches for reversed item 5 cover every correlation that involves item 5.
+
+6) Result checks that indicate errors (sanity checks)
+- B11 (rxx') > 1 — symptomatic of issue (1).
+- Negative reliabilities (KR21 / KR20) — mathematically possible if observed variance is too small relative to model terms, but these negative values are surprising and you should confirm the variance basis (see #3). After correcting H5, re-check reliabilities in Problem 1.
+
+Summary of immediate actionable fixes
+1. Change H5 to =D5*F5. Recalculate H8 and B11 (rxx').
+2. Correct labels N27/P27 from "mean" to "sqrt(sum squares)" or compute proper SD if that was intended.
+3. Make variance basis consistent for KR21 and KR20. Recommended: use sample variance (divide by n−1) for both. Replace B124 with =(C121-(B122/5))/4 if you follow that route. Add a comment noting chosen convention.
+4. Fix typos / header labels (A102, G22, etc.).
+5. Optionally, convert manual sums of unique off-diagonals (Problem 4) to formulas that reference the matrix cells explicitly to reduce human error.
+
+If you want, I can produce the exact corrected formulas to paste into the sheet (I already showed H5 =D5*F5 and an example for B124). Tell me which corrections you want me to produce explicitly and I will list them.

@@ -1,0 +1,30 @@
+Short answer — the sheet has two problems. Fixes and why:
+
+1) Typo / wrong cell reference (bug)
+- Problem: Cell C35 contains = $C$21*$B20*C29 but B20 does not exist. This makes the Midwest→California opportunity cost wrong (it produces #REF or wrong value).
+- Fix: Replace C35 with the correct reference to the Midwest "average daily" cell (B19) if your opportunity-cost formulas use the B-column daily-dollar values. Example corrected formula:
+  C35 = $C$21 * $B19 * C29
+- Why: B19 is Midwest daily-dollar volume (consistent with B33/B34). Using B20 was a typo.
+
+2) Potential inconsistency / unit mismatch (data vs formulas)
+- Symptom: Opportunity-cost formulas use B17:B19 while processing-cost formulas use C17:C19. That looks like a mixed use of "average daily" vs "yearly checks".
+- What to check:
+  - If B17:B19 are average daily dollar volume and C17:C19 are yearly check counts, the current pattern is OK: opportunity = cost_of_capital * daily_dollars * days_float; processing = yearly_checks * per-check_fee.
+  - If B17:B19 are daily check counts (not dollars) or you intended to use yearly counts for opportunity cost, then the opportunity-cost formula must be changed (you must convert days to fraction of year and/or multiply by average check dollar amount).
+- Correct patterns (choose the one that matches your labelled data):
+  - If B-col = average daily dollars (current likely intent):
+    - Opportunity (East→PA) B33 = $C$21*$B17*B27  (and similarly for other cells)
+    - Processing (East→PA) B39 = $C17*B$6  (yearly checks * per-check fee — as you have)
+  - If C-col = yearly checks and you want to compute opportunity from counts, use:
+    - Opportunity = cost_of_capital * (annual_checks * avg_check_value) * (days_float / 365)
+    - Example: B33 = $C$21 * $C17 * Avg_Check_Value * (B27/365)
+
+What to do now (step-by-step)
+1. Fix the typo: change C35 to =$C$21*$B19*C29 (or to the corresponding cell if you decide to use C19 instead).
+2. Confirm what B17:B19 and C17:C19 actually are (daily dollars vs yearly counts).
+3. Make formulas consistent with that decision:
+   - If B = daily dollars, leave opportunity formulas using B17..B19 and keep processing formulas using C17..C19 (as they already do).
+   - If you want everything on an annual basis, convert days to fraction of year (days/365) and multiply by annual dollar volume or include avg check $ amount.
+4. Recalculate and check the objective cell H52 — it will then show the correct cost.
+
+If you tell me which column (B or C) contains daily-dollar volume vs yearly check counts (and whether you have an average check dollar amount), I’ll give the exact corrected formulas for every cell.

@@ -1,0 +1,19 @@
+Faulty cell
+- C19
+
+Error type
+- Wrong lookup reference (mechanical/logical).
+
+What’s wrong (short)
+- C19 uses HLOOKUP(H16, R5:AW15, 3, TRUE) but H16 is empty. It should look up the character’s Endurance value (G16). Because of this, C19 returns the wrong value (or #N/A), and everything that depends on B19:E19 (Product → Hit Points, Damage, etc.) is wrong.
+
+Fix (exact formula)
+- Replace the formula in C19 with:
+  =HLOOKUP(G16,$R$5:$AW$15,3,TRUE)
+
+Why this fixes it (short)
+- The HLOOKUP top row (R5:AW5) holds attribute breakpoints; row_index 3 returns the Endurance-related row. Using G16 (Endurance) instead of H16 gives the correct column match and the correct Endurance-hit modifier. That corrects C19 and all downstream calculations (F19, G19, B20, etc.).
+
+Extra tip
+- Lock the lookup range to avoid accidental changes:
+  =HLOOKUP(G16,$R$5:$AW$15,3,TRUE)

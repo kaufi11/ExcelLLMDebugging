@@ -1,0 +1,48 @@
+Short summary of the problem
+- Several applicant score formulas point to the wrong weight cells on the Rate sheet, so some competency scores (and totals in Summary) are incorrect.
+- One cell on Ap3 (L20) is hard-coded to 5 instead of using the standard IF weighting formula.
+
+Why this is wrong
+- Each competency text cell on the Ap sheets (B16:B20 and B29:B33) pulls the question from Rate!G11:G20. Their score formulas must use the matching Rate!E11:E20 weight. Wrong E references produce wrong weighted points and wrong totals.
+
+Exact errors (by sheet & cell) and fixes
+Apply these replacement formulas (copy/paste into each listed cell):
+
+Ap1
+- 'Ap1'!L19 (was referencing Rate!E14) — replace with:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- 'Ap1'!L32 (was referencing Rate!E17) — replace with:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- 'Ap1'!L33 (was referencing Rate!E18) — replace with:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap2
+- 'Ap2'!L19 (was referencing Rate!E14) — replace with:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- 'Ap2'!L32 (was referencing Rate!E17) — replace with:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- 'Ap2'!L33 (was referencing Rate!E18) — replace with:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap3
+- 'Ap3'!L19 (was referencing Rate!E14) — replace with:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- 'Ap3'!L20 (was hard-coded =5) — replace with the normal proficiency formula:
+  =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+- 'Ap3'!L32 (was referencing Rate!E17) — replace with:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- 'Ap3'!L33 (was referencing Rate!E18) — replace with:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Optional: make it future-proof (recommended)
+- Instead of hard-coded Rate!Enn references that break when rows are moved/edited, use INDEX/MATCH to find the weight by matching the question text:
+  Example (replace any L cell formula):
+  =IF(K16=2, INDEX(Rate!$E$11:$E$20, MATCH(B16, Rate!$G$11:$G$20, 0))*0.33,
+     IF(K16=3, INDEX(Rate!$E$11:$E$20, MATCH(B16, Rate!$G$11:$G$20, 0))*0.66,
+     IF(K16=4, INDEX(Rate!$E$11:$E$20, MATCH(B16, Rate!$G$11:$G$20, 0))*1,0)))
+- This avoids manual mapping errors if rows are inserted/reordered.
+
+What to expect after fixing
+- Applicant row totals and the Summary totals will update to correct values because each competency will use its proper weight.
+
+If you want, I can produce the exact INDEX/MATCH formulas for every L cell so the workbook becomes robust to future changes.

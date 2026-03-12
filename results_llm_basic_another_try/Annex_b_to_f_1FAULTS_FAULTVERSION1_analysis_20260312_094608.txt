@@ -1,0 +1,43 @@
+Errors found:
+
+1. In "Table 1.0 I & E - Annex D" sheet:
+   - Cell B34 has formula `=525+1`, which is incorrect as row numbers are around 30s, not 500s. This will cause a #REF! error.
+   
+2. In "Table 2.0 BS - Annex E" sheet:
+   - Cell K69 uses formula `=K49` for "Total Funds" variance %, but K49 is variance in total net assets, not variance %.
+   - This inconsistency may cause incorrect % variance display.
+
+3. In "Table 3.0 CF - Annex F" sheet:
+   - In row 18 (Balance b/f), formulas like `=H19`, `=I19`, etc. refer to the next row's balance c/f, causing circular reference or incorrect carry forward.
+   - Balance b/f should refer to previous month's balance c/f, not next row.
+
+4. General:
+   - Many % variance formulas use `IF(Hx=0,"N/A",(Jx/Hx)*100)` which is correct, but if original forecast (Hx) is zero, variance % shows "N/A". This is expected but should be noted.
+
+Solutions:
+
+1. Fix B34 in "Table 1.0 I & E - Annex D":
+   - Change formula from `=525+1` to `=B31+1` or appropriate previous row +1 to maintain sequence.
+   - This will fix #REF! error and maintain correct row numbering.
+
+2. Fix K69 in "Table 2.0 BS - Annex E":
+   - Change formula from `=K49` to `=IF(H69=0,"N/A",(J69/H69)*100)` to correctly calculate variance % for Total Funds.
+   - This ensures % variance matches other rows.
+
+3. Fix Balance b/f formulas in "Table 3.0 CF - Annex F":
+   - Change formulas in row 18 from `=H19`, `=I19`, etc. to refer to previous month's balance c/f, e.g., for I18 use `=H18`, for J18 use `=I18`, and so on.
+   - This avoids circular references and correctly carries forward balances month-to-month.
+
+Explanation:
+
+- Row numbering must be sequential and logical; referencing a large unrelated number causes errors.
+- % variance must be calculated as (Variance / Original Forecast) * 100, not copied from other unrelated cells.
+- Balance b/f is the closing balance from previous period, so it must refer backward, not forward.
+- Using IF to handle division by zero is correct to avoid errors.
+
+Summary:
+
+- Correct B34 formula to proper row reference.
+- Correct K69 formula to calculate % variance properly.
+- Adjust Balance b/f formulas to refer to previous month's closing balance.
+- These fixes will resolve errors and ensure accurate calculations.

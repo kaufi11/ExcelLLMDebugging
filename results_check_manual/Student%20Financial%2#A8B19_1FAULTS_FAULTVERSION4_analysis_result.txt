@@ -1,0 +1,37 @@
+I reviewed the formulas and values on each sheet and found a few formula inconsistencies / likely errors in the "Tution and Fees" sheet. No #REF, #DIV/0 or other Excel error codes were present — the issues are logical/inconsistency type problems. Details and recommended fixes below.
+
+Summary of issues (by sheet and cell)
+
+Sheet: "Tution and Fees"
+
+1) Cell F8 (Room and Board On-Campus, 2003-2004)
+- Current: value 4892 (no formula).
+- Inconsistency: F9 = 2466 (Room Only) and F10 = 1806 (Board Only). 2466 + 1806 = 4272, not 4892.
+- Why it matters: other totals (F11, F12, etc.) use F8; having F8 not equal to the component parts makes totals inconsistent or misleading.
+- Suggested fix: verify the correct components. If F8 should be the sum of the two component cells, replace with:
+  =F9+F10
+  Or, if the 4892 figure is correct, explain/label why it's different from the sum of F9 and F10 (e.g., includes an extra charge) and document that.
+
+2) Cell H8 (Room and Board On-Campus, 2001-2002)
+- Current: formula =H9+733 (value 2791).
+- Inconsistency: H10 is 1806 (Board Only). The natural expected formula would be H9+H10 (2058 + 1806 = 3864), but sheet uses 733 instead of referencing H10.
+- Why it matters: mixing a literal 733 with the component H10 (1806) produces inconsistent/incorrect aggregation compared with other columns (G and I use component sums).
+- Suggested fix: either change formula to:
+  =H9+H10
+  or correct H10 to 733 if the board-only value for that year should be 733. Verify the intended values and update accordingly.
+
+3) Cell G36 (Required Fees, 12 & Above, 2003-2004)
+- Current: value 584 (no formula).
+- Inconsistency: other "Required Fees" cells (D36, E36, F36, H36, I36, J36, K36) use SUM of the fee rows (e.g., =SUM(D21:D29)). G36 is the only required-fees cell in that block that is hard-coded rather than using =SUM(G21:G29).
+- Why it matters: calculations that rely on G36 (e.g., G37 = SUM(G34:G36)) will reflect the hard-coded value 584, which may be incorrect if any of the fee components in G21:G29 change.
+- Suggested fix: replace the hard-coded value with:
+  =SUM(G21:G29)
+
+Notes / Observations
+- Columns G and I for "Room and Board On-Campus" use component sums (G8 = G9+G10, I8 = I9+I10). Columns F and H are inconsistent relative to that pattern (F8 hard-coded, H8 uses literal 733). That pattern inconsistency suggests either data-entry errors or that different components were intended; please confirm the intended logic.
+- Many totals (F11, F12, F36, etc.) depend on the cells flagged above, so correcting those will affect higher-level totals — verify after changes.
+- No formula-syntax errors (no #VALUE!/#REF!/#DIV/0!, etc.) were found; these are logical/data consistency issues.
+
+If you want, I can:
+- Produce the corrected formulas ready-to-paste into the workbook, or
+- Recompute the affected totals assuming the component sums (i.e., override F8 with F9+F10 and H8 with H9+H10) and show the new totals.

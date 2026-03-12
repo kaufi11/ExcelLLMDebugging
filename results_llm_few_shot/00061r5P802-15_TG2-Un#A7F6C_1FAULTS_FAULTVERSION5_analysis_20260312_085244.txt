@@ -1,0 +1,15 @@
+Faults found
+1) Cell A31 — wrong formula.
+   - Problem: A31 contains =A30-1 instead of =A30+1. That makes the numbering drop and creates duplicates (and every subsequent +1 formula continues from the wrong value).
+   - Fix (quick): Change A31 to =A30+1 and fill/copy that formula down through the rest of column A.
+
+2) Fragile numbering method (recommended improvement).
+   - Problem: Column A numbers are chained (each cell references the previous). This breaks when a single formula is wrong or when rows are inserted/deleted.
+   - Better fix: Replace the formulas in A2:A75 with a stable auto-number formula. For example, put this in A2 and copy down:
+     =ROW()-1
+     (Explanation: if your header row is row 1 and numbering starts at 1 in row 2, ROW()-1 returns 1 in row 2, 2 in row 3, etc. It never depends on other cells.)
+
+Optional check
+- A52 uses =A49+1 (skips A50/A51). If you intentionally left rows 50–51 blank this is fine. If not, after fixing A31 you should re-evaluate A50:A51 and change A52 to follow the immediate previous row (or just use the ROW()-1 approach).
+
+That will restore correct sequential numbering and make it robust to edits.

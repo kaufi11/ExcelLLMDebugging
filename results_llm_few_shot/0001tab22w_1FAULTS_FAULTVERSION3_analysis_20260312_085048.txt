@@ -1,0 +1,38 @@
+Summary of problems I found (short, actionable):
+
+1) Wrong cell reference (typo)
+- Faulty cell: O20
+- Problem: Formula uses M21 instead of M20: =SUM(100-(E20+G20+I20+K20+M21))
+- Fix: change to M20:
+  =100 - (E20+G20+I20+K20+M20)
+
+2) Stray / mis-entered values in spacer columns
+- Examples: F18, H18, H10, F19, H19, Z22, etc. These columns appear to be empty “spacers” in the layout; values typed there indicate data are in the wrong cells.
+- Problem: mis-keyed values cause data confusion, make audits hard, and can break formulas if later someone sums contiguous ranges.
+- Fix: Move each stray value into the correct data column (E,G,I,K,M for Lower Level; S,U,W,Y,AA for Upper Level). Or clear the stray cells if they are duplicates. After moving, re-check each row’s percent totals.
+
+3) Formulas that can error with text like "n/appl"
+- Example: rows with "n/appl" (Hospitality 1999/1998) — if you later try to include those cells in numeric math they return #VALUE!.
+- Fix: Use a formula that ignores non-numeric cells, for example:
+  =IF(COUNT(E15,G15,I15,K15,M15)=0,"n/appl",100 - SUM(E15,G15,I15,K15,M15))
+  Or if you want blank instead of "n/appl":
+  =IF(COUNT(E15,G15,I15,K15,M15)=0,"",100 - SUM(E15,G15,I15,K15,M15))
+
+4) Unnecessary use of SUM() around a single expression
+- Example: many O-col formulas use =SUM(100-(E6+G6+I6+K6+M6)). This works but is confusing.
+- Fix (cleaner):
+  =100 - (E6+G6+I6+K6+M6)
+  Or use the SUM of parts to avoid accidental text problems:
+  =100 - SUM(E6,G6,I6,K6,M6)
+
+Quick checklist to correct the sheet
+- Fix O20 reference from M21 → M20.
+- Scan each row for values in the spacer columns (F, H, L, N, etc. and Z where present). Move or delete stray values so each percent sits in the intended column.
+- Replace the O-column formulas with the robust pattern:
+  =IF(COUNT(<five lower-level cells>)=0,"n/appl",100 - SUM(<those five cells>))
+  and similarly for AC (upper-level).
+- Recalculate totals (Q30, AF30) after cleaning to ensure they match expected sums.
+
+If you want, I can:
+- Give the exact corrected formula for each faulty cell you point to, or
+- Provide a small macro to find stray numeric entries in spacer columns and highlight them.

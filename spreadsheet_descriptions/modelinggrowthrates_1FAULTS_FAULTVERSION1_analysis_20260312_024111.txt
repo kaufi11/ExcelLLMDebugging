@@ -1,0 +1,69 @@
+Spreadsheet summary — concise
+
+Overall
+- Workbook models exponential growth Q = A(1+r)^t with additive iid errors and compares three fit approaches: (1) linear fit to Q, (2) quadratic fit to Q, and (3) linear fit to ln(Q) (i.e., exponential model).
+- 4 sheets: Data, Linear, Quadratic, ln(Q)=f(time). Inputs are centralized on the Data sheet.
+
+Sheet: Data
+- Header/description at A1–A3.
+- Model inputs:
+  - A in C4 = 100
+  - r in C5 = 0.04
+  - Additive error factor in C6 = 1
+- Columns:
+  - A: simulated iid random errors (A8:A58 contain numeric error draws).
+  - B: time (0 to 50 in B8:B58).
+  - C: Q values computed by formula Cn = $C$4*(1+$C$5)^Bn + (An * $C$6) — i.e., deterministic exponential plus additive noise. Note: C12 uses "56*$C$6" (not A12) — likely an input/typo anomaly.
+  - D: ln(Q) computed as =LN(Cn).
+  - E: duplicate time = Bn (for regressions).
+  - F: time^2 = Bn^2.
+- Rows 8–58 show the 51 observations (time 0..50) with generated Q and ln(Q).
+
+Sheet: ln(Q)=f(time)
+- Regression of ln(Q) on time (exponential model).
+- Key regression stats:
+  - Observations: 51
+  - Multiple R ≈ 0.9999435, R² ≈ 0.9998870
+  - Standard error ≈ 0.006267
+- Coefficients:
+  - Intercept ≈ 4.603471085
+  - time coefficient ≈ 0.0392587123
+- Guidance/formulas:
+  - r = EXP(coefficient of time) − 1 (cell K20 has =EXP(B18)-1).
+  - A = EXP(intercept) (cell K21 =EXP(B17)).
+  - These convert the ln-model back to A and r (gives A ≈ 100, r ≈ 0.04).
+- Residual output: predicted ln(Q) and residuals for all 51 obs (small residuals; near-zero noise on log scale).
+
+Sheet: Linear
+- Regression of Q on time (simple linear).
+- Key regression stats:
+  - Observations: 51
+  - Multiple R ≈ 0.96946, R² ≈ 0.93985
+  - Standard error ≈ 43.8293
+- Coefficients:
+  - Intercept ≈ 24.70387
+  - time slope ≈ 11.53684
+- ANOVA and residual stats present.
+- Residual output: Predicted Q and residuals for each observation (residuals large and systematic because exponential shape not linear).
+
+Sheet: Quadratic
+- Regression of Q on time and time^2.
+- Key regression stats:
+  - Observations: 51
+  - Multiple R ≈ 0.999223, R² ≈ 0.998447
+  - Standard error ≈ 7.1165
+- Coefficients:
+  - Intercept ≈ 114.1012
+  - time ≈ 0.5902281
+  - time^2 ≈ 0.21893223
+- Residual output: predicted Q and residuals for each observation (much smaller residuals than linear).
+
+Notes / checks
+- The ln(Q) regression recovers the underlying exponential parameters (time coef ≈ 0.03926 ⇒ r ≈ 4%; intercept ⇒ A ≈ 100).
+- Data inconsistency: C12 uses "56*$C$6" instead of the corresponding error cell (A12). Confirm/repair if that was unintended.
+- All sheets include full ANOVA, coefficient standard errors, t-stats, p-values and per-observation residual outputs.
+
+If you want, I can:
+- compute exact converted A and r from the ln regression,
+- fix the C12 anomaly,
+- or produce a short chart or summary table of key fitted-parameter comparisons.

@@ -1,0 +1,38 @@
+Kurzfassung der Hauptfehler und einfache Lösungen (Deutsch, Excel‑Formeln in deutscher Schreibweise):
+
+Fehler 1 — ID‑Felder in Spalte A werden als Rechenformeln ausgewertet
+- Problem: Eintrag wie =356-78-4365 wird als 356−78−4365 gerechnet und liefert negative Zahlen statt der ID‑Text "356-78-4365".
+- Lösung: ID als Text eingeben (Apostroph voranstellen) oder als Text zusammensetzen.
+  - Manuell: in Zelle A6 z.B. eintragen:
+    '356-78-4365
+  - Oder per Formel (wenn Teile in Zahlen vorliegen):
+    =VERKETTEN("356";"-";"78";"-";"4365")
+  - Oder direkt als Textstring:
+    ="356-78-4365"
+- Erklärung: Ein führendes Apostroph macht die Zelle Text; Formeln ohne Anführungszeichen werden als Berechnung interpretiert.
+
+Fehler 2 — Noten‑WENN Formeln referenzieren manchmal falsche Schwellwerte auf anderen Sheets
+- Problem: In vielen P‑Zellen steht z.B. =IF(O12>'F Noon'!O$38*0.9;...) oder andere Blätter werden inkonsistent referenziert. Dadurch gilt für manche Schüler ein anderer Maximal‑Punktwert.
+- Lösung: Einheitliche, absolute Referenz auf das lokale Maximum O38 verwenden (oder einen benannten Bereich definieren). Beispiel (deutsche Formel):
+  =WENN(O6>$O$38*0,9;"A";WENN(O6>$O$38*0,8;"B";WENN(O6>$O$38*0,7;"C";WENN(O6>$O$38*0,6;"D";"F"))))
+- Alternative (gemeinsamer Schwellwert über alle Sheets): Definiere in einem Blatt einen Namen (z.B. MaxPunkte = 'Master'!$O$38) und benutze:
+  =WENN(O6>MaxPunkte*0,9;"A";WENN(O6>MaxPunkte*0,8;"B";...))
+- Erklärung: Durch $O$38 (oder benannten Bereich) stellst du sicher, dass alle Noten nach dem gleichen Maximalwert berechnet werden. Achtung: Dezimaltrennzeichen in DE ist Komma!
+
+Fehler 3 — Statistikformeln (MITTELWERT/ANZAHL/MAX) verwenden unterschiedliche Zeilenbereiche
+- Problem: Einige Blätter benutzen z.B. MITTELWERT(B6:B37), andere MITTELWERT(B6:B23) etc. Das führt zu unterschiedlichen Vergleichen/Statistiken, oft durch unterschiedliche Anzahl Schüler oder falsche Start/End‑Zeile.
+- Lösung: Vereinheitliche die Bereiche oder nutze dynamische Bereiche / strukturierte Tabelle. Beispiel einheitlicher Bereich (z.B. Zeilen 6–37 überall):
+  =MITTELWERT(B6:B37)
+  =ANZAHL(B6:B37)
+  =MAX(B6:B37)
+- Erklärung: Einheitliche Bereiche sichern vergleichbare Kennzahlen; dynamische Bereiche vermeiden Leereinträgeproblematik.
+
+Kurz‑Checkliste zum Beheben (praktisch)
+1. Spalte A: Alle Zellen, die IDs enthalten, als Text speichern (Zellen markieren → Format Zellen → Text) und dann neu eingeben oder Apostroph hinzufügen.
+2. Spalte P (Noten): Alle IF/WENN‑Formeln prüfen und vereinheitlichen auf die lokale $O$38 (oder benannte Variable). Beispielkopie oben verwenden.
+3. Statistikzeilen (B39:B41 etc.): Gleiche Start/End‑Zeile auf allen Sheets verwenden oder Tabelle/Dynamischen Bereich anlegen.
+4. SUMMEN prüfen: SUMME(B6:N6) ist OK, aber stelle sicher, dass keine Textwerte in diesen Zellen stehen (sie werden ignoriert) — falls Text vorhanden ist, korrigieren.
+
+Wenn du willst, schreibe ich dir:
+- eine Liste aller Zellen mit falschen ID‑Formeln (z. B. A6, A15, A23, ...) und
+- ersetze automatisiert alle abweichenden WENN‑Formeln durch die einheitliche Version.

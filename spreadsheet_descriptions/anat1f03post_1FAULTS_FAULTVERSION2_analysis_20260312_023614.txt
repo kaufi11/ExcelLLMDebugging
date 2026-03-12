@@ -1,0 +1,40 @@
+Sheet name
+- post1
+
+Overall layout
+- Two side-by-side class blocks (same layout repeated): header block at rows 1–3 (first class) and repeated header at rows 31–33 (second class).
+- Block 1: Section 8006, student data rows 6–25, MEAN row 26.
+- Block 2: Section 8004, student data rows 36–55, MEAN row 56.
+- Each block covers the same columns C:K.
+
+Columns (C:K)
+- C: Last 4 of SS# / student identifier (and section label in C5/C35).
+- D: Pract. 1 (max 100)
+- E: Pract. 2 (max 100)
+- F: Pract. 3 (max 100)
+- G: Pract. 4 (max 100)
+- H: Attendance / Participation (max 50)
+- I: Total (w/o A/P) — sum of the four practicals (D:G)
+- J: Class % — I divided by 400 (practicals total)
+- K: Grade — letter grade via nested IF based on J
+
+Key fixed values
+- Row 3 and 33 show max points: D/E/F/G = 100 each; H = 50; I total = 400.
+- Section identifiers: C5 = Sec. 8006, C35 = Sec. 8004.
+- Each section contains 20 student rows (20 rows of data per block).
+
+Formulas (representative)
+- Per-student total: I6:I55 = =SUM(Dn:Gn)
+- Class percent: Jn = =In/400 (block 1 uses I3; block 2 uses I33)
+- Letter grade (block 1 example): =IF(Jn>=89.9%,"A",IF(Jn>=79.9%,"B",IF(Jn>=69.9%,"C",IF(Jn>=59.9%,"D","F"))))
+- Section means (row 26 and 56): averages for each assessment, e.g. D26 = AVERAGE(D6:D25), and J26 = I26 / I3 (J56 uses I56/I33)
+
+Notable inconsistencies / anomalies to review
+- Grade-threshold consistency: Block 1 grade formula uses >= thresholds (>=89.9% etc.); block 2 uses > thresholds (>= vs > inconsistency).
+- MEAN formulas: F56 uses =AVERAGE(F37:F55) (starts at row 37) instead of F36:F55 — likely a typo.
+- Some student rows have missing scores (e.g., G55 appears blank) — SUM will treat blanks as zero; verify intended data.
+- Duplicate headers and professor cells are placed in different columns (Professor appears in J1 for block 1 and K31 for block 2) — minor layout inconsistency.
+- Totals and class % exclude attendance (I is explicitly “Total (w/o A/P)”), so attendance is not factored into the Class % as currently calculated.
+
+Summary
+- Two 20-student sections with identical grading layout: four practicals (400 points total), attendance recorded separately (50 points). Per-student totals and class percentages are calculated from the practicals only; letter grades assigned by nested IFs. Cleanups recommended: unify IF operators, correct average range typo, and verify any missing cell entries or intended inclusion of attendance in percentages.

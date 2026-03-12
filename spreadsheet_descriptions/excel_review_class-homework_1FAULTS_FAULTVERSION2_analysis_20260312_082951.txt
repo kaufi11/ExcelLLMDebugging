@@ -1,0 +1,35 @@
+Overview: three-sheet workbook with player efficiency metrics (Q'back), historical arrest counts (drug bust), and a student-score lookup/grade table (lookup). Below is a concise sheet-by-sheet summary of structure, key formulas, values, and notable issues.
+
+1) Sheet: Q'back (Quarterback Efficiency)
+- Header row (A4:L4): Quarterback, School, Attempts, Completions, Interceptions, Yards, TD, Completion %, Touchdown %, Interception %, Yards/Attempt, Points.
+- Data rows A5:L11 for seven QBs (Bryant, Burchette, Durant, Gaither, Garrard, MacPherson, Rivers). Attempts range ~199–384; Yards range ~1,393–2,586.
+- Formulas:
+  - Completion % (H): generally =D#/C#*100 (percentage of attempts completed). Exception: H5 (Bryant) is =D5/C5*180 (inconsistent multiplier).
+  - Touchdown % (I): =G#/C#*100.
+  - Interception % (J): =E#/C#*100.
+  - Yards/Attempt (K): =F#/C#.
+  - Points (L): =K#*8.4 + H# + I#*3.3 - J#*2 (composite score combining Y/A, completion pct, TD pct and penalizing INT pct).
+- Notes/flags:
+  - H5 uses *180 instead of *100 — likely an error; check units across H/I/J since the Points formula mixes percentage values with yard-based metric (unit consistency should be verified).
+
+2) Sheet: drug bust
+- Columns: A = Year (1970–2000 in A3:A33), B = ADULT arrests, C = JUVENILE arrests. Column E contains metadata/attribution.
+- Key values: adult arrests grow from 322,300 (1970) to 1,375,600 (2000); juvenile arrests vary (e.g., 93,300 in 1970, 203,900 in 2000).
+- Metadata in column E (E3–E10): filename drug.wk1, data source "Crime in the United States 2000", authors, contact, date of version, and a title "Estimated arrests for drug abuse violations by age group, 1970-2000".
+- No formulas shown — static historical data table.
+
+3) Sheet: lookup
+- Header row (A3:H3): Student, four course columns (Child Management 101; Psychology of seniors; Brewing Science; Taxidermy 200), Total /400, Average /100, Letter Grade.
+- Student rows A4:E9 list five students with scores per course (e.g., Spiggy Topes 20,35,80,60; Jennifer Lopez 70,80,60,80). Columns F (Total) and G (Average) are empty in provided data (no formulas shown).
+- Grade mapping table (F11:G18): Points thresholds to Letter (45→F, 50→F, 55→D, 60→C, 65→B, 70→A, 75→A). Header in F11:G11 labeled Points / Letter.
+- Notes: Totals and averages appear intended (headers show /400 and /100) but formulas are not provided for student rows; grade lookup likely expects a lookup (e.g., VLOOKUP or INDEX/MATCH) using Total or Average against F11:G18.
+
+Overall layout and recommendations (brief)
+- Q'back: consistent formula patterns except H5; verify percent vs. raw units before relying on L (Points) calculation.
+- drug bust: clean time series with metadata in column E — no formulas.
+- lookup: student scores present but Total/Average cells are blank; add formulas (e.g., F# =SUM(B#:E#), G# =F#/4 or =F#/400*100) and a lookup formula (e.g., VLOOKUP or INDEX/MATCH) to map totals/averages to letter grades per F11:G18.
+
+If you want, I can:
+- compute the Points column for Q'back rows,
+- correct the H5 inconsistency,
+- add Total/Average formulas and a grade lookup for the lookup sheet.

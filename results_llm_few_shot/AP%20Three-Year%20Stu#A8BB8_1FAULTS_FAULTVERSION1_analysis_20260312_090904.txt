@@ -1,0 +1,30 @@
+Short summary: I found omission / range errors and several hard‑coded totals that should be formulas. These cause wrong totals that won't update when you change the data.
+
+Concrete problems and fixes
+
+1) F10 (Total Exams row for Art: Studio Drawing)
+- Problem: formula uses =SUM(F6:F9) — it omits F5.
+- Fix: change to =SUM(F5:F9)
+- Why: the current range is off by one and undercounts by the value in F5.
+
+2) AI10 (Total Exams)
+- Problem: AI10 is a hard-coded value (19) instead of a SUM.
+- Fix: replace with =SUM(AI5:AI9)
+- Why: hard-coded totals do not update if any source cell changes.
+
+3) E11
+- Problem: E11 =SUM(E5:E7) — inconsistent with the other "Total Exams" cells (those sum E5:E9).
+- Fix: if E11 is intended to be the same “Total Exams” value, use =SUM(E5:E9)
+- Why: partial range will produce the wrong (too small) total.
+
+4) C44 and D44 (and other “Total Exams” cells shown as numbers)
+- Problem: C44 and D44 are typed numbers (84, 73) rather than SUM formulas while the same row uses SUM formulas in other columns.
+- Fix: replace with formulas: =SUM(C39:C43) and =SUM(D39:D43)
+- Why: typed totals won’t update if any C39:C43 or D39:D43 change. Search the sheet for more hard‑coded totals and convert them to SUM formulas.
+
+General recommendations
+- Use consistent ranges for every “Total Exams” row (usually SUM(col, rowStart:rowEnd) — e.g., SUM(C5:C9), SUM(D5:D9), etc.). Copy the correct formula across the row (fill right) rather than typing each one manually to avoid off‑by‑one errors.
+- Replace any manually entered totals with SUM formulas so values update automatically.
+- After fixing, spot‑check by temporarily changing one source cell (add 1) and confirm the corresponding total changes.
+
+If you want, I can generate the exact formulas for every total cell (or produce a corrected row10 and row44 you can paste). Which would you prefer?

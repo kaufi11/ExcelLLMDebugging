@@ -1,0 +1,61 @@
+I inspected the sheet "AP Grades" and the formulas you provided. I did not find any Excel error values (#REF!, #DIV/0!, #VALUE!, etc.), but there are several formula inconsistencies and a few likely mistakes that should be corrected or at least reviewed. I list them below (cell addresses refer to the addresses you supplied).
+
+Summary of likely problems and recommended fixes
+- F10 excludes grade-5 row
+  - Current formula: F10 =SUM(F6:F9)
+  - Problem: Row 5 (F5 = 1) appears to be part of the same AP-grade block (rows 5–9). All other total formulas for columns in this block sum rows 5:9. Excluding F5 is inconsistent and causes F10 to under-count by 1.
+  - Recommended fix: F10 =SUM(F5:F9)
+
+- Hard-coded "Total Exams" cells (inconsistent use of formulas vs. constants)
+  - Many "Total Exams" cells are entered as literal numbers rather than computed with SUM(...) like other blocks. This makes the sheet fragile (manual totals can get out of sync).
+  - Examples (not exhaustive): C20, D20, E20, C28, D28, E28, C36, D36, E36, C44, D44, C54, D54, E54, C62, D62, E62, C70, D70, E70, C78, D78, E78, C86, D86, E86, C94, D94, E94, I107/J107/K107/L107/etc., many others.
+  - Recommended approach: Use SUM ranges for these totals consistently. E.g. C44 =SUM(C39:C43), D44 =SUM(D39:D43), etc., for every "Total Exams" row where the total is derived from the preceding grade rows.
+
+- Individual missing formulas (cells with values but no formula where one would be expected)
+  - AI10 = 19 has no formula while AJ10, AK10, AL10 are SUM(...) formulas (AJ10 =SUM(AJ5:AJ9) etc.). If AI10 should be a total of AI5:AI9, add the SUM.
+  - Recommendation: If AI column is part of same pattern, set AI10 =SUM(AI5:AI9).
+
+- Mixed/partial SUM ranges that differ from nearby columns
+  - Example: E11 =SUM(E5:E7) while E10 =SUM(E5:E9). E11's range (E5:E7) produces 192 which is clearly a partial sum (grades 5–3). This may be intentional (e.g., separate subtotal), but it is inconsistent compared to E10 total (all grades). Review whether E11 is intended to be a subtotal; if it is, add a label to make its purpose explicit.
+  - Action: Confirm intent for E11. If unintended, change to E11 =SUM(E5:E9) (or remove redundant row).
+
+- Inconsistent application of SUM formulas in row blocks
+  - For example, row 44: E44 has a SUM formula (=SUM(E39:E43)), but C44 and D44 are constants (84, 73). This is inconsistent: either all totals in that row should be SUMs or all should be constants documented as such.
+  - Recommendation: standardize — convert C44 and D44 to formulas (C44 =SUM(C39:C43), D44 =SUM(D39:D43)).
+
+- Percent and Mean values are hard-coded
+  - Many "% of Grades 3+" and "Mean Grade" cells are fixed numbers instead of computed from the counts. Hard-coded percentages/means can get out of sync when the counts change.
+  - Recommendation: Where possible, compute % of Grades 3+ as e.g. =100 * (SUM(grade5_cell,grade4_cell,grade3_cell) / total_exams_cell). Compute mean as a weighted average of counts (e.g. = (5*count5 + 4*count4 + 3*count3 + 2*count2 + 1*count1) / total). This will ensure correctness if underlying counts change.
+
+- Some SUM ranges include columns with no values (not an error, but check intent)
+  - Many SUM formulas reference ranges that include blank cells (e.g., J44 =SUM(J39:J43) returns 0). If that is intended, it's fine; if not, verify the source data is in the expected rows.
+
+What I did NOT find
+- No Excel error tokens (#REF!, #N/A, etc.) were present in the formula cells you listed.
+- No obvious circular references in the listed formulas.
+
+Concrete suggested fixes (examples)
+- F10: change to
+  - =SUM(F5:F9)
+- C44, D44: change to
+  - C44 =SUM(C39:C43)
+  - D44 =SUM(D39:D43)
+- AI10 (if intended to sum AI5:AI9):
+  - AI10 =SUM(AI5:AI9)
+- Replace any manual "Total Exams" entry that should be the sum of a grade block with a SUM(...) of its grade rows.
+- Replace manual "% of Grades 3+" entries with formulas such as (example for column C, rows 5–9):
+  - =100 * (SUM(C5,C6,C7) / C10)  (if C5=grade5, C6=grade4, C7=grade3, and C10 is total)
+  - Or better, explicitly reference the cells: =100 * (SUM(C5:C7) / C10)
+- Replace manual "Mean Grade" with weighted average formula (example using columns C):
+  - =(5*C5 + 4*C6 + 3*C7 + 2*C8 + 1*C9) / C10
+
+Notes / checks to run
+- After converting totals to SUM formulas, check that the total values match previously manual totals. If they differ, investigate which source row was not intended to be included.
+- Confirm special subtotal rows (like E11) are intentionally partial aggregates; if so, add a label like "Subtotal (grades 5–3)" to avoid confusion.
+
+If you want, I can:
+- Produce a short list of exact cells that are currently hard-coded totals (so you can convert them to formulas).
+- Generate the exact SUM or weighted-average formulas for a specified set of columns (I can give a small batch or generate a pattern you can paste across columns).
+- Apply the corrections and return a repaired copy (if you provide the file or allow automated edits).
+
+Which would you prefer?

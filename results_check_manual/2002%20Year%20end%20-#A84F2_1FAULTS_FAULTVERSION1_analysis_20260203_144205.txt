@@ -1,0 +1,52 @@
+I reviewed the workbook. I found a small set of clear, repeatable errors (mostly hard‑coded numbers and a few incorrect signs / wrong references). Below are the problems, why they’re wrong, and exactly how to fix them. Short and simple.
+
+1) Problem: hard‑coded numbers instead of links on the Five Year Review sheet
+- Cells: Five Year Review!C15, C16 and C28 are values entered manually (not linked to the Financial Statements).
+- Why it’s wrong: when the Financial Statements change, the Five Year Review will not update. This causes reconciliation and reporting errors.
+- Fix: replace the values with direct links to the Financial Statements sheet:
+  - C15 -> = 'Financial Statements'!C54
+  - C16 -> = 'Financial Statements'!C61
+  - C28 -> = 'Financial Statements'!C28
+- Explanation: these cells summarize amounts that are already calculated on the Financial Statements sheet; linking them keeps the review automatic and correct.
+
+2) Problem: inconsistent/incorrect sign on interest bearing borrowings
+- Cell: Five Year Review!C26 currently = -'Financial Statements'!C34
+- Why it’s wrong: applying a minus sign here may be intentional (to show liabilities as negatives) but it is inconsistent with other columns and can lead to incorrect totals in the Five Year Review unless all columns use the same convention.
+- Fix: decide on one convention (liabilities positive or liabilities negative) and make the formula consistent. Common fix to show the liability as positive:
+  - C26 -> = 'Financial Statements'!C34
+- Explanation: be consistent across the table so SUMs and ratios are meaningful.
+
+3) Problem: hard‑coded / suspicious formula in the Cash Flow statement (Cash paid to suppliers and employees)
+- Cell: Financial Statements!C121 contains =-26907-7561074 (literal numbers inside the formula).
+- Why it’s wrong: embedding constants like this stops the value reconciling to the underlying schedules and prevents automatic updating. It’s also hard to read and is likely incorrect (typo or copy/paste mistake).
+- Fix: replace the hard‑coded expression with a formula that references the supporting cash flow/workings. Two safe replacement options depending on your layout:
+  - If C121 should be the negative of the "cash (applied to)/generated from operations" subtotal: set C121 -> = -C511  (or = -SUM(C504:C510))
+  - Or, if C121 should be derived from receipts minus net cash inflow: set C121 -> = C120 - C117 (and apply a negative sign if you want display as negative)
+- Explanation: always calculate from source cells (SUM or direct cell references). That ensures the cash flow statement ties to the detailed items and updates automatically.
+
+4) Problem: other isolated hard‑coded formulas and sums
+- Examples: Financial Statements!C72 displayed as "FORMULA =1416" (should be entered directly as 1416 or link), a few E‑column cells contain expressions like FORMULA =476555.8+3116.33 rather than linking to source totals.
+- Why it’s wrong: same issue — manual arithmetic blocks traceability and automatic updates.
+- Fix: replace any manual arithmetic with references to the source cells (or wrap the expression in SUM of the source cells). Example:
+  - If E79 is supposed to be sum of other cells, change e.g. E79 -> =SUM(E??:E??) (use the specific source range).
+- Explanation: formulas should reference source cells, not retype numbers.
+
+5) Recommendation: reconcile and audit a few cross‑checks
+- There are cross‑checks present (e.g. G147 = C147 - C532) that indicate the workbook author intended to check totals. After you fix the links described above, recalc and review:
+  - Balance sheet total (C23) = Non‑current + Current (C13 + C17)
+  - Total equity & liabilities (C42) = Capital and reserves + Non‑current + Current (C28 + C34 + C36)
+  - Cashflow (C144) = C136 + C129 + C117 and Cash at year end C147 = C144 + C145
+- If any of these still mismatch after fixing the hardcodes, report those specific mismatches and I’ll show how to trace them.
+
+Quick checklist to apply now (paste formulas into the cells indicated)
+- Five Year Review!C15 = 'Financial Statements'!C54
+- Five Year Review!C16 = 'Financial Statements'!C61
+- Five Year Review!C28 = 'Financial Statements'!C28
+- Five Year Review!C26 = 'Financial Statements'!C34  (if you want positive liability)
+- Financial Statements!C121 = -C511   (or use = -SUM(C504:C510) or another correct reference to the payments schedule)
+
+If you want, I can:
+- (A) Make the exact formula corrections for you and return a list of changed cells, or
+- (B) Step through reconciliation of one mismatched total (tell me which total is not tying and I’ll trace the source).
+
+Which do you want me to do next?

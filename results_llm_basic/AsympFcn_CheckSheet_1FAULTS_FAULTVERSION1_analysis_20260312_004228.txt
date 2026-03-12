@@ -1,0 +1,63 @@
+I checked both sheets and found several mistakes (typos, domain errors for LOG, and incorrect/unstable recurrence formulas). Below are the errors, why they break the sheet, and short fixes you can apply.
+
+MasterMethod_Checks — errors and fixes
+1) Row with n = 0 (A11 = 0)
+   - Problem: Many formulas use LOG(A11,2) or divide by C11. LOG(0,2) is undefined and B11/C11 becomes 0/0 -> #DIV/0.
+   - Fix: Remove the n=0 row or start n at 1. Master method tables should start at n ≥ 1.
+
+2) Typo in B19
+   - Problem: B19 formula is =A19/873 (obvious typo). This breaks f(n) for n = 8.
+   - Fix: Change B19 to =A19/2 (consistent with other rows).
+
+3) Theta column (H) uses LOG(A#,2)
+   - Problem: H is labeled "Theta Term" but each cell contains LOG(A#,2). That returns the logarithm of n, not the asymptotic Theta term. Also LOG(0,2) (if n=0 row kept) is invalid.
+   - Fix (choose one):
+     - If you want the numeric n^CE value, set H11 = C11 and fill down (so H shows n^CE).
+     - If you want a textual Theta expression, use e.g.
+       = "Θ(n^" & $B$6 & ")"
+       (or =CONCAT("Θ(n^", $B$6, ")") in Excel).
+   - Explanation: Master method compares f(n) to n^{log_b a}; H should show that n^{CE} or the symbolic Θ(n^{CE}), not log(n).
+
+SubstitutionMethod_Checks — errors and fixes
+1) Domain errors from LOG(LOG(A#,2),2) and dividing by LOG(A#,2)
+   - Problem: For n = 1 (A10 = 1):
+     - LOG(A10,2) = LOG(1,2) = 0, so A10/LOG(A10,2) is division by zero.
+     - LOG(LOG(1,2),2) = LOG(0,2) is undefined.
+   - Fix: Start n at 2 (or treat n=1 as a manual base case). The asymptotic expression that uses LOG(LOG(n,2),2) requires n>1. Set D(row for n=1) manually to your base T(1), e.g. D10 = 1.
+
+2) C10 missing multiplication by n
+   - Problem: C10 formula is = $B$5*LOG(LOG(A10,2),2) (missing *A10), whereas other C rows use $B$5*A11*LOG(...).
+   - Fix: Change C10 to = $B$5 * A10 * LOG(LOG(A10,2),2).
+
+3) Recurrence implementation in D column is incorrect/inconsistent
+   - Problem: The recurrence T(n) = 5*T(n/2) + n/LOG(n,2) appears to be intended, but many D cells use hard-coded references like 5*$D$11, 5*$D$12, etc., and some rows keep using 5*1. These references are inconsistent and wrong (they do not always select T(floor(n/2))).
+   - Fix: Use a formula that picks T(floor(n/2)) dynamically and handle the base case. Example (assuming rows start at row 10 and A10 contains n for that row, and D column stores T(n)):
+     - Put the base case manually: D10 = 1 (if n=1).
+     - For rows with n>1 use (example placed in D11 and fill down):
+       =IF(A11=1, 1, 5*INDEX($D:$D, 9 + INT(A11/2)) + A11/LOG(A11,2))
+     - Explanation of INDEX parameters:
+       - Rows are laid out with n in A10.. so the row index for a given n is 9 + n.
+       - T(floor(n/2)) is therefore in row 9 + INT(n/2). INDEX($D:$D, 9 + INT(A11/2)) returns that cell.
+   - This makes the recurrence robust and consistent down the column.
+
+4) General recommendation about LOG(LOG(...))
+   - Because LOG(LOG(n,2),2) is only defined when LOG(n,2) > 0 (i.e. n > 1), ensure the n-range excludes n=1. If you must include n=1, compute the base-case values separately and do not evaluate formulas that take LOG(LOG(1,...)).
+
+Summary of quick edits to make now
+- MasterMethod_Checks:
+  - Delete row with n=0 or change A11 to 1.
+  - Fix B19 to =A19/2.
+  - Change H column to either Hn = Cn (numeric n^CE) or Hn = "Θ(n^" & $B$6 & ")".
+
+- SubstitutionMethod_Checks:
+  - Remove or treat separately the n=1 row. Set D(row for n=1) = base value (e.g. 1).
+  - Fix C10 to = $B$5 * A10 * LOG(LOG(A10,2),2).
+  - Replace current D formulas with:
+    D10 (if n=1): =1
+    D11 (and fill down):
+      =IF(A11=1,1, 5*INDEX($D:$D, 9 + INT(A11/2)) + A11/LOG(A11,2))
+  - Ensure all rows start at n≥2 (except base case handled manually).
+
+If you want, I can:
+- Provide the exact formulas adjusted for your exact row numbers so you can paste them in, or
+- Prepare a corrected copy of the two sheets (list of every corrected cell) — tell me which you prefer.

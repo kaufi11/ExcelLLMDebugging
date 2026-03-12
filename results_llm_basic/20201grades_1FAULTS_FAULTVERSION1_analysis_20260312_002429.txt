@@ -1,0 +1,49 @@
+Thanks — I reviewed the worksheet text you sent. I found several classes of errors that will cause wrong totals, # errors, and inconsistent percentages. Below I list the problems, why they break things, and short fixes you can apply (with simple example formulas).
+
+1) Hard‑coded / inconsistent denominators for percent calculations
+- Problem: some percent formulas use literal numbers (examples: U5 = T5/150*100, AR5 = AQ5/350*100) while the sheet also has summary cells that hold the correct maxima (e.g. T1, AQ1, BS1, CE1 on Sheet2). Hard‑coding makes results wrong if the maximum changes and makes different sheets inconsistent.
+- Fix: use absolute references to the cell that holds the total possible points. Example replacements:
+  - Replace =T5/150*100 with =T5/$T$1*100 (or with whichever cell contains the assignment max on that sheet).
+  - Replace =AQ5/350*100 with =AQ5/$AQ$1*100 (use $AQ$1 if AQ1 stores the Research Project total).
+- Why: then every student percent uses the same source of truth and updates automatically if you change the max.
+
+2) Formulas placed in header rows / wrong row
+- Problem: Cells that look like “FORMULA =SUM(Y2:AF2)” are in row 1 (headers) instead of the data row (row 2). Example: AF1 and AO1 show SUM formulas that sum row 2. That mixes header text and calculations and is confusing.
+- Fix: move the formulas to the data row (AF2, AO2) or remove them from the header. Example: put this in AF2: =SUM(Y2:AF2) (if AF2 is supposed to be the sum of Y2:AF2). Keep row1 for labels only.
+- Why: headers should not contain row-specific formulas — otherwise the label row may show numbers and the real row sums can be missing or wrong.
+
+3) Non‑numeric text inside numeric SUM ranges (x, X, ., +, #, etc.)
+- Problem: many cells contain text like "x", "X", ".", "+" or displays like "#" in columns used by SUM ranges (BR6 '#', many BL/BR cells with X). A true Excel error value (#DIV/0!, #VALUE!, etc.) inside a SUM range makes the SUM return an error; text entries are ignored but often indicate missing data and distort averages or logical checks.
+- Fix options:
+  - Best practice: replace text markers (x, X, ., +) with blank or 0 if they should represent 0 points.
+  - If you must keep markers for human reading, change the SUM formulas to ignore errors/text explicitly. Examples:
+    - =SUMPRODUCT(--(ISNUMBER(BN6:BR6)),BN6:BR6)  — sums only numeric cells in BN6:BR6
+    - or =SUM(IFERROR(BN6:BR6,0)) entered as a normal formula (modern Excel accepts this array-style) or wrapped in SUMPRODUCT: =SUMPRODUCT(IFERROR(BN6:BR6,0))
+- Why: this prevents a stray text or an Excel error from breaking the total.
+
+4) Inconsistent SUM ranges across rows/columns
+- Problem: some rows sum Y:AP, some Y:AO (example AQ2 =SUM(Y2:AO2) vs AQ5 =SUM(Y5:AP5)). Using different end columns will give inconsistent totals when you insert/remove columns.
+- Fix: pick one consistent final column (e.g., AP or AO) and update every SUM to use the same range (or use dynamic approach: SUM(Y5:INDEX(5:5, MATCH("LastHeader",5:5,0))) ). Simpler: update all to =SUM(Y5:AP5) if AP is the last assignment column.
+- Why: keeps structure consistent and avoids off‑by‑one missing columns.
+
+5) Averages and summary formulas include wrong row ranges (legend rows included)
+- Problem: some averages use U5:U21 but your students are rows 5:19 (U5:U19). Including extra rows (20–21) picks up header/legend values or blanks and skews averages.
+- Fix: correct the ranges to exactly the student rows (example: =AVERAGE(U5:U19)). Or use a properly defined dynamic range or table so formulas auto-adjust when you add/remove students.
+- Why: avoids mixing summary or legend numbers in student statistics.
+
+6) Aggregate totals that reference non‑existent or text columns
+- Problem: CE5 =SUM(BZ5:CD5) includes CD5; if CD is text (e.g., “Credit”) that cell contributes nothing but makes the formula hard to read. Make sure the sum range includes only numeric columns.
+- Fix: restrict the sum to numeric columns (e.g., =SUM(BZ5:CB5) if CB is the last numeric column) or use named ranges for clarity.
+
+Concrete quick checklist to fix the workbook now
+- Replace hardcoded divisors with absolute references: use $T$1, $AQ$1, $BS$1, $CE$1 (or wherever the total points live).
+- Remove or convert any “x”, “X”, “.”, “+” markers inside numeric ranges to blanks or zeros. If they must remain, change the SUM formulas to SUMPRODUCT(ISNUMBER(...),... ) or wrap with IFERROR.
+- Move any formulas placed in header rows down to the correct data row (e.g., AF1 -> AF2).
+- Make all per‑row SUMs use the exact same end column (Y:AP or Y:AO) across the sheet, and update all AQ formulas to match.
+- Update averages to only cover student rows (e.g., U5:U19 instead of U5:U21), or convert the students area to an Excel Table and use structured references.
+
+If you want, I can:
+- give exact replacement formulas for a few specific cells you call out (e.g., “fix U5, AR5, BS6”),
+- or produce a short macro to convert common text markers (x, X, ., +) to zeros across a chosen range.
+
+Which option do you want me to do next?

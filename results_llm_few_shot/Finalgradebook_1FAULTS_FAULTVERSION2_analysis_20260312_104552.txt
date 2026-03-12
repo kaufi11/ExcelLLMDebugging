@@ -1,0 +1,30 @@
+Quick audit — I found several real formula mistakes (mostly copy/paste typos) that cause wrong averages and missing data. Fixes below (short + clear).
+
+1) Sheet3 — test-average cells P4:P18
+- Fault: Each P cell’s AVERAGE omits the Ln (Test 5 %) cell and instead references L40..L54 (wrong rows). That excludes Test 5 percentage from the student average.
+- Fix (example for row 4): change
+  =AVERAGE(D4,F4,H4,J4,L40)
+  to
+  =AVERAGE(D4,F4,H4,J4,L4)
+- Do the same for P5 → P18 (use Ln matching the row).
+- Why: You must average the five test percentage columns (D,F,H,J,L) for each student — the incorrect Lxx references are outside the student rows.
+
+2) Sheet3 — Test 2 percentage on row 14
+- Fault: F14 =331/$F$24 (wrong constant).
+- Fix: F14 = E14/$F$24
+- Why: F14 should divide Test 2 points (E14 = 101) by the total possible for Test 2 ($F$24 = 110). The 331 is an accidental entry.
+
+3) Sheet1 — Homework summary (Low & Class Average)
+- Fault: C20 = MIN(C4:C18) — wrong range (skips C3, includes unwanted row).  
+  C21 = MAX(C5:C19) — wrong function and wrong range (not the class average).
+- Fix:
+  - C20 =MIN(C3:C17)
+  - C21 =AVERAGE(C3:C17)
+- Why: The student homework results are in C3:C17. The low grade must use MIN on that exact range and Class Average must be AVERAGE on that same range.
+
+Notes / sanity checks (optional)
+- Many Sheet3 Pn formulas were likely copy/pasted and the L-row index shifted; check P4:P18 systematically.
+- The grading calculation on Sheet1 (I3 etc) mixes scales (Sheet2 homework averages are 0–100, Sheet3 test averages are decimals 0–1). That is intentionally handled by the weights used (e.g., C*0.125 and D*25). If you prefer all inputs as 0–1, change the Sheet2 averages to =AVERAGE(...)/100 and adjust weights accordingly — but this is optional because current formulas work if corrected as above.
+- After fixes, re-check a few student rows (I3 and J3) to confirm final numeric totals and letter grades look correct.
+
+If you want, I can generate the exact corrected formulas for every affected cell (P4:P18, F14, C20, C21) so you can paste them in. Which would you prefer?

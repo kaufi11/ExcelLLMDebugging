@@ -1,0 +1,18 @@
+Summary of the main errors I found and how to fix them:
+
+1) Faulty cell: program!A25
+- Problem: Typo in formula. It reads =A24+715 instead of adding 1.
+- Effect: A25 becomes 715 higher than intended and every subsequent cell that depends on A25 (A26, A27, …, A31, A33, A35, etc.) also becomes incorrect (the numbering jumps to the 700s).
+- Fix: Change the formula in A25 to =A24+1, then copy/fill that corrected formula down through the rest of the A column entries that should be sequential.
+- Why this fixes it: The intention is to produce a simple consecutive event number. Adding 1 produces the next number; +715 was a stray keystroke that broke the chain.
+
+2) Robustness suggestion (optional)
+- Instead of hard references that break if you accidentally skip a row, use a formula that only increments when the previous row contains an event, e.g. in A13 and copied down:
+  =IF(A12="","",A12+1)
+- Why: prevents numbers from appearing when previous rows are blank and reduces cascading errors.
+
+3) Minor/format issues to check (not formula errors but can confuse readers)
+- Mixed time formats and AM/PM labels (e.g., some rows use 24-hour times like 13:45 and others append "PM"). Consider using Excel time values (format: hh:mm or hh:mm AM/PM) consistently.
+- Some rows intentionally have zero-length session (C15 = D15 = 10:15). Confirm these are correct (you noted "Break-A - Eliminated").
+
+If you want I can give you the exact range to fill-down after fixing A25, or provide a single formula that auto-numbers only non-blank event rows. Which would you prefer?

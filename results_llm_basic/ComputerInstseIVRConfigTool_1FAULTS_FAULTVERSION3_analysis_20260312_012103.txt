@@ -1,0 +1,45 @@
+I reviewed the sheet and found several formula mistakes. Below are the errors, why they’re wrong, and the simple fixes.
+
+1) Cell F47
+- Error: F47 = 6 (hard-coded value).
+- Why wrong: All other rows use quantity × unit price. A fixed “6” won’t change if quantity or price change.
+- Fix: Replace with =C47*D47 (or =PRODUCT(C47,D47))
+
+2) Rows 78–81 (E78, E79, E80, E81)
+- Error: E78:E81 use PRODUCT(C78,175) (literal 175) instead of the unit price cell; they also don’t apply the dealer multiplier G2.
+- Why wrong: D78:D81 contain the correct unit prices (195). Using 175 is likely a typo and breaks consistency; Dealer column should be quantity × price × G2.
+- Fix (each row): E78 = C78 * D78 * $G$2 (or =PRODUCT(C78,D78,$G$2)). Apply same pattern for E79–E81.
+
+3) Warranty lines (rows 85 and 86)
+- Current formulas:
+  - D85 = PRODUCT(F82,0.09) (OK if NPL warranty price = 9% of software total)
+  - E85 = PRODUCT(F85,0.9) (incorrect / circular)
+  - F85 = PRODUCT(F82,C85,0.09) (incorrect reference to F82 and duplicates logic)
+  - D86 = PRODUCT(F82,0.18) (OK if NPL = 18%)
+  - E86 = PRODUCT(F86,0.9) (incorrect / circular)
+  - F86 = PRODUCT(F82,C86,0.18) (incorrect)
+- Why wrong: E85/E86 reference F85/F86 (circular) and F85/F86 recompute from F82 incorrectly. Dealer and Client columns should be built from D85/D86 and quantity.
+- Fix (use consistent pattern used elsewhere):
+  - D85 = $F$82 * 0.09 (leave as is if that was intended)
+  - F85 = C85 * D85
+  - E85 = F85 * $G$2    (or =C85 * D85 * $G$2)
+  - D86 = $F$82 * 0.18 (leave)
+  - F86 = C86 * D86
+  - E86 = F86 * $G$2    (or =C86 * D86 * $G$2)
+- Note: This removes circular references and follows the same Qty × UnitPrice and Dealer = Client × G2 pattern.
+
+4) Inconsistent/odd use of PRODUCT ranges (minor)
+- Examples: F73 = PRODUCT(C73:D73) works but is inconsistent with other rows (they use PRODUCT(C73,D73) or C73*D73).
+- Fix: For readability, use =C73*D73 or =PRODUCT(C73,D73). (This is not a functional error, only stylistic.)
+
+5) Summary formulas (check after fixes)
+- E82 = SUM(E4:E81) and F82 = SUM(F4:F81) are correct; after fixing row formulas these totals will update correctly.
+- E109 and F109 sum E82 plus E85:E108 and F82 plus F85:F108—once rows 85–86 are fixed these totals will compute properly.
+
+Quick checklist to implement:
+- Replace F47 with =C47*D47.
+- Replace E78:E81 with =Ccell*Dcell*$G$2.
+- Replace F85/F86 with =Ccell*Dcell (using D85/D86 as defined), and replace E85/E86 with =Fcell*$G$2 (or =Ccell*Dcell*$G$2).
+- Optionally, standardize PRODUCT usage for readability.
+
+If you want, I can produce the exact corrected formulas for each affected cell so you can paste them in.

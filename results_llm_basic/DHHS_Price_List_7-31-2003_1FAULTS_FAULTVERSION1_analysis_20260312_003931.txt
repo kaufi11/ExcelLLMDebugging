@@ -1,0 +1,45 @@
+I reviewed the sheet. Summary: there are a few clear formula errors and many inconsistent/hard‑coded values that will cause wrong results later. Fixes below are short and exact.
+
+1) Wrong literal used (clear error)
+- Problem: Cell G21 = 629*0.5 — 629 is not related to row 21. E21 = 20000 so this produces a totally wrong fee.
+- Fix: replace G21 with =E21*0.5
+- Why: G is the license fee and all other Processor rows use E * 0.5. Using E21 gives the correct fee (20000*0.5 = 10000).
+
+2) Likely inconsistent multiplier for a Processor row
+- Problem: Cell G39 = E39*0.3 while other Processor rows use *0.5.
+- Fix: if Internet Application Server (Processor) should use the same Processor factor as other products, change to =E39*0.5
+- Why: inconsistent multiplier produces a smaller license fee; confirm product licensing rule but make it consistent or use a lookup to enforce the correct factor.
+
+3) Many hard‑coded support/fee numbers instead of formulas (maintenance risk)
+- Problem: Several F and other cells contain literal numbers (for example F66=1100, F75=7.7, F84=22, etc.) even though the intended formula is F = E * 22%. If E changes those cells will not update.
+- Fix: replace hard‑coded values with formulas. Example:
+  - Fn = E n * 22%   (or =E n * 0.22)
+  - Gn = E n * <license factor> (see next item)
+  - Hn = G n * 15%
+  - In = G n * 7%
+  - Jn = H n + I n
+- Why: formulas keep sheet correct when list prices change.
+
+4) Make license factor selection robust (recommended)
+- Problem: license factor (0.2, 0.5, 0.3, etc.) is manually typed into many formulas — inconsistent and error prone.
+- Fix (recommended): create a small lookup table of "Type" → "Factor" (e.g. Processor = 0.5, Named User = 0.2, Universal Power Unit = 0.2, Computer = 0.2, Application User = 0.2, …). Put it on the sheet (e.g. X1:Y6). Then use VLOOKUP (or INDEX/MATCH) in column G:
+  - Example table (X1:Y6)
+    - Processor | 0.5
+    - Named User - Multi-Server | 0.2
+    - Named User - Single Server | 0.2
+    - Universal Power Unit | 0.2
+    - Computer | 0.2
+    - Application User | 0.2
+  - Example formula for G (row 21): =E21 * IFERROR(VLOOKUP(D21,$X$2:$Y$7,2,FALSE),0.2)
+- Why: one source of truth for each license type prevents accidental wrong multipliers (like the 629 or the 0.3).
+
+Quick action list (apply these changes)
+1. Fix G21 to =E21*0.5.
+2. Check G39; if it should be same as other Processors change to =E39*0.5.
+3. Replace any hard‑coded support/fee numbers with formulas (F = E*22%, H = G*15%, I = G*7%, J = H+I).
+4. Add a Type→Factor lookup table and change G formulas to use VLOOKUP/INDEX so future changes are safe.
+
+If you want, I can:
+- give the exact VLOOKUP formula to paste,
+- generate the lookup table entries for every Type shown in your sheet,
+- or produce a short macro to replace all hard‑coded F/G/H/I/J cells with the standard formulas. Which would you prefer?

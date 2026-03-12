@@ -1,0 +1,33 @@
+I reviewed the formulas in the supplied workbook and found no #REF!, #NAME? or obvious circular-reference errors. Most formulas follow a consistent pattern (deltas in J = I-H; percent = IF(H=0,"N/A",(J/H)*100); sums by month, etc.). I did, however, find a few places that look inconsistent or likely to be unintentional. Summary below (sheet name + cell, current formula, why it looks wrong, suggested fix).
+
+1) Inconsistent hard-coded row-number in a sequence
+- Location: Table 1.0 I & E - Annex D!B57
+- Current formula: =525+1
+- Why suspicious: Neighboring row-number cells use relative formulas (e.g. B56 = B52+1, B58 = B57+1). A literal 525+1 is inconsistent with that pattern and is likely a typo (or at least inconsistent maintenance).
+- Suggestion: If the intention is to continue the sequential numbering you use elsewhere, change to =B56+1 (or to whatever relative reference is appropriate). If the 526 code is intentional and should be hard-coded, leave as-is but add a comment to avoid confusion.
+
+2) Incorrect/odd percent reference for "Total Funds"
+- Location: Table 2.0 BS - Annex E!K69
+- Current formula: =K49
+- Why suspicious: Almost all other "Variance as % of original forecast" cells use the pattern =IF(Hx=0,"N/A",(Jx/Hx)*100). K69 is pulling the percentage from a different row (K49, Total Net Assets) instead of calculating the percent for Total Funds (row 69). That is inconsistent and will produce the wrong percentage unless the two bases happen to be identical.
+- Suggested correction: Use the standard pattern for the Total Funds row:
+  =IF(H69=0,"N/A",(J69/H69)*100)
+  (Replace with the exact IF formula used elsewhere in the sheet.)
+
+3) Reconciliation formulas — please verify the intended balance-sheet line items
+- Locations:
+  - Table 3.0 CF - Annex F!T26
+    Current formula: =T19-('Table 2.0 BS - Annex E'!H20+'Table 2.0 BS - Annex E'!H21+'Table 2.0 BS - Annex E'!H22)
+  - Table 3.0 CF - Annex F!T49
+    Current formula: =T42-('Table 2.0 BS - Annex E'!I20+'Table 2.0 BS - Annex E'!I21+'Table 2.0 BS - Annex E'!I22)
+- Why check: Those cells are intended to reconcile the cash forecast to balance-sheet values. They reference H20/H21/H22 (and I20/I21/I22) on the balance-sheet sheet. Please confirm that H20/H21/H22 in 'Table 2.0 BS - Annex E' are indeed the cells you intend to use for reconciliation (they are "Investments", "Cash at Bank/in Hand" and "Unspent/(overspent) balance on bursaries and access" in the provided extract). If the reconciliation is meant to use different balance-sheet lines (for example bank/cash only), adjust the formula to reference exactly those balance-sheet cells.
+- Suggestion: If reconciliation should be (closing cash / overdraft) only, then use only the appropriate H21 (cash) or the relevant cells rather than summing H20:H22.
+
+Other notes / small observations
+- Percent columns return the text "N/A" when the original forecast (H) is 0. That is consistent across the workbook but note that "N/A" is text — if you need further numeric operations on those cells, you may prefer NA(), 0 or blank ("").
+- I did not find Excel error values (#DIV/0!, #REF!, etc.) in the formulas you provided.
+- Many rows use T (Total) formulas based on the row's T column totals (e.g., T10 = SUM(T7:T9)). For running balances the pattern often uses the last-month value (e.g., T19 = S19) — that is consistent with reporting closing balances but double-check it matches the intended reporting semantics.
+
+If you like, I can:
+- produce corrected formulas and a patch list you can paste, or
+- verify any specific reconciliation logic (show the exact mapping you expect between cash-flow lines and balance-sheet lines) and produce corrected formulas.

@@ -1,0 +1,50 @@
+I looked through the two sheets and found the main formula/data problems that will give wrong totals or errors. Short, specific fixes below.
+
+1) Wrong SUM range on one student total (excludes a column)
+- Location: Sheet1 cell T19
+- Problem: T19 =SUM(E19:S19) — this excludes the D19 value (the first assignment column), so the student total and percent are too low.
+- Fix: change to =SUM(D19:S19)
+- Why: the student assignments run D:S; the SUM must include D.
+
+2) SUMs returning errors because some score cells contain errors/text (e.g. "#", "x", "X", "+ X")
+- Locations (examples): BR6 = "#", BR7 = "x  #", BL15 = "+ X", AZ13 = "x", etc. Any column in BN:BR (or other numeric blocks) containing an error symbol will make formulas like BS6 =SUM(BN6:BR6) evaluate to an error.
+- Problem: a literal error value (like # or an Excel error) inside a SUM range causes the whole SUM to error. Text like "x" is ignored by SUM, but real error values are not.
+- Fix options (pick one):
+  a) Replace error markers with 0 or blank (preferred if those represent missing/0 points). This is the cleanest fix.
+  b) If you must keep markers, change the SUM formulas to ignore errors, e.g. replace
+     =SUM(BN6:BR6)
+     with
+     =SUM(IFERROR(BN6:BR6,0))
+     (In older Excel you may need to enter as an array formula with Ctrl+Shift+Enter; in modern Excel IFERROR on ranges works.)
+  c) Or use AGGREGATE/aggregate pattern or clean data with a helper column: =SUMPRODUCT(N(BN6:BR6)) with N converts text to 0 but will still fail on error values; so IFERROR is safer.
+- Why: SUM won't return a number if any cell in the range holds an error; wrapping with IFERROR ensures errors count as 0.
+
+3) Formulas accidentally placed in header row (confusing / likely wrong location)
+- Locations: Sheet1 AF1 =SUM(Y2:AF2) and AO1 =SUM(AG2:AO2) (and maybe others in row 1)
+- Problem: row 1 is header; these formulas look like they belong for row 2 or are leftovers. They may display weird totals at the top.
+- Fix: move these formulas down to the student/section total row where intended (e.g. AF2 and AO2) or delete if not needed.
+- Why: headers should be labels; having formulas in header is confusing and risky.
+
+4) Inconsistent SUM ranges in summary/average rows (includes empty rows or wrong row limits)
+- Examples: U22 =AVERAGE(U5:U21) while student rows end at U19; BA22 =AVERAGE(BA5:BA21) etc.
+- Problem: these use U5:U21 when real student rows are U5:U19 (or U5:U21 if you actually have students through row21). This can hide errors or include unintended blank rows.
+- Fix: adjust averages to the exact student range (e.g. U5:U19) or use dynamic ranges / Table references so summaries automatically match the student count.
+- Why: keeps class summary accurate and prevents accidental inclusion of blank or future rows.
+
+5) Inconsistent absolute references between sheets (possible percent denominators)
+- Examples: Sheet1 uses hard-coded denominators (e.g. T5/150*100). In Sheet2 they use T5/$T$1*100 (better because header holds the max points).
+- Problem: Hard-coded denominators risk mismatch if you change assignment totals.
+- Fix: use absolute references to the header cells for max points, e.g. =T5/$T$1*100 or use named ranges.
+- Why: keeps formulas robust when you change assignment totals.
+
+Quick prioritized checklist to fix now
+1. Fix T19 to include column D.
+2. Replace or clean all "error" marks (#, x, X, + X, .) in numeric ranges. If you cannot remove them, change SUM formulas to SUM(IFERROR(range,0)).
+3. Move/delete formulas that are in header row 1 (AF1, AO1).
+4. Update summary averages to exact row ranges or use structured Table references.
+5. Replace hard-coded denominators with absolute references to header totals.
+
+If you want, I can:
+- provide the exact corrected formulas for all specific cells you name, or
+- give a small macro or Find/Replace steps to convert all non-numeric markers to blanks/zeros, or
+- scan and list every cell that currently contains text/error markers that will break totals.

@@ -1,0 +1,31 @@
+I inspected the workbook formulas and found no broken/circular references, but I did find a couple of formula inconsistencies that could give misleading results.
+
+Summary of issues and recommended fixes
+
+1) Sheet: Table 2.0 BS - Annex E
+- Cell: K69
+- Current formula: =K49
+- Problem: Every other "Variance as % of original forecast" cell uses the pattern IF(Hx=0,"N/A",(Jx/Hx)*100). K69 is pulling the percent from K49 (Total Net Assets) instead of calculating the percentage for Total Funds (row 69). This will show the wrong percent for Total Funds and is inconsistent with the rest of the sheet.
+- Recommended fix: replace with the standard pattern for the row, e.g.
+  =IF(H69=0,"N/A",(J69/H69)*100)
+
+2) Sheet: Table 3.0 CF - Annex F
+- Cells: T19 (original cash forecast Balance c/f), and T42 (actual/revised forecast Balance c/f) — and by pattern some other T-column "Balance" totals (T18/T41 are total = H18/H41 respectively)
+- Current formulas:
+  - T19 = S19
+  - T42 = S42
+- Observation: Most rows use column T as the year total (e.g. T17 = SUM(H17:S17)), but the Balance c/f rows are set so T = last month (S) rather than SUM across months. That may be intentional (closing balance for the year equals the July closing balance), but it is inconsistent with the T column usage elsewhere and could confuse users expecting T to be an annual sum.
+- Recommendation: Decide on the intended meaning for column T for balances:
+  - If column T is supposed to be the annual total of the monthly values, change:
+    - T19 → =SUM(H19:S19)
+    - T42 → =SUM(H42:S42)
+  - If column T is purposely showing the final-month balance (July) then keep as-is, but document that behaviour because it deviates from the SUM pattern used in other rows.
+
+Notes / confirmations
+- Cross-sheet reconciliation formulas appear consistent: e.g. Table 3 T26 references Table 2 H20:H22 for original forecast reconciliation and T49 references Table 2 I20:I22 for revised — those look intentionally set to compare the cash-sheet balances to the balance-sheet cash/investment lines.
+- No circular references were detected in the formulas you provided.
+- Many row-numbering formulas (e.g. B31 =B29+840) are unusual but appear intentional (they're producing coded line numbers rather than arithmetic errors).
+
+If you want I can:
+- produce the exact corrected formulas and a small change list (CSV) you can apply programmatically, or
+- scan for any other cells where the percent-column (K) deviates from the IF(Hx=0,...) pattern and produce a full list.

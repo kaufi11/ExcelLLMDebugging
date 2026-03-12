@@ -1,0 +1,32 @@
+I checked the sheet and found the clear formula mistakes and the likely cause. Short summary and fixes below.
+
+1) Wrong-row reference (explicit error)
+- Faulty cell: O23
+- Problem: formula reads =E24+J23 — it pulls E24 (next row) instead of E23.
+- Fix: change O23 to =E23+J23
+- Why: using the next-row cell gives an incorrect product total for row 23.
+
+2) Missing / misaligned column data causing many AK (and similar) totals to be wrong
+- Symptom: AK6 (and many AK cells) use =AG6+Y6 (or similar), but AG6 (the Q3 "LIQUID PETROLEUM GAS" cell for that row) is blank / not present in those rows. That makes AK show wrong/zero results.
+- Cause: the AG column values are missing for several rows (data shifted or omitted), while the formulas expect AG to contain Q3 LPG.
+- Fix options (pick the one that matches your source data):
+  a) If AG values were accidentally not entered: populate column AG for the affected rows with the correct LPG numbers (the missing Q3 data).
+  b) If the LPG numbers are actually in a different column (data shifted left/right): correct the AK formulas so they reference the actual column containing LPG. Example if LPG is in AE rather than AG, change AK6 to =AE6+Y6 (and fill down).
+- Why: formula references must point to the actual data cell. Blank/misplaced source cells make the total wrong.
+
+3) Potential copy/typing slips (how to find & fix)
+- I saw at least one obvious copy typo (O23). There may be other similar single-cell row-offset mistakes where a formula references the wrong row or column (e.g., +1 row or wrong column letter).
+- Quick way to find them:
+  - Turn on Formulas (Ctrl+`) to scan for inconsistent references.
+  - Use Formulas → Trace Precedents / Trace Dependents on totals to see if arrows point to the correct source cells.
+  - Use Find (Ctrl+F) for suspicious patterns (e.g., formulas containing E24, or AG with blanks) to inspect nearby rows.
+
+Recommendation (to prevent recurrence)
+- Use consistent formulas and fill-down instead of typing constants or manual edits. Example pattern for Q3-quarter subtotal columns:
+  - Qx = Gx + Lx
+  - Wx = Mx + Rx
+  - AKx = AGx + Yx (ensure AGx exists)
+- After fixing source cells or formulas, recalc and check totals (Trace Dependents on Grand Total cells).
+
+If you want, I can:
+- Give a short list of every cell that currently references the wrong row/blank AG cell (I can generate that if you paste the workbook or allow me to scan it).

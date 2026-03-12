@@ -1,0 +1,20 @@
+Summary of the error
+- The Total Points cell (C41) uses COUNT(C9:C31) instead of adding the point values. COUNT returns how many numeric cells are present, not the sum of their values — so your total points (and therefore the fee) will be wrong (usually much too low).
+
+Fix (copy/paste formulas)
+1. Replace the formula in C41 with:
+   =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+
+2. Make the final fee selector (F5) more robust (optional but recommended). Replace F5 with:
+   =IF(ISNUMBER(C43),C43,C42)
+   This avoids relying on text "N/A" in C43.
+
+Why this fixes it (short)
+- SUM(C9:C31) adds the point amounts from each line so Total Points becomes the actual total points. COUNT was only counting non-blank numeric cells, not adding point values.
+- Using ISNUMBER(C43) avoids comparing to a text "N/A" and ensures the displayed fee is numeric (half fee when present, otherwise full fee).
+
+Other small improvements (optional)
+- Use data validation on column B to restrict entries to numbers where a count is expected and to a single character (like "x") where presence is required.
+- Format fee cells as Currency for clarity.
+
+If you want, I can produce the corrected workbook formulas for all affected cells or add validations.

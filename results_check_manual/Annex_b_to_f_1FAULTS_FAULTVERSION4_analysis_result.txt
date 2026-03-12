@@ -1,0 +1,44 @@
+I reviewed the workbook formulas on each sheet you supplied and checked for broken references, inconsistent formulas, likely copy/paste mistakes and other formula issues. I did not find #REF or syntax errors, but I found a small number of formulas that look inconsistent or likely incorrect — I list them below with explanation and recommended fixes.
+
+Summary of flagged issues (by sheet and cell)
+- Table 2.0 BS - Annex E
+  1) K69 = K49
+     - Problem: All other “variance as % of original forecast” cells use the pattern IF(Hx=0,"N/A",(Jx/Hx)*100). K69 is set to =K49 (copies the percent for Total Net Assets), rather than calculating percent for Total Funds.
+     - Why this is a problem: If H69 ≠ H49 (i.e. Totals on the two rows don’t match) the K69 value will be wrong or misleading. Even where H69 = H49 the link hides problems rather than computing the percent for that row directly.
+     - Recommendation: replace with the consistent pattern:
+       =IF(H69=0,"N/A",(J69/H69)*100)
+
+- Table 3.0 CF - Annex F
+  2) T26 (Original cash forecast) and T49 (Actual/revised forecast) — reconciliation formula uses three balance-sheet cells
+     - T26 formula: =T19-('Table 2.0 BS - Annex E'!H20+'Table 2.0 BS - Annex E'!H21+'Table 2.0 BS - Annex E'!H22)
+     - T49 formula: =T42-('Table 2.0 BS - Annex E'!I20+'Table 2.0 BS - Annex E'!I21+'Table 2.0 BS - Annex E'!I22)
+     - Observation: those formulas reconcile the CF closing balance to the sum of three balance-sheet items: Investments (H20 / I20), Cash at bank/in hand (H21 / I21) and Unspent/(overspent) bursary (H22 / I22).
+     - Why this can be surprising: typically a cash-flow closing balance reconciles to “Cash at bank and in hand” on the balance sheet (H21/I21). Including short‑term Investments (H20/I20) and the bursary balance (H22/I22) may be intentional (if the cash-flow “closing balance” is meant to include cash equivalents and bursary balances), but it is not the conventional single-cell reconciliation to a “cash at bank/in hand” cell.
+     - Recommendation: confirm the intended reconciliation. If the CF closing balance should equal only balance-sheet cash, change to:
+       =T19 - 'Table 2.0 BS - Annex E'!H21  (and analogous for T49 using I21)
+       If the intention is to reconcile to cash + short‑term investments + bursary, keep as is but document that this is intentional.
+
+- Consistency / general observations (no immediate formula error, but worth noting)
+  3) Percentage cells return the text "N/A" when the original forecast (H column) is zero
+     - This is consistent across the workbook (IF(Hx=0,"N/A",(Jx/Hx)*100)). This is acceptable, but be aware it returns text instead of numeric 0 or #DIV/0!. If you rely on percentages in charts/calculations, the "N/A" text may need handling.
+  4) Many total/“T” column cells are implemented in two ways (SUM(H:S) vs copy of last-month cell)
+     - For flows the T column is SUM(H:S). For running balance rows the T column is set to the last month (S column). This is consistent in the file and probably intentional; just be aware there is no single rule for the T column throughout.
+  5) Row numbering/formulas that add large offsets (e.g., B22 = B21 + 256)
+     - These are logical / account-code assignments, not formula errors. They look odd at first glance but appear intentional.
+
+What I would change immediately
+- Fix K69 in Table 2.0 BS - Annex E to use the same percent formula pattern as other rows:
+  =IF(H69=0,"N/A",(J69/H69)*100)
+
+- Confirm the intended reconciliation in Table 3.0 CF:
+  - If the CF closing balance is meant to reconcile only to balance-sheet cash, change:
+    T26 -> =T19 - 'Table 2.0 BS - Annex E'!H21
+    T49 -> =T42 - 'Table 2.0 BS - Annex E'!I21
+  - If it is intentionally cash + investments + bursary, add a comment/label to the sheet to avoid confusion.
+
+If you want, I can:
+- Produce a small patch (exact formula replacements) that you can paste into the workbook, or
+- Re-open and run a full workbook-wide validation (identify each cell that breaks the pattern IF(H=0,"N/A",...) or any other non-uniform formulas), or
+- Apply the two recommended fixes and return the changed file.
+
+Tell me which of the recommended changes you want applied (automatic fix or only report), and I’ll prepare the exact replacement formulas or a fix file.

@@ -1,0 +1,25 @@
+Findings (short)
+- Error: Table59 cell C15 formula is =-Data!L7 (has an unintended leading minus). That returns -77 instead of 77 for Alabama (two‑year "Any Aid").
+- Risk/other issue: The Data sheet uses text flags "NA" and the em‑dash "—" (and some blank cells). Those are text, so any downstream numeric calculations (ratios, charts, % of nation) can return errors or wrong results.
+
+Fixes and how to apply them (easy steps)
+
+1) Correct the negative sign
+- Go to Table59!C15, edit the formula to remove the minus. Use:
+  =Data!L7
+  (or =+Data!L7 if you prefer the workbook's style).
+- Why: The leading minus multiplies the referenced value by -1, producing a negative where a positive percent was intended.
+
+2) Check for other accidental negative references
+- Find any other formulas with "-Data!" (Find → type -Data! or search for "=-Data!") and remove the stray minus where it's not intentional.
+
+3) Make NA/dash handling consistent (recommended)
+- Replace "NA" and "—" in the Data sheet with either a true blank or Excel's #N/A (use =NA()) so numeric formulas know data is missing.
+- OR change presentation formulas to guard against text, e.g. for percent-of-nation use:
+  =IF(AND(ISNUMBER(C10),ISNUMBER(C11),C10<>0),C11/C10*100,"")
+  This prevents #DIV/0! or other errors when a source is text or zero.
+- Why: Text flags break numeric math (division, averages, charts). Using blanks or #N/A (or guarding formulas) preserves correct calculations and prevents misleading results.
+
+Summary
+- Immediate fix: change Table59!C15 to =Data!L7.
+- Then search for other "-Data!" occurrences and standardize how missing values are represented (blanks or NA()) or wrap formulas with ISNUMBER/IFERROR checks. This will remove the incorrect negative value and prevent calculation errors from text "NA"/"—".

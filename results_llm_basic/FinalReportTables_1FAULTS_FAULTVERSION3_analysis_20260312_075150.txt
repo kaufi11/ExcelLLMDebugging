@@ -1,0 +1,36 @@
+I checked the workbook layout and formulas. I found 3 real problems that will produce wrong totals, plus a few small formula-cleanup issues. Below are the problems, why they are wrong and the precise fixes (short & easy).
+
+1) Wrong / hard-coded value in Table G.2 — Production for partner in column F
+- Problem: Table G.2 cell F14 is hard-coded to 4 (F14 = 4) instead of summing the Production costs for that partner. That makes B14 and all totals that depend on it incorrect.
+- Fix: Replace the 4 with the same SUMIF pattern used in the other partner columns. Example formula:
+  =SUMIF('Table G.6'!$C$5:$C$39,F$4,'Table G.6'!$H$5:$H$39)
+- Why: this will pull Production costs for partner number in F4 from Table G.6 (consistent with the other partner columns).
+
+2) Table G.2 TOTAL row (B26..V26) excludes Staff Costs (A)
+- Problem: B26 (and other partner total cells) currently =SUM(B17,B25) — that adds Operating (B17) + Subcontracting (B25) but omits Staff Costs (row B5). So partner totals are too small.
+- Fix: change each TOTAL cell to include staff costs. Example for column B:
+  =SUM(B5,B17,B25)
+  For column C:
+  =SUM(C5,C17,C25)
+  ...and so on for each partner column.
+- Why: TOTAL should be Staff + Operating + Subcontracting.
+
+3) Table G.1 TOTAL Expenditure Realised (D21) omits Staff Costs
+- Problem: D21 =SUM(D12,D20) — this sums Operating and Subcontracting realised but omits realised Staff Costs (row D5). That makes the Table G.1 "Expenditure Realised" total wrong.
+- Fix (two parts):
+  a) Make sure D5 exists and points to the staff-costs total in Table G.2 (or to the cell where staff costs per project are calculated). For example, if Table G.2 column B row 5 contains staff costs for the current contractor, use:
+     D5 = 'Table G.2'!$B$5
+  b) Change D21 to include staff costs:
+     D21 = SUM(D5,D12,D20)
+- Why: Table G.1 must add Staff + Operating + Subcontracting to compute the total realised expenditure.
+
+Small cleanups / recommendations (not critical but improve clarity)
+- Table G.8 per-row formulas use SUMIF with single-cell ranges (e.g. =SUMIF($E5,$I$4,$H5)). That works but is unconventional and harder to maintain. Use a simple IF expression per row:
+  =IF($E5=I$4,$H5,0)
+  or rewrite the layout so you use SUMIFS with full column ranges for the final summary rows.
+- Remove unnecessary SUM() wrappers around single products (cosmetic). For example in Table G.5.c change =SUM(F6*G6)*H6 to =F6*G6*H6 (same result, cleaner).
+- After fixing the F14 and the totals, re-check any dependent subtotals (B14, B17, B26 etc.) to ensure end-to-end totals match expected values.
+
+If you want, I can:
+- give you the exact corrected formulas for every affected cell (I already gave examples) OR
+- produce a short macro/Find&Replace plan to apply the fixes across partner columns. Which would help you more?

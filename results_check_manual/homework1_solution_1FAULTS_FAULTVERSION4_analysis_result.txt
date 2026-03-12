@@ -1,0 +1,19 @@
+I inspected the formulas and values on Sheet1. Summary:
+
+1) Fault / inconsistency found
+- Cell: D16
+- Current formula: =D15+1.16392805306977
+- Expected / consistent formula with the rest of the sheet: =D15+0.25
+- Reason: All other growers (B16, C16, E16, F16) add a fixed processing cost of 0.25 to the incoming cost (row 15). D16 uses a different hard-coded constant, producing a wrong, out-of-line result (3.69992805306977) and causing D19 to show a large negative profit.
+
+2) Consequent incorrect cell(s)
+- D19 (formula =D18-D16) is correct syntactically but yields an incorrect result because D16 is wrong. Current D19 = -0.72805305306977. With the corrected D16 (D15+0.25) you would get:
+  - D16 corrected = 2.536 + 0.25 = 2.786
+  - D19 corrected = 2.971875 - 2.786 = 0.185875
+
+3) Minor notes / suggestions (not errors strictly speaking)
+- F14 uses =AVERAGE(B3:E12). This yields the same result as =AVERAGE(B14:E14) only because each grower column has the same number of shipment rows. If the number of observations per grower could differ in future, use =AVERAGE(B14:E14) or compute a true weighted average as appropriate to make intent clear.
+- Consider putting constants (incoming cost per kg = 0.8, fixed processing cost = 0.25, selling price per kg = 1.25) into dedicated cells and referencing them (e.g., $B$1, $B$2, ...) so accidental manual edits (like the one in D16) are less likely and formulas are easier to audit.
+- Some cells show long floating decimals (e.g., D16). For presentation, consider rounding/formatting (ROUND(...,3) or cell number format) if you need consistent decimal display.
+
+If you want, I can produce the exact corrected workbook formulas (replace D16 with =D15+0.25) and list the recalculated values for any cells affected.

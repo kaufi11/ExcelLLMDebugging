@@ -1,0 +1,31 @@
+I reviewed the workbook and found two clear errors that will produce wrong per‑recipient numbers and distort totals. Short fixes and why they work below.
+
+1) Wrong multiplier (typo)
+- Location: Sheet "CWS per‑recipient", cell C14
+- Problem: formula uses *1880 instead of *1000:
+  current: =('College Work‑Study'!C16*1880)/'College Work‑Study'!T16
+- Why it’s wrong: all per‑recipient formulas convert Funding (which is stored in thousands) back to dollars by multiplying by 1000. Using 1880 scales the funding by 1.88 and produces an incorrect per‑recipient amount.
+- Fix: change to
+  =('College Work‑Study'!C16*1000)/'College Work‑Study'!T16
+- Result / Explanation: this restores the consistent unit conversion (thousands → dollars) so the per‑recipient calculation is correct.
+
+2) Likely data / entry outlier (extra digit or wrong cell copied)
+- Location: Sheet "Perkins per‑recipient" (the large table), cell AI53 shows 163,494 which is an outlier compared with nearby values.
+- Problem: that single value is far outside the expected range and breaks averages / percent comparisons. It looks like a data entry error (extra digit or pasted number into a recipient/per‑recipient slot).
+- Fix options (pick the one that matches your intended design):
+  a) If AI53 is supposed to be the recipients count copied from the "Perkins Loans" sheet, replace the hardcoded number with a direct reference:
+     = 'Perkins Loans'!AI53
+  b) If AI53 is intended to be the per‑recipient calculation (funding / recipients), recompute it consistently (example for the 2000–01 column):
+     =('Perkins Loans'!R53*1000)/'Perkins Loans'!AI53
+  c) If AI53 is meant to be a total, recompute from the source rows (safer):
+     =SUM(AI10:AI62)  (or the correct row range of recipients)
+- Why: using the correct source reference or recomputing removes the spurious outlier and makes downstream per‑recipient and percent formulas consistent.
+
+Quick checklist I recommend you run after fixes
+- Scan per‑recipient sheets for any other occurrences of “*1880” or other odd multipliers.
+- Look for unusually large/small single values (outliers) in each state/total column — often a sign of a typing/copy error.
+- Where possible replace hardcoded numbers for recipients/totals with formulas that reference the source sheet (SUM or direct cell reference) so updates propagate and manual entry errors are reduced.
+
+If you want, I can:
+- Produce a list of all cells that deviate (e.g., unusual multipliers or outlier values), or
+- Give the exact corrected formulas for any specific rows you care about.

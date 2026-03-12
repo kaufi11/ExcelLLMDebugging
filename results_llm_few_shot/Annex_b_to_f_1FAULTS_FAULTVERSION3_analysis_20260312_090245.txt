@@ -1,0 +1,28 @@
+I checked the three main tables and found a few clear errors. Short fixes and plain explanations below.
+
+1) Wrong hard-coded row number (Table 1.0 I & E)
+- Fault: B57 has formula =525+1 (should increment the line number like the other rows).
+- Why it’s wrong: it hard-codes a number (526) instead of continuing the sequence; it will break row numbering if you insert/delete rows.
+- Fix: Replace with =B56+1
+
+2) Cash-flow / balance-sheet reconciliation references (Table 3.0 CF)
+- Fault: T26 = T19 - ('Table 2.0 BS - Annex E'!H20 + 'Table 2.0 BS - Annex E'!H21 + 'Table 2.0 BS - Annex E'!H22) (and similarly T49 uses I20+I21+I22).
+- Why it’s wrong: To reconcile the closing cash balance you should compare the cash balance from the balance sheet (Cash at Bank/In Hand), not sum Investments + Cash + Unspent bursary. Summing H20:H22 is the wrong set of items for the reconciliation.
+- Fix: Change to reference the cash line only:
+  - T26 -> =T19 - 'Table 2.0 BS - Annex E'!H21
+  - T49 -> =T42 - 'Table 2.0 BS - Annex E'!I21
+
+3) Total-column (T) cells incorrectly linked to the first month (many rows in Table 3.0 and other tables)
+- Fault: Several column-T cells (examples: T18, T41 in Table 3.0) are set to =H18 or =H41 instead of summing across the months.
+- Why it’s wrong: Column T should be the total across months (or the intended total), not a copy of August (column H). This gives incorrect totals in the "Total" column.
+- Fix (apply where appropriate): Replace those unwanted single-month references with a full month-range sum. Typical formula:
+  - e.g. T18 -> =SUM(H18:S18)
+  - e.g. T41 -> =SUM(H41:S41)
+  - Do the same for any other T-cells that wrongly point to an H-cell.
+
+4) (Optional check) Verify other auto-increment row-label cells
+- Many B-cells use =previous+1 pattern. B57 was the obvious outlier; scan the B-column for any other accidental hard-coded numbers and change them to the =Bprevious+1 pattern to keep numbering robust.
+
+How to implement: edit each faulty cell and paste the replacement formula shown. After changes, recalc and spot-check totals and the reconciliation cells T26/T49 should show zero if the two sheets agree.
+
+If you want, I can list every T-cell that uses an =H... link (so you can fix them all) or give a small macro to replace Tn = Hn with Tn = SUM(Hn:Sn) across the workbook. Which would you prefer?

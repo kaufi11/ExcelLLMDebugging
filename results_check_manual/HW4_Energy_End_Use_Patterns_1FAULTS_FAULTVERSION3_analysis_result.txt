@@ -1,0 +1,58 @@
+I reviewed the formulas in all four worksheets and note a number of real errors, likely mistakes, and a few places that are fragile / likely to cause mistakes if the sheet is edited or copied. I list them by severity with sheet + cell references, a short explanation, and a suggested fix.
+
+1) Incorrect constant used for GAS RANGE in "Johnson - Base"
+- Sheet: Johnson - Base
+- Cell(s): C46 (shows 258.2) — formula =254+(C44*C45)
+- Problem: C43 (pilot lights) is 6 (therms/month) per the sheet, and the other sheets use pilot lights = 6 in the range calculation. Here a hard-coded constant 254 is used instead of using C43 (or 6). That produces an inflated monthly range consumption and flows through to total gas use, bills, CO2, etc.
+- Suggestion: Replace 254 with a reference to the pilot-lights cell (C43) or use formula C43 + (C44*C45). E.g. =C43 + (C44*C45)
+
+2) Walls area missing (all sheets)
+- Sheets: Johnson - Base, Johnson - More Efficient, Your Home - Base, Your Home - More Efficient
+- Cell(s): C23 (and sometimes C22/C23 depending on layout) is empty for "walls" so UA (E23 / E22 depending on sheet) is computed as =C23/D23, which yields 0.
+- Problem: Walls R-value is given (D23) but the wall area (C23) is not calculated/entered. That makes the walls contribute zero to UA and to total losses, which is unrealistic and will understate energy need.
+- Suggestion: Add a formula to compute wall area (typical approach: perimeter * height minus window area), or enter the correct wall area in C23. Example: if perimeter = 2*(length+width) use = (2*(C5+C6)*C7) minus total window area.
+
+3) Inconsistent RANGE formula implementations between sheets (copy/paste risk)
+- Observation: Different sheets implement the "THERMS FOR RANGE" calculation in different cells and with different formula structures:
+  - Johnson - Base: uses C46 = 254 + (C44*C45) (wrong, see #1)
+  - Johnson - More Efficient and Your Home sheets: use C45 = C42 + (C43*C44) (pilot + burner-hours)
+- Problem: The range formula lives in different rows/columns in different sheets; the constant 254 appears only in Johnson - Base. This makes sheet-to-sheet copying error-prone.
+- Suggestion: Standardize the range calculation across sheets (same layout and formulas), use cell references for pilot lights and burner-hours consistently.
+
+4) Risky/fragile IF tests for heating fuel / electric heating
+- Sheets: multiple
+- Cells: D39 / D38 and F39 / F38 variations:
+  - Example Johnson - Base: D39 =IF(C14<1,D38/100000,0) and F39 =IF(C14=G35,D38/F10,0)
+- Problem: The logic uses furnace efficiency being <1 or =1 to decide whether to convert delivered Btu into therms or kWh. That is brittle: it assumes (for example) that an electric system always has efficiency exactly 1 and gas a value <1. Comparing floats to 1 (C14=G35) can fail by rounding, and the logic ties "fuel type" to "efficiency" implicitly.
+- Suggestion: add an explicit fuel-type flag (e.g., a cell "heat fuel = Gas/Electric") and base the IF on that. Or at least use >= or > comparisons and avoid exact equality to 1.
+
+5) Inconsistent placement of price and conversion constants across sheets (copy/paste hazard)
+- Observation: the cells that hold "price of electricity" and conversion constants are not in the same coordinates in every sheet:
+  - Johnson - Base: electricity price is in C11
+  - Other sheets: electricity price is in C10
+- Problem: If a user copies formulas between sheets (or copies rows/columns) cell references can point to the wrong price cell and produce wrong $ results.
+- Suggestion: standardize the layout so price and conversion constants are at the same addresses across all sheets, or use named ranges (e.g. Electricity_Price) so formulas remain correct when copied.
+
+6) Hard-coded conversion constants referenced by different cell addresses across sheets
+- Example: the Btu/kWh conversion (3414) is sometimes F10, sometimes F9, etc. This is another copy/cell-shift fragility. Using named ranges for conversion factors would remove this class of error.
+
+7) Some formulas use literal constants rather than cell references
+- Example: Johnson - Base C46 uses literal 254 (see #1). Any other similar occurrences would be fragile. Replace literals with references.
+
+8) Minor: inconsistent row offsets for the electricity CO2 calc
+- Observation: In some sheets the electricity average CO2 calculation is on row 100 (C100/E100) and in others on row 101 (C101/E101). The formula structure is fine, but because the rows shift, it is another source of confusion if copying is attempted. Again, a standardized layout or named ranges would help.
+
+9) Numeric/units sanity checks (recommendations, not formula bugs)
+- Example: Pilot lights = 6 therms/month seems plausible; 254 therms/month (the hard-coded 254) is not plausible for pilot lights—this reinforces that 254 is a mistaken constant.
+- The walls UA being zero will materially understate losses and should be corrected.
+
+Summary / prioritized fixes
+1) Fix the range formula in Johnson - Base: change C46 from =254+(C44*C45) to =C43+(C44*C45) (or similar consistent formula).
+2) Enter / compute walls area (C23) in every sheet (replace blank with correct area formula).
+3) Standardize location of price & conversion cells across all sheets (or define named ranges for: Price_NG, Price_Elec, Btu_per_kWh, etc.) and update formulas to use the names.
+4) Replace float equality checks used to detect heating fuel with an explicit fuel-type flag (or at least use >= or clearly documented logic).
+5) Check any other hard-coded numbers and replace with references.
+
+If you want I can:
+- produce a small patch list of exact cell formulas to change (showing before→after),
+- or produce a version of the workbook with the fixes (I can describe the exact formula edits to make). Which would you prefer?

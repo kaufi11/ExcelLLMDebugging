@@ -1,0 +1,35 @@
+Findings (short)
+- Wrong divisor / typo: M42 = L42/347 — wrong. This gives a hugely incorrect per-student average and will skew M47.
+- Incorrect averaging method (systemic): M3:M45 mostly use =Lx/10. That always divides by 10 even when some homework cells B:K are blank. Blank cells are treated as zero in the sum but should normally be excluded from the average (or explicitly counted as zero depending on policy). This under‑states averages when scores are missing.
+- Several student rows have missing homework cells (blanks). Because totals use =SUM(Bx:Kx) and averages use /10, blanks act like zeros and reduce totals/averages if blanks really mean “not submitted / missing”.
+
+Rows with missing homework cells (based on your sheet): 4, 11, 25, 27, 28, 42, 45 (and others where any B–K value is absent). Check those rows before finalizing grades.
+
+Quick fixes (apply one of these)
+
+1) Minimal fix (correct obvious typo)
+- Change M42 to =L42/10 (or better use option 2 below). This fixes the glaring error.
+
+2) Best fix (recommended) — compute averages ignoring blanks
+- Replace per-student formula in M3 and copy down to M45 with:
+  =AVERAGE(B3:K3)
+  Explanation: AVERAGE ignores blank cells, so it uses only the scored assignments as the denominator.
+
+3) Alternative flexible fix — if you want to average only non-blank scores but keep totals:
+- Use:
+  =IF(COUNT(B3:K3)=0,"", SUM(B3:K3)/COUNT(B3:K3) )
+  Explanation: divides sum by number of numeric cells (ignores blanks). Returns blank if no scores.
+
+What to do after fixing
+- After changing M3:M45, recalc row 47 (AVERAGE formulas will automatically update). Remove any manual corrections like M42/347.
+- Decide policy: If a missing homework should count as zero, then keep =Lx/10 but first ensure blanks are replaced with explicit 0 values. If missing means “not graded” then use AVERAGE or SUM/COUNT as above.
+
+Why this works (one sentence each)
+- Changing M42 fixes a simple typo that produced the wrong denominator.
+- Using AVERAGE(Bx:Kx) or SUM/COUNT uses only actual scores to compute the per-student mean, so blanks do not artificially lower averages.
+- Using explicit zeros (if that’s your rule) makes SUM/10 correct because blanks will no longer be treated as non-numeric.
+
+If you want, I can:
+- Give the exact cell-by-cell corrected formulas to paste,
+- List all rows and which columns are blank,
+- Or produce the corrected class averages after you tell me whether blanks should count as zero or be ignored. Which do you want?

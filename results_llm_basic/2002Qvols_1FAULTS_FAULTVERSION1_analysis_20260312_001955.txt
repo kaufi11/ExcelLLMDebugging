@@ -1,0 +1,38 @@
+I checked the sheet. I found three types of real problems (one concrete formula bug, plus two likely data/column alignment issues). Short, exact fixes below.
+
+1) Wrong function used (concrete formula error)
+- Where: cell L31
+- Problem: L31 contains =COUNT(H31:K31). That counts how many numeric cells are in H31:K31 instead of totalling them.
+- Fix: replace with =SUM(H31:K31)
+- Why: all other rows use SUM for the quarter totals. COUNT returns a small integer (0–4) and breaks all downstream cumulative totals that rely on L31.
+
+2) Suspected column misalignment / missing Q4 value(s)
+- Where: several Q4 accumulation formulas follow the pattern:
+  - AI6 = AE6 + W6
+  - AJ6 = AF6 + X6
+  - AK6 = AG6 + Y6
+  - AL6 = AH6 + Z6
+  For row 6 the sheet shows AE6, AF6 and AH6 populated but AG6 is missing (blank).
+- Problem: AK6 = AG6 + Y6 will use a blank (0) if AG6 is empty, so the Q4 LPG total is wrong (or the data were pasted one column to the right).
+- Fix:
+  - Verify source values for the Q4 columns (AE:AH). If the LPG value was accidentally placed into AH instead of AG, move the value left one column (AG6 := AH6) or vice‑versa so AE:AH line up with AI:AL formulas.
+  - Alternatively, if AG6 really should be blank, confirm that AK6 formula is correct. After correction re-check AI:AL totals.
+- Why: all Q4 total formulas rely on matching AE->AI, AF->AJ, AG->AK, AH->AL. A one-column shift breaks totals but doesn’t throw an error.
+
+3) Suspicious data entries (possible data-entry errors)
+- Examples: J9 = -31560, T9 = -9600, AG79 = -5903, and some other negative numbers in product columns; AB16 = "XX" (text).
+- Problem: negative volumes in product columns and stray text values will cause totals to be wrong or treated differently by some functions.
+- Fix:
+  - Verify whether negative numbers are legitimate adjustments/returns; if not, correct to the proper positive values.
+  - Remove/replace non‑numeric text (e.g., "XX") in columns that are expected to be numeric (or move it to a notes column).
+- Why: totals (SUM) include negatives and blank/texts, which may be intentional but often are accidental and break aggregated results.
+
+How to find similar issues quickly
+- Find any COUNT used where SUM is expected: use Excel Find for "COUNT(" and inspect results. Replace accidental COUNT ranges with SUM.
+- Use formula auditing (Formulas → Error Checking / Trace Precedents) on any totals that look off to see which component cell is wrong/missing.
+- Check column headers AE:AH vs AI:AL mapping across the sheet to ensure every row follows the same column alignment pattern.
+
+If you want, I can:
+- Give a small macro or step-by-step Find/Replace plan to fix all COUNT → SUM occurrences,
+- Or scan the whole sheet for other COUNT mistakes and list their addresses,
+- Or help you fix the column shift by telling you exactly which cells to move (if you paste the AE:AH values for one example row I’ll show the correction).

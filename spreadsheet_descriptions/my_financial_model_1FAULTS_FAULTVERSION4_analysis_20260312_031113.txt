@@ -1,0 +1,71 @@
+Overview
+- Workbook models a lemonade business across monthly/annual columns (years run across columns E:P; Income!E2:P2 = 2002–2013).
+- Key inter-sheet flow: Income → Cashflow & Balance Sheet; Depreciation fed from/to Balance Sheet and Income. Sheet titles are linked (Income!B1 used as workbook title across sheets).
+
+Sheets (concise)
+
+1) Income
+- Layout: left-hand inputs in column C/D (unit growth rates, unit requirements, sales split), years across E:P.
+- Key inputs:
+  - E3 Cups produced = 200,000; growth rate in D3 = 0.05 (F3..P3 = prior*(1+$D$3)).
+  - Price per cup E4 = 4; price growth uses D4 = 0.08/12 (monthly inflation/growth).
+  - Ingredients: sugar per cup D5 = 0.2; lemons per cup D6 = 1.
+  - Prices: lemon E7 = 0.55; sugar E8 = 0.375.
+  - Sales mix: D10 = 0.4 online; D11 = 1 - D10 street.
+  - Fixed monthly costs: GM E22 = 7,500; credit card 75; web-hosting D24 = 500; advertising 2,500; insurance 250; legal 50,000; benefits = E22*0.25.
+  - Depreciation is pulled from Depreciation sheet (Income!E31 = Depreciation!E7).
+- Calculations:
+  - Revenue rows: Online (E10 = $D$10 * E3 * E4), Street (E11 = E3*(1-$D$10)*E4). Total (E12) uses SUM of the online row only (SUM(E10:E10) — note this only sums one cell).
+  - Annualized rows multiply monthly totals by 12 (E13 = E12*12).
+  - COGS rows compute ingredient quantities (E5..E6 = E3 * D5/D6) and costs (E15 = E6*E7, E16 = E8*E5). Totals and gross profit computed monthly and annualized.
+  - Net profit (E33) = Gross monthly profit - Fixed monthly totals (E29) - Depreciation (E31).
+- Notes: many year columns are filled by copying prior column formulas (F = E, G = F, etc.), producing multi-year projections.
+
+2) Balance Sheet
+- Header links year labels to Income.
+- Current assets: Cash is cumulative from Cashflow (E6 = Cashflow!D13; F6 = E6 + Cashflow!E13 etc.).
+- Long-term assets: original value pulled from Depreciation/Balance Sheet (chain of links: Depreciation!D6 ↔ Balance Sheet D8).
+- Accumulated depreciation aggregates Depreciation!E7..P7.
+- Liabilities: a long-term loan (Lear Jet Finance Co.) starts at D14 = 1,000,000 and accumulates Cashflow!E9.. etc.
+- Equity: initial investment D18 = 1,200,000; retained earnings cumulate Income!E33..P33.
+- Totals: Assets = Current + Inventory + Long-term net value; Liabilities + Equity summed and compared.
+
+3) Cashflow
+- Header links to Income year labels.
+- Cash from Operations = Income!E33..P33 (monthly net profit).
+- Depreciation rows pull Depreciation!E7..P7.
+- Cash from Investments: repeated -100,000 values (E9:F9: etc).
+- Cash from Financing pulls Balance Sheet E18 (initial investment).
+- Net change in cash per column = SUM of operation, depreciation, investing, financing rows (D13 = SUM(D6:D12) etc).
+- Cashflow net changes feed Balance Sheet cash.
+
+4) Depreciation
+- Asset original value pulled from Balance Sheet (D6 = 'Balance Sheet'!D8).
+- Useful life D7 = 7 (years).
+- Depreciation per period E7..P7 = IF(value at beginning>0, $D$6/$D$7,0) — constant straight-line annual depreciation distributed across years.
+- Value at end = beginning - depreciation.
+- Accumulated depreciation tallies across years.
+
+5) simple income
+- Small monthly profit/loss prototype sheet with month start-dates in E2:P2.
+- Revenue E4 = 1,000 replicated across months; COGS E7/E8 given; Gross profit E11 = E5 - E9; Fixed consultant E13 = 25; Net profit E15 = E11 - E13; annualized E16 = E15*12.
+
+6) RoadMap
+- Schematic diagram mapping Income → Cashflow → Balance Sheet → Depreciation and showing key line items (Revenue, Expenses, Depreciation, Cash from Investing/Financing, Equity/Retained Earnings). Mostly labels and links to cells.
+
+Key formulas & links (summary)
+- Growth/projection pattern: each year column = prior year * (1 + growth) or simply = prior year (copy-forward).
+- Many inter-sheet references: Income!E33 → Cashflow!D6 & Balance Sheet retained earnings; Depreciation!E7 → Income!E31; Cashflow!D13 → Balance Sheet E6 (cash).
+- Notable constants: initial cups 200,000; lemon price 0.55; sugar price 0.375; advertising 2,500/mo; legal 50,000/mo; initial investment 1,200,000; long-term loan 1,000,000.
+- Depreciation uses straight-line: annual depreciation = original value / 7 (if >0).
+
+Potential issues / oddities (brief)
+- Several totals use SUM over a single cell (e.g., Total revenue E12 = SUM(E10:E10) rather than E10:E11) — may omit street sales from totals.
+- Sugar price row formulas reference $D$7 (lemon growth cell) in some columns instead of $D$4 (price growth), likely a copy error.
+- Many copied formulas are chained (F = E, G = F, …) — good for propagation but can hide intended year-specific inputs.
+- Legal expense is very large (50,000 monthly) — likely intentional but worth checking.
+
+If you want, I can (choose one)
+- produce a corrected/cleaned version (fix SUM ranges and growth references),
+- extract a short list of cells to change to test scenarios, or
+- generate a one-page schematic showing the flow of key lines across sheets.

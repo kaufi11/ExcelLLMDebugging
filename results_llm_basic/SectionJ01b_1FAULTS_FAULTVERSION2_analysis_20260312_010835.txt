@@ -1,0 +1,47 @@
+Summary of the errors I found and simple fixes.
+
+1) Total LOE — Grand total missing last option
+- Error: B70 = SUM(B68:H68) — this omits the Opt.7 total in I68.
+- Fix: change B70 to =SUM(B68:I68)
+- Why: you need to include all period totals (Base + Opt 1..7). Missing I68 understates the Grand Total.
+
+2) Many sheets — inconsistent/incorrect escalation rate in Opt.4 (and some other rows)
+- Error: several Opt.4 formulas use *0.023 (2.3%) instead of the 2% used elsewhere (e.g. N5 = K5+(K5*0.023)).
+- Fix: make the growth rate consistent. If intended rate is 2% use 0.02. Example:
+  - Replace N5 = K5+(K5*0.023) with N5 = K5*1.02 (or N5 = K5+(K5*0.02))
+- Why: inconsistent rates produce wrong hours/rates for that option year.
+
+Recommendation (best practice): calculate options directly from the base to avoid chaining errors/accidental edits:
+- Opt1: =B5*1.02
+- Opt2: =B5*1.02^2
+- Opt3: =B5*1.02^3
+- etc.
+This prevents propagation-of-error if one option cell is accidentally changed.
+
+3) T&M sheet — hard-coded value instead of cell reference
+- Error: N37 = 920+(920*0.023) — uses 920 literal instead of referencing the previous option cell.
+- Fix: change to N37 = K37*1.02 (or if you keep 2.3% then *1.023, but use the referenced cell): N37 = K37*1.02
+- Why: hard-coded numbers break formulas when underlying hours change. Always reference the appropriate cell.
+
+4) T&M sheet — Grand Total sums wrong range
+- Error: B62 = SUM(B60:T60) — sums a contiguous block that includes intermediate columns (rates/loaded rates/extended price), not just the period totals.
+- Fix: sum just the total columns (every 3rd column where the period totals are). Example:
+  - B62 = SUM(B60,E60,H60,K60,N60,Q60,T60,W60)
+  - Or explicitly: =B60+E60+H60+K60+N60+Q60+T60+W60
+- Why: the existing SUM picks up extra numeric cells and double-counts or includes irrelevant data.
+
+5) Fixed Price and Cost Type sheets — missing/verify Grand Total formulas
+- Observation: Fixed Price shows A61 Grand Total label but no Grand Total formula listed. Cost Type shows A63 Grand Total with no formula shown.
+- Fix: add Grand Total formulas analogous to the T&M fix:
+  - Fixed Price grand total = SUM of E59, H59, K59, N59, Q59, T59, W59 (and include Base if required).
+  - Cost Type grand total = SUM of E61, H61, K61, N61, Q61, T61, W61 (adjust columns/names as your layout requires).
+- Why: ensure each sheet’s Grand Total aggregates the period totals only.
+
+Quick checklist to implement (do these 5 quick changes)
+- Change Total LOE B70 to =SUM(B68:I68).
+- Replace any *0.023 occurrences with *0.02 if the intended escalation is 2%, or standardize to your agreed rate.
+- Replace hard-coded N37 with a cell-referenced formula: N37 = K37*1.02 (or K37*1.023 if 2.3% intended).
+- Replace T&M B62 with =SUM(B60,E60,H60,K60,N60,Q60,T60,W60).
+- Add missing Grand Total formulas on Fixed Price and Cost Type sheets, summing the per-period totals only.
+
+If you want, I can produce the exact find/replace list (cell-by-cell) or give you the anchored formulas (base-reference / ^n approach) for one sheet so you can copy them down. Which sheet should I fix first?

@@ -1,0 +1,28 @@
+I checked the sheet and found three main problems. Short summary, cause, and fix for each:
+
+1) Row 41 balance sign error
+- Problem: J41 = G41 + H41 + I41 (it adds Expended and Commit instead of subtracting them).
+- Why it matters: That single-project balance is wrong and will confuse review of that project.
+- Fix: Change J41 to =G41 - H41 - I41.
+
+2) Inconsistent/wrong SUM ranges for the totals
+- Problems:
+  - G217 currently =SUM(G7:G216) — it omits the last data row (row 213) and sums to the wrong end row.
+  - H218 currently =SUM(H9:H216) — it starts at row 9 (omitting H7) and ends at row 216.
+  - I219 currently =SUM(I10:I217) — it starts and ends on the wrong rows.
+- Why it matters: The three totals (Total Budget, Expended to-date, Commitments) are incorrect because they don’t sum the same block of data. The final Balance (J220) which uses those totals will be wrong as well.
+- Fix (make all totals sum the same data block). If your data runs from row 7 through row 213, set:
+  - G217 = SUM(G7:G213)
+  - H218 = SUM(H7:H213)
+  - I219 = SUM(I7:I213)
+  - J220 = G217 - H218 - I219  (this one is already correct)
+  (Adjust the end row if your actual last data row is different.)
+
+3) Minor data issues to review
+- F94 shows a date of 2673-12-22 — likely a data-entry error (should be reviewed/corrected).
+- Several rows show Expended > Budget (H > G) which yields negative balances — not a formula error but may need accounting review.
+
+Recommendation to avoid this class of errors
+- Convert the list into an Excel Table and use structured references (SUM(Table[Budget]) etc.) or use dynamic ranges (INDEX/COUNTA) so totals always include the same rows and you avoid off-by-row mistakes.
+
+If you want, I can give the exact formulas to paste into the cells or prepare corrected ranges assuming the last data row is 213. Which would you prefer?

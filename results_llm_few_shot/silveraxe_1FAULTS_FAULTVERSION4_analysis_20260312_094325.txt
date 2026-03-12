@@ -1,0 +1,30 @@
+Summary — the sheet has four clear formula mistakes. Short fixes and why:
+
+1) Faulty cell: F19
+- Error: Wrong function (mechanical)
+- Problem: F19 =PRODUCT(B19:E19) multiplies the four "HP mod" values. These should be added, not multiplied.
+- Fix: =SUM(B19:E19)
+- Why: Hit Point modifiers combine additively.
+
+2) Faulty cell: H19
+- Error: Rounding (mechanical)
+- Problem: H19 = (F19*E15)+0.49 leaves a decimal result (and the +0.49 suggests you intended to round).
+- Fix: =ROUND(F19*E15,0)  (or =INT(F19*E15+0.49) if you prefer that method)
+- Why: Hit points should be a whole number; ROUND (or INT+0.49) produces the intended integer.
+
+3) Faulty cell: H22 (Base HTH Damage)
+- Error: Wrong lookup (logical)
+- Problem: H22 =HLOOKUP(C22,R2:AG4,3,TRUE) is looking up carrying capacity (C22) in the weight/other table. Base hand-to-hand damage depends on Strength, and the damage row and attribute-value row are on different rows, so a simple HLOOKUP on that range is wrong.
+- Fix (use INDEX/MATCH to look up damage by Strength): =INDEX(R4:AG4, MATCH(B16, R5:AG5, 1))
+- Why: MATCH finds the correct attribute column for Strength (B16) in the "Attr. Value" row (R5:AG5); INDEX returns the HTH damage from the damage row (R4:AG4). (If your actual table extends to AW instead of AG, use AW consistently in both ranges.)
+
+4) Faulty cell: C23 (Movement Rates)
+- Error: Omission (mechanical)
+- Problem: C23 =SUM(B16:B17,G16) omits G17 (Intelligence or Endurance depending on intent).
+- Fix: =SUM(B16:B17,G16:G17)
+- Why: You likely meant to include both G16 and G17 in the movement total.
+
+Quick extra note about HLOOKUP ranges
+- When using HLOOKUP(range, …, row_index, TRUE) the top row of the range must contain the lookup breakpoints. Check each HLOOKUP so the lookup-value column and the returned row are inside the same range, and that row_index points to the correct relative row. If top/return rows are inverted (like damage row above the attribute-value row) use INDEX/MATCH as above.
+
+If you want, I can give a checked list of every HLOOKUP in the sheet and the exact corrected ranges (I noticed some ranges use AG and some AW — I can standardize them to your actual columns).

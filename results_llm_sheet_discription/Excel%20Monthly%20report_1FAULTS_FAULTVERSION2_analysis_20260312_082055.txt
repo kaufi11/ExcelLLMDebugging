@@ -1,0 +1,59 @@
+Summary of the problem (short)
+- Many cells use incorrect chained or single-cell SUM formulas, so values are propagated across columns instead of showing real per-category numbers.
+- Example bad patterns:
+  - Per-day: E9 = SUM(E42) (wrong reference), F9 = SUM(E9), G9 = SUM(F9) … M9 = SUM(L9). This makes every cell equal to a previous single cell instead of actual data.
+  - One odd formula: L19 = COUNT(K19) (COUNT returns 1 or 0 for a single cell — not a sum).
+  - Totals row chaining: F40 = SUM(E40), G40 = SUM(F40), … M40 = SUM(L40). This repeats E40 across many columns instead of summing each column.
+
+Why these are wrong (short)
+- SUM(E42) references an out-of-range / wrong cell (no per-day data there).
+- SUM of a single other cell (e.g., F9 = SUM(E9)) just copies that cell; it does not calculate that column's per-day data.
+- Chaining totals (F40 = SUM(E40)) multiplies/duplicates the same total; you lose each column’s true total.
+- COUNT(K19) on one cell returns 1 if numeric or 0 otherwise — almost certainly not what you want.
+
+Correct approach (what you should have)
+1. Per-day row totals (column C): C9 should sum all service categories for that day.
+   - Put this in C9 and fill down to C39:
+     =SUM(D9:M9)
+2. Per-day service columns (D9:M39):
+   - These should contain the actual counts for each service on that day (entered directly), not chained SUMs.
+   - If you must compute them from other inputs, use formulas that sum the proper source range(s). Do NOT use SUM of the previous column cell.
+   - Replace erroneous single-cell SUMs like F9 = SUM(E9) with either a direct value or the correct range sum (e.g., =SUM(SomethingRange) ) depending on where the source data is.
+   - Replace L19 = COUNT(K19) with the correct formula for your intent (probably a sum or direct reference). If you intended to copy K19 into L19 use:
+     =K19
+     or if you intended to sum a range, use:
+     =SUM(<correct range>)
+3. Column totals (row 40): each column should sum its own column, not the previous column.
+   - Use these formulas (put in row 40):
+     C40 = SUM(C9:C39)  (already correct)
+     D40 = SUM(D9:D39)
+     E40 = SUM(E9:E39)
+     F40 = SUM(F9:F39)
+     G40 = SUM(G9:G39)
+     H40 = SUM(H9:H39)
+     I40 = SUM(I9:I39)
+     J40 = SUM(J9:J39)
+     K40 = SUM(K9:K39)
+     L40 = SUM(L9:L39)
+     M40 = SUM(M9:M39)
+
+Concrete quick fixes (step-by-step)
+1. Fix daily totals:
+   - In C9 enter: =SUM(D9:M9) and fill down to C39.
+2. Clear wrong formulas in D9:M39:
+   - Select D9:M39, press Delete to clear.
+   - Enter your real daily counts into D9:M39 (or a proper formula that sums the real source ranges).
+3. Fix L19 if needed:
+   - If L19 should equal a number in K19, replace with =K19.
+   - If L19 should be sum of a range, replace with =SUM(<range>).
+4. Fix totals row:
+   - In D40 enter: =SUM(D9:D39) and fill right to M40 (or manually enter each column sum as shown above).
+
+Why this fixes it (short)
+- SUM(D9:M9) gives the correct per-day total of all services.
+- Using direct counts or correct range sums for D:M ensures each service column represents that category only.
+- Summing each column (D9:D39 etc.) gives a true monthly total per service instead of copying the previous column.
+
+If you want, I can:
+- Provide the exact "replace" list so you can use Find & Replace on formulas, or
+- Produce the corrected formulas in bulk for you to paste into the sheet. Which do you prefer?

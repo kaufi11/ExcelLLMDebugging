@@ -1,0 +1,31 @@
+Summary of the problems I found
+- Numbering error in column A: A19 has the formula =A18-1 (should be +1). This breaks the sequence and shifts/duplicates all row numbers from row 19 downward.
+- Missing column header for column I: you listed H1 then J1 in the header row, so column I1 is blank. Some address data is split across H and I (e.g. rows 30, 33), so the blank header causes confusion/ misalignment.
+- Minor data issues (optional to fix): duplicate person entries (e.g. Joseph A. Paradiso shows twice) and several missing email addresses marked "?". These are data-quality issues, not formula errors.
+
+Why the main error matters
+- Because A19 subtracts 1 instead of adding 1, the sequence stops increasing at row 19 and all subsequent auto-numbering is wrong. Any downstream processes relying on unique sequential IDs will be incorrect.
+
+How to fix (short, step-by-step)
+1) Fix the numbering quickly
+   - Edit A19 and change the formula to: =A18+1
+   - Then copy A19 and paste (or drag the fill handle) down column A to the last row to restore the correct sequence.
+
+   Alternative (single-step) method:
+   - Put this formula in A2 and fill down (or put in A2 and A3 then drag): =ROW()-1
+     - This automatically generates 1 in row2, 2 in row3, etc. (If your header is in row1.)
+
+2) Fix the missing column header
+   - Put an appropriate header in I1 (e.g. "Address 2" or "Street line 2") or shift columns so that fields line up with the existing headers.
+   - Review rows where address information is split across H and I to confirm they match the intended columns.
+
+3) (Optional) Clean data issues
+   - Remove or merge duplicate entries (Joseph/“Joe” Paradiso).
+   - Fill in missing emails where available.
+
+Why these fixes work
+- Changing A19 to =A18+1 restores the intended recursive increment; copying it down applies the correct pattern to all rows.
+- Adding the missing header clarifies column meaning and prevents misinterpretation of address fields.
+- Using =ROW()-1 avoids chained formulas and is robust if rows are inserted/deleted.
+
+If you want, I can give the exact steps to run Fill->Series or a short macro to re-number A automatically and check for duplicates/missing emails. Which would you prefer?

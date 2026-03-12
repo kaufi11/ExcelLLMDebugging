@@ -1,0 +1,57 @@
+Sheet name
+- Silver Axe — single character sheet for "Villains and Vigilantes 2nd Edition".
+
+Layout / contents (high level)
+- Left block (A–G): character identity, biography and core stats:
+  - Identity: Julia Cochran / Silver Axe, Side: Evil, Level 2, Age 25, Legal status, backstory text.
+  - Core attributes: Strength (B16)=30, Agility (B17)=34, Endurance (G16)=12, Intelligence (G17)=11, Charisma (B18)=15, Weight (B15)=170, Experience (B4)=0.
+  - Powers and equipment listed in A5–A8 and A6 (magic handaxe +2 to hit, HTH+d12).
+- Middle/right block (columns Q–AW / R–AG): lookup tables for attribute/weight thresholds and corresponding modifiers:
+  - Row R2:AG2 = weight thresholds (0, 31, 61, 121, 241, …).
+  - Row R5:AW5 = attribute breakpoints (Attr. Value: 0,1,3,6,9,12,…90).
+  - Rows under those headings give Str HP Mod, End HP Mod, End Heal Rate, Int HP Mod, Int Dmg Mod, Det Hidden, Det Danger, Agl HP Mod, Agl Dmg Mod, Agl Acc Mod, Charisma/Reaction table, etc.
+  - Row R4 (part of the weight table) contains HTH damage by carrying-capacity bracket (1, 1d2, 1d3, … up to 8d10).
+
+Key formulas and calculations
+- ROUNDUP:
+  - E15 = ROUNDUP(B15/50,0) — Basic Hits from weight. For weight 170 → Basic Hits = 4.
+- HLOOKUP (approximate match TRUE) — used extensively to map attribute/weight values to modifiers:
+  - H15 = HLOOKUP(B15,R2:AG3,2,TRUE) — Agility Mod from weight table (Weight 170 → Agility Mod = 0).
+  - E18 (React. Mod) = HLOOKUP(B18,R17:AN18,2,TRUE) — Reaction modifier from Charisma table.
+  - Many HLOOKUPs use the big attribute table R5:AW15 to return Str/End/Int/Agl HP & damage modifiers used in combat calculations.
+- Hit/HP calculation:
+  - B19 = HLOOKUP(Strength,R5:AW15,2,TRUE) → Str HP Mod = 2.4 (for Str 30).
+  - C19 = HLOOKUP(Endurance,R5:AW15,3,TRUE) → End HP Mod = 1.4 (End 12).
+  - D19 = HLOOKUP(Intelligence,R5:AW15,5,TRUE) → Int HP Mod = 1 (Int 11).
+  - E19 = HLOOKUP(Agility,R5:AW15,9,TRUE) → Agl HP Mod = 3.4 (Agl 34).
+  - F19 = PRODUCT(B19:E19) → combined HP multiplier ≈ 11.424.
+  - H19 = (F19 * E15) + 0.49 → Hit Points ≈ 46.19.
+- Damage and other derived stats:
+  - A20 (Dmg. Mod) = HLOOKUP(Int,R5:AW15,6,TRUE) + HLOOKUP(Agl,R5:AW15,10,TRUE) → For Int 11 + Agl 34 = 0 + 4 = +4 damage modifier.
+  - G20 (Healing Rate) = E15 / HLOOKUP(Endurance,R5:AW15,4,TRUE) → 4 / 0.3 ≈ 13.33.
+  - A22 Carrying Capacity = ((B16/10)^3 + (G16/10)) * (B15/2) → computes carrying-capacity number (C22 ≈ 2397).
+  - E22 Base HTH Damage = HLOOKUP(C22,R2:AG4,3,TRUE) → maps carrying-capacity to base HTH damage; with C22 ≈ 2397 the lookup yields 1d12.
+- Other formulas:
+  - A27 Inventing = G17*3 → 11*3 = 33.
+  - C26 Inventing Points = (G17/10)*H4 → (11/10)*2 = 2.2.
+  - Various HLOOKUPs supply detection values (Det. Hidden, Det. Danger), agility accuracy modifiers, reaction table, etc.
+
+Key values (at a glance)
+- Identity: Julia Cochran / Silver Axe (Female, Evil)
+- Level / Age / Weight: 2 / 25 / 170
+- Attributes: Str 30, Agl 34, End 12, Int 11, Cha 15
+- Basic Hits: 4
+- Hit Points (calculated): ≈ 46.2
+- Damage modifier: +4
+- Base HTH damage (carrying capacity lookup): 1d12
+- Magic weapon: Silver Handaxe, +2 to hit, HTH + d12
+- Inventing: 33; Inventing points: 2.2
+
+Notes on structure/usage
+- The sheet relies heavily on approximate-match HLOOKUPs against the attribute and weight tables (R2:AG4 and R5:AW15). Changing attribute or weight cells (B16, B17, G16, G17, B15, etc.) will automatically update derived stats (HP, damage, detection, healing rate, carrying capacity, etc.).
+- Ranges used are approximate-match (fourth argument TRUE) so values are binned by the listed breakpoints.
+
+If you want, I can:
+- Extract and list all computed numeric outputs (final displayed values),
+- Reformat the lookup tables for readability,
+- Convert the HP, damage and other derived stats into rounded/display-ready values.

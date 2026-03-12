@@ -1,0 +1,60 @@
+Summary: I found several formula mismatches between where you enter numbers and what the formulas actually sum. The biggest problems break the whole budget because total earnings (H6) is coming back wrong (zero), so all percentage calculations are wrong. Below are the errors, why they’re wrong, and the simple fixes.
+
+1) Income total uses the wrong column
+- Error: E22 =SUM(E11:E20) but all job/income dollar entries are in D11:D20.
+- Why it matters: H6 = 'STEP 1 OF 2'!E22 (total earnings) → H6 becomes 0 or wrong, so every % or ratio that divides by H6 is incorrect.
+- Fix: change E22 to sum the column where you enter income:
+  - Replace with E22 =SUM(D11:D20)
+  - (Alternative: move your income inputs into column E, but changing the formula is simpler.)
+- Result: H6 (and all %s that use H6) will reflect true total earnings.
+
+2) Saving percent references the wrong cell (typo)
+- Error: F10 (Saving %) =H8/H6 but H8 is Total Giving, not Total Saving.
+- Why it matters: the saving % shows the giving percent instead of saving percent.
+- Fix: change F10 to use the saving total cell:
+  - Replace with F10 =H10/H6
+
+3) Giving totals are inconsistent / use wrong ranges
+- Errors:
+  - E33 =SUM(E29:E30) — wrong place for giving totals.
+  - I33 =SUM(G32+I32) and M33 =SUM(K32+M32) — using SUM with additions is odd but not fatal.
+  - M35 (TOTAL GIVING) =SUM(E33:M33) — this aggregates a wide block and likely collects wrong/blank cells.
+- Why it matters: Total giving (M35) can be incorrect if it is summing the wrong cells; Step 2 uses M35 (H8).
+- Fix (recommended clean, explicit formulas):
+  - Keep the per-column giving subtotals: G32 =SUM(G29:G31), I32 =SUM(I29:I31), K32 =SUM(K29:K31), M32 =SUM(M29:M31)
+  - Set the overall total giving cell (M35) explicitly to sum those subtotals:
+    - Replace with M35 =SUM(G32,I32,K32,M32)
+  - Optionally remove or correct E33/I33/M33 if you don’t need those intermediate sums. If you want two-row subtotal grouping, set them explicitly (e.g. I33 =G32+I32; M33 =K32+M32), but don’t use a broad SUM(E33:M33) for the overall total.
+
+4) Savings total (M45) is ambiguous / may include wrong cells
+- Symptom: M45 =SUM(E43:M43) sums across a wide range and may capture unintended cells.
+- Fix: make it explicit:
+  - If the saving components are in E43, I43 and M43, set M45 =E43+I43+M43 (or =SUM(E43,I43,M43)).
+- This makes the intent clear and avoids accidental inclusion of unrelated cells.
+
+5) Inconsistent formula style and unnecessary use of SUM()
+- Notes:
+  - Examples like I33 =SUM(G32+I32) or M33 =SUM(K32+M32) are legal but confusing.
+- Recommendation: use either direct addition or SUM with a list:
+  - Use =G32+I32 or =SUM(G32,I32) — clearer.
+
+6) Division-by-zero risk after errors
+- Cause: H6 could be 0 if income total remains wrong → F# percentages show #DIV/0! or nonsense.
+- Action: after fixing E22 to sum D11:D20, confirm H6 > 0. If not, ensure incomes were entered in the expected cells.
+
+Optional check (good practice)
+- Hard-coded cell H14 = 4 looks like a fixed tax percent placeholder; verify that this is intentional. If H14 is supposed to be an amount rather than a percent, adjust formulas that reference it.
+
+Quick checklist of the exact formula replacements to implement now
+- E22  =SUM(D11:D20)
+- F10  =H10/H6
+- M35  =SUM(G32,I32,K32,M32)
+- (Optional) M45 =SUM(E43,I43,M43) or =E43+I43+M43
+- Replace any odd SUM(a+b) with either a+b or SUM(a,b) for clarity
+
+After you make these changes:
+- Recalculate (F9 or Ctrl+Alt+F9).
+- Check H6, H8, H10, H12 show expected totals and the F-column %s now compute correctly.
+- Verify M43 (total expense), M45 (net enjoying), and M47 (difference) produce sensible results.
+
+If you want, I can produce a corrected mapping of every total cell to the exact input ranges (a short table), or give a single "fixed" formula list you can paste in. Which would you prefer?

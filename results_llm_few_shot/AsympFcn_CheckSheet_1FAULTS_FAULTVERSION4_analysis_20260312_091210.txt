@@ -1,0 +1,36 @@
+Summary — the sheets have 3 classes of problems: invalid n values (domain errors), a hard-coded/wrong cell entry, and several bad copy/paste formulas. Fixes + short explanations below.
+
+MasterMethod_Checks
+1) Problem: A11 = 0 (n = 0)
+   - Why: many formulas use LOG(n,2) or divide by n^CE. n = 0 causes LOG(0) and 0/0 DIV errors.
+   - Fix: remove the n=0 row or change A11 so the sequence starts at n = 1 (e.g. delete the row with 0 and shift rows up).
+   - Explanation: Master method checks need n ≥ 1 (and any log expressions require n>0); removing 0 prevents undefined log/division by zero.
+
+2) Problem: B19 is hard-coded as =473/2
+   - Why: all other B rows use =A# / 2. This wrong hard-coded value breaks the tests for row 19.
+   - Fix: replace B19 with =A19/2
+   - Explanation: restores consistent definition of f(n) = n/2 for that row.
+
+SubstitutionMethod_Checks
+1) Problem: A10 = 1 (n = 1)
+   - Why: formulas use LOG(LOG(n,2),2) and n/LOG(n,2). For n = 1, LOG(1,2) = 0 so LOG(LOG(1,2),2) is undefined and division by LOG(1,2) is division by zero.
+   - Fix: start n at 2 (set A10 = 2) or remove the row with n = 1.
+   - Explanation: log(log n) requires n > 1 (and n/LOG(n,2) requires LOG(n,2) ≠ 0).
+
+2) Problem: C10 inconsistent / missing factor
+   - Why: C10 is written as =$B$5*LOG(LOG(A10,2),2) (missing multiplication by n). All other C rows use $B$5*A#*LOG(LOG(A#,2),2).
+   - Fix: change C10 to =$B$5*A10*LOG(LOG(A10,2),2)
+   - Explanation: makes lower/upper bound formulas consistent (c2 * asymptotic_fcn should include the n factor).
+
+3) Problem: D column (T(n)) contains wrong copy-paste constants (examples: many rows use 5*1, others use 5*$D$11, 5*$D$12, etc.)
+   - Why: copying with bad absolute references inserted values like 5*1 or referenced other D-cells ($D$11) — producing wrong/massively incorrect T(n) values.
+   - Fix (recommended canonical formula): set every Dn to
+       =5*LOG(A n,2) + A n / LOG(A n,2)
+     i.e. for row 10: =5*LOG(A10,2) + A10/LOG(A10,2) and fill down.
+   - Explanation: this replaces the incorrect constants/absolute references with the intended expression (5 * log_2 n + n / log_2 n). After this the Big-Oh/Big-Omega checks compare properly.
+
+Quick checklist to apply
+- MasterMethod: delete the n=0 row OR start at n=1; fix B19 to =A19/2.
+- SubstitutionMethod: change first n to 2; fix C10; replace all Dn formulas with =5*LOG(A n,2) + A n/LOG(A n,2); then copy those corrected formulas down.
+
+If you want, I can produce the exact formulas to paste (for a block) or show the minimal set of edits in the sheet step-by-step.

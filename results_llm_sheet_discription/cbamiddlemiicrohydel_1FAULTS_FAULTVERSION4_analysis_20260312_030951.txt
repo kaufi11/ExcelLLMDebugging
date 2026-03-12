@@ -1,0 +1,40 @@
+Summary — main errors found
+1) Discount-factor typo in costs row (row 19)
+   - Cell U19 is wrong: it reads =T19*(1*1.12) (multiplies by 1.12) instead of dividing by 1.12. Because the discount factors are chained, this single typo misaligns the discount factors (and therefore present values) from U19 onward. That makes PV of costs (G20:AA20), total PV of costs and all summary metrics (PV costs, NPV, B/C) incorrect.
+
+2) Possible (less-critical) indexing ambiguity for one‑off 2020 items
+   - AA17 (env. clean‑up) and AA29 (scrap 2% of total cost) use G5 and G6 as the base (year‑2000 construction amounts). That is OK if you intended "10% (or 2%) of the original construction value (in year 2000 prices)". If you intended 10%/2% of values in the target year (2020) you should reference AA5 and AA6 instead.
+
+What to fix and why (short)
+1) Fix the discount-factor typo (high priority)
+   - Change U19 from:
+     =T19*(1*1.12)
+     to:
+     =T19*(1/1.12)
+   - Better: make the row robust by defining G19 = 1 and H19 = G19/1.12, then copy H19 across to AA19 (or use =1/(1.12^(COLUMN()-COLUMN($G$19))) if you prefer a single formula). This guarantees each year's discount factor is 1/(1.12^n).
+
+Why: discount factors must divide by (1+rate) each year. The current multiplication breaks the chain so discounting is wrong from that year forward.
+
+2) Recalculate PV and summary after the fix
+   - Excel will automatically update row 20 (PV of costs), C20 (sum of PVs), G36/C36 etc. Check C36, C35, C38 (B/C) and C39 (NPV) — they will change when DF row is corrected.
+
+3) Check AA17 / AA29 references (optional)
+   - If the intended 2020 cleanup/scrap amounts should be percentages of the construction total as recorded in column AA (i.e., construction costs recognized in 2020), change formulas to:
+     AA17 = 0.1*(AA5 + AA6)   (instead of 0.1*G5+0.1*G6)
+     AA29 = 0.02*(AA5 + AA6)
+   - If you really want % of the original construction cost (year‑2000 figures), leave as is but add a comment so future users aren't confused.
+
+One-line action steps you can paste into Excel
+- Fix single cell: select U19 and replace formula with:
+  =T19*(1/1.12)
+- Or replace entire row19 with: put 1 in G19, then in H19:
+  =G19/1.12
+  and copy H19 across to AA19.
+- Verify row20 and row32 automatically update; then check C20 (PV costs) and C32 (PV benefits), and finally C38 and C39.
+
+Effect of the fix
+- Present value of costs for later years (2015 onward) will change, so NPV and B/C ratio will change. After the correction, the PV of costs will be computed correctly and the summary results will be reliable.
+
+If you want, I can also:
+- give the exact corrected values for PV, NPV and B/C after you tell me whether you want AA17/AA29 tied to G5/G6 or AA5/AA6, or
+- produce a single robust discount-factor formula you can paste into the sheet.

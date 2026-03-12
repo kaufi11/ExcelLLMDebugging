@@ -1,0 +1,24 @@
+I checked the formulas in the sheet. Findings and recommendations:
+
+1) Incorrect formula (bug)
+- Cell: Q5
+- Current formula: =(SUM(J5:O5)+MIN(J5:O5))/(COUNT(J5:O5)+1)
+- Why it's wrong: all other rows in column Q compute the category average by dropping the lowest score with the formula (SUM(range) - MIN(range)) / (COUNT(range) - 1). Q5 instead adds the minimum and increases the divisor, producing an incorrect, much lower value.
+- Correct formula: =(SUM(J5:O5)-MIN(J5:O5))/(COUNT(J5:O5)-1)
+- Correct value after fixing: 86.6 (current incorrect value shown: 80.142857...)
+- Downstream impact: AE5 (Final Grade) should also change. With Q5 = 86.6 the corrected AE5 becomes 87.7225 (was 86.7539285714286).
+
+2) Methodology inconsistency (possible intentional or oversight)
+- Homework (I), Classwork (Q), and Quizzes (X) averages use "drop the lowest" formula: (SUM - MIN) / (COUNT - 1).
+- Tests average (AD) uses =AVERAGE(Y:AB) (simple mean, no dropped lowest).
+- If your grading policy intends to treat all categories the same (either drop-lowest everywhere or not), AD formulas should be updated to match. If tests are intentionally averaged without dropping the lowest, no change is needed.
+
+3) Weights & final-grade formula
+- Final grade formula pattern in AE rows uses I*C$1 + Q*K$1 + X*S$1 + AD*Z$1. The weight cells (C1, K1, S1, Z1) add to 1.0, and the AE formulas use the correct absolute row reference for those weight cells. Those formulas look consistent across rows.
+
+4) Minor notes (cosmetic)
+- Headers contain repeated text labels (multiple "Homework", "Classwork", etc.). Not an error, but you may want to consolidate labeling for clarity.
+
+If you want, I can:
+- Provide the corrected file with Q5 fixed and AE5 recalculated.
+- Scan for any other potential edge-case errors (e.g., blank cells causing divide-by-zero with the drop-lowest formula) and propose more robust formulas (e.g., use IF(COUNT(range)>1, ..., "") ).

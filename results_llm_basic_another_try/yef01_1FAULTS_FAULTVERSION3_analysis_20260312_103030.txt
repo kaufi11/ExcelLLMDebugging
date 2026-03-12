@@ -1,0 +1,62 @@
+### Errors Found:
+
+1. **Revenues by Source Sheet:**
+   - Cell C10 formula: `=9595817+116896967` is a sum of two numbers, which is fine, but better to input the total directly or use references.
+   - Cell C12 formula: `=147577404-1` subtracts 1 dollar arbitrarily, which is suspicious and likely an error.
+   - Cell B16 formula: `=SUM(B10:B15)` includes B15 which is empty or missing, should be `=SUM(B10:B14)` because row 15 is missing.
+   - Cell C16 formula: `=SUM(C10:C15)` includes C15 which is missing or empty, should be `=SUM(C10:C14)`.
+
+2. **Expenditures by Function Sheet:**
+   - Cell B20 formula: `=SUM(B10:B19)` includes B19 which is missing or empty, should be `=SUM(B10:B18)`.
+   - Cell C20 formula: `=SUM(C10:C19)` includes C19 which is missing or empty, should be `=SUM(C10:C18)`.
+
+3. **Expenditures by Category Sheet:**
+   - Cell B16 formula: `=SUM(B10:B15)` includes B15 which is missing or empty, should be `=SUM(B10:B14)`.
+   - Cell C16 formula: `=SUM(C10:C15)` includes C15 which is missing or empty, should be `=SUM(C10:C14)`.
+   - Cell B12 formula: `=ROUND((C12/$C$16),4)-0.0001` subtracts 0.0001 arbitrarily, which can cause inaccuracies and is not a good practice.
+
+4. **FTEE Calculation Sheet:**
+   - Cell F14 formula: `=-E14/600` has a negative sign, which is likely an error because FTEE should not be negative.
+   - Cells I20 and I21 formulas subtract 0.000001 arbitrarily, which is unnecessary and can cause rounding issues.
+   - Some rows (e.g., D25, D26) use formulas like `=C25/H25` which divide by a value in the same row that might be zero or invalid, causing errors.
+   - Total row formulas add or subtract small constants (e.g., `+0.02`, `-0.02`, `+0.03`) which is not recommended.
+
+---
+
+### Solutions:
+
+1. **Revenues by Source:**
+   - Replace `=147577404-1` in C12 with the correct total value without subtracting 1.
+   - Adjust totals formulas to exclude empty rows:
+     - B16: `=SUM(B10:B14)`
+     - C16: `=SUM(C10:C14)`
+
+2. **Expenditures by Function:**
+   - Adjust totals formulas to exclude empty rows:
+     - B20: `=SUM(B10:B18)`
+     - C20: `=SUM(C10:C18)`
+
+3. **Expenditures by Category:**
+   - Adjust totals formulas:
+     - B16: `=SUM(B10:B14)`
+     - C16: `=SUM(C10:C14)`
+   - Remove arbitrary subtraction in B12:
+     - Change `=ROUND((C12/$C$16),4)-0.0001` to `=ROUND((C12/$C$16),4)`
+
+4. **FTEE Calculation:**
+   - Correct F14 formula to positive: `=E14/600`
+   - Remove arbitrary small adjustments in I20, I21, and total row formulas.
+   - Check for division by zero in D25, D26 and ensure denominators are valid.
+   - Remove arbitrary additions/subtractions in total row formulas to avoid inaccuracies.
+
+---
+
+### Explanation:
+
+- **Avoid arbitrary additions or subtractions** (like -1, -0.0001, +0.02) because they cause inaccuracies and confusion.
+- **Sum ranges should only include rows with data** to avoid summing blank or invalid cells.
+- **Negative FTEE values are illogical**; FTEE should always be positive or zero.
+- **Division by zero or invalid references cause errors**; always verify denominators.
+- **Rounding should be consistent and not manipulated by adding/subtracting small numbers.**
+
+Fixing these will ensure accurate calculations and clear, reliable data.

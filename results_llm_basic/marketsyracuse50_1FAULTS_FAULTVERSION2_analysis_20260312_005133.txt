@@ -1,0 +1,31 @@
+Summary of the errors I found
+- Cell F29 has a clear typo. It reads =891*$E29 which hugely inflates that institution’s "weighted deposits", market share and the HHI.
+- The sheet uses inconsistent ways to compute/display market share and HHI which is error‑prone:
+  - G cells use =F#/ $F$36 * 100 (so G holds a “percentage number” like 25 rather than a decimal 0.25). That works but is confusing and can lead to wrong HHI if you square the displayed percent or the underlying decimal inconsistently.
+  - H cells use =$G#^2 (unlocked row/column mix is odd but not fatal). Depending on how G is stored/formatted, squaring may produce the wrong HHI scale.
+
+How to fix (simple steps)
+1. Fix the typo in F29
+   - Change F29 to =1*$E29 (or simply =E29). This corrects weighted deposits for that row.
+
+2. Make market share and HHI calculations consistent (pick one clean approach). I recommend this standard approach (less error prone):
+   - Set column F (weighted deposits) using a single IF formula and fill down:
+     =IF($C10="Thrift",0.5*$E10,$E10)
+     (Put this in F10 and copy down). This prevents manual mistakes like F29.
+   - Set column G to the decimal market share (no *100):
+     =F10/$F$36
+     Format G as Percentage (e.g., 2 decimals). Now G shows 25.00% but the underlying value is 0.25.
+   - Set column H to compute HHI contribution on the 0–10,000 scale:
+     =G10^2*10000
+     (or = (F10/$F$36)^2*10000 if you prefer not to use G).
+   - Set H36 = SUM(H10:H33). That gives the standard HHI (e.g., 1500–3000 etc).
+
+Why this fixes things (short)
+- Correcting F29 removes the single-cell data error that distorted totals, shares and HHI.
+- Using IF(...) in F prevents manual weighting mistakes.
+- Using market share as a decimal (G = F/F36) and then H = G^2*10000 yields HHI on the conventional 0–10,000 scale and avoids confusion from multiplying by 100 in multiple places.
+
+Optional shorter fix if you only want to correct the obvious typo
+- Change F29 to =E29 (or =1*$E29). Excel will recalc G29 and H29 correctly under your current formulas.
+
+If you want, I can give the exact formulas ready to paste into the cells (F10, G10, H10 and H36) and explain how results will change.

@@ -1,0 +1,24 @@
+Summary — one clear error found
+
+- Error cell: C22 (Carrying Capacity).
+- Problem: the formula multiplies by B15/2 (character weight) instead of by the character’s Strength. That produces an inflated carrying capacity (2397) and so the HTH base damage lookup returns the wrong result (1d12).
+- Cause: wrong cell reference used (B15) where B16 (Strength) was intended.
+
+Fix (one-line)
+- Replace the formula in C22 with:
+  =((B16/10)^3 + (G16/10)) * (B16/2)
+
+Why this fixes it (simple)
+- The formula appears intended to compute carrying capacity from Strength and Endurance. Using Strength (B16) in the final multiplier makes the result scale with the character’s Strength instead of with the character’s body weight.
+- With Strength = 30 and Endurance = 12:
+  - Old (wrong) result: ((30/10)^3 + 1.2) * (170/2) = 28.2 * 85 = 2397 → maps to HTH 1d12 (wrongly high).
+  - New (correct) result: ((30/10)^3 + 1.2) * (30/2) = 28.2 * 15 = 423 → maps to HTH 1d6 (reasonable).
+
+Extra recommendations (quick)
+- Put the HTH lookup in the same logical cell (E22) or make it obvious where it lives; use the lookup as:
+  =HLOOKUP(C22,$R$2:$AG$4,3,TRUE)
+  and use $-absolute references to avoid accidental range shifts.
+- Optionally round the carrying capacity to an integer:
+  =ROUND(((B16/10)^3 + (G16/10)) * (B16/2),0)
+
+If you want, I can apply the corrected formulas to the sheet and list all dependent values that change.

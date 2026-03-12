@@ -1,0 +1,50 @@
+Here are the clear errors I found, with a short explanation and a concrete fix for each.
+
+NAIC increase sheet
+1) D6
+- Error: =(C6-390)/390 — uses a hard constant (390) instead of last year’s value.
+- Why: Year-over-year growth should compare this year to the previous year, not a fixed number.
+- Fix: =(C6-C5)/C5
+
+2) E7
+- Error: =E8-2258280 — references next year and subtracts an unexplained constant.
+- Why: E7 (2001 fee revenue / total yearly Sng+Grp) should be either an input or calculated from the correct components for 2001, not derived from 2002 minus a constant.
+- Fix (pick appropriate): if E is sum of Single+Group, use =G7+H7 ; or enter the correct 2001 value manually. (Replace the E8-constant formula.)
+
+3) E16, E17, E18 (and the percent/$ calculations that follow)
+- Errors: 
+  - E16 = (0.46*C7) — uses C7 and hard 0.46 instead of the percent cell and the correct total-premium cell.
+  - E17 = (0.43*C8) — same problem.
+  - E18 = (0.46*C9) — wrong percent (should be 0.35) and wrong column reference.
+- Why: These should multiply the percent in column D (e.g., D16) by the total premiums for that year (the correct total-premium cell), not hard-coded numbers or the C column.
+- Fixes (use the percent cell times the correct total premium cell). Example (if total premiums are in E7/E8/E9):
+  - E16 = D16 * E7
+  - E17 = D17 * E8
+  - E18 = D18 * E9
+- Also make the paid-fee $ amounts reference the Pd% cell:
+  - G16 = F16 * E7
+  - G17 = F17 * E8
+  - G18 = F18 * E9
+
+Notes: adjust the total-premiums cell reference (E7/E8/E9 above) to whatever column actually holds the total premiums. The key is: use the percent cell (D16..D18) and the correct total-premium cell — don’t hard-code constants or point to the wrong column.
+
+Consumer Price Index sheet
+4) R21
+- Error: =(Q21-Q12)/Q12 — compares 2001 annual value to 1992 (Q12) instead of to 2000.
+- Why: Year-over-year should compare to the previous year, not to 1992.
+- Fix: =(Q21-Q20)/Q20
+
+5) S21
+- Error: =(M21-M12)/M12 — compares Dec 2001 to Dec 1992 instead of Dec 2000.
+- Why: Dec percent-of-change should compare to the immediate prior December.
+- Fix: =(M21-M20)/M20
+
+Quick checklist to avoid similar problems
+- Never hard-code constants into growth formulas — use previous-year cell references.
+- Use the percent cells (D16..D18) rather than repeating the number in the formula.
+- Make sure formulas point to the same-year totals (E7/E8/E9) rather than to other columns (C7/C8/C9) unless that column actually contains the totals.
+- When copying formulas down, check that relative references are correct (or use $ for absolute refs where appropriate).
+
+If you want, I can:
+- Give exact corrected formulas using the definitive "total premiums" column (tell me whether total premiums are in C or E), or
+- Produce a corrected small region of the sheet showing the fixed formulas.

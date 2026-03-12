@@ -1,0 +1,53 @@
+I reviewed the workbook and found a small set of clear errors (plus one important methodological issue). Short, actionable summary below with fixes you can apply immediately.
+
+1) EIA_US sheet — incorrect conversion formula (typo)
+- Error: some CH4/N2O conversion cells multiply by 10^3 instead of dividing (example shown: G20 = F20*454*10^3). That blows the result up by a factor of 10^6.
+- Why it’s wrong: converting lbs/MWh → g/kWh needs (lbs/MWh * 454) / 1000. Multiplying by 1000 is the opposite.
+- Fix: replace the wrong formula with:
+  =F20 * 454 / 1000
+  and then fill/copy the corrected formula down the whole column so all rows use the same conversion.
+- Tip: use one canonical formula in the top cell (e.g. G5 = F5*454/1000) and fill down to avoid inconsistent typos.
+
+2) NRCAn data sheet — combined Residential+Commercial EF uses a simple average (methodological error)
+- Error: the sheet computes combined EF by arithmetic mean: Combined_EF = (Residential_EF + Commercial_EF) / 2 (e.g. J36 = (J21+K4)/2).
+- Why it’s wrong: EF (g/kWh) must be weighted by the electricity consumed by each sector. A simple mean treats both sectors equally even if one sector uses much more electricity.
+- Correct/Recommended formula (use emissions+energy or weighted average):
+  Option A (use emissions and PJ energy, compact):
+    = ((G_res + G_com) * 3600) / (C_res + C_com)
+    Example for 1990 (replace J36):
+    =((G21 + G4) * 3600) / (C21 + C4)
+    (G = emissions in megatonnes, C = electricity energy in PJ; this matches the sheet’s unit conversions)
+  Option B (use already-calculated EF but weighted by energy converted to same base):
+    = (J21 * C21 + K4 * C4) / (C21 + C4)  — but only safe if C are converted consistently or you keep units consistent when mixing EF and PJ.
+- Why this works: result equals total emissions / total kWh for both sectors, which is the correct combined g CO2/kWh.
+
+3) EIA_US sheet — inconsistent formulas across rows
+- Error: some rows in the same column use slightly different formula variations (e.g. /10^3 vs /1000 vs *10^3).
+- Fix: standardize the column with one correct formula and copy down (see #1). To prevent further errors, lock references and/or use named ranges.
+
+4) Aus sheet — suspicious Tasmania emission factor
+- Error/flag: Tasmania row shows C10 = 2 g CO2/kWh, which is inconsistent with other state values and with the sheet’s comment that Australia averages ~1051 g/kWh.
+- Action: verify the original data source. Either:
+  - Correct the typo if it should be 202 or 200 (or another value), or
+  - If 2 g/kWh is actually from source (very low because hydro), add a note and keep it; or set to NA until verified.
+- Fix step: look up the source (AIE link) and replace C10 with the correct value. If you want an immediate check, temporarily highlight values < 50 g/kWh as suspicious.
+
+5) EU Data sheet — misaligned / shifted rows and missing cells
+- Error: several country rows appear shifted (values in the wrong year columns) or have missing entries (example: Czech Republic row has an odd tiny 0.003 in G9 and other columns misaligned).
+- Why it’s a problem: time series are no longer in the correct year columns → analyses will be wrong.
+- Fix approach:
+  - Re-import or realign the rows from the original source CSV/HTML (preferred).
+  - If manual: identify one correct row, then shift the misaligned row cells right/left so years align (or use Text to Columns with correct delimiter).
+  - After correction, run quick checks: totals (EU15) and line charts: abrupt large gaps indicate remaining misalignment.
+- Tip: sort or filter rows with unrealistic year deltas (huge jumps) to spot more shifts.
+
+Minor housekeeping / simplifications
+- NRCAn conversion formulas can be simplified (more readable) from the long 10^12 * 3.6*10^6 form to: =F4 * 3600 / B4 (same result). Example:
+  - J4 = F4 * 3600 / B4
+  - K4 = G4 * 3600 / C4
+  This reduces mistakes and is easier to audit.
+- For repeated conversions (lbs→g etc.) use a named constant cell (e.g. cell X1 = 454) and formulas like =F5 * $X$1 / 1000 so if units change you update one place.
+
+If you want, I can:
+- produce exact replacement formulas for every affected cell (I can list the cell addresses and corrected formulas), or
+- patch the workbook: fix the EIA_US column, replace the combined-average formulas in NRCAn with weighted formulas, flag suspicious Aus/Tas row and realign EU Data rows. Which would you prefer?

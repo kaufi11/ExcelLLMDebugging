@@ -1,0 +1,24 @@
+Summary — the Balance Sheet has 3 clear errors causing it not to balance. Fix these and the sheets reconcile.
+
+1) Faulty cell: Balance Sheet!G4 (Dec 31, '01 Total Checking/Savings)
+- Problem: Hard-coded number 12323.99 that does not match the Financial summary closing checking balance (12823.99).
+- Fix: Replace the hard-coded value with a link to the Financial summary checking cell:
+  = 'Financial summary'!I35
+- Why: Keeps the Balance Sheet in sync with the source (Financial summary) and prevents mismatches.
+
+2) Faulty cell: Balance Sheet!H12 (Retained Earnings for 2002)
+- Problem: Formula =G12+G13 uses G13 (Net Income for 2001) instead of H13 (Net Income for 2002). That yields an incorrect retained earnings balance for 2002.
+- Fix: Change to:
+  = G12 + H13
+- Why: Retained earnings at year-end = prior retained earnings + current year net income. Use the current-year net income (H13) not the prior-year cell again.
+
+3) Faulty cell: Balance Sheet!H14 (Total Equity for 2002)
+- Problem: Formula =ROUND(COUNT(H10:H13),5) — COUNT returns a count of numeric cells, not the sum of equity components.
+- Fix: Change to:
+  = ROUND(SUM(H10:H13),5)
+- Why: Total equity must be the sum of the equity lines (Opening Bal Equity, Retained Earnings, Net Income, etc.), not the count of those rows.
+
+Extra note / consequence
+- Because H14 was wrong and H12 referenced the wrong net income, the "TOTAL LIABILITIES & EQUITY" and any balancing checks (H15, Difference rows) will be incorrect. After applying the three fixes above, re-check H15 and the Differences (sheet 'Financial summary'!M39 etc.) — they should reconcile (or reveal any remaining single-sheet hard-coded values that need linking).
+
+If you want, I can give the exact cell edits and then re-calculate the final totals to confirm the sheets balance.

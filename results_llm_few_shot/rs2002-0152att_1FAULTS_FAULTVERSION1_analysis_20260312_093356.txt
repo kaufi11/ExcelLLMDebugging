@@ -1,0 +1,36 @@
+Summary — main errors found
+1) Sheet "Watershed Protection" — cumulative column (I) uses the wrong column (G) and a hard-coded value:
+   - Faulty cells: I7, I8, I9, I10, I11, I13, I14, I16, I17, I18 (and any other I-cells in that block that add G instead of H).
+   - Specific outright error: I10 contains =2 (hard-coded), which breaks the running total.
+   - Why it’s wrong: Column I is meant to show "Cumulative Total Project Funds Awarded" but the formulas are summing Project Funds Requested (G) or hard-coded numbers instead of Approved/Awarded Funds (H). That produces a cumulative of requested money (or wrong numbers) instead of awarded money.
+
+Fix (quick):
+   - Replace the block’s formulas so each I-row references H (Approved/Awarded) and continues the running total. Example pattern:
+     - I7 = H7
+     - I8 = I7 + H8
+     - I9 = I8 + H9
+     - I10 = I9 + H10
+     - and so on down the column.
+   - Replace I10 = 2 with =I9+H10 (or the corresponding previous I + current H).
+
+Why this fixes it:
+   - Using H ensures the cumulative total reflects actual awarded funds (what the header describes). Removing the hard-coded =2 restores the proper rolling sum.
+
+2) Inconsistent use of G vs H across sheets (recommendation)
+   - Observation: Other sheets (CALFED Drinking Water, NPS Pollution, CALFED Watershed, Coastal NPS-Reg 4,8,9, etc.) generally use H in I (which is correct), but "Watershed Protection" mixes G and H.
+   - Action: Audit other sheets quickly for any I formulas using G (Project Requested) instead of H (Approved). If the intent is cumulative awarded funds, standardize all I formulas to use H as shown above.
+
+3) Minor numeric mismatch (possible rounding/truncation)
+   - Example: Sheet "Coastal NPS-Reg 4,8,9" row 18: G18 = 311280.25 but H18 = 311280 (H truncated 0.25).
+   - Why it matters: If H is supposed to equal G (or be precise to cents), having H differ by $0.25 will make the cumulative off by that amount.
+   - Fix: If award equals requested, set H18 = G18 (or H18 = ROUND(G18,2)). If the approved award was intentionally rounded/truncated, leave as-is but document it.
+
+Short checklist to correct the workbook
+- Go to each sheet with a cumulative (I) column and ensure:
+  - The first cumulative row = H (approved for that row).
+  - Each following cumulative row = previous cumulative + current H.
+- Replace any hard-coded values in the I column with the proper formula.
+- Fix any H cells that were accidentally truncated if precision is required (use =Gx or =ROUND(Gx,2) as appropriate).
+- After fixes, verify totals against the stated funding limits.
+
+If you want, I can give the exact formulas for each faulty I-cell in the "Watershed Protection" block — tell me which row range you want fixed and I’ll list them.

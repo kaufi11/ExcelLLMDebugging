@@ -1,0 +1,68 @@
+I reviewed the workbook and found several clear data / formula / formatting errors. Below I list each problem (with cell examples), give a short explanation of why it's wrong, and provide an exact fix you can apply in Excel. I kept everything short and actionable.
+
+1) Student - Teacher (Bufer attendance decimal)
+- Problem: E15 = 1.548 (Average Daily Attendance for BUFORD, 1991-1992). That is obviously wrong (attendance should be a whole number ~1,548).
+- Why: A decimal point shifted / thousands separator error.
+- Fix: Replace 1.548 with 1548 (or enter the correct original value). If many rows have the same issue, multiply the column by 1000: enter 1000 in a spare cell, copy it, select the affected cells, Paste Special → Multiply, then delete the spare cell.
+
+2) Student - Teacher (sum-range error in 1997 block)
+- Problem: Sheet (1997-98 block) cell F56 formula =SUM(F45:F54) — it excludes row 55.
+- Why: The total omits row 55 so the teachers total is incorrect.
+- Fix: Change F56 to =SUM(F45:F55). Check other subtotal cells for off-by-one ranges.
+
+3) Student - Teacher (missing totals & inconsistent totals)
+- Problem: Some TOTAL rows show ** or missing ratio cells (e.g., G37 = **, B18/C18 = **).
+- Why: Data missing or not calculated; possibly cells formatted as text or formula omitted.
+- Fix: Recalculate totals with SUM over the full numeric ranges and ensure cells are numeric (remove "*" or "**" placeholders). Example: for a total teachers cell use =SUM(I7:I17) (adjust range to your sheet). Replace ** with #N/A or leave blank if data truly not available.
+
+4) Teachers With Advanced Degrees (percent formatting and fractional totals)
+- Problem A: 1995–2000 percent columns (rows 21:31) show decimals like 0.4690338563 (raw fraction) whereas earlier years show 50.9 (percent). Inconsistent representation.
+- Why: Some percent values are stored as fractions (0.469) and others as percent-values (50.9). This breaks comparisons and any calculations that use these cells.
+- Fix A: Choose one representation (recommended: fractions stored as 0.469 and format the cells as Percentage with 1 decimal). To convert existing >1 numbers (like 50.9) into fractions, use a helper column: =IF(B6>1,B6/100,B6). Copy results and Paste Special → Values over the original percent column, then Format Cells → Percentage, 1 decimal.
+
+- Problem B: Some “Total No.” cells have decimal fractions (e.g., G13 = 1995.8, I13 = 1789.9).
+- Why: Totals should be whole numbers—these decimals are caused by intermediate fractional calculations (percent × staff) left unrounded.
+- Fix B: Replace those formulas with whole-number rounding, e.g. =ROUND(<original formula>,0). Or if you want to compute from percent × staff: =ROUND(PercentCell * StaffTotalCell,0).
+
+5) University (Two-Year totals reference wrong ranges)
+- Problem: A15 C15..K15 formulas reference C5:C14, D5:D14, etc. (they include four-year college rows 5:8) instead of summing only the two-year colleges (rows 12:14).
+- Why: Totals include unrelated rows and are inflated/wrong.
+- Fix: Change each total formula to sum only the two-year rows. Example:
+  - C15 =SUM(C12:C14)
+  - D15 =SUM(D12:D14)
+  - … through K15 =SUM(K12:K14)
+
+6) State test (inconsistent scale / likely wrong metric)
+- Problem: For Reading and Math, columns B–C are values ~215 (scale scores) but columns D–K show much smaller integers (e.g., 57, 53, 43) — different scale/metric in same table.
+- Why: Either the wrong metric was pasted for later years (percent passing vs. scaled score) or columns shifted. Mixing two metrics in one row makes comparisons invalid.
+- Fix: Check source data to determine intended metric:
+  - If all columns should be scaled scores, replace the D–K values with the correct scaled scores.
+  - If columns D–K are percent-proficient, add a clear header and move them into a separate table or convert them to the same metric. Do not mix scales in one row.
+  - As a quick audit, highlight values outside the expected scaled-score range (for 8th grade tests use conditional formatting for values <100 or >300) to locate problematic cells.
+
+7) SAT (impossible low values → likely missing leading digits)
+- Problem: Some SAT cells in column D are two- or three-digit values that are too low (e.g., D10 = 99, D11 = 100). Typical SAT entries nearby are ~900–1050.
+- Why: Most likely data-entry error: missing leading digit (e.g., 999 or 1000 trimmed) or digits dropped.
+- Fix: Verify against original source and correct the values. To locate problems automatically: use a helper formula or conditional formatting to flag scores outside a plausible range, e.g. highlight cells <400. Example helper: =IF(AND(D5<400,D5<>""),"Check value","OK").
+
+8) Public Grads / other SUMs that include missing text (“**”)
+- Problem: SUM formulas include ranges that contain “**” (text). SUM will ignore text, but totals can be misleading if many values are unavailable.
+- Why: Totals may be lower than expected because available data missing.
+- Fix: Replace “**” with blank (so it is clear) and add notes to totals indicating how many data points were included: e.g. =SUM(B5:B15) and in adjacent cell =COUNT(B5:B15) to show how many schools had data.
+
+General audit suggestions (fast checks you can run)
+- Highlight numbers outside expected ranges:
+  - SAT and test scores: highlight <400 or >1600 (or use realistic historical ranges).
+  - Attendance/teachers totals: highlight non-integer values or numbers with decimal part: =MOD(cell,1)<>0.
+- Normalize percent columns:
+  - Convert all percents to fraction form (0–1) and then use cell formatting Percentage.
+  - Use =IF(cell>1,cell/100,cell) to detect/convert mixed formats.
+- Fix rounding:
+  - Wrap computed headcounts with ROUND(...,0).
+- Use Paste Special → Values after fixing formulas so accidental recalculation doesn’t reintroduce fractional artifacts.
+
+If you want, I can
+- provide exact corrected formulas for any specific cell/range you point to, or
+- prepare a short macro (VBA) / step-by-step checklist to automatically detect and fix: (a) percent inconsistencies, (b) off-by-one SUM ranges, (c) non-integer totals, and (d) out-of-range SAT/test values.
+
+Which sheet and range would you like me to fix first?

@@ -1,0 +1,42 @@
+Summary — main errors found and quick fixes
+
+1) H9 uses COUNT instead of SUM
+- Error: H9 = COUNT(H7:H8) returns 2 instead of total revenues (should be 29,318 + 33,166 = 62,484).
+- Impact: H20 (operating income), H27 (income before tax), H33 (net income), EPS and all downstream H-column calculations are wrong.
+- Fix: change H9 to =SUM(H7:H8).
+- Result after fix (key H values):
+  - H9 = 62,484
+  - H20 = H9 - H18 = 62,484 - 61,334 = 1,150
+  - H27 = SUM(H20:H24) = 2,114
+  - H33 = H27 - H30 = 2,114 - 785 = 1,329
+  - H36 (diluted EPS) = H33 / H37 = 1,329 / 29,774 ≈ 0.0447
+
+2) Inconsistent SUM ranges in Balance Sheet current assets
+- Error: G13 = SUM(G7:G12) while I13 = SUM(I7:I11). G12 is not shown in your extract and this creates an inconsistent pattern between columns.
+- Fix: make ranges consistent and explicit. Use the exact rows that hold current assets (for example =SUM(G7:G11) and =SUM(I7:I11)). If G12 actually holds a value that should be included, ensure both columns include the same row(s).
+- Why: inconsistent ranges can accidentally include/exclude cells (blank or hidden) and break balance checks.
+
+3) J17 uses ad-hoc arithmetic (12615-5000) rather than a clear source reference
+- Issue: J17 = 12615-5000 (gives 7,615) while F17 = 2,615 and L17 = 0. The formula with hard-coded constants is opaque and error-prone.
+- Fix: replace with a formula referencing the originating cells (e.g., J17 = SUM(<Q1 charge cell>, <Q2 charge cell>) or J17 = cell_with_12615 - cell_with_5000). If you don’t have the source cells, replace with the correct numeric result (7615) but preferably link to source data.
+- Why: linking preserves traceability and prevents mistakes if source numbers change.
+
+4) Hard-coded Pro Forma EPS cells
+- Error: H46 and H52 (and L46/L52) contain fixed values like 0.05 or -0.05 instead of formulas, so they won’t update when Net Income or share counts change.
+- Fix: replace hard-coded EPS with formulas that divide the pro forma Net Income cell by the correct diluted shares cell (for example H46 = H44 / <pro forma diluted shares cell>). If pro forma uses a different share count (e.g., 32,703), put that share count in a cell and reference it (do NOT hard-code the number in the EPS cell).
+- Why: keeps EPS consistent and auditable.
+
+Quick checklist of what to change (cell-level)
+- H9: =SUM(H7:H8) (replace COUNT)
+- G13 / I13: make both =SUM(G7:G11) and =SUM(I7:I11) (or both SUM(...:G12) if G12/I12 should be included)
+- J17: replace =12615-5000 with a reference-based formula or set value to 7615 if that’s the confirmed number
+- H46, H52, L46, L52: replace hard-coded values with formulas like =H44 / <shares_cell> (place pro forma share counts in their own cells)
+
+Why these fixes matter (brief)
+- Fixing H9 corrects a cascade of wrong results across income, tax and EPS for the prior-year three-month column.
+- Consistent SUM ranges prevent hidden/blank cells from silently changing totals.
+- Reference-based formulas (instead of constants) improve transparency and make the workbook maintainable.
+
+If you want, I can:
+- Provide the exact replacement formulas for each pro forma EPS cell if you tell me which share-count cell to use, or
+- Recalculate and give all corrected H-column numbers if you want full corrected output.

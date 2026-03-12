@@ -1,0 +1,31 @@
+Summary of the errors
+- A22 contains =A21-1 (should be +1). That creates duplicates: ID 16 and 17 appear twice (rows 20/22 and 21/23).
+- A40 is a hard-coded 35 instead of following the incremental formula, so IDs 33 and 34 are missing (gap).
+- Column A uses a mix of hard-coded values and formulas. That makes the sequence fragile and prone to duplicates/gaps (especially if rows are inserted or a formula is edited).
+
+Why this matters
+- Duplicate or missing IDs break uniqueness (lookups, joins, pivot tables, primary-key assumptions).
+
+Simple fixes (pick one)
+
+1) Minimal quick fix
+- Edit A22 to: =A21+1
+- Edit A40 to: =A39+1
+This restores a continuous incremental sequence assuming A3 is 1 and the current formula chain is intended.
+
+2) Robust/clean fix (recommended)
+- Replace column A with a single consistent formula that skips blank rows. For example, in A3 put:
+  =IF(B3="","",ROW()-2)
+  then copy/fill that formula down A3:A40.
+  Explanation: ROW()-2 yields 1 in row 3, 2 in row 4, etc. The IF(B3="","",...) keeps A blank if there is no First Name in column B.
+
+Alternative robust option (keeps counting only filled rows):
+- In A3 put:
+  =IF(B3="","",COUNTA($B$3:B3))
+  and fill down. This gives a running index of only non-empty name rows.
+
+Which to use
+- Use the Minimal fix if you only want to correct the two wrong cells now.
+- Use one of the Robust fixes if you want a reliable auto-updating ID column (recommended).
+
+If you want, I can provide the exact formula to paste for the whole column or produce the corrected A column values. Which would you like?

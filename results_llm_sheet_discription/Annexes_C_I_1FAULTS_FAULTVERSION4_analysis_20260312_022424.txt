@@ -1,0 +1,34 @@
+I checked the workbook structure and formulas you provided. I found two clear formula issues (one definite error and one inconsistency that can produce wrong totals or be misleading). Short explanation and fixes below.
+
+1) Error: annex f — variance % for Total Funds (K68) is wrong
+- Problem: K68 is set to =K48 (copies the percent variance for Total Net Assets). That is inconsistent and will be wrong if Total Funds (H68) and Total Net Assets (H48) are not identical (or if you want K68 calculated the same way as every other % cell).
+- Why it’s wrong: every variance % cell elsewhere is calculated as IF(Hx=0,"N/A",(Jx/Hx)*100). K68 should follow that pattern so it shows the % variance of Total Funds (J68 divided by H68).
+- Fix: Replace K68 with a proper % formula. Use:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Result: K68 will now show the percentage variance for Total Funds exactly like every other variance percent cell.
+
+2) Inconsistency (and possible error): annex g — "Financed by / Total financing" T‑column totals
+- Problem: In the ORIGINAL CASH FORECAST block you use different conventions for the T (Total) column:
+  - For flows you use T = SUM(H:S) (correct for totals across months).
+  - For balance-type rows you sometimes set T = S (end-of-year month) or T = SUM(T22:T23) (indirectly summing July values because T22 = S22 and T23 = S23). This inconsistent approach can be confusing and easy to break; it can also produce wrong annual totals if someone later changes how T22/T23 are built.
+- Why it matters: T should be consistent and unambiguous. If T is meant to be the year total for flows use SUM(H:S). If T is meant to be the year-end (July) balance, explicitly reference S (end-month) so it’s clear. Mixing methods (copying S into T for some rows, summing T-cells for others) is fragile.
+- Recommended fixes (pick one consistent approach):
+  Option A — Make T always the sum across months (good for cash flows):
+    - T22 -> =SUM(H22:S22)
+    - T23 -> =SUM(H23:S23)
+    - T24 -> =SUM(H24:S24)
+    - (and similarly for other T cells that currently reference single-month cells)
+  Option B — Make T explicitly be the year-end (July) value for balance rows:
+    - T22 -> =S22
+    - T23 -> =S23
+    - T24 -> =S24
+    - (apply consistently to all balance rows)
+- Which to choose: For cash flow rows (income/outgoings) use Option A. For opening/closing balances use Option B (T should equal end-of-year month). But you must apply the chosen rule consistently across the sheet so reconciliation formulas remain correct.
+- Quick how-to: Edit the cells in column T for rows H22:H24 (and any similar rows) and set the formulas as above. Then re-check the reconciliation rows (H25 / T25 etc) — they should be zero.
+
+Extra suggestion (cleanliness / robustness)
+- Wherever a reconciliation refers to specific cells in the balance sheet (e.g., annex g T26 = T19 - ('annex f'!H20+'annex f'!H21)), consider referencing a single named cell in annex f that explicitly contains “cash + short‑term investments (end of year)”. This reduces risk if rows move or are renamed.
+
+If you want, I can:
+- Give the exact list of cells in annex g that should be fixed (I can enumerate all T cells that are inconsistent), or
+- Produce the exact replacement formulas and a short test checklist so you can verify everything balances after the changes.

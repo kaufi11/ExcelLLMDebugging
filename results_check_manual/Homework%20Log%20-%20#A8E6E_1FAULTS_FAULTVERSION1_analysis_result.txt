@@ -1,0 +1,28 @@
+I inspected the formulas on the "Activity Log" sheet. The formulas are overall consistent (same layout repeated down the rows), but I found one definite logic error and a couple of style/robustness issues you should consider fixing.
+
+1) Definite logic bug
+- Cell K19 uses inverted logic compared with all other K-column formulas:
+  - Current formula in K19: =(IF(L19<>"x",1)+IF(M19<>"x",1)+IF(N19<>"x",1))/3
+  - All other rows use IF(cell="x",1) to count the number of "x" flags; K19 instead counts non-"x" entries. That gives the opposite value you expect (and in your sheet K19 evaluates to 0 because the three cells are "x").
+  - Fix: make it consistent. Example corrections:
+    - =(IF(L19="x",1,0)+IF(M19="x",1,0)+IF(N19="x",1,0))/3
+    - or (simpler and clearer) =COUNTIF(L19:N19,"x")/3
+
+2) Omitted IF false-result argument (robustness / style)
+- Many IF(...) calls are written as IF(condition,1) with the value_if_false omitted. Excel will return FALSE for the false branch which gets coerced to 0 when used in arithmetic — so it works, but it's fragile and less readable.
+  - Example (typical pattern used everywhere): (IF(R3="x",1)+IF(S3="x",1)+...)/7
+  - Recommendation: include the false result explicitly to make formulas robust and clearer:
+    - Use IF(R3="x",1,0) etc.
+    - Or even simpler: use COUNTIF ranges, e.g. =COUNTIF(R3:X3,"x")/7, =COUNTIF(AB3:AK3,"x")/10, =COUNTIF(AO3:AW3,"x")/9, etc.
+
+3) Minor observations / suggestions
+- Several cells reference AL# / other columns for per-row attendance-rate calculations (AM# = AL#/F#). Ensure AL is always populated for rows that expect it; some rows in the JSON extract didn't show AL explicitly but AM references it — this may be just an artifact of the extract ordering, not an actual error. If any AL cells are blank, AM will return 0 or #DIV/0 if F is zero.
+- Consistency suggestion: replace repeated IF-sum formulas with COUNTIF as noted — it reduces risk of future copy/paste logic errors (like the K19 inversion).
+
+Summary of action items
+- Correct K19 to use "=" instead of "<>" (or replace with COUNTIF).
+- Optionally (recommended) replace IF(...) patterns with COUNTIF ranges or at least include the false result (0) in each IF to improve clarity and robustness.
+- Spot-check rows where AM (attendance fraction) references AL to ensure AL is present and correct.
+
+If you want I can:
+- Provide a script (or the exact corrected formulas) to patch K19 and to convert all IF-sum blocks to COUNTIF-based formulas across the sheet.

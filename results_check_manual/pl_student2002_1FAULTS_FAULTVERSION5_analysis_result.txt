@@ -1,0 +1,31 @@
+I checked the formulas and numeric values in the workbook (Homework, Attendence, Projects, Midterm). Summary of problems, inconsistencies and suggested fixes:
+
+1) Clear formula error (typo)
+- Cell: Homework!V5
+- Current formula: =(SUM(D5:R5)+U5+U5)/2
+- Problem: U5 is added twice; T5 is omitted. This produces V5 = 78 while the intended calculation (SUM(D5:R5)+T5+U5)/2 would give 70.
+- Fix: Replace with =(SUM(D5:R5)+T5+U5)/2
+
+2) Non-numeric value in a numeric column
+- Cell: Homework!W2
+- Value: "I" (text)
+- Problem: W column is used as numeric "Course Grade" (W53 = SUM(W2:W52)). A text value will be ignored by SUM and may hide a missing/invalid numeric grade.
+- Fix: Confirm intended value for W2 (e.g. use a numeric grade, NA marker standardized, or leave blank). If "I" is a valid status (Incomplete), consider keeping it but exclude W from numeric aggregates or use a separate status column.
+
+3) Potential data/formula-consistency observations (not necessarily errors, but worth checking)
+- Most Homework!Vn cells use the consistent formula pattern: =(SUM(Dn:Rn)+Tn+Un)/2 — good. V5 is the only one that deviates.
+- Summary (D53..W53), Average (D54..W54) and STDEV (D55..W55) formulas all use the consistent ranges D2:D52 etc. Confirm that rows 2:52 are the intended student rows (there are other informational rows below row 52), because these summary formulas intentionally exclude rows 53+.
+- Some V values exceed typical course maximums (examples: V30 = 137.5, V41 = 126.5, V26 = 100.5). That may be expected (raw totals before capping) but you may want to:
+  - check whether column V is intended to be capped at 100 or scaled before producing final Course Grade (W);
+  - or add a formulaic cap in W, e.g. =MIN(100,ROUND(Vn,0)) if you want W to be an integer capped at 100.
+- Small rounding differences between V and W exist (e.g. V3 = 63.5, W3 = 64). That is probably intentional (rounding) but verify that W is derived manually or by a rule (rounding, capping) and that the rule is applied consistently.
+
+4) Suggestions to reduce future errors
+- Make the V-column formula a single copied formula (fill down) so typos (like U+U) are less likely.
+- Use data validation on numeric columns (T, U, J, D..I, W) to prevent text entry into numeric cells.
+- If W is a derived "Course Grade" (rounded/capped version of V), consider computing W from V with an explicit formula so manual edits are avoided and consistency is enforced.
+
+If you want, I can:
+- produce the corrected formula for V5 and show other rows where V and W differ by a lot (e.g., >5 points),
+- or generate a list of all rows where V vs W differ (and by how much),
+- or produce a one-click formula to compute W from V with rounding/cap rules. Which would you like me to do?

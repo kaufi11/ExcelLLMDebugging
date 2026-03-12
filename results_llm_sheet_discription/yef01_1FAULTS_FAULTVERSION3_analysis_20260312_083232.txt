@@ -1,0 +1,56 @@
+Summary of errors found (short):
+
+1) FTEE sheet — negative non‑credit conversion
+   - Error: F14 = -E14/600 (ILCC-03). This produces a negative non‑credit FTEE.
+   - Fix: Change to =E14/600 (remove the minus).
+   - Why: Non‑credit hours cannot be negative; the negative sign lowers the college total and breaks percent of total.
+
+2) FTEE sheet — manual numeric “nudges” throughout
+   - Examples: many Hxx add +0.01 (H12, H13, H15, etc.), C28/C28/F28/H28 use +0.02 / +0.03 / -0.02, I20/I21 subtract 0.000001, I28 add 0.000002. Revenues sheet has C12 = 147,577,404 - 1. Expenditures/Revenue sheets have ad‑hoc arithmetic in cells (C10 = 9,595,817 + 116,896,967).
+   - Fix: Remove all manual tiny adjustments. Use exact unadjusted calculations (Hxx = Cxx + Fxx). Compute totals with SUM over the true data range. For display, use ROUND or cell formatting to show required decimals.
+   - Why: These tweaks hide underlying rounding/precision issues and cause inconsistent, hard‑to‑audit numbers.
+
+3) Inconsistent SUM ranges / missing row references
+   - Examples:
+     - Revenues: C16 = SUM(C10:C15) but only C10:C14 are listed (C15 missing).
+     - Expenditures by Function: C20 = SUM(C10:C19) but data only C10:C18.
+     - Expenditures by Category: C16 = SUM(C10:C15) but only C10:C14 present.
+   - Fix: Adjust SUM ranges to exactly match populated rows (e.g., SUM(C10:C14) or insert the missing row if a category was omitted). Verify there is not an intended row omitted.
+   - Why: Wrong ranges can either exclude an item or include blank/incorrect cells and mask missing data.
+
+4) Percent formulas rely on adjusted totals
+   - Symptom: Percent columns (B, I, etc.) use denominators that include the manual adjustments so percents don’t reflect real shares.
+   - Fix: After removing manual adjustments and correcting totals, recompute percents as value / SUM(range) and format/ROUND for display. If you need percentages to display that sum to exactly 100%, calculate all but the last percent normally and set the last percent = 1 - SUM(previous percents) (display rounded).
+   - Why: Proper rounding/display is preferable to altering source numbers.
+
+Practical step‑by‑step to correct workbook (apply in this order):
+
+1. Fix obvious sign bug:
+   - Cell F14: change from =-E14/600 to =E14/600.
+
+2. Remove manual numeric tweaks:
+   - Replace Hxx formulas with Hxx = Cxx + Fxx everywhere.
+   - Remove +0.01 from H12, H13, H15, H16, H22 etc.
+   - Remove tiny +/- adjustments in totals (C28, F28, H28, I28, I20, I21) and cells like C12 = 147577404-1 and C10 = 9595817+116896967: either enter true totals or sum component cells (e.g., =SUM(component cells)).
+
+3. Correct SUM ranges:
+   - Revenues total C16 → SUM(C10:C14) (or insert the missing row 15 if intended).
+   - Expenditures by Function total C20 → SUM(C10:C18).
+   - Expenditures by Category total C16 → SUM(C10:C14).
+   - Update corresponding percent denominators to absolute references to these corrected totals.
+
+4. Recompute percentages:
+   - Percent cells: =Cxx / $C$total (or Hxx / $H$28). Then format to desired decimal places or use =ROUND(Cxx/$C$total,4) for stored rounded values.
+   - If you want displayed percentages that add exactly to 100.00%, compute all but the last row normally and set last row = 1 - SUM(previous rounded percents).
+
+5. Audit totals:
+   - After the fixes, verify SUM(B) or SUM(D) percent columns are ~1 (or 100% depending on format). If small floating cents remain, use formatting/ROUND — do not change source values.
+
+Why these solutions are better (brief):
+- Removing manual “nudges” preserves data integrity and makes the workbook auditable.
+- Using SUM over correct ranges and consistent formulas ensures totals and percent shares reflect the real underlying data.
+- Use rounding/formatting for presentation instead of altering raw numbers so calculations remain accurate.
+
+If you want, I can:
+- Provide exact corrected formulas for each affected cell (pasteable).
+- Recompute numeric totals and percentages using the corrected approach and show the corrected values.

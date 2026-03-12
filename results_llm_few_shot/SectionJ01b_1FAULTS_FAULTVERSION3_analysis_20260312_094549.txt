@@ -1,0 +1,33 @@
+I checked the workbook. I found three groups of real problems (wrong ranges, inconsistent % and one hard‑coded value). Short fixes and why they work below.
+
+1) Total / Grand totals missing last column
+- Faulty cell: Sheet "Total LOE" B70
+- Error: Formula =SUM(B68:H68) omits column I (Option 7).
+- Fix: =SUM(B68:I68)
+- Why: Include all option totals (B through I) so the grand total equals the sum of every period.
+
+- Faulty cell: Sheet "T&M Type" B62
+- Error: Formula =SUM(B60:T60) misses column W60 (Option 7) and sums a big block instead of the 8 total cells.
+- Fix (recommended): =SUM(B60,E60,H60,K60,N60,Q60,T60,W60)
+- Why: That explicitly sums the eight period totals (base + opts 1–7). If you prefer a continuous range and columns between totals are blank, you could use =SUM(B60:W60) — but explicit sum is safer.
+
+(Also check the Fixed Price sheet for a missing/incorrect grand total cell — add a grand total that sums the total columns e.g. =SUM(E59,H59,K59,N59,Q59,T59,W59).)
+
+2) Inconsistent percent for Option 4 (typo 0.023)
+- Faulty pattern: Many N-column formulas across Fixed Price, Cost Type and T&M use *0.023 for the Option 4 increase (e.g. N5 = K5 + (K5*0.023)).
+- Error: Option increases appear intended to be 2% each period but Option 4 uses 2.3% (0.023) in many rows — inconsistency/typo.
+- Fix (example): change N5 from =K5+(K5*0.023) to =K5*1.02 (or =K5+(K5*0.02))
+- Why: Use 1.02 (or *0.02) to consistently apply a 2% increase. To fix fast, edit one correct N cell to =K5*1.02 then copy/paste (or fill) down the N column, or do a Replace: "*0.023" → "*0.02" if that matches your intended logic.
+
+3) Hard‑coded base value (typo)
+- Faulty cell: Sheet "T&M Type" E36
+- Error: E36 =600+(600*0.02) — the base value is hard‑coded (600) instead of referencing the Base cell.
+- Fix: =B36*1.02  (or =B36+(B36*0.02))
+- Why: If the base hours/rate in B36 changes, the expansion formula must reference B36 so updates propagate.
+
+General recommendations (to avoid repeat mistakes)
+- Use multiplicative form for percent increases: =previous_cell*1.02. It’s shorter and less error‑prone than +(...*0.02).
+- Put the growth rate in one cell (e.g. Z1 = 0.02) and use =K5*(1+$Z$1) so you can change the rate in one place.
+- After fixing one row, fill down the column or use consistent formulas for whole columns instead of hand-editing each cell.
+
+If you want, I can produce the exact corrected formulas for all affected ranges (I can list a few examples and a Fill/Replace plan). Which sheet would you like me to fix first?

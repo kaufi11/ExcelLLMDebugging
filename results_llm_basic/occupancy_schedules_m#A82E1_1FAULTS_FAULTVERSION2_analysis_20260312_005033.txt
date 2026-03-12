@@ -1,0 +1,47 @@
+I found several real errors (typos in formulas and a leap‑year/counting bug). Short list, fixes and brief explanations:
+
+1) Wrong sheet-name references (causes #REF!)
+- What: Many formulas refer to sheets without the space in the sheet name, e.g. 'OccL2-WD-DU' (no space) while the actual sheet is named "Occ L2-WD-DU" (with a space).
+- Where: Examples:
+  - Sheet "Occ L1-WD": C16:C39 and D16:D39 formulas use 'OccL2-WD-DU'!...
+  - Sheet "Occ L1-DU": C16:D39 use 'OccL2-DU-LR'!...
+  - There are multiple other similar places.
+- Fix: Edit those formulas to use the correct sheet name with spaces, e.g. change
+  - =+'OccL2-WD-DU'!C16*...  →  =+'Occ L2-WD-DU'!C16*...
+- Why: Excel needs exact sheet names; missing or wrong spaces produce #REF errors and break the schedule build-up.
+
+2) Incorrect weighting for latent load per person (wrong references)
+- What: The latent-load-per-person formulas use / weight by F19 and F20 (sensible gains) instead of using the living/bedroom schedule sums (F38 and F39).
+- Where: Example on multiple sheets (Occupancy summary and several schedule sheets):  
+  F10 =+(Occupancy!F22*Occupancy!F19+Occupancy!F23*Occupancy!F20)/(Occupancy!F19+Occupancy!F20)
+- Fix: Use the same weighting as the sensible calculation (use F38 and F39). Correct formula:
+  - =+(Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- Why: Latent load should be averaged by area schedule (how many people are in living vs bedroom over the year), not by the sensible gain numbers F19/F20. Current formula biases the result.
+
+3) Leap‑year / day fraction error for simulation year 2000
+- What: The workbook states "simulation year of 2000" (a leap year) but per-day fractions are being calculated dividing by 365 (and raw counts sum to 365).
+- Where: Occupancy sheet: G28..G31 use =F28/365 etc; F28:F31 sum to 365 but year 2000 has 366 days.
+- Fix options (pick one):
+  - Best/flexible: compute fractions relative to the actual counts: G28 = F28 / SUM(F28:F31) (and copy down). That avoids hardcoding 365/366.
+  - Or, if you want a fixed divisor: change 365 → 366 for year 2000.
+- Why: Using 365 for year 2000 misrepresents day fractions by ~0.27% and makes weekday/weekend fractions inconsistent. Using SUM(...) is robust.
+
+4) Accidental negative signs in a sum (typo)
+- What: One cell subtracts instead of adding:
+  - Sheet "Occ L2-WD-DU", cell F27: =-'Occ L3-WD-DU-LR'!J27-'Occ L3-WD-DU-LR'!K27
+- Fix: Make it a sum like the other rows:
+  - =+'Occ L3-WD-DU-LR'!J27 + 'Occ L3-WD-DU-LR'!K27
+- Why: Leading minus signs produce negative occupancy fractions where sums are expected, breaking totals.
+
+5) General recommendation: search & correct inconsistent sheet-name references
+- What: The workbook uses mixed naming conventions (some formulas reference sheets with and without spaces, sometimes different punctuation).
+- Fix: Do a workbook-wide search for sheet references that differ from the actual sheet tab names (look for 'OccL2', 'OccL1', etc.) and standardize to the exact tab name (including spaces). In Excel use Find (Ctrl+F) on formulas or use Name Manager/Trace Dependents to find broken links.
+- Why: Prevents hidden #REF and cascading calculation errors.
+
+Optional tidyups / small notes
+- Some text typos exist (e.g., "weedays", "BTY/hr") — cosmetic but not functionally breaking.
+- Wherever you change formulas, recalc (F9) and check totals (SUM ranges) to ensure day fractions still add to 1 and schedules sum correctly.
+
+If you want, I can:
+- Provide the exact corrected formulas for every affected cell (I already showed the templates above), or
+- Generate a find/replace plan (example: replace 'OccL2-' with 'Occ L2-' in formulas) you can run in one go. Which would you prefer?

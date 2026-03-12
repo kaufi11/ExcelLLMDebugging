@@ -1,0 +1,23 @@
+I checked the sheet and found the clear formula errors that will give wrong numeric results. Short, direct fixes below.
+
+1) Wrong divisor / typo in K13
+- Faulty cell: K13
+- Problem: K13 = =$C13/951 — looks like a typing error. All J/K/L columns are intended to be half of the C column (C13/2), so "/951" is incorrect.
+- Fix: change K13 to = $C13 / 2
+- Why: this restores the consistent halve-of-C behaviour used everywhere else (and fixes sums that include K13).
+
+2) Net setup lines are using the hold base (P15/Q15) instead of the setup base (P16/Q16)
+- Faulty cells: N18, P18, Q18 (these three formulas start from P$15 / Q$15)
+- Problem: N18/P18/Q18 are labelled “Net setup time” but their formulas use P$15 (hold) / Q$15 as the starting value. They should start from the setup times (P$16 / Q$16). Using the hold value gives wrong setup calculations.
+- Fixes (replace the P$15/Q$15 in each with P$16/Q$16):
+  - P18: =+P$16-3.125+$J$36+$J$37-J16-J19-J22-$J$23-$J$20-$J$28-$J13-(J30/2)
+  - Q18: =+Q$16+3.125+$J$36+$J$37-J16-J19-J22-$J$23-$J$20-$J$28-$J13-(J30/2)
+  - N18: =+P$16-3.125+$J$36+$J$37-J16-J19-J22-$J$23-$J$20-$J$28-$J13-(J30/2)
+- Why: setup-time calculations must be based on the setup budget (P16/Q16). Fixing these will correct the downstream Net/setup numbers and any dependent totals.
+
+Notes and impact
+- Correcting K13 will change K25/K35/K39/K40 etc wherever K13 is included.
+- Correcting P18/Q18/N18 will change the net-setup results and any cells that use them (e.g., later setup/hold windows).
+- I focused on definite formula typos/errors. There are other inconsistencies (mixed absolute/relative $ usage, comma vs dot decimal styling) but those are not necessarily formula errors — they may be stylistic or locale-driven.
+
+If you want, I can produce a list of all cells that will change when these fixes are applied (dependencies) or create the exact patched formulas inserted back into the workbook. Which would you prefer?

@@ -1,0 +1,49 @@
+Summary of the main problems I found
+- Inconsistent/incorrect grade thresholds: the IF(...) grade formulas use different sheet references for the maximum (O$38). Example: most rows use O$38 (local), row P12 on "M Noon" uses 'F Noon'!O$38, W 2 p.m. P27 uses 'M Noon'!O$38. That makes some grades compare to the wrong max and produce wrong letters.
+- Wrong function in one summary cell: on sheet "M Noon" F39 is SUM(F6:F37) but all other summary cells in that row use AVERAGE. F39 should be an AVERAGE, not a SUM.
+- Inconsistent ranges across summary rows: the Average/Max/Count formulas use different start/end rows on different sheets (B6:B37, B6:B23, B6:B30, B7:B30, B6:B29, etc.). That yields inconsistent statistics between sheets.
+- Hard-coded counts / values: some “count” cells show a fixed number instead of using COUNT formulas (I saw hard-coded numbers in places). That will not update when you add/remove students.
+- Mixed/missing data in detail rows: many student rows have missing cells or text in numeric columns; COUNT and AVERAGE will behave differently depending on blanks/text — this may explain why some COUNT results are smaller than the row span.
+
+Why these are errors (short)
+- Using the wrong worksheet for O$38 means some students are graded against a different class’s total — incorrect letter grades.
+- SUM instead of AVERAGE gives a total score instead of the mean for that column.
+- Different summary ranges mean the group statistics are not comparable across sheets and will change when rows are added.
+- Hard-coded numbers break automatic calculation.
+- Mixed types (text/blanks) change the result of COUNT/AVERAGE (they ignore text), causing misleading stats.
+
+How to fix (exact, simple steps)
+1) Fix all grade formulas so they reference the local anchored max cell O$38 (or a single named range) consistently. Use this formula in P6 and fill down:
+   =IF(O6>$O$38*0.9,"A",IF(O6>$O$38*0.8,"B",IF(O6>$O$38*0.7,"C",IF(O6>$O$38*0.6,"D","F"))))
+   - Use $O$38 (both row and column locked) so you can copy down. Do this on every sheet. If you intend to grade against a master total on one specific sheet, use a single absolute external reference (or better: a named range).
+
+2) Change F39 on "M Noon" to an average:
+   =AVERAGE(F6:F37)
+   (And check that F39 should be SAMPLE AVERAGE like other columns.)
+
+3) Standardize summary ranges across all sheets:
+   - Decide the fixed student row range (for example rows 6:37). Then change all summary formulas to that same range:
+     - Averages: =AVERAGE(B6:B37) etc.
+     - Max: =MAX(B6:B37)
+     - Count: =COUNT(B6:B37) (or COUNTA(A6:A37) to count non-blank ID rows)
+   - If you want the summary to adapt when you add students, convert the data area to an Excel Table and use structured references or define a dynamic named range (OFFSET or INDEX-based).
+
+4) Replace hard-coded counts/numbers with formulas:
+   - e.g., any cell showing "28" or "14" manually should be =COUNT(B6:B37) (or appropriate column).
+   - Use COUNT for numbers, COUNTA for non-empty cells, COUNTIF if you want to exclude formulas returning text.
+
+5) Clean up data types:
+   - Ensure numeric columns contain numbers (not text). Use VALUE() or re-enter if needed.
+   - Make sure blank/missing cells are intended; if a missing assignment counts as a zero, put 0 rather than blank (or adjust formulas).
+
+Optional but recommended improvements
+- Name the total-possible cell O38 as TotalPossible, then use:
+   =IF(O6>TotalPossible*0.9, "A", ...)
+  This prevents accidental wrong-sheet references when copying formulas between sheets.
+- Convert the student block into an Excel Table so summary formulas auto-expand and are consistent.
+
+If you want, I can:
+- Give you the exact list of cells that currently reference the wrong sheet (I spotted several examples) so you can update them, or
+- Provide a step-by-step macro or a short script to fix all P-column grade formulas and standardize summary ranges across all sheets.
+
+Which would you prefer?

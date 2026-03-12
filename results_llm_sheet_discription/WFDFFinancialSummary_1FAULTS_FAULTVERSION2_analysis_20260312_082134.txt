@@ -1,0 +1,34 @@
+Summary of errors found (short) and how to fix them
+
+1) Stork - 2002 Expenditures: Receipts / Expenditures references are swapped
+- Problem: At the bottom of the Expenditures sheet you have:
+  - D59 (labelled "Receipts") = C55 (which is the expenditures total)
+  - D60 (labelled "Expenditures") = 'Stork - 2002 Receipts'!C43 (which is the receipts total)
+  - D61 = D59 - D60 therefore computes Expenditures - Receipts (wrong sign / wrong numbers).
+- Effect: The “Net as of 7/3/03” is reversed and wrong.
+- Fix: Swap the two formulas so they match the labels:
+  - Set D59 = 'Stork - 2002 Receipts'!C43  (total receipts)
+  - Set D60 = C55  (total expenditures)
+  - Keep D61 = D59 - D60 (now correct = receipts − expenditures)
+- Why this works: D59 will now hold the receipts total and D60 the expenditures total, so the net (D61) will be receipts minus expenditures as intended.
+
+2) Balance Sheet: Dec 31 '01 checking/savings (G4) is wrong / not linked
+- Problem: G4 contains 12,323.99 but Financial summary I35 (the checking account for 2001) is 12,823.99 — a 500 discrepancy. Some years on the Balance Sheet are hard-coded while 2002 is linked to the Financial summary.
+- Effect: Total Current Assets and Total Assets may be wrong for Dec 31, 2001 and cause reconciliation mismatches.
+- Fix: Replace the hard value in G4 with a direct link to the Financial summary checking cell:
+  - Set G4 = 'Financial summary'!I35
+  - (For consistency, also consider setting E4 = 'Financial summary'!E35 and F4 = 'Financial summary'!G35, and the money market cells E5/F5/G5 to 'Financial summary'!E36/'!G36/'!I36.)
+- Why this works: Keeps Balance Sheet automatically in sync with the Financial summary and removes manual-entry typos (the 500 difference was a manual error).
+
+3) Minor / optional cleanup suggestions
+- K21 on Financial summary uses a hard-coded expression (=8821.24+118.52). Prefer summing the source cells (e.g., =SUM(H33,H44,H45,...) or the exact transaction rows) so totals update automatically if supporting register changes.
+- Verify that the 118.52 note (not cashed) is handled correctly in the registers (it appears as a memo in row 46); include it only if it should affect cash totals.
+
+Quick checklist to apply
+- On Stork - 2002 Expenditures: swap D59 and D60 formulas as shown.
+- On Balance Sheet: change G4 to ='Financial summary'!I35 (and optionally link E4/F4 and E5/F5/G5 to the Financial summary equivalents).
+- After changes: recalc workbook and confirm:
+  - D61 (net) on Expenditures = Receipts total − Expenditures total.
+  - Balance Sheet Total Current Assets matches Financial summary account balances and TOTAL ASSETS balances with Total Equity.
+
+If you want, I can give the exact formulas to paste into each cell (copy‑paste ready) or produce a small reconciliation showing numbers before/after the fixes.

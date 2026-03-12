@@ -1,0 +1,15 @@
+Summary — I found two defects. Short fixes + why.
+
+1) Sheet "2000", cell B23
+- Fault: formula =B19-2 (subtracts 2 days)
+- Why wrong: row label is TH (Thursday) but =B19-2 moves the date back to Sunday. The pattern through the sheet is +2 (Thu), +1 (Fri), +4 (Tue) etc., so this should add days, not subtract.
+- Fix: change to =B19+2
+- Result: B23 will be the correct Thursday (two days after B19).
+
+2) Sheet "1999", cell B7
+- Fault: B7 contains the date 2000-08-22 (year 2000) on the 1999 sheet.
+- Why wrong: the sheet’s whole date sequence is built from B7, so a wrong start year makes every computed date on that sheet wrong.
+- Fix: replace B7 with the correct 1999 start date (for example: 1999-08-24 00:00:00 if the course started that Tuesday) or whatever the actual start date should be for 1999. After you correct B7, all B# formulas (they use +2, +1, +4 etc.) will recalculate correctly.
+
+Quick suggestion to avoid future slips
+- Use one master start-date cell and mirror it to each year, or add a simple validation (WEEKDAY check) so a cell labeled TH/F/T/F does not get a date that’s the wrong weekday. For example: =IF(WEEKDAY(B23)=5,B23,"Check date") to flag mismatches.

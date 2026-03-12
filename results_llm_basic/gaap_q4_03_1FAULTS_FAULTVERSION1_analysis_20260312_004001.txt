@@ -1,0 +1,47 @@
+I reviewed the sheets. Summary: there are 4 types of errors: wrong sign, divide-by-zero, hard-coded/wrong formula, and inconsistent treatment of negative (cash‑outflow) items. Below are the specific problems, the fix, and a short explanation for each.
+
+1) Wrong sign (Q2 2003)
+- Problem: Cell H9 on sheet "Q2 2003" contains =-((D9-F9)/F9)*100 (extra leading minus).
+- Why wrong: It flips the sign of the percent change compared with all other quarters.
+- Fix: Replace with a standard percent-change formula, e.g.
+  =IF(F9=0,"n/a",(D9-F9)/F9*100)
+- Explanation: Removing the extra "-" gives the correct percent change and the IF avoids a DIV/0 if the base is zero.
+
+2) Divide-by-zero errors (Q1 2003 and anywhere base = 0)
+- Problem: H9 (Q1 2003) uses =+((D9-F9)/F9)*100 but F9 = 0 → #DIV/0!. H12 (Q1) also divides by F12 = 0.
+- Why wrong: You cannot divide by zero.
+- Fix: Use IF (or IFERROR) to show "n/a" or blank when the prior-year value is zero, e.g.:
+  =IF(F9=0,"n/a",(D9-F9)/F9*100)
+  or
+  =IF(F12=0,"n/a",(D12-F12)/F12*100)
+- Explanation: This prevents #DIV/0 and communicates that percent change is not defined.
+
+3) Hard-coded/wrong arithmetic formula (Q3 2003-4 Qtr)
+- Problem: Cell L11 shows FORMULA = -80+40 (which equals -40) instead of a proper referenced value or sum.
+- Why wrong: It's a hard-coded ad-hoc arithmetic expression and inconsistent with other sheets (Q4 L11 = -130, Q3 L11 = -80 etc.), so likely wrong or accidental.
+- Fix: Replace with the correct 2002 twelve-month AR securitization total. Either enter the correct number or link to the correct source cell, e.g.:
+  =SheetWithTotals!CellReference
+- Explanation: Use consistent sourcing (link or correct value) rather than ad hoc math so historical totals reconcile.
+
+4) Inconsistent handling of negative cash flows (capital expenditures, AR securitization)
+- Problem: Capital expenditures and securitization are negative numbers (outflows). Percent-change formulas (D-F)/F will give a sign driven by the negative denominator and can be confusing (increase in absolute spending may show as a negative percent).
+- Why wrong/confusing: Reported percent changes may appear reversed relative to what a reader expects (increase in spending showing as a negative %).
+- Fix: Decide whether you want sign-aware percent change or magnitude change. For magnitude (typical for outflows) use absolute values:
+  =IF(F12=0,"n/a",(ABS(D12)-ABS(F12))/ABS(F12)*100)
+  For sign-aware (keep flows as negative), keep original formula but document the convention.
+- Explanation: Using ABS shows percent change in the absolute cash-outflow amount (clearer for readers); keeping sign-aware retains accounting sign convention but can be counterintuitive.
+
+5) Missing/blank percent-change cells (several H11 cells show 0)
+- Problem: Some H11 cells are set to 0 instead of calculating percent change.
+- Fix: Replace 0 with the correct percent-change formula or the IF version to handle division by zero:
+  =IF(F11=0,"n/a",(D11-F11)/F11*100)
+- Explanation: Keeps calculations consistent across rows and quarters; avoids hidden manual overrides.
+
+Quick checklist to correct the workbook
+- Remove the stray "-" in Q2 H9.
+- Replace any percent-change formula of the form ((Dx-Fx)/Fx)*100 with the IF-protected version: =IF(Fx=0,"n/a",(Dx-Fx)/Fx*100)
+- For capital expenditures and other outflows, decide on ABS-based percent change if you want magnitude changes: =IF(Fx=0,"n/a",(ABS(Dx)-ABS(Fx))/ABS(Fx)*100)
+- Fix L11 in "Q3 2003-4 Qtr" by replacing =-80+40 with the correct 2002 value or a cell reference.
+- Scan for any other manually entered zeros or arithmetic and replace with formulas so totals reconcile.
+
+If you want, I can supply the exact corrected formulas for every problematic cell (I can list them sheet-by-sheet) or produce a version using ABS for outflows. Which would you prefer?

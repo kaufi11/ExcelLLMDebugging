@@ -1,0 +1,53 @@
+Summary — workbook checks Master and Substitution method inequalities over sample n values.
+
+Sheet: MasterMethod_Checks
+- Purpose: test Master Theorem cases by comparing f(n) to n^{CE} (CE = critical exponent = log_b(a)).
+- Key parameters (top-left):
+  - a in B4 = 3
+  - b in B5 = 3
+  - CE in B6 = FORMULA LOG(B4,B5) → evaluates to 1 (log_3 3)
+  - constant c in B7 = 0.5
+  - note in D6: "If CASE 3, Remember to check regularity conditions"
+- Main table (columns A–H, rows 10–41):
+  - A: n (0..30)
+  - B: f(n) mostly = A/2 (f(n) = n/2), but B19 is an outlier: A19/873 (likely a typo; probably should be /2)
+  - C: n^CE = A^$B$6 (so n^1 = n)
+  - D: f(n)/n^CE = B/C
+  - E: c * n^CE = $B$7*C
+  - F: Big-Oh test boolean = IF(B<=E,"TRUE","FALSE")
+  - G: Big-Omega test boolean = IF(E<=B,"TRUE","FALSE")
+  - H: Theta Term = LOG(A,2)
+- Important notes / issues:
+  - CE = 1, so comparing f(n)=n/2 vs n is straightforward (f(n) = (1/2) n).
+  - Row n=0 produces errors: LOG(0,2) in H and division by zero in D (C = 0^1 = 0). Expect #DIV/0 and #NUM errors for n=0.
+  - B19 uses /873 instead of /2 — inconsistent with other rows.
+  - The sheet is set up to indicate which Master-case holds by scanning F and G for TRUE/FALSE; D6 reminder to verify regularity for Case 3.
+
+Sheet: SubstitutionMethod_Checks
+- Purpose: attempt a substitution (epsilon-style) check to show T(n) = Theta(asymptotic_fcn) by verifying c1 * f_asymp <= T(n) <= c2 * f_asymp for sample n.
+- Key parameters (top-left):
+  - c1 in B4 = 0.5
+  - c2 in B5 = 3
+- Asymptotic function used in B/C formulas: A * LOG(LOG(A,2),2) (i.e., n * log_2(log_2 n)) — note some rows/cells omit the leading multiplication by A in column C at row 10 (C10 = $B$5*LOG(LOG(A10,2),2) missing *A10).
+- Main columns (A–G, rows 9–39):
+  - A: n (1..30)
+  - B: c1 * asymptotic_fcn = $B$4 * A * LOG(LOG(A,2),2)
+  - C: c2 * asymptotic_fcn = $B$5 * (should be A * LOG(LOG(A,2),2)) — check C10 for missing *A
+  - D: T(n) = modeled as 5 + n / LOG(n,2) in many rows (FORMULA =5*1 + A/LOG(A,2))
+    - Starting at some rows the formula references earlier D-row values as the 5-multiplier (e.g. D19 = 5*$D$11 + A19/LOG(...), later groups use $D$11, $D$12, $D$13, $D$14, $D$15). That makes D column inconsistent across ranges.
+  - E: Big-Omega test boolean = IF(B<=D,"TRUE","FALSE")
+  - F: Big-Oh test boolean = IF(D<=C,"TRUE","FALSE")
+  - G: Theta()? combined test = IF(E="TRUE",IF(F="TRUE","True","False"),"False")
+- Important notes / issues:
+  - Domain problems: LOG(LOG(n,2),2) is undefined for n <= 1 (LOG(1,2)=0 then LOG(0,2) error). Rows with n=1 will produce #NUM/#DIV/0 errors in B/C. Many asymptotic comparisons will be invalid at small n.
+  - Column C row 10 is missing the factor *A10 (inconsistent with other C rows).
+  - Column D uses piecewise references to previous D-values (5*$D$11 etc.), producing inconsistent definitions of T(n) by row block; likely unintended.
+  - The boolean logic in G correctly combines the two inequality tests (both must be TRUE to claim Theta).
+
+Overall / recommended fixes (short)
+- Fix obvious typos: change B19 (Master) back to =A19/2; fix C10 (Substitution) to include *A10.
+- Remove n=0 from Master table (or start n at 1) to avoid log(0) and division by zero.
+- Make column D (T(n)) consistent: use a single formula (e.g., =5 + A/LOG(A,2)) rather than referencing prior D cells.
+- Guard LOG(LOG(n,2),2) with IF(n>1, ... ,"N/A") to avoid domain errors for small n.
+
+If you want, I can produce a corrected cell-by-cell fix list or show the exact replacement formulas to apply.

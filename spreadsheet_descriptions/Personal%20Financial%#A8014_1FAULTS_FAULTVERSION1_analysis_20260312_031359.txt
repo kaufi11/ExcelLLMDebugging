@@ -1,0 +1,60 @@
+Overview — workbook has two sheets: "STEP 1 OF 2" (Personal Financial Profile) and "STEP 2 OF 2" (Monthly Financial Plan / Budget). STEP 2 pulls key totals from STEP 1 to build a monthly budget and compute net surplus/deficit.
+
+STEP 1 OF 2 — layout and contents
+- Title / header area (rows 3–7): "PERSONAL FINANCIAL PROFILE" with date and spouse fields.
+- What I Earn (cols C–G, rows 9–22)
+  - Rows for Job #1, Job #2, Other, etc. Inputs of gross income and tax withheld.
+  - E22 = SUM(E11:E20) — total gross income.
+  - G22 is shown as FORMULA =2 (appears incorrect/placeholder).
+- What I Own / Assets (cols I–M, rows 9–22)
+  - Asset categories: checking, savings, MMKT, CDs, stocks, insurance cash value, home, cars, IRAs, other.
+  - M22 = SUM(M9:M20) — total assets.
+- What I Give (cols E–M, rows 25–35)
+  - Multiple giving lines (rows 29–31) with per-category columns; totals per column:
+    - G32 = SUM(G29:G31)
+    - I32 = SUM(I29:I31)
+    - K32 = SUM(K29:K31)
+    - M32 = SUM(M29:M31)
+  - E33 = SUM(E29:E30) (possible omission of row 31)
+  - I33 = SUM(G32+I32) and M33 = SUM(K32+M32) (usage of SUM with summed arguments)
+  - M35 = SUM(E33:M33) — TOTAL GIVING
+- What I Save (cols E–M, rows 38–45)
+  - Emergency and future savings lines; intermediary formulas:
+    - E43 = SUM(E42)
+    - I43 = SUM(I41:I42)
+    - M43 = M42 (copied cell)
+  - M45 = SUM(E43:M43) — TOTAL SAVING
+- What I Owe / Debt (cols C–K, rows 48–65)
+  - Multiple debt lines (rows 53–63) capturing balances, interest %, monthly payment.
+  - G65 = SUM(G53:G63) — total credit debt (balance column)
+  - M65 = SUM(K53:K63) — total monthly debt payments
+- Instruction row (67) to proceed to Step 2.
+
+STEP 2 OF 2 — layout and contents
+- Monthly Financial Plan (Budget). Column E lists budget categories grouped by purpose (Giving, Saving, Repaying, Tax, Housing, Transportation, etc.). Column F shows recommended % allocations.
+- Key links to STEP 1:
+  - H6 = 'STEP 1 OF 2'!E22 (total gross earnings)
+  - H8 = 'STEP 1 OF 2'!M35 (total giving)
+  - H10 = 'STEP 1 OF 2'!M45 (total saving)
+  - H12 = 'STEP 1 OF 2'!M65 (repaying/debt payments)
+  - H14 = 'STEP 1 OF 2'!G22 (taxes/tax withheld — note G22 in Step1 appears set to 2)
+- Calculated intermediate totals:
+  - H16 = H6 - H8 - H10 - H12 - H14 (ENJOYING / net available after core allocations)
+  - H32 = SUM(H19:H31) (housing total)
+  - H43 = SUM(H35:H42) (transportation total)
+  - M18 = SUM(M7:M17) (personal/household totals from itemized monthly lines)
+  - M28 = SUM(M21:M27) (professional services/child care etc.)
+  - M40 = SUM(M31:M39) (entertainment totals)
+  - M43 = H32 + H43 + H50 + M18 + M28 + M40 — TOTAL EXPENSE
+  - M45 = H16 — NET INCOME (ENJOYING)
+  - M47 = M45 - M43 — DIFFERENCE (surplus/deficit)
+- Percentage formulas compute category ratios to earnings, e.g.:
+  - F6 = 100 (base)
+  - F8 = H8 / H6, F10 = H10 / H6, F12 = H12 / H6, F14 = H14 / H6, F18 = H32 / H6, etc.
+- Final outputs: M43 (total expenses), M45 (net available/enjoying), M47 (difference).
+
+Notes / observations
+- The workbook is structured so STEP 1 captures raw personal finances (income, assets, giving, saving, debts) and STEP 2 converts those totals into a recommended monthly budget.
+- A few formulas look suspicious or possibly placeholders (e.g., G22 = 2; E33 only sums E29:E30 while giving rows include row 31; some SUM() usages wrap already summed expressions like SUM(G32+I32)). You may want me to validate/fix those and confirm intended cells to ensure correct rollups.
+
+If you want, I can: (a) produce a concise map of exact cell references used as inputs vs. outputs, or (b) propose corrected formulas for the suspicious cells. Which would you prefer?

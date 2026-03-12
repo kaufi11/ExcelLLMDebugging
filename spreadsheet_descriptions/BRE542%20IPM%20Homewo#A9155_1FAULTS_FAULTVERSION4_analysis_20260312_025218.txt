@@ -1,0 +1,40 @@
+Summary of the workbook (concise)
+
+Sheets
+1) van Genuchten fit theta-h
+- Purpose: fit van Genuchten retention curve (theta vs pressure) and compute fit error (SSE).
+- Top parameters (A2:A7 / B3:B7):
+  - theta r = 0.009957388864981173 (B3)
+  - theta s = 0.45020068560206356 (B4)
+  - alpha = 0.00014665857868120281 (B5)
+  - n = 3.12346573314838 (B6)
+  - SSE shown in B7 (formula =E19)
+- Observed vs Predicted table (rows 10–16):
+  - Columns: Position (A), Pressure B, Observed Theta C, Predicted Theta D, Error (squared) E, Ln P F.
+  - Predicted formula (example D12): =$B$3+($B$4-$B$3)/((1+$B$5*(-B12)^$B$6)^(1-1/$B$6)) — standard van Genuchten theta(h) with absolute cell refs to the parameters.
+  - Error formula (example E12): =(C12-D12)^2 (squared residuals).
+  - Ln P formula (example F12): =LN(-B12) (natural log of absolute pressure; pressures stored as negative).
+- SSE calculation (D19/E19): E19 = SUM(E14:E18) (sum of squared errors — note the workbook uses a specific E-range for the sum).
+- Notes/observations: predicted cell formulas use fixed ($B$3:$B$6) parameter references so solver can change parameters to minimize SSE. (There is one apparent typo in the provided list: row E14 shown as =(C14-411)^2; check that cell.)
+
+2) Data set
+- Purpose: time-series heads and water contents at multiple depths; instructions for using data to compute fluxes, gradients and apparent conductivity, then fit Ksat.
+- Header and instructions in A1–A20 describing tasks (plotting, fitting van Genuchten, computing fluxes, using Darcy's law, and using solver to fit conductivity Ksat).
+- Depth layout:
+  - Depths at columns: 0.5 m (head B / theta C), 1.0 m (head E / theta F), 1.5 m (head K / theta L), 2.5 m (head Q / theta R), 3.5 m (head T / theta U).
+  - Time in A24:A42 (hours: 0,1,2,...,2400).
+  - Head and theta time series in the pairs above for rows 24–42 (e.g., B24:B42 heads at 0.5 m, C24:C42 thetas).
+- Flux/gradient/K area:
+  - Summary columns for computing flux, gradient and K at representative elevations (headers shown in row 21–22): 0.75 m, 1.25 m, 1.5 m, 2.5 m, 3.5 m — with cells intended for Flux, Gradient and K results (e.g., H22 Flux / I22 Gradient / J22 K for 0.75 m).
+- Data content: heads are negative (e.g., B25 = -0.01 at t=0) and associated measured thetas (e.g., C25 = 0.4596). The time series show gradual drainage (heads become more negative, theta decreases) across all depths.
+
+Key formulas & workflow encoded
+- Van Genuchten model in D-column of fit sheet: theta(h) = theta_r + (theta_s - theta_r) / [1 + alpha * (-h)^n]^(1 - 1/n).
+- Residual squared errors per point: (observed - predicted)^2; SSE is sum of those errors.
+- Ln P column computes ln(-pressure) for plotting/weighting if needed.
+- Data sheet intended to be used to compute fluxes from changes in profile water content, compute hydraulic gradients, then apparent K from Darcy’s law; solver is to be used to fit Ksat using the retention parameters fixed from the theta-h fit.
+
+Files/Cells to check when running solver
+- Ensure error-sum range E19 matches the actual error rows (E12:E16 vs E14:E18 inconsistency).
+- Check the apparent typo in E14 ((C14-411)^2) and correct to (C14-D14)^2 if necessary.
+- Solver should vary B3:B6 (or subset) and/or Ksat parameter(s) while minimizing B7 (=E19).

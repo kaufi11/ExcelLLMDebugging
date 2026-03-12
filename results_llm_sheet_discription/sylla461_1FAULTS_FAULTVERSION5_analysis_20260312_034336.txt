@@ -1,0 +1,38 @@
+Findings (short)
+- Sheet "1999": cell B7 is wrong — it contains 2000-08-22 (copied from 2000). It should be the 1999 course start date.
+- Sheet "2000": cell B19 formula is wrong — it is =B15-4 but should be =B15+4. That makes the B19 date fall on the wrong weekday (A19 = T = Tuesday).
+- General issue: every sheet uses simple +1/+2/+4/+5 offsets. That works only if the starting date is the correct weekday and every sign is correct. One bad start date or one wrong sign (like B19) breaks the whole schedule.
+
+Quick fixes
+1) Fix the wrong formulas/values:
+   - On sheet "2000" change B19 from =B15-4 to =B15+4.
+   - On sheet "1999" replace B7 (2000-08-22) with the correct 1999 start date (example: 1999-08-24 if your class started that Tuesday). Use the actual start date you want.
+
+2) Scan the rest of the B column for any other minus signs or accidental values copied between years and correct them (they should all be + offsets unless you intend otherwise).
+
+Why these fixes work
+- B19 in 2000 was subtracting 4 days instead of adding 4, so the computed date moved earlier and no longer matched the day code in column A. Changing to +4 restores the intended next-Tuesday date.
+- Correcting B7 on 1999 sets the base date for that sheet; all dependent +n formulas then produce the intended weekdays.
+
+Better (robust) solution — avoid fragile +n offsets
+Replace the fixed +n formulas with a "next weekday" formula so the schedule always lands on the day code in column A regardless of the start date. Example pattern:
+
+- Map weekday numbers (with WEEKDAY(…,2): Mon=1, Tue=2, Wed=3, Thu=4, Fri=5).
+- To get the next date after prevDate (in B7) that falls on a specific weekday (e.g., Thursday = 4):
+  =prevDate + MOD(4 - WEEKDAY(prevDate,2), 7)
+
+Practical example you can paste (assuming previous date is in B7 and A11 contains "T","W","TH" or "F"):
+- If you want next Tuesday (T): =B7 + MOD(2 - WEEKDAY(B7,2), 7)
+- If you want next Thursday (TH): =B7 + MOD(4 - WEEKDAY(B7,2), 7)
+- If you want next Friday (F): =B7 + MOD(5 - WEEKDAY(B7,2), 7)
+(Replace B7 with the relevant previous-row cell.)
+
+If you want a single formula that reads the day code in column A, use SWITCH/CHOOSE or MATCH to map the text to numbers and then use the same MOD(...) approach. Example (newer Excel with SWITCH):
+=LET(prev,B7, t, SWITCH(A11,"T",2,"W",3,"TH",4,"F",5), prev + MOD(t - WEEKDAY(prev,2),7))
+
+Summary / recommended next steps
+1. Correct the two concrete errors now: B19 on 2000 and B7 on 1999.
+2. Optionally convert the +n formulas to the MOD/WEEKDAY pattern so future copies/edits cannot break the weekday alignment.
+3. Recalculate/check a few rows after the fixes to confirm A (day code) matches WEEKDAY(B,row).
+
+If you want, I can produce the exact replacement formulas for every B cell (or a single formula for the whole column) and a small mapping table to paste into your workbook. Which would you prefer?

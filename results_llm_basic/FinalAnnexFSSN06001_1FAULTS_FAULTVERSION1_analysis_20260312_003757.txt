@@ -1,0 +1,45 @@
+I scanned the three Annex sheets and found several concrete errors (wrong ranges, wrong denominators, hard‑coded / inconsistent percent formulas). Below are the key problems, why they are wrong, and exactly how to fix them. Short and clear.
+
+1) Annex3 — Foreign commercial banks totals: L26 excludes row 31
+- Problem: L26 = SUM(L27:L30) but the group actually runs 27:31 (UNIBAN is in row 31). L26 therefore misses L31 and understates the L‑column subtotal.
+- Fix: change L26 to =SUM(L27:L31).
+- Why: all other year columns use SUM(...:31). Make the L column consistent so group totals include every bank.
+
+2) Annex3 — Wrong column reference in a percentage cell (copy/paste error)
+- Problem: K52 = (J52/$H$77). The denominator should be the total for column J (1996) not column H (1995). This looks like a mis-typed/copy‑pasted absolute reference.
+- Fix: change K52 to =J52/$J$77 (or better: =J52/$J$77 if J77 is the 1996 grand total).
+- Why: percentage cells must divide the amount in the same year column by that year’s total.
+
+3) Annex3 (general) — inconsistent/misplaced denominators in % columns
+- Problem pattern: several % cells use the wrong absolute column ($H$77, $B$38, etc). This is caused by copy/paste without adjusting the column letter.
+- Fix (general rule): For an amount in column X (e.g., J52), the adjacent % cell must be =Xrow / $X$totalCell (e.g., =J52 / $J$77). Audit % columns and replace wrong column letters following that rule.
+- Why: ensures each % is amount/column total (gives correct shares and makes percentages comparable).
+
+4) Annex1 — hard-coded and inconsistent percent formulas (mixing percent notation and decimals)
+- Problem examples:
+  - C7 is =73.3%+3.7% (hard coded), E7 is =(60.8+3.7)/100, G7 is =0.903+0.048. Some cells use % signs, some add numbers then divide by 100, some add decimals. This is inconsistent and brittle.
+- Fix: always compute shares from the underlying numeric cells and then format as Percentage. Example: if Commercial banks assets for 1992 is in cell X and total assets for 1992 is C6, use =X/C6 and format cell as % (do not hardcode “73.3%+3.7%”).
+- Why: hard coding percentages or adding different representations leads to mistakes and is hard to audit. Use formulas referencing real data so when data changes percentages update automatically.
+
+5) Annex2 — total % rows that divide a cell by itself (returns 1) — check intent
+- Problem: e.g., C32 = B32 / $B$32 returns 1 (100%). That is mathematically correct for the “Total” row but may be misleading if the intent was “% of GDP” instead of “% of total.”
+- Fix: confirm intent. If the goal is “% of this column total” keep 100% (no change). If the goal is “% of GDP” change denominator to the GDP cell (example shown elsewhere: L34 uses 100*L32/318346). Use a consistent denominator and label the column clearly.
+- Why: avoid accidental 100% results when the user actually wanted a different ratio.
+
+6) Annex3 Credits/Deposits — some % formulas refer to empty or wrong totals (e.g., M98 = (L98/$L$116) where L98 may be blank)
+- Problem: Some percent formulas point at cells that are blank or not the intended column total.
+- Fix: For every % cell ensure it follows the pattern =AmountCell / $ThisColumn$TotalRow (e.g., =L98 / $L$116). If the amount cell is blank, either leave % blank or return 0 with IFERROR/IF.
+- Why: prevent #DIV/0 or incorrect percentages.
+
+General recommendations to prevent these errors
+- Use named ranges for column totals (e.g., name B77 "Total_1992_deposits") and use =B52/Total_1996_deposits — reduces column-letter mistakes.
+- Avoid hard-coded percentages. Always compute from source values and format the result as Percentage.
+- When copying formulas across columns, use the correct absolute referencing pattern (lock row of total, not the column letter) or use relative column references and then fix the absolute row: e.g., =B52/$B$77 then copy across.
+- Do quick checks after fixes:
+  - Group sums (e.g., B12+B26+B33) should equal grand total B38.
+  - Percent columns for each year should sum to (approximately) 100%.
+  - No % formula should divide by the amount cell itself unless it’s the designated total row.
+
+If you want, I can:
+- return a short checklist of every cell with an incorrect formula I found (list by sheet/cell),
+- or produce the exact corrected formulas for every affected cell and a corrected workbook (if you can paste the sheet or allow me to modify the file). Which would you prefer?

@@ -1,0 +1,40 @@
+Summary — I found the cause of the balance-sheet mismatch and one related inconsistency. Fixing these will make Total Assets = Total Liabilities & Equity (D204 = 0).
+
+1) Long‑term debt summary does not equal the detailed long‑term debt schedule
+- Problem: BS!D42 is 5634 but the sum of the detailed long‑term debt lines (BS Crib!D169) is 5939 — a difference of 305. Same pattern in the March column (E42 is not the same as E169). So the one‑line “Long‑Term Debt, less current portion” (D42 / E42) is not linked to the detailed components and is hard‑coded/wrong.
+- Why it matters: the Liabilities side uses the detailed schedule (D169) elsewhere, so the sheet is out of balance.
+- Fix: replace the hard-coded values in D42 and E42 with a direct reference to the sum of the detailed lines. For example:
+  - Set BS!D42 = BS Crib!D169 (or =SUM(D153:D168) if you prefer)
+  - Set BS!E42 = BS Crib!E169 (or =SUM(E153:E168))
+- After this change the long‑term debt line will always equal the detailed schedule.
+
+2) Duplicate / inconsistent Stockholders’ Equity cell
+- Problem: there are two equity places that appear inconsistent:
+  - BS (upper section) shows “Stockholders' Equity (Deficit)” in D50 = 282
+  - Later summary line “Stockholders' Deficit” is BS!D201 = -78
+  These two are different cells and conflicting values are being included in totals.
+- Why it matters: the totals (Total Liabilities & Equity) use the D201 value later; but the sheet also uses D50 earlier — duplication/conflict causes confusion and can cause totals not to reconcile.
+- Fix (pick one consistent approach):
+  - Preferred: keep the detailed calculation in D201 and make the earlier display cell D50 reference it. Example: set BS!D50 = BS!D201 (and same for E column: E50 = E201). That way there is a single source of truth.
+  - Or the opposite: rework D201 so it equals D50 (not recommended; better to have summary cell reference the calculated value).
+- Make sure signs are correct (deficit should be negative). If D201 is negative and you want D50 to display the same sign/value, use D50 = D201.
+
+3) Consequence and verification
+- Cause: the two issues above (long‑term debt mismatch and duplicated/conflicting equity) are why Total Liabilities & Equity (BS!D203) does not equal Total Assets (BS!D100). D204 = D203 - D100 is currently non‑zero.
+- After making the two fixes above:
+  - Recalculate and verify BS!D204 should be 0 (or a rounding/trivial difference).
+  - If not zero, trace any other hard‑coded summary cells and make them reference the appropriate detail cells (use SUM over the detail rows).
+
+Quick checklist of exact edits to make now
+- Change BS!D42 formula to =BS Crib!D169 (or =SUM(D153:D168))
+- Change BS!E42 formula to =BS Crib!E169 (or =SUM(E153:E168))
+- Change BS!D50 formula to =BS!D201 (or vice versa, make one reference the other consistently)
+- Change BS!E50 formula to =BS!E201
+
+A short hygiene tip
+- Avoid hard‑coding totals when you have a detailed schedule. Always have summary lines reference the detailed subtotal (SUM or cell reference). Use one cell as the single source of truth for each subtotal/total.
+
+If you want, I can:
+- Give the exact updated formulas for every affected total,
+- Recompute the sheet and report the new D204 value,
+- Or scan for additional similar hard‑coded mismatches. Which would you like next?

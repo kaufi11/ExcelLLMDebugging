@@ -1,0 +1,34 @@
+Short answer — main errors
+1) The model uses the region check counts inconsistently:
+   - The check-processing formulas (rows 39–41) use C17:C19 (yearly checks), while the opportunity-cost formulas (rows 33–35) use B17:B19. That mixes two different cells for the same quantity and yields wrong costs.
+2) C35 is hard-coded to =4 instead of using the same formula pattern (so Midwest opportunity cost is wrong).
+3) The column headers B16 / C16 ("average daily" vs "yearly checks") look swapped or ambiguous — this caused/encouraged the inconsistent references.
+
+Fix (what to change)
+Decide where the yearly check counts live (the model uses C17:C19 for processing charge, so use C17:C19 everywhere). Then replace the opportunity-cost formulas and fix C35. Use absolute references for the cost-of-capital cell.
+
+Corrected formulas to enter:
+
+Opportunity cost rows (replace B33:C35):
+- B33 = $C$21 * $C$17 * B27
+- C33 = $C$21 * $C$17 * C27
+- B34 = $C$21 * $C$18 * B28
+- C34 = $C$21 * $C$18 * C28
+- B35 = $C$21 * $C$19 * B29
+- C35 = $C$21 * $C$19 * C29
+
+Check-processing rows (ensure absolute reference to counts):
+- B39 = $C$17 * B$6
+- C39 = $C$17 * C$6
+- B40 = $C$18 * B$6
+- C40 = $C$18 * C$6
+- B41 = $C$19 * B$6
+- C41 = $C$19 * C$6
+
+Optional cleanup (recommended)
+- Fix B16/C16 headers so the label matches the data (e.g., put "yearly checks" over C17:C19).
+- Make the check-count column absolute ($C$17:$C$19) so copying won’t shift incorrectly.
+- Recalculate; objective H52 will change after the fixes.
+
+Why this fixes it (simple explanation)
+- All cost calculations must use the same yearly check counts. Right now opportunity cost used the B column while processing used C — mixing gives wrong totals. Replacing B17:B19 with $C$17:$C$19 (and fixing the hard-coded 4) makes the opportunity and processing costs consistent and correct.

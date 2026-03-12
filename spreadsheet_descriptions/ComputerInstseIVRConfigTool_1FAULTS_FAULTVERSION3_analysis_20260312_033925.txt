@@ -1,0 +1,59 @@
+Sheet name
+- Configuration Editor (single worksheet described).
+
+Layout / columns
+- Column A: CII Code (product/service SKU).
+- Column B: Description / section headings (e.g., "e-IVR Bundles", "Messaging", "Call Center Applications", "Dealer Hardware…").
+- Column C: Quantity (user-entered; currently all 0).
+- Column D: NPL Price (unit price).
+- Column E: Dealer Price (calculated in most rows).
+- Column F: Client Price (calculated in most rows).
+- Column G: constants/notes (G2 = 0.75 is used as a multiplier; many other G cells are "TBD").
+
+Key formula patterns
+- Typical line-item formulas:
+  - Dealer Price (E) = PRODUCT(Cx, Dx, G2) → quantity * NPL price * 0.75
+  - Client Price (F) = PRODUCT(Cx, Dx) → quantity * NPL price
+- Section totals:
+  - SOFTWARE TOTAL (row 82): E82 = SUM(E4:E81); F82 = SUM(F4:F81)
+  - GRAND TOTAL (row 109): E109 = SUM(E82,E85:E108); F109 = SUM(F82,F85:F108)
+- Warranty rows attempt to compute warranty costs as percentages of F82:
+  - D85 = PRODUCT(F82,0.09) and D86 = PRODUCT(F82,0.18) (but see notes on inconsistencies below).
+
+Content and organization
+- The sheet is organized by product/service blocks with section headers in column B. Major groups include:
+  - e-IVR Bundles (rows 4–8)
+  - e-IVR Messaging / Unified Messaging (rows 11–14)
+  - Additional RTU Ports (row 17)
+  - e‑IVR Fusion Family (rows 20–28)
+  - Definity / Magix / IP Office Call Center Applications (rows 31–44)
+  - Call Center Options (rows 47–49)
+  - Vertical Applications (Education, Healthcare, Hospital, Construction; multiple blocks)
+  - Switch Integration and Custom Programming (rows 73–81)
+  - SOFTWARE TOTAL, Extended Annual Warranty, Project/OS/Installation/Training, Dealer Hardware groups
+- Most quantities are 0 (no items selected by default).
+
+Notable values / constant
+- G2 = 0.75 (used as dealer multiplier).
+- Many NPL prices are populated (e.g., D4 16995, D31 15500, hardware prices D97–D107).
+- Many G cells are "TBD" or text placeholders.
+
+Errors / anomalies / flags to review
+- Several non-numeric or placeholder values in price/notes: D57 and D60 = "CALL"; many G-cells = "TBD".
+- Warranty rows (85–86) contain inconsistent / circular formulas:
+  - D85/D86 calculated from F82, but E85/E86 and F85/F86 reference each other or use circular combinations (E85 = PRODUCT(F85,0.9) is circular; F85 = PRODUCT(F82,C85,0.09) mixes row/column references).
+- Some formulas use incorrect range syntax or likely-typos:
+  - F47 = 6 (constant) instead of PRODUCT(C47,D47) like other lines.
+  - F73, F74, F75 use PRODUCT with a range C73:D73 or C75:D75 (colon likely wrong).
+  - E91–E94 use PRODUCT(Cx,1000) while D91–D94 are 1200 (inconsistent unit used for dealer/client).
+- Custom Programming rows use PRODUCT(Cx,175) in E (different unit multiplier than D).
+- Rows with D = "CALL" or "TBD" will break numeric totals unless handled.
+- With all quantities = 0, totals are zero; populated quantities will trigger the formulas, but the anomalies above can produce incorrect/circular results or #VALUE errors.
+
+Recommendations (brief)
+- Standardize formulas: E = C*D*G$2 and F = C*D for every line.
+- Fix circular/cross-referencing in warranty rows (compute warranty D as percent of F82, then compute dealer/client consistently).
+- Replace textual "CALL"/"TBD" in price cells with numeric placeholders or handle with IFERROR/ISNUMBER logic to avoid SUM/PRODUCT errors.
+- Correct the few malformed formulas (range-colon misuse, hard-coded F47 = 6).
+
+If you want, I can produce a corrected-formula map (exact corrected formulas per row) or a cleaned version of the sheet.

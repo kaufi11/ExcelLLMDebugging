@@ -1,0 +1,55 @@
+Summary — main errors found
+1) Several cells have stray “+1” added to an item or a total (artificially increases values and breaks totals/percentages).
+   - Locations: Revenues: C11 (=141577402+1); General State Financial Aid: B21 (=3684419+1); FTEE sheet: E27 (=SUM(E11:E26)+1).
+   - Fix: remove the “+1”. Use the actual value or the plain SUM. Example: change C11 to =141577402 and E27 to =SUM(E11:E26).
+   - Why: Adding 1 changes totals and percent calculations by a small but incorrect amount. It looks like a manual patch to force equality — don’t do that.
+
+2) Incorrect SUM ranges (include missing/extra rows)
+   - Revenues sheet: B15 currently =SUM(B9:B14) and C15 =SUM(C9:C14) but data rows are B9:B13 and C9:C13.
+     - Fix: B15 =SUM(B9:B13) and C15 =SUM(C9:C13).
+   - Expenditures by Function: B19 =SUM(B9:B18) and C19 =SUM(C9:C18) but data go B9:B17 / C9:C17.
+     - Fix: B19 =SUM(B9:B17) and C19 =SUM(C9:C17).
+   - Expenditures by Category: B15 =SUM(B9:B14) and C15 =SUM(C9:C14) but data go B9:B13 / C9:C13.
+     - Fix: B15 =SUM(B9:B13) and C15 =SUM(C9:C13).
+   - FTEE Calculation totals: many totals use B11:B26 / C11:C26 / H11:H26 but records finish at row 25.
+     - Fix: use B11:B25, C11:C25, H11:H25, I11:I25 and so on (make ranges exactly match the data).
+   - Why: Summing extra blank rows or the wrong row-range makes totals inconsistent or hides missing data.
+
+3) Inconsistent / manually overridden formulas
+   - FTEE sheet: F12 is hard-coded as =4 while other rows use =E#/600 (e.g. F11 =E11/600). 
+     - Fix: F12 =E12/600
+   - Why: A single manual value breaks consistency and percent-of-college calculations.
+
+4) Strange inline additions instead of clean references (not strictly wrong but fragile)
+   - Revenues: C9 =9432730+111410104 — better to place the two components each in a cell and SUM them or use =SUM(9432730,111410104).
+   - Why: Hard-coded, combined numbers are harder to audit.
+
+Quick corrected examples (copy/paste into the sheet)
+- Revenues:
+  - C11: =141577402
+  - C9: (optional) =SUM(9432730,111410104)
+  - C15: =SUM(C9:C13)
+  - B15: =SUM(B9:B13)
+- General State Financial Aid:
+  - B21: =3684419
+  - B25: =SUM(B9:B23) (keep)
+  - C25: =SUM(C9:C23) (will now match 100% if all item values are correct)
+- Expenditures by Function:
+  - C19: =SUM(C9:C17)
+  - B19: =SUM(B9:B17)
+- Expenditures by Category:
+  - C15: =SUM(C9:C13)
+  - B15: =SUM(B9:B13)
+- FTEE Calculation:
+  - F12: =E12/600
+  - E27: =SUM(E11:E25)
+  - B27: =SUM(B11:B25), C27: =SUM(C11:C25), H27: =SUM(H11:H25), I27: =SUM(I11:I25)
+  - D27: =C27/H27
+
+How to verify after fixes
+- Recalculate workbook (F9) and check that:
+  - Percent columns sum to ~1 (or 100%) — small rounding differences expected.
+  - Totals on summary rows equal the sum of detail rows exactly (no +1 adjustments).
+  - No individual cell contains “+1” or other manual nudges.
+
+If you want, I can produce a patched list of exact formula replacements for every cell in the workbook so you can paste them in.

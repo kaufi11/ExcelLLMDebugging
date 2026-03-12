@@ -1,0 +1,21 @@
+I inspected the formulas in the sheets you supplied. There is one clear formula inconsistency:
+
+Problem
+- Sheet: B Direct Payments
+- Cell: I15 (labelled "Total" on the totals row)
+- Current formula: =COUNT(I10:I14)
+- Why it's an error: Every other totals cell in that row uses SUM to total numeric values. I10:I14 contain numeric totals of payment values (each =SUM(F# : H#)), so I15 should sum those numeric totals, not count how many non-empty cells are present. Using COUNT returns the number of non-empty numeric cells (in your file it currently returns 5), not the monetary total.
+
+Recommended fix
+- Replace the formula in I15 with either:
+  - =SUM(I10:I14)
+  or (equivalently)
+  - =SUM(F15:H15)
+Both will produce the monetary grand total for the "Value of Payments" columns and be consistent with the other total cells.
+
+Additional suggestions / checks
+- After fixing I15, verify that I15 = SUM(F15:H15) (if you used the first fix) to ensure internal consistency.
+- Check that all input cells (B10:D14 and F10:H14) contain numeric values (not text) so the SUMs calculate correctly.
+- (Minor) There are no other formula errors in the sheets you provided — Table 1/2 totals use appropriate SUM ranges.
+
+If you want, I can produce the exact VBA or replacement instruction to update I15, or scan the workbook for any cells with unexpected COUNT, SUBTOTAL, or manual constants masquerading as totals.

@@ -1,0 +1,35 @@
+Short summary of the problems I see
+- Column A (record numbers) is inconsistent:
+  - Most cells use A(n) = A(n-1)+1, but A52 uses =A49+1 (skips rows) and A63 uses =A62-1 (decrements). That produces wrong/duplicate/missing IDs and is fragile if you insert/delete rows.
+- Header / column misalignment:
+  - J1 header is missing (your header list jumps from I1: Address to K1: City). That makes address data shift between columns (some rows put second address lines into J, others into I), so city/state data can be mislabelled.
+- Fragile formula design:
+  - Using formulas that explicitly point to a specific earlier cell (e.g. =A49+1) will break sequencing when rows are inserted/deleted.
+
+How to fix (clear, simple steps)
+1) Fix the numbering in column A (one-line solution)
+   - Put this in A2 and copy/fill down the whole column:
+     =IF($C2="","",ROW()-1)
+   - Why: ROW()-1 gives the sequential record number (header is row 1). The IF keeps blank rows unnumbered. This always stays correct when you insert/delete rows.
+
+2) Fix the missing header / address alignment
+   - Put a header label into J1 (e.g. "Address line 2" or "Address 2"). Check rows that currently have data in J or I and move them so address parts are consistently in I (address line 1) and J (address line 2).
+   - Why: a missing header suggests the columns are off; a proper header prevents confusion and keeps address fields aligned.
+
+3) Verify and clean duplicates
+   - After step 1, highlight duplicates in A to confirm uniqueness:
+     - Conditional Formatting → Highlight Cells Rules → Duplicate Values (or use =COUNTIF($A:$A,$A2)>1).
+   - Correct any rows that still show duplicate numbers (should be rare once A is fixed).
+
+4) Make it robust (optional recommended)
+   - Convert the data range to an Excel Table (select range → Ctrl+T). Use the table for structured references and for auto-expanding numbering.
+   - If you have Excel 365, you can also generate numbers with =SEQUENCE(ROWS(TableName)).
+
+Why these solutions work (brief)
+- ROW()-1 creates a direct mapping to the sheet row and automatically updates when rows are inserted/deleted, so you won’t get references that point to the wrong previous row.
+- Restoring J1 and aligning address columns ensures each address field always lives in the same column, avoiding mislabelled city/state fields.
+- Converting to a Table makes the sheet more structured and safer to edit.
+
+If you want, I can give:
+- the exact sequence of clicks for converting to a Table and filling A2 down; or
+- a short macro to fix column A and realign address fields automatically. Which would you prefer?

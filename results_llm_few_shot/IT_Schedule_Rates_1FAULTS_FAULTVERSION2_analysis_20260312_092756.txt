@@ -1,0 +1,23 @@
+Summary of problems (short):
+1) Wrong multiplier in one cell: EER SITE G21 uses =F21*1.56935229331187 (should be 1.04).  
+2) Fragile design: almost every formula hard-codes 1.04 instead of using the escalation value in column C (0.04). That makes maintenance/error-prone if escalation changes.  
+3) Inconsistent source for base rates: some rows have text "added 8/02" in column B and a manual base in column D. That breaks a single-source approach and makes copying formulas unreliable.
+
+Immediate fixes (exact):
+- Fix the typo: change EER SITE G21 to =F21*1.04 or better =F21*(1+$C21).
+- Replace hard-coded 1.04 formulas with references to column C. Example for row 6:
+  - D6 = B6*(1+$C6)
+  - E6 = D6*(1+$C6)  (or E6 = B6*(1+$C6)^2 if you want direct compounding)
+  - F6 = E6*(1+$C6), etc.
+- For rows where B contains "added 8/02" and the base is in D, move the base value into column B (year 1) so the same formula works in all rows. After moving the base, re-enter D = B*(1+C) etc.
+
+Why this fixes it (short):
+- Changing G21 fixes the wrong numeric multiplier (mechanical error).  
+- Using (1+$Cn) makes formulas dynamic: if escalation changes you edit C once instead of many formulas.  
+- Putting the base rate consistently in column B gives a single source of truth so all year columns can be generated from it.
+
+Quick implementation tips:
+- To update one row quickly: enter D6 =B6*(1+$C6), then drag right to fill E6:H6, then copy that row down.  
+- Or use direct compounding to avoid chaining rounding: D6 =B6*(1+$C6)^1, E6 =B6*(1+$C6)^2, F6 =B6*(1+$C6)^3, etc. Fill down.
+
+If you want, I can provide the exact formulas for each column (D–H) using the compounding pattern or give you a small macro to fix all rows.

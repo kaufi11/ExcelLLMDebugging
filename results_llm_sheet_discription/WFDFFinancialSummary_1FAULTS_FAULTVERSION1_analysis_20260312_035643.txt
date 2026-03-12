@@ -1,0 +1,37 @@
+Findings — the real errors and quick fixes
+
+1) Balance Sheet — Total Equity (wrong function)
+- Error: Cell H14 contains =ROUND(COUNT(H10:H13),5). COUNT returns the number of numeric cells (likely 4), not the monetary total.
+- Fix: Replace with =ROUND(SUM(H10:H13),5)
+- Why: SUM adds the equity components (Opening Bal, Retained Earnings, Net Income) so Total Equity will show the correct dollar amount.
+
+2) Balance Sheet — hard‑coded / wrong cash values (Dec 31, ’01 typo)
+- Error: G4 = 12323.99 (hard-coded) but Financial summary I35 = 12823.99. Several current-asset cells on the Balance Sheet are hard-coded instead of linked to the Financial summary, so they can get out of sync.
+- Fix: Link these to the Financial summary cells. Example formulas:
+  - E4 = 'Financial summary'!E35
+  - F4 = 'Financial summary'!G35
+  - G4 = 'Financial summary'!I35
+  - H4 = 'Financial summary'!K35 (you already have this one)
+  - Similarly link money market cells: E5='Financial summary'!E36, F5='Financial summary'!G36, G5='Financial summary'!I36, H5='Financial summary'!K36
+- Why: Keeps Balance Sheet automatically in sync with the Financial summary and removes the 500.00 mismatch (and other potential differences).
+
+3) Stork - 2002 Expenditures sheet — Receipts/Expenditures swapped
+- Error: On the Expenditures sheet the labeled lines are swapped:
+  - D59 (labeled "Receipts") = C55 (which is the Expenditures total)
+  - D60 (labeled "Expenditures") = 'Stork - 2002 Receipts'!C43 (which is the Receipts total)
+  This inverts receipts vs expenditures and makes D61 (net) wrong.
+- Fix: Swap the formulas so the labels match the values:
+  - D59 (Receipts) = 'Stork - 2002 Receipts'!C43
+  - D60 (Expenditures) = C55
+  - Leave D61 = D59 - D60
+- Why: Correct labelling/formula mapping gives the true net of receipts minus expenditures.
+
+Other notes / sanity checks (quick)
+- The Financial summary rolls forward beginning/ending cash correctly; confirm 2001 restatement is reflected in Financial summary I30 (net) and therefore pulled into the Balance Sheet G13.
+- Check any other hard-coded numbers on the Balance Sheet (and elsewhere) and replace with links to source data to avoid future mismatches.
+- After fixes, verify:
+  - H14 (Total Equity) equals sum of H10:H13.
+  - Balance Sheet current assets match the Financial summary account breakdown.
+  - Stork sheet net (D61) equals Receipts (C43 on Receipts sheet) minus Expenditures (C55 on Expenditures sheet).
+
+If you want, I can provide the exact cell updates for every affected cell and a short checklist to validate the workbook after you change them.

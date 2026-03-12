@@ -1,0 +1,68 @@
+I reviewed the formulas in both sheets and found several formula errors and inconsistencies. Below I list each issue, why it’s a problem, and recommended fixes (with corrected values where helpful).
+
+P&L sheet
+
+1) H9 uses COUNT instead of SUM
+- Cell: H9
+- Current formula: =COUNT(H7:H8) -> returns 2 (shown)
+- Problem: Should total revenues for the column; COUNT returns number of numeric cells, not their sum.
+- Fix: change to =SUM(H7:H8)
+- Impact (if corrected):
+  - H9 → 62,484 (29318 + 33166)
+  - H20 (Income (loss) from operations) → 1,150 (H9 - H18)
+  - H27 (Income (loss) before provision) → 2,114 (SUM(H20:H24))
+  - H33 (Net income) → 1,329 (H27 - H30)
+  - H36 (Diluted EPS) → ≈ 0.04464 (H33 / H37)
+  - H39 (Basic EPS) → ≈ 0.04761 (H33 / H40)
+  - Note: several downstream totals in column H are currently incorrect due to this.
+
+2) Hard-coded arithmetic in J17
+- Cell: J17
+- Current formula: =12615-5000
+- Problem: Hard-coded constants break pattern of referencing data and reduce traceability. If the 12,615 or the 5,000 are values elsewhere, those should be referenced.
+- Suggestion: Replace with cell references (for example =<cell_with_12615> - <cell_with_5000>) or enter the explicit value if intentional. If J17 is a one-off value, consider documenting why it differs from F17.
+
+3) Missing / inconsistent write-off entries across columns
+- Cells: F23 and J23 have -5000 filled; H23 and L23 are blank (0).
+- Note: This may be intentional. If the write-off applied to all periods/columns, populate other columns consistently; otherwise document why only F and J have the write-off.
+
+4) Pro forma EPS uses hard-coded denominators and manual values
+- Cells: F46, J46, F52, J52, plus H46/H52 and L46/L52 contain manual numbers or hard-coded denominators (e.g., =+F44/32703, =+J44/32761, H46 = 0.05, L46 = -0.05).
+- Problem: These use hard-coded share counts (32703, 32761) instead of referencing the appropriate weighted-average shares cells (e.g., F37/J37 or separate cells) and some are entered manually in some columns but not others.
+- Suggestion:
+  - If the denominators (32,703 / 32,761) are adjusted share counts for the pro forma, put those adjusted share counts in dedicated cells (e.g., a “Pro forma diluted shares” row) and reference those cells (e.g., =F44 / $X$1). This improves clarity and maintainability.
+  - Replace manual values (H46, H52, L46, L52) with formulas referencing the proper pro forma share cells.
+- Rationale: Using cell references avoids silent mismatches and makes audit/tracing easier.
+
+5) Inconsistent formula style and manual entries
+- Examples: =+F33/F37 (unary + is harmless but unnecessary), L44 uses "=-1526" instead of -1526, some pro forma net incomes are fixed values without formulas.
+- Suggestion: Standardize on direct formulas and reference source cells whenever possible for transparency.
+
+Balance Sheet sheet
+
+6) Inconsistent SUM ranges for total current assets
+- Cells: G13 vs I13
+  - G13 formula: =SUM(G7:G12)
+  - I13 formula: =SUM(I7:I11)
+- Problem: G13 includes G12 (which is blank), whereas I13 sums only I7:I11. Even though the current G12 is blank, ranges should be consistent between columns to avoid future mismatches if a row is added.
+- Suggestion: Make both ranges identical. Likely should be =SUM(G7:G11) and =SUM(I7:I11) (or include the same block in both, e.g., G7:G11 / I7:I11). If you intended to include an extra row, ensure both columns include that row.
+
+7) Blank/missing values in some parallel cells
+- Examples: H17, H23, L23, etc. (on P&L) and G12 (on Balance) are blank and sometimes included in SUM ranges.
+- Note: Blank cells included in SUMs are treated as zero, but this can hide omissions. Consider marking intentionally blank cells or populating zeros explicitly or adjusting ranges to only include intended rows.
+
+Other observations (not strict formula errors but worth checking)
+- Totals on Balance Sheet do balance (G22 = G38 = 375,311; I22 = I38 = 364,945) — good.
+- Several formulas use direct numeric literals (e.g., -5000 in F23/J23 and =12615-5000 in J17). If those values are factual one-offs, document them; otherwise convert to cell references.
+- Mixed use of cell references vs. hard-coded constants in pro forma EPS and charges increases the risk of inconsistent updates.
+
+Summary of recommended immediate fixes
+1. Change H9 to =SUM(H7:H8).
+2. Replace J17’s hard-coded formula with a cell-reference-based formula (or add a comment explaining the constants).
+3. Put pro forma adjusted share counts into cells and update F46/J46/F52/J52 (and H/L equivalents) to reference those cells instead of hard-coding.
+4. Align Balance Sheet total-current-assets ranges: change G13 to =SUM(G7:G11) (or make both columns use the exact same range).
+5. Review missing entries (H17, H23, L23, etc.) and confirm whether blanks are intentional. Ensure consistency across columns or document reasons.
+
+If you’d like, I can:
+- Apply the corrections above and show the recalculated P&L H-column values, or
+- Produce a version of the workbook with corrected formulas and an audit sheet listing the changes. Which would you prefer?

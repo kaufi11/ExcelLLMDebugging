@@ -1,0 +1,40 @@
+Summary — I found three types of errors that make the tables/report wrong or unreliable. Below are the errors, the cause, the exact fixes, and short explanations.
+
+1) Wrong total for 1995 assets (big, affects many %s)
+- Error: Cell H38 contains the literal 4 instead of the sum of 1995 amounts.
+- Why it matters: H38 is used as the denominator for all 1995 % calculations in the "ASSETS" block. With H38 = 4 those % cells are effectively dividing by 4 and give meaningless results.
+- Fix: Replace the 4 with the correct sum formula. For example:
+  - H38 = SUM(H12,H26,H33)
+  - or H38 = H12 + H26 + H33
+- Effect: All 1995 percentages (the I-column %s that use $H$38) will recalc correctly.
+
+2) Wrong denominator reference in Deposits (example: Bank Al‑Amal)
+- Error: K52 formula is = (J52 / $H$77). K52 is a 1996 % cell but uses $H$77 (the 1995 total) as denominator.
+- Why it matters: Using the previous year’s total gives wrong %s for the 1996 column (column K). This kind of typo likely appears elsewhere and skews proportions.
+- Fix: Change the denominator to the 1996 total (the appropriate column total). For K52 use:
+  - K52 = J52 / $J$77
+- Recommendation: scan the whole Deposits block and the other tables for the same pattern: column C must use $B$77, column E use $D$77, column G use $F$77, column I use $H$77, column K use $J$77, column M use $L$77 (i.e. each % column must reference the total from its associated amount column).
+
+3) Hard‑coded percentages / sums instead of using cell references
+- Examples: C7 = 73.3%+3.7%, E7 = (60.8+3.7)/100, G7 = 0.903+0.048, B13 = 6.07+0.2 (this last one is OK but mixing).
+- Why it matters: Hard-coded constants create risk of inconsistencies after updates. If the underlying numbers change, these cells won’t update automatically and the sheet will be inconsistent.
+- Fix: Replace hard-coded arithmetic with formulas that reference the source cells. For example:
+  - If C7 should be (commercial banks assets in 1992) / (total assets in 1992), set C7 = (cell_with_commercial_banks_1992) / C6 (or the actual cells in your sheet).
+  - Replace things like 73.3%+3.7% with = (cellA + cellB) / 100 or better = cellA/100 + cellB/100 depending on how those values are stored.
+- Effect: The sheet will update correctly whenever source numbers change; removes inconsistent manual edits.
+
+Quick checklist and how to implement fixes fast
+- Fix H38 first (it is the largest structural error).
+- Use Find to locate incorrect absolute references:
+  - Search for “$H$77” in the Deposits block and check every hit — many should be $J$77 or other column totals.
+  - Search for any “%” or numeric constants used in formulas and verify they should be references.
+- Use consistent formula patterns:
+  - For amounts in column B use denominator $B$38 or $B$77 (depending on table); for column D use $D$38 / $D$77 etc. Keep that mapping consistent.
+- After changes: Recalculate workbook (F9) and quickly scan key totals/percent rows to confirm
+  - Totals should equal sums of the parts.
+  - Percentages for totals row should be 100% (or 1) where expected.
+
+If you want, I can:
+- Give the exact replacement formulas for a list of suspect cells (e.g., all K‑column %s that currently point to $H$77).
+- Produce a small Find & Replace map you can use (e.g., replace “/$H$77” with “/$J$77” where appropriate).
+Tell me if you want me to list every cell that needs correction (I can list them explicitly).

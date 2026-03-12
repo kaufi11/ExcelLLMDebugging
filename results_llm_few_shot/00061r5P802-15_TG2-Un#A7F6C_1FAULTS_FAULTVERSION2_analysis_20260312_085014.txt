@@ -1,0 +1,19 @@
+Faulty cell
+- A63
+
+Error
+- Typo in the formula: it says =A62-1 (subtracts 1) instead of incrementing.
+- Result: row numbers repeat/shift (A63 equals A61, A64 equals A62, etc.). That breaks unique IDs and any lookups depending on the sequence.
+
+Quick fix
+- Change A63 to:
+  =A62+1
+
+Better, robust solution (prevents future breaks if rows are inserted/deleted)
+- Replace the column-A formulas with a row-based auto-number. Put this in A2 and copy down:
+  =IF(TRIM(C2)="","",ROW()-1)
+  Explanation: ROW()-1 returns 1 in row2, 2 in row3, etc.; the IF keeps cells blank when the Name (column C) is blank.
+
+Why this works
+- The immediate fix restores the intended +1 sequence.
+- The ROW()-based formula always produces sequential IDs tied to row number, so a single bad operator or a copied wrong formula won’t create duplicate/shifted IDs and it adapts when rows are inserted or removed.

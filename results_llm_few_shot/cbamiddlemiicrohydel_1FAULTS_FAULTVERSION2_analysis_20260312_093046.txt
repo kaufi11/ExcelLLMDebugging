@@ -1,0 +1,29 @@
+I checked the workbook and found the main formula errors that will give wrong totals/NPV. Short fixes and explanations below.
+
+1) Faulty cells: AA17 (Environmental clean up in 2020) and AA29 (Scrap value in 2020)
+- Error type: Wrong-column reference / year mismatch (mechanical)
+- Explanation: Both formulas use G5 and G6 (year 2000 cells) instead of the 2020 column values (AA5 and AA6). That makes the 2020 cleanup and scrap values reference costs in year 2000 instead of year 2020.
+- Fix:
+  - AA17 → =0.1*(AA5+AA6)  (or =0.1*AA5 + 0.1*AA6)
+  - AA29 → =0.02*(AA5+AA6)
+- Why: When you calculate a cost that applies in year 2020 you must reference the cost cells in the same year column (AA). Using G5/G6 pulls the wrong-year amounts.
+
+2) Faulty cell: R19 (Discount factor row)
+- Error type: Formula typo → breaks discount factor chain (mechanical / logical)
+- Explanation: All discount factors are being propagated by multiplying the previous cell by (1/1.12). R19 is written as =Q19/(1/1.12) which is equivalent to Q19*1.12 (the opposite), so from R19 on the DF series is wrong and every present value after year 10 will be incorrect.
+- Fix: change R19 to multiply like the others:
+  - R19 → =Q19*(1/1.12)
+- Why: Discount factor for year n = previous year * (1/(1+rate)). Using division by (1/1.12) is the inverse and inflates rather than discounts.
+
+3) Consequence to present values and NPV/B/C:
+- Error type: Cascading calculation error (logical)
+- Explanation: Because R19 is wrong and AA17/AA29 reference wrong years, the present values in rows 20 and 32 (and thus totals C20, C32, C35, C36, B/C ratio and NPV) will be wrong for years after the R19 point and for 2020-specific items.
+- Fix: After correcting R19 and AA17/AA29, recalc the sheet. Verify G20:AA20 and G32:AA32 (present value of costs/benefits) now use correct discount factors and year references.
+
+4) Minor inconsistencies to review (not strictly formula errors but worth checking)
+- Q10 uses 4275 and 7.5 while H10/I10 use 4297*15 — check whether the 4275/7.5 in Q10 are intentional (different price or half households) or a typo.
+- AA29 and AA17: you may prefer the compact form =percentage*(AA5+AA6) to avoid missing any component later if you add more construction items.
+- Consider replacing the incremental DF chain with a single power formula to avoid copy/propagation errors:
+  - For example, put year index in row 19 (0,1,2...) and compute DF as =1/(1.12^year) — this avoids chained multiplication mistakes.
+
+If you want, I can give the exact list of corrected formulas for all affected cells (present-value rows and totals) or create the power-style DF formulas for the whole projection.

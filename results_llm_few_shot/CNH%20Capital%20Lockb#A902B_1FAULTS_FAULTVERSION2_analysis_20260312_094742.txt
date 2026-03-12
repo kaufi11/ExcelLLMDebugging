@@ -1,0 +1,21 @@
+Summary — main errors found
+1) Cell C41 typo (mechanical error)
+- Problem: C41 has = $C19 / C$6 (division) instead of multiplying.
+- Why it’s wrong: This returns a tiny (wrong) number for processing cost instead of dollars.
+- Fix: Change C41 to =$C$19*C$6  (or = $C19 * C$6).
+
+2) Inconsistent / likely swapped "average daily" vs "yearly checks" data (unit error)
+- Problem: Row headers say B16 = "average daily" and C16 = "yearly checks", but the numbers in B17:B19 and C17:C19 look inconsistent (e.g. B17 = 20,000,000 and C17 = 2,500,000). The model formulas use B17 for opportunity-cost (which expects a daily dollar amount) and C17 for annual-processing-cost (which expects yearly counts). The current values do not match those expected units.
+- Why it’s wrong: Opportunity cost formula ($C$21*$B17*B27) assumes B17 = average daily dollar volume. If B17 is actually yearly checks (or the two columns are swapped), the result is meaningless.
+- Fix (pick one, depending on your true data):
+  a) If B17:B19 should be average daily dollar volumes: correct the data so B17:B19 contain the daily dollar amounts and C17:C19 contain annual check counts (swap the numbers between columns if they were entered in the wrong column).
+  b) If you only have yearly check counts (C17:C19) and an average $ per check (call it cell X), change the opportunity-cost formula to convert annual → daily dollars, e.g.:
+     = $C$21 * (C17 / 365 * AvgCheckAmount) * B27
+     (This computes daily dollar volume = yearly checks/365 * $ per check, then multiplies by days float and cost of capital.)
+- Make sure units match: opportunity-cost formulas must use dollar volumes (not counts) times days float.
+
+Other small recommendations
+- Use consistent absolute references (e.g. $C$17, $C$21) to prevent copy/paste errors.
+- After fixing C41 and the B/C data-unit issue, verify H52 (objective) sums look sensible.
+
+If you tell me whether B17:B19 are supposed to be daily dollar amounts or counts and whether you have an average $ per check, I will give the exact corrected formulas and (if needed) swap the data values for you.

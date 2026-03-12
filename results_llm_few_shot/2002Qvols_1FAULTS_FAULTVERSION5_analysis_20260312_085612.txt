@@ -1,0 +1,45 @@
+Summary — I found three clear, repeatable errors plus one broad structural issue. Fixes and short explanations below.
+
+1) Hard-coded constant instead of cell reference
+- Example: O11 = E11 + 970
+- Problem: 970 is a literal constant; likely J11 should have been used. Hard-coding breaks consistency and will not update if J11 changes.
+- Fix: replace with a reference: O11 → =E11 + J11
+- Why it fixes: uses the Q2 cell (J11) rather than a fixed number so totals update correctly.
+
+2) Wrong/omitted cell reference (typo) in some quarter-4 roll-ups
+- Example: AK6 = AG6 + Y6 (OK pattern), but AG6 is missing in the row (or the AG column value was shifted/omitted), and in other rows you have AI = AE+W, AJ = AF+X, AK = AG+Y, AL = AH+Z pattern — but a few rows either reference a non-existent/blank AG cell or reference the wrong column.
+- Problem: either the data column (AG) is empty or the formula points to the wrong column (misalignment). This yields incorrect/zero results.
+- Fix: ensure the data in column AG actually exists (move/correct the missing value), or correct the formula to point to the intended cell. Example correction if AG should exist: AK6 → =AG6 + Y6. If the value is in another column (say AF or AH), change the formula to reference that column consistently.
+- Why it fixes: restores the consistent quarter‑to‑cumulative pattern so Q4 totals include the proper product column.
+
+3) Inconsistent use of inline arithmetic instead of cell references
+- Examples: C75 = 44762024 + 2009667, D75 = 6179061 + 352427 (etc.)
+- Problem: embedding constants in formulas makes the worksheet hard to audit and maintain (and inconsistent with every other row that uses cell references).
+- Fix: replace inline sums with references to the source cells (for example if those two numbers are originally in Cxx and Cyy, replace with =Cxx + Cyy). If they are intended to be single cell totals split across two source cells, move the component values into separate cells and reference them.
+- Why it fixes: keeps formulas consistent and transparent, and prevents accidental mistakes if a source number changes.
+
+4) Structural/consistency issue — many formulas follow a repeated pattern but some rows break that pattern
+- Pattern to enforce: For each row the quarter/cumulative formulas should follow the same template:
+  - Q (quarter cumulative) = G + L
+  - M = C + H ; N = D + I ; O = E + J ; P = F + K
+  - W = M + R ; X = N + S ; Y = O + T ; Z = P + U
+  - AI = AE + W ; AJ = AF + X ; AK = AG + Y ; AL = AH + Z
+- Problem: a handful of rows do not follow that template (hard-coded constants, wrong column letters, missing AG/AE etc.). That causes wrong sub-totals and wrong grand totals (propagates to AI..AL and row/section sums).
+- Fix: audit the sheet programmatically or with Excel’s Error Checking:
+  - Pick a correct “template” row, copy the formulas down (use relative references) to all rows in that block so formulas are identical in pattern.
+  - Where data is missing, insert the missing column values (AG, AE, etc.) in the correct columns so formula pattern can work.
+  - Replace any hard-coded numbers with the intended cell references.
+- Why it fixes: restores consistent formula logic across all rows so roll-ups and Grand Totals compute correctly.
+
+Quick steps to implement (practical):
+1. Fix the obvious cell-level mistakes first (e.g., change O11 → =E11+J11).
+2. For one fully-correct sample row, copy the block of formulas for AI:AL and M:Z columns and paste down the block for all rows (this enforces the pattern).
+3. Search for numeric literals inside formulas (use Find: “+[0-9]” or manually scan) and correct to cell references.
+4. Check the AG / AE / AF / AH columns for missing data and realign values if they were accidentally shifted left/right.
+5. Recalculate and verify the Grand Total (row 133) matches expected sum — if not, trace which section sum differs.
+
+If you want I can:
+- Produce a short list of every cell that deviates from the template (O11 and other exact cells) — or
+- Give the exact formula strings to paste for one block (columns M:Z and AI:AL) so you can fill down safely.
+
+Which would you prefer?

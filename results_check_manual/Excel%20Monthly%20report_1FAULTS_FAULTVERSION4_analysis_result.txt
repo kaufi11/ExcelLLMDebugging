@@ -1,0 +1,60 @@
+I inspected the formulas on Sheet1 and found multiple formula errors and inconsistent patterns. Summary first, then a list of specific problematic cells and recommended fixes.
+
+Summary of problems
+- Many cells contain SUM() of a single cell (e.g. =SUM(E9)) or a literal number (e.g. =SUM(235)). These are unnecessary and fragile; they usually indicate copy/paste errors.
+- Several formulas reference cells that are outside the data area (e.g. =SUM(E42)). Those return 0 and are almost certainly wrong.
+- A frequent pattern: each row's columns F→M are formulas that simply SUM the previous column in the same row (F9 = SUM(E9), G9 = SUM(F9), …). That creates long dependency chains and is almost certainly not the intended design.
+- The TOTAL row is partially correct for columns C–E, but from F40 onward the totals are chained (F40 = SUM(E40), G40 = SUM(F40) …) instead of summing the column data (F9:F39, G9:G39, …). That yields incorrect totals or hides errors.
+- One odd literal-sum in K19 (=SUM(235)) — SUM of a literal number is odd; likely 235 should be entered as a value or the cell should reference a proper source.
+
+Specific problematic cells and suggested fixes
+1. E9
+   - Formula: =SUM(E42)
+   - Problem: E42 is outside the daily data range (no data shown). SUM of that returns 0; likely wrong.
+   - Recommendation: remove the formula and enter the real data value, or change to a correct reference. If it should read a value from another place use that explicit cell reference (e.g. =E42 only if E42 is the real source and exists).
+
+2. Rows 9–39, columns F through M (examples)
+   - F9 =SUM(E9), G9 =SUM(F9), H9=SUM(G9), I9=SUM(H9), J9=SUM(I9), K9=SUM(J9), L9=SUM(K9), M9=SUM(L9)
+   - For rows 10..39 the same pattern appears but shifted: F10 =SUM(E10), G10 =SUM(F10), etc.
+   - Problem: these create long chains of single-cell sums instead of independent daily inputs or meaningful formulas. They propagate any upstream error across the whole row. They also use SUM on single cells unnecessarily.
+   - Recommendation:
+     - If these cells are intended to be manual daily counts, clear the formulas from F9:M39 and make them input cells (user-entered numbers).
+     - If these cells should be computed from other data, replace the chain with the correct formula referring to the real source range(s).
+     - Do not use SUM on a single cell unless you intentionally want that.
+
+3. K19
+   - Formula: =SUM(235)
+   - Problem: SUM of a literal number is unnecessary and unusual. Probably 235 was intended to be a numeric value (entered directly) or a reference.
+   - Recommendation: replace formula with the numeric value 235 (no formula) or with a proper reference (e.g. =<cell_with_235>).
+
+4. L19 and M19
+   - L19 =SUM(K19), M19 =SUM(L19)
+   - Problem: They simply copy K19 via single-cell SUMs; redundant and fragile.
+   - Recommendation: place the intended value directly (or reference correctly). If you want L19 = K19, use =K19 (no SUM).
+
+5. TOTAL row (row 40)
+   - C40 =SUM(C9:C39) — correct
+   - D40 =SUM(D9:D39) — correct
+   - E40 =SUM(E9:E39) — correct
+   - F40 =SUM(E40), G40 =SUM(F40), H40 =SUM(G40), I40 =SUM(H40), J40 =SUM(I40), K40 =SUM(J40), L40 =SUM(K40), M40 =SUM(L40)
+   - Problem: from F40 onward the totals are chaining previous total cells instead of summing their column's daily data. That produces wrong totals (and hides errors upstream).
+   - Recommendation: change the totals to sum the proper column ranges:
+     - F40 -> =SUM(F9:F39)
+     - G40 -> =SUM(G9:G39)
+     - H40 -> =SUM(H9:H39)
+     - I40 -> =SUM(I9:I39)
+     - J40 -> =SUM(J9:J39)
+     - K40 -> =SUM(K9:K39)
+     - L40 -> =SUM(L9:L39)
+     - M40 -> =SUM(M9:M39)
+
+Other general recommendations
+- Replace SUM(single-cell) formulas with either the direct value or a direct reference (e.g. =K19 rather than =SUM(K19)). SUM on a single cell is unnecessary and obscures intent.
+- If columns F:M are intended to accept manual daily entries, clear formulas there so users can enter numbers. Keep totals in row 40 as column sums (as recommended above).
+- If any per-row formulas were intended to compute cumulative values, make that explicit (e.g. cumulativeF9 = F9, cumulativeF10 = cumulativeF9 + F10, etc.) rather than copying the previous column's values.
+- Verify any off-sheet references (like E42) — if they are intended to refer to summary inputs elsewhere, ensure those cells exist and are correct. If not, remove or correct them.
+
+If you want, I can:
+- Provide a corrected list of exact formulas to paste into the cells (e.g. replace F40..M40 with the formulas above).
+- Produce a script-like set of changes to apply (clear formulas from F9:M39, set totals row formulas).
+Tell me which you prefer and I will produce the exact formulas/commands.

@@ -1,0 +1,28 @@
+Summary of the problems I found and how to fix them (short & clear)
+
+1) Balance Sheet — Checking/Savings for 2001 is wrong (hard‑typed)
+- Problem: Balance Sheet cell G4 shows 12323.99 (hard value) but the Financial summary checking for 2001 is 12823.99 ('Financial summary'!I35). That 500 difference will make assets ≠ liabilities & equity for 2001.
+- Fix: Change G4 to link to the Financial summary: = 'Financial summary'!I35
+- Why: keeps the Balance Sheet connected to the source (prevents manual/typo differences).
+
+2) Stork - 2002 Expenditures sheet — receipts/expenditures totals are swapped
+- Problem: On that sheet you have
+  - D59 = C55 (which is the Expenditures total) but D59 is labelled Receipts,
+  - D60 = 'Stork - 2002 Receipts'!C43 (the Receipts total) but D60 is labelled Expenditures.
+  This swaps receipts and expenditures when computing the net (D61).
+- Fix: Put the correct totals under the correct labels:
+  - For Receipts cell use the receipts total: C59 (or D59) = 'Stork - 2002 Receipts'!C43
+  - For Expenditures cell use the expenditures total: C60 (or D60) = C55
+  - Then Net = Receipts − Expenditures.
+- Why: Swapped references give a wrong net and hide the true cash movement.
+
+3) Balance Sheet — TOTAL ASSETS formula references a suspicious cell (verify)
+- Problem: E7 formula is =ROUND(E2+E6,5). E6 is Total Current Assets (ok). E2 looks like a header/label in many sheets — if E2 is not a numeric non‑current asset amount, E7 is wrong.
+- Fix: Replace the E2 reference with the correct non‑current asset cell (or zero if none). Example: if there are no non‑current assets use =ROUND(E6,5). If there are fixed assets put their cell: =ROUND(E6 + <FixedAssetsCell>,5).
+- Why: TOTAL ASSETS must be numeric sum of current + non‑current assets; referencing a label or wrong cell gives wrong asset totals.
+
+How to verify after fixes
+- After (1) and (3) the Balance Sheet column for 2001 should have Total Assets = Total Liabilities & Equity.
+- After (2) the Stork sheets’ Net as of 7/3/03 should equal Receipts − Expenditures (check D61).
+
+If you want, I can give the exact replacement formulas for the cells in your workbook and a short checklist to run to confirm the workbook balances.

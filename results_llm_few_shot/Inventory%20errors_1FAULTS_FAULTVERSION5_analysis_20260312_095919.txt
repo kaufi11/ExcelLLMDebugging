@@ -1,0 +1,31 @@
+Summary (short): The balance sheet in Sheet1 is out of balance because inventory errors were changed on the income statement (affecting cost of goods sold and net income) but the prior‑period inventory error was not removed from retained earnings. In other words: a prior‑year inventory correction was incorrectly allowed to flow through current year net income instead of being adjusted to retained earnings (a prior‑period adjustment). That causes Assets ≠ Liabilities + Equity.
+
+Faulty behavior (where to look)
+- Sheet1 (and Sheet2): ending inventory cells (e.g. B11, D11, F11) were changed but retained earnings (B33/D33/F33 or B35/D35/F35 depending on sheet) were not adjusted for the prior‑period error.
+- Sheet1 result: Total Assets − (Total Liabilities + Equity) ≠ 0 (example showed a $200 difference).
+- Sheet2: demonstrates the imbalance is exactly equal to the inventory error amount.
+- Sheet3: shows the correct treatment — retained earnings are adjusted for prior‑year inventory error and the balance sheet balances.
+
+Why this is wrong (simple)
+- If an inventory error belongs to a prior year, you must correct retained earnings (a prior‑period adjustment), not current year net income. Letting the error change this year’s net income leaves the balance sheet and equity inconsistent.
+
+How to fix (two options)
+1) Correct the historical inventory values so the income statement and retained earnings already reflect the true prior amounts (preferred if you know the correct prior balances).
+   - Fix the wrong ending inventory cells (B11, D11, F11) to the correct amounts. Recalculate CGS and NI. No further adjustment needed.
+
+2) If you must keep the income‑statement numbers as shown, make a prior‑period adjustment to retained earnings to reverse the prior year error (what Sheet3 does).
+   - Example repair formulas (based on the numbers shown):
+     - For 2002 retained earnings cell (Sheet3): D35 = E17 + 17000
+     - For 2003 retained earnings cell (Sheet3): F35 = G17 - 25000
+   - Or in general: RetainedEarnings_thisYear = NetIncome_thisYear ± PriorYearInventoryError
+
+Why the fix works (short)
+- Adjusting retained earnings removes the prior‑period effect from current year net income so assets (inventory) and equity reflect the same cumulative amounts — therefore Assets = Liabilities + Equity again.
+
+Quick checklist to prevent this
+- When you change beginning/ending inventory for a prior year, decide if the change belongs to that prior year. If so, adjust retained earnings (prior‑period adjustment). If it belongs to current year, put it in current year CGS.
+- Keep formulas consistent and avoid mixing columns/ranges incorrectly (e.g., make sure sum ranges refer to the same column year).
+
+If you want, I can:
+- Give the exact cell formulas to put into your workbook to correct each year (I can match them to the cells shown), or
+- Rebuild a cleaned version of the sheets that automatically handles prior‑period inventory corrections.

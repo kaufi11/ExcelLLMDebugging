@@ -1,0 +1,82 @@
+Overview: The workbook contains 3 distinct job-costing / bidding templates, each duplicated (a “(2)” copy). Sheets and copies are identical except where noted. Below I summarize structure, key inputs, formulas and notable values/inconsistencies.
+
+1) Sheet: E20-9 (and E20-9 (2))
+- Purpose: Compute hourly direct/indirect rates, allocation rate, predicted job cost for a specific job (Southwest Light & Gas), then apply a 20% markup to produce a bid.
+- Key inputs (C2:C8):
+  - Direct labor hours = 16,000
+  - Direct labor costs = 2,240,000
+  - Office rent = 350,000
+  - Support staff salaries = 860,000
+  - Utilities = 246,000
+  - Estimated job hours = 220
+- Key formulas:
+  - Hourly direct labor cost rate C10 = C3 / C2 (2240000 / 16000 = 140.00)
+  - Indirect cost hourly rate C11:
+    - E20-9: = SUM(C4:C6) / C2 → (350k+860k+246k)/16,000 = 1,456,000/16,000 = 91.00
+    - E20-9 (2): = SUM(C4:C6) / C3 → 1,456,000 / 2,240,000 = 0.65 (different denominator)
+  - Allocation rate C12 = C11 / C10
+    - E20-9: 91 / 140 = 0.65
+    - E20-9 (2): 0.65 / 140 ≈ 0.004643
+  - Predicted job cost C14 = (C10 + C11) * C8
+    - E20-9: (140 + 91) * 220 = 50,820
+    - E20-9 (2): (140 + 0.65) * 220 = 30,943
+  - Markup C16 = C14 * 20%; Total bid C17 = C14 + C16
+    - E20-9 total bid = 50,820 *1.2 = 60,984
+    - E20-9 (2) total bid = 30,943 *1.2 = 37,131
+- Notes: the two copies differ in how indirect hourly rate is computed (division by hours vs by labor dollars); likely an error/inconsistency (C11 denominator in the second sheet).
+
+2) Sheet: P20-1B (and P20-1B (2))
+- Purpose: Job-cost ledger with WIP, Finished Goods and Cost of Goods Sold columns and related journal-style transfer entries.
+- Layout: Three parallel ledgers:
+  - (a) Work in Process Inventory (cols B–C)
+  - (b) Finished Goods Inventory (cols D–E)
+  - (c) Cost of Goods Sold (cols F–G)
+- Key entries / numbers:
+  - Date 2000-11-30: WIP jobs 4 (500) and 5 (500); Finished Goods jobs 1 (1400) and 2 (1600)
+  - Date 2000-12-31: WIP jobs 7 (1200) and 8 (600); Finished Goods jobs 3 (1300) and 4 (900); FG jobs 5 & 6 appear later (2000 and 700)
+- Important formulas:
+  - C6 = SUM(C4:C5) (WIP subtotal) → 1,000
+  - G6 = SUM(G4:G5) (FG subtotal) → 3,000
+  - C10 = SUM(C8:C9) → 1,800
+  - G12 = SUM(G8:G11) → 4,900
+  - F14 = E4 + G6 (aggregate Finished Goods) → 1,300 + 3,000 = 4,300
+  - G15 = F14 (carry / transfer) → 4,300
+  - F18 = G9 + G10 + G11 → 900 + 2,000 + 700 = 3,600; G19 = F18
+  - Accounts Receivable F22 = 3,800 and G23 = F22 (sales)
+  - COGS entry F26 = 2,000 and G27 = F26 (movement to expense)
+- Notes: Sheets (2) is identical to the first; the workbook records job completions and transfers between WIP → Finished Goods → COGS and records the sale.
+
+3) Sheet: P20-3B (and P20-3B (2))
+- Purpose: Detailed job cost record for Job No. 449 (Alliance Rubber) — records direct materials, direct labor, manufacturing overhead, totals and accounting transfers.
+- Header: Job 449 for Hoyt Corporation — 50 belts; dates started 9/30, completed 10/3.
+- Key inputs and row formulas:
+  - Direct materials: C10 = 593, C11 = 598, C12 = 622
+  - Direct labor computations:
+    - D10 = 20 * 15 = 300
+    - D11 = 30 * 9 = 270
+    - D12 = 12 * 12 = 144
+    - F10 = 10 * 19 = 190
+    - F12 = 40 * 18 = 720
+  - Overhead rate and allocation:
+    - H10 = 375 / 250 = 1.5
+    - I10 = F14 * H10 (sheet shows I10 = +F14*H10) — note: I10 uses total labor (F14) rather than the row’s labor amount; F14 = SUM(F10:F12) = 190 + 720 = 910, so I10 = 910 * 1.5 = 1,365
+  - Totals:
+    - D14 = SUM(D10:D13) = 300 + 270 + 144 = 714 (D13 blank)
+    - F14 = SUM(F10:F12) = 910
+    - I14 (Total Cost) = I10 + F14 + D14 = 1,365 + 910 + 714 = 2,989
+  - Accounting transfers:
+    - F16, F19, F22, F25 etc. move amounts to Work in Process and then to Finished Goods (F25 = I14)
+    - F28 = 50 * 110 = 5,500 (Accounts receivable amount), G29 = F28 (Sales)
+    - F31 (COGS) = F25 (2,989)
+- Notes / potential issues:
+  - I10 references F14 (total labor) instead of the row-level labor F10; that is atypical—overhead per row usually = row labor * rate. This is likely an error but consistent with totals producing the correct aggregated Total Cost I14.
+  - The duplicate sheet is identical.
+
+Overall layout and flow:
+- E20-9 sheets compute bid estimates from company-wide cost pools and job hours, producing an hourly direct rate, indirect rate, allocation factor, job cost, markup and final bid.
+- P20-1B sheets show multi-column job ledger entries and journal-like transfers between WIP, Finished Goods and COGS, plus a sales/AR entry.
+- P20-3B sheets are job cost sheets that total materials, labor and applied overhead to produce job cost and record accounting transfers and sale.
+
+If you want, I can:
+- Correct the inconsistent formulas (e.g., C11 in E20-9 (2) and I10 in P20-3B) and provide the corrected formulas and resulting numbers, or
+- Produce a one-sheet summary with corrected final bid and job totals.

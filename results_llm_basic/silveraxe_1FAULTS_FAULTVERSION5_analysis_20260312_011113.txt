@@ -1,0 +1,21 @@
+I checked the sheet. There are two clear problems and a couple of robustness issues. Short, actionable fixes below.
+
+1) Wrong lookup used for "Base HTH Damage" (definite bug)
+- Problem: H22 currently is =HLOOKUP(C22,R2:AG4,3,TRUE). C22 is "Carrying Capacity" (a large computed number), but the HTH damage table in R2:AG4 is keyed to weight. Using carrying capacity gives the wrong column and wrong damage.
+- Fix: Lookup the character's weight (B15) instead of carrying capacity. Replace H22 with:
+  =HLOOKUP($B$15,$R$2:$AG$4,3,TRUE)
+- Why: the first row of the R2:AG4 block is the weight thresholds (R2:AG2). HLOOKUP needs the actual weight to find the correct HTH-damage column.
+
+2) Inconsistent / too-small HLOOKUP ranges (can cause wrong results if stats are high)
+- Problem: some HLOOKUPs use R5:AW15 while others (e.g. G18) use R17:AN18. The smaller ranges (ending at AN) may not cover the full attribute threshold columns, so a high attribute can return #N/A or wrong match.
+- Fix: Make all HLOOKUP ranges cover the full table columns and lock them with $ signs. Example:
+  =HLOOKUP($B$18,$R$17:$AW$18,2,TRUE)
+- Why: keeps all lookups consistent and prevents misses when attribute values fall in columns beyond AN.
+
+Optional / recommended improvements (short)
+- Use absolute references ($R$2:$AG$4 etc.) so inserting rows/columns won't break formulas.
+- Wrap critical lookups in IFERROR to handle out-of-range values nicely, e.g.
+  =IFERROR(HLOOKUP($B$15,$R$2:$AG$4,3,TRUE), "Check weight")
+- Consider using INDEX/MATCH (or MATCH with exact column) for clearer, less error-prone lookups.
+
+If you want, I can (a) show exact cells to change and paste-ready formulas for all HLOOKUPs, or (b) convert the HLOOKUPs to INDEX/MATCH for robustness. Which would you prefer?

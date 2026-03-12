@@ -1,0 +1,48 @@
+Short, clear list of errors and fixes (NAIC sheet first, then CPI note)
+
+1) Wrong growth formula in D6
+- Error: D6 = (C6-C5)*C5 (multiplication)
+- Fix: change to D6 = (C6-C5)/C5
+- Why: growth = (new − old) ÷ old. Multiplying returns a meaningless huge number.
+
+2) Backward / inconsistent reference in E7
+- Error: E7 = E8 - 2258280 (uses a later-year cell and a hard-coded subtraction)
+- Fix (pick one approach depending on your intent):
+  - If you want to compute forward from the previous year using a 4% avg growth: set a base year (e.g., E6) and use E7 = E6 * 1.04, E8 = E7 * 1.04, E9 = E8 * 1.04.
+  - If E8 is correct and you need 2001 (E7) derived from it: use E7 = E8 / 1.04.
+- Why: never calculate earlier-year values by arbitrarily subtracting a constant from a later-year cell. Use a consistent growth rate or compute forward from a base.
+
+3) Wrong reference / wrong percent in E16, E17, E18
+- Errors:
+  - E16 = (0.46*C7) — uses C7 (NAIC Expenses) instead of the total premium base and hard-codes 0.46.
+  - E17 = (0.43*C8) — same issue.
+  - E18 = (0.46*C9) — wrong percent (should be 0.35 per row 18) and wrong column reference.
+- Fix: reference the correct total-premium base cell (and use the percent in column D for clarity). Assuming the dollar base for “total premiums” is in E7:E9 (if not, replace E7:E9 below with the actual total-premiums cell), use:
+  - E16 = D16 * E7
+  - E17 = D17 * E8
+  - E18 = D18 * E9
+  (Also correct D18 to 0.35 if not already.)
+- Why: column D holds the percent-of-total-premiums; to get dollar amount you must multiply that percent by the total-premium dollar base — not by NAIC expenses (column C) and not by a wrong hard-coded percent.
+
+4) Fee-dollar calculations (G16..G18) — ensure consistent base
+- Check/Recommended formulas:
+  - G16 = F16 * E7
+  - G17 = F17 * E8
+  - G18 = F18 * E9
+- Why: F16..F18 are percent-of-database-fee paid by capped groups; multiply by the total database-fee revenue (E7..E9) to get dollar amounts. Make sure E7:E9 really contain total database-fee revenue.
+
+5) Minor / consistency checks
+- I8 and I9 look OK: percent change in caps = (H8-H7)/H7 etc.
+- Make sure D21/F21 align with the table headers — column alignment errors can cause wrong interpretation.
+- CPI sheet: formulas look correct (Dec-to-Dec and annual % changes). Q column appears to duplicate Exhibit values — verify Q is intended.
+
+Quick summary (what to do now)
+- Fix D6 to use division.
+- Replace E7 formula with a consistent growth-based formula (prefer forward calculations E(n) = E(n−1)*1.04 or back-calc with /1.04).
+- Change E16:E18 to multiply the percent (D16:D18) by the actual total-premiums dollar cell (or E7:E9 if that is your premiums base).
+- Ensure G16:G18 multiply the percent-of-fee (F16:F18) by the total database-fee dollars (E7:E9).
+- Scan sheet for other hard-coded constants copied between rows (e.g., the 0.46 in E18) and replace with the correct cell references.
+
+If you want, I can:
+- Provide an exact corrected formula list ready to paste (based on whether E7:E9 are “total premiums” or “database fees”), or
+- Create a corrected version of the NAIC table step-by-step. Which do you prefer?

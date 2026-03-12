@@ -1,0 +1,29 @@
+Quick summary — I found three clear problems and how to fix each.
+
+1) Wrong percent formula (typo)
+- Where: By Broad Category sheet, cell I8 (Prepared or Preserved Fish Products % Change).
+- Problem: Formula is =(H8-H8)/H8 which always returns 0 (it subtracts H8 from itself).  
+- Fix: Replace with =(H8-G8)/G8
+- Why: % change = (new − old) / old. The current formula compares H8 to itself instead of comparing H8 to G8.
+
+2) Incorrect total (copied value instead of sum)
+- Where: Processed Food Exports sheet, cell E61 (Confectionery Total for 2001-02).
+- Problem: E61 equals D61 (280,772,774) instead of the correct sum of the components for 2001-02. That makes this sheet disagree with the By Sector / By Broad Category totals (which show 313,091,548).  
+- Fix: Put a proper sum formula in E61, e.g.
+  - =SUM(E59:E60)
+  or if you prefer explicit: =E59+E60
+- Why: Totals must sum the component lines (Without cocoa + With cocoa). Right now E61 was not updated and duplicates D61.
+
+3) Floating-point artifacts and divide-by-zero gaps
+- Where: Several country totals show long decimal tails (e.g. G149 = 26170999.999999996, H149 similar); some percent-change cells are missing because the base (G) is zero (example: Processed Food Exports I38).
+- Problems & Fixes:
+  - For visual cleanliness and to avoid tiny precision errors, wrap calculated totals/percentages in ROUND(...,0) (or use number formatting). Example: =ROUND(SUM(G5:G17),0) or apply 0 decimal number format.
+  - For % change where the old value is zero, avoid #DIV/0 by using IF. Example for I38:
+    - =IF(G38=0,NA(),(H38-G38)/G38)
+    or if you want 0 instead of NA: =IF(G38=0,0,(H38-G38)/G38)
+- Why: Floating-point arithmetic can display tiny fractions; % change must handle zero denominators.
+
+Optional check (recommended)
+- Review the Summary sheet formulas: several Summary cells point to By Sector column I (the % change column). Confirm whether Summary should show values (G/H) or % changes (I) — if you intended values, update those links to G/H instead of I.
+
+If you want I can produce the exact formulas to paste into the faulty cells (and a short macro to search for accidental self-subtractions like =(H-H)/H).

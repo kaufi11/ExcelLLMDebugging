@@ -1,0 +1,37 @@
+Errors found:
+
+1. In sheet "annex g" row 18 (Balance b/f), the formulas create a circular reference:
+   - I18 = H19, J18 = I19, ..., S18 = R19, T18 = H18
+   - But H19 = SUM(H17:H18), so H18 depends on H19 and H19 depends on H18 → circular reference.
+   
+2. Similarly, in "annex g" row 41 (Balance b/f), the same pattern repeats:
+   - I41 = H42, J41 = I42, ..., S41 = R42, T41 = H41
+   - H42 = SUM(H40:H41), so again circular reference.
+
+3. In "annex g" row 18 and 41, the balance brought forward should link to the previous month's balance carried forward, not to the next month's balance carried forward.
+
+4. In "annex f" sheet cell K68 (Total Funds variance %), the formula is `=K48` which is inconsistent because it should calculate variance % like other rows.
+
+5. In "annex f" sheet, cells with formulas like `=IF(Hx=0,"N/A",(Jx/Hx)*100)` will return #DIV/0! error if Hx is zero and Jx is not zero, but this is handled by the IF condition, so no error here.
+
+Solutions:
+
+1. Fix circular reference in "annex g" row 18 and 41:
+   - Change the balance b/f formulas to refer to the previous month's balance c/f, not the next month's balance b/f.
+   - For example, in I18, formula should be `=H18` (previous month's balance c/f), in J18 `=I18`, and so on.
+   - Or better, set H18 as opening balance (input or zero), then for I18 use `=H19` (previous month's balance c/f), J18 `=I19`, etc., but ensure no circular reference by adjusting the sequence.
+
+2. Fix K68 formula in "annex f":
+   - Change from `=K48` to `=IF(H68=0,"N/A",(J68/H68)*100)` to calculate variance % correctly.
+
+Explanation:
+
+- Circular references occur when two or more cells depend on each other directly or indirectly, causing Excel to be unable to calculate values properly.
+- Balance b/f (brought forward) should be the previous period's balance c/f (carried forward), not the next period's balance b/f.
+- Variance % should always be calculated as (Variance / Original) * 100, not copied from unrelated cells.
+
+Summary:
+
+- Correct "annex g" balance b/f formulas to avoid circular references by linking to previous period's balance c/f.
+- Correct "annex f" K68 variance % formula to calculate properly.
+- These fixes will ensure accurate and error-free calculations.

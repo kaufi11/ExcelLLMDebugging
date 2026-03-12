@@ -1,0 +1,26 @@
+I found three clear errors on the Balance Sheet that cause wrong totals. Short explanation + fix for each:
+
+1) Wrong Checking/Savings value for Dec 31, 2001 (cell G4)
+- Problem: G4 shows 12323.99 but the Financial summary checking for 2001 is 12823.99 (sheet: 'Financial summary'!I35). This is a data-entry mismatch.
+- Fix: Replace the hard-coded/wrong number with a direct link: set G4 = 'Financial summary'!I35 (or change the value to 12823.99).
+- Why: each Balance Sheet column should pull the corresponding year’s checking/savings from the Financial summary; using a link prevents manual errors.
+
+2) Retained Earnings for 2002 (cell H12) uses the wrong net-income cell
+- Problem: H12 = G12 + G13 uses G13 (net income for 2001) instead of the 2002 net income. That gives an incorrect retained earnings roll-forward.
+- Fix: Change H12 to =G12 + H13.
+- Why: Retained earnings at end of 2002 = retained earnings at end of 2001 (G12) + net income for 2002 (H13).
+
+3) Total Equity for 2002 (cell H14) uses COUNT instead of SUM
+- Problem: H14 = ROUND(COUNT(H10:H13),5) returns a count of numeric cells (a small integer) not the sum of equity items.
+- Fix: Change H14 to =ROUND(SUM(H10:H13),5).
+- Why: Total equity must be the sum of the equity line items, not their count. Fixing this restores proper totals and makes TOTAL LIABILITIES & EQUITY correct.
+
+Recommended additional cleanup (optional but safer)
+- Replace any other hard-coded year-end cash numbers with links to 'Financial summary' to avoid future copy-paste errors:
+  - E4 = 'Financial summary'!E35
+  - F4 = 'Financial summary'!G35
+  - G4 = 'Financial summary'!I35
+  - H4 = 'Financial summary'!K35 (already a formula)
+- After changes, recalc and verify that TOTAL ASSETS = TOTAL LIABILITIES & EQUITY.
+
+Cause: These are typical manual-entry / wrong-cell-reference mistakes (typo and a COUNT/SUM mix-up). Fixing the three formulas above will correct the Balance Sheet totals.

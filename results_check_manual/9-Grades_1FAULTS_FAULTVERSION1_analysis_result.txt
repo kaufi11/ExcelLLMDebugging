@@ -1,0 +1,49 @@
+I inspected the workbook formulas and found several clear formula mistakes and a number of systematic inconsistencies you should review/fix. Below I list the concrete problems I found (by sheet and cell), explain why each is a problem, and give recommended fixes.
+
+High-priority / definite formula errors
+- Sheet "University Total by Sem."
+  - O31 =SUM(O10:O30) — incorrect start cell. O9 contains data but is excluded, which is why O31 shows 0.6888 (wrong). Recommendation: change to SUM(O9:O29) or SUM(O9:O30) depending which row set you use consistently (see "consistent ranges" below).
+  - M31 has a value (1) but no formula (Formula = null). All other "Total" columns use SUM formulas. Recommendation: replace the hard-coded value with the appropriate SUM (e.g., =SUM(M9:M29) or =SUM(M9:M30) according to the consistent range you choose).
+  - Inconsistent SUM ranges in row 31:
+    - B31 is =SUM(B9:B29)
+    - C31 is =SUM(C9:C29)
+    - D31 is =SUM(D9:D30) (includes row 30)
+    - E31..L31 are =SUM(...9:30)
+    - N31 is =SUM(N9:N30)
+    - O31 (as noted) is =SUM(O10:O30)
+    These inconsistent start/end rows (9:29 vs 9:30 vs 9:30 with missing O9, and one column hard-coded) will produce incorrect totals if you intended a single uniform category range. Recommendation: standardize all totals to the same row interval (for example =SUM([col]9:[col]29) or =SUM([col]9:[col]30)), and fix O31/M31 accordingly.
+
+Other concrete mismatches / potential errors
+- Sheet "Class Grades by div." (first department table near top)
+  - Row A..N totals area: N65 uses =SUM(N44:N64) while other columns in that same "Total" row use ranges B44:B63, C44:C63, etc. That is an off-by-one mismatch (N64 vs N63), making N65 inconsistent with the others. Recommendation: make N65 use the same row range as adjacent totals (likely N44:N63).
+- Many departmental "Total" rows across the workbook use slightly different end rows in their SUM ranges. Examples:
+  - In several department blocks the final column uses SUM(...:N64) while the other columns use SUM(...:N63) or SUM(...:N63) vs SUM(...:N64). These are off-by-one inconsistencies (same pattern as above). I did not enumerate every single occurrence, but the pattern recurs in many department tables — please scan every department's "Total" row for consistent SUM ranges across columns and fix any off-by-one.
+- Rounding residuals
+  - Several totals evaluate to 1.0003 (or similar) instead of exactly 1. This is not a formula error per se but a rounding/precision accumulation effect (your input percentages are rounded to 3 decimals in many cells). Example cells: K31 and L31 (University Total by Sem.) show 1.0003; many departmental totals also show 1.0003. Recommendation: acceptable if you understand rounding; if you want exact 1.000 use a rounding function on the SUM (e.g., =ROUND(SUM(...),3)) or adjust presentation formatting.
+
+Other items to review / recommended improvements
+- Hard-coded totals
+  - M31 (University Total by Sem.) was hard-coded; search the workbook for other "Total" cells that have values but no SUM formula. Hard-coded totals are fragile and inconsistent with the rest of the layout.
+- Blank/text entries in ranges
+  - Some category cells contain " " (space) or text "N/A" rather than numeric zeros. SUM ignores text, which may be intended, but it can cause confusing differences between columns. If a cell should be numeric zero, replace the text/blank with 0. If "N/A" is required, understand it will be excluded from SUMs.
+- Division formulas that depend on totals which themselves contain rounding artifacts
+  - On "Sheet1" percentages D1:D23 are computed as =C?/C24 where C24 = 19.0003 (sum of A24:B24). Because of the workbook rounding artifacts you can get tiny inconsistencies. This is not incorrect mathematically, but if you expect exact fractions of 19 use a cleaned/unrounded base total.
+
+Summary / recommended corrective actions (step-by-step)
+1. Decide a single canonical row-range for each "category block" (for example rows 9:29 for the grade-category blocks you used in many tables). Apply that exact same range across all columns for every "Total" cell in the same block.
+2. Fix explicit formula errors:
+   - Change O31 from =SUM(O10:O30) to include O9 (e.g., =SUM(O9:O29) or =SUM(O9:O30) consistent with step 1).
+   - Add a SUM formula to M31 (replace hard-coded 1).
+   - Fix any other individual SUMs that are off by one (I flagged N65 in Class Grades by div.; there are other similar occurrences — search for SUM ranges ending at a different final row than adjacent columns).
+3. Replace hard-coded totals with formulas or mark them clearly if intended.
+4. Decide how you want to handle rounding:
+   - If you want display-only rounding but exact internal totals, leave inputs precise.
+   - If you want shown totals rounded to 3 decimals, wrap totals in ROUND(...,3).
+5. Replace " " (space) or textual placeholders with numeric 0 if they are supposed to be numeric; otherwise accept that SUM ignores them.
+
+If you want, I can:
+- produce a complete list of every SUM formula whose row-range differs from the majority in its adjacent columns (off-by-one or different start row), or
+- provide an updated set of corrected formulas (e.g., a patch list) for the specific sheets and cells I flagged (University Total by Sem., the departmental totals I mentioned), or
+- scan the workbook for all hard-coded "Total" values (cells with a numeric displayed total but no formula).
+
+Which follow-up would you like?

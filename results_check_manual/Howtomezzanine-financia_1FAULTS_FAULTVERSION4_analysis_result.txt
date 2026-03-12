@@ -1,0 +1,32 @@
+I inspected the formulas in both sheets and found two main problems (one clear formula error that propagates large incorrect values, plus several label/formula inconsistencies). Details and suggested fixes below.
+
+1) Clear formula error (causes huge wrong numbers)
+- Cell: H14
+  - Current formula: =$C14*$C$5
+  - Current value: 910,000,000 (65000 * 14,000)
+  - Problem: Column H is used elsewhere as "per sq ft/year" and every other row in H uses division by $C$5 (e.g. H12 = $C12/$C$5). H14 should also be a per-sq-ft value, so it must divide by total area, not multiply.
+  - Correct formula: =$C14/$C$5
+  - Effect of the error: H14 being multiplication inflates H29 (=SUM(H12:H27)), H37 (=H29+SUM(H31:H35)), H78 (=H$37) and any downstream cells that reference those H-values (for example I78 which equals H$37). Fixing H14 will remove these massively incorrect numbers.
+
+2) Cells that look like labels but contain invalid formulas (likely should be plain text)
+- Cells with formula strings that begin with "=" but appear to be labels (these will cause #NAME? errors unless corresponding named ranges exist):
+  - J5: currently "= independent variables"
+  - J6: currently "= dependent variables"
+  - J7: currently "= costs to the mezzanine"
+  - J8: currently "= revenues to the mezzanine"
+- Recommendation: remove the leading "=" so they are plain text labels, e.g. change to "independent variables", etc. Alternatively, define the named ranges if those were intended (unlikely here).
+
+3) Other observations / minor points
+- Many formulas include a leading "+" (e.g. "=+H29+SUM(...)") — harmless but redundant.
+- C37 = SUM(C12:C35)*0.9 — this is consistent with the sheet (appears intentional), but verify the 0.9 factor is intended (10% adjustment).
+- NPV formula in F85 uses a long chain of IFs to include up to 11 repeated F$80 cashflows. This works but is verbose; it's not an error but you may prefer a more compact approach (e.g. generate an array or use OFFSET/INDEX to supply the correct number of periods).
+- F95 formula precedence: =(F$92-F39)/F$91-1 — this evaluates as ((F92-F39)/F91) - 1. If the intended calculation was different (for example (F92-(F39/F91))-1) verify parentheses; current expression is reasonable for "markup needed = (target - other rev) / cost - 1".
+
+4) Summary of recommended immediate fixes
+- Change H14 to: =$C14/$C$5
+- Change J5, J6, J7, J8 from formulas into plain text (remove leading "=")
+- After fixing H14, review these dependent cells to confirm values now make sense: H29, H37, H57/H78/I78, and any outputs that feed from H37 or H29 (for example I78 which references H37).
+
+If you want, I can:
+- produce a list of all cells that depend (directly or indirectly) on H14 so you can quickly verify every affected result, or
+- provide a corrected version of the workbook (with H14 and the J5–J8 label fixes applied).

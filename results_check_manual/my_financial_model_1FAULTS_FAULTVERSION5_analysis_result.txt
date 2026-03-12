@@ -1,0 +1,49 @@
+I inspected the workbook formulas you provided and found several formula mistakes / inconsistencies (some cause wrong numbers that propagate through the model). Below are the issues I found, the affected cells, why they are wrong, and the suggested fixes.
+
+1) Revenue "Total" only includes Online sales (major error, propagates everywhere)
+- Where: Income sheet row 12 (E12:P12). Example: E12 = SUM(E10:E10) (and F12 = SUM(F10:F10), etc.)
+- Problem: Total revenue cells are summing only the Online Lemonade Sales row (row 10). They ignore Street Sales (row 11). This makes all downstream figures (Gross Profit, Net Profit, Annualized revenue, Cashflow, Retained Earnings, Balance Sheet, etc.) incorrect.
+- Fix: Change each total to include both rows 10 and 11. For example:
+  - E12 should be =SUM(E10:E11) (or =E10+E11)
+  - Copy across to F12:P12
+
+2) Sugar price formulas reference the wrong inflation cell (inconsistent / fragile)
+- Where: Income sheet, Sugar price row (row 8), cells F8:P8. Example: F8 formula is =E8*(1+$D$7)
+- Problem: the sugar-price growth formulas use $D$7 (the lemon-price inflation cell) instead of $D$8 (the sugar inflation cell). Currently D7 and D8 have the same numeric formula (=0.08/12), so outputs are the same now, but this is inconsistent and will break if the two inflation rates ever differ.
+- Fix: Use $D$8 for sugar price escalation. For example:
+  - F8 should be =E8*(1+$D$8), and copy across to G8:P8
+
+3) Depreciation cumulative total row is inconsistent / incomplete (gives wrong cumulative totals)
+- Where: Depreciation sheet, "Total Depreciation" row (row 11). Examples:
+  - E11 = E7 (ok)
+  - F11 = E11 + F7 (ok)
+  - K11 = J11 + K7 (ok)
+  - There is no L11 formula (missing), and M11 = M7 (not cumulative), N11 = N7, etc.
+- Problem: the cumulative pattern breaks after K11. Columns after K do not continue the cumulative sum pattern (they appear to just reference the single-period depreciation), so "Total Depreciation" is incorrect for later years.
+- Fix: Make each column cumulative: each cell should be previous total + current year depreciation. Example formulas:
+  - L11 = K11 + L7
+  - M11 = L11 + M7
+  - N11 = M11 + N7
+  - etc.
+
+4) Minor (clarity) — Cashflow net change references an extra row
+- Where: Cashflow sheet, Net Change In Cash row (row 13): e.g., D13 = SUM(D6:D12)
+- Problem: D12 does not exist / is blank in the provided rows; Excel treats blanks as zero so the result is correct, but it's clearer and less error-prone to sum the explicit rows that contain cash from ops, depreciation, investments, financing (D6:D11).
+- Fix (optional): Use =SUM(D6:D11) (and similarly for other columns) so the sum is explicit.
+
+5) Inconsistent chaining of some fixed-cost formulas (cosmetic/fragile)
+- Where: Income sheet, Advertising and Marketing row (row 25): some cells are entered as literals and others chained (I25 = F25 etc). Works as-is but is inconsistent. Not a calculation error now, but fragile if some earlier column is changed accidentally.
+- Suggestion: Use a consistent approach across the row (e.g., set E25 and copy across, or link uniformly).
+
+6) Propagation note — fix the root errors first
+- The single biggest practical error is (1): fix row 12 totals. That change will immediately correct Gross Profit (row 19), Net Profit (row 33), Cashflow (Cash From Operations and Net Change In Cash), Retained Earnings and the Balance Sheet totals.
+- After fixing (1) you should re-check other derived rows (COGS, fixed costs, depreciation) for any further inconsistencies; currently many downstream numbers are inconsistent only because the revenue totals are too small.
+
+Summary of concrete edits to make first:
+- Income!E12 → =SUM(E10:E11) and copy E12:P12
+- Income!F8 (and G8:P8) → use $D$8 not $D$7: e.g. F8 = E8*(1+$D$8)
+- Depreciation!L11 → =K11+L7, Depreciation!M11 → =L11+M7, etc. (continue cumulative formula across the row)
+
+If you want, I can:
+- produce a short script of the exact cell formulas to paste in for the fixes, or
+- re-calculate the model with the corrected formulas and show the corrected key outputs (Gross Profit, Net Profit, Net Change in Cash, Balance Sheet totals). Which would you prefer?

@@ -1,0 +1,19 @@
+Findings — short, clear:
+
+1) Faulty cell: Select Financial Data!H12
+- Error type: Operator typo (sign error).
+- What's wrong: Everyone else uses Total revenues minus Cost of operations (=B8-B11, C8-C11, …). H12 is =H8+H11 (plus), which gives the wrong value.
+- Fix: Replace formula with =H8-H11
+- Why: Total revenues less cost of operations = gross operating amount; using + double-counts costs.
+
+2) Faulty cells: Select Financial Data!B25:K25 (Net Earnings)
+- Error type: Range includes an extra/incorrect row (clarity / risk of wrong cells).
+- What's wrong: Each is =SUM(B20:B24) etc. Row 20 is a header/blank so use of B20:B24 is sloppy and may accidentally include wrong cells if rows shift.
+- Fix: Change to =SUM(B21:B24) (and C21:C24 … K21:K24)
+- Why: The intended components are Earnings before Extraordinary (row21), Extraordinary (row23) and Cumulative effect (row24). Summing row21:24 is explicit and safer.
+
+Notes / quick checks:
+- The chained "beginning of year" formulas on the Cash Flow sheet (B42=C44, C42=D44, …, K42=2084) are intentional (they pull prior-year ending cash). That is not a formula error unless you see a circular-reference warning — the chain terminates at the hard-coded K42 = 2084.
+- After you fix H12, recalc downstream totals (rows 14, 18, 21, 25, etc.) to ensure all dependent values update.
+
+If you want, I can give the exact Replace All formulas to paste for the full row (e.g., H12 corrected and B25:K25 replaced) or create a short macro to fix them. Which would you prefer?

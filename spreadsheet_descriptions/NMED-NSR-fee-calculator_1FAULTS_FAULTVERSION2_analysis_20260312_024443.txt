@@ -1,0 +1,49 @@
+Structure
+- Sheets: "Calculations" (main calculator) and "Definitions" (not shown).
+- Layout (Calculations): column A = permitting action labels and instructions; column B = user inputs (# of units or "x" for presence); column C = calculated points for each line; columns E–G = list of non-applicable regulations / references (NMAC, NSPS, NESHAP). Header/title at A1–A2 and instruction lines at A47–A49.
+
+Key fixed values
+- Fee per point: C5 = 315 ($/point).
+- Reference: A2 = 20.2.75 NMAC.
+
+Input cells (user fills)
+- Column B entries: number of units (e.g., B9, B22, B24, B35) or "x" to indicate presence/requirement (e.g., B10, B11, B15, B16, B18, B19, B27, B38 for small business).
+
+Important formulas and logic (selected)
+- Emission Units (C9): =IF(B9<>"",IF(B9<5,5,IF(B9>15,15,B9)),0)
+  - Minimum 5 points, maximum 15, otherwise equal to # units.
+- Fugitive Emissions (C11): =IF(B11<>"",5,0)
+- Non-attainment Area (C12): =IF(B12<>"",75,0)
+- Modeling Review (C13): =IF(B13<>"",15,0)
+- Level 1 (C16): =IF(B16<>"",8,0)
+- BACT (C18): =IF(B18<>"",60,0)
+- Health Assessment (C19): =IF(B19<>"",100,0)
+- 20 NMAC 2.X regs (C22): =IF(B22<>"",(3*B22),0) → 3 points per listed NMAC reg
+- NSPS (C23): =2 (fixed)
+- NESHAPs (C24): =IF(B24<>"",(5*B24),0) → 5 points per listed NESHAP
+- Case-by-case MACT (C27): =IF(B27<>"",100,0)
+- PSD Netting vs PSD review:
+  - C30 = IF(B31="",(IF(B30<>"",20,0)),"") → 20 pts if PSD Netting indicated and no PSD review
+  - C31 = IF(B31<>"",75,0) → 75 pts if PSD review (including netting)
+- Other actions / streamlined:
+  - C34 (General Permit): =IF(B35="",(IF(B34<>"",10,0)),"")
+  - C35 (Streamlined sites): =IF(B35<>"",(B35*10),0)
+  - C36 (Total Other Actions) = SUM(C34:C35)
+- Total Points (C41): =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+  - Uses OTHER ACTIONS total if any other-action values present, otherwise sums the standard action points.
+- Fee (C42): =C41*C5
+- Half fee logic (C43): =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))
+  - If general permit (B34) then half-fee cell = "N/A"; if small business box (B38) marked, half fee = half of C42, else "N/A".
+- Display/auxiliary cell (F5): =IF(C43="N/A",C42,C43) — chooses full fee or half fee value for display depending on C43.
+
+Non-applicable regs columns
+- Column E lists NMAC part numbers (E9–E26 sample entries: 1,2,3,5,7,8,60,70,71,72,73,74,75,77,78,79,80,82).
+- Column F and G show NSPS/NESHAP references (e.g., F9 = Subpart A; G9 = 40 CFR 61 Subpart A, etc.).
+
+Notes / Instructions
+- A47–A48: user guidance to insert numbers and "X" for applicable items.
+- Revision note at A49: rev. 02/06/01.
+- Definitions sheet presumably holds terminology and guidance (contents not provided).
+
+Overall purpose
+- Points-based fee calculator: users mark applicable actions or enter unit counts in column B; column C computes points per action; total points are converted to a fee using the fee-per-point constant (C5 = $315). Special rules handle caps, multipliers, alternate other-action totals, PSD options, and a small-business half-fee.

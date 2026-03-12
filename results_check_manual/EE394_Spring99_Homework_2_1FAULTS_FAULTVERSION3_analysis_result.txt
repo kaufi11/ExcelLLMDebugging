@@ -1,0 +1,22 @@
+I audited the sheet formulas. Overall the formulas are consistent and appear to implement the intended transmission‑line calculations. I found one clear formula typo/inconsistency and one important (potentially confusing) use of ATAN2 to point out:
+
+1) Likely typo (should be corrected)
+- Cell K40 currently contains: =$B$23*F40
+  - Every other row in column K uses the pattern = $B$23 * E(row) (i.e. Real(IS) = IR_real * cos(beta*d)). K40 is the only K‑cell that multiplies by the sine term (F40) instead of the cosine term (E40).
+  - Consequence: K40, and therefore M40 and N40 (which depend on K40), will be wrong.
+  - Suggested correction: change K40 to =$B$23*E40
+
+2) ATAN2 argument order — note about portability / readability
+- Throughout the sheet angles are computed as ATAN2(G#,H#)*180/PI() (and ATAN2(K#,L#)*180/PI() for IS). This is consistent across the workbook and returns the intended angle = atan2(imag, real) in degrees for Excel.
+- Important caveat: Excel's ATAN2 uses the argument order ATAN2(x_num, y_num) and returns arctan(y_num/x_num). That is counter‑intuitive compared with many math libraries (which use ATAN2(y,x)). The workbook has been authored to match Excel's ordering (i.e. ATAN2(real, imag) → angle = atan2(imag, real)). So the formulas are correct for Excel, but:
+  - If you move these formulas to other software or if a reader assumes the conventional ATAN2(y,x) order, the results will be wrong.
+  - If you want to make the intention explicit/less error‑prone, consider using ATAN2(H#,G#) and documenting which argument is which; or add a comment in the sheet explaining the Excel ATAN2 ordering.
+
+3) Other checks
+- No obvious #DIV/0, #N/A or syntax errors were found in the formulas you provided.
+- Constant/physical‑constant formulas (B12, B13, B15, B16, B17, B18, etc.) look consistent with the rest of the sheet.
+- B20's IF logic for Q (sign) looks reasonable (uses B8 PF sign to choose +/− Q).
+
+If you want, I can:
+- Produce a list of every cell that depends on K40 so you can see the downstream impact of the typo.
+- Replace the ATAN2 calls with a version that is less likely to be misinterpreted (e.g. ATAN2(H,G) with a comment) and update the workbook.

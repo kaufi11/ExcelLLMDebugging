@@ -1,0 +1,108 @@
+I reviewed the formulas in both worksheets ("Example" and "FINANCIAL DATA & ANALYSIS") and found several formula errors and clear inconsistencies (wrong cell references, omissions of columns when computing totals/weighted averages, likely copy/paste mistakes). Below I list the issues found, explain why each is a problem, and give recommended corrected formulas.
+
+Summary of highest-priority problems
+- FINANCIAL DATA & ANALYSIS: many "TOTAL" (I-column) formulas either take only one vendor column (e.g. =G10) or combine only C and E columns for averages, while the sums/totals include C+E+G. This is inconsistent and will produce wrong totals/averages when data in column G (or C/E) are present.
+- FINANCIAL DATA & ANALYSIS: I22 contains an obvious typo (C2 used instead of C20).
+- Example sheet: H68 references D68 (which is empty) while B68 = 330 — H68 should probably reference B68 or be a proper aggregate.
+
+Detailed issues and recommended fixes
+
+Sheet: Example
+1) H68
+- Current: formula = D68 (value shown 0)
+- Problem: D68 is empty; B68 contains  actual value (330). H68 should not point to an empty cell. This is inconsistent with other "TOTAL / H" behavior.
+- Recommendation / fix (pick the appropriate behavior you want):
+  - If H68 should show vendor C value (as other H-cells often mirror B-values): set H68 = B68
+  - If H68 should be the total across vendor columns (consistent with H14 etc): set H68 = B68 + D68 + F68
+- Example corrected formula for total: =B68+D68+F68
+
+2) H17 (minor / edge case)
+- Current: =IF((B15+D15)<>0,((B15*B17)+(D15*D17))/(B15+D15),"")
+- Problem: B17 and D17 are currently empty; formula will evaluate to zero (because blanks are treated as 0). It's not an error per se, but if you intend to include column F or to use the total number of calls (including F), the formula is inconsistent with other total patterns.
+- Recommendation: consider using all vendor columns and the total denominator cell (H15) to avoid missed data, for example:
+  =IF(H15<>0, ((B15*B17)+(D15*D17)+(F15*F17))/H15, "")
+
+Sheet: FINANCIAL DATA & ANALYSIS
+(major consistency and correctness issues)
+
+General note: many I-column totals are sums (I = C + E + G) but many averages/weighted calculations consider only C and E, or copy only C. Best practice: use I-column totals (I14, I20, I32, etc.) as denominators and include C, E and G in numerators.
+
+3) I10
+- Current: =G10
+- Problem: just takes G10, ignores C10 and E10. Not consistent with other "I" totals (which sum C+E+G).
+- Fix: =C10+E10+G10
+
+4) I11
+- Current: =G11
+- Problem: same as above.
+- Fix: =C11+E11+G11
+
+5) I16 — average duration of local calls
+- Current: =IF((C14+E14)<>0,((C14*C16)+(E14*E16))/(C14+E14),"")
+- Problems:
+  - Omits column G entirely.
+  - Uses the partial denominator (C14+E14) instead of the I14 total.
+- Better (weighted by call counts across all vendors) — use I14 as denominator and include G:
+  =IF(I14<>0, ((C16*C14)+(E16*E14)+(G16*G14))/I14, "")
+
+6) I22 — average duration of long distance calls
+- Current: =IF(C2+E20<>0,((C20*C22)+(E20*E22))/(C20+E20),"")
+- Problems:
+  - Typo: uses C2 instead of C20 in the IF condition.
+  - Omits G20 and G22.
+  - Uses C20+E20 instead of I20.
+- Corrected:
+  =IF(I20<>0, ((C22*C20)+(E22*E20)+(G22*G20))/I20, "")
+
+7) I34 — average duration for long distance to mobiles
+- Current: =IF(C32+E32<>0,((C32*C34)+(E32*E34))/(C32+E32),"")
+- Problem: omits G32/G34 and should use I32 as denominator.
+- Corrected:
+  =IF(I32<>0, ((C34*C32)+(E34*E32)+(G34*G32))/I32, "")
+
+8) I61 — weighted average call length for inbound numbers (1800)
+- Current: =IF(C59+E59<>0,((C61*C59)+(E61*E59))/(C59+E59),"")
+- Problem: omits G59/G61 and should use I59 as denominator.
+- Corrected:
+  =IF(I59<>0, ((C61*C59)+(E61*E59)+(G61*G59))/I59, "")
+
+9) I67 — average call length for inbound numbers (1300)
+- Current: =E67
+- Problem: just copies E67 and ignores C67 and G67 and the total calls I65; inconsistent with other average formulas.
+- Corrected:
+  =IF(I65<>0, ((C67*C65)+(E67*E65)+(G67*G65))/I65, "")
+
+10) Many I-column cells copy C only (possible inconsistency)
+- Examples: I23 = C23, I24 = C24, I25 = C25, I26 = C26, I27 = C27, I28 = C28, I29 = C29, I35..I42, I47, I52..I56 etc.
+- Problem: if the intent of I-column is to show the total/combined value across vendor columns, these formulas are incomplete—they ignore columns E and G. If the intended behavior is to default to vendor in column C when other vendors are blank, this needs to be documented/intentional.
+- Recommendation:
+  - For numeric fields that should combine across vendors, change to =Cxx+Exx+Gxx (or a weighted average using the appropriate denominators).
+  - For "mix" fields entered as text (e.g. "80%/20%"), decide whether a concatenation or a chosen default is intended. If totals should be a single representative string, copy is acceptable; if totals need to aggregate, formula must be changed.
+
+11) I31, I32 and similar sums
+- I31/I32 are currently =C31+E31+G31 and =C32+E32+G32 — these are correct sums. Ensure corresponding averaged formulas use I32 as denominator (see I34 correction above).
+
+12) Inconsistent use of I-column as denominator vs manual sums
+- Several averages in the sheet should use the I-column totals for denominator (I14, I20, I32, I59, I65, etc.) to remain correct when any of the vendor columns (C/E/G) are filled. I recommend standardizing all weighted averages to use the corresponding I total for the denominator.
+
+Other smaller observations
+- Several cells on the Example sheet use formulas like =C7 (copying a source label). Those are not errors but are redundant.
+- Some cells in Example use "=288" (D9) instead of just having the constant; not an error but unusual.
+- Many formulas return "" for zero cases while other cells return 0; consider standardizing to either blank or zero as desired.
+
+Actionable checklist you can apply immediately
+- Fix the obvious typo in FINANCIAL DATA & ANALYSIS! I22: replace the IF(C2+E20<>0,...) with IF(I20<>0,...) and include G20/G22 in the weighted sum (use formula shown above).
+- Replace any I cells that currently are =Gxx or =Cxx with full sums when the I column is supposed to represent the total across vendors:
+  - I10 := C10+E10+G10
+  - I11 := C11+E11+G11
+  - etc.
+- Update all weighted-average formulas to:
+  - use the I-column total as denominator (I14, I20, I32, I59, I65, ...)
+  - include all three vendor columns in numerator, e.g. =IF(I14<>0,((C16*C14)+(E16*E14)+(G16*G14))/I14,"")
+- Fix Example H68 to reference B68 or sum across vendor columns, depending on intent.
+
+If you want, I can:
+- produce a full list of every cell in FINANCIAL DATA & ANALYSIS whose formula deviates from the “include all vendor columns (C,E,G) / use I-col totals” pattern, or
+- prepare corrected formulas for all affected cells and present them as a change list you can paste back into the workbook.
+
+Which would you prefer?

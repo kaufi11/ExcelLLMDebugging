@@ -1,0 +1,16 @@
+I inspected every formula you supplied on Sheet1. Only one clear formula error / inconsistency was found:
+
+1) Cell C10
+- Current formula: =1+911
+- Effect / problem: the formula uses a hard-coded constant (911) instead of referencing the previous row’s C cell. That produces 912 but breaks the numbering sequence and makes the sheet non-dynamic — if earlier numbers change, C10 won’t update correctly. All other C-column formulas use references like =1+Cn and chain from the previous C cell; C10 is the lone exception.
+- Likely intended fix: replace with a reference to the previous numeric C cell. For example, if the intended sequential number is the next after C7, use:
+  =C7+1
+  (or =1+C7)
+- Note: if the 912 value was intentional (i.e. you wanted numbering to jump to 912 deliberately), keep the hard-coded value but preferably remove the formula and store 912 as a constant (or add a comment) so it’s clear that the jump was intentional.
+
+Other observations (not formula errors but potential concerns)
+- The column C formulas consistently skip rows that only contain E-column notes (e.g. references jump from C3 to C5, etc.). That is fine if deliberate, but be aware the formulas are not strictly "previous row" references — they reference the previous numbered C cell.
+- There are no circular references among the formulas shown.
+- No other formulas contain literals where a cell reference would be expected.
+
+If you want, I can produce an updated version of the column C formulas that consistently produce a sequential numbering (e.g., fill C2:C49 with a single pattern), or give a formula that automatically finds the previous numeric C value so you can safely mix note-only rows. Which would you prefer?

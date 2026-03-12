@@ -1,0 +1,71 @@
+Good — I reviewed the workbook summary and found several clear formula errors and a few places where formulas should be made consistent and easier to maintain. Below are the errors, why they are wrong, and simple fixes (with corrected formulas). Keep it short and actionable.
+
+1) D6 – wrong hard-coded reference
+- Problem: D6 = =(C6-390)/390. The formula uses 390 (wrong constant) instead of the prior year cell.
+- Why it’s wrong: growth should be (this year − prior year) / prior year, not relative to 390.
+- Fix: replace with a proper year-over-year formula:
+  - D6 = (C6 - C5) / C5
+
+2) E7 / E8 / E9 – backward reference / inconsistent growth direction
+- Problem: E7 is computed as =E8 - 2,258,280 (it references the next year). That makes the model depend backwards and is fragile.
+- Why it’s wrong: each year should reference the prior year (forward calculation), or if you only have a later year you must divide by (1+growth) to get the prior year. Mixing directions hides errors.
+- Fix (pick one approach):
+  - Preferred (if 2001 value is known): set E7 = [actual 2001 fee revenue number], then
+    - E8 = E7 * (1 + 0.04)
+    - E9 = E8 * (1 + 0.04)
+  - Alternative (if E8 is fixed and you want to derive E7 assuming 4% growth):
+    - E7 = E8 / (1 + 0.04)
+- Explanation: always link later-year cells to earlier-year cells for growth chains (E(next) = E(prev)*(1+rate)), not the other way around.
+
+3) E16, E17, E18 – wrong source cell and incorrect percentage used
+- Problems:
+  - E16 = (0.46 * C7) uses C7 (NAIC Expenses) but the header says "% of total prem." — it should multiply the percent by total premiums (the column that holds total premiums), not expenses.
+  - E17 = (0.43 * C8) same issue.
+  - E18 = (0.46 * C9) uses 0.46 but the narrative says 0.35 for 2003 (wrong percentage).
+- Fix (use the correct "total premiums" column; based on your summary that appears to be E7:E9 — adjust if your total-premiums live in a different column):
+  - E16 = D16 * E7   (or =0.46 * E7)
+  - E17 = D17 * E8   (or =0.43 * E8)
+  - E18 = D18 * E9   (or =0.35 * E9)
+- Explanation: D16..D18 hold the percent-of-total-prem values; multiply those by the total-prem cell for the same year.
+
+4) G16, G17, G18 – make them reference the percent-of-fee cells, not hard-coded rates
+- Current: G16 = 0.22*E7, G17 = 0.2*E8, G18 = 0.17*E9 (these are okay numerically if E7:E9 are total database fees).
+- Recommended fix for clarity & maintainability:
+  - G16 = F16 * E7
+  - G17 = F17 * E8
+  - G18 = F18 * E9
+- Explanation: this ties dollar amounts to the percent cells (F16..F18), avoids duplication, and prevents inconsistency if F values change.
+
+5) E18 specific typo (duplicate of #3 but worth calling out)
+- Problem: E18 used 0.46 instead of 0.35.
+- Fix: change to =D18 * E9 (D18 contains 0.35 per your narrative).
+- Explanation: aligns with your textual estimate for 2003.
+
+6) Small-insurers row (D21, F21) – likely should be linked
+- Problem: D21 and F21 contain raw numbers (0.46, 0.22) but are disconnected from the cap-hit estimates.
+- Fix (if 2000 row should reflect the same ratios as 2001 in your example):
+  - D21 = D16  (or point to whichever year’s percent you want)
+  - F21 = F16
+- Explanation: keep one source of truth for those percentages.
+
+7) CPI sheet — clarify cross-year comparisons
+- Observation: R21 = (Q21-Q12)/Q12 and S21 = (M21-M12)/M12 compare 2001 to 1992 (not year-over-year). That may be intentional, but it's easy to mistake.
+- Action: if you intended year-over-year changes, use adjacent-year references (e.g., P21 already does (O21-O20)/O20). If you intended 1992→2001 change, leave as-is but add a comment/label.
+- Explanation: verify that Q12 and Q21 are the intended endpoints; otherwise use the consistent adjacent-year formulas.
+
+Quick summary of corrected formulas (examples)
+- D6: =(C6-C5)/C5
+- E8: =E7*(1+0.04)  and E9: =E8*(1+0.04)  (or E7 = E8/(1+0.04) if you must back-solve)
+- E16: =D16*E7
+- E17: =D17*E8
+- E18: =D18*E9
+- G16: =F16*E7 ; G17: =F17*E8 ; G18: =F18*E9
+- D21: =D16 (if you want to link) ; F21: =F16
+
+Next steps I recommend
+- Decide which column holds “total premiums” (E? or some other column) and update E16..E18 to reference that column.
+- Replace backward references (E7 referencing E8) with forward calculations (E8 referencing E7) or explicitly compute prior year from later year using division by (1+growth).
+- Replace hard-coded constants (390, duplicate percentages) with cell references so the workbook is easier to update and less error-prone.
+- Add brief comments to cells with non-obvious logic (e.g., step explaining why you compare 1992→2001).
+
+If you want, I can produce the exact corrected formulas applied to each specific cell in the sheet (using the exact cell addresses you have) or prepare a corrected small patch sheet. Which would help more — the patch sheet or the explicit cell-by-cell list?

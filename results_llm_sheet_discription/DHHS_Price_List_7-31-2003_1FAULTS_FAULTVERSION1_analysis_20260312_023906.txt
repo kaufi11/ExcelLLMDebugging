@@ -1,0 +1,54 @@
+Summary of the main problems I found
+- Row 21 (OLAP Processor): G21 is wrong — it shows/uses "629*0.5" instead of using E21. That makes G21 (and therefore H21, I21, J21) incorrect. This is a clear typo/reference error.
+- Inconsistent multipliers for Processor rows: most Processor rows use 0.5 (E*0.5) but row 39 uses 0.3 (G39 = E39*0.3). That may be intentional, but it looks inconsistent and should be checked against your licensing rule.
+- Many cells in F (support = E*22%) and some other computed columns are hard-coded numbers (not formulas). Hard-coding is risky — if E changes those cells won’t update and you’ll get wrong totals.
+- Minor: some fractional/very small unit prices (e.g., E91 = 0.6) are unusual — verify units (per line, per $M, etc.). Also decimals/rounding may make numbers look inconsistent; apply currency formatting.
+
+Concrete fixes (easy steps + exact formulas)
+
+1) Fix the obvious typo (row 21)
+- Replace G21 with: =E21*0.5
+- Replace H21 with: =G21*15%
+- Replace I21 with: =G21*7%
+- Replace J21 with: =H21+I21
+Why: G21 must use the row’s list price (E21). The wrong reference (629) caused the wrong support/update numbers.
+
+2) Standardize Processor multiplier (check & apply)
+- If Processor licensing rule is 0.5 (common in your sheet), change any Processor G cells that use something else (like G39) to =E39*0.5.
+- If a product should be 0.3 (product-specific), document it in Notes column so it’s not accidental.
+Why: Having consistent multipliers prevents unexpected mismatches across similar license types.
+
+3) Replace hard-coded support and update numbers with formulas
+- For column F (1 Year Support), use one formula you can fill down:
+  - In F8 (example): =E8*22%  then copy/FILL down for all product rows.
+- For column G (base fee for updates) use either:
+  - A direct formula depending on license type (e.g., =E8*0.2 or =E8*0.5), or better:
+  - Create a small mapping table and use VLOOKUP/INDEX to choose multiplier automatically (recommended).
+    Example mapping (place somewhere unused, e.g. X1:Y6):
+      X1 = "Processor"        Y1 = 0.5
+      X2 = "Named User"       Y2 = 0.2
+      X3 = "Universal Power Unit" Y3 = 0.2
+      X4 = "Application User" Y4 = 0.2
+      X5 = "Computer"         Y5 = 0.2
+    Then in G8 use:
+      =E8 * VLOOKUP(D8, $X$1:$Y$6, 2, FALSE)
+    and fill down.
+- Keep H = G*15%, I = G*7%, J = H+I and fill down.
+Why: formulas keep sheet consistent and automatically update when E changes.
+
+4) Formatting and validation (quick hygiene)
+- Format E, F, G, H, I, J as Currency (2 decimals) so values look consistent.
+- Use Data Validation on column D (license type) with a list of allowed types to avoid typos that break your VLOOKUP mapping.
+Why: reduces human error and makes formulas reliable.
+
+What to do now (quick checklist)
+- Fix G21 and its dependent H/I/J as given.
+- Scan Processor rows (filter column D for "Processor") and correct any non-0.5 multipliers if they are mistakes.
+- Convert the hard-coded F, G, H, I, J values to formulas and fill down for the full product range.
+- Add a small multiplier lookup table and use VLOOKUP/INDEX to avoid future manual mistakes.
+- Format currency and add data validation.
+
+If you want, I can:
+- Give the exact VLOOKUP formula tailored to your sheet columns and ranges,
+- Provide the orphan list of rows that currently have hard-coded values (not formulas),
+- Or produce a short macro to convert the whole F–J columns to the correct formulas and fill down. Which would you prefer?

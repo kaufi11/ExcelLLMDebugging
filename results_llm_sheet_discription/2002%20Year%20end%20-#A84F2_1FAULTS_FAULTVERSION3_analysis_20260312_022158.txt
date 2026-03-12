@@ -1,0 +1,41 @@
+I checked the two sheets and found several errors (some cause incorrect totals, others are fragile / risky). Summary of the problems, why they matter, and how to fix each — short and actionable.
+
+1) Hard‑coded arithmetic instead of proper references (example: C121)
+- Problem: C121 (Cash paid to suppliers and employees) is entered as =-26907-7561074 (hard numbers). That both risks mistakes and already contains a 1‑unit mismatch with C120 (cash received 7,561,073 vs the hard 7,561,074) — this yields a wrong/fragile result.
+- Why it matters: If any underlying value changes (e.g. cash received) the cash flow will not update correctly. The 1‑unit difference produces a small but unjustified discrepancy.
+- Fix: Replace the hard‑coded expression with a proper reference or a SUM of the cells that build the payment amount. For example:
+  - If you keep a cell that totals payments, point to it: = -<cell_with_payments_total>
+  - Or use: = -SUM(range_of_payment_components)
+  - If you want to keep the existing layout and G121 holds the correct total, change C121 to = -G121 (or better, move the true payment total into a single cell and reference that).
+- Explanation: Formulas should reference source cells so totals update automatically and cannot drift out of sync.
+
+2) Text “-” used in numeric cells (example: C39, C267, C473, C503 and others)
+- Problem: Several cells show a dash "-" instead of a numeric zero. That is text, not a number.
+- Why it matters: Text in numeric locations breaks formulas or causes inconsistent results (SUMs treat text differently). It also hides intended sign conventions.
+- Fix: Replace any "-" entries used as “no amount” with 0 (zero) or leave the cell truly blank. Ensure dependent formulas expect numeric values.
+- Explanation: Numeric formulas must reference numeric cells; use zero to represent no amount.
+
+3) Inconsistent sign conventions and missing numeric values (example: C503 shows “-” while E503 is numeric 4715)
+- Problem: Some reconciliation lines use numeric negatives, some use a text dash, and some are missing numeric values.
+- Why it matters: SUMs and reconciliations (e.g. operating cashflow) will be wrong or inconsistent if one column contains text or inconsistent signs.
+- Fix: Standardise: cash outflows = negative numbers; cash inflows = positive numbers. Replace text with numeric 0 or appropriate signed values. Recalculate totals.
+- Explanation: Consistent sign convention keeps SUMs and cashflow reconciliations correct and auditable.
+
+4) Cross‑year references are fragile and some movement formulas are inconsistent (example: working‑capital movement formulas)
+- Problem: Movement lines (e.g. "Decrease in inventory") use previous‑year vs current‑year cells directly (C507 = E18 - C18). That works only if you keep the columns in the same relative positions; some E‑column movement cells appear to be hard-coded values (e.g. E507 = 1448) rather than formulas.
+- Why it matters: Hard-coded movement values break automatic reconciliation when layout or data changes.
+- Fix: Use a consistent formula pattern for each year column: change = (opening balance for that year) - (closing balance for that year). Implement this by keeping explicit "opening" and "closing" cells or by using structured references (e.g. for year 2002 column C, C507 should be =E18 - C18; for 2001 column E, E507 should be =G18 - E18 or better use named ranges or helper rows for openings). Replace hard numbers with formulas.
+- Explanation: Use consistent relative references or helper cells to compute movements so formulas always reflect the correct prior-year comparison.
+
+5) General housekeeping / checks to run after fixes
+- Replace hard numbers with references (no more =1416 typed as "FORMULA =" — that's cosmetic but keep references).
+- Replace text dashes with zeros as above.
+- After applying changes, verify:
+  - Total assets (C23) = Total equity & liabilities (C42).
+  - Cash recon: C147 (cash end) = C532 (sum of components). You already have a check cell G147 = C147 - C532 — it should be 0 after fixes.
+  - Recompute cashflow: C117 = SUM(C122:C125) and C144 = C136 + C129 + C117.
+- If any of those checks fail, trace dependents to the changed cells.
+
+If you want, I can:
+- Provide the exact replacement formulas for the specific cells (C121, C503, C507, E507, etc.) if you tell me which cells should be the authoritative inputs for payments, opening balances and similar; or
+- Produce a small patch (list of exact cells and formula texts) you can copy‑paste to correct the workbook.

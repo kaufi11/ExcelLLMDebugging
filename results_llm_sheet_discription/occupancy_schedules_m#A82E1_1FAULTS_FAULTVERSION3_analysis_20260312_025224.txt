@@ -1,0 +1,34 @@
+I found three real problems (easy fixes). Short description, impact, and exact fix for each:
+
+1) Wrong negative sign (typo) — Occ L2-WD-DU!D25
+- Problem: D25 is =-'Occ L3-WD-DU-LR'!E25-'Occ L3-WD-DU-LR'!F25 (negatives). All other rows use sums.
+- Impact: produces a negative occupancy fraction at hour 10 (and breaks downstream averages/exports).
+- Fix: replace formula with a sum:
+  =+'Occ L3-WD-DU-LR'!E25+'Occ L3-WD-DU-LR'!F25
+- Why: D25 should add the two L3 source columns like the other rows; the minus signs are a copy/typing mistake.
+
+2) Latent “per person” formula uses wrong cells (systemic) — Occ L0, Occ L1-*, Occ L2-* (cells labelled F10 / F11 etc)
+- Problem: the latent per-person formula multiplies the latent gains by Occupancy!F19 and F20 and divides by F19+F20 (those are sensible-load numbers), e.g.
+  =(Occupancy!F22*Occupancy!F19 + Occupancy!F23*Occupancy!F20) / (Occupancy!F19+Occupancy!F20)
+  This weights latent gains by sensible-load values (wrong) instead of by the schedule sums (what the sensible-per-person formula does).
+- Impact: latent BTU/person/hr is calculated incorrectly (biased by the sensible values), so total latent gains will be wrong wherever the per-person latent value is used.
+- Fix: use the same weighting method as sensible gains — weight by the living/bedroom schedule sums (Occupancy!F38 and F39). Replace with:
+  =(Occupancy!$F$22*Occupancy!$F$38 + Occupancy!$F$23*Occupancy!$F$39) / (Occupancy!$F$38 + Occupancy!$F$39)
+- Where to change: every sheet that has the current incorrect latent formula (Occ L0 F10, Occ L1-WD F10, Occ L1-DU F10, Occ L2-* F11, etc.). Use absolute refs ($) if you copy.
+
+3) Inconsistent/hard-coded day-fraction denominator (Occupancy!G28:G31)
+- Problem: G28..G31 are =F28/365 etc but F28..F31 sum is used elsewhere (and year 2000 is a leap year). Other derived fractions (F33..F36) use SUM(F28:F31).
+- Impact: inconsistent fractions and potential error if day counts change (and if you really simulate year 2000 you should use 366 or the sum).
+- Fix: change G28..G31 to divide by the actual total (robust):
+  =F28/SUM($F$28:$F$31)  (and same pattern for F29..F31)
+  OR if you want to force year 2000 explicitly, divide by 366.
+- Why: using SUM keeps the fractions consistent with the other formulas and resilient to edits.
+
+Quick testing / sanity checks to run after fixes
+- After changing D25 to a plus, confirm there are no negative occupancy fractions anywhere in Occ L2-WD-DU (and downstream sheets).
+- After fixing the latent formula, compare Occ L0 F9 (sensible per person) vs. new F10 (latent per person) — both should use the same schedule-based weighting logic and make sense numerically.
+- After fixing day fractions, check F33..F36 remain consistent (they already use SUM).
+
+If you want I can:
+- Provide the exact cell-by-cell replacements (I listed the general formulas above), or
+- Search the workbook for any other accidental leading minus signs and the repeated incorrect latent formula and give a change list you can paste into Excel.

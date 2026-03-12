@@ -1,0 +1,23 @@
+I found two formula errors that are causing wrong totals and wrong weighted scores. Fixes are quick.
+
+1) Q4 Homework — student Evans total (H5) is missing one column
+- Error: H5 =SUM(B5:F5) — this leaves out G5 (Personal Shield).
+- Fix: change H5 to =SUM(B5:G5)
+- Why: H feeds Homework totals into Q4 Summary. Missing G5 makes Evans’ homework total too low and all downstream calculations wrong.
+
+2) Q4 Summary — weighted score formulas use the Projects column twice
+- Error (example): F4 =B4*0.3+C4*0.1+D4*0.4+D4*0.2 — the last term should use E4 (Homework) but uses D4 again.
+- Fix: update F3:F12 to use E instead of the second D. Example correct formulas:
+  - F3 =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+  - F4 =B4*0.3 + C4*0.1 + D4*0.4 + E4*0.2
+  - …and so on for F5:F12
+- Faster/better method (one formula to copy): in F4 put =SUMPRODUCT(B4:E4,$B$2:$E$2) or =B4*$B$2 + C4*$C$2 + D4*$D$2 + E4*$E$2 and copy down.
+- Why: using D twice ignores homework points and double-counts projects, so weighted scores (F) and percents (G) are wrong.
+
+Optional improvements (recommended)
+- In Q4 Summary G4:G12, don’t hardcode 300. Use the Points Possible cell so it updates automatically:
+  - Replace =(F4/300)*100 with =(F4/$F$3)*100 and copy down.
+- The Year Summary letter-grade IF works but is verbose; you can simplify to:
+  - =IF(H2>=90,"A",IF(H2>=80,"B",IF(H2>=70,"C",IF(H2>=60,"D","F"))))
+
+After changing H5 and fixing F3:F12 (or using SUMPRODUCT), recalc the sheet — Q4 Summary and Year Summary values will be correct.

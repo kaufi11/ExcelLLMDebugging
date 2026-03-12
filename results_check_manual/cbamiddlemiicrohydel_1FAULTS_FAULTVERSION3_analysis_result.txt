@@ -1,0 +1,58 @@
+I checked the formulas in both sheets and found a few clear formula errors and several inconsistencies that will materially affect the Present Values, B/C ratio and NPV. Summary first, then specific cells and suggested fixes.
+
+Main problem (critical)
+- Cell K19 contains a typo that breaks the discount-factor chain for the costs.
+  - K19: formula is "=69*(1/1.12)" — this is almost certainly wrong. Because of this one incorrect value the discount factors in K19..AA19 are wrong, so every Present Value of Costs in row 20 from column K onward is incorrect.
+  - Consequence: K20 = K18*K19 (and all subsequent cost PVs) are massively inflated. That propagates into:
+    - SUM(G20:AA20) (C20 / C36 / G36), Present value of costs, B/C (C38 / G38), and NPV (C39 / G39) — all are invalid.
+  - Suggested fix: change K19 to continue the DF chain, e.g.
+    - K19 should be "=J19*(1/1.12)" (so K19 = previous discount factor * 1/(1.12)).
+  - Alternative: delete duplicate DF row 19 and use the correct DF series already present in row 31 (row 31 appears to contain the correct 1/(1.12)^n series).
+
+Other points directly caused by or related to the above
+- Inconsistent discount-factor usage
+  - Costs PV uses DF row 19, benefits PV uses DF row 31. Before column K the two rows match; after K row19 diverges (because of the K19 error). It is better to have a single canonical DF row and reference it everywhere (either use row19 or row31 consistently). I recommend using row31 (it looks like a clean 1/(1.12)^n series).
+  - Action: either fix row19 chain or update the cost PV formulas to use row31 (e.g., change G20..AA20 formulas to reference G31..AA31).
+
+Other formula inconsistencies / suspicious formulas
+- AA17 (environmental clean-up in year 2020)
+  - AA17 formula: "=0.1*G5+0.1*G6"
+  - Issue: the comment says "cost of environmental clean up in year 2020". The formula uses only G5 and G6 (AKRSP + community contributions in year 2000). If the intended base for the 10% is the total project cost (or the full set of construction costs), this is incomplete/ambiguous.
+  - Suggestion: clarify the intended base. If you mean 10% of total initial project cost, use 0.1*SUM(G5:G?) (or sum of all construction cost items in their base year) rather than only G5 and G6.
+
+- AA29 (scrap value in year 2020)
+  - AA29 formula: "=0.02*G5+0.02*G6"
+  - Issue: the label says "scrap value (2% of total cost of the project)". Like AA17, the formula uses only G5 and G6; if scrap is 2% of the total project cost you should use 0.02*SUM(of the cost items that form the total project cost), not only G5 and G6.
+  - Suggestion: replace with 0.02*SUM(G5:??) where the range covers the relevant construction/capital cost items (or 0.02* G18 if G18 is the intended base for initial-year total cost).
+
+- G30 (Total benefits, year G/2000)
+  - G30 formula is "=SUM(G23:G29)" and evaluates to zero. That may be intended (no benefits in 2000) but check that you aren’t accidentally summing the wrong columns. Many benefit rows begin in H (2001) rather than G; if you intended benefits in G, ensure the data/columns line up.
+
+- Row 20 (Present value of costs)
+  - Because of the K19 error the PV costs in row 20 from column K onward are wrong. Example:
+    - K20 currently = K18*K19 = 154,438 * 61.607... = 9,514,483 (obviously excessive). With the corrected DF (≈0.6355) K20 should be ≈98,147.
+  - Action: fix the DF, then recalc G20:AA20.
+
+- Row 19 vs Row 31 duplication
+  - You have two DF sequences (row 19 and row 31). Keep only one and reference it throughout. Row 31 appears correct and clean. Using two increases the chance of one being wrong (as happened).
+
+Minor checks / suggestions
+- Recompute the B/C ratio and NPV after fixing the DF issue — those summary outputs will change significantly.
+- Check whether AA17 and AA29 are intentionally only 10% / 2% of the two contributions (G5 and G6) or should be a percentage of a larger "total project cost" line. Update formulas and documentation accordingly.
+- Consistency of year alignment: ensure that the costs that belong in year 2000 are in G, 2001 in H, etc. Some rows start at H — that is OK if intentionally zero in G, but worth verifying.
+
+Exact cells to correct or review (summary)
+- Fix immediately:
+  - K19: change "=69*(1/1.12)" → "=J19*(1/1.12)" (or rebuild the whole DF row as 1/(1.12)^(n-2000)).
+- Review and/or change:
+  - G20:AA20 formulas to reference the corrected DF (row19) or change them to use row31 DF (preferred).
+  - G36/C36/C20/C38/C39/G36/G38/G39: these summary cells depend on the PVs and must be recomputed after the DF fix.
+  - AA17 and AA29: verify that the base used (G5 and G6) is correct; if not, change to 0.1*SUM(...) and 0.02*SUM(...) using the intended cost base.
+  - G30 (and other year-zero benefit sums): confirm whether year-2000 benefits are expected to be 0.
+
+If you like, I can:
+- show the corrected value for K19 and example corrected K20,
+- or produce a list of exact formula replacements (change each G20..AA20 to reference row31), or
+- recalculate the key outputs (PV costs, PV benefits, B/C, NPV) assuming the single fix to K19 (and optionally changing the cost PVs to reference row31).
+
+Which follow-up would you like?

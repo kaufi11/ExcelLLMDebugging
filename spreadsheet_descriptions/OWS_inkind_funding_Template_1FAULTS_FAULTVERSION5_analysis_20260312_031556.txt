@@ -1,0 +1,43 @@
+Summary — workbook has two templates: "Cost sharing template" and "In-kind contribution template". Both follow the same 3-section layout: Labor, Travel, and Other (or Hardware/Software/Data), with per-line amount calculations and rolling totals.
+
+1) Sheets and overall layout
+- Sheet: Cost sharing template
+  - Title in C1; running total label in G3.
+  - Labor Funding Request (rows 4–16)
+    - Columns: A Function/Task, B WBS Task, C Assigned Personnel, D Hourly Rate, E Projected Labor Hours, F Task Funding Request.
+    - Per-row formula: F5,F6 etc. = D*E (examples: F5 = D5*E5, F6 = D6*E6).
+    - Rows allowed 5–15 for labor; row 16: Total Labor = SUM(F5:F15). G16 copies that total (G16 = F16).
+    - Example values: Sr. Software Eng. 50/hr × 100 hr = $5,000; Assoc. Software Eng. 30/hr × 150 hr = $4,500. Labor total (with only these two rows) = $9,500.
+  - Travel Funding Request (rows 18–29)
+    - Columns: A Function/Event, B Duration, C Aspects, D Est. Trip Cost, E # Travelers, F Trip Funding Request.
+    - Per-row formula: F = E*D (e.g. F20 = E20*D20).
+    - Travel total row 29: F29 = SUM(F20:F28).
+    - Example: OWS Kickoff 1×$3,000 = $3,000; OWS Demo 2×$3,000 = $6,000 → Travel total = $9,000.
+  - Other Expense Requests (rows 31–41)
+    - Columns: A Expense Type, B Purpose, C Justification, D Est. Cost, E Amount (Units), F Expense Funding Request.
+    - Per-row: F = E*D (e.g. F33 = E33*D33).
+    - Total Other row 41: F41 = SUM(F33:F40).
+    - Example: Server $5,000×1 = $5,000; Licenses $3,000×20 = $60,000 → Other total = $65,000.
+  - Running/Grand totals (column G and F)
+    - G16 = F16; G29 = G16 + F29; G41 = G29 + F41; Grand Total (F43) = G41.
+    - Using the example rows above: Grand Total = $9,500 + $9,000 + $65,000 = $83,500.
+
+- Sheet: In-kind contribution template
+  - Same structure and columns as Cost sharing, but titled for in-kind declarations.
+  - Labor: per-row formulas intended to be F = D*E (as in Cost sharing). Row 16: Total Labor = SUM(F5:F15); G16 = F16.
+  - Travel: same formulas and totals logic as Cost sharing.
+  - Hardware/Software/Data (other) section: per-row F = E*D; total row F41 = SUM(F33:F40); G41 = G29 + F41; F43 = G41.
+  - Example intended values: Labor $9,500; Travel $9,000; Hardware/Software/Data = $65,100 (server $5,000 + DB $60,000 + vector $100) → intended Grand Total = $83,600.
+
+2) Key formulas and ranges
+- Per-labor row: F# = D# * E# (Cost sharing uses this consistently).
+- Per-travel row: F# = D# * E#.
+- Per-other row: F# = D# * E# (or E#*D#).
+- Totals: F16 = SUM(F5:F15); F29 = SUM(F20:F28); F41 = SUM(F33:F40).
+- Rolling totals in column G: G16 = F16; G29 = G16 + F29; G41 = G29 + F41; Grand total F43 = G41.
+
+3) Issues / recommendations
+- Bug: In the In-kind sheet F5 is =E5*E5 (100*100 = 10,000) rather than =D5*E5 (50*100 = 5,000). This will inflate the labor total and all downstream totals. Fix F5 to =D5*E5.
+- Confirm intended ranges (F5:F15, F20:F28, F33:F40) if you expect more/fewer rows; adjust SUM ranges if you expand the form.
+
+If you want, I can produce a corrected formula list or compute exact totals assuming empty rows beyond the examples.

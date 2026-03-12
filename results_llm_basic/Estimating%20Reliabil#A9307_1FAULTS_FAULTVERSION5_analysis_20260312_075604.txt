@@ -1,0 +1,44 @@
+I checked the workbook and found the main errors (plus a few risky hard‑coded values). Short list of problems, why they’re wrong, and the fix for each.
+
+1) Wrong constant "706" in Problem 4 (Time 1) — cell E46
+- Problem: E46 currently contains 706 instead of the correlation term. That corrupts the "mean rij if item deleted" for item 4 and all downstream alpha-if-deleted numbers.
+- Why wrong: For the mean of the 6 pairwise correlations among items {1,2,3,5} we must sum the six correlation cells — not a literal 706.
+- Fix: replace E46 with the correct combination:
+  = (B38 + B39 + B41 + C39 + C41 + D41) / 6
+- Effect: alpha-if-deleted for item 4 and B47–F47 will then be calculated correctly.
+
+2) KR‑21 formula missing k/(k–1) factor — cell B104
+- Problem: B104 = 1 - ((B102*(5-B102))/(5*B103)) misses the multiplier k/(k–1).
+- Why wrong: Standard KR‑21 = [k/(k-1)] * [1 - (mean*(k-mean)/(k*variance))]. Without the k/(k-1) factor the reliability is underestimated.
+- Fix: use the corrected formula (you already have it in F104). Put this in B104:
+  = (5/(5-1)) * (1 - ((B102*(5-B102)) / (5 * B103)))
+- Effect: B104 will match F104 and give the correct KR‑21.
+
+3) Many hard-coded means / rounding used in deviation formulas (risky)
+- Examples: D5 = B5 - 2.93333, D6 = B6 - 2.93333, D23 = B23 - 2.777767, etc.
+- Problem: hard-coded numbers introduce rounding inconsistencies and are fragile if you change data.
+- Why wrong: If you change data or the mean cell’s rounding, the deviation cells won't update correctly.
+- Fix: reference the mean cells instead of hard-coded numbers. E.g. replace:
+  D5: = B5 - $B$9
+  F5: = C5 - $C$9
+  D23: = B23 - $B$27
+  F23: = C23 - $C$27
+  (Use absolute references to the appropriate mean cells).
+- Effect: all deviations, squared deviations and covariances update automatically and avoid rounding errors.
+
+4) Minor: inconsistent use of SQRT on sums (Problem 2)
+- Observation: N27 and P27 use =SQRT(N26) and =SQRT(P26) — not used by the r formula (which uses sqrt(E26) etc.). Not necessarily wrong but confusing.
+- Recommendation: be consistent — either keep sums-of-squares and use them directly in the Pearson formula (H26 / (SQRT(E26)*SQRT(G26))) or compute variances/SDs properly (divide by n-1 then sqrt). Don’t mix approaches.
+
+5) Kappa: avoid hardcoding N in expected counts formula
+- Current: expected cell formulas use /51 literal. Better: divide by absolute N cell (e.g. $B$71) so changes to N update everything:
+  = (B69 * B70) / $B$71
+- Effect: safer and easier to edit.
+
+Summary of action items (minimal changes to get correct results)
+- Fix E46 to =(B38+B39+B41+C39+C41+D41)/6
+- Fix B104 to =(5/(5-1))*(1-((B102*(5-B102))/(5*B103))) (or just use F104)
+- Replace all hard-coded mean constants (2.93333, 2.777767, 3.166667, etc.) with references to the appropriate mean cells ($B$9, $C$9, $B$27, $C$27, etc.)
+- Replace any literal N (51) with reference to the total‑N cell ($B$71) in Kappa expected cell formulas.
+
+If you want I can give an exact list of cell-by-cell replacements (copy/paste formulas) for the whole sheet. Which sheet area should I output full replacement formulas for first (Problem 4, Problem 6, or everywhere)?

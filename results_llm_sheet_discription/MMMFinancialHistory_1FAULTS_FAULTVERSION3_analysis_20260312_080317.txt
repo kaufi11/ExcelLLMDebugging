@@ -1,0 +1,33 @@
+I found three formula errors (two important, one minor) that will distort earnings and cash‑flow totals. Short explanation + fix for each:
+
+1) Wrong subtraction in Select Financial Data — column J (big error)
+- Problem: J12 currently =J8-78. That’s a typo. It should subtract Cost of operations (J11), not the number 78.
+- Effect: J12 (Earnings from operations before other operating items) is massively wrong for 1995 and any dependent rows.
+- Fix: Replace J12 with:
+  =J8 - J11
+  (or, if you fix all columns at once, ensure row12 uses =B8-B11 / =C8-C11 / etc.)
+- Why: row12 is meant to be Total revenues minus Cost of operations; the “78” is a typo.
+
+2) Sign / aggregation error in Cash Flow — "Earnings before cumulative effect and extraordinary item" (row 6)
+- Problem: B6 (and the same formula pattern across years) is =SUM(B3:B5). That adds the cumulative‑effect and extraordinary items to Net Earnings instead of removing them.
+- Effect: B6 is too large (example 2003: SUM gives 100,497 but the correct pre‑cumulative earnings is 93,623 − 6,874 = 86,749). This error cascades into Net Cash Provided by Operating Activities (row17) and ending cash.
+- Fix: Use subtraction, e.g.:
+  =B3 - B4 - B5
+  or more compact:
+  =B3 - SUM(B4:B5)
+  Apply similarly across columns (C6 = C3 - SUM(C4:C5), etc.)
+- Why: “Earnings before cumulative effect/extraordinary item” should remove (subtract) those items from Net Earnings.
+
+3) Minor / off‑by‑one range in Select Financial Data — Net Earnings row (row 25)
+- Problem: B25 (and other columns) uses =SUM(B20:B24). The calculated “earnings before extraordinary” is actually in B21, so summing from B20 is sloppy/unclear (B20 is a label row and may be blank). This can mask mistakes if rows are moved.
+- Fix (recommended): change to:
+  =SUM(B21:B24)
+  and similarly for other year columns.
+- Why: Keeps ranges explicit and avoids depending on blank label cells.
+
+Summary of steps to correct:
+1. In Select Financial Data: change J12 to =J8-J11. Then update row12 formulas across all columns if any have similar typos.
+2. In Cash Flow: replace row6 formulas with =B3 - SUM(B4:B5) (and replicate across columns).
+3. In Select Financial Data: change row25 formulas to =SUM(B21:B24) (and copy across columns).
+
+If you want, I can produce the exact list of cells to edit (all columns), or give a short macro/text you can paste to fix all instances at once. Which would you prefer?

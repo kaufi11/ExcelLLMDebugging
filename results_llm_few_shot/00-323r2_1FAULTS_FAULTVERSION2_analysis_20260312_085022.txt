@@ -1,0 +1,37 @@
+Summary — the sheet has two clear, fixable errors and a couple of style/logic issues that will silently break totals.
+
+1) Typo in J22 (mechanical)
+- Fault: J22 = $C2244/244 (invalid token)  
+- Symptom: J22 returns an error or wrong number; any sums that include J22 (J25, J38, J39, J40, etc.) will be wrong.  
+- Fix: Replace with = $C22/2
+- Why: All the J/K/L columns are using half of the C‑column inputs. The stray "244" is a keystroke error.
+
+2) Double‑counting of asymmetry terms (logical)
+- Fault: Several rows are marked "Double counting" (D12, D14, D18). The same asymmetry terms appear in both transmitter and receiver calculations, so they are subtracted twice from the budget. Example: P12 includes -C12 and other formulas also subtract the same asymmetry.  
+- Symptom: Post‑compensation totals are too small (or negative) because the same error term is removed more than once.  
+- Fix (procedure):
+  - Decide which side should own each asymmetry term (transmitter OR receiver). Remove the duplicated reference(s) from the other side.
+  - Example change (if the asymmetry should belong only to the receiver): change P12 from
+    =C5 - C9 - C12 - C15 - C21
+    to
+    =C5 - C9 - C15 - C21
+    (remove the -C12 term). Do the symmetric cleanup where C14 is duplicated.
+- Why: Every physical error term must be accounted exactly once. Removing duplicates restores correct totals.
+
+3) Potential locale/number formatting issue (data entry)
+- Symptom: Cells like C4 show "12,5 ns" (comma decimal and "ns" text). In some Excel locales a comma is a thousands separator or text; including "ns" makes the cell text, not numeric. That will break arithmetic and SUMs.  
+- Fix:
+  - Use plain numeric values (12.5) in value cells; place unit labels only in a separate header/notes column, or
+  - Ensure regional settings match the comma decimal convention and remove the "ns" text from the numeric cell.
+- Why: Arithmetic functions require numeric values, not text.
+
+Quick checklist to apply and verify
+- Fix J22 to =$C22/2.
+- Search the sheet for every cell containing "Double counting" and trace the terms with Evaluate Formula. Remove duplicated terms from one side (transmitter or receiver) consistently.
+- Convert any cells containing units (ns) to pure numbers.
+- After changes, recalc and confirm J25, K25, L25, B39/C39/J39 totals and B40/C40/J40 post‑compensation match expected values.
+- Use Evaluate Formula to step through long formulas (P17, P21, etc.) to ensure no other accidental references.
+
+If you want I can:
+- Give the exact list of cells to edit (I can produce a changed-formula map), or
+- Walk through one example (fix J22 and one double-counting term) and show the before/after totals.

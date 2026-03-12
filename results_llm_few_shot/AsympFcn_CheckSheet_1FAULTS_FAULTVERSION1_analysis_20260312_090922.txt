@@ -1,0 +1,51 @@
+Summary — main errors and fixes (short and simple)
+
+MasterMethod_Checks
+1) Problem: Row for n = 0 (A11 = 0)
+   - Errors: C11 = A11^CE gives 0^CE → 0; D11 = B11/C11 → 0/0 (#DIV/0!). H11 = LOG(A11,2) → LOG(0,2) (#NUM!).
+   - Fix: Remove the n=0 row or start n at 1. If you must keep 0, guard formulas with IF to avoid log(0)/div0.
+   - Example fixes:
+     - Change A11 from 0 to 1; OR
+     - Wrap: C11 =IF(A11<=0,NA(),A11^$B$6), D11 =IF(C11=0,NA(),B11/C11), H11 =IF(A11>0,LOG(A11,2),NA()).
+   - Why: log(0) is undefined and division by zero causes errors.
+
+2) Problem: Typo in B19
+   - Error: B19 uses =A19/873 (should be /2 like other rows).
+   - Fix: Change B19 to =A19/2.
+   - Why: Inconsistent divisor produces wrong asymptotic values and breaks the Big-Oh checks.
+
+3) (Optional) B6 LOG formula
+   - B6 uses =LOG(B4,B5) — this is valid in Excel (LOG(number,base)). If you prefer portability use =LOG(B4)/LOG(B5). No change required unless you want the alternate form.
+
+SubstitutionMethod_Checks
+1) Problem: n = 1 rows produce log(log(n)) errors
+   - Errors: LOG(LOG(A10,2),2) for A=1 → LOG(1,2)=0 then LOG(0,2) undefined (#NUM!).
+   - Fix: Start n at 2 (or guard formulas).
+   - Example guard: =IF(A10>1,LOG(LOG(A10,2),2),NA()).
+   - Why: log log n is undefined for n ≤ 1.
+
+2) Problem: C10 missing the factor A10
+   - Error: C10 = $B$5*LOG(LOG(A10,2),2) but header expects c2 * asymptotic_fcn (should include *n).
+   - Fix: Change C10 to = $B$5 * A10 * LOG(LOG(A10,2),2).
+   - Why: Missing multiplication gives wrong comparison bounds.
+
+3) Problem: Inconsistent / incorrect formulas in D column (T(n))
+   - Errors:
+     - Many D cells are written as =5*1 + A/LOG(A,2) (first rows) or =5*$D$11 + A/LOG(A,2), =5*$D$12 + ... (later rows). Those are wrong: they either hard-coded 1 or reference other D-cells with absolute refs.
+   - Fix: Use consistent correct formula for T(n). If intended T(n) = 5*log_2(n) + n / log_2(n), set:
+     - D10 (and all D rows) = 5*LOG(A10,2) + A10/LOG(A10,2)
+     - Copy that formula down (replace A10 with the row cell).
+   - Why: 5*1 or 5*$D$11 are copy-paste mistakes; they distort T(n) and break the comparison tests.
+
+4) General: many rows use LOG(LOG(n,2),2) which fails for small n — use guards or start at n>=2 as noted.
+
+Quick checklist of exact fixes to apply
+- MasterMethod:
+  - Remove or change A11 from 0 → 1, OR wrap formulas with IF(A>0,...).
+  - Change B19: =A19/2 (replace 873 by 2).
+- SubstitutionMethod:
+  - Change C10: = $B$5 * A10 * LOG(LOG(A10,2),2)
+  - Fix every D-row to: =5*LOG(Ax,2) + Ax/LOG(Ax,2) (replace Ax with that row’s A cell); remove $D$11/$D$12 references and any 5*1 placeholders.
+  - For any LOG(LOG(...)) cells, either start n at 2 or wrap with IF(A>1, ..., NA()).
+
+If you want, I can produce the exact corrected formulas for each affected cell (rows 10–41) and give a small copy-down pattern you can paste. Which would you prefer?

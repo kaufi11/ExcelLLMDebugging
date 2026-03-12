@@ -1,0 +1,34 @@
+I scanned the workbook formulas and checked for incorrect formulas and inconsistent formula patterns. Findings are grouped into definite formula errors (things that are almost certainly wrong) and other inconsistencies/potential pitfalls you should be aware of.
+
+Definite formula error
+- Sheet "1", cell H9 (Operating profit for 1997)
+  - Current formula: =H6+H8
+  - Problem: All other years in that row use Operating profit = Gross profit − S.G.&A. expenses (e.g. C9 = C6 − C8). H9 uses + instead of −, producing an outlier (H9 = 2,016,004) and causing downstream numbers (H10, H16, H20, H22, etc.) to be incorrect for 1997.
+  - Suggested fix: change to =H6-H8
+
+Other formula inconsistencies / possible issues to review
+- Mixed empty/placeholder results in IF tests
+  - Example: sheet "1" uses IF(...,"-  ",...) (returns the text "-  ") while sheet "5" uses IF(...,"",...) (returns empty string).
+  - Effect: inconsistent display and different data types (text vs blank). If spreadsheets or models later expect numeric blanks (0 or NA), this can cause errors in charts, exports or numerical calculations. Suggest standardizing (e.g., use "" or NA or 0 consistently).
+- Text dashes ("-") used in numeric ranges
+  - Examples: many "Treasury stock" cells show "-" (text) rather than 0. Several "Gain on securities..." cells contain "-" text.
+  - Effect: SUM and other numeric functions ignore text, but this is an inconsistent representation. Consider using 0 (numeric) or keep blank and document choices.
+- Hard-coded totals / inconsistent use of formulas for year-1 (early columns)
+  - Example: some totals for the earliest year in a table (often column C) are entered as values (constants) instead of formulas (where later-year totals are computed with =SUM(...)). This is not a formula error by itself but is an inconsistency that can lead to maintenance errors if source rows change. Consider replacing constants with SUM formulas where appropriate.
+- Column alignment differences between sheets
+  - Many sheets do not start their time series in the same column. Example: sheet "1" years are in C:N, sheet "3" years begin at D:O, sheet "6" starts at E:L, etc. This is OK if intentional, but it increases risk when copying formulas across sheets. When auditing cross-sheet references, make sure the year-to-column mapping is consistent.
+- Some SUM ranges use the mixed-argument form SUM(range, cell) (that's valid) — not an error but inconsistent style. Example: sheet "2" C38 =SUM(C29:C30,C37). It's fine functionally but inconsistent with other =SUM(C29:C30,C37) vs =SUM(C29:C30,C37) — just an observation.
+- Values that differ across sheets for the same label/year (possible data/offset confusion)
+  - At a glance some rows appear to be shifted by one column between sheets (e.g., sheet "3" uses columns D:O for years, while others use C:N). This may lead to apparent mismatches if you compare the same column letter between sheets; verify year alignment, not column letters, when cross-checking numbers.
+
+Recommendations
+1. Fix H9 to =H6-H8 (sheet "1"). Then recalc dependent rows (H10, H16, H20, H22 and any other dependent values).
+2. Standardize handling of "no value" in IF formulas across the workbook (choose "" or a consistent text like "-") and update formulas accordingly.
+3. Replace textual dashes ("-") in numeric fields with numeric 0 or blanks, depending on how you want downstream formulas to behave; or document them clearly.
+4. Replace hard-coded totals (where feasible) with SUM formulas so totals automatically update if input rows change.
+5. Document the column/ year mapping used on each sheet, and consider aligning year columns across sheets to reduce copy/paste / reference errors.
+
+If you want, I can:
+- produce a list of every cell that contains a formula returning text (e.g. IF(...,"-  ",...)) so you can standardize them;
+- apply the H9 fix and re-evaluate the affected totals and percentages and give you the corrected values; or
+- search for any other occurrences of “+” where all other years use “−” (I already checked for obvious patterns and H9 was the only clear +/− inconsistency). Which would you like me to do next?

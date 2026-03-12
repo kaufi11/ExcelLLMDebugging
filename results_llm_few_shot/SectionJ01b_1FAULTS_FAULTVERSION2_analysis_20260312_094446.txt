@@ -1,0 +1,36 @@
+Summary — main errors I found and quick fixes
+
+1) Inconsistent / incorrect percent in Option‑4 formulas (many sheets)
+- Fault: Some Option‑4 cells (column N) use *0.023 instead of the 2% increment used elsewhere (*0.02). This appears to be a typo from copy/paste.
+- Effect: Option‑4 values are ~2.3% larger than they should be (inconsistent inflation across options).
+- Fix: Change N cells from e.g. =K5+(K5*0.023) to =K5+(K5*0.02). Apply that change to all N-column formulas on Fixed Price, Cost Type and T&M sheets so Option‑4 matches the 2% step pattern.
+
+2) Hard‑coded value instead of cell reference (T&M sheet)
+- Fault: Cell N37 is =920+(920*0.023) — it uses literal 920 rather than the row's previous-period cell (K37 or similar).
+- Effect: If the base hours/rate in B37 change, N37 will not update and is wrong.
+- Fix: Replace with the correct chained formula using the prior-option cell, e.g. =K37+(K37*0.02) (or =K37*(1+0.02) ). Also ensure the 0.02 fix from (1) is applied.
+
+3) Grand total ranges exclude the last option (Total LOE sheet)
+- Fault: B70 =SUM(B68:H68) — this sums Options Base → Opt 6 but leaves out Opt 7 in I68.
+- Effect: Grand Total is missing the last column.
+- Fix: Use =SUM(B68:I68) to include the full set of period totals.
+
+4) Grand total formulas that sum wrong/too‑many cells (T&M sheet and possibly others)
+- Fault: B62 =SUM(B60:T60) sums a contiguous block B→T, but the period totals are in non‑contiguous columns (B, E, H, K, N, Q, T, W). SUM(B60:T60) picks up intermediate columns that are not period totals (unit/loaded rates), producing wrong totals.
+- Effect: Grand total is incorrect.
+- Fix: Sum the actual total cells explicitly, for example:
+  =SUM(B60,E60,H60,K60,N60,Q60,T60,W60)
+  Do the same style fix for Fixed Price and Cost Type sheets' Grand Total cells (use the row that holds per‑period totals).
+
+Short explanation of why these fixes work
+- Consistent percent: The workbook increases each option by +2% successively. Using 0.023 breaks that pattern and produces inconsistent results. Replacing 0.023 with 0.02 restores the intended growth chain.
+- Cell references not literals: Formulas should refer to the previous period cell so changes propagate. Hardcoded numbers won’t update.
+- Correct SUM ranges: Grand totals must include every period‑total cell. Use the correct range or list the exact total columns to avoid including intermediate (rate/unit) columns.
+
+How to implement quickly
+- Use Find (Ctrl+F) for “*0.023” or “0.023” to locate N‑column mistakes and replace with 0.02 where appropriate.
+- Search for the hardcoded “920” (or visually check N37) and change it to reference K37 (or use the consistent pattern).
+- Update B70 to =SUM(B68:I68).
+- Replace any cross‑sheet grand totals like B62 =SUM(B60:T60) with =SUM(B60,E60,H60,K60,N60,Q60,T60,W60) (and similarly for Fixed Price and Cost Type).
+
+If you want, I can produce the exact corrected formulas for each affected cell (or give you a small VBA macro to apply the 0.02 change and fix grand totals). Which would you prefer?

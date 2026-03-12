@@ -1,0 +1,35 @@
+Short answer — main errors
+1. Several cumulative (column I) formulas use the Requested Funds (column G) instead of the Awarded/Approved Funds (column H). That makes the running totals wrong (overstates funds committed).
+   - Example: Sheet "Watershed Protection" I7 = G7, I8 = I7+G8, I9 = I8+G9 ... (all use G).
+2. There are hard‑coded/incorrect formulas in the cumulative column that break the running total logic.
+   - Example: Sheet "Coastal NPS - Reg 1,2,3" cell I22 = 262 + H22 (should reference the previous cumulative cell, not a constant).
+
+Why these are errors (short)
+- Column I is supposed to be a running total of awarded/approved funds (H). Using G (requested) or a hard constant gives wrong cumulative totals and wrong remaining/available funding calculations.
+
+How to fix (quick, exact steps)
+Option A — simple running total (recommended)
+1. In every sheet, set the first cumulative cell for the project list to the awarded cell. Example for rows that start at row 7:
+   - Put in I7: =H7
+2. In I8 (and fill down from I8 to the end): =I7 + H8
+   - Use relative references so you can fill the formula down the column.
+
+Option B — alternative robust formula (avoids chaining errors)
+- In I7 (and copy down) use a SUM of the H column to that row:
+  - I7: =SUM($H$7:H7)
+  - I8: =SUM($H$7:H8)
+  - Copy I8 down — each row shows the cumulative awarded sum up to that row.
+
+Fix the specific problems you gave
+- Watershed Protection sheet: change I7 from =G7 to =H7. Change I8…I18 from =I(n-1)+G(n) to =I(n-1)+H(n) (or use the SUM pattern).
+- Coastal NPS - Reg 1,2,3 sheet: change I22 from =262+H22 to =I21+H22 (or use SUM).
+- Scan for any other I cells that contain constants or reference G instead of H and correct them the same way.
+
+How to implement fast in Excel
+- Use Find (Ctrl+F) for "=G" in column I or for known bad text like "262+" to locate problem cells.
+- Replace manually or: put correct formula in the first bad I cell and drag-fill down to overwrite the rest.
+- After fixing, verify: last I cell should equal SUM(H7:H[lastrow]) and should be <= the sheet’s funding limit (header).
+
+Optional checks / small notes
+- Minor rounding differences (e.g., 311,280.25 vs 311,280) are formatting/rounding issues — decide whether to round displayed values.
+- If you want, I can produce the corrected cumulative total for each sheet or give the exact cell list to change.

@@ -1,0 +1,43 @@
+Summary — I found three concrete problems and a few consistency/robustness issues. For each I give the cause, the effect, and the quick fix.
+
+1) Wrong operator in Hardware Gross Profit % for FY1999 (H14)
+- Problem: H14 = +H13*H5 (multiplication). All other gross % cells use gross / revenue.
+- Effect: H14 returns a huge, meaningless number instead of the gross-margin percent for FY1999.
+- Fix: replace the formula with division:
+  - H14 = H13 / H5
+- Why: Gross profit % = gross profit ÷ revenue. Multiplication is a typo.
+
+2) Income From Operations (FY2003) inconsistent / not formula-driven (D31)
+- Problem: D31 is 38,222 (entered value) but D19 - D28 = 38,323 (difference = 101). D31 appears to be hard-coded instead of computed from totals.
+- Effect: the row "Income From Operations" does not reconcile to the calculated gross profit minus operating expenses for FY2003, so downstream % metrics may be wrong.
+- Fix: make D31 a formula so it always equals the subtotal difference:
+  - D31 = D19 - D28
+  - Likewise replace E31, F31, G31, H31, I31, J31 with =En - E28 etc. (one formula per year/column)
+- Why: avoids manual entry errors and keeps the sheet internally consistent.
+
+3) Lots of hard-coded values where formulas are expected (Nine‑Quarter sheet)
+- Examples: some quarter-level Income From Operations and Income From Operations % cells are entered as values (e.g., D29, H31) while others are formulas (C29 = C19 - C26). Same for some % cells.
+- Effect: increases risk of mismatches when source numbers change.
+- Fix: standardize to formulas:
+  - For each quarter column X: X29 = X19 - X26  (Income From Operations)
+  - X31 = X29 / X8  (Income From Operations %)
+  - Replace hard-coded numbers with these formulas across D, E, F, H, I, J, K, M.
+- Why: consistent formulas prevent reconciliation errors and make updates automatic.
+
+4) Robustness / housekeeping suggestions
+- Replace text "-" used as numeric placeholders with either blank or 0 (or use NA text in a non-numeric column). Text like "-" can confuse formulas or make it unclear whether the value is zero or missing.
+- Protect percent-change cells from divide-by-zero errors. For example in C% change columns use:
+  - =IF(E5=0,"", (D5-E5)/E5)
+  or wrap with IFERROR as preferred.
+- Verify Book Value Per Share calculation: make sure D64 is calculated from equity ÷ shares using the same share units. Example:
+  - If D43 is number of shares (not thousands): D64 = D62 / D43
+  - If D43 is in thousands, D64 = D62 / (D43 * 1,000)
+  - If your current D64 value doesn’t match the formula result, recalc with the correct units.
+
+How to apply fixes quickly
+- Fix 1 (H14): click H14, replace formula with =H13/H5.
+- Fix 2 (D31 and other years): click D31, enter =D19-D28, then copy this formula across E31:J31.
+- Fix 3 (nine-quarter): replace hard-coded quarter rows with formulas (X29 = X19-X26; X31 = X29/X8) and copy across all quarter columns.
+- Run a quick reconciliation: for each year/quarter check that (Gross Profit total) - (Operating Expenses total) equals Income From Operations; and that Total Assets - Total Liabilities = Shareholders' Equity.
+
+If you want, I can give the exact formulas for every affected cell (copy/paste ready) or produce a short VBA/Find-Replace plan to locate hard-coded values where formulas should be. Which would you prefer?

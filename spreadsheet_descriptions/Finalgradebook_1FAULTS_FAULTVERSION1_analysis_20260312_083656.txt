@@ -1,0 +1,64 @@
+Summary of workbook — concise
+
+Sheets
+- Sheet1 — Gradebook summary (students list, aggregated scores, final numeric & letter grades, grade-translation table and class summary rows).
+  - Columns: A Students; C Homework (links to Sheet2!P); D Tests (links to Sheet3!P); E Midterm (decimal 0–1); F Final (decimal 0–1); G Participation (decimal 0–1); I Final Grade: Number; J Final Grade: Letter; K-L Grade translation table (numeric threshold → letter).
+  - Key formulas:
+    - C3..C17: =Sheet2!P5:P19 (homework average per student)
+    - D3..D17: =Sheet3!P4:P18 (test average per student)
+    - I3..I17 (final numeric): =(C3*0.125)+(D3*25)+(E3*25)+(F3*25)+(G3*12.5)
+      - Note: currently mixes scales (C = 0–100, D/E/F/G = 0–1) and uses inconsistent multipliers.
+    - J3..J17: =VLOOKUP(I3,$K$5:$L$17,2,TRUE()) (approximate match against K5:K17 thresholds)
+  - Summary rows (High/Low/Class Average) present but several have incorrect ranges/formulas (see Issues).
+
+- Sheet2 — HOMEWORK WORKSHEET (raw homework scores, per-student max/min/average).
+  - Columns: listed homework scores (C:L), N = MAX(C:L), O = MIN(C:L), P = AVERAGE(C:L) (these feed Sheet1 C cells).
+  - Good: raw scores are 0–100; per-student P5:P19 are correct averages.
+
+- Sheet3 — TESTS WORKSHEET (raw test points, converted to percentages using Curve Scale, per-student max/min/average).
+  - Row 24 (Curve Scale): D24=100, F24=110, H24=90, J24=95, L24=120 (total possible points for each test).
+  - For each student:
+    - C=points; D = C / $D$24; E = points; F = E / $F$24; etc. N = MAX(D,F,H,J,L); O = MIN(...); P = AVERAGE(D,F,H,J,L) which feeds Sheet1 D cells.
+  - Several P formulas and one division contain typos (see Issues).
+
+Grade translation table (Sheet1 K5:L17)
+- Mapping example: K5=0 → L5=F; K6=59.5 → D-; up to K17=96 → A+. Table appears sorted ascending and used by VLOOKUP(...,TRUE).
+
+Key issues and recommended fixes (concise)
+1) Mixed scales in final-grade calculation (Sheet1 I3:I17)
+   - Problem: C (homework) is 0–100 (Sheet2 P), while D/E/F/G are 0–1. Current formula mixes those and uses inconsistent multipliers (some are 25, some 0.125/12.5).
+   - Fix (produce final grade on 0–100 scale): normalize homework by 100 and use weight percentages:
+     - Correct formula example for I3: =(C3/100)*12.5 + D3*25 + E3*25 + F3*25 + G3*12.5
+     - Or equivalently if you prefer decimal weights: = (C3/100)*0.125*100 etc — above is clear and yields 0–100 final grade.
+   - If you prefer all inputs on 0–1, change Sheet2 P to P/100 (or divide C3 by 100 before weighting) and use weights 0.125/0.25/0.25/0.25/0.125.
+
+2) Multipliers in Sheet1 currently incorrect/inconsistent
+   - Current: (C3*0.125)+(D3*25)+... yields wrong scale. Use the corrected formula shown above.
+
+3) VLOOKUP letter grade
+   - VLOOKUP(I3,$K$5:$L$17,2,TRUE()) is OK if K5:K17 are sorted ascending (they are). Make sure I3 final numeric is on same 0–100 scale as K thresholds (K values appear 0–96). If you move to 0–1 scale, update translation table accordingly.
+
+4) Sheet3 formula typos / wrong references
+   - Many P# formulas use wrong cell references (e.g., P4 uses L40, P5 uses L41, etc.) — should be AVERAGE(D4,F4,H4,J4,L4) for row 4 and similarly for each row: P5 = AVERAGE(D5,F5,H5,J5,L5) etc.
+   - Specific wrong cell: Row 14 F14 = 510/$F$24 (should be =E14/$F$24). Fix that 510 typo.
+   - Action: correct all P-row AVERAGE references to the corresponding row (no stray 40–54 endings) and fix F14.
+
+5) Summary rows have inconsistent ranges / wrong functions (Sheet1 and others)
+   - Examples on Sheet1:
+     - C19..I19 (High Grade) mostly use MAX on appropriate columns — check ranges are C3:C17, D3:D17, etc.
+     - C20 (Low Grade) currently =MIN(C4:C18) — should be =MIN(C3:C17).
+     - C21 (Class Average) currently =MAX(C5:C19) — should be =AVERAGE(C3:C17) (or C5:C19 only if you intentionally offset).
+   - Review all summary formulas to use consistent row set (student rows are 3:17 on Sheet1).
+
+6) Consistency across sheets
+   - Ensure test percentages on Sheet3 (D/F/H/J/L) are produced as decimals 0–1 and the final calculations expect the same scale.
+   - Decide whether you keep all intermediate scores as 0–100 or as 0–1 and convert systematically. My recommendation: keep everything as percentages 0–100 (Sheet2 already is), or convert homework to 0–1 before aggregating — but be consistent.
+
+Quick checklist of fixes to apply
+- Replace Sheet1 I3 formula with: =(C3/100)*12.5 + D3*25 + E3*25 + F3*25 + G3*12.5 and copy down.
+- Fix all Sheet3 P-row formulas to AVERAGE(Dn,Fn,Hn,Jn,Ln) for n = 4..18.
+- Correct F14 to =E14/$F$24.
+- Fix summary row ranges to use student rows consistently (e.g., MIN(C3:C17), AVERAGE(C3:C17), MAX(D3:D17), etc.).
+- Verify the grade translation table thresholds (K5:K17) match the numeric scale of I3 (0–100), or adjust K-values if you convert I to 0–1.
+
+If you want, I can produce the exact corrected formulas for each affected cell (I3:I17, Sheet3 P4:P18, summary rows) or provide a small macro to correct the replicated reference errors. Which would you prefer?

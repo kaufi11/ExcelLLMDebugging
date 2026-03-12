@@ -1,0 +1,38 @@
+Summary of errors
+1) Row 25 (BEACON FEDERAL) has the wrong weight in F25. All thrifts are supposed to be 0.5 * Deposits except one special case — this looks like a stray multiplier (1.21674489270828) and will distort the weighted total (F36), every market share and HHI.
+
+2) HHI (column H) is being computed inconsistently with the way market shares (column G) are stored/formatted:
+- The sheet stores market shares as either raw percentages (e.g. 30) or as fraction decimals (e.g. 0.30) depending on whether the G formulas include *100 and how the cells are formatted. The formula shown (=$G10^2) will square the underlying value, so you can get the wrong scale:
+  - If G10 contains 0.30 (30%) then =$G10^2 gives 0.09 (not 900).
+  - If G10 contains 30 (because you used *100) then =$G10^2 gives 900 (correct HHI-contribution on percent basis).
+This inconsistency makes HHI wrong or fragile.
+
+Correct fixes (simple, safe)
+1) Fix BEACON row (F25)
+- If BEACON is a thrift (as C25 indicates), change F25 to:
+  =0.5*$E25
+- If BEACON is actually a bank, change C25 to "Bank" and set:
+  =1*$E25
+
+2) Make G and H consistent and robust (recommended approach)
+- Set market-share formula in G10 and fill down:
+  =$F10/$F$36
+  Then format G10:G33 as Percentage (eg 2 decimal places). This yields values like 30.00%.
+- Set H10 and fill down to compute HHI contributions (standard HHI on percent shares):
+  =($F10/$F$36)^2*10000
+  (Equivalently: =(G10*100)^2 if you prefer to reference G.)
+- Keep totals:
+  G36 = SUM(G10:G33) → should show 100% (or 1.00 depending on format)
+  H36 = SUM(H10:H33) → final HHI (e.g. 1500–5000 range)
+
+Why this works (short)
+- G as =F/F_total and formatted as % is the clearest representation of market share.
+- HHI is conventionally the sum of squared market shares expressed on a 0–100 scale (so 30% -> 30^2 = 900). Squaring the decimal (0.30^2) and multiplying by 10,000 yields the same 900, which is why we use *10000 in the formula. This avoids depending on how G is formatted.
+
+What to do now
+1. Change F25 to =0.5*$E25 (or change C25 to Bank + =1*$E25 if Beacon is really a bank).
+2. Replace G10:G33 with =$F10/$F$36 and format as Percentage.
+3. Replace H10:H33 with =($F10/$F$36)^2*10000 (or =(G10*100)^2) and fill down.
+4. Recalculate and check G36 = 100% and H36 = the correct HHI.
+
+If you want, paste the current cell values for F25, one G row and one H row and I will confirm the exact corrected results.

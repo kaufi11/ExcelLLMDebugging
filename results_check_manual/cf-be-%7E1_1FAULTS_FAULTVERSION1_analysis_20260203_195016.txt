@@ -1,0 +1,69 @@
+Thanks — I reviewed the workbook and found a number of real formula mistakes and a few fragile practices that will cause wrong numbers or errors as you copy/fill across months. Below are the main problems, the quick fixes (exact corrected formulas) and short explanations.
+
+High‑priority errors (fix these first)
+1) Wrong hard-coded total — Year 1, cell L14
+- Problem: L14 = 1 (literal 1). That makes month‑10 total cash receipts wrong and breaks totals below.
+- Fix: replace with the sum of that month’s receipt rows:
+  L14 = SUM(L8:L13)
+- Why: totals must sum the rows for that month, not be a fixed number.
+
+2) Wrong row referenced in Year 2 (Payroll / misaligned)
+- Problem: Year 2 cell O20 is using the formula for row 22 (O20 shows O22 formula). Some O.. cells reference the wrong row (a copy/paste offset).
+- Fix example: O20 should be =SUM(C20:N20) and P20 = O20/$O$57
+- Why: misaligned row references produce totals that belong to a different expense line.
+
+3) Beginning‑of‑month cash links are inconsistent / circular (Year 1 & Year 2)
+- Problem: many "CASH ON HAND (BEGIN. OF MO.)" cells use SUM(B55), SUM(C55) etc. In places the formula references the wrong column or creates a circular reference (beginning cash equals the same month’s ending cash).
+- Correct pattern:
+  - Month 1 beginning (column C on Year1) should be your input starting cash in column B (for example B6) — not B55. Example:
+    C6 = B6   (if B6 is the opening/startup cash input)
+  - For every subsequent month the beginning cash equals the previous month’s end-of-month cash. Example:
+    D6 = C55
+    E6 = D55
+    F6 = E55
+    etc.
+- Why: begin‑of‑month = previous month’s end. Referencing wrong cells or same‑month values causes circulars or wrong balances.
+
+4) Percent‑of‑sales formulas: inconsistent anchoring and self‑division
+- Problems:
+  - Some % cells use O$57 or O57 inconsistently and some mistakenly divide a total by itself (yielding 1).
+  - Example: P57 = +O57/O$57 gives 1 — that’s meaningless here.
+- Fix: use absolute reference to the total sales cell and make denominator meaningful. For row totals in column O and percent in P:
+  - Px (for any row x) = Ox / $O$57
+  - Example: P9 = O9 / $O$57
+- Why: using $O$57 locks the denominator to the total sales across months. Avoid dividing a total by itself.
+
+5) Variance formulas divide by zero and are fragile
+- Problem: many variance cells use formulas like =(D8-C8)/C8. If C8 = 0 you get #DIV/0!. Also some references point to wrong months because of inconsistent column mapping.
+- Fix: wrap with an error check:
+  - =IF(C8=0, "", (D8-C8)/C8)
+  - or =IFERROR((D8-C8)/C8, "")
+- Why: prevents #DIV/0 errors and makes sheet readable. Also audit the referenced month columns so the “actual” and “baseline” match.
+
+General audit recommendations (quick checklist)
+- Search for any SUM() that wraps a single cell arithmetic (e.g., SUM(B15-B54)). Those usually work but are confusing; change to plain arithmetic (B15-B54) for clarity.
+- Do a row-by-row check down one month, then fill right. Example workflow:
+  1. Fix all Month 1 formulas so they are correct and consistent.
+  2. For Month 2, set beginning cash = Month 1 end (no hard coding). Copy formulas across months; Excel will keep relative references correctly.
+- Use absolute references for fixed totals (e.g., $O$57) when computing percents so filling right/left doesn’t break the denominator.
+- Use Find (look for "=SUM(" and check ranges) and look for any obvious offsets (e.g., cell references using row+2 or -2 unexpectedly). Common culprit: copy/pasted blocks where some rows were inserted/deleted and references didn’t update.
+
+Concrete corrected formulas — examples you can paste
+- Year1 L14: =SUM(L8:L13)
+- Year2 O20: =SUM(C20:N20) and P20: =O20/$O$57
+- Year1 beginning cash sequence (if B6 is opening balance):
+  C6 = B6
+  D6 = C55
+  E6 = D55
+  F6 = E55
+  (and so on)
+- Percent of sales example:
+  P17 = O17 / $O$57   (copy down)
+- Variance safe formula example:
+  E8 = IF(C8=0,"", (D8-C8)/C8)
+
+If you want I can:
+- Produce a corrected version of the workbook (I can provide a list of every cell that’s wrong and the exact replacement formula),
+- Or scan and output all rows where the O## formula references the wrong row (I already spotted O20 -> O22 in Year2 as an example) so you can fix them in bulk.
+
+Which would you prefer — a full list of every incorrect cell with the corrected formula, or I fix the workbook and return a repaired file?

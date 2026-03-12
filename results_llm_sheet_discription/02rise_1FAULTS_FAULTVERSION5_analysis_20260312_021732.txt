@@ -1,0 +1,35 @@
+Summary: I found two real errors that will give wrong grand totals (and one minor consistency issue). Fixes and explanations below.
+
+1) Wrong sign in the “Public Cost” row (row 268)
+- Problem: cells F268:BG268 are written as =SUM(F269-F270) (i.e. RISE Cost minus RISE Savings). But the public cost should be RISE Cost + RISE Savings (see your Financial Info note: Total public cost = total RISE tuition dollars plus total RISE savings).
+- Effect: the Public Cost row and the Public Cost grand total (BI268) are wrong (they show RISE cost minus savings instead of the true public cost).
+- Fix: replace the formula in F268 with:
+  =F269+F270
+  Then copy that formula across F268:BG268 (or use =SUM(F269:F270) if you prefer).
+- Why: F269 holds the RISE (tuition) totals by company; F270 holds the RISE savings by company. Public cost = tuition + savings. Using + produces the correct per-company public cost and fixes the grand total BI268.
+
+2) Hard-coded participants total in BK261 (inconsistent / fragile)
+- Problem: BK261 is a literal 12 (hard-coded) instead of the usual formula =SUM(F261:BG261). All other BK# cells are formulas. Hard-coding means if any company counts in row 261 change, the BK total and downstream totals (BL261 etc.) will be wrong.
+- Fix: change BK261 to the formula:
+  =SUM(F261:BG261)
+- Why: keeps the sheet consistent and prevents incorrect totals when attendee columns change.
+
+3) Minor / cosmetic issues (not incorrect but risky)
+- Many "Total" cells use SUM() around a single multiplication, e.g. =SUM(F3*$E$3). This works but is unnecessary and harder to read. Consider using plain formulas like =F3*$E$3 for clarity.
+- Some per-class totals live on the "Total" row below the class (e.g. BM4 uses D3*BK3). That’s fine if intentional, but be aware of the row offsets when auditing or copying formulas.
+
+Quick step-by-step to fix (recommended)
+1. Fix public cost row:
+   - Select F268, replace formula with =F269+F270.
+   - Copy F268 and paste across to BG268.
+   - Recalculate / check BI268 (should equal SUM(F268:BG268)).
+2. Fix BK261:
+   - Replace BK261 = 12 with BK261 =SUM(F261:BG261).
+   - Check BL261 (C261*BK261) and related totals update.
+3. Optional clean-up:
+   - Replace SUM(C3*BK3) style formulas with C3*BK3 for readability.
+   - Search for any other manually entered BK values and convert them to formulas.
+
+If you want, I can:
+- give you the full list of cells to change (the F268:BG268 range and any other hard-coded BK cells), or
+- produce a short macro (VBA) or a copy-paste-ready set of formulas to correct the sheet automatically.

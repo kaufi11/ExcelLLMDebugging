@@ -1,0 +1,43 @@
+I checked the three workbooks you gave. I found clear formula/reference mistakes in E20-9 (the duplicate sheet), P20-1B and P20-3B. Below are the problems, short explanations, and the exact fixes to enter.
+
+1) Sheet: E20-9 (the second copy)
+- Error: C11 = SUM(C4:C5)/C2
+  - Why wrong: This omits Utilities (C6). Indirect costs must include C4:C6.
+  - Fix: change C11 to =SUM(C4:C6)/C2
+  - Effect: indirect hourly rate will include utilities and downstream amounts (C12, C14, C16, C17) will update correctly.
+
+2) Sheet: P20-1B
+- Error #1: F14 = +E4+G6
+  - Why wrong: G6 is the SUM of the Cost-of-Goods-Sold column (G4:G5). You are adding COGS to Finished Goods. The completed WIP that should move into Finished Goods is C6 (SUM of WIP costs), not G6.
+  - Fix: change F14 to =E4 + C6
+  - Effect: Finished Goods balance becomes existing finished goods (E4) plus the WIP completions (C6).
+- Error #2 (posting column mix-ups)
+  - Symptom: Several entries post to column G (COGS column) when they should post to the Finished Goods column (E) or to WIP column (C). Example: G15 uses F14, G27 = +F26 (puts a Finished Goods credit in the COGS column).
+  - Why wrong: Debits/credits are being recorded in the wrong column groups, producing wrong balances in each inventory bucket.
+  - Fix (general): Post ledger transfers to the columns that match the account headings:
+    - Work in Process decreases → write the amount in column C (WIP cost column).
+    - Finished Goods increases/decreases → write in column E (Finished Goods cost column).
+    - Cost of Goods Sold entries → write in column G (COGS cost column).
+  - Example concrete corrections:
+    - If you record completion of jobs 4 & 5 (reduce WIP and increase Finished Goods):
+      - Put the completed amount in E14 (Finished Goods debit) and reduce C6 (or show credit in C15) for WIP.
+    - When recording cost of job 5 sold (COGS = 2000), the credit to Finished Goods must be in E (e.g. E27 = E27 - 2000 or a formula referencing the previous finished-goods balance), not in G27.
+  - Effect: fixes will put the right numbers into each inventory account and preserve correct double-entry flow.
+
+(If you want, paste the exact cell addresses you want to use for the debit/credit lines and I will give the precise formulas for each journal line.)
+
+3) Sheet: P20-3B
+- Error: I10 = +F14*H10
+  - Why wrong: I10 should be the overhead applied to the specific entry on row 10 = that row’s direct labor amount (F10) times the overhead rate (H10). The existing formula multiplies the rate by F14 (the total direct labor), thus misallocating total labor to one row.
+  - Fix: change I10 to =F10 * H10
+  - Also check I14: I14 = +I10 + F14 + D14 — this is correct in structure (Overhead for the job + Direct labor total + Direct materials total) but it depends on I10 being fixed.
+  - Effect: Overhead applied and total job cost (I14) will be correct.
+
+Summary (one-line each)
+- E20-9(2): Expand indirect-cost SUM to C4:C6 (include utilities).
+- P20-1B: F14 should use C6 (WIP sum) not G6; also fix any postings that are in the wrong column groups (WIP → column C, Finished Goods → column E, COGS → column G).
+- P20-3B: change I10 to =F10*H10 (apply overhead to the row’s DL, not to total DL).
+
+If you want, I can:
+- give the exact corrected formulas for every affected cell in P20-1B (if you confirm which rows represent each journal entry), or
+- show the corrected cell-by-cell values after the fixes.

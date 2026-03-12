@@ -1,0 +1,40 @@
+I checked all formulas in the three sheets and found two clear formula errors/inconsistencies (one of them causes cascading wrong results elsewhere). Summary below with exact cell addresses, what is wrong, the fix, and the main downstream effects.
+
+1) Q4 Homework — wrong hard-coded value in H5
+- Cell: Q4 Homework!H5
+- Current formula/value: =1 (value shown 1)
+- Problem: H5 should be the total of that student's category scores (consistent with H3, H4, H6:H11 which use =SUM(Bn:Gn)), but H5 was replaced by the literal =1.
+- Correct formula: =SUM(B5:G5)
+- Correct value after fix: 273 (81+21+25+25+50+71 = 273)
+- Downstream effect:
+  - Q4 Summary!E6 currently references Q4 Homework!H5, so E6 and all calculations that depend on it (Q4 Summary!F6, Q4 Summary!G6 and Year Summary cells that reference Q4 Summary!G6) are incorrect until H5 is fixed.
+
+2) Q4 Summary — incorrect weight used in Points Possible calculation
+- Cell: Q4 Summary!F3 (Points Possible / weighted total)
+- Current formula: =B3*0.3+C3*0+D3*0.4+E3*0.2
+- Problem: the C3 term uses *0 (zero) instead of the correct weight *0.1 (weights are in B2:E2 = 0.3, 0.1, 0.4, 0.2). That makes the weighted "points possible" 270 instead of 300.
+- Correct formula: =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+- Correct value after fix: 300 (since each of B3..E3 = 300)
+- Downstream effect:
+  - F3 is supposed to represent the weighted total points possible (should be 300). Using 270 may confuse interpretation or checking; any checks or displays based on F3 will be off. (This cell isn't used in other formulas in the provided file, but it's semantically wrong and misleading.)
+
+Cascading example of the practical impact (if you apply the H5 fix and keep the corrected F3):
+- After Q4 Homework!H5 -> 273:
+  - Q4 Summary!E6 becomes 273 (it references Q4 Homework!H5)
+  - Q4 Summary!F6 (Evans weighted score) recalculates to:
+    = B6*0.3 + C6*0.1 + D6*0.4 + E6*0.2
+    = 200*0.3 + 268*0.1 + 279*0.4 + 273*0.2 = 253
+  - Q4 Summary!G6 = (F6/300)*100 = 84.3333333333333
+  - Year Summary!G4 (Q4 for Evans) references Q4 Summary!G6 and becomes 84.3333
+  - Year Summary!H4 (Evans final average) = AVERAGE(D4:G4) becomes 81.3333333333333
+  - Year Summary!I4 (Evans final grade) would then become "B" (it is currently "C" because the erroneous Q4 lowered the average)
+
+Other notes / suggestions
+- Use consistent formulas for totals (H column in Q4 Homework): all rows should use =SUM(Bn:Gn) to avoid accidental manual overrides.
+- For weighted calculations, consider using SUMPRODUCT for clarity, e.g. =SUMPRODUCT(B4:E4,$B$2:$E$2) (with absolute references to the weights row) — this reduces copy/paste errors.
+- The nested IF grade formula in Year Summary I2..I10 works but could be simplified with LOOKUP or IFS (Excel versions permitting). The existing logic is fine but note it uses <101 as the top bound which is acceptable but unconventional.
+
+If you want I can:
+- Generate the corrected values for the whole workbook and list every cell that would change, or
+- Provide the exact corrected formulas you can paste in, or
+- Produce a version of the workbook with the fixes applied.

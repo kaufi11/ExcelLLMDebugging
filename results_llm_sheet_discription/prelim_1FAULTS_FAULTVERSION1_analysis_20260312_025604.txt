@@ -1,0 +1,25 @@
+Summary of the errors
+- Cell A25 contains a typo formula =A24+715. That jumps the event numbering from 12 to 727 and therefore all subsequent auto-numbered events become wrong.
+- Cell A41 (MIT guided tour) is hard-coded as 26 instead of continuing the sequence with a formula, so it may mismatch after fixes.
+- (Optional check) Some event rows were entered manually; any manual overrides break the automatic sequence.
+
+Why this is a problem
+- The +715 is almost certainly a typing error (should be +1). Because later event cells are defined as =previous+1, the single typo propagates and makes the whole event numbering incorrect/inconsistent with the schedule sheet.
+
+Quick fix (steps you can do in Excel)
+1. Change A25 to =A24+1.
+2. Select A25 and drag the fill handle down through the last event row (e.g., A41) to restore the sequential numbers.
+3. Replace any manual event numbers (like A41) with formulas so the whole column is consistent — e.g., set A41 = A39+1 (or simply fill down from A25 as above).
+
+One‑line alternatives (safe formulas)
+- Put this in A25 and fill down: =IF(A24="","",A24+1)
+  This avoids creating numbers when the above cell is blank.
+
+How to verify the fix
+- After fixing, verify that each event increments by 1. You can add a quick check in a helper column (say column Z):
+  In Z13: =IF(A13-A12=1,"OK","ERROR") and fill down — all should show OK.
+
+Why this solution works
+- The sheet was designed to auto-number events by adding 1 to the previous event number. Replacing the accidental +715 with +1 restores the intended sequential logic and prevents further propagation of wrong numbers. Using the IF version prevents numbers in blank rows.
+
+If you want, I can give a single command/formula to find other similar anomalies or create a robust auto-number (based on row numbers or filled Start times) so the sequence can never jump.

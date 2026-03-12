@@ -1,0 +1,42 @@
+Summary of the errors
+- Many daily cells (D9:M39) contain wrong SUM formulas that point to single cells or off-sheet cells instead of being data or single-day totals. Example: E9 = SUM(E42) (wrong); F9 = SUM(E9), G9 = SUM(F9) etc. (these create a chained, shifted copy of numbers).
+- Daily total column (C9:C39) is not shown as =SUM(D9:M9). Without this, the row totals are wrong or missing.
+- Monthly totals row (row 40) is mostly chained to single cells instead of summing each column. Example: F40 = SUM(E40), G40 = SUM(F40), etc. This makes every column total equal to the previous column instead of summing its column.
+- One odd cell: K19 = SUM(235) — SUM(235) returns 235 but is almost certainly the wrong formula/value for a daily service cell.
+- Result: totals are incorrect, values are shifted/duplicated, and some data may be overwritten by formulas when you should be entering counts.
+
+Quick fixes (apply these)
+1. Remove the incorrect formulas from the daily service cells (D9:M39). These should be user-entered counts (numbers) for each day and service, not SUM formulas. If you need formulas there, correct them to the proper source ranges.
+2. Put a proper daily total formula in C9 and fill down:
+   - C9 = SUM(D9:M9) and fill down through C39.
+3. Replace the monthly totals in row 40 with per-column sums (not chained):
+   - D40 = SUM(D9:D39)
+   - E40 = SUM(E9:E39)
+   - F40 = SUM(F9:F39)
+   - G40 = SUM(G9:G39)
+   - H40 = SUM(H9:H39)
+   - I40 = SUM(I9:I39)
+   - J40 = SUM(J9:J39)
+   - K40 = SUM(K9:K39)
+   - L40 = SUM(L9:L39)
+   - M40 = SUM(M9:M39)
+4. Fix K19: replace SUM(235) with the actual daily value for that cell (a number) or the correct formula/range if it should calculate something.
+
+Why this fixes the problem (short)
+- Daily service cells should be raw counts. Chained SUMs move values across columns and double-count or misplace figures.
+- C9 = SUM(D9:M9) correctly totals that day's services.
+- D40:M40 using SUM(column range) gives the correct monthly totals for each service rather than copying the previous column’s total.
+- Replacing SUM(235) corrects a hard-coded/wrong value.
+
+Quick verification after changes
+- Check that C40 (SUM of C9:C39) equals SUM(D40:M40). They should match. Add a check cell if you want:
+  - Check cell = (C40 = SUM(D40:M40)) — returns TRUE if totals match.
+
+Best-practice suggestions (optional, quick)
+- Convert A7:M39 to an Excel Table — formulas auto-fill and totals become structured (easier & less error-prone).
+- Freeze header rows (row 7) so you don't accidentally overwrite header formulas.
+- Use data validation on D:M to allow only numbers.
+
+If you want, I can:
+- List the exact replacement formulas for every cell that currently has a wrong formula, or
+- Produce a corrected copy of Sheet1 (list all changed cells). Which do you prefer?

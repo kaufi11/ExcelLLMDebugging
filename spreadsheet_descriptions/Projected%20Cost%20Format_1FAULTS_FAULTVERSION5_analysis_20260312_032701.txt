@@ -1,0 +1,56 @@
+Summary of workbook: three related grant-cost worksheets (one form per proposed grant year). Each sheet collects categorical cost line items, calculates subtotals, percentages of category totals, and grand totals. Gray cells are pre-set for calculations; users should enter values only in non-gray input cells (e.g., dollar amounts and descriptive text).
+
+1) Sheet: Seq Production Costs (Sheet 1 — Sequence production projected costs)
+- Purpose: Capture projected costs for shotgun reads, finished basepairs, plus any "Other Activities" supporting sequencing.
+- Layout:
+  - Header/instructions in A1:A8.
+  - Top summary: columns for Shotgun reads (B), Q20 bases (C), Finished basepairs (D), and Other Activities (G). Row 10 holds the “One year total” counts (reads, Q20 bases, finished bases).
+  - Cost categories listed in A13:A18: Amortized Equipment (3 yrs), Labor, Materials & Reagents, Sub-contracts, Travel, Other.
+  - Dollars for Shotgun go in B13:B18; % for Shotgun in C13:C18 (computed).
+  - Dollars for Finished go in D13:D18; % in E13:E18.
+  - Dollars for Other Activities go in G13:G18; % in H13:H18.
+- Key formulas:
+  - C13:C18 = corresponding B-value / $B$21 (percent of shotgun grand total).
+  - E13:E18 = corresponding D-value / $D$21 (percent of finished grand total).
+  - H13:H18 = corresponding G-value / $G$21 (percent of other-activities grand total).
+  - B19 = SUM(B13:B18) (Total Direct Costs for Shotgun). D19 = SUM(D13:D18). G19 = SUM(G13:G18).
+  - B21 = SUM(B19:B20) (Shotgun Grand Cost Total including indirects). D21 = SUM(D19:D20) (Finished Grand Cost Total). G21 = COUNT(G19:G20) (note: G21 uses COUNT on G19:G20 per template).
+  - A11 average-cost outputs:
+    - Shotgun average cost per read B11 = B21 / B10.
+    - Q20 average per base C11 = B21 / C10.
+    - Finished avg per base D11 = D21 / D10.
+  - B23 = B21 + D21 + G21 (One Year Total Costs summed across activities).
+- Notes: Equipment amortization is specified as 3-year amortized costs. Users should list which “Other Activities” are included (G10).
+
+2) Sheet: Tech Dev Costs (Sheet 2 — Technology development projected costs)
+- Purpose: Itemize technology development funding requested for the year.
+- Layout:
+  - Header/instructions in A1:A7. Total funds requested at B6 (user input; currently 0).
+  - Cost categories in A8:A14 (Equipment amortized 3 yrs, Labor, Supplies, Sub-contracts, Travel, Other).
+  - Column B holds dollar amounts (B9:B16).
+  - Column C used for descriptive breakdowns (e.g., labor categories, equipment notes).
+- Key formulas:
+  - B17 = SUM(B9:B16) (Total Direct Costs for Tech Dev).
+  - B18 = B17 / B6 (percent of total costs for the grant-year total B6).
+  - B17 also feeds A19 “Contribution to total read cost ($)” (cell A19 present to indicate contribution but no explicit formula shown).
+- Notes: Provide breakdowns in C9, C10, C12 as requested.
+
+3) Sheet: Bioinformatics Costs (Sheet 3 — Bioinformatics projected costs)
+- Purpose: Capture costs for three bioinformatics areas: Infrastructure, Assembly, and Annotation.
+- Layout:
+  - Header and total funds requested at B6 (user input; currently 0).
+  - Infrastructure block: cost categories in A8:A14 with dollars in B9:B16 and notes in C9/C10/C12.
+  - B17 = SUM(B9:B16) (Total Direct Infrastructure costs). B18 = B17 / $B$6 (percent of total).
+  - Assembly block (A20:A30): equipment/labor/etc. with B30 = SUM(B22:B29) and B31 = B30 / $B$6.
+  - Annotation block (A33:A43): similar structure with B43 = SUM(B35:B42) and B44 = B43 / $B$6.
+- Key formulas:
+  - B17, B30, B43 are the subtotal sums for each bioinformatics area.
+  - B18, B31, B44 are percent-of-total formulas dividing those subtotals by B6.
+- Notes: Cells in column C are for descriptive breakdowns of equipment/labor.
+
+Overall workbook behavior and important cells
+- B6 on Tech Dev and Bioinformatics sheets is the declared “Total funds requested” for that grant year (used as denominator for percent calculations).
+- Sheet 1 central totals are B21 (Shotgun grand total), D21 (Finished grand total), and G21 (Other activities count/total per template). B23 sums the three activity totals to give the One Year Total Costs requested.
+- Percent columns uniformly compute each line item as dollars / corresponding grand total.
+- Equipment amortization: amortize equipment costs over 3 years; include amortized amounts for equipment bought in prior two years if charged to the grant.
+- Users must enter activity descriptions where requested (e.g., G10, C9/C10/C12 on other sheets) and should not overwrite pre-set (gray) formula cells.

@@ -1,0 +1,52 @@
+Overview
+- Workbook contains 4 sheets: "Homework", "Mid-term", "Final", and "Final Grades".
+- Layout is a typical student-score gradebook: rows = students (pseudonyms), columns = assignments/questions/subtotals/totals, plus status/notes columns.
+
+Sheet: Homework
+- Header rows: A1 title, C1 revision date, row 3 lists columns: Pseudonym (A), HW1..HW10 (B:K), Total (L), Paper (N), HC/status legend (P).
+- Student rows (A4:A42) list pseudonyms; B:K contain individual homework scores or text flags (HC = Honor Code violation, P = pending, NG, x = not received).
+- Column L (L4:L42) contains formula =SUM(Bn:Kn) for each student (sums HW1..HW10). Some rows use =SUM(Cn:Kn) when HW1 omitted.
+- Column N lists an aggregate "Paper" (or precomputed total) numeric value per student.
+- L44: =AVERAGE(L4:L42) and N44: =AVERAGE(N4:N42) compute class means; O44 labeled "Mean".
+- Legend in P column explains codes (P, NG, x, HC).
+
+Sheet: Mid-term
+- Title row and headers: questions split into groups (B:G for Question 1 subparts, H:K for Question 2 subparts); L = Total; N = Q1 subtotal; O = Q2 subtotal.
+- Row 5 contains total possible points per sub-question; L5 =SUM(C5:K5) (overall possible).
+- Student rows (A6:A44) have scores by sub-question. Many rows have Nn =SUM(Cn:Gn) and On =SUM(Hn:Kn) to produce Q1 and Q2 subtotals; Ln =SUM(Cn:Kn) for full mid-term total.
+- Row 46 contains averages per column (AVERAGE over student score ranges).
+- Q49:Q87 area lists a sequence of numeric values (likely sorted total scores or thresholds).
+
+Sheet: Final
+- Title and headers: pseudonym (A), Q1..Q6 (B:G), TOTAL in I.
+- Each student row sums final exam question scores; In is generally =SUM(Bn:Gn) (note one row used SUM(Bn:Hn) by mistake).
+- Row 44 contains AVERAGE formulas for each question column and for the TOTAL (B44..I44).
+
+Sheet: Final Grades
+- Consolidated grades per student with columns:
+  - B = Papers (from Homework? precomputed),
+  - C = Mid-term,
+  - D = Term (term project/term total),
+  - E = Final (final exam),
+  - F = Total (column sums of B:E via =SUM(Bn:E n) for most rows),
+  - G = Note (HC, P etc).
+- Column I/J present grade mapping or ranges: I contains letter-grade labels (A, A-, B+, ...), J contains numeric thresholds (e.g., J5 480 for A-). Rows K45:K83 include many numeric cutoff-like values (probably detailed thresholds or sorted totals).
+- Some entries are manual text overrides instead of numeric totals (e.g., F4 = "F" for V.K.G), and several students have HC or P flags in G.
+
+Common formulas & patterns
+- SUM used per-student to compute totals:
+  - Homework totals: =SUM(Bn:Kn) (or =SUM(Cn:Kn) when HW1 not included).
+  - Mid-term total: =SUM(Cn:Kn); Q1/Q2 subtotals =SUM(Cn:Gn) and =SUM(Hn:Kn).
+  - Final total: =SUM(Bn:Gn) (per row).
+  - Final Grades total: =SUM(Bn:En).
+- AVERAGE used for column/class means:
+  - Homework averages L44 and N44, Mid-term averages row 46, Final averages row 44.
+- Several cells contain text flags (HC, P, NG, x) that will block numeric aggregation if included in a SUM unless handled.
+
+Notable values / flags
+- Revision date: (revised 12/9/02) in C1 (Homework) and C1 (Final Grades).
+- Legend: P = pending for Honor Code review; HC = honor-code violation; NG = received but not yet graded; x = not received.
+- Final Grades shows a mix of computed totals and manual entries; grade thresholds listed in J and K (e.g., A- threshold J5 = 480, A threshold J4 = 515).
+
+Overall
+- Workbook is a standard multi-sheet gradebook: Homework, Mid-term, Final are input sheets with per-question scores and automatic row totals/subtotals; Final Grades consolidates those components into final totals and assigns notes/flags. Formulas are primarily SUM and AVERAGE; watch for textual flags (HC/P/NG/x) that can affect numeric calculations.

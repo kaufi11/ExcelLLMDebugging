@@ -1,0 +1,38 @@
+Summary of the errors I found (short & clear), why they break totals, and how to fix them.
+
+1) Wrong function used in one Total row (AN94)
+- Problem: AN94 is "FORMULA =COUNT(AN93*$E$93)". COUNT returns the count of numeric items (here it returns 1), not the numeric product you need.
+- Effect: That single wrong cell injects a tiny incorrect value into the row totals (BO94 etc.), corrupting aggregated RISE amounts and downstream grand totals.
+- Fix: Replace AN94 with the correct arithmetic: =AN93*$E$93 (or =SUM(AN93*$E$93) if you prefer the existing pattern). Then copy that corrected formula to any other "Total" cells that accidentally use COUNT.
+
+2) Public Cost summary uses subtraction instead of addition (row 268)
+- Problem: The summary row for "Public Cost" (F268, G268, …, BG268) uses formulas like =SUM(F269-F270) (i.e. it subtracts F270 from F269). Public Cost should equal RISE Cost + RISE Savings, not RISE Cost − RISE Savings.
+- Effect: The Public Cost Grand Total (and column-level public cost numbers) are wrong (they end up too small or negative depending on values). Any dashboard or Companies totals that depend on those summary cells are therefore wrong.
+- Fix: Replace each subtraction formula with an addition. Example:
+  - In F268 enter =F269+F270 (or =SUM(F269:F270)).
+  - Then fill/copy across from F268 → BG268.
+  - Recalculate BI268 (grand total) if necessary; it should then be =SUM(F268:BG268) as already set.
+
+3) (Optional / recommended) Some per-class BK (participant total) cells are hard-coded
+- Problem: Most BK cells are =SUM(Fn:BGn), but some rows (I noticed BK261 = 12) are written as literal numbers. Hard-coded participant totals will not update if the per-company participant counts change.
+- Effect: Wrong participant counts, BL (student-days) and any derived dollar totals for that class will be wrong.
+- Fix: Replace hard-coded BK cells with the formula =SUM(Fn:BGn) for that row (replace n with the row number) and copy across the BK column where needed.
+
+How to apply fixes quickly
+- To fix the subtraction → addition across the whole summary row:
+  - Edit F268 to =SUM(F269:F270) (or =F269+F270).
+  - Copy F268 and paste across to BG268.
+- To fix the COUNT mistake:
+  - Edit AN94 to =AN93*$E$93 (or =SUM(AN93*$E$93)).
+  - If you have many similar mistakes, search for "COUNT(" in the sheet and inspect results.
+- To enforce BK formula consistency:
+  - For any BK cell with a value, put =SUM(Fn:BGn) and copy down BK for all class rows.
+
+Why these fixes solve the problem
+- Using addition (F269+F270) correctly computes Public Cost = RISE revenue + RISE savings.
+- Replacing COUNT with multiplication returns the actual monetary total for that company in that class (participant_count * RISE_cost).
+- Using formulaic BK ensures participant totals, student-days and all downstream values stay in sync when counts change.
+
+If you want I can:
+- Provide an exact list of every cell that currently uses subtraction in row 268 (so you can replace only those), and list any BK cells that are hard-coded.
+- Produce corrected formulas for a few example rows (I can paste a short set you can copy into Excel).

@@ -1,0 +1,45 @@
+I checked the workbook and found the main errors and fragile spots that will give wrong reliability results. Short fixes and explanations below.
+
+1) Wrong value in H5 (Problem 1)
+- Error: H5 contains the constant 5 instead of the product (x1 - mn1)*(x2 - mn2).
+- Effect: H8 (sum of cross-products) and rxx' (B11) are wrong.
+- Fix: Replace H5 with
+  =D5*F5
+- Explanation: H-column must be D*F for each subject so the covariance (sum of H) is correct.
+
+2) Many hard-coded means (fragile / error-prone)
+- Examples: D5 = B5 - 2.93333, D6 = B6 - 2.93333, F5 = C5 - 2, etc.
+- Effect: If you change data the means won’t update → wrong deviations, sums of squares, correlations.
+- Fix: Use cell references to the computed means (use absolute refs). For Problem 1:
+  D5 = B5 - $B$9
+  D6 = B6 - $B$9
+  D7 = B7 - $B$9
+  F5 = C5 - $C$9
+  F6 = C6 - $C$9
+  F7 = C7 - $C$9
+- Explanation: Always reference the mean cell (B9, C9) so deviations update automatically.
+
+(Apply same idea in Problem 2: replace numbers like 2.777767 and 3.166667 with $B$27 and $C$27 or the appropriate mean cells, and replace the K/L hard-coded means with $K$27/$L$27.)
+
+3) KR‑20 (Problem 6) uses population variance where sample variance is expected
+- Error: B124 = (C121 - (B122/5))/5 (divides by 5) → population variance used, then B125 uses it in KR‑20.
+- Effect: KR‑20 will be wrong (biased) because the test-score variance should be the sample variance (divide by n‑1) for the (small) sample approach used elsewhere.
+- Fix (two options):
+  a) Replace B124 with the sample variance formula (use n‑1):
+     = (C121 - (B122/5)) / 4
+  OR
+  b) Leave B124 and change the KR‑20 cell to use B103 (the sample variance already computed in Problem 6):
+     B125 = (5/(5-1)) * (1 - (J113 / B103))
+- Explanation: KR‑20 uses the variance of total scores; use the unbiased sample variance (divide by n‑1) if you used sample variance elsewhere — otherwise your reliability estimate is distorted.
+
+4) Minor / recommended cleanups
+- Replace hard-coded sums for means with references, e.g. B9 currently = 8.8/3 — use =B8/3 (and C9 = C8/3). This reduces risk of mismatch.
+- In Problem 2 some helper cells (N27/P27) take SQRT(N26) etc. Confirm you intended those (they may be unnecessary). Use consistent naming and reference behavior.
+- In Problem 4 and other places, replace explicit cell lists with SUM or AVERAGE where appropriate for clarity (e.g., B44 could be =AVERAGE(range_of_the_10_pairs)).
+
+Summary of critical fixes to apply now:
+- H5 -> =D5*F5
+- Replace all hard-coded mean numbers with absolute cell references (e.g. D5 = B5 - $B$9, F5 = C5 - $C$9, and similar in Problem 2).
+- Fix KR‑20 variance: either make B124 use /4 (sample variance) or make B125 use B103.
+
+If you want, I can give exact replacement formulas for every affected cell (Problem 1 rows, Problem 2 mean substitutions, and the KR‑20 change). Which section should I give the full corrected formulas for first?

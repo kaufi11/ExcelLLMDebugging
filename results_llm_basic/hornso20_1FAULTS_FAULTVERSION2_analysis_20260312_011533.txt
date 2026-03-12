@@ -1,0 +1,39 @@
+I checked the three sheets. Below are the errors I found, why they are wrong, and the simple fixes.
+
+1) Sheet E20-9 — incorrect denominator (two versions shown)
+- Error: In the second version C11 is =SUM(C4:C6)/C3 (dividing total indirect costs by C3 = direct labor COSTS). It should divide by direct labor HOURS (C2).
+- Why it’s wrong: dividing by C3 gives an indirect cost PER DOLLAR of direct labor (0.65), not an indirect cost PER HOUR ($91). That produces an incorrect tiny indirect hourly amount and a wrong job cost.
+- Fix: Change C11 to =SUM(C4:C6)/C2
+- Effect (numbers): correct C11 = 1,456,000 / 16,000 = $91. Incorrect C11 = 1,456,000 / 2,240,000 = 0.65. Fixing restores the predicted job cost to (140 + 91)*220 = $50,820 (instead of the incorrect ~$30,943).
+
+2) Sheet P20-3B — wrong cell used for overhead application
+- Error: I10 is =+F14*H10 (it multiplies the total direct labor (F14) by the overhead rate).
+- Why it’s wrong: overhead applied to Job 449 should be based on that job’s direct labor base (its F10 or its labor hours), not the total of all jobs (F14). Using F14 massively over‑applies overhead to this single job.
+- Fix: Change I10 to multiply the job’s direct labor amount (or hours) by H10. Likely correct formula is:
+  - I10 = F10*H10  (if H10 is $ of overhead per dollar of direct labor),
+  - or I10 = (job’s direct labor HOURS)*H10 (if H10 is $ per labor hour).  
+  Use whichever base matches how H10 was calculated (H10 = 375/250 looks like $ per hour, so use the job’s hours).
+- Effect: this makes the overhead applied to Job 449 proportional to Job 449’s own labor, not to the total.
+
+3) Sheet P20-1B — journal lines placed in wrong columns (column shift)
+- Symptom: The amounts for transfers between Work-in-Process, Finished Goods and Cost of Goods Sold are placed in the wrong columns (many formulas are one or two columns to the right). Examples:
+  - F14 = +E4+G6  — this formula sits in column F (COGS) but it should be the Finished Goods amount (column E).
+  - G15 = +F14  — that places the WIP offset in column G (COGS) instead of in the WIP column (column C).
+  - F18 = +G9+G10+G11 and G19 = +F18 — same type of column shift for the next completion entry.
+  - G27 = +F26 — finished-goods credit/offset is placed in the wrong column.
+- Why it’s wrong: the sheet is organized with three side-by-side journals: B/C = Work-in-Process, D/E = Finished Goods, F/G = Cost of Goods Sold. When you transfer/completing jobs you must put the debit in the Finished Goods cost column (E) and the credit in the Work-in-Process cost column (C). The current formulas put those amounts into the COGS columns instead, so balances and totals are incorrect.
+- Fix: Move each transferred amount one column to the left (put debit amounts into the Finished Goods cost column E and put corresponding credits into the Work-in-Process cost column C). Concretely:
+  - Change F14 → E14 (E14 = E4 + G6)
+  - Change G15 → C15 (C15 = E14)  — this records the credit to WIP
+  - Change F18 → E18 (E18 = G9 + G10 + G11)
+  - Change G19 → C19 (C19 = E18)
+  - Change G27 → E27 (E27 = F26)
+(Adjust other similar shifted formulas the same way.)
+- Effect: entries will post to the intended accounts, and totals in each “column journal” will reconcile.
+
+Summary of actions to correct the workbook (short):
+- E20-9: Change C11 to =SUM(C4:C6)/C2.
+- P20-3B: Change I10 to use job-level base (e.g., =F10*H10 or job hours * H10) instead of F14*H10.
+- P20-1B: Move completion/transfer formulas one column left so Finished Goods amounts are in E and WIP offsets are in C (examples shown above).
+
+If you want, I can provide the exact corrected formulas for every affected cell (I can list them one-by-one) or make the fixes and show the corrected numeric results. Which would you prefer?

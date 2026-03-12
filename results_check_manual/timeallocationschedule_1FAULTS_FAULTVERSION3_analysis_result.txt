@@ -1,0 +1,50 @@
+I reviewed the formulas and cell values you supplied for the TAS sheet and found a small set of likely errors / inconsistencies and a few risky/formula-style issues worth correcting. Summary first, then details and suggested fixes.
+
+Summary of issues found
+- Potential date parsing problem: J4 =NETWORKDAYS(C4,F4) while C4 and F4 contain the literal strings "2004-08-01T00:00:00" (ISO with a "T"). Those are not guaranteed to be Excel date serials and may break NETWORKDAYS in some environments.
+- Likely logic/typo error: J14 =IF(I$39>50,I14/I$39,50) — this deviates from the pattern used for other J-column formulas and almost certainly does not do what was intended.
+- Suspicious cell values that look like mistaken references: S13 and S14 both contain the text "X39" while most S cells hold numeric codes or X-codes. These two stand out and should be verified.
+- Minor/inconsistent formula style: use of FALSE() in the VLOOKUP and inconsistent absolute reference styles ($I39 vs I$39). These are not errors per se, but inconsistent and could be cleaned up.
+
+Details, why they matter and suggested fixes
+
+1) NETWORKDAYS vs textual timestamps (J4)
+- Formula: J4 =NETWORKDAYS(C4,F4)
+- Cell values: C4 = "2004-08-01T00:00:00", F4 = "2004-09-30T00:00:00" (strings in that form)
+- Problem: Excel does not always recognise ISO strings with the "T" as date serials. If C4/F4 are text, NETWORKDAYS may coerce them (locale-dependent) or return #VALUE / wrong result in other environments.
+- Fix: Put real Excel dates (date serials) into C4 and F4 (e.g. 2004-08-01 formatted as a date) or convert the strings to dates before using NETWORKDAYS (e.g. remove the "T00:00:00" or use DATEVALUE/ SUBSTITUTE to convert). Example conversion: =NETWORKDAYS(DATEVALUE(LEFT(C4,10)),DATEVALUE(LEFT(F4,10))) (or ensure C4/F4 are proper date cells).
+
+2) J14 logic looks wrong / inconsistent
+- Formula: J14 =IF(I$39>50,I14/I$39,50)
+- Why suspicious: Every other J-row uses the pattern IF(I$39>0, Ixx / I$39, 0) — i.e. calculate proportion or return 0 if the total is zero. J14 checks >50 and returns 50 if false. Returning 50 (not a ratio or 0) is inconsistent and likely a typo.
+- Likely intended: IF(I$39>0,I14/I$39,0)
+- Action: Confirm intent. If you want the proportion of I14 to the total I39, change to IF(I$39>0,I14/I$39,0). If there is some reason to clamp or default to 50, document why.
+
+3) S13 and S14 contain "X39"
+- Values: S13 = "X39", S14 = "X39"
+- Observation: The majority of S-cells are numeric codes (e.g. 111, 228, 730) or occasionally X-prefixed strings (X06 etc). Having "X39" repeated on these two rows is unusual and might be a paste/copy error (maybe someone intended reference to cell S39 or to code X39).
+- Action: Verify what the intended department/code for those rows is; if they should be numeric, correct them; if they should be the X-code for some overhead category that's fine but check duplication and correctness.
+
+4) VLOOKUP uses FALSE() (C6)
+- Formula: =VLOOKUP(C5,R7:T136,3,FALSE())
+- Comment: FALSE() is accepted in Excel (it returns FALSE) but most spreadsheets use FALSE (without parentheses) or 0. This is not an error, but inconsistent notation. No functional problem unless you want cleaner style.
+- Suggestion: Use =VLOOKUP(C5,$R$7:$T$136,3,FALSE) and consider absolute range anchors ($R$7:$T$136) to avoid accidental breakage if rows are inserted/deleted.
+
+5) Inconsistent absolute reference styles
+- Examples: Some formulas use I$39, others use $I39, others $I39 in different places.
+- Effect: Functionally they all point to I39 in this sheet, but the inconsistent locking (row vs column locking) can be confusing and error-prone if formulas are copied to other locations.
+- Suggestion: Standardize the anchoring (for a single fixed total cell use $I$39 everywhere) to make intent explicit and reduce mistakes when copying formulas.
+
+6) J39 / I40 behavior (sanity check)
+- J39 =IF(I$39>0,I39/I$39,0) and I40 =IF($I39>0,I39/$I39,0) etc produce 1 when the total is >0 (total divided by itself). This is not an error — likely intended to show that the total is 100% — but confirm you want the raw 1 (or format it as percentage 100%).
+
+Other small points to check
+- Ensure all expected input cells (F13:F37 and H13:H37) are filled; many of the sum formulas rely on blank/zero entries. The IF(...I$39>0, ... , 0) guards prevent #DIV/0, but if I39 is 0 the J-column percentages will be 0 (intended).
+- Look over mixed use of numeric codes and X-prefixed codes in column S; confirm both are valid code types in your process.
+
+If you want, I can:
+- produce corrected formulas for the suspicious cells (e.g. J14 and the VLOOKUP with absolute ranges),
+- build a small list of cells to change (with suggested replacements), or
+- attempt to convert the C4/F4 timestamps into proper date cells and show corrected NETWORKDAYS usage.
+
+Which of those would you like next?

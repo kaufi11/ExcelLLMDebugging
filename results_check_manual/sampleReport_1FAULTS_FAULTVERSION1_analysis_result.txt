@@ -1,0 +1,66 @@
+I scanned the workbook formulas you provided and found several formula errors / inconsistencies and a few non-formula issues that will likely cause wrong totals or confuse reviewers. Items are grouped by sheet and include the cell, the problem, why it matters, and a suggested fix.
+
+Summary of the most important issues
+- Several totals in the L (second-year) columns use a different row range than the corresponding J (first-year) totals (likely copy/paste range-offset errors). This will produce mismatched totals between years.
+- A couple of totals sum a single cell (or the wrong block) so Partners' Equity / Total Assets may be wrong.
+- A value was hard-coded in one of the L column total cells instead of using the equivalent formula used in the J column.
+- A header has the wrong year (text), not a formula error but likely an oversight.
+
+Detailed findings (by sheet)
+
+OP_EXP
+- L46: formula =SUM(L33:L44)
+  - Issue: J46 uses =SUM(J33:J43) while L46 sums L33:L44 (one extra row, L44). This mismatched range is inconsistent.
+  - Why it matters: the "TOTAL OPERATING AND MAINTENANCE EXPENSES" total will not match between columns if one column includes a different set of rows.
+  - Suggested fix: change L46 to =SUM(L33:L43) to match J46 (unless you actually intended to include L44 — verify and harmonize ranges).
+
+Bal Sht (Balance Sheet)
+- J36: formula =SUM(J23:J35)
+  - Issue: J36 (TOTAL ASSETS) sums J23:J35. Based on the layout, TOTAL ASSETS should normally add NET INVESTMENT IN REAL ESTATE (the net real estate block) and TOTAL OTHER ASSETS (J34). The current range J23:J35 does not clearly match that logical block and likely omits or double-counts rows. The range is suspicious because J23..J33 overlap the "OTHER ASSETS" detail (which are already summed at J34).
+  - Why it matters: Total assets may be wrong.
+  - Suggested fix: Verify which rows hold NET INVESTMENT IN REAL ESTATE and TOTAL OTHER ASSETS. A typical correct formula would be either SUM(J17,J34) (if J17 holds net investment) or SUM(J12:J33) if you intend to sum all asset lines. Adjust to the intended block. At minimum verify whether J36 should be =J34 + <cell-with-net-investment> rather than SUM(J23:J35).
+- L36: formula =SUM(L23:L35)
+  - Same issue as J36 for the L column. Harmonize with J36 after determining correct block.
+- J52: formula =SUM(J51:J51)
+  - Issue: J52 sums only J51 (single cell). That is unusual for a "PARTNERS' EQUITY" total line — likely intended to sum a list of partners' equity detail rows.
+  - Why it matters: partners' equity subtotal can be incorrect.
+  - Suggested fix: Replace with the appropriate sum range (for example SUM(J51:<last partners' row>) or SUM(J49:J51) depending on layout). Verify what rows actually contain the components to be summed.
+- L52: formula =SUM(L51:L51)
+  - Same issue for the L column; adjust to the intended range.
+
+Income (Statements of Operations)
+- L14: formula =5 (hard-coded constant)
+  - Issue: J14 uses =J10+J13 but L14 contains the constant 5 (formula is literally "=5"). The J column computes TOTAL RENTAL INCOME; the L column should do the same for the second year.
+  - Why it matters: inconsistent calculation between years; downstream totals in L20, L32, etc. will reflect this constant rather than the sum of the component rows.
+  - Suggested fix: change L14 to =L10+L13 (to mirror J14).
+- (General) Many L-column totals depend on L14 being correct; fix L14 first, then verify L20/L32/L45/etc.
+
+Stkhold.Equity (Statements of Partners' Equity)
+- G4 header text: "YEARS ENDED DECEMBER 31, 2001 AND 2001"
+  - Issue: The header repeats 2001 twice (likely should be 2002 and 2001).
+  - Why it matters: misleading header text in the report.
+  - Suggested fix: correct the text to the intended years (e.g., "2002 AND 2001").
+- O17: formula =IF(SUM(K17:M17)=SUM(O9:O15),SUM(O9:O15),"off")
+  - Note: This formula intentionally returns "off" if the check fails. That may be desired (integrity check), but it introduces text into a column otherwise numeric. Make sure consumers of O17 handle string results.
+- O21: formula =IF(SUM(K21:M21)=SUM(O17:O19),SUM(O17:O19),"off")
+  - Same note as above.
+
+Cash Flows
+- L45: formula =SUM(L37:L44)
+  - Issue: J45 uses =SUM(J37:J42) while L45 sums L37:L44 (one extra row). This mirrors the same J/L inconsistency we saw in other sheets.
+  - Why it matters: NET CASH PROVIDED BY (USED IN) INVESTING ACTIVITIES will be inconsistent between years.
+  - Suggested fix: change L45 to =SUM(L37:L42) to match J45 (unless you intended to include L43–L44 — verify and harmonize).
+- (Downstream) Because L45 is used in L56 (and L56 is used in L58, etc.), this range mismatch will propagate incorrect totals. Fix the source range first and then re-check totals.
+
+Other observations and general recommendations
+- Many label cells in I/K columns contain "$" text or parentheses in J9 show "(    )" — those are text labels. Sums should not include those columns. Ensure that all numeric input cells are numeric (not formatted text). If any numeric-looking cells are text, SUM formulas will ignore them and give 0.
+- There are several places where formulas sum single cells (e.g., SUM(K11:M11) is okay for cross-column aggregation, but SUM(J51:J51) is suspicious). Review all SUMs that have single-cell ranges to check they are purposeful.
+- Several formulas use IF(...,"off") returning text on failure. Returning text from a numeric area will make numeric totals error-prone if you later try to arithmetic-sum those cells. Consider having checks produce an error code or place the check in a separate validation cell instead of in totals columns.
+- After correcting ranges, run a reconciliation: Total assets (Balance Sheet) should equal Total liabilities + Partners' equity. The workbook attempts such checks (e.g., IF formulas in Stkhold.Equity) — use them after you fix the range mismatches.
+
+If you want, I can:
+- Open the workbook and patch the specific formulas (I can provide the exact corrected formulas I recommend),
+- Or produce a short VBA macro or step-by-step to find other J/L range mismatches (search for pairs where the J-column sum range differs from the L-column range),
+- Or re-run a validation after you accept corrections to show new totals and whether the sheet balances.
+
+Which would you like me to do next?

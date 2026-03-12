@@ -1,0 +1,53 @@
+Summary of the errors I found (short):
+
+1. Wrong formula (hard-coded constant) in FRF sheet, cell I20:
+   - It reads =SUM(482-J20). That subtracts J20 from 482 (wrong reference).
+
+2. Non‑idiomatic / potentially error‑prone formulas in FRF sheet column I:
+   - Many cells use =SUM(H#-J#). SUM( ) around a single subtraction works, but is unnecessary and can hide formula mistakes.
+
+3. Ambiguity about number of pore‑pressure sensors in RHB sheets:
+   - The note asks “Are there 5 or 6 sensors collecting Pore Pressure data??” The listing shows PD0–PD5 (six PD sensors) plus PA0 and PA1 (piezometers). It's unclear whether PA# are counted as pore‑pressure sensors.
+
+4. Inconsistent date formats and some suspicious coordinate values:
+   - DOZR uses full timestamps (e.g., 1994-07-04 00:00:00) while RHB/FRF use day numbers (12, 23, etc.). This is a consistency/validation issue.
+   - Some coordinates (e.g., F23 = -927.3, G28 = -2400.81) look odd — flag for data verification.
+
+Quick fixes and explanation
+
+1. Fix the wrong formula (I20):
+   - Replace =SUM(482-J20) with =H20-J20
+   - Why: you want the difference between the values in column H and column J for the same row. Using H20 makes the formula reference the correct cell instead of a hard-coded constant.
+
+2. Replace SUM-wrapped subtractions with plain subtraction (cleaner and safer):
+   - Example: change =SUM(H5-J5) to =H5-J5
+   - How: edit the formula in the first row of column I (e.g., I5) and then fill/drag down the column.
+   - Why: =H-J is clearer, slightly faster, and avoids confusing SUM syntax that could mask range mistakes.
+
+3. Verify numeric values before subtracting:
+   - Ensure H and J cells are numeric (not text). If a cell is text-looking number, convert it (Data → Text to Columns or multiply by 1).
+   - Why: =H-J returns #VALUE! if one side is text.
+
+4. Resolve the pore‑pressure sensor count (answer + how to compute):
+   - From the sheet: PD0 through PD5 = 6 PD sensors. PA0 and PA1 are separate piezometers (often also pore‑pressure). If you want only PD sensors: there are 6. If you include PA sensors as pore‑pressure, total = 8.
+   - Quick way to count PD IDs in Excel (adjust range to your rows):
+     - =COUNTIF(A10:A17,"PD*")  --> counts PD0–PD5
+     - =COUNTIF(A10:A17,"PA*")  --> counts PA0/PA1
+     - Or to count any row whose Type contains "Press": =COUNTIF(M10:M17,"*Press*")
+   - Why: these formulas give an unambiguous count so you can answer the note in D19–D20.
+
+5. Normalize dates and flag suspicious coordinates:
+   - Normalize date formats (select date columns → Text to Columns or use DATEVALUE) so all sheets use real Excel dates.
+   - Check negative/large coordinate values manually — confirm they are intended or correct by applying Filters and sorting to find outliers.
+
+Step‑by‑step to fix I20 and the column I formulas (fast):
+1. Go to FRF sheet.
+2. Select I20. Replace formula with: =H20-J20 and press Enter.
+3. Select the top cell of column I that should compute the difference (e.g., I5). Edit it to =H5-J5 and press Enter.
+4. Drag the fill handle down column I to copy the corrected formula to all rows that need it.
+5. If any #VALUE! errors appear, select column H and J and convert text numbers to numeric (Data → Text to Columns → Finish) or use Paste Special → Multiply by 1.
+
+If you want, I can:
+- Provide the exact COUNTIF/COUNTIFS ranges for your sheets,
+- Produce a short macro to fix all =SUM(H-J) → =H-J replacements and correct the hard-coded I20,
+- Or normalize the date formats across sheets automatically. Which would you like?

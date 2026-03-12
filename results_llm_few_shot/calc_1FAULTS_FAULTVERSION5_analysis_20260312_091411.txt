@@ -1,0 +1,37 @@
+Summary — the sheet has 3 real problems (one clear bug + two design/robustness issues). Short fixes and why:
+
+1) Sample Company — wrong constant in Waste/Scrap
+- Faulty cell: Sample Company!C23
+- Problem: cell contains the number 3 instead of calculating Waste/Scrap from the inputs.
+- Fix (replace the 3 with the correct formula):
+  =C9*B24*C11
+- Why: the other rows compute their values as Annual Value * % * duty rate. This cell should too, otherwise Total (C37) is wrong.
+
+2) Text Only sheet uses hard‑coded inputs (won’t reflect Your Company sheet)
+- Faulty cells: Text Only!C5, C6, C7, C8 (and C6–C8 used throughout)
+- Problem: those are fixed numbers (1, 0.1, 0.075, 0.12) instead of links to the main sheet, so changes on "Your Company" won't appear on the print version.
+- Fix: link them to the Your Company sheet:
+  Text Only!C5 = 'Your Company'!C14
+  Text Only!C6 = 'Your Company'!C15
+  Text Only!C7 = 'Your Company'!C16
+  Text Only!C8 = 'Your Company'!C17
+- Why: keeps the print (Text Only) sheet synchronized with the input sheet.
+
+3) Possible divide-by-zero / robustness issue for Cash‑flow calculation
+- Faulty cells: Your Company!C22 and Text Only!C13 (both do C13/C14*… or C4/C5*…)
+- Problem: if Inventory Turnovers (C14 / C5) = 0 you get #DIV/0.
+- Fix: guard the formula — example for Your Company:
+  =IF(C14=0,0,C13/C14*C15*C17)
+  (or use IFERROR: =IFERROR(C13/C14*C15*C17,0))
+- Why: prevents errors and misleading results if the user leaves turnovers at zero.
+
+Optional check (business-logic)
+- Some category formulas (exports, returns, etc.) multiply by the parts duty rate (C15). Confirm whether a given line should use Parts (C15) or Finished Product rate (C16). For example, if Exports are finished goods, use:
+  =C13*B31*C16
+- Why: using the wrong duty rate gives incorrect savings estimates.
+
+Other small recommendations
+- Format percentage inputs as Percentage (or document they must be decimals like 0.05).
+- After fixing Sample Company!C23, re-check Sample Company!C37 (total) and Your Company!C41 to confirm totals update correctly.
+
+If you want, I can provide the exact corrected formulas pasted for each cell or produce a patch list you can apply directly.

@@ -1,0 +1,32 @@
+I checked the workbook formulas and found one clear formula error plus a few inconsistencies/points that will likely cause incorrect totals or confusion. Summary and recommended fixes below.
+
+1) Wrong function in SG1 (major error)
+- Cell: SG1!F53
+- Current formula: =COUNT(F7:F51)
+- Problem: COUNT returns the number of numeric cells in F7:F51 (38) rather than the sum of the 2002 entries. This makes the subtotal in F53 incorrect and breaks all dependent totals/percentage-change calculations (for example G53 and the overall totals in row 63).
+- Fix: Replace with =SUM(F7:F51)
+- Expected result after fix: F53 = 456,288 (the sum of the numeric F7:F51 values shown in the sheet). Consequent updates:
+  - SG1!G53 (=(F53-E53)/E53) will become approximately -0.006855 (instead of the current ≈ -0.9999).
+  - SG1!F63 (which is =SUM(F53:F61)) will become 490,485 (current value 34,235 is wrong because it used the wrong F53). 
+  - SG1!G63 (=(F63-E63)/E63) will become approximately -0.003405 (instead of the current ≈ -0.9304).
+
+2) Text hyphen(s) used in numeric columns (possible source of subtle SUM/COUNT problems)
+- Examples: SG1!F44 (value is "-"), SG2 and SG1 have several "-" cells in numeric columns indicating “not applicable”.
+- Problem/Note: Using the text hyphen prevents these cells from being included in SUM and COUNT as numbers. That may be intentional (to indicate N/A), but it can cause unexpected subtotal behaviour if a SUM was expected to include a zero. In the current workbook this likely contributed to the author using COUNT in F53 to count non-empty numeric cells (but the intended operation was a SUM).
+- Recommendation: If a numeric zero is more appropriate use 0; if you want to show N/A but still sum, consider blank (empty) vs zero depending on the intended aggregation. Document which approach is intended.
+
+3) Redundant / inconsistent absolute references (cosmetic / maintainability)
+- Examples: SG4a!B53 uses =B52/$B52 instead of the more conventional =B52/$B$52; SG2!B52 uses =B51/$B$51 (good), but you have a mix of styles.
+- Problem/Note: These do not produce incorrect results here (they divide a cell by itself to return 1), but the inconsistent use of absolute addressing is a maintainability issue and can lead to errors if rows are moved/copied.
+- Recommendation: Standardize to $B$52 where you mean an absolute reference.
+
+4) Percent-change formulas assume numeric denominators (watch for division-by-zero)
+- Pattern: Many cells use =(F#-E#)/E#. If E# can be 0 or non-numeric ("-"), this will produce #DIV/0 or invalid results.
+- Recommendation: If there's any chance E# = 0 (or text), wrap the formula in an IFERROR or test E#>0 before dividing, e.g. =IF(E#=0,NA(),(F#-E#)/E#) or =IFERROR((F#-E#)/E#,"").
+
+5) Overall data consistency note (not a formula bug but relevant)
+- After fixing SG1!F53 to SUM, SG1 totals (F63 etc.) will match the totals shown elsewhere (SG2 totals). Currently the incorrect COUNT caused the SG1 F subtotals/totals and percent changes (G53, G63) to be grossly wrong — fix (1) above will correct that.
+
+If you want, I can:
+- Apply the correction (change F53 to SUM) and recompute the dependent totals and percentages throughout SG1 and report the corrected values (I already computed the principal corrected values above).
+- Scan for any additional COUNT/SUM mix-ups across the workbook (I found the F53 COUNT as the only explicit COUNT formula in the supplied formula list; I can re-scan for subtle range misreferences if you want).

@@ -1,0 +1,28 @@
+Summary of errors found
+1) Cell J41 has a typo: its formula is =193-H41-I41 instead of subtracting the Budget (G41).  
+2) The totals use wrong ranges:
+   - H218 (Expended to-date) is =SUM(H9:H216) — it skips H7:H8.  
+   - I219 (Commitments) is =SUM(I10:I217) — it skips I7:I9 and also includes row 217 (a totals row), which is wrong.  
+   These incorrect ranges make the overall Balance (J220) wrong.  
+3) (Quick check) Some formulas are shown as text in your extract ("FORMULA =..."). If you see formula text in the sheet instead of results, Excel may be in Show Formulas mode or the formulas stored as text.
+
+Correct formulas to fix everything
+- Fix the bad cell:
+  - J41 -> =G41 - H41 - I41
+- Fix the totals ranges:
+  - H218 -> =SUM(H7:H216)
+  - I219 -> =SUM(I7:I216)
+- Keep G217 -> =SUM(G7:G216) (this is already correct)
+- Balance (J220) should remain -> =G217 - H218 - I219
+
+Why these changes fix it (short)
+- J41 used the constant 193 so it was not using the actual Budget (G41). Changing to G41 uses the right value.  
+- The Sum ranges were starting/ending in the wrong rows, so some project expended/commitment amounts were omitted (or totals row was accidentally included). Using H7:H216 and I7:I216 includes all project rows and excludes the totals row.  
+- Once the component totals are correct, J220 (Balance) will compute correctly.
+
+Quick checks to run after fixing
+- Use Find (Ctrl+F) to search for any formulas containing hard-coded numbers (like "193-") — replace them with the correct column reference (Gx).  
+- Toggle Show Formulas (Ctrl+`) to ensure formulas display as results, not text.  
+- Recalculate (F9) and verify that J220 matches manual sum of budgets minus expended minus commitments.
+
+If you want, I can give the exact Excel actions (clicks/keystrokes) to change these cells.

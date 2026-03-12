@@ -1,0 +1,38 @@
+Findings (short)
+1. Missing Pract.4 for row 55 (G55 is blank). I55 =SUM(D55:G55) will behave unexpectedly (blank treated as 0 / student missing a score).
+2. Mean formula typo: F56 =AVERAGE(F36:F54) — it omits row 55 (should be F36:F55).
+3. Grade-threshold inconsistency: Block A student grades use >= (e.g. >=89.9%), but Block B and the MEAN rows use > (e.g. >89.9%). Different operators can change borderline results.
+4. (Possible confusion) Attendance (H) is listed and H3=50 but totals I3=400 and I# = SUM(D:G) — that means attendance is intentionally excluded from the "Total (w/o A/P)". If you intended attendance included in percent/grade you must change formulas.
+
+Fixes + exact formulas (easy)
+1. Fill missing Pract.4 for row 55
+- Action: enter the correct G55 score. To find blanks quickly: Home → Find & Select → Go To Special → Blanks.
+- If score is genuinely 0, type 0. If missing data, get the score from source.
+
+2. Fix the mean for Pract.3 (F56)
+- Change F56 to:
+  =AVERAGE(F36:F55)
+- Explanation: include all 20 students (rows 36–55).
+
+3. Standardize grade cutoffs (use >= recommended)
+- Replace current K formulas in both blocks and the MEAN rows with a single consistent formula. Example (use this in K6:K25, K36:K55, K26, K56):
+  =IF(J#>=0.90,"A",IF(J#>=0.80,"B",IF(J#>=0.70,"C",IF(J#>=0.60,"D","F"))))
+- Example for cell K6:
+  =IF(J6>=0.9,"A",IF(J6>=0.8,"B",IF(J6>=0.7,"C",IF(J6>=0.6,"D","F"))))
+- Explanation: using >= and round cutoffs (90%, 80% ...) avoids ambiguity at borders and is consistent.
+
+4. If you want attendance included in Total/Class %
+- Change each I# to include H:
+  I6 (and I36, etc) → =SUM(D6:H6)
+- Update header totals:
+  I3 and I33 → 450 (4 practicals ×100 + 50 attendance)
+- Update class % formulas if needed (they already divide by I3/I33):
+  J6 remains =I6/$I$3 (use absolute reference $I$3 recommended)
+- Explanation: that moves attendance into the student total and percentage. If you keep attendance excluded on purpose, do nothing here.
+
+Small improvements (optional)
+- Use absolute references for denominators: set J formulas to =I6/$I$3 (or =I36/$I$33) so copying doesn't change the denominator.
+- Check all AVERAGE ranges to ensure every mean includes rows 6–25 and 36–55 (D26:D25 etc are OK; F56 was the single typo).
+- Use conditional formatting to highlight missing or out-of-range scores (e.g., format G6:G55 for blanks or values >100).
+
+If you want, I can give you the exact find/replace steps to update all K cells at once or provide the corrected formulas for every affected cell. Which do you prefer?

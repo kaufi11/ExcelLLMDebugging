@@ -1,0 +1,41 @@
+Summary — key errors found
+1) G21 is wrong (hard-coded). Instead of following the Yes/No × weighting pattern, G21 is set to =1. That makes Section II’s weighted total too large.
+
+2) Weight-sum checks can fail because of formatting/rounding. The section checks use comparisons to 100% (or rely on exact decimal sums). Small rounding differences (e.g., 0.1428 vs 0.143) or if weights are stored/formatted as decimals vs percentages can trigger the IF(...<>"100%", "ERROR", ...) result even though the intent is correct.
+
+3) Minor robustness issue: IF formulas return "" for unexpected answers or N/A and some section checks reference non-contiguous cells (risk when sheet structure changes).
+
+Fixes (short, copy‑paste formulas) and why they work
+1) Fix G21 so it multiplies the weight like the other items
+Replace the current =1 in G21 with:
+=IF(C21="yes",F21,IF(C21="no",0,""))
+Why: this applies the same logic as the other G cells — it returns F21 when the answer is Yes, 0 when No, blank otherwise. That prevents an incorrect full-point contribution.
+
+2) Make the section weight-sum checks tolerant to rounding and consistent in units
+Replace checks like
+=IF(SUM(F6:F10)<>100%,"ERROR","100%")
+with a rounding-based numeric check and return a numeric 1 (formatted as %):
+=IF(ROUND(SUM(F6:F10),4)<>1,"ERROR",1)
+Then format the cell as Percentage with desired decimals (e.g., 0 or 1 decimal).
+Why: ROUND(...,4) avoids tiny floating-point errors. Comparing to 1 (not a text "100%") matches your weights as decimals (0.2, 0.1428, etc.). Returning numeric 1 lets you format consistently as 100%.
+
+Apply the same pattern to the other section checks:
+Section II (F24):
+=IF(ROUND(SUM(F16:F22),4)<>1,"ERROR",1)
+Section III (F36):
+=IF(ROUND(SUM(F28:F34),4)<>1,"ERROR",1)
+Section IV (F56):
+=IF(ROUND(F41+F45+F53+F54+F55,4)<>1,"ERROR",1)
+(Or change the explicit sum to a contiguous range if you reorganize rows.)
+
+3) (Optional) Make G formulas robust to N/A and inconsistent capitalization
+Use consistent matching or normalize:
+=IF(LOWER(TRIM(C6))="yes",F6,IF(LOWER(TRIM(C6))="no",0,IF(LOWER(TRIM(C6))="n/a",0,"")))
+Why: trims extra spaces and ignores case, and treats N/A as zero contribution if you want.
+
+What to check after changes
+- After fixing G21 and the checks, verify each section total (G12, G24, G36, G56) sums to 1 (or 100% when formatted).
+- Format all weight cells F6:F56 and section total cells consistently (either all decimals or all Percent format) to avoid confusion.
+- If you need exact percentages, consider expressing weights as percentages (20%, 14.28%) consistently and use ROUND in checks.
+
+If you want, I can give you the exact corrected formulas for every problematic cell and a short copy/paste instruction to update the sheet.

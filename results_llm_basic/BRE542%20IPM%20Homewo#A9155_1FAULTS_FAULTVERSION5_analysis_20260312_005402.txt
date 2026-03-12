@@ -1,0 +1,33 @@
+Summary — main errors found
+1) Typo in E12: it uses 463 instead of the observed theta cell. This makes that squared-error huge/wrong.  
+2) SSE is summed over the wrong range: E19 =SUM(E14:E18) — it misses the actual error cells and includes a non-existent row.  
+3) van Genuchten prediction formula is fragile because it uses -B12 rather than ABS(B12). That works for your negative pressures now, but is risky and can break if signs change.
+
+Exact fixes (copy these into the indicated cells)
+
+- Cell E12 (squared error for row12) — replace
+  =(463-D12)^2
+  with
+  =(C12-D12)^2
+
+- Cell E19 (sum of squared errors) — replace
+  =SUM(E14:E18)
+  with
+  =SUM(E12:E16)
+  (or =SUM(E12:E16,E?...) if you have more rows — sum exactly the error rows)
+
+- Replace the D formulas (predicted theta) with an ABS-based, clearer formula. For D12 use (copy to D12 and fill down):
+  =$B$3 + ($B$4-$B$3) / ( (1 + $B$5 * (ABS(B12)^$B$6))^(1 - 1/$B$6) )
+  This is equivalent to your van Genuchten formula but safer and clearer.
+
+Why these fixes
+- The 463 in E12 is a human typo: the squared error must compare observed (C12) vs predicted (D12). Using 463 makes the error nonsense and will mislead the solver.  
+- The SUM range must include every squared-error row. Summing the wrong range gives an incorrect SSE so the optimizer will fit to the wrong target.  
+- Using ABS(B12) ensures the model uses |h|^n (the correct van Genuchten form) and avoids problems if some pressure values are positive or if Excel treats unary minus oddly.
+
+Extra checks (recommended)
+- Verify all E rows (E12:E16) use the consistent formula =(C#-D#)^2.  
+- Confirm B7 (SSE) references the fixed E19 (or point it directly to the SUM cell).  
+- Check headers: you have two "Observed" headings at B10 and C10 — consider renaming to "Pressure (h)" and "Theta observed" to avoid confusion.
+
+If you want, I can give a single-block of corrected formulas for D12:D16 and E12:E16 and show how to set up the solver target cell.

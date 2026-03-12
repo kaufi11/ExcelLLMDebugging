@@ -1,0 +1,34 @@
+Short summary of the problems I found and how to fix them.
+
+1) Many cells show the text "FORMULA =…" instead of returning results
+- What this means: the formulas are stored/entered as text (or were prefixed with the literal text "FORMULA ="), or the workbook is showing formulas instead of results.
+- Why it’s a problem: those cells are not being evaluated, so headers and repeated references (e.g. =A$9) are not pulling through, and downstream results are wrong/missing.
+- Quick fix:
+  1. If Excel is simply showing formulas (not text), toggle Show Formulas: press Ctrl+` (grave accent). If that fixes it you’re done.
+  2. If the cells contain the literal text "FORMULA =A$9" (i.e. the word FORMULA and an equals sign):
+     - Select the affected range.
+     - Set Number format to General (Home → Number → General).
+     - Ctrl+H (Find & Replace): Find what: FORMULA =    Replace with: =    → Replace All.
+     - Press F9 or Ctrl+Alt+F9 to force recalculation.
+     - If some cells still remain text, edit one (F2) and Enter to re-evaluate, or use Data → Text to Columns (Finish) to coerce formulas.
+  3. Also ensure Calculation is set to Automatic: File → Options → Formulas → Calculation options → Automatic.
+
+2) Broken sequence in A-122 column C (specific formula error)
+- Problem: cell C34 currently has =C33-1 which breaks the incremental numbering sequence in column C (every row up to C33 is C(previous)+1).
+- Why it’s a problem: it creates a wrong cost-principle number and shifts downstream numbering.
+- Fix: change C34 to =C33+1 so the sequence continues correctly.
+
+3) Potential mismatches between Account (column A) and mapped Account (column B)
+- What I noticed: some rows show A and B account numbers that differ (e.g. A23 = 1115 but B23 = 1190). Some of those differences may be intentional (mapping to another chart), but if they are supposed to match this is an error.
+- How to check & fix quickly:
+  - Insert a helper column and use =IF(A16=B16,"OK","Mismatch") (adjust row numbers).
+  - Filter on "Mismatch" to review. For rows that should match, correct B to equal A (or correct A if the primary is wrong).
+  - If the mismatch is intentional (mapping), add a comment cell/legend so reviewers know it’s expected.
+
+Extra recommendations
+- After fixes, run a quick consistency check:
+  - Toggle Show Formulas off (Ctrl+`) and verify header references (=A$9 etc.) show the copied header values.
+  - Scan for cells still left as text (they align left by default) and convert to General and re-evaluate.
+- Save a backup before doing mass find/replace.
+
+If you want, tell me which sheet(s)/ranges you want me to repair and I can give the exact Find/Replace strings and a one-line macro to fix everything automatically.

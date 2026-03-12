@@ -1,0 +1,39 @@
+Findings (short)
+- Error: Cell D6 on sheet "EER SITE" contains =2 instead of the expected Year‑2 calculation. That produces a wrong Year‑2 value (and all later years will cascade from that wrong number).
+- Consistency issue: Most D–H formulas are hard‑coded with *1.04 instead of referencing the escalation cell in column C. That makes changing the escalation rate error‑prone.
+- Input inconsistency: Many rows have "added 8/02" text in column B (base column). Those rows cannot use B*1.04 for Year‑2; you must keep the supplied numeric Year‑2 in D for those rows or standardize the input.
+
+Simple fixes and why they work
+1) Fix D6 (immediate error)
+- Replace D6 =2 with:
+  =B6*(1+$C6)
+  (or =B6*1.04 if you prefer hard code).
+- Why: D should be Year‑2 = Year‑1 * (1 + escalation). B6 is Year‑1; C6 is the escalation (0.04). The current =2 is wrong.
+
+2) Make formulas robust (recommended)
+- In column D (for rows where B is numeric) use:
+  =IF(ISNUMBER($B6),$B6*(1+$C6),D6)
+  (If you don’t want to overwrite rows where B is text and D already contains the official Year‑2 number, manually skip those rows.)
+- In columns E–H use consistent formulas referencing C, for example put in E6 and copy right/down:
+  =D6*(1+$C6)
+  then F6 =E6*(1+$C6), etc.
+- Better alternative (all rows consistent if Year‑2 is always numeric or B is numeric):
+  - D6: =IF(ISNUMBER($B6),$B6*(1+$C6),$D6) — but note this references D6 itself only if you plan to keep an existing numeric D for "added 8/02" rows; usually you will just leave those rows alone and apply the formula only to rows with numeric B.
+
+3) Standardize escalation reference
+- Replace every hard‑coded "*1.04" with "*(1+$C6)" (locking column C if needed: (1+$C$6) or use row relative $C6).
+- Why: If escalation changes you change one cell (column C), not every formula.
+
+How to find similar mistakes quickly
+- Filter column B for non‑numeric values (look for "added 8/02") to see rows you must treat specially.
+- In column D use a helper formula to flag mismatches:
+  =IF(AND(ISNUMBER(B6),ROUND(D6,2)<>ROUND(B6*(1+$C6),2)),"Mismatch","OK")
+  copy down — this will show any row where D is not B*(1+C).
+
+Actionable step list (quick)
+1. Change D6 to =B6*(1+$C6).
+2. Replace other hard‑coded year formulas with references to C, e.g. E6 =D6*(1+$C6) and copy across/down for all rows that have numeric B (skip the "added 8/02" rows or leave their provided D value).
+3. Use the helper mismatch formula to spot any remaining wrong Year‑2 values.
+4. Optionally: convert column C to a single cell (e.g. $C$4 or $C$3) and use that absolute reference if escalation is the same workbook‑wide.
+
+If you want, I can give exact copy‑paste formulas to run over the whole table (and a formula that preserves existing D values for the "added 8/02" rows). Which option do you want?

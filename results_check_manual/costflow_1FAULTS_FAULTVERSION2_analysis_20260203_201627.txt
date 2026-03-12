@@ -1,0 +1,40 @@
+I reviewed the three sheets you gave. I found a few concrete formula errors (wrong cell references and missing formulas) in the "Valuing Ending Inventory" sheet that are causing wrong numbers and #DIV/0 or blanks. Below are the problems, why they’re wrong, and how to fix them — short and simple.
+
+1) Wrong reference for purchase units (causes #DIV/0 in average cost)
+- Where: Valuing Ending Inventory → cell I9
+- Current formula: =+D14
+- Why wrong: D14 is a dollar amount (cost); I9 should contain units (column C). Because I9 is zero or wrong, J9 (unit cost = K9/I9) will give #DIV/0 or an incorrect average.
+- Fix: change I9 to =C14 (or =SUM(C12:C13) if C14 is a sum row).
+- Explanation: average unit cost = total cost / total units. I9 must be the purchase units.
+
+2) Missing formulas (question marks) for ending inventory cost and COGS in the first (periodic) block
+- Where: Valuing Ending Inventory → K11 and K12 (K11 shows "?", K12 shows "?")
+- What to put:
+  - K11 = I11 * J10  (ending inventory units × average unit cost)  
+  - K12 = SUM(K10:K11)  (goods available cost + ending inventory cost, or more explicitly =K10 + K11)
+- Why: K10 is goods-available cost, J10 is average unit cost, I11 is negative ending units in your layout; K11 must be the cost associated with that ending inventory, and K12 must roll up to COGS (goods available cost + ending inventory cost produces the negative/positive signs you use elsewhere).
+- Explanation: ending inventory cost = units remaining × unit cost; COGS = goods available cost + (ending inventory cost as negative).
+
+3) Potential/recurring wrong-column references (general pattern)
+- Symptom: many averages and unit-costs are calculated with divisions like K?/I? where the I? cell is coming from the D column by mistake (e.g., I9 = D14). That produces wrong or zero denominators and wrong averages.
+- Fix: Inspect every formula that computes a unit cost (cells named J* or any =K*/I*) and ensure the denominator references the units column (column C or the correct "units" cell), not column D (cost per unit).
+- Explanation: unit-cost formulas must divide total cost by total units. If units reference is wrong you’ll get wrong unit cost and every dependent number will be incorrect.
+
+4) Clarity / sign recommendation (not strictly an error but reduces confusion)
+- Where: H11 currently uses =-I10-SUM(C17:C18)
+- Issue: it works because sales are negative, but it’s confusing.
+- Recommended replacement: =-( I10 + SUM(C17:C18) ) or = I10 + SUM(C17:C18) and then use the sign convention consistently.
+- Explanation: clearer formulas reduce future mistakes.
+
+Quick checklist to correct the sheet (do these changes):
+- Replace I9 with =C14 (or =SUM(C12:C13) depending on structure).
+- Put K11 = I11 * J10.
+- Put K12 = SUM(K10:K11).
+- Then scan all J? cells (unit-cost columns): confirm numerator is a cost column and denominator is a units column (no mixing columns).
+- Replace confusing sign formulas with explicit parentheses so results are easier to read/debug.
+
+If you want, I can:
+- produce the exact corrected formulas for every affected cell (I can list a table of cell → corrected formula), or
+- show a corrected small example of the top block so you can copy it into the workbook.
+
+Which would you prefer?

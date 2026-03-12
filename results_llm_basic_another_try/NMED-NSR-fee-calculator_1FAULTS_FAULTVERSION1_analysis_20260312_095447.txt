@@ -1,0 +1,54 @@
+Errors found:
+
+1. **Cell F5 formula**: `=IF(C43="N/A",C42,C43)`  
+   - Problem: This formula is in the header row (row 5) and references cells C42 and C43, which are far below and contain fee values. It doesn't make sense to have this formula in a header cell.
+
+2. **Cell C41 formula**: `=IF(OR(C34>0,C35>0),C36,COUNT(C9:C31))`  
+   - Problem: The `COUNT` function counts numeric values only. Many formulas in C9:C31 return numbers, but some may be zero or blank. If the intent is to sum points, `COUNT` is wrong; it should be `SUM`.
+
+3. **Cell C43 formula**: `=IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))`  
+   - Problem: The logic is unclear. It returns "N/A" if B34 is not blank, otherwise halves fee if B38 is not blank, else "N/A". But B34 is "Streamlined (# of Sites)" and B38 is "Small business?" (x if yes). The condition for "N/A" on B34 seems incorrect.
+
+4. **Cell C30 formula**: `=IF(B31="",(IF(B30<>"",20,0)),"")`  
+   - Problem: B31 is "PSD review, including netting" (row 31), but the formula is in row 30. The formula returns blank if B31 is not empty, which may cause inconsistent counting.
+
+5. **Cell C34 formula**: `=IF(B35="",(IF(B34<>"",10,0)),"")`  
+   - Problem: B35 is "Streamlined (# of Sites)". The formula returns blank if B35 is not empty, which conflicts with C35 formula that calculates points based on B35. This can cause double counting or missing points.
+
+---
+
+**Solutions:**
+
+1. **F5 formula**: Remove or move this formula to a relevant cell (like C44) where fee calculation is displayed. Header cells should not have formulas referencing data cells.
+
+2. **C41 formula**: Change `COUNT(C9:C31)` to `SUM(C9:C31)` to correctly sum all points.
+
+   - Corrected: `=IF(OR(C34>0,C35>0),C36,SUM(C9:C31))`
+
+3. **C43 formula**: Change logic to check if small business (B38) is marked, then half fee applies; otherwise full fee.
+
+   - Corrected: `=IF(B38<>"",C42/2,C42)`
+
+   - Remove check on B34 since "Streamlined" is handled separately.
+
+4. **C30 formula**: Simplify to count 20 points if B30 is not blank, regardless of B31.
+
+   - Corrected: `=IF(B30<>"",20,0)`
+
+5. **C34 formula**: Remove the nested IF and just count 10 points if B34 is marked and B35 is blank (to avoid double counting).
+
+   - Corrected: `=IF(AND(B34<>"",B35=""),10,0)`
+
+---
+
+**Explanation:**
+
+- Use `SUM` instead of `COUNT` when adding numeric points to get total points correctly.
+
+- Simplify IF formulas to avoid blanks that cause inconsistent totals.
+
+- Small business discount should be applied only if marked, no conflicting conditions.
+
+- Avoid double counting by checking related cells before assigning points.
+
+- Keep formulas consistent and logical to ensure accurate fee calculation.

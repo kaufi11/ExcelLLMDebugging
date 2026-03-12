@@ -1,0 +1,61 @@
+I inspected the workbook formulas and found one clear formula error and several inconsistent / risky formula usages that will likely produce incorrect totals or make maintenance error‑prone. Summary with locations and recommended fixes follows.
+
+1) Clear formula error (wrong function)
+- Sheet: SG1
+- Cell: F53
+- Current formula: =COUNT(F7:F51)
+- Problem: This counts how many numeric cells are in F7:F51 (returns 38) instead of summing the entries for 2002. As a result F53 is wrong and every dependent calculation (notably G53 and the Totals in row 63) is incorrect.
+- Effect observed: G53 = (F53-E53)/E53 → gives about -0.9999 because F53 is 38 instead of the intended sum.
+- Fix: Replace with =SUM(F7:F51) (or adjust range to the correct rows if different).
+
+2) Resulting incorrect dependent totals
+- Sheet: SG1
+- Cells: G53, F63, G63 (and any other cells that reference F53 or F63)
+- Reason: Because F53 is wrong, F63 (=SUM(F53:F61)) and change calculations (=(F63-E63)/E63 etc.) produce wrong results.
+- Action: Fix F53 to a SUM (see #1) and then recheck F63 and the related percentage change cells.
+
+3) Inconsistent absolute/relative addressing (style / potential maintenance issues)
+I found multiple cells where absolute addressing is used inconsistently (e.g. $B52 vs $B$52 or B$8). These are not syntactically wrong but are inconsistent and can cause errors if the sheet is modified.
+
+Examples:
+- Sheet: SG4a
+  - B53 formula =B52/$B52  (works but uses $B52 instead of $B$52)
+- Sheet: SG4b
+  - B53 formula =B52/$B52 (same style)
+- Sheet: HG4a
+  - B9 formula =B8/B$8 (uses mixed absolute addressing)
+- Sheet: HG3 / HG4c / others: several "% as percentages" cells use $B29, $B51 etc with inconsistent anchoring.
+
+Recommendation:
+- Standardize absolute references where appropriate (use $B$52 style when dividing by a fixed total cell). That reduces risk when rows/columns are inserted or copied.
+
+4) Use of subtotal rows inside further SUM ranges — potential for double counting if layout changes
+- Example: SG1 B63 =SUM(B53:B61)
+  - Here B53 is itself =SUM(B7:B51) (a subtotal) and B55..B61 are additional blocks of entries. This is OK as currently structured, but it relies on the specific row layout. If rows are moved/inserted you can accidentally double count or omit ranges.
+- Recommendation: Consider either:
+  - keeping all raw data in one consistent block and summing that directly, or
+  - using explicit named ranges for the blocks and summing named ranges so it's clearer and less error‑prone.
+
+5) Cells containing "-" (text) in numeric columns
+- Example: SG1 F44 = "-" and G44 = "-" (text)
+- These are not formulas but are present in numeric columns used by SUMs in other places. Excel ignores non‑numeric text in SUMs, but having textual placeholders in numeric columns can hide problems and confuse users.
+- Recommendation: Use blank cells or NA() or explicit zero where appropriate, and document how these should be treated.
+
+6) Potential data/value inconsistencies (not strictly formula errors, but worth checking)
+- Some trend/change formulas show very large negative changes (e.g. in HG1 English: E8 = 12827, F8 = 469 → G8 =(F8-E8)/E8 yields ~ -96%). This could be legitimate (data) or could indicate that the 2002 value was placed in the wrong column/cell. I did not change values, but you may wish to verify unusual jumps manually.
+  - Example: HG1 row for English: B8..F8 = 34160, 33551, 27234, 12827, 469 — please confirm that 469 is the intended 2002 entry number.
+
+7) Minor formula-style inconsistencies
+- Several places use B29/$B29 or B29/$B$29 etc. All work but uniform style is clearer. Consider standardizing.
+
+Summary of action items I recommend you apply now
+1. On SG1 change F53 from =COUNT(F7:F51) to =SUM(F7:F51) (or correct sum-range if necessary).
+2. After fixing (1), re-evaluate F63, G53, G63 and any other dependent totals/percentages.
+3. Standardize absolute reference usage (use $B$nn for fixed totals).
+4. Replace textual "-" placeholders in numeric columns with blanks or documented numeric placeholders.
+5. Review cells with very large year-to-year changes (e.g. HG1 English) to ensure data values are in correct columns.
+
+If you want I can:
+- provide a small list of every formula that uses mixed absolute/relative anchors,
+- compute the correct value that F53 should be (I can sum F7:F51 and F53:F61 for you) and show the corrected totals/percentages,
+- or produce a corrected copy of the workbook with the F53 fix and standardized references. Which would you like?

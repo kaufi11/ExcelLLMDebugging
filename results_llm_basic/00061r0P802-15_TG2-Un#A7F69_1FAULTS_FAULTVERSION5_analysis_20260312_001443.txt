@@ -1,0 +1,39 @@
+Findings (short)
+1) Row 61 numbering is wrong: A61 contains =A60+685 (should be +1). This breaks the sequence (big jump from 60 → 745).
+2) Missing / misnamed headers and misaligned address columns:
+   - There is no header in I1 but many rows use column I for address line 2 (room/building). Add a header (e.g., "Address 2").
+   - Column L is labeled "CNTY" but contains country names like "USA" — that label is confusing (should be "Country").
+3) Inconsistent address layout: some rows put part of the address in H only, some split H and I. This causes apparent misalignment when you expect H=address, I=address2.
+4) Missing email placeholders: E26, E31, E53, E54 (and any cell showing "?") are unresolved/missing data.
+
+How to fix (very short, step-by-step)
+1) Fix numbering jump (A61):
+   - Edit A61 and replace =A60+685 with =A60+1.
+   - Then select A61 and drag the fill handle down to re-fill the sequence, or double-click the fill handle if column A is contiguous.
+   - Alternative robust formula: put 1 in A2 and in A3 use =ROW()-1 and fill down (this always gives sequential numbers starting at row2).
+
+Why: replacing +685 restores the intended +1 increment and returns the sequence to continuous numbering.
+
+2) Add/rename headers:
+   - Put a header in I1, e.g. "Address 2" (or "Address line 2").
+   - Rename L1 from "CNTY" to "Country" if the column stores country; if it stores county change the cell values accordingly.
+
+Why: headers must match the data stored so columns are unambiguous and consistent.
+
+3) Make address fields consistent:
+   - Decide H = Address line 1 and I = Address line 2. Move any data so H contains the street and I contains secondary info (room/building).
+   - Use Text to Columns / copy-paste to move pieces, or manually edit the few differing rows.
+
+Why: consistent layout prevents data from appearing shifted and makes filtering/exporting reliable.
+
+4) Handle missing emails:
+   - Find all "?" entries (Ctrl+F) and either replace with blank or enter the correct email addresses if known.
+   - Optionally add data validation to column E to flag invalid/missing emails (simple rule: must contain "@").
+
+Why: placeholders like "?" can break mail merges and lookups.
+
+Extra recommendations (optional)
+- Convert the data range to an Excel Table (Insert > Table). Then formulas and fills are easier and column names travel with the table.
+- If you want automatic numbering that never breaks when rows are inserted, use =ROW()-1 (or structured reference like =ROW()-ROW(Table[#Headers])).
+
+If you want, I can give the exact formula to paste for automatic numbering in your sheet or provide a small macro to normalize addresses and fix all blanks. Which would you prefer?

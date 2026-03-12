@@ -1,0 +1,35 @@
+I looked through the three annex sheets and found the clearest, objective errors. For each I show: faulty cell, error type, short explanation, and the fix (repair formula).  
+
+1) Faulty cell: Annex2!B28  
+- Error type: Sign / logical error  
+- Explanation: "Institutional savings (1)" should be the sum of Pension funds (B29) and Insurance reserves (B30), but formula is B29 - B30 (subtracts instead of adding). This makes totals (B32, B34, etc.) and all ratios too small/incorrect.  
+- Repair formula: =B29 + B30
+
+2) Faulty cell: Annex3!L26  
+- Error type: Omission (wrong SUM range)  
+- Explanation: L26 is supposed to sum Foreign commercial banks rows L27:L31, but it currently sums L27:L30 (missing L31). That omits UNIBAN (row 31) from the total.  
+- Repair formula: =SUM(L27:L31)
+
+3) Faulty cell: Annex3!K52  
+- Error type: Wrong reference / mechanical error  
+- Explanation: K52 is the percent column for the J-year (column J = amounts for 1996). The formula uses J52 but divides by $H$77 (the 1995 total) instead of the matching year total $J$77, so the percentage is wrong.  
+- Repair formula: =IF($J$77=0,"",J52/$J$77)
+
+4) Faulty cells: Annex1 row 7 (C7, E7, G7) — example: Annex1!C7  
+- Error type: Inconsistent hard-coded percentages / mixing formats (data-entry vs formula)  
+- Explanation: Some "shares" are entered as literal sums of percentages (e.g. "73.3%+3.7%") or as decimals added (0.903+0.048) while other cells compute as value/total. This inconsistency risks wrong values if cell formatting changes or if underlying numbers change.  
+- Repair suggestion: Always compute from source numbers (no hard-coded percent arithmetic). Example replacement for C7 if the components are in cells (say Cx and Cy): =Cx/C6  or if you must add two percent-values stored as numbers without % sign: =(73.3+3.7)/100 — but better: reference the actual amounts rather than typing percentages.
+
+5) Faulty cells: Annex2!L34 and Annex2!N34  
+- Error type: Incorrect denominator / unit mismatch  
+- Explanation: L34 and N34 use large hard-coded denominators (318346, 341386) inconsistent with other Total/GDP entries. That likely mixes units (millions vs thousands) and yields wrong percentages.  
+- Repair suggestion: Use the GDP value that matches the units of L32 (and N32), and store GDP in a cell and reference it. Example (if GDP for that column is in $X$1): =100 * L32 / $X$1
+
+Quick checklist to finish:
+- Fix B28 first (it cascades to many totals and ratios).  
+- Recalculate totals (B32, B34, B32-derived ratios).  
+- Fix the SUM ranges (like L26) so all group totals include every row.  
+- Fix wrong-year denominator references (like K52) — ensure each percentage divides by the total from the same column/year ($column$77 or $column$38, etc.).  
+- Replace hard-coded percent arithmetic with formulas that reference source amounts.
+
+If you’d like, I can (a) produce exact corrected formulas for every affected cell (I’ll walk through cascading fixes), or (b) produce a short macro to find similar pattern errors (SUM ranges that omit the last row, percent cells dividing by wrong-column totals, literal “x%+y%” text). Which would you prefer?

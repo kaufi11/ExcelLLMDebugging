@@ -1,0 +1,57 @@
+I reviewed the workbook and found two classes of real errors that break the whole demand/price pipeline and therefore many downstream numbers. I explain each error briefly, show why it matters, and give the exact fix to apply (short and actionable).
+
+1) PRIMARY / show-stopper — inconsistent / wrong ranges in the fisher index (sheet "fisher")
+What’s wrong
+- Several fisher formulas use the wrong ranges (missing the 5th product row or pointing at shifted ranges). Examples:
+  - D37 is =SUMPRODUCT(C24:C27,D31:D34) (uses C24:C27 and D31:D34 — 4 items) but should multiply the five revenue-share rows (64..1Gbit) by the five price-relative rows.
+  - D38 (Paasche) has an extra *(1/(1-D28)) factor and inconsistent structure.
+  - H37 and H38 are referencing mismatched blocks (e.g. G25:G28,H32:H35) — clearly shifted/wrong ranges.
+- These produce wrong Laspeyres/Paasche/Fisher indexes (D39,E39,... and therefore the chained price index in row 40). Those fisher values feed LEM Demand Calibration and then most of the price/capacity calculations, so everything downstream is wrong.
+
+Fix (exact corrected formulas to paste in the fisher sheet)
+- Replace D37..H37 with the Laspeyres sumproduct of the five revenue-share cells times the five P-relatives:
+  - D37: =SUMPRODUCT(D24:D28,D31:D35)
+  - E37: =SUMPRODUCT(E24:E28,E31:E35)
+  - F37: =SUMPRODUCT(F24:F28,F31:F35)
+  - G37: =SUMPRODUCT(G24:G28,G31:G35)
+  - H37: =SUMPRODUCT(H24:H28,H31:H35)
+- Replace D38..H38 with the standard Paasche algebraic form (sum of shares * reciprocal relatives then invert). For D:
+  - D38: =1/(D24*(1/D31)+D25*(1/D32)+D26*(1/D33)+D27*(1/D34)+D28*(1/D35))
+  - And analogously for E38..H38 (use E24:E28 & E31:E35, etc.)
+- Recompute Fisher (geometric mean) for each column:
+  - D39: =SQRT(D37*D38)  (and E39,F39,G39,H39 similarly)
+- Chained index formulas (row 40) are fine once the D39..H39 are correct:
+  - C40 should remain 1; D40 = D39*C40; E40 = E39*D40; etc.
+
+Why this fixes things
+- Fisher = sqrt(Laspeyres*Paasche). The wrong ranges gave invalid Laspeyres/Paasche numbers, so the chained P index and every cell that references fisher!C40..H40 (e.g. LEM Demand Calibration C6, many "Capacity&Price Calculation" formulas) were wrong. Fixing the ranges restores a correct price index and corrects all dependent calculations.
+
+2) SECONDARY — mis-aligned labels/values in the DRAM cost block (sheet "DRAM cost side" and duplicated block in "$ per bit" / "Capacity&Price Calculation")
+What’s wrong
+- In the DRAM cost side area the label row and the numeric values are misaligned so formulas point at the wrong cells. Example:
+  - Row A15 label = "overhead SG&A rate" with C15 = 0.36 (OK),
+  - But the following labels (“var fab cost/wafer”, “vat A&T cost/yielded die”) and the numeric values are staggered: E15 contains 964.705882..., H15 contains 1, while formulas later use $E$15, $H$15, $D$15 inconsistently. This makes D16/D17/etc read the wrong input (a column shift error).
+- This produces wrong cost-per-wafer and cost-per-die numbers which flow into profit-per-wafer, cash flows and IRR.
+
+Fix
+- Re-align labels and values so each label (e.g. "var fab cost/wafer") is immediately left of its numeric cell, or change the formulas to point to the intended cells.
+- Concrete: Decide where "var fab cost/wafer" value should live (suggestion: put 964.705882 in D15, put A&T cost (1) in F15). Then update formulas to reference the correct absolute cells:
+  - If 964.705882 is moved to D15, change D16..H16 to use $D$15 rather than $E$15.
+  - If A&T cost is in F15, change D17..H17 formulas to use $F$15.
+- Alternatively (if you prefer not to move cells), edit the formulas so the inputs come from the current value locations explicitly (e.g. D16: = (1+$C$15)*$E$15 only if E15 is indeed the var fab cost; otherwise change $E$15 to the correct cell).
+
+Why this fixes things
+- Costs feed profit-per-wafer, variable cost/die and capex allocations — mis-pointed inputs give wrong variable costs, wrong revenues, wrong net cash flows and IRR. Aligning labels and references removes the subtle shift-bug.
+
+Other smaller issues to scan/fix (quick checklist)
+- Search the workbook for SUMPRODUCT / SUM ranges that are different lengths — every SUMPRODUCT must use identically sized ranges.
+- Remove stray / duplicated weird formula patterns like =+ ... (not harmful, but noisy).
+- There are a few cells showing unused calculations (J7, J39) — those aren’t errors but check whether they were meant to be used.
+- After fixing fisher, recalc and then validate key checks: fisher!C40..H40, 'LEM Demand Calibration'!C6..H6, and Capacity&Price Calculation totals (C13..H13) and a few sample price-per-chip outputs (Capacity&Price Calculation C40..H40) to ensure values look sensible.
+
+If you want, I can:
+- Provide a small list of exact cell edits (every affected cell formula) and a corrected fisher sheet you can paste in; or
+- If you attach the workbook (or allow me to produce a text patch), I can give a ready-to-paste corrected block for the fisher sheet and show before/after key outputs.
+
+Summary (one-line)
+- Fix the fisher index formulas (Laspeyres/Paasche) — they use wrong/mismatched ranges — then fix the misaligned cost inputs in the DRAM cost block so formulas point to the intended cells; recalculation after these two fixes will correct most downstream errors.

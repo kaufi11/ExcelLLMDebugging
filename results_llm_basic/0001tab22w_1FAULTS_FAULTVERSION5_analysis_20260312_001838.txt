@@ -1,0 +1,28 @@
+Summary — two problems found
+
+1) Wrong operator in one formula (Hospitality, cell O14)
+- Error: O14 has =SUM(100-(E14-G14-I14-K14-M14)). The formula uses minus signs between the percentage cells, so it computes 100 - E14 + G14 + I14 + K14 + M14 (incorrect).
+- Fix: Replace it with a subtraction of the sum, e.g.
+  =100 - SUM(E14,G14,I14,K14,M14)
+- Why: You want 100 minus the total of those five category percentages. Using minus signs inside the parentheses reverses the sign for all but the first term.
+
+2) Misplaced / shifted data in normally-empty columns (extra values in F, H, Z, etc.)
+- Symptom: A few rows (for example Education row 18, Business row 10, Hospitality row 14 and Engineering row 22/23/24) have numbers in columns F, H, Z that look like stray entries. The “Other” formulas (and some totals) are written to subtract only the five expected columns (E,G,I,K,M for lower level; S,U,W,Y,AA for upper level). If values were entered into adjacent columns by mistake the formulas ignore them and the calculated “Other” (and proportions) are wrong.
+- Fix:
+  a) Move the stray values into the correct columns so every row follows the same layout. Example: if a value is in H10 but should be the third percent column, cut H10 and paste into I10 (or wherever the pattern requires).
+  b) After fixing data placement, recalc the dependent cells (O column and AC column formulas).
+  c) To locate other misplaced values quickly: use Go To Special > Constants (or COUNT/COUNTA per column) on normally-blank columns (F, H, Z, etc.) and clear or move them.
+- Why: The formulas expect a rigid column pattern. Data typed in the wrong column will be omitted from the 100% calculation, producing incorrect “Other” percentages and inconsistent totals.
+
+Extra clean-up / robustness suggestions (short)
+- Replace all O and AC formulas with the clearer form:
+  =100 - SUM(E6,G6,I6,K6,M6)
+  =100 - SUM(S6,U6,W6,Y6,AA6)
+  (instead of SUM(100-(...)) — that expression works but is confusing)
+- Add data validation to the percent columns so accidental entries in adjacent helper columns are easier to catch.
+- Use conditional formatting to highlight rows where SUM of the five expected percent columns ≠ 100 (or ≠ 100 ± small rounding tolerance) so you can spot mis-entry quickly.
+
+If you want, I can:
+- give the exact cells to edit (I can list all O and AC formulas to replace),
+- provide a short macro to find and move values in the stray columns,
+- or show the conditional formatting rule to flag rows whose expected sum differs from 100.

@@ -1,0 +1,48 @@
+Summary — key errors I found and how to fix them (short & simple):
+
+1) Fault: Balance Sheet asset cells are inconsistent / hard-coded
+- Problem: Column totals for Checking/Savings and Money Market are not consistently linked to the Financial summary sheet. Example: Balance Sheet G4 shows 12323.99 (a hard value) but the Financial summary checking for 2001 is 12823.99 (in 'Financial summary'!I35). This creates mismatches between the two reports.
+- Fix: Link each Balance Sheet cell to the matching Financial summary cell (do not hard-code). Example formulas:
+  - E4 = 'Financial summary'!E35
+  - F4 = 'Financial summary'!G35
+  - G4 = 'Financial summary'!I35
+  - H4 = 'Financial summary'!K35
+  - E5 = 'Financial summary'!E36
+  - F5 = 'Financial summary'!G36
+  - G5 = 'Financial summary'!I36
+  - H5 = 'Financial summary'!K36
+- Why: keeps Balance Sheet automatically identical to the Financial summary and prevents manual-entry mistakes.
+
+2) Fault: Retained earnings / Net Income accumulation is wrong
+- Problem: Retained earnings row is not using cumulative addition. Example: H12 uses =G12-G13 (subtracts Net Income), and earlier retained earnings cells appear to be hard values or shifted references.
+- Fix: Make retained earnings cumulative: each year’s retained earnings = previous year retained earnings + previous year net income. Example formulas:
+  - F12 = E12 + E13
+  - G12 = F12 + F13
+  - H12 = G12 + G13
+- Why: Retained earnings should be carried forward by adding prior net income, not subtracting it.
+
+3) Fault: TOTAL ASSETS formula may reference a wrong/empty cell (E2)
+- Problem: E7 = ROUND(E2 + E6,5) but E2 isn’t defined in the snippet (or might be blank/wrong).
+- Fix: Confirm E2 actually contains the non-current assets (or change formula to reference the correct cell that holds non-current assets). If there are no non-current assets, use:
+  - E7 = ROUND(E6,5)
+- Why: TOTAL ASSETS must sum current assets + other asset categories; pointing at an empty/wrong cell gives incorrect totals.
+
+4) Fault: Text and footnote markers mixed into numeric ranges
+- Problem: There are stray text/footnote values inside numeric areas (e.g., L13 contains "a", F8/F10/F19 have small numbers used as footnote markers). These can confuse reviewers and, if accidentally inside SUM ranges, corrupt totals.
+- Fix: Move footnote numbers and letters into a dedicated Notes column or format them as text outside numeric sum ranges. Remove text from numeric columns or use explicit ranges that exclude note columns.
+- Why: SUM ignores text but human errors or accidental inclusion of these cells in ranges cause wrong totals.
+
+5) Minor / recommended cleanup: explicit SUM ranges
+- Issue: Some totals use ranges that include header rows (e.g., C15 = SUM(C6:C13) where C6 is the "Income" label row). This normally returns the same numeric result (empty cells are ignored) but is fragile.
+- Fix: Use exact data ranges (e.g., C15 = SUM(C7:C13)). It’s clearer and safer.
+
+What to do now (practical next steps)
+1. Replace the hard-coded asset numbers on the Balance Sheet with the linked formulas shown in (1).
+2. Replace retained earnings formulas with the cumulative formulas shown in (2).
+3. Check E2 (and equivalent year cells) to ensure TOTAL ASSETS references the correct other-asset value; fix if needed.
+4. Move footnote markers/text out of numeric columns and re-check all SUM totals.
+5. Recalculate and verify that:
+   - Balance Sheet Total Assets = TOTAL LIABILITIES & EQUITY for each year,
+   - Differences (row C39 etc.) are zero.
+
+If you want, I can produce the exact cell-by-cell replacement formulas for the whole Balance Sheet (for all years) and a short checklist to reconcile the sheets step-by-step. Which would you prefer?

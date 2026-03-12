@@ -1,0 +1,32 @@
+I checked Sheet1 and found two concrete errors that are producing wrong totals. Short explanation and concrete fixes follow.
+
+1) Part A (Lobo) — Net purchases formula uses the wrong cell
+- Error: Net purchases (cell D68) is written as =D65‑E67 but the summed returns+discount is in D67 (not E67). So D68 is subtracting a wrong/blank cell and all downstream numbers (Cost of goods purchased, COGAFS, COGS, Gross margin) are wrong.
+- Fix: Change D68 to =D65‑D67 (or explicitly =D65‑(C66+C67)). Then recalc.
+- Why this fixes it: D67 contains SUM(C66:C67) = purchase returns + purchase discount. Subtracting D67 from purchases gives correct net purchases. Once D68 is correct, D70/E71/F73/F74 will update correctly.
+- Corrected amounts (after fix):
+  - Net purchases = 55,000 − (1,500 + 1,070) = 52,430
+  - Cost of goods purchased = 52,430 + 5,200 = 57,630
+  - COGAFS = 15,000 + 57,630 = 72,630
+  - COGS = 72,630 − 12,500 = 60,130
+  - Net sales = 109,000 − 1,700 = 107,300
+  - Gross margin = 107,300 − 60,130 = 47,170
+
+2) Part B (Red Co.) — Weighted‑average COGS value not matching the calculations
+- Error: Ending inventory under weighted average (EI = 8.05 × 2,500 = 20,125) is correct, but the weighted‑average COGS shown (cell D83 = 60,735) is inconsistent with GAFS and EI. The COGS should be GAFS − EI = 80,500 − 20,125 = 60,375. So either the cell with the EI or the COGS formula is referencing the wrong cell.
+- Fix: Make the weighted‑average COGS formula explicit and consistent:
+  - Calculate average per unit: D108 = E92 / C92 (80500 / 10000 = 8.05).
+  - EI (weighted avg) = D108 * 2500 (put in J110 or the EI cell).
+  - Set weighted‑avg COGS = GAFS − EI (e.g., J111 = J109 − J110) and make sure D83 references that cell (or directly use =E92 − (D108*2500)).
+- Why this fixes it: It forces COGS to be derived from the same GAFS and EI values, removing any stray reference or manual entry that produced 60,735.
+- Corrected weighted‑average numbers:
+  - EI (wtd avg) = 8.05 × 2,500 = 20,125
+  - COGS (wtd avg) = 80,500 − 20,125 = 60,375
+  - Gross margin = Sales (97,500) − 60,375 = 37,125
+
+Quick additional recommendations
+- Keep returns/discounts/purchases in the same column group so SUMs reference contiguous cells (helps avoid E vs D reference mistakes).
+- Where possible, derive downstream totals as explicit formulas (e.g., COGS = GAFS − EI) instead of hard‑typing numbers.
+- Check that each displayed number is linked to the calculation cells (use Trace Precedents/Dependents in Excel).
+
+If you want, I can give the exact formula text for each cell to paste in (e.g., D68, E70, E71, F73, F74 and the weighted‑avg cells) and provide the updated worksheet numbers laid out in the same layout as yours. Which would you prefer?

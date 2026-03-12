@@ -1,0 +1,40 @@
+Summary — the workbook has two clear, actionable errors and one important modeling inconsistency to fix:
+
+1) Obvious typo (syntax)
+- Error: J22 contains "=$C2244/244" (nonsense).
+- Fix: replace with =$C22/2
+- Why: every J/K/L half-cycle column uses Cxx/2. This is clearly a mistyped copy/paste and breaks the calculation in the J/K/L totals and any cells that use J22.
+
+2) Wrong algebraic treatment of skew (logical/modeling bug)
+- Error: skew terms (the compensated skew items in row 27–30) are being divided by 2 in many formulas even though the model explicitly says "assumes all terms can be divided by two except skew" (H2). Example occurrences:
+  - P13 and P14: contain ($L30/2) — should use $L30
+  - P17, Q17, N17, P18, Q18, N18: contain (J30/2) or -(J30/2) — should use -J30
+  - P21, Q21, P22, Q22: contain ($K$30/2) or similar — should use $K$30 (no /2)
+- Fix: remove the "/2" on any formula that divides any of row-27..30 skew values. Replace:
+  - (J30/2) → J30
+  - ($L30/2) → $L30
+  - ($K$30/2) → $K$30
+  - and similarly for any other /2 on row30 references.
+- Why: H2 states skew terms must not be halved. Dividing skew halves their effect and produces overly optimistic margins; removing the /2 makes the math match your model assumptions and prevents double/under-counting skew.
+
+3) Suggested tidy/verification (important, not a hard error)
+- Check C6 / the "Ideal Setup/Hold" rows. The description implies Fast-160 should have a smaller hold (1.5625 ns) vs the setup (3.125 ns). If you intend to have both setup and hold values visible, split them into separate rows (Ideal Setup and Ideal Hold) or compute C6 as C5/2 and create a dedicated hold row = C5/4. This avoids confusion and wrong references later.
+- Confirm rows flagged "Double counting" (D12, D14, D18) are intentionally zeroed — they currently appear set to 0, which is fine if that was deliberate.
+
+Which cells to edit (practical list)
+- Fix J22: set J22 = =$C22/2
+- Replace /2-on-row30 references in these cells (search for "30/2" in formulas and change them):
+  - P13, P14, P17, Q17, N17, P18, Q18, N18, P21, Q21, P22, Q22 (and any other cell that contains J30/2, K30/2, or L30/2).
+  - Example: change P17 ...-(J30/2)  → ...-J30
+  - Example: change P13 ...-($L30/2) → ...-$L30
+
+Short explanation of effects after fixes
+- Fixing J22 restores half-cycle tolerance into the J/K/L subtotals so the totals (J25/K25/L25 and downstream sums) are correct.
+- Removing the accidental halving of skew increases the skew contributions where they should be full-size, which will reduce reported margins (more realistic, not optimistic).
+- After these changes, recompute the totals (rows 25, 35, 38, 39, 40, 41, and P/Q/N/R device columns) to see the corrected margins.
+
+If you want I can:
+- produce the exact corrected formulas for every affected cell, or
+- compute the updated numeric results after applying these fixes.
+
+Which would you prefer?

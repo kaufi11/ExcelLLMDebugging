@@ -1,0 +1,17 @@
+I checked the formulas on Sheet1 and found one clear inconsistency.
+
+What’s wrong
+- Cell I19 has formula =SUM(I8:I17) but the other column totals in row 19 use rows 7–17 (e.g. G19 = SUM(G7:G17), H19 = SUM(H7:H17), J19 = SUM(J7:J17), K19 = SUM(K7:K17)). I19 therefore omits I7 (which contains 52).
+- Consequence: the column totals (G19:K19) sum to 1,237, while the sum of the per‑row totals (L7:L17) is 1,289. The difference is exactly 52 (I7), confirming the omission.
+
+Recommended fix
+- Change I19 to include row 7. Replace the formula with:
+  =SUM(I7:I17)
+- After that I19 will be 470 and the column-total sum will match SUM(L7:L17) (1289).
+
+Optional robustness suggestions
+- Use consistent ranges everywhere (e.g. always G7:G17 etc.).
+- Add a reconciliation cell to validate data integrity, for example:
+  =SUM(G19:K19)-SUM(L7:L17)
+  which should show 0 when totals are consistent.
+- If data may grow, consider converting the block to an Excel Table and use structured references so totals auto‑adjust.

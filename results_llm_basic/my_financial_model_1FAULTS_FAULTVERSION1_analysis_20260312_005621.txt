@@ -1,0 +1,38 @@
+I reviewed the workbook. I found a few clear formula errors and some poor references that will give wrong numbers or make the model fragile. Short summary of the real problems and exactly what to change (and why):
+
+1) Sugar price inflation references the wrong cell
+- Error: Row 8 (Sugar price) uses $D$7 in the growth formulas (e.g. F8 = E8*(1+$D$7)). D7 is the lemon-price growth cell, not sugar’s growth cell.
+- Fix: Change all sugar-price growth formulas to reference $D$8. Example: F8 = E8*(1+$D$8)
+- Why: Sugar inflation must use the sugar rate (D8). Using D7 makes sugar prices follow the lemon-price inflation instead.
+
+2) Total revenue sums only online sales (omits street sales)
+- Error: Total row (row 12) uses SUM(E10:E10), SUM(F10:F10) … i.e. it only sums the Online Sales line and ignores Street Sales (row 11).
+- Fix: Change each total cell to sum the two revenue rows. Example: E12 = SUM(E10:E11), F12 = SUM(F10:F11), etc.
+- Why: You must include both Online + Street to get total revenue; current totals understate revenue.
+
+3) Balance Sheet: F14 contains wrong hard-coded value
+- Error: Balance Sheet F14 is "6" (looks like a stray constant) while the other years use cumulative formulas (pattern E14 = D14+Cashflow!E9; G14 = F14+Cashflow!G9 etc).
+- Fix: Replace F14 with the correct formula following the pattern: F14 = E14 + Cashflow!F9
+- Why: The constant breaks the cumulative liability calculation and corrupts subsequent years (G14 onward will be wrong).
+
+4) Cash (Balance Sheet) starting value / chain is ambiguous (likely wrong design)
+- Issue: Balance Sheet E6 is set to Cashflow!D13 (net change in cash) rather than to an opening-cash balance + change. Then F6 = E6 + Cashflow!E13 etc. That means the model has no clear opening cash; cash accumulation could be off.
+- Recommendation/fix:
+  - Add an explicit Opening Cash cell (e.g. Balance Sheet D6 = Opening Cash, enter your starting cash there).
+  - Set E6 = D6 + Cashflow!D13 (or if D13 is the first period’s net change you want end-cash = opening + change).
+  - Keep the rolling chain F6 = E6 + Cashflow!E13, G6 = F6 + Cashflow!F13, etc.
+- Why: Clear separation of Opening Cash and Period Changes prevents misinterpretation and ensures cash rolls forward correctly.
+
+5) Repeated single-cell SUM ranges (fragile / misleading)
+- Issue: Many places use SUM(E10:E10) or SUM(E4:E4) etc. These are legal but misleading and fragile if you later add lines.
+- Recommendation: Use explicit ranges that include all relevant rows (e.g. SUM(E10:E11) for revenue, SUM(E22:E28) for fixed costs). Or convert to structured ranges / named ranges for clarity.
+- Why: Makes the spreadsheet self-documenting and robust to future row insertions.
+
+Optional improvement (reduces future errors)
+- Consolidate common rates: you repeat 0.08/12 in multiple D-cells (D4, D7, D8). Put the monthly inflation/growth rate in one input cell (e.g. Inputs!D3 or Income!D2) and reference that with $ anchors. This eliminates mismatched references and makes updates easy.
+
+If you want, I can:
+- Provide the exact list of cells and corrected formulas ready to paste (I can produce a short change list),
+- Or generate a corrected small patch of formulas for the Income and Balance Sheet sheets only.
+
+Which would you prefer?

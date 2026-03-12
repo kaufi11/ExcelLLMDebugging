@@ -1,0 +1,33 @@
+I checked the formulas and consistency of the sheet "335". Summary of problems and recommended fixes follows.
+
+1) Wrong cell reference in O5
+- Current: O5 =F7 (value shown 0)
+- Problem: F7 contains text/labels (or is blank); O5 should show the Exam‑1 percentage (like the other component cells), not a text cell. This looks like a typo.
+- Recommended fix:
+  - If O5 should show the exam percentage (unweighted): change to =E7
+  - If O5 should show the weighted contribution (25% * exam %): change to =E7*D7
+
+2) Inconsistent intent for the component summary cells O5, O7, O10, O12
+- Current behaviour:
+  - O7 =E13 (final exam % unweighted = 0.85)
+  - O10 =K13 (individual HW % unweighted = 0.875)
+  - O12 =K25 (group HW % unweighted = 0.857142857)
+  - O5 =F7 (incorrect, see item 1)
+- Notes: O7/O10/O12 present unweighted percentages while O14 computes the weighted sum (E7*D7 + E13*D13 + K13*J13 + K25*J25). Decide whether O5..O12 should display unweighted % (current pattern) or weighted contributions. Then make O5 consistent with the others (use =E7) or change all four to show weighted contributions (e.g. =E7*D7, =E13*D13, =K13*J13, =K25*J25).
+
+3) Letter-grade thresholds (O16)
+- Current formula: =IF(O14>89.99%,"A",IF(O14>79.99%,"B",IF(O14>69.99%,"C",IF(O14>59.99%,"D","F"))))
+- Notes:
+  - This compares O14 (a decimal like 0.8580357) to percent literals (89.99% = 0.8999). That works numerically, but it can be confusing because O14 is not shown as a percent in the formula — Excel handles it correctly but you might prefer clarity.
+  - Consider using >= for cutoffs (for example >=90% as A) to avoid boundary surprises.
+- Suggested clearer alternative (if you want inclusive upper boundaries): =IF(O14>=90%,"A",IF(O14>=80%,"B",IF(O14>=70%,"C",IF(O14>=60%,"D","F"))))
+
+4) O14 (final weighted average)
+- Current: =(E7*D7)+(E13*D13)+(K13*J13)+(K25*J25)
+- Status: This is consistent with the intended 4×25% weighting and calculates correctly for the given inputs (result 0.858035714285714). No change needed unless you change the representation of O5..O12 (see point 2).
+
+Other observations (not errors, just suggestions)
+- Many cells store percentages as decimals (0.85). Consider formatting these cells as Percentage for clarity.
+- J13 and J25 both hold 0.25; consider consolidating the "weight" cells in one column and referencing that single column for consistency.
+
+If you want, I can provide the exact formulas to paste into the cells to implement the fixes (for unweighted or weighted display), and suggest cell formatting. Which display style do you prefer for O5/O7/O10/O12 — unweighted percentages or weighted contributions?

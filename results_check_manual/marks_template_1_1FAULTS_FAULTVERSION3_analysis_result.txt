@@ -1,0 +1,45 @@
+I reviewed the formulas and key cells on sheet "Marks". Found several formula errors / inconsistencies and some likely data-entry problems. Summary with locations, what’s wrong, and suggested fixes:
+
+1) D19 uses the wrong reference
+- Problem: D10..D59 use D# = A# (e.g. D10 =A10). D19 is different: D19 =B19.
+- Effect: row number in D19 shows wrong value (pulls blank B19 instead of A19).
+- Fix: change D19 to =A19.
+
+2) Total-possible / percent divisor is wrong (AD10)
+- Problem: X# cells compute percent as =Z#*100/$AD$10. AD10 currently = 10.
+- Effect: percentages are scaled by factor 10 (Z*100/10 = Z*10) — incorrect.
+- Likely intent: total possible marks = 100. The label "Total Possible marks" is in AE10 (text) while the numeric value is in AD10 — looks mis-placed.
+- Fix: Put the correct total possible marks (100) into AD10 (or change formulas to use whichever cell you intend to hold the total). If you prefer the label in AE10, move the numeric 100 into AD10 (and/or change X formulas to use $AE$10 if AE10 will hold the number).
+
+3) Z60 average range is truncated (likely copy/paste error)
+- Problem: Z60 formula is =AVERAGE(Z10:Z30). All other summary averages use row 10:59.
+- Effect: Z60 does not reflect the full student range (only rows 10–30).
+- Fix: Change Z60 to =AVERAGE(Z10:Z59) (or to the same range used by other averages).
+
+4) Inconsistent use of grade thresholds (hard-coded vs AF cells)
+- Problem: Most row-grade formulas (AA10..AA59) use the threshold cells $AF$21:$AF$28. But Y60 and AA60 use hard-coded numbers (94.49, 89.49, etc).
+- Effect: If you update thresholds in AF21:AF28 the Y60/AA60 results will not follow them.
+- Fix: Replace hard-coded numbers in Y60 and AA60 with references to the AF21..AF28 cells (same order) so all grade logic uses a single set of thresholds.
+
+5) Potential text/number issues in header weight cells
+- Problem: Several header-weight cells show quoted values in the export (e.g. "10" in L9, M9, N9 etc). If those are text in the workbook instead of numbers, any arithmetic that depends on them (L+M, scaling formulas that divide by $N$9, etc.) can misbehave.
+- Effect: formulas may return errors or incorrect results if these header weights are stored as text.
+- Fix: Ensure all weight/header cells are numeric (no leading apostrophes or stored as text). Convert to numbers if necessary (multiply by 1, use VALUE, or re-enter as numbers).
+
+6) Minor / logical issues to consider
+- AA10..AA59 and other grade formulas use strict ">" comparisons against thresholds. That means a score exactly equal to a threshold will fall into the lower grade bracket. If you want inclusive top boundaries (score >= threshold), change to >= for the appropriate comparisons.
+- Y10..Y59 use IF(P# >= $AE$7,"F",AA#) — AE7 is 4 (absences threshold). AE7 location is fine, but note the logic forces an "F" regardless of computed grade if absences meet/exceed the threshold; confirm this is intended policy.
+- Averages rows show many #DIV/0! because there are no student values yet — expected but you may want to wrap AVERAGE in IFERROR or use AVERAGEIF to hide errors.
+
+7) Other inconsistent cell (callout)
+- AD10 currently =10 while AE10 has text "Total Possible marks". The numeric value for total possible marks and its label appear misaligned. Confirm label/value placement and correct accordingly (usually label in AD10 and numeric 100 in AE10, or label AE10 and numeric AD10 — pick one and fix formulas to reference the numeric cell).
+
+Summary of recommended concrete changes
+- D19: change to =A19
+- AD10: change value to 100 (if that is your intended total), or change X formulas to reference the correct cell containing 100
+- Z60: change to =AVERAGE(Z10:Z59)
+- Y60 and AA60: change the hard-coded numbers to references to AF21..AF28
+- Confirm and convert L9, M9, N9, O9, R9, S9, T9, U9, V9, W9 etc to numeric types (not text)
+- Optionally: decide whether comparisons should be > or >= in the grade IF chains and make uniform
+
+If you want, I can: (a) provide the exact corrected formulas for the cells I listed, and (b) produce a small patch (list of cell edits) you can apply. Which would you prefer?

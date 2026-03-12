@@ -1,0 +1,40 @@
+I checked the workbook and found the main, clear errors that will give you wrong numbers. Short explanations and exact fixes below.
+
+1) Off‑by‑one (misaligned) formulas in Raw Data column I ("$$ per child")
+- Problem: many I cells point to the J cell on the wrong row (e.g. Raw Data!I5 = J6). That means your "$$ per child" values are pulling from the next record, producing incorrect $/child values.
+- Fix: Replace the I column formulas so each row refers to its own row. Two safe options:
+  - If "per child" should equal "per participant" (J): Raw Data!I5:I20 = =J5 (fill down).
+  - If "per child" should be budget divided by children only: Raw Data!I5:I20 = =IF(D5>0, K5/D5, "") (fill down).
+- Why this works: copying/dragging formulas created a one‑row offset. Using the correct same‑row reference (or computing directly K/D) ensures each record calculates from its own row.
+
+2) Parent totals range excludes some rows (Raw Data!E22)
+- Problem: Raw Data!E22 = SUM(E5:E15) but parent data goes down to row 19, so E16:E19 are excluded from the total.
+- Fix: change Raw Data!E22 to:
+  =SUM(E5:E19)
+- Why this works: includes all parent counts in the block so the total is correct.
+
+3) Similar range / SUM issues (recommendation)
+- Problem: Several totals use many individual additions inside SUM (example: SUM(D5+D6+...) ), or use ranges that stop too early (e.g. Charts and Totals across blocks).
+- Fix / Recommendation:
+  - Replace long SUM(D5+D6+D7+...) with a single range SUM(D5:D36) where appropriate.
+  - Scan other totals (E38, H38, K38, K24, K44 etc.) and ensure each SUM's start/end match the data rows for that year (2000 block vs 2001 block). Adjust end row to include all data rows.
+- Why: SUM with a continuous range is less error‑prone and easier to update when rows change.
+
+4) Copy/paste / fill errors in other sheets
+- Symptom: Many sheets reference Raw Data cells (A5, B5, I5, J5, etc.). Because Raw Data had misaligned cells, dependent sheets (Charts, Age Data, Age Charts) will show wrong values.
+- Fix: After you correct Raw Data column I and the totals range(s), recalc / F9. Then check these key dependent totals:
+  - Charts 2000: S2..S17 (they multiply children * $/participant)
+  - Age Data / Age Charts: any cells pulling Raw Data!I#/J# will refresh to correct values.
+- Why: fixing the source fixes downstream sheets.
+
+Quick step list you can follow now
+1. In Raw Data change I5 formula to =IF(D5>0,K5/D5,"") or =J5 depending on intended meaning; fill down I5:I20.
+2. Change Raw Data!E22 to =SUM(E5:E19).
+3. Replace any long manual SUM lists with range sums (example: A43 etc. — convert to SUM(D5:D36) where that covers all rows).
+4. Press F9 or save/close/reopen and verify totals on Charts and Age sheets.
+
+If you want, I can:
+- Give an exact list of every cell that currently has an off‑by‑one in column I (I can parse and list them),
+- or produce corrected formulas for the totals (E22, E38, K38, J18, K23, K24, K44 etc.) after I scan ranges you want included.
+
+Which would you like next?

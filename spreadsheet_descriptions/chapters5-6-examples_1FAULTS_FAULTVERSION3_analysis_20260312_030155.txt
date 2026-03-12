@@ -1,0 +1,71 @@
+High-level overview — structure and contents
+
+Common inputs (Sheet1)
+- Title: "Aggregate Planning"
+- Demand forecast (A5:B11): Jan–Jun demands = {1600, 3000, 3200, 3800, 2200, 2200}.
+- Cost / parameter table (A13:B24):
+  - Materials cost/unit = 10
+  - Inventory holding cost/unit/month = 2
+  - Marginal stockout cost/unit/month = 5
+  - Hiring & training cost/worker = 300
+  - Layoff cost/worker = 500
+  - Labor hours required/unit = 4
+  - Regular time cost/hour = 4
+  - Overtime cost/hour = 6
+  - Marginal subcontracting cost/unit = 30
+- Initial conditions: period 0 workforce = 80 (pricing/other sheets D4), initial inventory = 1000 (F4).
+
+Sheet: pricing (main scenario / decision variables + cost)
+- Layout:
+  - Columns B–K: decision variables per period (Ht = # hired, Lt = # laid off, Wt = workforce, Ot = overtime, It = inventory, St = stockout, Ct = subcontract, Pt = production, J = demand, K = price).
+  - Columns M–P: constraint checks / supporting formulas.
+- Key numeric values: Periods 0–6 shown. Period 1–6 production Pt ≈ 2,583.33 units in this scenario; Price (K5:K10) = 40 each period.
+- Important constraint formulas (column headers M–P):
+  - Workforce balance (M): = D_t - D_{t-1} - H_t + L_t  (example M5 = +D5-D4-B5+C5).
+  - Production capacity/constraint (N): = 40*Workforce + (Overtime/4) - Production (example N5 = 40*D5 + (E5/4) - I5) — used as feasibility check.
+  - Inventory balance (O): previous inventory ± stockouts + production + subcontract - demand - current inventory (example O5 = +F4-G4+I5+H5-J5-F5+G5).
+  - Overtime limit (P): = -Overtime + 10*Workforce => enforces Ot ≤ 10*Wt (example P5 = -E5+10*D5).
+- Cost table (rows A14:I20): per-period costs computed by referencing Sheet1 parameters and decision variables:
+  - Hiring = Sheet1!$B$19 * (# hired)
+  - Layoff = (# laid off) * Sheet1!$B$20
+  - Regular time cost = Workforce * Sheet1!$B$22 * 8 * 20 (8h/day * 20 days)
+  - Overtime cost = Overtime * Sheet1!$B$23
+  - Inventory cost = Inventory * Sheet1!$B$17
+  - Stockout cost = Stockout * Sheet1!$B$18
+  - Subcontract cost = Subcontract * Sheet1!$B$24
+  - Material cost = Production * Sheet1!$B$16
+- Totals:
+  - Total Cost (C22) = SUM(B15:I20)
+  - Total Revenue (C24) = SUMPRODUCT(J5:J10, K5:K10)
+  - Profit (C25) = C24 - C22
+
+Sheet2 (alternate plan)
+- Same structure: periods 0–6 decision variables, production I5..I10 ~2,480–2,635 depending on period; different workforce (D=62) and overtime in later periods.
+- Cost table references Sheet1 parameters; per-period costs computed similarly.
+- Total Cost (C22) = SUM(B15:H20) (no material column I present for this sheet).
+
+Sheet3 (another alternate plan)
+- Same decision-variable layout and constraint formulas; workforce values and production differ (e.g., workforce ~51.25–67.5, production ~2,050–2,700).
+- Cost table similar to pricing sheet; material cost in I-column present.
+- Totals:
+  - Total Cost (C22) = SUM(B15:I20)
+  - Total Revenue (C24) = SUM(J5:J10)*31 — note: this diverges from pricing sheet (SUMPRODUCT) and looks like a likely error (multiplies sum of demands by 31 rather than using period price × demand).
+
+Other sheets
+- Sheet4 through Sheet16 exist but are empty / not populated.
+
+Key numbers to note
+- Initial workforce: 80; initial inventory: 1000.
+- Monthly demands: Jan–Jun = 1600, 3000, 3200, 3800, 2200, 2200.
+- Unit costs: material = 10; holding = 2; stockout penalty = 5; subcontract = 30.
+- Labor costs: regular $4/hr, overtime $6/hr, labor hours/unit = 4 ⇒ regular labor cost per unit = 4 hr × $4 = $16 (note regular-time cost formula multiplies workforce hours by 8*20 to get monthly labor cost).
+- Hiring/layoff costs: hire $300/worker, layoff $500/worker.
+
+Notable issues / recommendations (brief)
+- Sheet3 revenue formula (C24) differs and appears incorrect (SUM(J5:J10)*31) — verify intended revenue calc (should be SUMPRODUCT(demand, price) or similar).
+- Some cost formulas reference other sheets/rows inconsistently (e.g., occasional missing '!' or references to Sheet2 in Sheet3 cost rows). Review cross-sheet references for typos.
+- Confirm units/assumptions: Production capacity uses factor 40*Workforce (implies 40 units per worker per month); regular labor cost formula uses 8*20 days — ensure these assumptions match your planning model.
+
+If you want, I can:
+- Produce a one-page annotated map with the specific key formulas per cell,
+- Fix the inconsistent formulas (e.g., Sheet3 revenue) and standardize references across sheets.

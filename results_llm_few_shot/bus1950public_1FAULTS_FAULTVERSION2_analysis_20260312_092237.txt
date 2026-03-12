@@ -1,0 +1,45 @@
+Summary — the workbook has four recurring faults. I’ll list each fault, show a simple fix (formula change or action) and explain why it fixes the problem.
+
+1) ID column (column A) contains arithmetic formulas (e.g. =356-78-4365) instead of real IDs
+- Problem: cells in A (ID NO.) are being used for calculations so they show large negative numbers. IDs should be static values (not math).
+- Fix: replace formula cells in column A with the correct ID values, or move the arithmetic formula to a different column (e.g. column Q) if you actually need that calculation.
+- Why: ID is an identifier field — formulas give wrong/meaningless numbers and confuse SUM/AVERAGE/filters.
+
+2) Grade IF formulas reference different “max points” cells and use > (not >=)
+- Problem: some grade formulas use O$38 on the same sheet, others use 'F Noon'!O$38 or 'M Noon'!O$38 inconsistently. Also they use > which excludes exact boundary scores (e.g. a score equal to 90%).
+- Fix: centralize the max-points cell and use an absolute named reference; change IF to >=. Example (on each sheet):
+  - Define a named range MaxPoints pointing to the single cell you want to use (or use $O$38 consistently).
+  - Replace P6 (example) with:
+    =IF(O6>=MaxPoints*0.9,"A",IF(O6>=MaxPoints*0.8,"B",IF(O6>=MaxPoints*0.7,"C",IF(O6>=MaxPoints*0.6,"D","F"))))
+- Why: every sheet must grade against the same total. Using >= fixes tie/boundary behavior.
+
+3) Inconsistent summary ranges (AVERAGE, MAX, COUNT) across sheets
+- Problem: different sheets use different row ranges (B6:B37, B6:B23, B6:B30, etc.). That yields inconsistent averages/counts and wrong class statistics.
+- Fix: pick one consistent student-data range (for example rows 6:36) and use it everywhere. Example:
+  - B39: =AVERAGE(B6:B36)
+  - B40: =MAX(B6:B36)
+  - B41: =COUNT(B6:B36)
+  - Repeat for columns C..O on every sheet, or better convert the data area to an Excel Table and use structured references so summaries always use the same rows automatically.
+- Why: consistent ranges ensure all sheets calculate class stats from the same set of student rows.
+
+4) Totals and averages may be wrong because of blank/text/non-numeric cells and inconsistent columns included in ranges
+- Problem: many O (TOTAL) cells use =SUM(B#:N#). If some score cells are text, blank or formulas in the ID column are inside the sum range, totals can be wrong or misleading. Also some row formulas omit certain columns (some sheets have missing B or other cells).
+- Fixes:
+  - Ensure all score cells are numeric (convert any imported text numbers: select column -> Data → Text to Columns or use VALUE).
+  - Confirm columns B:N are only numeric score columns. If ID or other text columns are inside the SUM range, move them out.
+  - If you want to ignore zeros/blanks in averages, use AVERAGEIF, e.g. =AVERAGEIF(B6:B36,">0").
+  - Example total (if columns B through N are the only score columns): keep =SUM(B6:N6). If some columns are sometimes non-numeric, use:
+    =SUMPRODUCT(--(IFERROR(VALUE(B6:N6),0)))
+- Why: SUM ignores text and blanks (which might look like “missed” points). Converting to numeric and cleaning up ranges makes totals reliable.
+
+Quick prioritized checklist to fix the workbook now
+1. Replace/remove formulas in column A where IDs belong. Put any calculations in a separate column.
+2. Decide where the “Max points” value lives (e.g. O38 on a single master sheet). Create a named range MaxPoints pointing to it.
+3. Update every grade formula (column P) to reference MaxPoints and use >= (copy the single corrected IF to all P cells).
+4. Choose a single student-data row range (e.g. 6:36). Change all AVERAGE/MAX/COUNT formulas to use that same range (or convert to a Table).
+5. Make sure all score cells are numeric. Convert any text-numbers and remove stray text from B:N so SUM and AVERAGE work properly.
+
+If you want, tell me:
+- which sheet you want as the master MaxPoints cell, and
+- the exact rows that contain students (e.g. 6:36),
+and I will give the exact formulas you should paste (or a short macro) to apply the fixes across all sheets.

@@ -1,0 +1,40 @@
+Summary of workbook structure and contents (concise)
+
+Sheets
+- Total LOE
+  - Purpose: Master summary of estimated Level of Effort (LOE) by labor category across Base Period + 7 option periods.
+  - Layout: Column A = Labor Category (rows 14:67). Columns B:I = Base Pd (B) and Opt.1–Opt.7 (C:I).
+  - Key populated base Pd hours (examples): Biostatistician B14=1240; Computer Programmer I B18=6240; Computer Programmer III B20=10400; Data Analyst II B26=1040; Data Entry Operator I/II B31/B32=8320; Graphics Specialist B33=100; Program Director B43=1040 (also repeated across options); Program Manager B44=4160 (repeated); Systems Analyst I B50=12480; Systems Analyst III B51=1040; Task Manager B57=1040; Technical Automation Specialist B58=4160; Technical Information Specialist B59=6240; Tech Writer B60=400.
+  - Formulas: Option columns are cumulative escalations: C = B + B*2%; D = C + C*2%; etc. Total row B68:I68 = SUM of rows 14:67. Grand Total (B70) = SUM(B68:H68) — note it sums across Base + Opt 1–4? (excludes column I/Opt.7 as written).
+  - Notes at top: Percentage LOE split — 29% Cost, 70% T&M, 1% FFP.
+
+- Fixed Price
+  - Purpose: Fixed-price (FFP) task orders (1% LOE).
+  - Layout: A = Labor Category, B = Base Pd Hrs, C = Unit Price, D = Extended Price; repeated blocks for Opt.1 Hrs + Unit Price + Extended Price across options (E–Y).
+  - Formulas: Option Hrs populated from base via cumulative increases (E = B + 2% of B; H = E + 2% of E; K = H + 2% of H; N uses 2.3% in this sheet for the Opt.4 step; subsequent options return to 2%). Extended Price columns likely calculated as Hrs * Unit Price (not explicitly listed, but expected).
+  - Totals: Sum of option Hrs columns (E59, H59, K59, N59, Q59, T59, W59) via SUM of their respective ranges. Grand Total row exists.
+
+- Cost Type Task (Cost)
+  - Purpose: Cost-type task orders (29% LOE). Note indicates estimated cost should exclude indirects/fee.
+  - Layout: A labor categories, B Base Pd Hrs, C Hourly Rates, D Extended Price; repeated option Hrs/Hourly Rate/Extended Price blocks (E–Y).
+  - Formulas: Option Hrs populated the same way as Fixed and T&M: each option = previous option + 2% (option 4 uses 2.3% escalation in many rows). Extended price presumably = Hrs * Hourly Rate. Totals per option (E61, H61, K61, N61, Q61, T61, W61) are SUMs. Grand total cell present.
+
+- T&M Type (Time & Material / Labor Hour)
+  - Purpose: T&M / Labor Hour task orders (70% LOE). Labeled "Loaded Labor Rates".
+  - Layout: A labor categories, B Base Pd, C Loaded Rates, D Extended Price; repeated option columns similar to above (E–Y).
+  - Formulas: Option Hrs follow same cumulative +2% structure, with many sheets using +2.3% at the N/Opt4 step. Totals: B60 sum of base hours; per-option sums for E60, H60, K60, etc.; Grand Total B62 = SUM(B60:T60) (note this summation range covers Base through Opt.6/T? check mapping).
+  - Anomalies: One cell (N37) contains a direct numeric expression using 920 (N37 = 920 + 920*0.023) instead of referencing previous column; also some rows use hard-coded base/option values (e.g., Program Director/Manager in Total LOE kept constant across options).
+
+Common patterns and key formulas
+- Option escalation: Most option period hours are computed by compounding a 2% increase each option (current = previous + previous*0.02). Many sheets use a slightly higher 2.3% increase when computing Opt.4 (N column).
+- Totals: Each sheet sums the option columns across the listed labor-category rows (SUM ranges vary by sheet). Grand totals aggregate across periods but a few grand-total formulas appear to exclude the last option column (potential oversight).
+- Repeated blocks: Sheets follow a repeated block structure per option (Hrs — Rate/Unit Price — Extended Price) for Fixed, Cost, and T&M variations.
+
+Potential issues to review
+- Grand totals in Total LOE (B70 = SUM(B68:H68)) omit column I (Opt.7); T&M grand total B62 = SUM(B60:T60) may not match full column range if Y (Opt.7 Extended Price) is intended to be included.
+- Inconsistent escalation at Opt.4 (use of 2.3% vs. 2.0%) — verify intentional.
+- Occasional hard-coded formulas (e.g., N37) instead of references—check for consistency.
+
+If you want, I can:
+- produce a short checklist of cells to fix (grand total ranges, inconsistent escalations, hard-coded cells), or
+- output a corrected formula map with exact cell references to change.

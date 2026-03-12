@@ -1,0 +1,45 @@
+Summary — two real problems and a couple of risks:
+
+1) Wrong logic in one IF (produces incorrect weighted score for Question 6 in Section II)
+2) Totals can spuriously show "ERROR" because the SUM test uses exact equality (floating‑point rounding risk)
+Plus two quick robustness suggestions (normalize Yes/No text; return numeric 100% instead of the text "100%").
+
+Details and fixes (short and clear)
+
+A. Wrong IF logic (actual error)
+- Problem cell: G21
+- Current formula: =IF(C21<>"yes",(1*F21),IF(C21<>"no",(0*F21),""))
+- Why it’s wrong: the tests are inverted. For C21 = "Yes" the first test (C21<>"yes") is FALSE, so Excel evaluates the second IF which tests C21<>"no" — that is TRUE for "Yes" and returns 0*F21. Result: a "Yes" gives 0 instead of F21.
+- Fix (simple, consistent with other rows):
+  =IF(UPPER(TRIM(C21))="YES",F21,IF(UPPER(TRIM(C21))="NO",0,""))
+  Explanation: UPPER/TRIM makes the check robust to case/extra spaces; returns the weighting (F21) for "Yes", zero for "No", blank otherwise.
+
+B. Avoid spurious "ERROR" in section total checks (floating-point rounding)
+- Problem cells: F12, F24, F36, F56 (they use IF(SUM(range)<>100%,"ERROR","100%"))
+- Why risky: decimal weights stored in binary can sum to 0.9999999999 or 1.0000000002 and <>100% will be TRUE, showing "ERROR" even when the weights are correct.
+- Fix: use ROUND or an ABS tolerance. Example (numeric 100% output):
+  =IF(ABS(SUM(F16:F22)-1)>0.0005,"ERROR",1)
+  or using round:
+  =IF(ROUND(SUM(F16:F22),3)<>1,"ERROR",1)
+  Then format the cell as Percentage.
+- Apply same style to F12 (SUM(F6:F10)), F36 (SUM(F28:F34)), F56 (SUM(F41,F45,F53,F54,F55) or SUM of the five).
+
+C. Make totals numeric (recommended)
+- Currently formulas return the text "100%". Better to return numeric 1 and format the cell as Percentage so other formulas can use the cell as a number.
+- Example replacement for F12:
+  =IF(ABS(SUM(F6:F10)-1)>0.0005,"ERROR",1)  (then Format → Percentage)
+
+D. Small robustness suggestions
+1. Standardize answer entries (Yes/No/N/A/Small Extent/Large Extent). Use Data Validation dropdowns to avoid typos that break formulas.
+2. Consider replacing repeated IF chains with a lookup (e.g., a small table mapping answer text → multiplier) and use VLOOKUP/INDEX-MATCH with UPPER(TRIM()) for robust comparison.
+
+Quick corrected examples you can paste
+- Correct G21:
+  =IF(UPPER(TRIM(C21))="YES",F21,IF(UPPER(TRIM(C21))="NO",0,""))
+- Correct F24 (replace range as needed for each section):
+  =IF(ABS(SUM(F16:F22)-1)>0.0005,"ERROR",1)
+
+If you want, I can:
+- Provide corrected formulas for every erroneous cell in the sheet,
+- Add a small lookup table (answers → multipliers) and give the cleaner formulas to replace all IF chains,
+- Create Data Validation lists for the answer column.

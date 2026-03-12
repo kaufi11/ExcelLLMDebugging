@@ -1,0 +1,61 @@
+I checked Sheet1. I found a few clear errors that will make your summary stats wrong or individual scores wrong. Short, actionable list below.
+
+1) Summary MAX formulas use the wrong row ranges
+- Problem: B69, C69, D69 use B33:B68, C33:C68, D33:D68 (they skip rows 2–32). N69 and Q69 start at row 17 (N17:N68, Q17:Q68) so they skip rows 2–16.
+- Fix: make all MAX formulas use the same student data range (rows 2:68). Example corrections:
+  - B69 -> =MAX(B2:B68)
+  - C69 -> =MAX(C2:C68)
+  - D69 -> =MAX(D2:D68)
+  - G69 -> =MAX(G2:G68) (already OK)
+  - N69 -> =MAX(N2:N68)
+  - Q69 -> =MAX(Q2:Q68)
+
+Why: inconsistent ranges omit students and give wrong maxima.
+
+2) MIN formulas include the summary row (and wrong starts)
+- Problem: N70 =MIN(N17:N69) and Q70 =MIN(Q17:Q69) include the MAX result in row 69 (and start at row 17), which can distort results or create circular references.
+- Fix: point MIN to the same student-only range (rows 2:68). Example:
+  - N70 -> =MIN(N2:N68)
+  - Q70 -> =MIN(Q2:Q68)
+  - (Confirm B70, C70, D70, G70 already use B2:B68 etc; align them all.)
+
+Why: summary cells should not include other summary cells and must use the full student range.
+
+3) AVERAGE / STDEV rows must use the same consistent range
+- Problem: some summary cells already use B2:B68 etc while others used different ranges (see #1). This gives inconsistent statistics.
+- Fix: standardize every summary formula to the same rows: 2:68. Examples:
+  - B71 =AVERAGE(B2:B68)
+  - C71 =AVERAGE(C2:C68)
+  - D71 =AVERAGE(D2:D68)
+  - G71 =AVERAGE(G2:G68)
+  - N71 =AVERAGE(N2:N68)
+  - Q71 =AVERAGE(Q2:Q68)
+  - For stdev prefer the modern function: =STDEV.S(B2:B68) etc (or keep =STDEV if you want population/legacy).
+
+Why: consistent ranges are essential so min/max/avg/stdev agree.
+
+4) Ambiguous arithmetic in some N: formulas (operator precedence)
+- Problem: Several N cells use expressions like =17+5/2. Excel evaluates division before addition, so =17+5/2 → 17 + 2.5 = 19.5. If you intended to compute the average (17+5)/2, you must add parentheses.
+- Fix: If your intent was (sum)/2, change these to =(17+5)/2. Search column N for "/2" or similar and confirm intent. Example:
+  - N10 from =17+5/2 → if you meant average: =(17+5)/2
+
+Why: operator precedence (/,* before +,-) causes silent wrong results.
+
+5) Some "FORMULA =" entries may be text, not formulas
+- Problem: your description shows many N cells as "FORMULA =20+4". If those cells literally contain the string "FORMULA =20+4" they are text and won't participate in numeric summaries.
+- Fix: edit the cell so it contains a real formula starting with =, e.g. =20+4 (no leading “FORMULA ”). Or enter the numeric result directly.
+
+Why: Excel treats "FORMULA ..." as text; summaries ignore text.
+
+6) Other checks to run (quick QA)
+- Ensure no summary formulas include row 69–72 (the summary rows) — use absolute ranges or convert the student area to an Excel Table so summaries auto-adjust (e.g. =MAX(Table1[HW1])).
+- Check for non-numeric cells (leading spaces, text) in numeric columns: use ISNUMBER or =COUNT(B2:B68) vs row count to spot problems.
+- Confirm unusually large student IDs (e.g. A16, A68) are correct; these won't affect numeric stats unless the student ID column is accidentally included in a summary.
+
+Quick recommended actions to apply right now
+1. Replace the MAX/MIN formulas in row 69–70 with the corrected ranges shown above.
+2. Replace AVERAGE/STDEV formulas to use the same 2:68 ranges.
+3. Scan column N for any formula using "/2" (or other mixed ops) and add parentheses if you meant to divide a sum.
+4. Make sure any cells that say "FORMULA =..." are actual Excel formulas (start with =).
+
+If you want, I can produce a short list of exact corrected formulas for every summary cell (B69:Q72) or scan column N and list every cell that needs parentheses — tell me which you'd prefer.

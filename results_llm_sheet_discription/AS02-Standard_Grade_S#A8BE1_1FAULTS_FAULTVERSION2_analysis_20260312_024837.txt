@@ -1,0 +1,26 @@
+I checked the workbook and found two real data/formula problems that will make totals and percent‑change figures wrong — plus a few practical fixes to avoid future errors.
+
+1) Wrong function in SG1 subtotal (major)
+- Problem: Cell F53 on sheet SG1 is =COUNT(F7:F51). COUNT returns the number of non‑blank numeric cells (i.e. a count), not the sum of the 2002 entries. That makes F53 far too small and corrupts any dependent calculations (G53 percent change and the Totals row F63/G63).
+- Fix: Replace F53 with a sum:
+  - F53 = SUM(F7:F51)
+- After that, G53 = (F53‑E53)/E53 will give the correct percent change, and F63 (which is SUM(F53:F61)) and G63 will also become correct.
+- Why: Subtotals for entries must add values, not count rows.
+
+2) Missing / non‑numeric entry in SG1 row for "Office and Information Studies" (row 44)
+- Problem: SG1 row A44 shows F44 = "-" (text) and E44 = 6442 which is suspiciously low compared with earlier years (16670, 16172, 15370, 6442, "-"). A text dash breaks any arithmetic (e.g., a formula =(F44‑E44)/E44 will error or produce incorrect result) and will also break sums if the cell is text.
+- Fix:
+  - Enter the correct numeric 2002 value in F44 from your source data. (Preferable.)
+  - If you don’t have the source right now, set F44 to 0 or leave it blank and use a guarded formula in G44 to avoid #DIV/0 or text errors, for example:
+    - G44 = IF( OR( E44 = "", F44 = "" ), "", (F44 - E44) / E44 )
+    - or simpler: G44 = IFERROR((F44 - E44) / E44, "")
+- Why: Text dashes prevent arithmetic and cause subtotals & percent changes to be wrong or show errors.
+
+Other small recommendations (preventive)
+- Scan the sheet for any other COUNT used where SUM is intended (look at other subtotal rows). Replace COUNT(range) with SUM(range) when you want total entries.
+- Don’t store a dash ("-") for missing numbers. Use blank cells or NA() so formulas can handle them (or guard formulas with IFERROR/IF to avoid errors).
+- For percent change cells, consider wrapping in IFERROR or IF(Ecell=0,"",...) to avoid divide‑by‑zero or ugly errors.
+
+If you want, I can:
+- Give the exact list of all cells that depend on F53 so you can verify they update,
+- Scan the workbook text you provided for other COUNT→SUM mistakes and report them.

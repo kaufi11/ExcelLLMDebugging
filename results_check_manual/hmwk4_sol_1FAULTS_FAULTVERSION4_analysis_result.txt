@@ -1,0 +1,71 @@
+I inspected the formulas in the sheet and found several recurring errors and inconsistencies. Below I list the problems I found (grouped by type), show examples, explain why they are wrong, and give recommended fixes.
+
+1) Wrong factor for arcseconds → hours conversion (*/3600 vs *3600)
+- Problem: Many airmass/altitude formulas build the declination term with Hx*3600 instead of Hx/3600, grossly inflating the declination input to trig functions.
+- Examples:
+  - V55: uses (ABS(F55)+G55/60+H55*3600) — should be H55/3600
+  - V65, V75, V85, V95, V105, V115, V125, V135, V155, V165, etc. (there are many occurrences)
+- Why: minutes/seconds to degrees (or to hours) uses division by 60 or 3600, not multiplication. Using *3600 makes the term thousands of times too large and produces incorrect trig arguments / airmass values.
+- Fix: Replace Hxx*3600 with Hxx/3600 in the formula arguments (use the same pattern used correctly in earlier rows: ABS(Fx)+Gx/60+Hx/3600).
+
+2) Inconsistent use / wrong absolute/negation placement in trig arguments
+- Problem: Some formulas apply a -1 factor to $U$1 in SIN and not in COS, or apply -1 to both SIN and COS in some rows but not others. This is inconsistent and likely incorrect.
+- Examples:
+  - V5: SIN(-1*$U$1*(...)) but COS($U$1*(...)) — inconsistent signs
+  - V35: uses COS(1*$U$1*(...)) (the "1*" is redundant)
+  - V55 and many others use -1*$U$1 for both SIN and COS
+- Why: The sign in the trig argument must be handled consistently according to the physics (declination sign, hemisphere conventions). Randomly negating the radian conversion factor or adding inconsistent negations will produce wrong hour angle / airmass calculations.
+- Fix: Decide on a single convention for the sign and apply it consistently in both SIN and COS. If you intend to convert degrees to radians, use $U$1*(...) (or -$U$1*(...) if a global negative is required) consistently in all trig function arguments. Remove redundant "1*" factors.
+
+3) Wrong named cell used ($V$1 instead of $U$1)
+- Problem: At least one formula uses $V$1 where $U$1 (rad/deg) should be used.
+- Example:
+  - V165: =1/(SIN(-1*$V$1*((ABS(F165)+G165/60+H165*3600)))*SIN($V$1*$S$2)+...)
+- Why: $U$1 holds the radians-per-degree constant (0.0174532925). $V$1 is not that cell and using it will produce wrong radian conversion (or #VALUE/0 if empty).
+- Fix: Replace $V$1 with $U$1 (and also correct the H165*3600 to H165/3600 as above).
+
+4) Sky-counts STDEV normalization typo (AA columns)
+- Problem: Several AAxx formulas that compute sky counts per second uncertainty divide STDEV(P...)/Nstart/Nend (i.e. they use the ending row's N cell) instead of dividing by the column O value (gain/exposure scaling) for that row. This appears to be a copy/paste error: they used /Nstart/Nend instead of /Nstart/Ostart.
+- Examples:
+  - AA15 = =STDEV(P15:P24)/N15/N24 (should be /N15/O15)
+  - AA25 = =STDEV(P25:P34)/N25/N34 (should be /N25/O25)
+  - AA35 = =STDEV(P35:P44)/N35/N44, AA45, AA55, AA65, AA75, etc. — same pattern repeats
+- Why: The correct normalization for sky counts/sec is STDEV(P-range) divided by exposure and gain factors for that row (N and O), not by Nstart and Nend.
+- Fix: Change AAxx formulas to: =STDEV(Pstart:Pend)/Nxx/Oxx (for the row's N and O). Example for row 15: =STDEV(P15:P24)/N15/O15.
+
+5) Mis-copied references for AN / AO / AP columns (per-exposure derived values)
+- Problem: Several rows have ANxx/AOxx/APxx pointing to other rows' AH/AI/AJ values rather than the same-row AH/AI/AJ. This looks like incorrect relative addressing after copy/paste.
+- Examples:
+  - AN6 = =AH15  (should be =AH6)
+  - AO6 = =AI15  (should be =AI6)
+  - AP6 = =AJ15  (should be =AJ6)
+  - AN7 = =AH25 (should be =AH7), AN8 = =AH35 (should be AH8), etc.
+- Why: Those derived columns should typically mirror the row's AH/AI/AJ (or similar). Pointing to different rows mixes star results between records.
+- Fix: Replace references so ANxx = AHxx, AOxx = AIxx, APxx = AJxx (i.e. reference the same row).
+
+6) Some formulas use odd or inconsistent reference patterns in AC/AE/AK etc.
+- Examples & notes:
+  - AK5 formula =AF5-AD5+AH5*$AT$22 — this uses AT22 (airmass coefficient?) that is defined at AT22 = 0.2667; if that is intended, ok. Just verify the constant cell is correct (AT22). (Not necessarily an error, but flagged for verification.)
+  - AG15 = $AF$5-AF15: this uses AF5 as a global reference offset (makes sense if AF5 is the chosen zero-point). Check that that is intended for all AGxx (they use AF$5 as reference across stars).
+- Suggestion: verify the intention behind using $AF$5 as the photometric zero-point and AT22 location.
+
+7) Miscellaneous small issues / cleanups
+- Remove redundant multipliers like 1*$U$1 in COS(1*$U$1*(...)).
+- Use consistent absolute/negatives: many formulas wrap declination in ABS(), but then also negate the radian factor; ensure this reflects the intended geometry.
+- Check any averages and STDEV ranges — they look consistent in most X and Y columns, but after you fix the AA normalization you should re-check the propagated AD/AE (magnitudes and uncertainties) for reasonableness.
+
+Summary of fixes I recommend you apply (minimum set)
+1. Globally search/replace in the airmass/airmass-related V-column formulas:
+   - replace occurrences of Hxx*3600 with Hxx/3600
+   - replace any $V$1 occurrences in these formulas with $U$1
+   - enforce consistent use of $U$1 (or -$U$1) across both SIN and COS arguments
+2. Fix AAxx formulas: change /Nxx/Nend to /Nxx/Oxx (i.e. use the row's O cell)
+3. Fix AN/AO/AP mis-references so they point to the same-row AH/AI/AJ
+4. Optionally: standardize and simplify trig formula text (remove "1*" and make sign convention explicit)
+
+If you want, I can:
+- produce a list of every cell where H*3600 appears so you can correct them in bulk,
+- generate the corrected formulas for a few representative rows (so you can copy them down),
+- or apply all of the automated replacements and return a corrected formulas-only list.
+
+Which would you prefer?

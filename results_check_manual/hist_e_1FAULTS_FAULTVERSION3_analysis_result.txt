@@ -1,0 +1,32 @@
+I inspected the workbook formulas and found one definite formula error plus a few inconsistencies/possible issues you should be aware of.
+
+1) Clear formula error
+- Sheet "1" cell H6 (Gross profit)
+  - Current formula: =H5-H5
+  - Problem: this subtracts H5 from itself and always returns zero. All other gross-profit cells use Net Sales minus Cost of Sales (e.g. C6=C4-C5).
+  - Correct formula: =H4-H5
+  - Impact: This single wrong formula causes the H6 value (gross profit) to be wrong and cascades into H9, H10, H16, H17, H20, H22, H23, etc. Fixing H6 will correct those dependent results.
+
+2) Inconsistent handling of "no value" in percentage IF() formulas
+- Examples: Sheet "1" row 7 (Gross profit %), formulas like =IF(C$4=0,"-  ",C6/C$4)
+- In other sheets similar IF() expressions use =IF(...,"",...) (empty string) rather than "-  " (two-character string).
+- Issue: returning a text string ("-  ") where a numeric is expected produces mixed types in the column. Although SUM/AVERAGE typically ignore text, this can break charts, further numeric calculations, or type-sensitive operations.
+- Recommendation: pick a consistent placeholder for “no value” (prefer "" or NA() if you want an error) and apply consistently.
+
+3) Use of text "-" in numeric cells
+- Several cells contain the text "-" (not a numeric zero). Examples: many segment/regional cells (e.g. sheet "4" C5/C6/C7 are "-"), sheet "2" treasury-stock cells C36:D36 etc.
+- Issue: text "-" will be ignored by SUM and other numeric aggregations (which may be what you want), but it is risky because it’s not a numeric zero and will break functions that expect numeric types.
+- Recommendation: If you intend “no data / not applicable” use blank/"" or NA(); if you intend zero use 0. Be consistent.
+
+4) Minor / informational observations
+- Sheet "1" row 21 (Cumulative effect of accounting change) has a value only in L21. The net income rows correctly sum C20:C21 etc, which is fine (blank cells are ignored). This is not an error but worth confirming that the lone entry in L21 is intentional.
+- Several SUM formulas include a mixture of ranges and single cells (e.g. =SUM(C29:C30,C37)). That’s syntactically valid and works as intended; no problem there.
+
+Summary of corrective action
+- Fix H6 on sheet "1" to =H4-H5.
+- Decide a consistent convention for missing/non-applicable numeric values ("" or NA(), or 0) and update the IF() placeholders and "-" cells accordingly.
+
+If you want, I can:
+- Recompute the affected cells (show before/after) after fixing H6,
+- Generate a list of all cells that currently contain text "-" or the string "-  " inside IFs,
+- Or produce a revised version of the workbook with the H6 fix and consistent placeholders applied.

@@ -1,0 +1,29 @@
+Summary of errors
+- L29 contains =COUNT(B29:K29) instead of the sum — it returns a count (like 10 or 9) not the total score.
+- Every row's average uses M# = L#/10 (fixed divisor 10). Several students have blank homework cells, so dividing by 10 undercounts their true average (blanks are not scores).
+- Because of the fixed /10, the column summary (M47 or L47) will also be wrong or misleading while blanks remain.
+
+Why these are wrong (short)
+- COUNT returns how many numeric cells exist, not the sum of scores.
+- SUM treats blanks as zero only when you explicitly want zeros; dividing the SUM by 10 assumes there are always 10 valid scores. If a student has only 9 scores (one blank), SUM/10 lowers their average incorrectly.
+
+How to fix (quick steps + formulas)
+1. Fix the typo in L29:
+   - Replace L29 with =SUM(B29:K29)
+
+2. Compute per-student averages properly (choose one):
+   - If blanks should be ignored (typical): use AVERAGE which ignores blanks:
+     - Put in M3 and fill down: =AVERAGE(B3:K3)
+   - OR, explicit using SUM/COUNT to guard against text/non-numeric cells:
+     - =IF(COUNT(B3:K3)=0,"",SUM(B3:K3)/COUNT(B3:K3))
+   - If blanks actually mean a score of zero (you want to count them): fill blanks with 0, then keep =L#/10 (or use =SUM(B3:K3)/10).
+
+3. After fixing row formulas, recalc summary row:
+   - L47 = AVERAGE(L3:L45) (will now reflect correct totals)
+   - M47 = AVERAGE(M3:M45) (or compute overall average as SUM(L3:L45)/SUM(COUNT(B3:K3) for all rows) if you want a weighted overall average by actual number of scores)
+
+Extra recommendations
+- Convert the range to an Excel Table (Ctrl+T) so formulas auto-fill and are consistent.
+- Highlight or filter rows with blanks so you can decide whether blanks mean "not submitted" (ignore) or "0" (count).
+
+If you want, I can give the exact fill-down formulas for M3:M45 and show how to convert to a table.

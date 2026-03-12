@@ -1,0 +1,74 @@
+Overview — workbook contains two sheets: "CBA" (Cost-Benefit Analysis of a MHU) and "Individ. Hh. Analysis". Below is a concise, structured summary of layout, key rows/columns, main formulas and notable values or issues.
+
+Sheet: CBA
+- Layout
+  - Year columns run G:AA = 2000..2020. Header labels in row 2.
+  - Left-hand labels: A–F contain serial numbers (S#), item descriptions and section headers (Costs / Benefits / Assumptions / Sensitivity).
+  - Costs block: rows ~5–18. Benefits block: rows ~23–30. Discount factors, PVs and summaries in rows 19–20, 31–32 and 35–39.
+- Key cost items (rows & formulas)
+  - Construction (rows 5–6): 
+    - AKRSP contribution (G5): =240000/0.4825 (inflation/price index adjustment to 2000). Community contribution (G6): =21780/0.4825.
+  - Operation & Maintenance (row 8): repeated yearly formula =55200-(1200*12)-(600*12)+(500*12) → evaluates to Rs. 39,600/year. Year 2010 (Q8) includes extra sensitivity costs: +10000+25000+(500*5)+50000+5000 → Q8 = 132,100.
+  - Connection costs (rows 9): H9,I9 = 500*15 (Rs. 7,500).
+  - Wiring (row 10): H10,I10 = 4297*15 (Rs. 64,455); Q10 uses 4275*7.5 (unique one-off).
+  - Tube lights (row 11): per-year formula 5.67*30*50*6 = 51,030 (applies across years).
+  - Tubelight unit replacement (row 12): 5.75*1*30*120 per year.
+  - Energy-saving bulbs (row 13): 4.22*30*12*15 = 22,788 per year.
+  - Recycling transport & labour (row 14): (500*2)+(60*2) = 1,120 per year.
+  - Other small equipment line items (washing machines, butter churners) placed in specific years (rows 15–16).
+  - Environmental clean-up (row 17): AA17 = 0.1*G5+0.1*G6 (10% of construction contributions, shown in 2020 column).
+- Cost totals and discounting
+  - Row 18: G18..AA18 = SUM of costs for each year (SUM(G5:G17), etc).
+  - Discount factors (DF) @ 12%:
+    - Row 19: G19 =1; H19 = G19*(1/1.12); propagated across years. Note: X19 uses an odd multiplier (W19*(438/438.4382)) — inconsistent with the standard (likely an error).
+  - Row 20: Present value of costs = G18*G19, H18*H19 etc; C20 sums present values across years.
+- Benefits
+  - Key benefit lines (rows 23–27, 28 scrap from bulbs/tubes, row 29 scrap value 2% of project cost):
+    - Saving on kerosene (row 23): (164-26)*30*13 = 53,820/year.
+    - Saving on batteries (row 24): (7.44-0.78)*12*30*18 ≈ 43,157/year.
+    - Profits from handicrafts (row 25): 300*12*30 = 108,000/year.
+    - Time savings (washing row 26): ((11*10*52)/8)*60 = 42,900/year; (butter churning row 27): 46,800/year.
+    - Scrap value of bulbs/tubes (row 28): 0.1*(tube light value + bulb value).
+    - Project scrap (row AA29): =0.02*G5+0.02*G6 (2% of G5+G6).
+  - Row 30: yearly total benefits (SUM across benefit rows).
+  - Discounting of benefits: row 31 repeats DF @12%; row 32 = yearly benefit * DF; C32 sums PV of benefits.
+- Summary metrics
+  - Row 35–36: PV benefits and PV costs (copies of C32 and C20).
+  - Row 38: B/C ratio = PV benefits / PV costs.
+  - Row 39: NPV = PV benefits − PV costs.
+- Assumptions & sensitivity tests
+  - Assumptions block (rows 43–60) documents unit costs, consumption assumptions, appliance counts, labour rates, and other model inputs (e.g., AKRSP 240,000 in 1993 -> adjusted; kerosene 13 Rs/L; battery pair Rs.18; wiring cost Rs.4,297; tube light/bulb replacement frequencies and costs).
+  - Sensitivity tests (rows ~78–85) list discrete events and repair costs (e.g., headworks damage Rs.10,000 year 10, major flood Rs.25,000, turbine refurbishment Rs.50,000 year 7, etc.). Some of these are explicitly added into Q8 (2010) in O&M line.
+
+Notable formula/consistency issues to check
+- Discount factor row: X19 uses W19*(438/438.4382) — inconsistent with the iterative 1/1.12 chain used elsewhere; likely a mistake.
+- Scrap and environmental cleanup entries reference only G5 and G6 (AKRSP & community in 2000) — ensure intended years/columns are correct.
+- Some one-off costs (e.g., Q10 wiring differing multiplier) appear only in certain columns — verify timing.
+- Row/serial numbering has minor jumps (e.g., A10 labeled "6") but that is only a label, not a formula problem.
+
+Sheet: Individ. Hh. Analysis
+- Layout
+  - Columns list household ID (A), impacts on workload/activities (B–J), education (K), fuel types before/after (L–S), quantities used before/today (T–X), monthly bill, appliance counts, wiring cost & year, appliances owned, and yes/no flags (AP:AQ).
+  - Rows 3–11: individual household records (households 1–9) with many cell formulas converting units and valuations.
+- Key formulas & aggregations
+  - Fuel quantity conversions: many cells use multiplier 4.54596 (litres to gallons?) — e.g., T3 = 4*4.54596.
+  - Battery cost conversions: W3 = 8*18 etc (pair count * Rs.18).
+  - Wiring cost normalization: AE columns: AE3 = 2500/0.797, AE7 = 4800/0.797, AE8 = 4200/0.712 etc (inflation/price-index adjustments).
+  - Row 13: averages across households for quantities and counts (T13, V13, X13, Y13, Z13, AB13, AC13, AD13, AE13).
+  - Village-level aggregates and valuations in rows 34–113:
+    - C34..C44 compute average per-household kerosene consumption before/after and village totals and value conversions (C40,C41 using conversion to gallons and Rs.50 per gallon).
+    - Batteries: C47..C57 compute average pairs/month, annual village totals and value at Rs.18/pair.
+    - Firewood: C60..C70 compute per-hh and village maunds and value at Rs.70/maund.
+    - LPG: C74..C77 compute village LPG usage and value at Rs.35/kg.
+    - Electricity bill: AB13 average monthly bill; C81..C83 compute annual and village totals.
+    - Bulbs & tube lights: C86..C94 compute village counts and annual replacement costs using AC13/AD13 averages.
+    - Appliance ownership percentages computed in rows 101–109 (e.g., washing machine 5/9*100).
+    - Wiring costs: C112 = AE13 (average wiring cost per hh); C113 = C112*31 (whole village).
+- Notes / assumptions included inline (rows 15–32 and elsewhere): unit rates (Rs.60/day for time value, conversion factors, fuel prices).
+
+Overall comments (concise)
+- Structure: classic year-by-year CBA across 2000–2020 with yearly cost & benefit lines, discounted to PV at 12%, producing B/C ratio and NPV.
+- Main drivers: large upfront construction (AKRSP & community contributions), recurring O&M (~Rs.39,600/yr), annual benefits dominated by handicraft profits (Rs.108k/yr), kerosene & battery savings, and time-savings valuations.
+- Action items to verify: the anomalous DF cell (X19), one-off year-specific formulas (Q8, Q10, AA17/AA29 references), and consistent use of price-index denominators in wiring and construction adjustments.
+
+If you want, I can: (a) calculate the numeric PVs, B/C and NPV from the formulas shown; (b) list all anomalous formulas/cells to correct; or (c) produce a cleaned, error-checked formula map. Which would you like next?

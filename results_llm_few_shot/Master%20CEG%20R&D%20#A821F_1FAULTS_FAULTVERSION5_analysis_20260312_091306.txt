@@ -1,0 +1,27 @@
+Findings (short):
+
+1) Wrong sign in one project balance:
+- Faulty cell: J41
+- Error: formula uses addition: =G41+H41+I41
+- Fix: =G41-H41-I41
+- Why: Balance = Budget − Expended − Commitments (not +).
+
+2) Totals use inconsistent ranges, so Grand Totals are wrong:
+- Faulty cell: G217 (maybe OK), H218, I219
+- Errors:
+  - H218 currently =SUM(H9:H216) — it omits H7 and H8 (early rows).
+  - I219 currently =SUM(I10:I217) — it omits early commitment rows (I7, I9) and uses an inconsistent end row.
+  - G217 =SUM(G7:G216) uses a different row range than the H and I totals (inconsistent).
+- Fix (make all totals use the same exact data range). Example using rows 7–213 (the last data row shown):
+  - G217: =SUM(G7:G213)
+  - H218: =SUM(H7:H213)
+  - I219: =SUM(I7:I213)
+- Why: Totals must sum the same set of project rows (Budget, Expended, Commitments) so the final Balance (J220 = G217 − H218 − I219) is correct.
+
+Optional / more robust:
+- If rows may grow/shrink, convert the project area into an Excel Table and use structured SUMs, or use full-column sums that exclude headers (e.g. =SUM(G:G) minus header rows), or use dynamic ranges.
+
+After fixes:
+- J220 (overall Balance) = G217 − H218 − I219 will correctly reflect Total Budget − Total Expended − Total Commitments.
+
+If you want, I can give the exact corrected formulas inserted into the sheet or create Table-style formulas.

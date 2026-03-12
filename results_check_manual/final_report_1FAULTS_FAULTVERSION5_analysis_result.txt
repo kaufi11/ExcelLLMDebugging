@@ -1,0 +1,65 @@
+I inspected the workbook formulas and found a number of concrete formula errors and inconsistencies that will produce wrong results or fragile calculations. I list the issues, their effects, and recommended fixes (grouped by sheet).
+
+Summary of the most important problems
+- Raw Data!I5 is pointing to the wrong cell (causes large incorrect per‑child values to propagate through the reports).
+- Several subtotal/total formulas use inconsistent row ranges (some totals exclude rows that should be included).
+- Many IF tests compare numeric cells to text (e.g. comparing cell J which contains a number to the string "bullying") — these tests always return FALSE.
+- Text entries such as "N/A" are present in places where numeric values are later used in formulas (this can break SUM/IF arithmetic).
+- Because the Raw Data I/J column references are inconsistent, downstream sheets (charts, Age Data, Age Charts) are producing incorrect totals.
+
+Detailed findings and recommended fixes
+
+1) Wrong reference in Raw Data column I (per‑child / per‑participant)
+- Problem: Raw Data!I5 has formula "=J6" (it should be the per‑participant value for row 5). I6 is "=J6" (correct for row 6), but I5 referencing J6 duplicates row 6's per‑participant value for row 5.
+- Effect: Raw Data!I5 shows 290.028571 (value for row 6) instead of the correct per‑participant figure for row 5 (~10.26 as in J5). That incorrect 290 value flows into Age Data and charts (they reference Raw Data I cells), producing inflated totals (for example Age Data M4 = K4*E4 uses that value).
+- Fix: Change Raw Data!I5 to reference its own row's column J (I5 = J5).
+
+2) Inconsistent / incorrect totals ranges on Raw Data (rows for 2000)
+- Examples:
+  - Raw Data!D22 uses =SUM(D5:D19) but projects for 2000 appear to run through row 20 (D20 contains 14). D22 excludes D20.
+  - Raw Data!E22 uses =SUM(E5:E15) but there are parent entries beyond row 15 (E16..E20).
+  - Raw Data!F22 uses =SUM(F5:F19) while H22 uses =SUM(H5:H20) (H22 does include row 20). G22 uses SUM(G5:G19) while K22 uses SUM(K5:K20).
+- Effect: Totals are inconsistent and can omit data (some columns include row 20, others don't). Totals across columns are not calculated from the same set of rows.
+- Fix: Decide the exact data block for year 2000 (looks like rows 5:20). Make all totals use the same consistent range, e.g. D22 = SUM(D5:D20), E22 = SUM(E5:E20), F22 = SUM(F5:F20), G22 = SUM(G5:G20), H22 = SUM(H5:H20), K22 = SUM(K5:K20).
+
+3) IF(...="bullying") tests referencing the wrong column (charts 2000)
+- Problem: Several IF statements compare the contents of a numeric column J to the text "bullying". Example: charts 2000!K30 = IF(J30="bullying",1,0). J30 is numeric (number of schools/children), so the comparison to the string "bullying" always returns FALSE.
+- Locations where this pattern occurs (non‑exhaustive list from the file): charts 2000 K30, K32, K33, K34, K35, K36, K37, K40, K41, K42, K43 and similar IFs in that region.
+- Effect: These IF formulas always return 0 when they intended to detect the issue text (bullying). This causes counts/categories to be wrong.
+- Fix: Change those IF tests to reference the issue column (B column) or whichever column actually contains the textual category. For example, use IF(B30="bullying",1,0) instead of IF(J30="bullying",1,0).
+
+4) Use of text "N/A" in numeric columns (charts / Raw Data)
+- Examples: Raw Data!I30 and Raw Data!J30 contain "N/A". charts 2001 F20 = "N/A".
+- Effect: Formulas that expect numeric values and SUM or multiply these cells will either ignore them or error depending on the formula. This creates inconsistent numeric results.
+- Fix: Replace "N/A" with either blank (if you want it ignored) or a numeric zero or adjust the formula to handle the text (e.g. use IFERROR/VALUE/ISNUMBER or wrap with IF(ISNUMBER(...),...,0)).
+
+5) Downstream sheets use Raw Data I values that are incorrect
+- Problem: Age Data and Age Charts pick up per‑child figures from Raw Data column I (e.g. Age Data K4 = 'Raw Data'!I5). Because Raw Data I5 was wrong (see point 1), Age Data M4 etc. produced very large totals (e.g. M4 = K4 * E4 = 290.02857 * 141 = 40,894 which does not match the program budget of 3,500).
+- Effect: The Age Data and Age Charts summary dollar totals are inflated/incorrect where they reference the bad Raw Data I cells.
+- Fix: Correct the Raw Data I column (see #1). Then re-check whether Age Data should be using Raw Data J (per‑participant) rather than Raw Data I — ensure the intended per‑child vs per‑participant column is used consistently across sheets.
+
+6) Some formulas divide by D+E where E is often blank
+- Example: many J formulas in Raw Data are Kx / (Dx + Ex) but Ex is blank in some rows (Excel treats blank as zero). That may be intended, but if parents (E) are not tracked for some projects this could still be okay — just be aware.
+- Effect: If E was intended to be included but left blank, the per‑participant value will be overestimated. Also if D+E = 0 there would be a divide by zero.
+- Fix: Confirm the denominator convention. If E is frequently blank but is intended to be zero, it's OK; otherwise ensure data entry or wrap with IF(Dx+Ex=0,NA(),Kx/(Dx+Ex)).
+
+7) Miscellaneous oddities and brittle formulas
+- Many SUMs use SUM(A+B+C) rather than SUM(A:C) or SUM(A,A2,...). Not an error but less maintainable.
+- charts 2000: some formulas like T2 use SUM(J28+J29+J31+...) — if any referenced cell becomes text this is ignored; may want SUMIF or structured ranges.
+- charts 2000: cells K152,K153,K154 use hardcoded literal 159 in K153 = "=159-107" — this is fragile/hardcoded math; if 159 should be a value elsewhere, link to that cell instead.
+- charts 2000 T4 = T3/T2: if T2 = 0 this will produce #DIV/0!. Check that denominator is nonzero before division.
+
+Actionable checklist to fix the workbook
+1. Fix Raw Data!I5 to =J5 (and scan column I for any other accidental cross‑row references).
+2. Standardize totals ranges for year blocks:
+   - For 2000 make all totals use the same row range (probably rows 5:20). Update D22, E22, F22, G22, H22 etc to use the same range.
+   - For 2001 repeat the same consistency check (rows 26:36 or whatever block is correct).
+3. Replace incorrect IF comparisons that use column J with the proper text column (B). Example: charts 2000 K30 -> IF(B30="bullying",1,0).
+4. Replace "N/A" text in numeric cells with blanks or wrap formulas that use those cells with ISNUMBER/IFERROR so numeric aggregates behave properly.
+5. After the Raw Data fixes, re-evaluate Age Data and Age Charts formulas to confirm they are referencing the intended per‑child vs per‑participant column (I vs J). If the intention is to multiply per‑participant cost * number of participants, make sure the per‑participant column is the J column (K/(D+E)) and downstream sheets reference J (or change naming/labels to avoid confusion).
+6. Check all divides where denominator can be zero; wrap with IF(D+E=0,"N/A", K/(D+E)) or IFERROR to avoid #DIV/0!.
+7. Replace hardcoded constants in formulas (e.g. charts 2000 K153) with references to proper cells, or annotate why a literal is used.
+
+If you want, I can:
+- produce a list of every cell that currently contains a formula comparing Jx="bullying" (so you can correct them directly), and
+- produce corrected formulas for the specific cells (I can output the exact replacement formulas for Raw Data!I5, the totals in Raw Data, and a set of corrected IF statements in charts 2000). Which would you prefer?

@@ -1,0 +1,47 @@
+I found several clear mistakes (copy/paste and typos) that will give wrong / inconsistent results. Short list with what’s wrong, why it matters, and the fix.
+
+1) Sheet "DRAM cost side" — D21 (including ovhd, 2001 column)
+- Problem: formula is =+D31*D9*D10-D16-(D9)*D17. D31 is the "price after fab add" cell — a wrong source here. All other year columns use the baseline P (row 13). This mixes scenarios and gives a wrong var-profit for 2001.
+- Fix: replace D31 with D13 so the formula uses baseline price:
+  =D13*D9*D10 - D16 - D9*D17
+- Why: var profit/wafer should use the baseline predicted price (D13) in this “baseline / including ovhd” section, not the price after adding a fab.
+
+2) Sheet "DRAM cost side" — H22 (cap cost/start/5 years for last column)
+- Problem: H22 =+$D$18/380 while all other columns divide by 5 (e.g. D22 = $D$18/5). That “/380” is almost certainly a typo.
+- Fix: change H22 to =+$D$18/5 (or =$D$18/5) to match other columns.
+- Why: cap cost spread should be 5 years consistently; /380 produces a tiny (wrong) annual charge.
+
+3) Sheet "fisher" (and duplicate sheets like "$ per bit") — Laspeyres (row 37) and Paasche (row 38) formulas have inconsistent ranges / missing terms (copy/paste errors)
+- Problem symptoms:
+  - Some columns use different row ranges (e.g. D37 uses SUMPRODUCT(C24:C27,D31:D34) while other columns use C24:C28 and D31:D35). H37 uses totally different ranges (G25:G28, H32:H35). Paasche formulas in some years omit the fifth term (H38 missing H24 term). These mismatches produce wrong price indices for some years.
+- Correct pattern (example for 2002 in column D):
+  - Laspeyres (D37) should use the same 5-item ranges for revenue shares and price relatives:
+    =SUMPRODUCT(D24:D28,D31:D35)
+    (or =SUMPRODUCT(C24:C28,D31:D35) depending on your intended weights — pick the consistent rows used for that column)
+  - Paasche (D38) should be:
+    =1/( D24*(1/D31) + D25*(1/D32) + D26*(1/D33) + D27*(1/D34) + D28*(1/D35) )
+  - Fisher (D39) = SQRT(D37*D38)
+- Fix: edit every Laspeyres and Paasche cell so both use the same aligned ranges (same number of rows and corresponding price-relative rows) for every year. Then recompute Fisher as sqrt(Laspeyres*Paasche).
+- Why: SUMPRODUCT (and the Paasche denominator) requires ranges of the same length / aligned items. Mixed ranges produce invalid weightings and wrong index values.
+
+4) General copy/paste / range-size errors
+- Problem: I saw multiple places where formulas were copied but row/column offsets weren’t adjusted (e.g. some columns reference the previous column’s row offsets). That causes silent, wrong values.
+- Fix / How to check:
+  - For any SUMPRODUCT, SUM or long sum, make sure the count of items in both ranges is identical. Use =ROWS(range) and =ROWS(otherRange) or just visually check start:end rows.
+  - Use Excel “Evaluate Formula” and “Trace Dependents/Precedents” for suspicious results.
+  - Use consistent absolute references ($) when you intend to lock a cell when copying.
+
+Quick checklist to correct everything
+- Fix D21 and H22 on "DRAM cost side".
+- Go to sheet "fisher" and the "$ per bit" duplicate:
+  - Replace all Laspeyres (row 37) formulas with consistent SUMPRODUCT ranges covering the same 5 items for that year.
+  - Replace all Paasche (row 38) formulas with the full 5-term expression shown above.
+  - Recalculate Fisher (row 39) as SQRT(Laspeyres*Paasche).
+- Scan the workbook for other formulas that look like they were copy/pasted (rows/columns shifted by ±1) and verify ranges.
+- Re-run key summary numbers (totals, IRRs) after these fixes.
+
+If you want, I can:
+- (A) Provide the exact corrected formulas for each affected cell in the fisher sheet (I will list them column by column), or
+- (B) Produce a small macro / find-replace plan to detect mismatched range lengths automatically.
+
+Which would you like?

@@ -1,0 +1,48 @@
+Summary — main problems found
+1) pricing sheet (your "Aggregate Plan Decision Variables" sheet): cell C15 (Lay off cost for Period 1) contains the number 3 instead of the formula. That makes Total Cost and Profit wrong for that scenario.  
+2) Sheet2: the Over time cost rows (column E in the cost table) reference the wrong Sheet1 cells (B24, B25, B26, ...). Overtime cost should always use the overtime rate in Sheet1!$B$23, not those other cells. This gives incorrect overtime cost numbers.  
+3) Sheet3 (and a few other cost blocks): many cost formulas point to decision-variable cells on Sheet2 instead of the same sheet (e.g. Sheet3!B15 uses Sheet2!B5). This mixes values from different scenarios and makes Sheet3 costs wrong.  
+4) Sheet3 Total Revenue (C24) is =SUM(J5:J10)*31 — that’s not revenue. Revenue must be price × production (or SUMPRODUCT of production × price). Using SUM(demand)*31 is incorrect.
+
+Why these are errors (short)
+- Hard-coded or wrong-sheet references mean the cost rows are not using the decision variables or the cost rates you intended. Totals (Total Cost, Profit, Total Revenue) become invalid.
+- Using different relative references (B24, B25 …) looks like a copy/paste error: overtime rows should all reference the single overtime rate cell.
+
+How to fix (exact fixes & examples)
+1) pricing sheet C15 (Period 1 Layoff cost)
+- Replace the 3 with the formula:
+  =C5*Sheet1!$B$20
+  (C5 is # laid off in period 1 on the same sheet; Sheet1!$B$20 is Layoff cost/worker.)
+- Use $ (absolute) for the cost cell so the formula copies correctly.
+
+2) Sheet2 overtime cost formulas (rows 15–20, column E of the cost table)
+- Replace any =E6*Sheet1!B24 or similar wrong references with:
+  =E6*Sheet1!$B$23
+- General pattern for row N: =E<N>*Sheet1!$B$23 (e.g., for row16: =E6*Sheet1!$B$23).
+- This makes every overtime-cost row use the correct overtime rate.
+
+3) Sheet3 (and any sheet where cost rows point to Sheet2 decision cells)
+- Edit the hiring/layoff/material/etc cost formulas so they use the decision variables on the same sheet (or explicitly reference the sheet name), and keep cost rates anchored to Sheet1. Examples:
+  - B15 (Hiring cost for period 1 on Sheet3) should be:
+    =Sheet1!$B$19 * B5
+    (or =Sheet1!$B$19 * Sheet3!B5)
+  - C15 (Layoff cost):
+    =C5 * Sheet1!$B$20
+  - D15 (Regular time cost):
+    =D5 * Sheet1!$B$22 * 8 * 20
+  - I15 (Material cost):
+    =I5 * Sheet1!$B$16
+- Do this for rows 15–20 so each row multiplies that sheet’s decision variables (B5,C5,D5,… etc) by the master costs on Sheet1 (use absolute references like Sheet1!$B$16:$B$24).
+
+4) Sheet3 Total Revenue (C24)
+- Replace =SUM(J5:J10)*31 with a correct revenue formula. Two options:
+  - If each period has its own price in a column (e.g. pricing!K5:K10): =SUMPRODUCT(I5:I10,pricing!K5:K10)
+  - If price is constant (e.g. 40): =SUM(I5:I10)*40
+- Use the correct production range (I5:I10) × price.
+
+Extra recommended cleanup
+- Use absolute references for the cost table on Sheet1, e.g. Sheet1!$B$16,$B$17,...$B$24 so copies can’t accidentally shift to B25,B26,...
+- Scan each sheet for any formulas that reference another scenario sheet (Sheet2, Sheet3, pricing) and confirm they should — if they shouldn’t, change to reference the current sheet’s decision cells.
+- After fixes, recalc totals (Total Cost, Revenue, Profit) and spot-check a few rows to confirm results change as expected.
+
+If you want, I can give you the exact Find/Replace or cell-by-cell changes for each sheet so you can paste formulas quickly. Which sheet do you want me to prepare fixes for first?

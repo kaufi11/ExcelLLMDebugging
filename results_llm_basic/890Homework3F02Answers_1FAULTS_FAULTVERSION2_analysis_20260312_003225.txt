@@ -1,0 +1,39 @@
+Summary — I checked the workbook and found the main concrete formula errors plus a couple of places with inconsistent referencing that will give wrong results when copied. I list each problem, the fix, and a short explanation.
+
+1) Typo in Q1 (row 5, column F)
+- Problem: F5 contains =$F$2/(83+$J5)^$F$83 — the constants "83" and "$F$83" are wrong typos.
+- Fix: Replace with the correct period-based formula: =F$2/(1+$J5)^F$1
+- Why: The denominator should be (1 + discount rate)^period (period is the number in row 1, e.g. F1 = 2). The "83" and $F$83 produce nonsense exponents and wrong discounting for that cell. After this fix you can copy the formula across and down consistently.
+
+2) Inconsistent absolute/relative references (general, Q1 D4:Gn block)
+- Problem: Some formulas use different mixes of $ signs. That can cause wrong cells to be referenced after copying.
+- Fix / Recommendation: Use a single copyable pattern. Put this in D4 and copy across and down:
+  =D$2/(1+$J4)^D$1
+  Explanation: D$2 (cashflow at period column) will become E$2, F$2, … when copied right; $J4 fixes column J but lets row change when copied down (so each row uses its own discount in J); D$1 locks the row 1 period but lets the column change when copied right (so each column uses its own period exponent).
+- Why: Using that consistent anchoring prevents accidental references to the wrong row/column when you fill right/down.
+
+3) Check IRR/NPV uses (Q1 / Q1 a-b graph)
+- Note / potential pitfall: Excel’s IRR may return one of multiple possible roots when cash flows change sign multiple times (you already note this). NPV plots / root-finding are fine, but be careful:
+  - Use NPV(rate, CF1:CFn) + CF0 (you have this pattern correct in the graph sheet).
+  - If you want all IRR roots, use a scan of NPV(rate) over a wide rate grid (you already do that); don’t rely on a single IRR() call for non-conventional CFs.
+
+4) Cost-of-equity / discount-rate references (Q2 / Q2 debt scenario)
+- Potential confusion: discounting of equity cash flows should use the cost of equity; project-level CFs use WACC. Some formulas reference C19 vs C20 inconsistently in different rows.
+- Fix / Recommendation: Decide and document which discount to use for each line:
+  - Equity cash flows → discount at cost of equity (C20).
+  - Project / firm cash flows → discount at WACC (C19 or whichever cell you store it in).
+  - Make those cells absolute (e.g. $C$20 or $C$20 depending on fill) so pasted formulas always use the intended rate.
+- Why: Mixing the two rates or referencing the wrong cell gives wrong present values.
+
+5) Minor: check ANY stray literal numbers inserted by mistake
+- Problem: I found the F5 example; there may be other single-cell manual typos introduced the same way (e.g. a number typed instead of 1 or wrong row).
+- Fix: Do a quick search for “83” or other out-of-place numbers in formulas, and scan columns F/G in the discount tables for similar anomalies. Use Find (Ctrl+F) with “$F$83” or “83+” to locate typos.
+
+How to implement the main correction quickly
+- Go to sheet Q1, cell F5. Replace the formula with:
+  =F$2/(1+$J5)^F$1
+- Then select D4:G4 (or the whole discount table block) and fill down to cover all rate rows. This will propagate the consistent, correct formulas.
+
+If you want I can:
+- Produce the exact corrected formula block for each sheet (paste-ready),
+- Or scan the workbook and list every cell with inconsistent referencing / typos (I can do that if you upload the file).

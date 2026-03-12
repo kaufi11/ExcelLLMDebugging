@@ -1,0 +1,25 @@
+I inspected the formulas on the "van Genuchten fit theta-h" sheet and found two clear formula problems (one typo that produces the huge SSE and one incorrect sum range). Summary and fixes below.
+
+1) Wrong formula / typo in E14
+- Current formula: =(C14-411)^2
+- Problem: "411" is a hard-coded constant (typo). All other error terms use (C# - D#)^2; this cell should compare observed (C14) to the model prediction (D14). The 411 makes this residual enormous and dominates the SSE.
+- Fix: change to =(C14-D14)^2
+
+2) Incorrect SUM range in E19 (SSE)
+- Current formula: =SUM(E14:E18)
+- Problems:
+  - It excludes E12 and E13 (which contain residuals) and instead sums from E14 through E18. E17/E18 are blank so harmless but the intended sum appears to be the residuals for the five data points in rows 12–16.
+  - Because of (1) above, E19 becomes very large.
+- Fix: change to =SUM(E12:E16)
+
+3) B7 links to the summed SSE (works but depends on E19)
+- Current formula: =E19
+- Comment: This is fine, but after applying the fixes above B7 will show the correct SSE.
+
+Other notes / checks
+- The predicted theta formulas in D12:D16 look consistent: =$B$3+($B$4-$B$3)/((1+$B$5*(-B12)^$B$6)^(1-1/$B$6)) and similarly for rows 13–16 (the relative reference to B12/B13 etc is expected). Using -B# makes the negative pressure values positive before exponentiation — that's correct here.
+- The LN formulas in F12:F16 (e.g. =LN(-B12)) are consistent with negative pressure inputs.
+- E12, E13, E15, E16 already use (C#-D#)^2 and are correct.
+- After correcting E14 and E19, re-run Solver (if used) because the erroneous E14 was likely biasing the fitted parameters strongly.
+
+If you want I can provide the exact corrected formulas ready to paste, or check any other sheet ranges/formulas.

@@ -1,0 +1,37 @@
+I checked the workbook and found the clear formula bugs and a few logic inconsistencies. Short, specific fixes below.
+
+1) Wrong sign in one discounted-CF formula
+- Faulty cell: E19 (first big Q1 block)
+- Error: operator typo — denominator uses 1 - J19 instead of 1 + J19.
+- Current formula: =$E$2/(1-$J19)^$E$1
+- Fix: =$E$2/(1+$J19)^$E$1
+- Why: discounting uses (1 + rate)^t. Using (1 - rate) gives wrong PVs (and can blow up when rate>1).
+
+2) Tax‑loss‑carry‑forward formulas reference the wrong column (off-by-one)
+- Faulty cells (examples; same pattern appears in two places): E46, F46, G46 (WITH DEPRECIATION block) and E70, F70, G70 (DEBT/with‑depr block).
+- Error: each cell is checking/aggregating the previous column (e.g. E46 tests D47) instead of its own column.
+- Example wrong: E46 =IF(D47=0,SUM(D45:D47),0)
+- Correct pattern: E46 =IF(E47=0,SUM(E45:E47),0) ; F46 =IF(F47=0,SUM(F45:F47),0) ; G46 =IF(G47=0,SUM(G45:G47),0)
+- Same correction for the E70/F70/G70 group.
+- Why: referencing the wrong column gives incorrect carry-forward amounts and breaks taxable income/tax calculations.
+
+3) Inconsistent/incorrect discount‑rate cell used for equity vs project (possible logic bug)
+- Where: Q2 discounting rows (C31:D31:E31... and similar in debt scenario)
+- Symptom: some cells use $C$19 (WACC/discount rate) and others use $C$20 (cost of equity) inconsistently.
+- Guidance / Fix: decide what you are valuing:
+  - If you are valuing the whole project (unlevered cash flows), discount by WACC (use $C$19 or the cell where WACC is stored).
+  - If you are valuing cash flows to equity, discount by cost of equity (use $C$20).
+- Example (equity cash flows in debt scenario): D31 should be =D30/(1+$C$20)^D22 (not /$C$19), and similarly for E31:F31:G31.
+- Why: using the wrong discount rate mixes up PVs and gives wrong equity/project values.
+
+4) IRR/NPV sign/interpretation caution (not a formula typo but important)
+- Where: Q1/Q1 c-d sheets with multiple sign changes in cash flows.
+- Note: IRR may return multiple solutions or a misleading single root; NPV is the reliable decision rule. No formula change required, but be aware when interpreting IRR results (you already commented this in the sheet).
+
+Quick checklist to apply across the workbook
+- Search for any formulas that reference the neighbor column (e.g., D47 used in E46) — fix to the same column.
+- Search for any discount formulas using (1 - rate) — change to (1 + rate).
+- Make discount-rate references absolute and consistent (use named cells or $ references: e.g., name WACC and r_e and use those names).
+- After fixes, re-check totals/sums/NPV/IRR outputs to confirm they move to expected values.
+
+If you want, I can produce the exact corrected formulas for every affected cell (I found the main ones above) or give a small macro / find/replace plan to fix all "shifted‑column" IFs at once. Which would you prefer?

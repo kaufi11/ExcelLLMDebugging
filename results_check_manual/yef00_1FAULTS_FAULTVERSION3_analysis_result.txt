@@ -1,0 +1,53 @@
+I inspected the workbook formulas on each sheet you provided. I found no #VALUE/#REF/#DIV errors, but I found a few inconsistent / suspicious formulas and places likely to be mistakes. Summary first, then cell-by-cell details and recommended fixes.
+
+Summary — likely problems
+- Several cells contain an unexplained “+1” (hard-coded +1) that is inconsistent with the rest of the data and likely an ad‑hoc correction.
+  - Revenues by Source: C11 = 141577402+1
+  - General State Financial Aid: B21 = 3684419+1
+  - FTEE Calculation: E27 = SUM(E11:E26)+1
+  These +1s look like manual adjustments and should be confirmed or removed for consistency.
+- One cell uses a hard-coded numerator instead of the expected cell division:
+  - FTEE Calculation: F14 = 829/600 (hard-coded) instead of E14/600 (inconsistent with every other row).
+  This yields a very small non-credit FTEE for row 14 that is inconsistent with the magnitude of E14.
+- Several SUM formulas include ranges that extend one row beyond the last visible data row (e.g., SUM(B9:B14), SUM(C9:C14), SUM(B9:B18), SUM(C9:C18), SUM(B11:B26), SUM(C11:C26), SUM(H11:H26), etc.). These are harmless if those extra rows are blank, but they are inconsistent and may indicate rows were deleted or ranges not updated.
+
+Detailed findings and recommended fixes
+
+1) Sheet: "Revenues by Source"
+- C11: formula = 141577402+1
+  - Issue: hard-coded +1. Why add 1 to the state financial-aid number? It’s inconsistent with how other source amounts are entered (simple values or sums).
+  - Suggested fix: if the true source value is 141,577,403, enter that value directly (or correct the source cell to =141577402 if that was intended). If no deliberate +1 adjustment is required, replace with 141577402 (or better: with the correct raw source number).
+  - Note: the total C15 (SUM(C9:C14)) currently matches the existing numbers, so removing/altering the +1 will change totals — verify intended source data.
+
+2) Sheet: "General State Financial Aid"
+- B21: formula = 3684419+1
+  - Issue: same pattern as above — an unexplained +1.
+  - Suggested fix: replace with the actual value (3684420) as a direct value or confirm why +1 was used. For consistency, prefer direct cell value without arithmetic.
+
+3) Sheet: "FTEE Calculation"
+- F14: formula = 829/600
+  - Issue: every other non-credit FTEE cell uses =E# / 600 (e.g., F11 = E11/600). F14 uses a hard-coded numerator (829) not tied to E14 (E14 = 366167). This produces F14 = 1.3816667 while E14/600 = 366167/600 ≈ 610.278. That creates an implausibly small F14 and causes H14 and totals to be inconsistent relative to the rest of the table.
+  - Likely cause: either E14 should be 829 (but currently shows 366167), or F14 should be =E14/600. Which is correct must be checked against source data.
+  - Suggested fix: if E14 = 366167 is correct, change F14 to =E14/600. If E14 is wrong and should be 829, correct E14 accordingly and keep F14 = E14/600. After fixing, recalc H14 and H27 and dependent percentages.
+- E27: formula = SUM(E11:E26)+1
+  - Issue: added +1 again. This is inconsistent; other totals are plain SUM() without +1 (except the noted individual ones). The +1 appears to be an ad hoc adjustment and will distort totals.
+  - Suggested fix: change to =SUM(E11:E26) (or adjust range to SUM(E11:E25) if row 26 is blank) and verify whether the earlier +1s were trying to reconcile totals. If +1s were inserted to force totals to match external data, correct the underlying data instead of adding +1.
+- Other observations on this sheet:
+  - Several SUM formulas include ranges that go to row 26 while your last college data appears in row 25 (e.g., SUM(B11:B26), SUM(C11:C26), SUM(F11:F26), SUM(H11:H26), SUM(I11:I26)). That is not an error per se (extra rows may be blank) but it is inconsistent and can hide mistakes if rows are later inserted/removed. Consider tightening ranges to exactly the data rows or convert the table into an Excel Table to auto expand.
+
+4) Minor / styling inconsistencies (not errors that break calculation)
+- Many formulas use a leading plus sign (e.g., "=+C9/$C$15"). This is stylistic and not functionally wrong, but inconsistent with usual convention (“=” is enough).
+- Several totals (Total Revenues, Total Expenditures, etc.) use SUM ranges that include a blank row at the end (e.g., SUM(B9:B14) when only through B13 is filled). This currently gives correct totals because blanks are zero, but is fragile and signals possible deleted/missing rows.
+
+Actions I recommend you take
+1. Confirm the reason for the +1 adjustments in C11 (Revenues), B21 (General State Financial Aid), and E27 (FTEE). Remove them unless there's a documented reason.
+2. Fix F14: change to =E14/600 (if E14 is right) or correct E14 if 829 was the intended contact hours. Then recalc H14, H27 and all percentages (Dxx, Gxx, Ixx).
+3. Tighten SUM ranges to the exact rows used, or convert contiguous blocks to proper Excel Tables so formulas auto-adjust when rows are added/removed.
+4. After changes, recalc workbook and verify that totals and percentage columns sum to 1 (or expected totals) and match authoritative source numbers.
+
+If you want, I can:
+- produce the exact corrected formulas to paste in specific cells (e.g., F14 -> =E14/600),
+- recalc the impacted totals/percentages and show the new numbers,
+- or open the workbook and make the corrections and return a summary of what changed.
+
+Tell me which of those you prefer.

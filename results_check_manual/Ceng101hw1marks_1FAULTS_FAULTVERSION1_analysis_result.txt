@@ -1,0 +1,63 @@
+I inspected the formulas and values in Sheet1 and found several formula errors / inconsistencies and a few suspicious data values. Summary and suggested fixes below.
+
+1) Inconsistent MAX ranges (likely copy/paste errors)
+- B69 currently =MAX(B33:B68) — but other stats use B2:B68. This excludes rows 2–32.  
+  Suggest: =MAX(B2:B68)
+- C69 currently =MAX(C33:C68) — excludes rows 2–32.  
+  Suggest: =MAX(C2:C68)
+- D69 currently =MAX(D33:D68) — excludes rows 2–32.  
+  Suggest: =MAX(D2:D68)
+
+Rationale: Averages/STDEVs in rows 71–72 use 2:68. The MAX cells should use the same data range (rows 2:68) unless there is an intentional reason to start at row 33.
+
+2) Inconsistent / incorrect starts for N and Q summary formulas
+- N69 =MAX(N17:N68) — this excludes N2:N16. If you intend the whole student block, change to =MAX(N2:N68). If you intentionally start at 17, be explicit (comment or named range).
+- Q69 =MAX(Q17:Q68) — same issue; probably should be =MAX(Q2:Q68).
+
+3) MIN formulas include aggregated cells (should not)
+- N70 =MIN(N17:N69) — this includes N69 (the MAX row). That will distort the MIN if N69 contains an extreme value. Suggest: =MIN(N2:N68)
+- Q70 =MIN(Q17:Q69) — includes Q69 (an aggregate). Suggest: =MIN(Q2:Q68)
+
+4) Other MIN/MAX inconsistent ranges vs. averages / stdevs
+- G69 uses =MAX(G2:G68) and G70 uses =MIN(G2:G68) — these are fine and consistent with averages/stdevs (G71/G72).
+- Some summary formulas use start row 17 (N/Q) or 33 (B/C/D) while averages and STDEVs use 2:68. Decide on a single consistent data range (likely 2:68) and update all summary formulas to that range.
+
+5) Suspicious MIN results (possible data issues or wrong ranges)
+- C70 (value shown 0) — MIN(C2:C68) returned 0 even though visible C values in rows 2–68 in your extraction are all >= 22. This suggests either:
+  - There is an explicit 0 in the range (check for C cells with 0), or
+  - The range referenced is wrong / includes unintended cells, or
+  - The extractor representation differs from the actual workbook.
+  Action: inspect C2:C68 in Excel for any 0 entries or accidental zero values typed in; correct them if unintended.
+- G70 (value shown 0) — same concern for G2:G68. Check for accidental 0 values.
+
+6) Aggregation rows referencing aggregated results
+- Some MIN/MAX include other summary rows (e.g., N70/Q70 included N69/Q69). Always exclude rows that contain computed aggregates from the input range for other aggregates, or place summary rows outside the data block.
+
+7) Ambiguous arithmetic in many N cells (possible precedence mistakes)
+- Several N-column cells use formulas without parentheses: e.g. N10 =17+5/2, N15 =18+5/2, N32 =13+5/2, etc. These compute as (number) + (5/2) because division has precedence. If the intended value was the average (17+5)/2, then the formula is wrong. Review formulas like:
+  - =17+5/2 returns 19.5 (17 + 2.5)
+  - =(17+5)/2 would return 11
+  Check the intention and add parentheses where needed.
+
+8) Odd / outlier data to check manually
+- Q52 = 6.5 — this is much lower than most Q (final exam) values (many in 20–80 range). Confirm Q52 is correct and not a mistaken entry.
+- A16 and A68 contain very large numbers (98227577, 99650185) while other student IDs are 7 digits; check whether those are intentionally present or are stray values in the student ID column.
+
+9) Specific recommended corrected formulas (if the intended full data range is rows 2:68)
+- B69: =MAX(B2:B68)
+- C69: =MAX(C2:C68)
+- D69: =MAX(D2:D68)
+- N69: =MAX(N2:N68)
+- Q69: =MAX(Q2:Q68)
+- N70: =MIN(N2:N68)
+- Q70: =MIN(Q2:Q68)
+
+10) General recommendations
+- Use a single consistent data range for all summary statistics (e.g., B2:Q68), or convert the student block to an Excel Table and use structured references — this avoids hard-coded row offsets and prevents including summary rows in the ranges.
+- Put summary rows (MAX/MIN/AVERAGE/STDEV) outside the data block (below row 68) and ensure none of the summary ranges include these summary cells.
+- Review N-column arithmetic where division and addition are combined without parentheses if those cells were intended to show averages or different computations.
+- Scan for accidental zeros / misplaced values (C70 / G70 / Q52 / odd A16/A68).
+
+If you want, I can:
+- produce a list of every formula cell and propose corrected formulas programmatically,
+- or provide a patch (exact formula replacements) for the cells I listed. Which would you prefer?

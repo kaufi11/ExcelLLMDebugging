@@ -1,0 +1,34 @@
+I reviewed the formulas in all sheets you supplied. Overall the workbook is consistent and follows clear patterns (monthly chains, per-year totals, year totals summed similarly across sheets). I found one definite formula inconsistency that you should correct; I also point out the likely impact and the suggested fix.
+
+1) Sheet: In‑Kind Contributions — row for "Personnel costs (from Personnel sheet)" (row 23)
+- Problem cells and formulas:
+  - R23 = Q23
+  - AF23 = AE23
+- Why it's wrong:
+  - The rest of the workbook follows the pattern where P contains the Year‑1 total (SUM(D:O)) and R should start by copying the Month‑12 value (O) into Month‑13 (R), then S copies R, T copies S, etc. In this row R23 references Q23 (a column that in this layout is unused), and AF23 references AE23 (again the wrong predecessor column). Those two references are off by one (or two) compared with the intended pattern.
+- Impact:
+  - If O23 (month 12) contains a non‑zero value, that value will not be carried into R23 and subsequent months; instead R23 will read Q23 (likely blank/zero) and the propagation (S23, T23, ... and AF23 onward) will be incorrect (zeros instead of the intended repeated value). This misreports in‑kind personnel contributions for months 13+ (and likely year totals).
+- Suggested fixes:
+  - Change R23 formula from =Q23 to =O23.
+  - Change AF23 formula from =AE23 to =AC23.
+  - After those two fixes the rest of the chain in that row (S23 = R23, T23 = S23, ..., AG23 = AF23, etc.) will correctly propagate the month‑12 and year‑2 boundary values across the remaining months.
+
+Notes / reasoning about the suggested AF23 change:
+- The sheet uses these three blocks: months D:O (Yr1), months R:AC (Yr2), months AF:AQ (Yr3). For many rows the pattern is:
+  - P = SUM(D:O)
+  - R = O
+  - S = R, T = S, ... AC = AB
+  - AD = SUM(R:AC)
+  - AF = AC
+  - AG = AF, etc.
+- In this row AF was incorrectly pointing to AE (off by one); it should point to AC (the last month of Year 2) so Year 3 propagation starts from the proper value.
+
+2) No other formula errors found
+- I scanned for other anomalous references (unexpected references to Q*, AE* or Q in other rows) and I did not find additional occurrences in the JSON you provided. Most other rows consistently use the "copy previous column" pattern and the SUM ranges are consistent.
+- A couple of things to watch for even though they are not errors now:
+  - Hidden or unused column Q: many sheets skip Q and use R as the next month — this is the likely cause of the off‑by‑one references. When filling formulas across a large multi‑block layout, watch for the column gap (P -> [Q unused] -> R) which is where such copy/paste errors easily occur.
+  - If you ever insert or remove columns, re‑check the month propagation formulas (the chain =previousColumn) and the Year totals (P/AD/AR) to ensure the ranges still match.
+
+If you want, I can:
+- produce the exact corrected formulas to paste in (R23 and AF23) and show before/after impact on the year totals, or
+- scan the live Excel file and patch these two cells for you.

@@ -1,0 +1,58 @@
+Summary — I found a few clear errors (and some risky/mis-labeled items). Below are the problems, why they matter, and exactly how to fix them. Short and plain.
+
+1) Missing / blank inputs (will make results = 0 or produce #DIV/0!)
+- Cells blank: C15 (annualized purchases), C104 (no. lift-truck drivers), C106 (lift-truck driver's rate), C110 (avg annual maintenance cost), C111 (avg annual fuel cost), C130 (mean warehouse inventory value), C135 (avg profit/turn).
+- Why it matters: any formulas using those cells return 0 (or break downstream totals / payback formulas).
+- Fix: fill these cells with the intended numeric values (or an explicit 0 if appropriate). After you fill them verify subtotals E149, E151, C255 etc. stop showing zero or #DIV/0.
+
+2) Hard-coded / incorrect value at G86
+- Problem: G86 = 7 (hard-coded). This cell should be the maximum-savings formula like every other “Max” cell.
+- Effect: Avg (I86) = (E86+G86)/2 is meaningless because G86 is not the correct max savings.
+- Fix: Replace 7 with the correct formula:
+  G86 = C86 * C87 * C88 * 0.25
+  (Then I86 = (E86+G86)/2 will work correctly.)
+- Explanation: E86 uses 16% lower bound; Max should use 25% upper bound per pattern.
+
+3) Inconsistent / mislabeled percent inputs (confusing and error-prone)
+- Examples:
+  - A57 label says “Range = 16–25%” but C57 = 0.25 only (this is a single number, not a pair). That’s OK if C57 is intended to be the user-selected percentage, but the label is confusing.
+  - A89 label says “Range = 16–25%” but C89 = 0.16 (only lower bound). If the row expects you to choose a single “Your Savings” percent, using 0.16 here likely yields incorrect K86 (or misleads the user).
+- Why it matters: a wrong/misplaced percent causes “Your Savings” column (K) to be wrong.
+- Fix: Standardize: make two clear inputs for each range or a single clearly labeled “Your Savings %” cell next to each benefit. Example:
+  - If you want “Your Savings” = 25%, set C89 = 0.25 and ensure K86 = C86*C87*C88*C89
+  - Or change the label to “Default Your Savings %” if C89 is the chosen percent.
+- Explanation: consistent labeling removes accidental use of lower-bound vs chosen percentage.
+
+4) Potentially confusing inventory / carrying-cost block (Method 1/2/3)
+- Observations: E133 & G133 use fixed constants (0.04/0.06 for one-time reduction and 0.18/0.25 for carrying cost). K133 uses C130*C131*C133 (multiplying two percent cells).
+- Why it matters: it’s easy to confuse which cell holds the one-time reduction percent and which holds the carrying-cost percent. If the user changes only one of the percent cells, K133 might be unexpected.
+- Fix (two options):
+  - Option A (recommended): create two explicit labeled input cells, e.g. C130 = Inventory value, C131 = One-time reduction % (user selected), C132 = Carrying cost % (user selected). Then:
+      E133 = C130 * 0.04 * 0.18   (keeps historical min)
+      G133 = C130 * 0.06 * 0.25   (keeps historical max)
+      K133 = C130 * C131 * C132   (user-chosen calc)
+  - Or at least document which cells are the user inputs and rename them so K133 is clearly using the intended user-selected percentages.
+- Explanation: explicit inputs prevent accidental double-multiplying or wrong percent combinations.
+
+5) Payback / ROI divide-by-zero risk
+- Problem: Payback months formula = ((B+C)/A) * 12 uses A = total annual savings (C255 / E255 / etc). If total savings = 0, you get #DIV/0.
+- Fix: wrap with error handling or check total first. Example:
+  - C262 = IF(C255>0, ((C257+C258)/C255)*12, "Savings = 0 — check inputs")
+- Explanation: prevents #DIV/0 and gives a helpful message.
+
+6) Many “Min” formulas use *0 intentionally — confirm intent
+- You have many rows where Min = Cx*...*0 (e.g., E20, E26, E31, E38). Often these were intentional (min = 0). Verify each case and if you want a non-zero lower bound, change the 0 to the correct low-percent (e.g., 0.16).
+- Fix: review each min formula and set appropriate lower percent if 0 is not intended.
+
+Quick checklist to fix now (actionable)
+1. Populate required blank inputs: C15, C104, C106, C110, C111, C130, C135 (and any other blanks you expect to be non-zero).
+2. Replace G86 (7) with: =C86*C87*C88*0.25
+3. Standardize “Your Savings %” inputs: for each block place a single labeled cell for the user percent and point K formulas to it.
+4. Add error-handling to payback formulas to avoid #DIV/0: =IF(C255>0, ((C257+C258)/C255)*12, "CHECK INPUTS")
+5. Review min formulas that multiply by 0 and confirm they should be zero.
+
+If you want I can:
+- Produce a one-line corrected formula for every cell you told me to fix (paste-ready), or
+- Provide an annotated cell-by-cell list of all blank/incorrect cells in the sheet.
+
+Which would you prefer?

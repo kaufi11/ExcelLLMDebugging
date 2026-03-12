@@ -1,0 +1,42 @@
+Summary — what's wrong (short)
+- Several rows are misaligned: extra/shifted columns (e.g. stray values in F, H, Z) put percentages under the wrong headings. That makes the "Other" formulas and the upper-level totals reference wrong cells.
+- One clear formula typo: AC22 uses subtraction signs instead of addition: =SUM(100-(S22-U22-W22-Y22-AA22)). That produces a wrong result.
+- Some formulas use the odd construction SUM(100-(...)) and/or reference cells that contain text like "n/appl", which can produce unexpected results.  
+
+Examples of misalignment / bad formulas
+- Row 10 (Business Admin) has H10 = 0 between G10 and I10 → data shifted right.
+- Row 18 (Education) shows extra F18 and H18 cells, shifting the expected columns.
+- Row 22 (Engineering) shows a Z22 value and AC22 has the subtraction-typo.
+- AC22 formula: =SUM(100-(S22-U22-W22-Y22-AA22)) — wrong operator signs.
+
+Why this breaks the sheet
+- Header columns expect A,B,C,D,F/WF,Other in specific columns (E,G,I,K,M,O for lower level and S,U,W,Y,AA,AC for upper level). Any inserted column shifts the data so formulas subtract/add the wrong numbers. The subtraction typo yields an incorrect "Other" percent.
+
+How to fix it (short, step-by-step)
+1) Fix alignment first
+   - Remove any stray/empty columns that were inserted (the extra F/H/Z columns you see), or move the mis‑placed numeric values into the correct columns so each percentage sits under the correct header. After that, all rows should have numbers in E,G,I,K,M (lower) and S,U,W,Y,AA (upper).
+   - Practical: If a whole row is shifted right by one, cut the shifted range and paste it one column to the left until it lines up with the headers.
+
+2) Correct the formula typo(s)
+   - Replace AC22 (and any similar typos) with a correct formula. Example correct formulas:
+     - Lower-level "Other" (O6 etc): =100 - SUM(E6,G6,I6,K6,M6)
+     - Upper-level "Other" (AC6 etc): =100 - SUM(S6,U6,W6,Y6,AA6)
+   - For AC22 specifically: =100 - SUM(S22,U22,W22,Y22,AA22)
+
+3) Handle "n/appl" text cells
+   - If an entire row is "n/appl" (no numeric percentages), don’t use numeric formulas — show "n/appl" in the Other cell. Use an IF that checks for numeric input:
+     - Example: =IF(COUNT(E15,G15,I15,K15,M15)=5,100 - SUM(E15,G15,I15,K15,M15),"n/appl")
+   - This prevents errors when cells contain text.
+
+4) Clean up formulas for clarity
+   - Replace constructions like =SUM(100-(E6+G6+...)) with =100 - SUM(...). Both compute the same but the latter is clearer and less likely to hide mistakes.
+
+Quick checklist to verify after fixes
+- Each lower-level row: numeric values only in E,G,I,K,M and percentage Other in O computed as 100 - SUM(E,G,I,K,M).
+- Each upper-level row: numeric values only in S,U,W,Y,AA and Other in AC computed as 100 - SUM(S,U,W,Y,AA).
+- No rows have stray numeric cells in columns between the expected columns.
+- Totals (Q30, AF30 etc.) add the intended college totals.
+
+If you want, I can:
+- Give the precise list of columns to delete/move if you paste a screenshot or indicate which rows show the extra values, or
+- Show corrected formulas for a few representative rows (I can produce them for rows 6, 10, 22, 30).

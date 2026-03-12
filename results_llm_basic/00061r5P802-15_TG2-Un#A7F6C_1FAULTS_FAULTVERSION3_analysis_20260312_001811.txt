@@ -1,0 +1,47 @@
+Summary of problems
+- Column A (the numbering) is inconsistent / broken:
+  - A35 contains =A34+8 (should be +1), which causes the sequence to jump and all following row numbers to be wrong.
+  - There are blank rows (50–51). A52 uses =A49+1, so the sequence skips two rows.
+- Many column-A entries are shown as the literal text "FORMULA =A2 + 1" (or "FORMULA =A34+8") rather than real Excel formulas. That means Excel is treating them as text and not computing the numbers.
+- Because of the above, the easiest fill-down/bulk numbering no longer works and any dependent logic expecting sequential numbers will be wrong.
+
+What causes this
+- A wrong manual edit in A35 (used +8 instead of +1) and manual deletion/insertion of rows created the gap.
+- Some cells are formatted or entered as text (or prefixed with the word "FORMULA ") so Excel does not evaluate them as formulas.
+
+Quick fixes (short)
+1. Repair the single bad cell
+   - Edit A35 and change its formula to =A34+1.
+
+2. Convert text formulas into real formulas
+   - Select column A.
+   - Format cells as General (Home → Number → General).
+   - Use Find & Replace (Ctrl+H):
+     - Find: FORMULA = (include the space after = if present) or find the literal prefix you have (e.g. "FORMULA =")
+     - Replace with: =
+     - Click Replace All.
+   - If some cells still show as text, select them, press F2 then Enter, or run Data → Text to Columns → Finish to force re-evaluation.
+
+3. Fill the whole column with a reliable numbering formula
+   Option A (simple contiguous sheet, no blanks):
+     - Put 1 in A2 and in A3 use =A2+1. Drag/fill down the column.
+   Option B (only number rows that have a Name in column C):
+     - In A2 put 1, in A3 use:
+       =IF($C3="","",A2+1)
+     - Fill down. This prevents numbering empty rows.
+   Option C (robust independent of deletions):
+     - In A2 put: =IF($C2="","",ROW()-1)
+       (adjust the -1 if your first data row is different)
+     - Fill down.
+
+4. Fix the gap (rows 50–51)
+   - Either delete the empty rows 50–51 so the sheet is contiguous, then fill column A down; or change A52 to reference the immediate previous row (e.g. if you want continuous numbers, set A50 = A49+1, A51 = A50+1, A52 = A51+1) — easier: fill down from the corrected A35 (or from the top) after step 2.
+
+Why these fixes work (brief)
+- Changing A35 back to +1 restores the intended increment so subsequent numbers are correct.
+- Replacing "FORMULA =" with "=" and changing format from Text → General lets Excel evaluate the cell contents as formulas rather than plain text.
+- Using IF($Cn<>"",Aprev+1,"") or ROW()-1 produces a stable numbering scheme that won't break when rows are added/removed or when there are blank rows.
+
+If you want, I can:
+- Give the exact Find/Replace string if your cells include slightly different prefixes (e.g. "FORMULA = A3 + 1" vs "FORMULA =A3+1").
+- Provide a single formula to paste into A2 and fill down that will auto-number only populated rows.

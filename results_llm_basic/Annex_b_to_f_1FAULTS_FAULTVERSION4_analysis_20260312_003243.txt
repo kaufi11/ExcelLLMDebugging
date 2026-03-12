@@ -1,0 +1,46 @@
+I reviewed the workbook and found a small set of real formula errors that will cause wrong totals / reconciliation and one likely typo in a numbering cell. Short summary, then exact fixes.
+
+Summary of errors (what’s wrong and where)
+1. Table 3 (Operating Cash Flow) — totals for “Financed by” are wrong:
+   - ORIGINAL forecast: T22 and T23 are set to S22 and S23 (July only) instead of the year totals.
+   - ACTUAL/REVISED forecast: T45 and T46 are set to S45 and S46 (July only) instead of the year totals.
+   Impact: T22/T23/T45/T46 show only July values. That corrupts T24/T47 (Total financing), then the “These cells should be zero” checks (H25..T25 and H48..T48) and the reconciliation T26/T49.
+
+2. Table 2 (Balance Sheet) — percent column for Total Funds:
+   - K69 = K49 (it points to the percent for Total Net Assets) rather than calculating the percent for Total Funds.
+   Impact: the variance % for Total Funds is wrong / meaningless — it just repeats the percent from a different line.
+
+3. Table 1 (I&E) — row numbering typo (minor):
+   - B22 is set to =B21+256 instead of =B21+1.
+   Impact: only affects the row index numbers in column B (likely cosmetic). It does not affect calculations unless someone uses those numbers.
+
+(Optionally) check: endowment linking — H59/I59 in Table 2 are set equal to H15/I15. That can be correct if you intend the Endowment fund total to equal the Endowment Asset Investment value; confirm this is intended.
+
+Exact fixes (copy/paste formulas to replace the broken ones)
+1. Table 3 — ORIGINAL forecast
+   - Cell T22: replace =S22 with =SUM(H22:S22)
+   - Cell T23: replace =S23 with =SUM(H23:S23)
+   After replacement T24 (=SUM(T22:T23)) will correctly show the year total financing.
+
+2. Table 3 — ACTUAL/REVISED forecast
+   - Cell T45: replace =S45 with =SUM(H45:S45)
+   - Cell T46: replace =S46 with =SUM(H46:S46)
+   After replacement T47 (=SUM(T45:T46)) will be correct.
+
+3. Table 2 — Total Funds percent
+   - Cell K69: replace =K49 with =IF(H69=0,"N/A",(J69/H69)*100)
+   This computes the variance % for Total Funds (J69/H69) just like the other percent cells.
+
+4. Table 1 — numbering typo (optional cosmetic fix)
+   - Cell B22: replace =B21+256 with =B21+1
+
+Why these fixes work
+- T22/T23/T45/T46: those cells should be the sum across the 12 monthly columns (H:S). Using S22/S23 only returned the single-month (July) value and made year totals and reconciliations incorrect. SUM(H22:S22) aggregates all months as intended.
+- K69: every “Variance as % of original forecast” cell follows the pattern IF(Hx=0,"N/A",(Jx/Hx)*100). K69 was incorrectly referencing another cell; replacing it restores the intended percent calculation.
+- B22: the +256 was a clear typo in the auto-numbering pattern (others are +1). Changing it to +1 restores consistent numbering.
+
+What to check after you fix
+- Recalculate or press F9 to ensure dependent totals and the reconciliation cells (T26 and T49) become zero (or show intended differences).
+- Confirm the Endowment mapping (H59/I59 = H15/I15) is intended for your model.
+
+If you want, I can give you the exact cell addresses and copy-ready formulas in the workbook language (Excel formula strings) to paste into each cell.

@@ -1,0 +1,58 @@
+Summary — biggest problems I found
+1) A single-row sum error (mechanical) that breaks that student’s assignment %:
+   - Faulty cell: T5 (Aguilar‑Price row).
+   - Problem: T5 =SUM(E5:S5) omits D5 (the Review column). That makes T5 too small and U5 (assignment %) wrong.
+   - Fix: change T5 to =SUM(D5:S5).
+
+2) Inconsistent/hard‑coded denominators (design/maintenance risk)
+   - Many % formulas use hard‑coded totals (150, 350, 400, 830, etc.) instead of pointing to the worksheet cells that show the maximum points.
+   - Example consequences: if you change the maximum points in the header, the % formulas won’t update. Also I see different totals used on Sheet1 vs Sheet2 (Sheet2 correctly uses absolute refs like $T$1 and $AQ$1).
+   - Fix (recommended): Replace hard codes with absolute references to the header cells that store the maximum points (or use named ranges). Examples:
+     - If cell T3 (or whichever header cell) holds the assignments maximum, change U5 (and all U rows) to:
+       =T5/$T$3*100
+     - If AQ1 (or the header cell that holds research max) contains the research maximum, change AR5 (and all AR rows) to:
+       =AQ5/$AQ$1*100
+     - If BS1 (or the header for exam/overall max) holds the exam/overall maximum, change BU5 (and all BU rows) to:
+       =BT5/$BS$1*100
+     - If CE1 (or the header that holds the grand total, e.g., 830) is the correct grand total, change CF5 (and all CF rows) to:
+       =CE5/$CE$1*100
+   - Or: create named ranges (AssignMax, ResearchMax, ExamMax, OverallMax) and use them (cleaner and less error‑prone).
+
+3) Non‑numeric entries in numeric columns
+   - I see "x", "X", "+", "#" and text like "." in cells inside numeric ranges (e.g., AZ8 = X, BR6 = #, BL7 = X, etc.).
+   - Problem: SUM ignores text, which can hide missing data or produce misleading results; other formulas expecting numbers may return errors.
+   - Fix: Replace those entries with either blank cells or 0 where appropriate. If you want to flag missing work while keeping numeric sums intact, use an adjacent notes column and keep the numeric cell blank or 0.
+
+4) Inconsistent formula patterns across rows
+   - Example: T5 used SUM(E5:S5) while most other student rows use SUM(Dn:Sn). This indicates potential copy/paste mistakes elsewhere.
+   - Fix: Audit the first few formula columns (T, U, AQ, AR, BA, BF, BM, BS, BT, BU, BZ, CA, CB, CE, CF) for consistency across rows. Use relative formulas on the first row and fill down to keep consistency.
+
+How to implement the fixes (quick checklist)
+1. Fix the obvious mechanical error:
+   - Change T5 to: =SUM(D5:S5)
+
+2. Replace hard‑coded denominators with absolute references:
+   - Decide which header cells hold the maxima (e.g., T3 = AssignMax, AQ1 = ResearchMax, BS1 = ExamMax, CE1 = OverallMax).
+   - Update formulas:
+     - U5 (and all U rows) := =T5/$T$3*100
+     - AR5 (and all AR rows) := =AQ5/$AQ$1*100
+     - BU5 (and all BU rows) := =BT5/$BS$1*100
+     - CF5 (and all CF rows) := =CE5/$CE$1*100
+   - Or create named ranges and use them.
+
+3. Clean non‑numeric marks:
+   - Replace "x", "X", "+", "#" etc. with blank or 0 in numeric columns OR move those flags to a notes column.
+   - If you must keep text, wrap sums in error‑tolerant formulas (SUM already ignores text; for averages or COUNT use IFERROR/ISNUMBER as needed).
+
+4. Verify consistency:
+   - Select a column of formulas (e.g., column T, U, AR, BU) and Fill Down from the first correct row to the bottom to ensure the same formula pattern applies to every student.
+
+Why these fixes help (short)
+- Fixing T5 corrects that student's assignment total and % immediately.
+- Replacing hard codes with cell references makes the workbook robust: change the max points once in the header and all %s update automatically.
+- Removing text from numeric cells prevents hidden mistakes and makes totals predictable.
+- Ensuring consistent formulas prevents one-off copy/paste errors from recurring.
+
+If you want, I can:
+- List every cell in the workbook that currently has a hard‑coded denominator (150, 350, 400, 830, etc.) so you can replace them systematically.
+- Produce the exact formulas that should be used for every column (T, U, AQ, AR, BA, BF, BM, BS, BT, BU, CE, CF) so you can copy/paste them. Which would you prefer?

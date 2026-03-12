@@ -1,0 +1,22 @@
+Faulty cells (column A — the sequential ID column)
+
+1) A35
+- Error type: Typo / wrong increment
+- Problem: formula is =A34+8 so the sequence jumps (e.g. from 33 → 41). That breaks the numbering and all downstream values that rely on it.
+- Fix: change to =A34+1
+
+2) A52
+- Error type: Broken chain / wrong reference after deleted rows
+- Problem: formula is =A49+1 instead of continuing from the immediately prior row. Because A50/A51 were removed (or not filled), A52 now continues from the wrong cell and the sequence is offset.
+- Fix: change to =A51+1 (or simply reestablish the normal fill pattern)
+
+Quick, robust solution (recommended)
+- Replace the whole column A sequence with a stable formula that doesn't break when rows are inserted/deleted:
+  - Put this in A2 and fill down: =ROW()-1
+  - Or keep A2=1 and use A3: =A2+1 then fill down.
+
+Why the recommended fix
+- =ROW()-1 auto-generates the correct 1,2,3... IDs based on the row number and will not get out of sync if rows are inserted/deleted or a single cell formula is accidentally changed.
+- Re-filling A3=A2+1 down also works but is more fragile if rows are deleted without refilling.
+
+If you want, I can give exact steps to correct column A and re-fill it safely.

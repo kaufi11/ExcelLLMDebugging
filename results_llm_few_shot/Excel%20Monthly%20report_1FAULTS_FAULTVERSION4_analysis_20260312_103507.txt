@@ -1,0 +1,45 @@
+Summary of the problems
+- Many cells in rows 9–39 (columns E:M and some others) contain wrong/chained SUM formulas like F9 = SUM(E9), G9 = SUM(F9), E9 = SUM(E42) etc. These reference a single cell or the previous column, so they don't show per-column or per-row service counts — they create a cascading/misplaced calculation.
+- Totals row (row 40) mostly references the wrong cells: F40 = SUM(E40), G40 = SUM(F40) etc. That sums totals of other columns instead of summing the column's data.
+- One obvious typo: K19 = SUM(235) — SUM of a literal number is meaningless; probably intended to be a number or proper reference.
+- Likely missing per-row totals: Column C ("Total #") should be the sum across the service columns (D:M) for each day, but that formula isn't shown.
+
+Why this is wrong (short)
+- SUM(single cell) or SUM(previous column total) does not compute the intended column totals or per-row totals. The sheet is summing the wrong ranges, so bottom totals and per-row totals are incorrect.
+
+Fixes (exact, copy/paste formulas)
+
+1) Per-row total (column C)
+- Put this in C9 and fill down to C39:
+  =SUM(D9:M9)
+This makes each day's "Total #" equal the sum of all service columns for that day.
+
+2) Column totals (row 40)
+- Replace the current formulas in row 40 with these (copy each into the appropriate cell):
+  E40: =SUM(E9:E39)
+  F40: =SUM(F9:F39)
+  G40: =SUM(G9:G39)
+  H40: =SUM(H9:H39)
+  I40: =SUM(I9:I39)
+  J40: =SUM(J9:J39)
+  K40: =SUM(K9:K39)
+  L40: =SUM(L9:L39)
+  M40: =SUM(M9:M39)
+Note: C40 and D40 are already correct (C40 = SUM(C9:C39), D40 = SUM(D9:D39)).
+
+3) Remove/replace wrong formulas in data rows (E9:M39)
+- Clear the mistaken formulas like E9 = SUM(E42), F9 = SUM(E9), ..., and enter the actual counts for each service for each day.
+- If those cells must be calculated from elsewhere, replace with correct references to the source cells (e.g., =SourceSheet!E9).
+
+4) Fix the typo K19
+- If 235 was meant to be a value, put 235 (no SUM). If K19 should reference J19 as the other rows do, set:
+  K19: =J19
+(But avoid chains like =SUM(J19) for a single adjacent cell — better use =J19 or the correct source.)
+
+Quick checklist to repair the sheet fast
+- Clear E9:M39 (remove incorrect SUM formulas) and re-enter the daily counts.
+- Put C9 formula and fill down.
+- Put the column-sum formulas in row 40 for E:M.
+- Fix K19 as above.
+
+If you want, I can produce a step-by-step macro or a list of exact cells to edit and the precise formulas to paste. Which would you prefer?

@@ -1,0 +1,85 @@
+Summary of workbook structure and contents (concise)
+
+Workbook purpose
+- 2002 Financial Forecasts Update for a college: Declaration, Commentary, consolidated Income & Expenditure (I&E), Balance Sheet (BS) and Cash Flow (CF) tables with Original FFR vs Mid‑Year Revised Outturn and variance analysis.
+
+Sheets (high level)
+
+1) Declaration - Annex B
+- Header/title and return date. College identity and contact fields (name, address, contact, telephone, e‑mail).
+- Short declaration text and signature area: Signed (B26), role (D26 = Principal and Accountable Officer), date (J26).
+- No calculations shown.
+
+2) Commentary - Annex C
+- Title and a financial commentary box prompt.
+- Cell A4 pulls the sheet title from Table 1.0: ='Table 1.0 I & E - Annex D'!A4.
+- Instructions: commentary required for material changes (>£50k and >10%).
+
+3) Table 1.0 I & E - Annex D (Income & Expenditure)
+- Layout: rows for income lines (Funding Council grants, education contracts, tuition fees, other grants, other operating income, investment income) and expenditure lines (staff costs, restructuring, other expenses, depreciation, interest).
+- Columns:
+  - H: Original FFR Forecast (£000)
+  - I: Mid‑Year Update — Revised Outturn (£000)
+  - J: Variance (I − H)
+  - K: Variance % =IF(H=0,"N/A",(J/H)*100)
+  - L: Reason where material
+- Key calculated totals:
+  - H15/I15 = SUM(H9:H14) — Total Income
+  - H23/I23 = SUM(H18:H22) — Total Expenditure (excl. bursaries)
+  - H25/I25 = H15−H23 (Surplus/(Deficit) after depreciation)
+  - H31/I31 = H25+H28−H29 (after gain/loss on sale)
+  - H38/I38 = H31−H34−H36 (after taxation/minority interest)
+  - H43/I43, H48/I48, H52/I52 track historical cost adjustments and carried forward totals
+  - Bursary/access section calculates over/under use (differences)
+- Formula pattern: most variance cells are I−H and percent use IF to avoid divide‑by‑zero.
+- Current numeric state: nearly all monetary cells shown are 0, so many % cells display "N/A".
+
+4) Table 2.0 BS - Annex E (Consolidated Balance Sheet)
+- Layout: fixed assets, current assets, creditors due within one year, creditors after one year, provisions, deferred capital grants, endowments, reserves and totals.
+- Columns H/I/J/K/L similar to I&E (Original, Revised, Variance, % and reason).
+- Key formulas:
+  - H13/I13 = SUM(H7:H12) — Total Fixed Assets
+  - H23/I23 = SUM(H18:H22) — Total Current Assets
+  - H33/I33 = SUM(H26:H32) — Amounts falling due within one year
+  - H35/I35 = H23−H33 — Net Current Assets/(Liabilities)
+  - H37/I37 = H13+H15+H35 — Total Assets Less Current Liabilities
+  - H44/I44 = SUM(H40:H43) — Amounts falling due after >1 year
+  - H49/I49 = H37−H44−H47 — Total Net Assets
+  - H56/I56 = SUM(H52:H55) — Total Deferred Grants
+  - H59/I59 = H15/I15 (Endowments set equal to income total)
+  - H67/I67 = SUM(H62:H66) — Total Reserves
+  - H69/I69 = H56+H59+H67 — Total Funds
+- Key checks:
+  - H74/I74 = H49−H69 (these cells MUST be zero)
+  - Many variance % formulas use IF(H=0,"N/A",…).
+- Current numeric state: monetary cells shown are 0, so balance formulas evaluate to 0 and checks show zero.
+
+5) Table 3.0 CF - Annex F (Operating Cash Flow, consolidated)
+- Two main blocks: ORIGINAL CASH FORECAST (columns H:S for Aug–Jul; T = total) and ACTUAL/REVISED FORECAST (same monthly layout).
+- Income lines (SFEFC funding, other grants, other cash), totals per month (H10 etc).
+- Expenditure lines (payroll, other payments, interest), totals per month (H15 etc).
+- Key monthly calculations:
+  - H10 = SUM(H7:H9) — Total cash in
+  - H15 = SUM(H12:H14) — Total cash out
+  - H17 = H10−H15+H16 — Net cash inflow/(outflow) each month
+  - H19 = SUM(H17:H18) — Balance c/f (monthly running balances)
+  - T26 = T19 - ('Table 2.0 BS - Annex E'!H20+'Table 2.0 BS - Annex E'!H21+'Table 2.0 BS - Annex E'!H22) — reconciliation with balance sheet (should be zero)
+- Financing section calculates cash vs overdraft short term, and checks:
+  - H25 = H24−H19 etc (should be zero monthly)
+  - T49 = T42 - ('Table 2.0 BS - Annex E'!I20+'Table 2.0 BS - Annex E'!I21+'Table 2.0 BS - Annex E'!I22) — reconciliation for actual/revised
+- Current numeric state: monthly monetary inputs shown are 0; balance and reconciliation formulas present but evaluate to 0 (with IFs producing "N/A" where denominator = 0).
+
+Cross‑sheet links and validation
+- Several header/title cells use formulas to pull labels from Table 1.0 (e.g., Table 3.0 A1 and A4 link to Table 1.0).
+- Cashflow T26/T49 reference specific balance sheet cells for reconciliation.
+- I&E, BS and CF all follow the same Original vs Revised vs Variance design pattern with automatic variance and % calculations; percent calculations guard against divide‑by‑zero with IF(...,"N/A",...).
+- Reconciliation cells (H74/I74 in BS; monthly checks and T26/T49 in CF) are explicit integrity checks and are intended to be zero.
+
+Overall layout and notes
+- Workbook is a standard template: leftmost column lists line numbers and descriptions; main data in H (original) and I (revised), with automated J (variance) and K (%). Explanatory L column for material variances (>£50k and >10%).
+- Most monetary cells in the provided extract are 0, so computed variances yield 0 and percentage cells return "N/A".
+- Key formulas: sums for totals (SUM ranges), I−H for variances, IF(H=0,"N/A",(I−H)/H*100) for percent variances; balance/carry forward formulas in cashflow use prior month c/f linking.
+
+If you want, I can:
+- Flag any broken references or inconsistent formulas if you provide the live workbook, or
+- Produce a short checklist of the reconciliation cells to verify after you enter data.

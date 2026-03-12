@@ -1,0 +1,40 @@
+Errors found:
+
+1. In sheet Q1, row 19, column E (E19):
+   - Formula is `=NPV(A19,$C$3:$E$3)+$B$3` in Q1 a-b sheet but in Q1 main sheet, the formula for E19 is `=$E$2/(1-$J19)^$E$1` (minus sign before J19).
+   - This is inconsistent with other discounting formulas which use `(1 + rate)` in denominator.
+   - Using `(1 - rate)` will cause wrong discounting and likely errors when rate is positive.
+
+2. In Q1 main sheet, rows 4 to 40, the discounting formulas use absolute references like `$J4`, `$J5`, etc. but the row numbers for the interest rates are from J4 to J40. This is correct, but the formula in E19 breaks this pattern with `(1 - $J19)` instead of `(1 + $J19)`.
+
+3. In Q1 c-d additional info sheet, the IRR formulas in E26 and G26:
+   - `=IRR(B2:E2)` and `=IRR(B2:E2,22%)` are correct, but the comment in B49-B55 mentions that multiple IRRs or no IRR may occur due to negative cash flows in the future.
+   - This is not an error but a known issue with IRR when cash flows change signs multiple times.
+
+4. In Q2 sheet, row 24 (interest calculation):
+   - Formulas like `= -$C$17*$C$18` use absolute references to loan and interest rate, which is correct.
+   - Discounting formulas in row 31 use different discount rates for year 0 (C19) and years 1-4 (C20), which is correct.
+
+No other formula errors detected.
+
+---
+
+**Main error and solution:**
+
+- **Error:** In Q1 main sheet, cell E19 uses `(1 - $J19)` instead of `(1 + $J19)` in the denominator for discounting cash flow at period 1.
+
+- **Why it's an error:** Discounting cash flows requires dividing by `(1 + discount rate)^period`. Using `(1 - rate)` is mathematically incorrect and will give wrong discounted cash flows.
+
+- **Solution:** Change the formula in E19 from `=$E$2/(1-$J19)^$E$1` to `=$E$2/(1+$J19)^$E$1`.
+
+---
+
+**Explanation of solution:**
+
+- Discounting formula: Present Value = Future Cash Flow / (1 + discount rate)^period.
+- The discount rate is added to 1, not subtracted.
+- Fixing this ensures consistent and correct discounted cash flows across all periods and rates.
+
+---
+
+Summary: Fix the formula in Q1 main sheet cell E19 to use `(1 + $J19)` instead of `(1 - $J19)`. This will correct the discounting error.

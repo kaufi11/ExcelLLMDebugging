@@ -1,0 +1,67 @@
+Errors found:
+
+1. **Division by zero in variance % formulas**:  
+   In annex e and annex f sheets, many variance % formulas use this pattern:  
+   `=IF(Hx=0,"N/A",(Jx/Hx)*100)`  
+   Since all Hx values are zero, the formula returns "N/A" correctly. No error here but if original forecast (Hx) is zero, variance % is not meaningful.
+
+2. **Circular reference in annex g sheet (Cash Flow)**:  
+   In annex g, row 18 (Balance b/f) formulas reference the next row's balance c/f:  
+   - I18 = H19  
+   - J18 = I19  
+   - K18 = J19  
+   ... and so on, creating a circular reference because H19 depends on H18.  
+   This causes a circular dependency error.
+
+3. **Inconsistent totals in annex g sheet**:  
+   - T18 = H18 (should be sum or linked properly)  
+   - T19 = S19 (inconsistent with other columns summing)  
+   This inconsistency can cause errors in totals.
+
+4. **Formula in annex g cell T26**:  
+   `=T19-('annex f'!H20+'annex f'!H21)`  
+   But annex f H20 and H21 are not defined in your data (no info given). If these cells are empty or zero, no error, but if they have text or errors, this will cause #VALUE! error.
+
+5. **In annex f sheet, formula in K68**:  
+   `K68: FORMULA =K48`  
+   K48 is a variance % cell. This is correct if intentional but check if K68 should be variance % of total funds or a different calculation.
+
+Summary of main error:  
+**Circular reference in annex g sheet row 18 (Balance b/f) formulas.**
+
+---
+
+**Solution:**
+
+- For the circular reference in annex g row 18:  
+  Change the Balance b/f formulas to refer to the previous month's Balance c/f, not the next month's. For example:  
+  - I18 should be `=H18` (previous month balance c/f)  
+  - J18 should be `=I18`  
+  - K18 should be `=J18`  
+  ... and so on. This way, the opening balance for each month is the closing balance of the previous month, avoiding circular references.
+
+- For totals in annex g row 18 and 19:  
+  Ensure consistency by summing or linking correctly. For example, T18 should be sum or linked properly, and T19 should be sum of T17 and T18.
+
+- For variance % formulas where original forecast is zero:  
+  No action needed if "N/A" is acceptable.
+
+- For annex g T26 formula:  
+  Verify that 'annex f'!H20 and H21 contain numeric values or zero to avoid errors.
+
+---
+
+**Explanation:**
+
+- Circular references occur when a formula directly or indirectly refers to its own cell, causing Excel to loop endlessly. Changing the Balance b/f formulas to refer to the previous month's closing balance breaks this loop.
+
+- Consistent totals ensure that sums and balances reconcile correctly.
+
+- Variance % cannot be calculated when the original forecast is zero, so "N/A" is appropriate.
+
+- Referencing empty or text cells in arithmetic formulas causes errors; ensure referenced cells contain numbers.
+
+---
+
+**Summary:**  
+Fix the circular reference in annex g row 18 by making each month's opening balance equal to the previous month's closing balance, not the next month's. Check totals for consistency. Other formulas are correct given zero values.

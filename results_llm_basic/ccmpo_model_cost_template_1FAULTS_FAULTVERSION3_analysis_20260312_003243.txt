@@ -1,0 +1,30 @@
+I inspected Sheet1. I found two concrete formula errors that will make section totals and the project total wrong. Short summary, explanation and exact fixes below.
+
+Errors
+1) K41 is a hard-coded value 5 instead of summing the subtask total.
+   - Consequence: Section 8’s total (and the overall K93 project total) may be wrong if K42 changes.
+
+2) H43 / I43 / J43 are set to 0 instead of summing the Mode Choice subtasks (rows 44:47).
+   - Consequence: The Labor (H93), Travel (I93), and Expenses (J93) project totals will exclude the Mode Choice subtasks, undercounting the project.
+
+Fixes (exact formulas to enter)
+- In K41 replace the 5 with:
+  =K42
+  (or =SUM(K42:K42) — either is fine)
+
+- In H43 enter:
+  =SUM(H44:H47)
+
+- In I43 enter:
+  =SUM(I44:I47)
+
+- In J43 enter:
+  =SUM(J44:J47)
+
+Why these fixes work (short)
+- Header rows should sum their child rows so changes in subtasks automatically flow up into section and project totals. K41 was hard-coded so it didn’t update; H43/I43/J43 were zeroes so they removed Mode Choice hours/costs from the project totals. Changing them to SUM(...) restores correct roll-up behavior.
+
+Optional improvements (not required)
+- You can replace repeated patterns like =SUM(D15*$E$5,E15*$E$6,...) with SUMPRODUCT(D15:G15,$E$5:$E$8) for cleaner formulas, but this is optional.
+
+If you want, I can list any other cells that are hard-coded (like other headers) or scan for inconsistencies across the whole sheet.

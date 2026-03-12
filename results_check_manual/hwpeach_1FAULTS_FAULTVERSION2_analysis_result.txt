@@ -1,0 +1,21 @@
+I inspected the formulas in both sheets. I found one clear formula error and a few minor inconsistencies / points to check:
+
+1) Clear formula error
+- Cell: homework!F5
+- Current formula: =(B5/$B$29)*741
+- Problem: All other F# cells use the pattern =(B#/ $B$29)*100 to compute the CPI normalized to 1995=100. The multiplier 741 is a typo and produces an obviously wrong CPI index (F5 ≈ 196.92) and therefore makes the derived real price in G5 incorrect and inconsistent with E5.
+- Effect: G5 = C5/(F5/100) yields ~0.0490 (wrong). E5 (correct method) = D5*($B$29/100) yields ~0.3631. E5 and G5 should match.
+- Fix: Change F5 to =(B5/$B$29)*100
+
+2) Minor observations / suggestions (not errors but worth checking)
+- homework!E# and homework!G# compute the same quantity (real price in 1995 dollars) by two equivalent methods:
+  - E#: =D#*($B$29/100), with D# = (C#/B#)*100 -> yields C#*(B29/B#)
+  - G#: =C#/(F#/100), with F# = (B#/$B$29)*100 -> yields C#*(B29/B#)
+  This duplication is fine but redundant — expect E# and G# to be identical for every row. After fixing F5 they will match there as well.
+- homework!K8 contains =NA() which intentionally returns #N/A. Confirm that's intended.
+- peaches1!H3 and peaches1!L3 use the range C14:N50 for MAX and MIN. That range appears to cover monthly columns C:N. If you intended to include the "MYA" column (P) or other columns, adjust the range. (Not an error if MAX/MIN should be over months only.)
+- There are many chained formulas for years in peaches1 (B14 = B15+1, B15 = B16+1, … B50 = static 1957). That works but relies on B50 as the anchor; make sure that is intentional.
+
+If you want, I can:
+- produce a list of rows where E and G differ (after fixing F5 they should all match), or
+- provide the single-change patch (update F5) and show the corrected values for F5 and G5.

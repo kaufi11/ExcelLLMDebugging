@@ -1,0 +1,30 @@
+Summary — I found three problems. Short fixes and why they work are below.
+
+1) Typo/logic error in J14
+- Current: =IF(I$39>50,I14/I$39,50)
+- Problem: the test (>50) and the "false" result (50) are wrong for a share/percentage formula — it returns 50 instead of 0 (or a percent) and will rarely behave correctly.
+- Fix: replace with a divide-by-zero-safe share:
+  =IF($I$39>0,I14/$I$39,0)
+- Why: checks total (I39) > 0, returns the correct fraction I14 / total, otherwise returns 0. This prevents divide-by-zero and removes the incorrect hard-coded 50.
+
+2) Inconsistent / weak absolute references
+- Examples: some formulas use I$39, some $I39, some I$39, etc. That will cause errors if you copy formulas around because the reference to the grand total (I39) can shift.
+- Fix (standardise): use $I$39 whenever you mean “always point to cell I39”:
+  e.g. J13 -> =IF($I$39>0,I13/$I$39,0)
+  F40 -> =IF($I$39>0,F39/$I$39,0)
+  (and update other J/F/H/I formulas that test/divide by the total)
+- Why: $I$39 locks both column and row so copied formulas always divide by the same total cell.
+
+3) NETWORKDAYS UDF prefix
+- Current: =_xludf.NETWORKDAYS(C4,F4)
+- Problem: _xludf.NETWORKDAYS indicates a custom add-in or an old UDF path; on machines without that add-in the formula will error (#NAME?).
+- Fix: if you want the built-in function, use:
+  =NETWORKDAYS(C4,F4)
+  If NETWORKDAYS is not available, enable the Analysis ToolPak (or the Analysis ToolPak – VBA in older Excel) or reinstall the add-in that provides _xludf.NETWORKDAYS.
+- Why: use the standard function name or ensure the add-in is present so Excel recognises the function.
+
+Other small suggestions
+- J39 currently =IF(I$39>0,I39/I$39,0) — that will always return 1 (when total>0). That’s OK if you want the total row’s “share” to be 100%, but you can simplify to =IF($I$39>0,1,0) or to show 100% format it as percentage.
+- Scan the sheet for any other cells that accidentally have hard-coded fallback values (like that 50) and replace with consistent IF($I$39>0, ... , 0).
+
+If you want, I can produce the exact list of cells to change (copy/pasteable formulas) and set the recommended formats (percentage/decimal) for the J-column.

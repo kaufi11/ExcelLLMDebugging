@@ -1,0 +1,33 @@
+Summary — key errors found and fixes (short & clear)
+
+1) Double-counting rehab amounts in the grand total
+- Problem: County sheet Total Requested (E13) =SUM(E9:E12) adds:
+  - E10 = 'Non Profit'!E22 (which already includes rehab projects)
+  - E11 = Rehab!E8 (the same rehab projects again)
+  => Rehab totals get counted twice.
+- Fix (quick formula change on County sheet E13): replace =SUM(E9:E12) with
+  =E9 + E10 - E11 + E12
+  (or equivalently =E9 + ('Non Profit'!E22 - Rehab!E8) + E12)
+- Why: This subtracts the Rehab subtotal once so rehab appears only once in the final total.  
+- Alternative: Remove the rehab rows from the Non Profit sheet so Non Profit!E22 already excludes rehab, then keep the original SUM.
+
+2) Likely typo in Municipal F5
+- Problem: F5 = 730 but Request E5 = 147,970 — 730 is almost certainly a mistaken number.
+- Fix: Set F5 to the intended recommend value. If recommendation should equal the request, use:
+  =E5
+  (Or enter the correct numeric recommendation.)
+- Why: 730 is inconsistent with the rest of the sheet and looks like a data-entry error.
+
+3) AHTF subtotal may omit first recommend cell
+- Problem: AHTF F14 =SUM(F3:F13) excludes F2 (Canus recommend). If F2 should be included, the subtotal misses it.
+- Fix: Change F14 to:
+  =SUM(F2:F13)
+- Why: ensures the full recommend column for AHTF is summed.
+
+4) Miscellaneous data issues to check (no automatic fix applied)
+- Non-numeric text in recommend cells (e.g., AHTF F10 = "Pending Feasibility Study") will break numeric totals if included. Replace with a numeric or leave blank and document separately.
+- Several Municipal recommend cells are blank — confirm whether blank is intentional or should be =E# or a numeric recommendation.
+
+If you want, I can:
+- Give the exact cells to edit and show the updated totals after the fixes, or
+- Create a corrected Total Requested formula for your file and list all suspect rows with blanks/non-numeric values.

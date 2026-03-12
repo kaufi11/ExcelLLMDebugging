@@ -1,0 +1,38 @@
+Summary of errors
+- Root cause: many formulas on Ap1 / Ap2 / Ap3 reference the wrong Rating cells on the Rate sheet (wrong E##), and one formula on Ap3 uses <> instead of = (logical error). Because Summary pulls the L‑column scores, totals are wrong.
+
+Faulty cells and fixes (short)
+
+Ap1
+- L19 (should use Rate!E16 but currently uses Rate!E14)
+  Fix: =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 (should use Rate!E19 but currently uses Rate!E17)
+  Fix: =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (should use Rate!E20 but currently uses Rate!E18)
+  Fix: =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap2
+- L19 (should use Rate!E16 but currently uses Rate!E14)
+  Fix: =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 (should use Rate!E19 but currently uses Rate!E17)
+  Fix: =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (should use Rate!E20 but currently uses Rate!E18)
+  Fix: =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap3
+- L19 (should use Rate!E16 but currently uses Rate!E14)
+  Fix: =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L20 (uses <> instead of = — logic inverted; fix to normal equality test)
+  Fix: =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+- L32 (should use Rate!E19 but currently uses Rate!E17)
+  Fix: =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (should use Rate!E20 but currently uses Rate!E18)
+  Fix: =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Why these fixes
+- Each B-row pulls a text question from Rate!G11:G20; the corresponding numeric score is in Rate!E11:E20. The L formulas must use the same E cell index as the B row’s G reference. Several L formulas pointed to the wrong E index, producing incorrect partial scores. Ap3 L20 used <> which produces incorrect branch testing — change to =.
+
+Quick suggestion to prevent this in future
+- Use a single lookup to pair G→E (e.g. match the question text in column B to lookup the correct E value) or use INDEX/MATCH instead of hardcoding E11/E12/... so shifting rows won’t break formulas.
+
+If you want, I can give the INDEX/MATCH versions so you never hardcode E11:E20 addresses.

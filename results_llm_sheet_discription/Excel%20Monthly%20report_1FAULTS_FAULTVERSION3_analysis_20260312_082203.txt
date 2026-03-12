@@ -1,0 +1,48 @@
+Summary of the errors
+- Many daily cells use chained or wrong SUM formulas instead of actual data or correct ranges. Examples:
+  - E9 = SUM(E42) (references a single, likely wrong, cell)
+  - F9 = SUM(E9), G9 = SUM(F9), H9 = SUM(G9) … (chained copying across columns)
+  - This pattern repeats on many rows (F10 = SUM(E10), etc.). This propagates wrong values and masks real day entries.
+- One cell uses the wrong function:
+  - H19 = COUNT(G19) — COUNT returns 0/1 for nonblank numeric cells, not the numeric sum you need.
+- The TOTAL row is incorrect / self-referential:
+  - F40 = SUM(E40), G40 = SUM(F40) … (each total is summing the previous total, not the daily range). This produces wrong totals and can cause circular references.
+
+Why these are wrong (short)
+- Chained formulas copy values across columns instead of summing each column’s daily inputs.
+- Summing a single unrelated cell (E42) or using COUNT on a single cell is almost certainly not the intended aggregation.
+- Totals must add the daily rows (9:39) for each column, not other totals.
+
+How to fix (simple step-by-step)
+1. Restore daily input cells (D9:M39)
+   - Replace formulas like F9 = SUM(E9) with the actual daily number (manually enter) OR with a correct SUM of a detail-range if you aggregate from another table. Example if detail rows are on Sheet2 rows 2–100:
+     - F9 should be either a number (e.g. 3) or =SUM(Sheet2!F2:F100).
+   - In short: remove the chained formulas so each column is independent and reflects the real data source.
+
+2. Fix H19
+   - Replace H19 = COUNT(G19) with the correct value (a number) or with the correct aggregation (e.g. =SUM(Sheet2!H2:H100) if you are summing a detail area). Do NOT use COUNT unless you really want count of numeric entries.
+
+3. Correct the TOTAL row (row 40) — replace the cascaded sums with column sums:
+   - C40 = SUM(C9:C39)
+   - D40 = SUM(D9:D39)
+   - E40 = SUM(E9:E39)
+   - F40 = SUM(F9:F39)
+   - G40 = SUM(G9:G39)
+   - H40 = SUM(H9:H39)
+   - I40 = SUM(I9:I39)
+   - J40 = SUM(J9:J39)
+   - K40 = SUM(K9:K39)
+   - L40 = SUM(L9:L39)
+   - M40 = SUM(M9:M39)
+
+4. Audit and remove circular references
+   - After making changes, check Formulas → Error Checking / Circular References to ensure no formula refers to its own total.
+
+Quick tips/tools
+- Use Formulas → Show Formulas to see all formulas at once.
+- Use Trace Precedents/Dependents to confirm each cell is sourcing the right range.
+- If detail data is on another sheet, use named ranges (e.g., Detail_JobSearch) and formulas like =SUM(Detail_JobSearch).
+
+If you want, I can:
+- Provide a replacement list of exact formulas for rows 9–40 assuming daily values are entered directly, or
+- Give exact SUM ranges if you tell me where the underlying detail rows are (which sheet/range).

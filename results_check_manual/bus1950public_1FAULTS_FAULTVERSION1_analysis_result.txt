@@ -1,0 +1,84 @@
+I inspected the workbook formulas you provided and found a number of formula issues and inconsistencies. Below I list the notable problems (by sheet and cell where applicable), explain why they are likely incorrect or inconsistent, and give a suggested fix for each.
+
+1) Cross-sheet grade-threshold references (probably wrong)
+- M Noon!P12 =IF(O12>'F Noon'!O$38*0.9, …)
+- F 1 p.m.!P7 =IF(O7>'F Noon'!O$38*0.9, …)
+- W 2 p.m.!P27 =IF(O27>'M Noon'!O$38*0.9, …)
+- F 1 p.m.!P7 (again) and a few other grade IFs in other sheets also reference other-sheet O$38 in isolated cells
+
+Why: all grade cells mostly compare the student's O# to O$38*threshold where O$38 is the max points for that sheet. In most rows the formula uses a local O$38 (same sheet). These sporadic references to another sheet's O$38 are inconsistent and will make grading depend on the other sheet's max-points value (likely a bug).
+
+Suggested fix: change those cross-sheet references to the local sheet's O$38 (e.g. P12 in "M Noon" should be =IF(O12>O$38*0.9,...) ), or make the cross-sheet reference intentional by documenting why that sheet's max should be used.
+
+2) Inconsistent summary ranges across sheets (AVERAGE / MAX / COUNT use different row ranges)
+Examples:
+- M Noon: B39 uses =AVERAGE(B6:B37) etc (full section)
+- M 1 p.m.: B39 uses =AVERAGE(B6:B23) (much shorter range)
+- M 2 p.m., W 1 p.m., W 2 p.m., F Noon, F 1 p.m. — the B39 / B40 / B41 and equivalent summary formulas use different row ranges (B6:B23, B6:B30, B7:B30, B6:B29, B7:B32, B8:B34, etc)
+
+Why: summary rows (AVERAGE, MAX, COUNT) should use the same / correct dataset range for that sheet. The ranges are inconsistent (and in some sheets do not cover all data rows). Using different ranges leads to misleading statistics.
+
+Suggested fix: standardize the summary ranges to cover exactly the data rows present in each sheet (or use dynamic ranges / tables). If all rows B6:B37 are meant to be included, update the formulas to that full range.
+
+3) Missing/hand-entered summary formulas (summary cells with values but no formula)
+Examples:
+- M Noon: C41 has value 28 but formula is null (other adjacent summary cells have formulas)
+- M 1 p.m., M 2 p.m., W 1 p.m., W 2 p.m., F Noon, F 1 p.m. — many C39, C40, C41 and some other summary cells show numeric results but the formula field is null
+
+Why: inconsistent application of formulas vs. manual values is error-prone: the manual values may be stale and will not update when data changes.
+
+Suggested fix: replace static summary values with consistent formulas (COUNT/AVERAGE/MAX) like the neighboring summary cells use.
+
+4) Grade IF uses strict > (not >=) for cutoffs
+- Example pattern (many sheets, many rows): =IF(O#>O$38*0.9,"A",IF(O#>O$38*0.8,"B",…))
+
+Why: using > excludes students who scored exactly 90%, 80%, etc. That may be an intentional convention, but often >= is desired for inclusive boundaries.
+
+Suggested fix: if you want boundary scores included in the higher grade, use >= instead of >.
+
+5) Suspicious subtraction formulas in column A (likely mistaken arithmetic)
+Examples in M Noon (and similar across sheets):
+- M Noon!A6 =356-78-4365 (result is a large negative)
+- M Noon!A15 =352-74-6205
+- M Noon!A21 =323-82-3880
+- M Noon!A23 =319-78-6001
+- M Noon!A34 =331-76-4823
+- M Noon!A36 =333-84-6349
+- Many other sheets also have A# formulas like =351-80-2879, =319-80-587, =334-74-1777, etc.
+
+Why: these formulas subtract three numbers where the last term is already much larger than the first two and produce large negative values. If column A is meant to hold ID numbers, the formulas look wrong; if they are meant to compute something else, the pattern is unclear.
+
+Suggested fix: check intent. If these cells are supposed to be constants (IDs), replace the formula with the correct ID value. If they are meant to be arithmetic, verify the operands and operators — perhaps a plus was intended or the numbers were concatenated incorrectly.
+
+6) Some O# (TOTAL) cells set to =SUM(B#:N#) but then later rows have O# set to 0 or inconsistent sums
+- Many sheets have O30..O36 explicitly set to =SUM(B30:N30) but show zero — likely because B:N are mostly blank for those rows; not necessarily an error but verify these rows are intended to be blank.
+
+Suggested check: ensure the SUM ranges match the actual columns that hold points (they consistently sum B:N so that seems OK).
+
+7) Inconsistent MAX formulas referencing different ranges than the AVERAGE formulas in same sheet
+Example:
+- W 2 p.m. B39 =AVERAGE(B6:B29) while B40 =MAX(B6:B37). MAX is using a larger range than AVERAGE.
+
+Why: mixing ranges between summary metrics in the same sheet leads to inconsistent statistics.
+
+Suggested fix: unify the ranges used for AVERAGE, MAX and COUNT unless there's a deliberate reason to use different ranges.
+
+8) Inconsistent use of external sheet for grade thresholds in isolated cells
+- W 2 p.m.!P27 uses =IF(O27>'M Noon'!O$38*0.9,…). Similarly some other single cells use another sheet's O$38.
+
+Why: inconsistent unless intentional (e.g., one sheet's maximum should define thresholds for that particular student). This is likely a copy-paste error.
+
+Suggested fix: correct to local O$38 or make all grade formulas use a single named cell (e.g. a defined name like MaxPoints) to avoid mistakes.
+
+Summary of recommended actions (high priority first)
+1. Correct all IF grade formulas that reference a different sheet's O$38 to reference the local sheet's O$38 (or switch to a named cell if the sheet should consistently use one master max).
+2. Replace static summary numbers (cells with values but null formulas) with proper formulas (COUNT / AVERAGE / MAX) so summaries update automatically.
+3. Standardize the row ranges used in summary formulas (AVERAGE/MAX/COUNT) so they consistently cover the same dataset within each sheet (or use dynamic named ranges/tables).
+4. Review column A formulas that produce large negative numbers; replace with intended values or correct arithmetic.
+5. Consider using >= in the grade IFs if you want to include exact boundary scores in the higher grade.
+6. Optionally, replace repeated grade IF logic with one named formula or a lookup table to reduce copy/paste errors.
+
+If you want, I can:
+- produce an explicit list of every cell whose formula references an external sheet,
+- produce a diff-style list of summary formulas that do not match the sheet's main data range,
+- or produce corrected formulas (exact replacements) for the specific cells you want fixed. Which would you like me to do next?

@@ -1,0 +1,71 @@
+I checked both sheets. Below are the concrete errors, the fixes (exact formulas), and a short explanation for each.
+
+MasterMethod_Checks — Errors & Fixes
+1) Problem: Row n = 0 (A11 = 0)
+   - Error: LOG(0,2) and divisions by zero (e.g. D11 = B11/C11 where C11 = 0) cause #NUM! / #DIV/0!.
+   - Fix: Remove the n = 0 row or start n at 1 (set A11 = 1). Master-method asymptotic checks assume n ≥ 1.
+
+2) Problem: B19 uses the wrong arithmetic
+   - Faulty formula: B19 = A19*2
+   - Fix: B19 should be consistent with other rows: B19 = A19/2
+   - Why: All other rows compute f(n) (looks like n/2). The *2 was a typographical error.
+
+3) Problem: Theta column uses LOG instead of n^CE
+   - Faulty formula: H11 (and down) = LOG(A11,2)
+   - Fix: Replace H11:H41 with the n^CE column (C) or explicitly =A11^$B$6. Example for row 11: H11 = C11  (or =A11^$B$6)
+   - Why: H is labeled “Theta Term” — it should show n^CE (the master-term) not log_2(n).
+
+Summary (Master): Start n at 1, fix B19 to =A19/2, and set Theta column to =C11 (or =A11^$B$6). That removes DIV/NUM errors and keeps consistency.
+
+SubstitutionMethod_Checks — Errors & Fixes
+1) Problem: log(log(n,2),2) undefined for n ≤ 1
+   - Symptoms: B10 / C10 compute LOG(LOG(1,2),2) → LOG(0,2) → #NUM!
+   - Fix options:
+     - Start the n list at n = 2; OR
+     - Treat n = 1 as a base case and do not evaluate the log expression when n = 1.
+   - Example base-case cell (row for n=1): D10 (T(1)) = 1  (use your actual base value)
+
+2) Problem: C10 missing multiplication by n
+   - Faulty: C10 = $B$5*LOG(LOG(A10,2),2)
+   - Fix: C10 = $B$5 * A10 * LOG(LOG(A10,2),2)
+   - Why: All other C rows multiply by A (asymptotic f(n) = c2 * n * log log n).
+
+3) Problem: Recurrence cells (D column) reference the wrong fixed cells ($D$11, $D$12, etc.)
+   - Symptoms: D19..D? use constant absolute references (5*$D$11, 5*$D$12, etc.) instead of using the T(n/2) value corresponding to the current n.
+   - Fix: compute T(n) with a lookup of T(n/2) (or use OFFSET/INDEX). Two safe approaches:
+
+   a) If your n values are sequential (1,2,3,...):
+      - Put T(1) in the row for n=1, then for general row use:
+        D10 = IF(A10=1, <base_T1>, 5 * OFFSET($D$10, (A10/2) - 1, 0) + A10 / LOG(A10,2))
+      - Example (assuming T(1)=1 and rows start at A10=1):
+        D10 (row for n) formula:
+        =IF(A10=1, 1, 5 * OFFSET($D$10, A10/2 - 1, 0) + A10 / LOG(A10,2))
+      - Note: For non-integer n/2 use FLOOR(A10/2,1) if the recurrence uses floor(n/2):
+        =IF(A10=1, 1, 5 * OFFSET($D$10, FLOOR(A10/2,1) - 1, 0) + A10 / LOG(A10,2))
+
+   b) More robust (works if n values are not exactly consecutive): use MATCH + INDEX
+      - Example:
+        D10 = IF(A10=1, 1, 5 * INDEX($D$10:$D$40, MATCH(FLOOR(A10/2,1), $A$10:$A$40, 0)) + A10 / LOG(A10,2))
+      - This finds the row that contains n/2 (or floor(n/2)) and uses its T value.
+
+   - Why: Recurrence T(n) = 5*T(n/2) + n/log n must reference the T value for n/2 for each row — absolute references to a single cell are wrong.
+
+4) Minor / consistency items
+   - Make B/C formulas consistent: both should multiply by A (n) if asymptotic_fcn = n * log log n.
+   - Ensure base-case values are explicit (T(1) = given constant) to avoid divide-by-zero in A/LOG(A,2).
+
+Quick checklist to implement
+- MasterMethod:
+  - Remove or change A11=0 → A11=1.
+  - Fix B19 to =A19/2.
+  - Change H11:H41 to =C11 (or =A11^$B$6).
+
+- SubstitutionMethod:
+  - Make n start at 2 or add explicit base-case in D for n=1.
+  - Fix C10 to = $B$5 * A10 * LOG(LOG(A10,2),2).
+  - Replace hardcoded recurrence references (5*$D$11 etc.) with OFFSET or INDEX+MATCH formulas that fetch T(n/2). Example robust formula:
+    =IF(A10=1, 1, 5 * INDEX($D$10:$D$40, MATCH(FLOOR(A10/2,1), $A$10:$A$40, 0)) + A10 / LOG(A10,2))
+
+If you want, I can:
+- give the exact corrected formulas for every affected cell (I can list them row-by-row), or
+- produce the single INDEX-based recurrence formula you can paste into the whole D column so it auto-adjusts. Which would you prefer?

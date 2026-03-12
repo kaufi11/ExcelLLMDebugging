@@ -1,0 +1,23 @@
+I reviewed the formulas and values in both sheets and found a small number of formula errors / inconsistencies and a couple of minor issues to be aware of. Summary below (cell addresses are on the sheet named "Seven-Year Financial Summary" unless otherwise noted).
+
+High-priority issues
+- J14 (Hardware Gross Profit % for FY1997)
+  - Problem: Formula is =+J13/37 (hard-coded divisor 37). That produces 1,061.27027 which is clearly wrong as a percentage/ratio.
+  - Why it's wrong: every other year in that row divides gross profit by that year's Hardware Revenue (e.g. D14 = D13/D5). J14 should be J13/J5 (i.e. J13 / J5), not J13/37.
+  - Fix: change formula to =J13/J5 (or =+J13/J5 to match the workbook's style).
+
+- D31 (Income From Operations for FY2003 in "Seven-Year Financial Summary")
+  - Problem: D31 = 38,222 (entered as value) but, based on the sheet's structure, Income From Operations should equal Total Gross Profit minus Total Operating Expenses (D19 - D28).
+  - Check: D19 (198,560) - D28 (160,237) = 38,323. The current D31 is 101 less (38,222). E31, F31, G31 etc follow the expected relationship and match D19 - D28 for their years; only D31 deviates.
+  - Impact: the percent-change cell C31 and any downstream metrics that use D31 are using the incorrect number.
+  - Fix: replace the value in D31 with the formula =D19 - D28 (or =+D19-D28).
+
+Other observations / minor issues
+- Some totals and intermediate rows are stored as static values rather than formulas (for example: E19, F19, G19, etc., on the Seven-Year sheet are correct values but not formulas). They currently match the expected sums (E13+E15+E17, etc.), so not an error per se, but it is a maintenance risk — recalculation is safer if you convert them to formulas (e.g. E19 = E13+E15+E17).
+- Text markers like "-" are used for missing numeric entries (e.g. Office Closure Costs row: E26, F26, etc.). SUM formulas (e.g. SUM(J24:J27)) properly ignore text, but using real zeros or blank numeric cells would be cleaner if you want consistent numeric typing.
+- H31 in the Nine-Quarter sheet (Income From Operations %) is a hard-coded value (0.075) while most other quarter % cells use formulas (e.g. =+C29/C8). H31 = H29/H8 evaluates to ~0.0749, so the hard-coded value is acceptable but inconsistent; consider using the formula =H29/H8 to match other quarters and avoid rounding drift.
+- No divide-by-zero or obvious circular reference errors were found in the provided cells.
+
+If you want, I can:
+- Provide the exact corrected formulas to paste in (e.g. cell J14 and D31).
+- Scan for and convert more static totals into formulas if you want the workbook fully formula-driven.

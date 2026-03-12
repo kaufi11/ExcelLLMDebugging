@@ -1,0 +1,35 @@
+Summary of problems I found
+1. Repeated/accidentally filled URLs across hundreds of columns (row 6 and row 7). This is almost certainly accidental and bloats the sheet.
+2. Typo/inconsistency in the repeated URL on row 7: the many repeated cells show "puevnhyd" while A7 contains "puenvhyd" — one of these is wrong.
+3. Date formulas are inconsistent/fragile — many cells reference different earlier rows (e.g. sometimes Bn = B(n-2)+7 or =+B(n-1)+2). That makes the schedule hard to maintain and risks incorrect dates if rows are inserted or a holiday/break is inserted. B60 is a text placeholder ("? April/May") instead of an actual date.
+4. Date cells include a time portion (B12 shows "00:00:00") — formatting issue rather than a calculation error. Some rows used blank A cells for breaks (A36–A38) which can be confusing.
+
+Quick fixes (what to do, step-by-step)
+1. Remove the accidental URL repeats
+   - Select the excessive ranges (e.g. G6:IV6 and G7:IV7) → Home → Clear → Clear Contents.
+   - Keep the correct URLs in A6 and A7 only (or if you want the URL to span the header visually, merge cells A6:IV6 instead of copying text across).
+   - Fix the typo in row 7: either edit A7 to the correct URL or use Find & Replace on row 7 to change "puevnhyd" → "puenvhyd".
+
+2. Make the date column robust and consistent
+   - Replace the mixed formulas with a single, repeatable formula that automatically alternates Mon→Wed (+2 days) and Wed→Mon (+5 days). Put this in B13 and fill down to B59:
+     =B12 + IF(WEEKDAY(B12,2)=1, 2, 5)
+     (When copied down it becomes =B13 + IF(WEEKDAY(B13,2)=1,2,5) etc.)
+   - Rationale: WEEKDAY(...,2) returns 1 for Monday and 3 for Wednesday, so the IF adds 2 days after a Monday (to get Wednesday) and 5 days after a Wednesday (to get next Monday). This removes the ad-hoc +2, +7 referencing mistakes.
+   - For rows that are HOLIDAY or BREAK, replace the date formula in that row with the text "HOLIDAY"/"BREAK" (or leave the date but mark C-column). If you remove a date row for a holiday you must ensure the formula after the holiday still references the previous date cell (the formula above will handle it if the previous cell contains a date).
+
+3. Fix the final exam placeholder
+   - Replace B60 "? April/May" with a real date, e.g. =B59+2 (or the actual exam date). If the final is scheduled differently, enter the actual date manually.
+
+4. Format dates cleanly
+   - Select column B → Format Cells → Date → pick a date-only format (e.g., "yyyy-mm-dd" or "mm/dd/yyyy"). This removes the "00:00:00" time display.
+
+Why these fixes work (short)
+- Clearing duplicate URLs removes accidental data and file bloat; merging/preserving just the leftmost cell gives the same visual result without filling hundreds of cells.
+- A single fill-down formula based on WEEKDAY makes the schedule predictable and tolerant of inserted or removed rows; it encodes the real rule (Mon→Wed or Wed→Mon) instead of hard-coded offsets that reference different earlier rows.
+- Replacing text placeholders with real dates or consistent formulas prevents broken chains of date formulas and makes printing/exporting consistent.
+- Date formatting displays only the date and avoids misleading time text.
+
+If you want, I can:
+- Give the exact copy-ready formula for B13 that you can paste and drag,
+- Provide the keyboard steps to Find & Replace the row-7 typo,
+- Or produce a cleaned version of the date column for you.

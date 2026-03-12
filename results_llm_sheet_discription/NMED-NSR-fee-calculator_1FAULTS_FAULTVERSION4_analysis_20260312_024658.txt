@@ -1,0 +1,33 @@
+Summary — main errors found
+1) Wrong default points on Applicable Regulations (row 22)
+   - Problem formula: C22 =IF(B22<>"",(3*B22),278)
+   - Why it's wrong: If B22 is blank, this gives 278 points (huge, unintended default) and inflates C41/C42.
+   - Fix: Replace 278 with 0 so blank = 0 points.
+   - Correct formula: =IF(B22<>"",3*B22,0)
+
+2) Cells returning text ("") instead of numeric zero (can break math/logic)
+   - Problem formulas:
+     - C30 =IF(B31="",(IF(B30<>"",20,0)),"")
+     - C34 =IF(B35="",(IF(B34<>"",10,0)),""
+   - Why it's wrong: these return "" (text) in some branches. Text in numeric columns can cause unexpected behavior in comparisons, SUMs, and downstream logic.
+   - Fix: Return 0 instead of "" in the numeric branch.
+   - Correct formulas:
+     - C30 =IF(B31="",IF(B30<>"",20,0),0)
+     - C34 =IF(B35="",IF(B34<>"",10,0),0)
+
+3) Final fee selection uses text comparison of "N/A" (fragile)
+   - Problem formulas:
+     - C43 =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))
+     - F5 =IF(C43="N/A",C42,C43)
+   - Why it's fragile: using a text code ("N/A") to signal “no half-fee” is brittle (case/format differences) and mixes text with numbers. The F5 test can fail if C43 returns a different non-numeric value (or #N/A).
+   - Fix: Make C43 numeric (or use NA()) and make F5 test use ISNUMBER().
+   - Recommended formulas:
+     - C43 (show half-fee or blank/NA): =IF(B34<>"",NA(),IF(B38<>"",C42/2,NA()))
+       OR if you prefer visible text but keep logic numeric: =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))
+     - F5 (robust pick of half fee if numeric): =IF(ISNUMBER(C43),C43,C42)
+
+Additional recommendations (short)
+- Enforce numeric inputs for count cells (B9, B22, B23, B24, B35, etc.) with Data Validation to avoid text comparisons failing (e.g., "5" vs "five" or "x" in numeric fields).
+- Consider using SUM(...) checks instead of OR(...>0,...) in C41 to avoid odd behavior if any cell is text: e.g. C41 =IF(SUM(C34:C35)>0,C36,SUM(C9:C31))
+
+If you want, I can produce the exact corrected workbook formulas for every affected cell and test a few sample inputs.

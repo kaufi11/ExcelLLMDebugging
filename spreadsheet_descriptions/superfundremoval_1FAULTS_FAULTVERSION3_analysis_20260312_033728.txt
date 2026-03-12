@@ -1,0 +1,49 @@
+Sheet name and purpose
+- PART Qs & Section Scoring — an OMB PART-style assessment for the program "Superfund Removal" that records question answers, explanations, evidence, question weightings and computes weighted scores and section totals.
+
+Layout (columns)
+- A: Item / question number / section titles
+- B: Question text or sublabels
+- C: Ans. (Yes, No, N/A, Small Extent, Large Extent, etc.)
+- D: Explanation / narrative
+- E: Evidence / Data
+- F: Weighting (decimal weights that sum to 1.00 per section)
+- G: Weighted Score (calculated from Ans. × Weighting)
+
+Sections and key rows
+- Header: A1–A3 contain tool title, program type and program name ("Superfund Removal").
+- Section I (Program Purpose & Design): rows A4–A12. Questions in rows 6–10. 
+  - Each question uses G6:G10 = IF(Cx="yes",1*Fx,IF(Cx="no",0*Fx,"")) to compute weighted score.
+  - F6:F10 are each 0.2 (sum = 1.00). F12 = IF(SUM(F6:F10)<>100%,"ERROR","100%") verifies weights sum to 100%; G12 = SUM(G6:G10) gives the section score.
+- Section II (Strategic Planning): rows A14–A24. Questions in rows 16–22.
+  - Weights F16:F22 total 1.00 (mix of 0.1428 and 0.143). G16:G22 use same yes/no IF pattern as Section I.
+  - F24 verifies weight sum; G24 = SUM(G16:G22).
+  - Note: G21 (row for budget alignment) currently shows an incorrect formula: =IF(C21<>"yes",(1*F21),IF(C21<>"no",(0*F21),"")) — this inverts the logic and will produce 0 for a "Yes". It should match the other rows: =IF(C21="yes",1*F21,IF(C21="no",0*F21,"")).
+- Section III (Program Management): rows A26–A36. Questions in rows 28–34.
+  - Weights F28:F34 total 1.00. G28:G34 use the same yes/no IF formula pattern.
+  - F36 verifies weights; G36 = SUM(G28:G34).
+- Section IV (Program Results): rows A38–A56. Questions at rows 41,45,53,54,55.
+  - Weights: F41 0.334, F45 0.333, F53 0.333, F54/F55 = 0. F56 checks weights: IF((F55+F54+F53+F45+F41)<>100%,"ERROR","100%").
+  - Weighted score formulas in G41, G45, G53 use a multi-option IF to handle responses of "yes","no","small extent","large extent":
+    - e.g. =IF(Cx="yes",1*Fx,IF(Cx="no",0*Fx,IF(Cx="small extent",0.33*Fx,IF(Cx="large extent",0.67*Fx,""))))
+  - G56 = G55+G54+G53+G45+G41 totals section score.
+
+Key values and data points
+- Program name: Superfund Removal (A3).
+- Recurrent numeric target cited in narrative: target of 300 removals per year (appears in explanations and evidence).
+- Many evidence entries reference CERCLA, CERCLIS database, RFF report, Annual Plans/Congressional Justifications.
+- Several explanatory cells note lack of long-term efficiency/outcome metrics and data quality issues.
+
+Formulas and checks
+- Per-question weighted score pattern (Sections I–III): IF(C="yes",1*Weight,IF(C="no",0*Weight,""))
+- Section totals: SUM of the weighted scores (G12, G24, G36, G56).
+- Weight-sum validation cells use IF(SUM(weights)<>100%,"ERROR","100%") to ensure each section's weights equal 100%.
+
+Potential issues and recommendations (concise)
+- G21 formula is incorrect (logic inverted) and should be corrected to the same pattern used elsewhere.
+- The sheet relies on exact text answers (Yes/No/Small Extent/Large Extent). Although Excel comparisons are case-insensitive, leading/trailing spaces or alternate spellings would break the logic — consider data validation dropdowns to enforce allowed answers.
+- Several cells display the word FORMULA =… (your input shows formulas as text); confirm these are real formulas in the sheet rather than pasted text.
+
+If you want, I can:
+- Produce a short clean-up checklist (fix G21, add data validation, convert any text-formulas to actual formulas).
+- Calculate current section totals if you paste the actual numeric weighted-score outputs (G6:G10, G16:G22, etc.).

@@ -1,0 +1,22 @@
+I checked the Mezzanine sheet and found three clear formula problems. Short fixes and why they matter:
+
+1) Faulty cell: H14
+- Wrong formula: =$C14*$C$5
+- Fix: =$C14/$C$5
+- Why: H-column is "per sq ft" so you must divide the annual cost in C14 by total area ($C$5). Multiplying gives a huge, wrong value.
+
+2) Faulty cell: C37 (TOTAL CHARGE)
+- Wrong formula: =SUM(C12:C35)*0.9
+- Fix (likely): =SUM(C12:C35)
+- Why: C37 should be the sum of the annual cost lines (C12:C35). Multiplying by 0.9 arbitrarily reduces the total by 10% and skews all downstream calculations (operating costs, break-even etc.). If the 0.9 was intentional (e.g. to apply a specific discount or occupancy factor) move that adjustment to the correct place (for example when calculating revenue or occupancy), not into the base cost total.
+
+3) Faulty cell: F37 (TOTAL CHARGE, probably "per sq ft" or total with markups)
+- Current: =C37+SUMPRODUCT(C12:C35,F12:F35)
+- Better replacement: =SUMPRODUCT(C12:C35,1+F12:F35)
+- Why: The replacement computes base + markup in one clear step (sum of C * (1+markup)). With C37 corrected to SUM(C12:C35), the existing formula would work, but the SUMPRODUCT version is simpler and avoids accidental double-counting or dependence on a possibly wrong C37.
+
+Optional notes (not urgent errors but watch them):
+- Several rows (e.g. row 15) reference C15 which is blank — they will return zero; check whether values are missing.
+- The NPV formula is long and uses many IF()s — it works but can be simplified; also check the lease-length logic if you change C65.
+
+If you want, I can produce an updated set of formulas for the whole block (C12:M37) with the fixes applied.

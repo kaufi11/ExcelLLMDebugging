@@ -1,0 +1,61 @@
+Summary — what’s wrong
+- Many cells show #REF! because their formulas refer to cells that were deleted or moved. (#REF! appears in O39:P39:Q39:R39, several cells in rows 40–45, S44, P45, P50, P51, P53 and others.)
+- Some formulas also depend on the wrong “base” cell (inconsistent absolute references). That makes percentage allocations produce wrong or broken results.
+- A few calculations use a cell that appears blank or was removed (for example D21 seems to be used in formulas like ($D$21-23000) — ensure D21 contains the expected number).
+
+Why this happened (short)
+- Someone deleted or moved a column/row or removed the cell(s) that the formulas referenced. Excel then converts the references to #REF!.
+- Some formulas were built with relative references (or hard-coded values) rather than a single named/absolute base cell, so when rows/columns shift the links break or become inconsistent.
+
+How to fix it (short, step-by-step)
+1. Find the intended base cells
+   - Decide which single cell holds the base fee/amount that all allocations should use (e.g., Total Basic Services / Contract Amount). Typical candidates in this sheet are E31 (Total Basic Services / Contract Amount) or a single cell that stored the 69,500 value used in row 39. Pick one consistent base cell for each block of formulas.
+
+2. Use Excel’s tracing tools to locate broken references
+   - Formulas tab → Trace Precedents / Trace Dependents or select a #REF! cell and click Error Checking → Trace Error. This shows where the formula expected to get its input from.
+
+3. Repair each broken formula by replacing #REF! with the correct cell reference (absolute)
+   - If the formula should use the contract total use $E$31 or $E$62 and make it absolute: e.g. = (O45/100)*$E$31
+   - If the formula is splitting a specific subtotal (e.g. the 69,500 fee), point all the split formulas at the same base cell (for example if 69500 is in D39 or a dedicated cell, use $D$39). Don’t hard-code the number; use the cell.
+
+4. Replace inconsistent formulas with a reliable pattern
+   - Example pattern for percentage allocation of a base amount:
+     - BaseFee cell: put the numeric base in one cell (call it BaseFee in the example cell $X$1 or use $E$31).
+     - Allocation cell formula: =PercentageCell * $X$1 (or = (PercentageCell/100)*$E$31 if PercentageCell is shown as a percent).
+   - Apply to all rows so they reference the same BaseFee cell.
+
+5. Use named ranges for key values
+   - Give the contract amount a name (e.g., ContractAmount) and use that name in all formulas. This prevents accidental #REF! when columns move.
+
+Concrete examples from your sheet (exact fixes)
+- Cost Consultant row (row 39):
+  - K39..R39 currently partially correct but O39:P39:Q39:R39 show =#REF!*percent.
+  - Fix them to reference the 69500 base (either the cell that contains 69500 or a new cell you create). Example if 69500 is in cell D39 (or put 69500 into $Z$1 named Base_69500):
+    - O39 = $Z$1 * 0.0547
+    - P39 = $Z$1 * 0.0109
+    - Q39 = $Z$1 * 0.0065
+    - R39 = $Z$1 * 0.0065
+  - Or if you want to keep 69500 typed in formula (less robust): O39 =69500*0.0547 etc.
+
+- Mechanical / Discipline percent-to-dollar conversions:
+  - P45 currently: =(O45/100)*#REF!
+  - Fix to point to the contract total (E31 or E62). For example:
+    - P45 = (O45/100) * $E$31
+
+  - Likewise for P50 and P51:
+    - P50 = (O50/100) * $E$31
+    - P51 = (O51/100) * $E$31
+
+- Rows that use ($D$21-23000):
+  - Check cell D21. If it should contain a numeric total (for example 27,000), enter that value. If D21 is empty because it was deleted, restore the correct number. If the amount belongs elsewhere, update the formula to reference the correct cell.
+
+- S44 (and any SUMs showing #REF!):
+  - Edit the formula to sum the intended range, e.g. =SUM(K44:R44) rather than using a reference to a deleted cell.
+
+General recommendations to avoid future problems
+- Put every key base value in one clear cell and use absolute references or named ranges to that cell across the sheet.
+- Don’t delete columns/rows that formulas reference; if you must reorganize, update named ranges first.
+- Use Trace Precedents to confirm no #REF! before finalizing sheet changes.
+
+If you want, I can:
+- Give exact replacement formulas if you tell me which single cell contains each base number (for example confirm where the 69500, the total contract amount, and D21 values should live). I can then list the exact formulas to paste into the broken cells.

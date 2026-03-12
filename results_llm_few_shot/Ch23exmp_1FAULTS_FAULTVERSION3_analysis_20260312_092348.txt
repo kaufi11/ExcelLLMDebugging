@@ -1,0 +1,30 @@
+Summary — main errors found
+1) Wrong function & wrong range in the August operating-expense total
+   - Faulty cell: C24 (Formulas sheet shows C24 =COUNT(B21:B24); Example sheet shows C24 =SUM(B21:B24))
+   - Problem: It uses COUNT (not SUM) and it sums the B-column instead of the expense cells in the same month column. The total must SUM the expense lines for that month, not COUNT them or pull from the wrong column.
+
+2) Inconsistent column references for month data
+   - Several formulas (e.g. B21, C24, E24, F38, F42, F44 and others) mix columns for inputs and totals (some rows use C17 for sales while totals sum B21:B24, etc.). That creates mis‑summations and hard-to-find errors when months shift columns.
+
+Suggested fixes (short and exact)
+1) Fix C24 to sum the expense cells in the same month column and use SUM:
+   - Replace C24 with: =SUM(C21:C24)
+
+2) Make the month formulas consistent column-by-column
+   - Put August numbers in one column (e.g. C) and September in the next (e.g. E). Then use matching formulas:
+     - August salaries: C21 =ROUND($B$9 + $B$10 * C17, -3)
+     - August total opex: C24 =SUM(C21:C24)
+     - September salaries: E21 =ROUND($B$9 + $B$10 * E17, -3)
+     - September total opex: E24 =SUM(E21:E24)
+
+3) Fix the obvious cross-column totals in the cash-summary/footer
+   - Example (adjust depending on intended current/prior layout):
+     - F38 (collections total) → probably: =C38 + E38
+     - F42 (purchases total) → probably: =C42 + E42
+     - F44 (salaries total) → probably: =C44 + E44
+   - Make sure each “total” cell adds the same row across the month columns, not a mix of different-row/column cells.
+
+Why this solves it (brief)
+- Totals must SUM the relevant numeric cells in the same month column. COUNT returns the number of numeric cells (not their sum). Mixing columns/rows causes totals to use the wrong inputs. Standardizing each month into one column and summing that column fixes logic and prevents future errors when copying formulas.
+
+If you want, I can produce a corrected version of the exact formulas for every affected cell (C21:C24, E21:E24, F38, F42, F44, etc.) — tell me which column you intend for each month (e.g. August=C, September=E) and I’ll list them.

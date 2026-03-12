@@ -1,0 +1,37 @@
+Summary of the problems I found (short) and how to fix them:
+
+1) Wrong formula / typo in FRF sheet (biggest concrete error)
+- Problem: Column I is supposed to be H − J (height off / difference), most cells use =SUM(Hx-Jx) (odd but works). Row 20 is wrong: I20 contains =SUM(H20-251) — that subtracts the number 251 instead of the gauge depth in J20 (typo).
+- Why it’s wrong: it produces incorrect values for that row and is inconsistent with other rows.
+- Fix: Replace those formulas with a simple subtraction referencing the correct cells. Example:
+  - I5 -> =H5-J5 (not =SUM(H5-J5))
+  - I20 -> =H20-J20
+- How to fix quickly:
+  - Select column I, use Find & Replace to remove the SUM wrapper (Find: =SUM(   Replace: = ), and then remove the trailing ) if needed; then manually fix any remaining bad references (I20).
+  - Or enter =H5-J5 in I5 and drag/copy down to fill the column.
+- Explanation: =H5-J5 is the straightforward, correct formula. SUM(H5-J5) works but is unnecessary and easy to mistype; explicit cell subtraction avoids the 251 typo.
+
+2) Ambiguous / inconsistent count of pore‑pressure sensors in RHB sheets
+- Problem: The sheet asks “Are there 5 or 6 sensors…?” but the table lists PA0, PA1 and PD0–PD5. Depending on what the question intends (count only PD sensors, or count all piezometers/pore-pressure transducers), the answer differs.
+- Clarification & fix:
+  - If counting PD# only: PD0–PD5 = 6 sensors.
+  - If counting all pore‑pressure instruments (PA and PD): PA0 + PA1 + PD0–PD5 = 8 sensors.
+  - Action: decide which group the question targets and update the cell text to the exact count (e.g., “PD sensors = 6; total pore‑pressure sensors = 8”). Better: add a small column “Sensor Type / Category” and a boolean “Collecting pore pressure?” so counts can be computed by a COUNTIF.
+- How to implement: add column “Type (PorePressure=Yes/No)” and use =COUNTIF(range,"Yes") to get exact numbers.
+
+3) Date / month inconsistency in DOZRJune (minor data quality issue)
+- Problem: DOZRJune sheet header says MONTH = June but some To dates are 1994‑07‑04 (July 4). Also some date values are mixed formats (day numbers vs full dates).
+- Fix:
+  - Standardize the From/To columns to real Excel dates (convert strings to dates).
+  - Correct the header month or the dates so they match (if the run ended in July, change “June” to “June–July” or correct the To column).
+- How to implement: convert the text timestamps to Excel dates (Data → Text to Columns or =DATEVALUE()) then format consistently.
+
+Minor style / robustness suggestions
+- Replace =SUM(Hx-Jx) with =Hx-Jx everywhere (cleaner, less error‑prone).
+- Check any cells with N/A or missing J values before copying formulas (avoid #VALUE).
+- Add a validation column (Active/Inactive) and a standardized “Sensor Category” to prevent ambiguous questions later.
+
+If you want, I can:
+- Give the exact Find & Replace string steps for the FRF formulas,
+- Produce the single formula to paste and drag for the entire column I,
+- Or produce the COUNTIF formula to answer the RHB sensor-count question automatically. Which would you like?

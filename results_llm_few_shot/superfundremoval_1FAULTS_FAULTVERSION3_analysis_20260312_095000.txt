@@ -1,0 +1,30 @@
+Summary of problems found (short & clear)
+
+1) Wrong logic in G21 (Section II, Weighted Score)
+- Fault: formula is =IF(C21<>"yes",(1*F21),IF(C21<>"no",(0*F21),""))
+- Why it's wrong: the tests are inverted. As written it returns 1*Weight when C21 is NOT "yes" and returns 0 when C21 IS "yes". For C21 = "Yes" this yields 0 (incorrect).
+- Fix: use the same pattern as the other weighted-score cells:
+  Correct formula: =IF(C21="yes",1*F21,IF(C21="no",0*F21,""))
+- Explanation: Test C21 for "yes" first; if yes give full weight, if no give zero, otherwise leave blank.
+
+2) Potential false "ERROR" in section weight-check cells (F12, F24, F36, F56)
+- Fault: formulas test equality to 100% exactly, e.g. =IF(SUM(F6:F10)<>100%,"ERROR","100%")
+- Why it's fragile: floating‑point rounding can make the sum 0.9999999 or 1.0000001 so the exact test <>100% may trigger "ERROR" even though weights are correct.
+- Fix (use ROUND or tolerance). Example replacement:
+  =IF(ROUND(SUM(F6:F10),4)<>1,"ERROR","100%")
+  or
+  =IF(ABS(SUM(F6:F10)-1)>0.0001,"ERROR","100%")
+- Explanation: Round the SUM (or use small tolerance) before comparing to 1 (100%) to avoid floating‑point precision false errors.
+
+3) (Optional) Consistency / readability suggestions
+- Use percentage format for weighting cells (e.g., 20% instead of 0.2). That avoids confusion between 1 and 100%.
+- Make all weighted-score IF formulas consistent. Example standard pattern to copy into G6:G34, G41:G56:
+  =IF(LOWER(C6)="yes",F6,IF(LOWER(C6)="no",0,""))
+  This handles any capitalization and returns the weight (or 0) without extra arithmetic.
+
+Quick checklist for you to apply
+- Replace G21 with: =IF(C21="yes",1*F21,IF(C21="no",0*F21,""))
+- Change F12/F24/F36/F56 to use ROUND or ABS tolerance as shown.
+- Optionally reformat F6:F56 as Percent and simplify weighted formulas to return Fn (not 1*Fn).
+
+If you want, I can give the exact corrected formulas for every affected cell and/or a version of the sheet with fixes applied.

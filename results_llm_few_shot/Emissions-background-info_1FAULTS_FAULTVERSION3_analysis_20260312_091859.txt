@@ -1,0 +1,39 @@
+I checked the workbook and found a few clear errors and some suspicious values. Short, simple fixes and explanations below.
+
+1) Sheet: EIA_US factors — cell G20
+- Fault: Formula error (unit conversion)
+- Problem: G20 has =F20*454*10^3 which multiplies by 1000 instead of dividing. This gives a value 1,000,000× too large.
+- Fix: Replace with =F20*454/1000
+- Why: F20 is in lbs per MWh. To get grams per kWh: lbs/MWh × 454 (g/lb) ÷ 1000 (kWh per MWh).
+
+(Apply the same correct conversion to any other G cells that accidentally use *10^3.)
+
+2) Sheet: NRCAn data — all J (all-fuels EF) and K (electricity EF) formulas
+- Observation: Formulas are correct but overly complex: they use (value*10^12*3.6*10^6)/(energy*10^15).
+- Better, simpler formulas:
+  - For all fuels: =F4*3600/B4  (and fill down)
+  - For electricity: =G4*3600/C4 (and fill down)
+- Why: algebra simplifies (emissions in Mt * 10^12 g/Mt * 3.6e6 J/kWh) / (energy in PJ * 1e15 J/PJ) => emissions*3600/energy. Simpler reduces chance of typing errors.
+
+3) Sheet: EU Data — row for Czech Republic (row 9) and some other rows
+- Fault: Data misalignment / suspicious small values
+- Problem: C9 shows 0.003 while adjacent values are ~150–190. Looks like columns are shifted or some cells are blank causing misplacement.
+- Fix: Re-check original data source and realign the row so each year value is in the correct column (B=1990, C=1991, D=1992, ... L=2000). Insert missing cells or move values right as needed.
+- Why: Misaligned row/cells cause wrong year-to-value mapping and bad calculations/plots.
+
+4) Sheet: Aus — cell C10 (Tasmania = 2 gm/kWh)
+- Fault: Suspicious data / likely typo or wrong unit
+- Problem: Other states are ~1000 g/kWh; Tasmania = 2 is an extreme outlier (probably wrong units or missing digits).
+- Fix: Verify the source for Tasmania and correct the value (likely 200–2000 range or units mismatch). If it's actually 2 kg/GJ or something, convert to g/kWh correctly.
+- Why: Outliers like this usually indicate unit issues or data entry mistakes.
+
+General housekeeping suggestions (short):
+- Use consistent conversion formulas (avoid mixing *10^3 and /10^3 inconsistently).
+- Replace long power expressions with simplified forms (like *3600/energy) to reduce errors.
+- Lock ranges or use named ranges to avoid misaligning rows when inserting/deleting.
+- Spot-check outliers visually or with conditional formatting (highlight values far from median).
+
+If you want, I can:
+- Give exact "Find & Replace" steps or a fill-down correction for the EIA sheet,
+- Provide a corrected small sample file (or a list of corrected formulas) for the rows you care about,
+- Or scan any specific rows you suspect and correct them.

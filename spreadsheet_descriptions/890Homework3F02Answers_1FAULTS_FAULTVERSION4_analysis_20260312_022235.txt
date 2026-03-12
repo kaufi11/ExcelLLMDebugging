@@ -1,0 +1,80 @@
+Overview: the workbook contains 7 sheets solving time‑value problems (NPV/IRR) and simple corporate finance exercises. Each sheet is organized with inputs (top/left), cash‑flow rows, a sweep of discount rates (columns A/B or column J), NPV/discounted CF calculations, and short written conclusions. Key cells, formulas and any anomalies are noted per sheet below.
+
+Sheet: Q1
+- Purpose: DCF sensitivity table for cash flows at t=0..3 and IRR discussion.
+- Inputs (row 1–2): Periods in D1:G1 = {0,1,2,3}; nominal cash flows in D2:G2 = {-85, 120, 100, -140}.
+- Discount‑rate column: J4:J44 contains a sweep from -10% to +30% (various steps).
+- Discounted CF rows (rows 4:44): Dn–Gn formula pattern: =$D$2/(1+$Jn)^$D$1 etc — each cell discounts the corresponding nominal CF by (1+rate)^period. Row Bn = SUM(Dn:Gn) gives total NPV at that rate.
+- Key result/note: A46 states “The NPV is positive for discount rates which are >7% and <43%” — this non‑monotonic behavior occurs because of the negative future cash flow (t=3), producing multiple sign changes in the CF stream.
+- IRR: E48 on the sheet uses =IRR(D2:G2) (Excel returns the positive ~7% root). Comments in B49–B55 discuss multiple IRR pathology.
+- Anomaly: D19..G19 formulas are consistent except E19 shows a typo in your text: = $E$2/(1-$J19)^$E$1 (minus sign) — this is likely a copy error and should be +.
+
+Sheet: Q1 a-b, graph
+- Purpose: NPV vs. discount rate sweep for the same cash flows (plottable series).
+- Inputs: Periods B2:E2 = {0,1,2,3}; cashflows B3:E3 = {-85,120,100,-140}.
+- NPV sweep (A7:A47 rates; B7:B47) uses Bn = NPV(An,$C$3:$E$3)+$B$3 — standard Excel NPV treating time0 separately.
+- This sheet is set up for charting the NPV profile across rates (used to illustrate non‑monotonicity).
+
+Sheet: Q1 c-d, additional info
+- Purpose: Variant with CF at t=3 = -138 (instead of -140) and extended NPV sweep to high rates to demonstrate IRR sensitivity.
+- Inputs: B2:E2 cashflows = {-85,120,100,-138}.
+- NPV sweep uses same formula pattern: Bn = NPV(An,$C$2:$E$2)+$B$2 across many rates up to ~0.9+ (rows A6:B106).
+- IRR calculations: F26 = IRR(B2:E2) and G26 = IRR(B2:E2,22%) (shows multiple roots and the need for guesses).
+- Notes explain how changing the late negative CF moves the lower IRR and why IRR can mislead.
+
+Sheet: Q2
+- Purpose: Valuation of a small project under no‑debt and debt scenarios, with/without depreciation.
+- Common inputs: tax rate C3 = 0.25, base discount rate C4 = 0.15 (no debt), project cost C9/C28/C49/C74 = -200, annual pre‑tax cash inflows (periods 1–4) = 80 each (D7–G7 etc).
+- No‑debt, no‑depr block:
+  - Taxes: D8:G8 = -D7*$C$3 (tax on cash inflow).
+  - Total after‑tax CFs: row 10, discounting row 11 uses C11 = C10/(1+$C$4)^period.
+  - Project DCF: C12 = SUM(C11:G11).
+- Debt scenario (no depreciation):
+  - Loan C17 = 100, interest rate C18 = 0.06.
+  - Interest rows (D24:G24) = -$C$17*$C$18; taxable income adjusts; taxes computed; principal repayment represented (G29 = -100).
+  - Cost of equity formula used: C20 = (0.15 - 0.06*(0.5)*0.75)/0.5 — a levering formula incorporating tax shield (uses debt/equity 0.5 and corporate tax 0.75 multiplier in this sheet).
+  - Discounting of equity cash flows in row 31 uses the appropriate discount rates (cost of equity for levered).
+- With depreciation blocks:
+  - Depreciation inputs: C38/C59 = 2 (per‑year), carried into EBT calculations.
+  - Tax loss carryforward handled via IF formulas (e.g., E46 = IF(D47=0,SUM(D45:D47),0)).
+  - DCFs computed similarly; final equity value C32/C78 = SUM(discounted CFs).
+- Notes: the sheet models tax shields, tax loss carryforwards, and shows how depreciation and debt change after‑tax cash flows and discounting.
+
+Sheet: Q3 (Ford)
+- Purpose: Simple financial statement extract (Ford Motor Company) and valuation snippets.
+- Data: 1999–2001 income statement items in C:E rows (Revenue, Cost of Revenue, Gross Profit, Operating Income, EBIT, Interest Expense, Income Before Tax, Net Income etc.). Example key numbers: 2001 Revenue C3 = 162,412,000,000; Net income C21 = -5,453,000,000 (2001).
+- Calculations:
+  - 3‑year average earnings: C34 = AVERAGE(C28:E28).
+  - Perpetuity value at 9% and 11%: C37 = C34/0.09; C51 = C34/0.11.
+  - Market value: C41 = shares C39 * price C40 (C39 = 1,735,756,535; C40 = 15.55).
+  - PVGO: C43 = C41 - C37 and C53 = C41 - C51.
+  - P/E: C46 = C41 / C34; EPS/Price transformation in E45 = 1/(1 - C43/C41).
+- Notes: these cells compute valuation statistics; watch for negative average earnings if data contains a loss (affects perpetuity formulas).
+
+Sheet: Q4
+- Purpose: Tax and depreciation effects (example using Coca‑Cola data link).
+- Inputs: Income tax expense D6 = 1,691,000,000; Income before taxes D7 = 5,670,000,000; Depreciation D9 = 803,000,000; Interest D16 = 289,000,000.
+- Calculations:
+  - Tax rate D8 = D6 / D7.
+  - Taxable income etc. with/without depreciation: D10 = D7 - D9; D11 = D10 * D8; D12 = D6 (tax without depreciation); tax reduction D13 = D12 - D11 (also D14 = D9 * D8).
+  - Interest tax shield computed similarly (tax rate * interest).
+- Layout: simple step‑through showing how depreciation and interest reduce taxable income and taxes.
+
+Sheet: Q5
+- Purpose: P/E and E/P using Gordon growth model examples.
+- Formulas: P/E = 1 / (r - g). Example inputs r=10%:
+  - Company 1 (g=5%): B4 = 1/(10%-5%).
+  - Company 2 (g=2%): B5 = 1/(10%-2%).
+- Also shows E/P = r - g (cells B8/B9).
+- Notes: conceptual demonstration of P/E sensitivity to growth and required return.
+
+General comments / issues to check
+- Non‑monotonic NPV profiles and multiple IRRs are intentionally demonstrated (negative CF in a later period).
+- Typo flagged: Q1 sheet E19 formula text showed 1 - $J19; it should be 1 + $J19 to match all other discount formulas.
+- Absolute referencing: many formulas use mixed/absolute refs (e.g., $D$2/(1+$Jn)^$D$1) — consistent discounting structure.
+- Large rate sweeps (especially on Q1 c-d) go to very high rates to demonstrate multiple sign changes — these are for illustration, not typical economic rates.
+
+If you want, I can:
+- Correct the Q1 formula typo and show the corrected cells,
+- Extract the computed IRR(s) and a short table of NPVs at a few rates,
+- Or convert the repeated formulas into compact array formulas for maintainability.

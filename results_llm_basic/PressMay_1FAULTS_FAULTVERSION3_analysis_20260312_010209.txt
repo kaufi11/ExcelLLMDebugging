@@ -1,0 +1,23 @@
+Summary of the error
+- Cell D6 is wrong. Every other MEEC Price is calculated as =E# * 0.7 but D6 contains =E6 * 1.49351631165241. This produces a wrong MEEC price (inflated) for Troubleshooting MS Access Databases.
+
+Why it’s wrong
+- The sheet’s pricing rule appears to be MEEC Price = USPrice * 0.7. D6 uses a different multiplier, so it breaks consistency and gives an incorrect result.
+
+How to fix it (quick)
+1. Change D6 to:
+   =E6 * 0.7
+2. To ensure no other cells are inconsistent, replace the whole D column with the same formula for all rows:
+   - Put =E2*0.7 in D2, then drag/fill down to the last row (D429).
+
+Better, safer solution (recommended)
+- Put the factor (0.7) in a single cell, e.g. G1 = 0.7, and use an absolute reference:
+  D2: =ROUND(E2*$G$1,2)
+  Fill down. Benefits: one-place change for the factor and consistent rounding to 2 decimals.
+
+How to find similar errors
+- Quick test column: in F2 enter =IF(E2=0,"",D2/E2) and fill down. Any value ≠ 0.7 indicates an inconsistent formula.
+- Or use Conditional Formatting on column D to highlight cells where D<>ROUND(E*0.7,2).
+- You can also use Home → Find & Select → Go To Special → Formulas to review different formulas visually.
+
+If you want, I can give the exact steps to apply the G1 factor + fill or create the conditional formatting rule.

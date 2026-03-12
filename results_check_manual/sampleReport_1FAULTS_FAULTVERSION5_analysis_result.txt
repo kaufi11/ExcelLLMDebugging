@@ -1,0 +1,61 @@
+I inspected the formulas you provided for all sheets and found several formula errors and inconsistencies. Below is a concise list of the issues (cell, current formula, why it's wrong, and recommended fix).
+
+Summary of substantive problems
+1) Income sheet — hardcoded value instead of a cell reference
+- Cell: Income!L14
+- Formula shown: =L10+951
+- Problem: TOTAL RENTAL INCOME should be Net Residential Rent + Net Commercial Rent (i.e. L10 + L13). The formula uses a hard-coded 951 instead of referencing L13, which will produce incorrect totals and propagate the error to downstream totals (L20, L32, L45, L51, L57, L62).
+- Recommendation: change to =L10+L13
+
+2) OP_EXP (Operating & Maintenance total) — mismatched SUM ranges between columns
+- Cells:
+  - OP_EXP!J46 =SUM(J33:J43)
+  - OP_EXP!L46 =SUM(L33:L44)
+- Problem: J46 sums rows 33–43 but L46 sums 33–44 (L46 includes one extra row). The two columns should sum the same set of line items. This mismatch will make column totals inconsistent even when the item-level inputs mirror each other.
+- Recommendation: make the ranges identical. Likely correct is =SUM(J33:J43) and =SUM(L33:L43) (i.e. change L46 to =SUM(L33:L43)), unless there is intentionally an extra item in row 44 — confirm which rows are actual numeric items and align both columns.
+
+3) Cash Flows (Investing activities) — mismatched SUM ranges between columns
+- Cells:
+  - Cash Flows!J45 =SUM(J37:J42)
+  - Cash Flows!L45 =SUM(L37:L44)
+- Problem: J45 sums rows 37–42; L45 sums 37–44 (includes extra rows 43–44). Again this creates inconsistent totals between the two columns.
+- Recommendation: align ranges. Most likely both should be =SUM(J37:J42) and =SUM(L37:L42). Inspect whether rows 43–44 are numeric inputs; if not, remove them from L45.
+
+4) Balance Sheet — TOTAL ASSETS formula likely wrong (range selection)
+- Cell: Bal Sht!J36 (and L36)
+- Formula shown: J36 =SUM(J23:J35) and L36 =SUM(L23:L35)
+- Problem: TOTAL ASSETS is typically NET INVESTMENT IN REAL ESTATE + TOTAL OTHER ASSETS. In this sheet TOTAL OTHER ASSETS is J34 (=SUM(J21:J33)). The formula SUM(J23:J35) looks unusual (it skips earlier investment/net cells such as J17 if that is where NET INVESTMENT appears), and may both omit the NET INVESTMENT and double-count or include unintended rows. At minimum the range J23:J35 does not obviously match the named/grouped subtotals.
+- Recommendation: replace with an explicit sum of the two subtotals: e.g. =J17+J34 (or whichever cell holds NET INVESTMENT) — verify the row that contains Net Investment and use that + J34. If the intent was to sum a contiguous list of asset lines, adjust ranges so they actually cover all asset value cells and do not skip the net investment cell.
+
+5) Stkhold.Equity — header text / date typo (non-formula)
+- Cell: Stkhold.Equity!G4
+- Value: "YEARS ENDED DECEMBER 31, 2001 AND 2001"
+- Problem: repeated year; likely should be "2002 AND 2001" — not a formula error but an inconsistency to correct.
+
+6) Balance Sheet — odd/self-referential sum for PARTNERS' EQUITY (possible logic problem)
+- Cells:
+  - Bal Sht!J52 =SUM(J51:J51) and L52 =SUM(L51:L51)
+- Problem: these sum a single cell and therefore are redundant/odd. If J51/L51 are supposed to be numeric contributors to "PARTNERS' EQUITY" this might be fine, but commonly J52 would be the sum of a range of partner balances (e.g. K?..). Confirm validity; at minimum it's unusual.
+- Recommendation: confirm the intended inputs and adjust the range to include all partner columns or remove the redundant SUM.
+
+7) Stkhold.Equity — logical check returns text "off" (intentional but note)
+- Cell: Stkhold.Equity!O17
+- Formula: =IF(SUM(K17:M17)=SUM(O9:O15),SUM(O9:O15),"off")
+- Note: This returns the string "off" on mismatch (mixes text with numbers) — this may be intentional as a flag, but it will break numeric consistency if O17 is used later in numeric calculations. If you intend to flag a mismatch, consider returning an error value (e.g. NA()) or a numeric indicator instead of a text string.
+
+Other pattern to check
+- I noticed multiple places where the left (J) column SUM ranges end earlier than the right (L) column SUM ranges (examples above include OP_EXP and Cash Flows). Review all paired-column subtotal formulas to ensure both columns reference identical rows. Inconsistent ranges are a common source of subtle mismatches.
+
+Files/locations to review first
+- Income!L14 (hardcoded 951) — this is the highest priority; it flows through many statements.
+- OP_EXP!L46 and OP_EXP!J46 (align ranges)
+- Cash Flows!L45 and Cash Flows!J45 (align ranges)
+- Bal Sht!J36/L36 (re-validate intended inputs and change to explicit subtotal of Net Investment + Total Other Assets)
+- Stkhold.Equity!G4 (typo) and O17 (flagging method)
+
+If you want, I can:
+- produce a corrected list of formulas (with exact replacement formulas) for each problematic cell,
+- scan for any other mismatched SUM-range pairs across the workbook and auto-propose fixes,
+- or open the actual workbook and modify the formulas directly and return the fixed file.
+
+Which would you like me to do next?

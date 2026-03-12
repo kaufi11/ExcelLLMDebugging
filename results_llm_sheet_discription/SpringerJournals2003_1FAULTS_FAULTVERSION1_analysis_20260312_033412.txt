@@ -1,0 +1,50 @@
+Summary of the errors I found
+1) Inconsistent / hard‑coded per‑row total (breaks automatic updates)
+   - Cell G25 is =E25*61 (hard coded 61) instead of =E25*F25.
+   - Consequence: if you change the subscription count in F25 the G25 total will not update; the grand total (G407) will be wrong.
+
+2) Likely cause of zero / wrong totals: column G or F not numeric / formulas stored as text
+   - If any G cells contain the literal text "FORMULA =E2*F2" (or start with an apostrophe) they are text, not formulas, so SUM(G2:G404) ignores them.
+   - If F values are blank or stored as text, E*F evaluates to 0 or gives unexpected results.
+
+3) Presentation / rounding (not a formula error but recommended)
+   - Column E contains many long decimal numbers (conversion artifacts). That makes results look messy.
+
+How to fix (simple steps)
+1) Fix the inconsistent formula (row 25)
+   - Edit G25 and enter: =E25*F25
+   - Press Enter.
+
+2) Ensure every row in G uses the correct formula and is numeric
+   - Put this in G2: =IF(OR(E2="",F2=""),0,E2*F2)
+   - Fill (drag or double‑click) that formula down to G404 (or to the last data row).
+   - This replaces any hard‑coded constants and handles blank cells safely.
+
+3) Make sure column F entries are real numbers (not text)
+   - Select column F, then Data → Text to Columns → Finish (this converts numbers stored as text).
+   - Or multiply the column by 1: enter 1 in any empty cell, copy it, select F2:F404, Paste Special → Multiply.
+
+4) Convert any G cells that are text formulas into real formulas
+   - If you have literal text like "FORMULA =E2*F2": do a Find & Replace
+     - Replace "FORMULA =" with "=" across column G (or whole sheet).
+     - Excel will convert the replaced strings beginning with "=" into actual formulas.
+   - Or reapply step 2 (put the IF formula in G2 and fill down) which is safer.
+
+5) Recalculate totals and formatting
+   - F407 should be =SUM(F2:F404) (no change needed if correct).
+   - G407 should be =SUM(G2:G404).
+   - Format columns E and G as Currency (Euro) with 2 decimals for readability.
+
+Quick checks after fixing
+- Change one F value (e.g., F25) and verify G25 and G407 update automatically.
+- Select a few G cells and confirm the formula bar shows =E#*F# (not text).
+- Ensure sum in G407 > 0 if you have non‑zero F values.
+
+Why these fixes work
+- Replacing hard‑coded constants with E*F makes each row's total dependent on the subscription count, so totals update automatically.
+- Converting text numbers and text formulas into real numbers/formulas makes Excel treat them numerically so SUM and arithmetic work.
+- Formatting only affects appearance, not calculation, but makes results easier to read and audit.
+
+If you want, I can:
+- Provide the exact G2 formula to paste and a short macro to auto‑fix the whole G column, or
+- Scan the sheet for any other hard‑coded cells in column G and list them. Which do you prefer?

@@ -1,0 +1,23 @@
+I reviewed the formulas in all three sheets and found two clear formula mistakes plus some consistency / best-practice issues. Summary below with exact cells, what’s wrong, and recommended fixes.
+
+1) Wrong function used in Q4 Homework H5
+- Cell: Q4 Homework!H5
+- Current formula: =COUNT(B5:G5)
+- Problem: COUNT returns the number of numeric entries (6), not the sum of the assignment scores. All other rows use SUM to get the student’s total.
+- Fix: replace with =SUM(B5:G5)
+- Effect: will change the value from 6 → 273 (81+21+25+25+50+71).
+
+2) Homework weighting formula duplicates the wrong column (D) instead of using Homework (E)
+- Affected cells: Q4 Summary!F3 and Q4 Summary!F4:F12 (every student/row except the header F2)
+- Current pattern (example F4): =B4*0.3+C4*0.1+D4*0.4+D4*0.2
+- Problem: The last term uses D (Projects) twice. It should use E (Homework) multiplied by the 0.2 weight. Because some rows have different values in D and E, these weighted scores are incorrect.
+- Correct formula pattern (row 4 example): =B4*0.3 + C4*0.1 + D4*0.4 + E4*0.2
+- Better (robust) option using the declared weights in row 2: =SUMPRODUCT(B4:E4,$B$2:$E$2)  — this avoids hard-coded weights and makes the sheet easier to maintain.
+
+Notes / suggestions
+- Q4 Summary!F2 correctly sums the weight cells (=SUM(B2:E2) = 1).
+- Q4 Summary!E3 references Q4 Homework!H2 (points possible) — that’s okay (E3 = 'Q4 Homework'!H2).
+- Year Summary grade IF formulas are nested but functionally correct (they return expected letters).
+- As a best practice, avoid hard-coding the weights (0.3, 0.1, 0.4, 0.2) in each row’s formula. Use absolute references to the weight row (e.g. $B$2:$E$2) and SUMPRODUCT or similar so one change in weights updates all rows.
+
+If you’d like, I can produce an exact list of corrected formulas for each affected cell (F3:F12 and H5) or a version of the workbook with the fixes applied.

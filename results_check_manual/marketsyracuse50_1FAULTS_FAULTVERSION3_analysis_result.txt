@@ -1,0 +1,28 @@
+I checked the sheet "Syracuse, NY" for formula errors and consistency. Summary and corrective action below.
+
+Main problem found
+- Cell G12 has a wrong formula:
+  - Current: =$F12/$F$36/100
+  - Intended pattern for the column is: =$F12/$F$36*100
+  - Effect: G12 is off by a factor of 10,000 (it shows ~0.0013 instead of ~13.04). Because H12 = $G12^2, H12 is also wrong (extremely small instead of ~170). As a result the totals are wrong:
+    - G36 (SUM of G10:G33) = 86.9593406035236 (should be 100.00 when G12 is fixed)
+    - H36 (SUM of H10:H33) is understated (current 979.595641919188); with G12 fixed H36 will increase by ≈170 and become ≈1,149.7 (approximate HHI).
+
+Other checks
+- All other per-row F formulas (1*$E## for banks, 0.5*$E## for thrifts) are consistent.
+- All other G formulas use the expected pattern ($F#/ $F$36 * 100).
+- D36, E36, F36 use SUM formulas and appear consistent given the F values (F36 reflects half-counting of thrifts).
+- No division-by-zero or other obvious formula errors detected.
+
+Recommended fix
+- Change G12 to:
+  =$F12/$F$36*100
+- After that, verify:
+  - G12 ≈ 13.04196 (depends on your precision/formatting)
+  - H12 ≈ (13.04196)^2 ≈ 170.09
+  - G36 should recalculate to 100.00
+  - H36 should recalculate to ≈1,149.7 (this is the new HHI)
+
+If you want, I can:
+- compute the exact corrected numeric totals to a given number of decimals, or
+- scan any other sheets in the workbook for similar inconsistencies.

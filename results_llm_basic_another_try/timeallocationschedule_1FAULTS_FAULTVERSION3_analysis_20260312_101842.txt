@@ -1,0 +1,54 @@
+Errors found:
+
+1. **Inconsistent IF condition in J14:**
+   - Formula: `=IF(I$39>50,I14/I$39,50)`
+   - Problem: The "else" part returns 50, which is a fixed number, not a ratio or zero. This is inconsistent with other similar formulas that return 0 if the denominator condition is not met.
+   
+2. **VLOOKUP in C6 referencing wrong range:**
+   - Formula: `=VLOOKUP(C5,R7:T136,3,FALSE)`
+   - Problem: The lookup value is `C5` ("ACCOUNTING AND FINANCE"), but the lookup range `R7:T136` has department names in column R and faculty names in column T. The formula tries to find `C5` in column R and return the 3rd column (T), which is correct. However, the department name in C5 is "ACCOUNTING AND FINANCE" but in R7 it is also "ACCOUNTING AND FINANCE". This seems correct, but the formula is in C6, which is in column C, and the lookup range is in columns R to T (far away). This is not an error but unusual. No error here.
+
+3. **Formula in J39:**
+   - Formula: `=IF(I$39>0,I39/I$39,0)`
+   - Problem: This is a circular reference because I39 is used in its own formula. I39 is `=I15+I30+I37` (sum of totals), so using I39 in the formula for J39 is okay, but the formula divides I39 by I39, which will always be 1 if I39>0. This might be intended but is redundant.
+
+4. **Inconsistent use of $ in formulas:**
+   - Some formulas use `I$39` (absolute row), others use `$I39` (absolute column). This inconsistency can cause errors when copying formulas.
+
+5. **Use of _xludf.NETWORKDAYS in J4:**
+   - Formula: `=_xludf.NETWORKDAYS(C4,F4)`
+   - Problem: `_xludf.NETWORKDAYS` is a user-defined function (UDF). If the UDF is missing or disabled, this formula will return an error.
+
+Summary of main errors:
+
+- Incorrect IF formula in J14 (returns 50 instead of 0 or ratio).
+- Possible circular reference or redundant formula in J39.
+- Potential error if UDF `_xludf.NETWORKDAYS` is missing.
+
+---
+
+**Solutions:**
+
+1. **Fix J14 formula:**
+   - Change `=IF(I$39>50,I14/I$39,50)` to `=IF(I$39>0,I14/I$39,0)`
+   - Explanation: This matches other IF formulas and avoids returning a fixed number 50, which is illogical here.
+
+2. **Check for circular reference in J39:**
+   - If the intention is to show the ratio of total to itself, replace with `=1` or remove formula.
+   - Or clarify the purpose.
+
+3. **Replace UDF NETWORKDAYS if unavailable:**
+   - Use Excel's built-in `NETWORKDAYS` function if available: `=NETWORKDAYS(C4,F4)`
+   - Explanation: This calculates working days between two dates without needing UDF.
+
+4. **Standardize absolute references:**
+   - Use consistent absolute referencing like `$I$39` in all formulas to avoid errors when copying.
+
+---
+
+**Summary:**
+
+- Correct J14 IF formula to avoid fixed number output.
+- Replace or verify UDF NETWORKDAYS usage.
+- Review J39 formula for circular reference.
+- Use consistent absolute references in formulas.

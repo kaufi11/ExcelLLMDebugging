@@ -1,0 +1,65 @@
+Summary of the errors (short)
+
+- Many "Total" cells use wrong SUM ranges (off-by-one or inconsistent start/end). That makes totals not equal to 1 and breaks downstream calculations.
+- Several totals are hard‑coded as constants (for example M31 = 1, B65 = 1). Hardcoding hides errors and yields wrong percentages.
+- Some SUMs omit the first data row (e.g. O31 = SUM(O10:O30) instead of including O9) or include the totals row (9:30 vs 9:29).
+- Some division formulas (Sheet1) use direct division without checking for zero → risk of #DIV/0!.
+
+Why this is wrong (short)
+- Off‑by‑one SUM ranges and hardcoded numbers mean the "Total" rows are not the true sum of the data. Any chart / percentage / ratio based on those totals will be wrong.
+- Direct division can produce errors if the denominator is zero.
+
+Concrete fixes (apply these)
+
+1) Fix the main "University Total by Sem." totals (row 31)
+Replace the incorrect ranges / constants with a consistent SUM over the data rows (B9:B29 … O9:O29). Example corrected formulas (European format with semicolons):
+
+- B31 =SUM(B9:B29)  (already OK)
+- C31 =SUM(C9:C29)  (already OK)
+- D31 =SUM(D9:D29)
+- E31 =SUM(E9:E29)
+- F31 =SUM(F9:F29)
+- G31 =SUM(G9:G29)
+- H31 =SUM(H9:H29)
+- I31 =SUM(I9:I29)
+- J31 =SUM(J9:J29)
+- K31 =SUM(K9:K29)
+- L31 =SUM(L9:L29)
+- M31 =SUM(M9:M29)  (replace hardcoded 1)
+- N31 =SUM(N9:N29)  (verify current formula)
+- O31 =SUM(O9:O29)  (replace SUM(O10:O30))
+
+2) Find and remove other hard-coded totals
+Search the workbook for totals that are constants (e.g. single cell = 1). Replace them with the correct SUM for the block they intend to summarise. Example places to check (you already have examples):
+- 'University Total' sheet: B65 is currently 1 → should be =SUM(B43:B64)
+- Any "Total" row that contains a constant (1, 0, etc.) should be replaced by the SUM of the rows above it.
+
+3) Make all totals use identical ranges for the same block
+For each table block (each department/school), pick the exact rows that contain the data (for example rows 8–29 or 43–64 in that block) and use the same start/end rows for every column's SUM. Do not include the "Total" row in the summed range.
+
+Practical technique to fix consistently
+- Turn on formula view (Ctrl+`) and inspect each "Total" row side‑by‑side.
+- Use Find (Ctrl+F) for "=SUM(" to locate all SUM formulas; check the ranges quickly.
+- Where you find inconsistency, replace with a formula using the same start/end rows for every column (you can write one formula and copy/paste across the row using relative/absolute references).
+- Use named ranges or freeze the row numbers if blocks repeat to avoid copy/paste mistakes.
+
+4) Protect against divide-by-zero in Sheet1
+Replace plain divisions like =C1/C24 (or =+C1/+C24) with an IF to avoid #DIV/0!. Example:
+
+- D1 =IF($C$24=0;"";C1/$C$24)
+
+Copy that pattern for D2..D23.
+
+Why these fixes work (short)
+- Using consistent SUM ranges and removing hardcoded totals makes the totals equal actual sums of the data. Percentages and averages derived from those totals will then be correct.
+- The IF check prevents division errors and keeps the sheet neat if the grand total is zero.
+
+One-line checklist to apply now
+- Replace all hardcoded totals with SUM formulas.
+- Standardise SUM ranges for each block (same first and last data row).
+- Fix off‑by‑one ranges (include row 9 where omitted; exclude total row).
+- Replace direct divisions with IF(...=0;"";...) to avoid #DIV/0!.
+
+If you want, I can:
+- produce an exact list of every incorrect cell in the workbook (I will scan formulas and list each mismatch and the corrected formula), or
+- provide a small VBA macro that fixes all SUM ranges for a specified block size automatically. Which do you prefer?

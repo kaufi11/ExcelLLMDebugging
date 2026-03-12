@@ -1,0 +1,28 @@
+I found two types of errors. Short fixes and explanations below.
+
+1) Problem: "Text Only Version" shows hard-coded inputs so it doesn’t reflect changes made on the "Your Company" sheet.
+- Symptoms: C5, C6, C7, C8 on the Text Only sheet are static values (1, 0.1, 0.075, 0.12) instead of pulling from "Your Company".
+- Why it matters: If you change Inventory Turnovers, Duty Rates or Interest on "Your Company", the print sheet (Text Only) will not update and printed results will be wrong.
+
+Fix: Replace those hard-coded cells with links to the corresponding cells on "Your Company".
+- Set Text Only!C5 = 'Your Company'!C14
+- Set Text Only!C6 = 'Your Company'!C15
+- Set Text Only!C7 = 'Your Company'!C16
+- Set Text Only!C8 = 'Your Company'!C17
+
+Explanation: This makes the print sheet always read the current input values from the main sheet.
+
+2) Problem: "Sample Company" has an incorrect entry in the Waste/Scrap cell (C23).
+- Symptoms: Sample Company!C23 is the number 3 (not a formula), so totals and savings are wrong for that example.
+- Why it matters: That constant value breaks the sample calculations and the SUM total.
+
+Fix: Replace the value with the correct formula used elsewhere:
+- Set Sample Company!C23 = Sample Company!C9 * Sample Company!B24 * Sample Company!C11
+
+Explanation: This computes Waste/Scrap as (Annual import value) * (waste %) * (average parts duty), matching the template logic.
+
+Optional check (recommended): Add a validation or warning if the sum of percentages (exports + zone transfers + obsolete + waste + returns) exceeds 100%, because that will make the Inverted Duty calculation negative. Example check formula (any sheet):
+- =IF((B31+B37+B25+B28+B34)>1,"Percentage total >100%","OK")
+(Adjust references to whichever sheet/cells you're validating.)
+
+If you want, I can give you the exact paste-ready formulas for each cell or create the validation rule and corrected sheet for you.

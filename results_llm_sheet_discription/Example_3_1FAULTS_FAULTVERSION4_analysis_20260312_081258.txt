@@ -1,0 +1,22 @@
+Findings — two errors:
+
+1) Q4 Homework, H5 (Evans)
+- Error: cell H5 = COUNT(B5:G5). COUNT returns the number of numeric cells (6), not the sum of scores.
+- Effect: Evans’s homework total is 6 instead of the correct sum, and every sheet that pulls that value (Q4 Summary E6 → Year Summary G4, etc.) is wrong.
+- Fix: replace with a sum formula:
+  - Correct formula: =SUM(B5:G5)
+
+2) Q4 Summary, column F (rows 3–12)
+- Error: each F# uses D# for both the 0.4 and the 0.2 terms (…+ D#*0.4 + D#*0.2). That weights Projects twice (0.6) and ignores Homework (0.0).
+- Effect: Homework scores aren’t counted; project scores are over-weighted, so every student’s Q4 weighted score and percentage (columns F and G) are incorrect and that propagates to Year Summary.
+- Fix: use Homework (E#) for the 0.2 term — and preferably use absolute references to the weight row so the formula is easy to copy down. Example corrected formulas:
+  - Single-row explicit: =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+  - Better (use weights from row 2): =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+  Copy the corrected formula down rows 3:12.
+
+Quick verification steps
+- After fixes, check Q4 Homework H2 = 300 and H3:H11 are reasonable sums (not counts).
+- In Q4 Summary, F2 should be 1.0 (weights sum). For a student, F# should change and G# = (F#/300)*100 should reflect the correct weighted percent.
+- Year Summary column G (Q4) and Final Average/Letter Grade will update automatically.
+
+That will correct all propagated errors.

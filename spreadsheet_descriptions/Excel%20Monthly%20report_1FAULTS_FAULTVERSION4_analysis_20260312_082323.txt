@@ -1,0 +1,54 @@
+High-level summary
+- Workbook has 3 sheets: Sheet1 (primary), Sheet2 and Sheet3 (no detail provided).
+- Sheet1 is a monthly operation log: title in A2 ("Monthly Operation Statistics"); Month in I3 and Year in K3.
+
+Sheet1 layout
+- Header block:
+  - Row 6: "SERVICES" label (appears in D6).
+  - Row 7: column headers across D–M for service types: Homework, Job Search, Games, Internet, College, Business, Class, New, Web Design, Other.
+  - Row 7 columns A–C: A = Day, B = Date, C = Total #.
+  - Row 8 includes subheaders under K–L ("member", "Specialist") — unclear if these are staff columns or subcategories.
+- Data area:
+  - Daily rows run B9:B39 (Day numbers 1–31 in A9:A39 / B9:B39).
+  - For each day, service counts are expected in columns D–M.
+  - Row 40 is TOTAL for the month.
+
+Reported formulas (as given)
+- Many daily-row formulas are present but inconsistent/misreferencing. Examples:
+  - E9 = SUM(E42) (refers to a cell outside data range)
+  - F9 = SUM(E9) (sums a single cell from the previous column)
+  - G9 = SUM(F9), H9 = SUM(G9), etc. (chain-summing single cells)
+  - Several rows repeat the same pattern for rows 9–39.
+  - One cell: K19 = SUM(235) (invalid usage).
+- Totals row formulas:
+  - C40 = SUM(C9:C39) and D40 = SUM(D9:D39) — these are correct.
+  - E40 = SUM(E9:E39) — correct.
+  - F40 = SUM(E40), G40 = SUM(F40), H40 = SUM(G40), etc. — these chain to single cells rather than summing the column ranges.
+  - L40 = SUM(K40), M40 = SUM(L40) — also chained instead of proper column sums.
+
+Issues & risks
+- Many formulas reference single cells or cells outside the intended ranges, creating incorrect totals and potential circular or cascading errors.
+- SUM(235) is invalid (probably intended to sum a cell range).
+- Chained sums (F40 = SUM(E40) etc.) will not give column totals and will propagate errors if one cell is wrong.
+- Daily total column (C) seems intended to be the sum of that day's services but the daily-row formulas provided do not show a correct =SUM(D9:M9) pattern.
+
+Recommended corrections (concise)
+- For each day's Total # (C9:C39): set C9 = SUM(D9:M9) and fill down to C39.
+- For per-service monthly totals (row 40):
+  - D40 = SUM(D9:D39)
+  - E40 = SUM(E9:E39)
+  - F40 = SUM(F9:F39)
+  - … continue similarly through M40 = SUM(M9:M39)
+- Remove any SUM(...) formulas that reference single cells or invalid constants (e.g., SUM(235) → replace with appropriate range or value).
+- If K8/L8 are subheaders, ensure column alignment is correct (no inadvertent shifted columns).
+
+Best-practice suggestions
+- Convert the data range (A7:M39) into an Excel Table (Insert → Table) for dynamic ranges and easier formulas (e.g., =SUM(Table[Homework])).
+- Use consistent, column-based totals (no cascading SUM references).
+- Freeze panes at row 7 to keep headers visible.
+- Add data validation for numeric entries in D:M and date validation for column B.
+- Consider adding a checksum or cross-check cell: =SUM(D40:M40) should equal C40 to validate totals.
+
+If you want, I can:
+- Provide the exact corrected formulas for every affected cell (daily rows and totals).
+- Produce a fixed version of the Sheet1 formulas (listing replacements).

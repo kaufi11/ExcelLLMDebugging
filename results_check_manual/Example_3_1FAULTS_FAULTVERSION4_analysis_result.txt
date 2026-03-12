@@ -1,0 +1,41 @@
+I inspected the formulas across all sheets and found the following formula errors / inconsistencies. For each I give the problem, where it appears, why it's wrong, and a suggested fix.
+
+Summary of main issues
+- Q4 Homework!H5 uses COUNT instead of SUM → returns 6 instead of the student's total (propagates into other sheets).
+- Q4 Summary F3:F12 (Weighted Score) use the Projects column twice (D) and never use the Homework column (E) → all weighted scores (and resulting percentages) are wrong when D and E differ.
+- These two issues propagate to Q4 Summary (G column) and then into Year Summary (G and Final Average), producing incorrect final averages/grades for affected students.
+
+Details
+
+1) Q4 Homework!H5
+- Current formula: =COUNT(B5:G5)
+- Problem: COUNT returns the number of numeric cells (6), not the sum of the assignment scores. All other students use =SUM(B#:G#).
+- Result: H5 = 6 (should be the sum of scores for Evans). This incorrect value is used by Q4 Summary (E6) and then flows into weighted calculations.
+- Fix: Change to =SUM(B5:G5)
+
+2) Q4 Summary F3:F12 (Weighted Score)
+- Example (row 4 / Brantley): current formula in F4 =B4*0.3+C4*0.1+D4*0.4+D4*0.2
+- Pattern: Every F-row uses D#*0.2 as the last term (projects again) instead of E#*0.2 (homework).
+- Problem: Homework (E) is not included in the weighted total; Projects (D) are counted twice. If D and E are equal (e.g. the Points Possible row) this may not show up, but for students where D ≠ E the weighted score is incorrect.
+- Result: F-values are wrong; G-values (=(F#/300)*100) and Year Summary entries that reference Q4 Summary propagate these errors.
+- Correct formula: =B#*0.3 + C#*0.1 + D#*0.4 + E#*0.2
+  - e.g. for Brantley (row 4): =B4*0.3 + C4*0.1 + D4*0.4 + E4*0.2
+
+Propagation / impact
+- Q4 Summary E-row values pull from Q4 Homework H3:H11. Because H5 is wrong (6), Q4 Summary E6 is wrong.
+- Q4 Summary F3:F12 are wrong because they omit E; therefore G3:G12 (percentages) are wrong.
+- Year Summary G2:G10 reference Q4 Summary G4:G12, so Year Summary G is wrong where the Q4 Summary was wrong. Year Summary H (AVERAGE of quarters) and final letter grade (I) are therefore potentially wrong for affected students.
+
+Other minor observations
+- Q4 Summary F2 (=SUM(B2:E2)) and the weights add to 1 — that is correct.
+- The nested IF used for Final Grade in Year Summary is correct for the intended cutoffs, albeit verbose; no error found there.
+- C11 in Year Summary contains the label "Class Average" in column C rather than column A — not a formula error but a layout/label placement oddity.
+
+Recommended fixes (quick checklist)
+1. In Q4 Homework, change H5 to =SUM(B5:G5).
+2. In Q4 Summary, correct the Weighted Score formulas (F3:F12) to use E (homework) as the last term:
+   - Replace =B#*0.3 + C#*0.1 + D#*0.4 + D#*0.2
+   - With =B#*0.3 + C#*0.1 + D#*0.4 + E#*0.2
+3. After correcting the above, check Q4 Summary G and Year Summary G/H/I to ensure they now display expected values.
+
+If you want, I can produce the exact corrected formulas for each affected cell (F3:F12 and H5) or generate a step-by-step change log you can apply.

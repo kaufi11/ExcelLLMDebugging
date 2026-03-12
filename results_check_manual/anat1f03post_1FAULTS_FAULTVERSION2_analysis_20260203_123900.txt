@@ -1,0 +1,54 @@
+Fehlerübersicht (kurz und verständlich) und Lösungen:
+
+1) Falscher Mittelwert-Bereich
+- Problem: Zelle F56 =AVERAGE(F37:F55) schließt F36 aus.
+- Lösung (deutsche Formel): =MITTELWERT(F36:F55)
+- Erklärung: Der Mittelwert muss über dieselben Zeilen wie die anderen Spalten gehen (36–55).
+
+2) Fehlender Praktikumseintrag (Datenfehler)
+- Problem: In Zeile 55 fehlt G55 (Prakt.4). I55 =SUMME(D55:G55) rechnet dann mit 0.
+- Lösung: Trage den fehlenden Wert in G55 ein (oder bestätige, dass 0 korrekt ist).
+- Erklärung: Fehlende Einzelwerte verzerren Total und Durchschnitt.
+
+3) Inkonsistente und teilweise falsche Vergleichsoperatoren in Notenformeln
+- Problem: Erste Sektion verwendet >= in K6:K25, zweite Sektion und MEAN-Zellen verwenden > (z. B. K36:K55, K26, K56). Dadurch Grenzwerte (z. B. genau 89,9%) werden unterschiedlich bewertet.
+- Lösung (einheitliche, sichere Formel; in K6 nach unten kopieren): =WENN(J6>=89,9%;"A";WENN(J6>=79,9%;"B";WENN(J6>=69,9%;"C";WENN(J6>=59,9%;"D";"F"))))
+  - Für Zeile 36 (zweite Sektion) entsprechend J36 statt J6.
+- Erklärung: Verwende >= an allen Stellen, damit z. B. 89,9% immer als A gewertet wird.
+
+4) Harte Kodierung der 400-Punkt-Gesamtzahl statt Bezug auf die Kopfzeile
+- Problem: Nutzungen wie =I6/400 sind hart codiert; wenn der Gesamtwert in I3 oder I33 geändert wird, werden Formeln nicht automatisch aktualisiert.
+- Lösung (erste Sektion; in J6 nach unten kopieren): =I6/$I$3
+  - zweite Sektion (in J36 nach unten kopieren): =I36/$I$33
+  - MEAN-Zellen: J26 =I26/$I$3 ; J56 =I56/$I$33
+- Erklärung: Absolute Referenz ($I$3 / $I$33) macht die Formel robust gegenüber Änderungen der Kopfzellen.
+
+5) Einheitlichkeit der Formeln bei Mittelwert der Spalten
+- Prüfe, dass in D26–I26 und D56–I56 überall die Bereiche korrekt sind (z. B. D26 =MITTELWERT(D6:D25), usw.). (Hinweis: Du hast diese größtenteils richtig; F56 war die Ausnahme.)
+
+Zusammenfassung der wichtigsten korrigierten Formeln (deutsche Excel-Funktionennamen, zum Kopieren):
+
+- J6 (Klassen-% erste Sektion, kopieren nach unten bis J25):
+  =I6/$I$3
+
+- J36 (zweite Sektion, kopieren nach unten bis J55):
+  =I36/$I$33
+
+- K6 (Note erste Sektion, kopieren nach unten):
+  =WENN(J6>=89,9%;"A";WENN(J6>=79,9%;"B";WENN(J6>=69,9%;"C";WENN(J6>=59,9%;"D";"F"))))
+
+- K36 (Note zweite Sektion, kopieren nach unten):
+  =WENN(J36>=89,9%;"A";WENN(J36>=79,9%;"B";WENN(J36>=69,9%;"C";WENN(J36>=59,9%;"D";"F"))))
+
+- F56 (korrekter Mittelwert):
+  =MITTELWERT(F36:F55)
+
+- J26 (Mean % erste Sektion):
+  =I26/$I$3
+
+- J56 (Mean % zweite Sektion):
+  =I56/$I$33
+
+Kurz noch: nachdem du G55 ergänzt und die Formeln vereinheitlicht hast, prüfe ein paar Grenzfälle (z. B. genau 89,9% oder 79,9%), ob die gewünschte Note erscheint.
+
+Wenn du willst, passe ich alle K-Formeln automatisch an (z. B. per einheitliche Formel in K6 runterziehen) oder erstelle absolute Bezüge für alle J-Zellen.

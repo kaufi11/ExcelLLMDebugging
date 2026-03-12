@@ -1,0 +1,80 @@
+Summary of workbook structure and contents (concise)
+
+General
+- Currency/units: (dollars in millions) shown on P&L and crib sheets.
+- Layout pattern: main financial statements (P&L, BS, CF) plus two “Crib” detail sheets that break out line items and feed the main sheets via cell references. Period columns are organized as quarter and YTD (Three Months Ended, Six Months Ended) and comparisons/QoQ deltas are computed in adjacent columns.
+- Common formula patterns: many cells use SUM(range) for totals, and QoQ or YTD deltas like =Kx-Ox or =Lx-Px. Crib sheets contain granular inputs and comment notes and feed aggregated amounts to the main statements.
+
+Sheet: P&L (primary statement)
+- Title/headers (A4–A11) and period columns: Three Months Ended (H / O), Six Months Ended (K), with year columns (H11,I11,K11,L11,O11,P11).
+- Sections: Revenue (rows 13–17), Costs & Expenses (19–27), Other Income/Expense (31–35), Loss before taxes and below‑the‑line items including discontinued operations, cumulative effect (rows 37–47), EPS and shares (rows 49–72).
+- Key formulas:
+  - Segment totals: Total Revenue K17 = SUM(K14:K16) (similarly for other periods).
+  - Total Costs K27 = SUM(K20:K26).
+  - Income (loss) from operations K29 = K17 - K27.
+  - Other income K35 = SUM(K32:K34).
+  - Loss before taxes K37 = K29 + K35.
+  - Net Loss K47 = SUM(K42:K45).
+  - EPS = segment or total loss divided by share counts (e.g., K69 = K61 / K66).
+- Notable values (example cells):
+  - Six months revenues (column K): Communications K14 = 1,142; Information Services K15 = 997; Other K16 = 32; Total K17 = SUM = 2,171.
+  - Six months total costs K27 = SUM of cost lines (≈2,137 based on components).
+  - Six months net loss K47 computed from K42:K45 (includes cumulative accounting change K44 = 5 and discontinued K45 = -7).
+  - Weighted average shares ~467.7k to 484.4k depending on period (cells H57, K57 etc).
+- Structure contains quarter-over-quarter difference columns (H and I) that compute deltas like =K14 - O14 and =L14 - P14.
+
+Sheet: P&L Crib (detail)
+- Purpose: granular breakdown by business units and quarters supporting P&L totals.
+- Calendar columns across quarters (D, F, H, J, L, N, Q, S) and a comments column (U).
+- Revenue broken down by sub‑segments (Domestic/International per business) with formulas aggregating to totals (e.g., D13 = SUM(D11:D12); Q13 = +L11+N11).
+- Detailed cost lines (cost of revenue, depreciation, G&A categories) with many manual entries and formula-driven adjustments (SUMs, explicit arithmetic like K23 = 499+48).
+- EBITDA calculations by segment (rows 121–127) computed as segment revenue minus related costs and G&A (formulas like D121 = D13 - D29 - D63 - D72 - D75 - D78).
+- Many inline comments in column U explain nonrecurring items, accruals and reclassifications.
+- Key behavior: this sheet is the source of many P&L totals via direct links.
+
+Sheet: BS (primary balance sheet)
+- Headers (A4–E10) with two period columns: June 30, 2003 (D) and March 31, 2003 (E).
+- Sections: Current Assets (cash, restricted securities, accounts receivable, other), PP&E net, restricted securities, intangibles/goodwill, other assets; Current liabilities and noncurrent liabilities; Stockholders' Equity.
+- Key formulas:
+  - Total Current Assets D19 = SUM(D15:D18).
+  - Total Assets D28 = SUM(D19:D27), and a later grand total D51 = SUM(D40:D50).
+  - Total Liabilities and Equity D203 = SUM(D199:D201).
+- Notable values:
+  - Cash & equivalents D15 = 915 (June 30, 2003).
+  - PP&E, net D21 = 5,941.
+  - Long-term debt (less current) D42 = 5,634 (entered as a constant).
+  - Stockholders’ equity (deficit) D50 = 282 (June), E50 = -58 (Mar).
+- Many E‑column cells are formulas calculating prior period adjustments (e.g., E21 = 6043-4).
+
+Sheet: BS Crib (detail)
+- Detailed balance sheet rollforward and sub‑ledger breakdowns (cash components, restricted, receivables by business, other current assets, PP&E by segment, goodwill/intangibles details, other assets).
+- Uses many granular entries and formula aggregations to produce totals used in BS. Examples:
+  - Cash history by quarter in top rows (D8–J8).
+  - Detailed restricted cash line items and SUMs (D21 = SUM(D12:D20)).
+  - Accounts receivable broken out by business (D24:D28) with D29 = SUM(D24:D28).
+  - Debt line items (long-term notes, bank debt, convertible notes) enumerated (D153:D168) with D169 = SUM(D153:D168).
+- Contains numerous explanatory notes in column K and K‑row comments (e.g., K153 “$100 million exchanged for common stock”).
+- Final reconciliation: Total Assets (D100) built from component sums (D50 + D59 + D98 + D79).
+
+Sheet: CF (cash flow statement)
+- Layout: Three Months Ended and Six Months Ended (columns D, E, G etc) with line items divided into Operating, Investing, Financing and supplemental disclosures.
+- Operating activities section starts with Net Loss (D11 = -462 for three months ended June 30, 2003) and applies noncash and working capital adjustments to get net cash from continuing operations (D34 = SUM(D14:D33)).
+- Key operating adjustments: Depreciation/amortization D17 = 228; Induced conversion expense D18 = 190; Stock award noncash D23 = 25; Deferred revenue adjustments D24 = 12.
+- Investing activities: capital expenditures D39 = -65; proceeds from sales D48 = 5; Genuity acquisition cash flow D41 = -1 (and E41 = -143).
+- Financing activities: minor items shown (stock options exercised D52 = 3; debt payments D53 = -13).
+- Notable totals:
+  - Net cash change D60 calculated as D34+D49+D54+D56+D58; beginning cash D62 = 944; end cash D64 = D60 + D62.
+  - Supplemental noncash items: common stock issued for debt D71 = 754, long-term debt retired by stock D73 = 580.
+- Many period‑to‑YTD aggregations use simple addition (G11 = D11 + E11, etc).
+
+Cross-sheet links and mechanics
+- Crib sheets are the primary source of granular amounts; main P&L/BS/CF use SUM/inline formulas fed by crib totals.
+- Repetitive pattern: period columns for current quarter, prior quarter, and YTD; QoQ deltas computed as differences (e.g., H = K - O; I = L - P).
+- Numerous explanatory comment cells (mostly in crib sheets column U / K) documenting one‑time items, reclassifications and assumptions.
+
+Overall layout and purpose
+- This workbook is a consolidated financial reporting file for Level 3: condensed P&L, balance sheet, cash flows and supporting detailed crib sheets that provide line‑item granularity, adjustments and commentary. Formulas are predominantly sums, arithmetic adjustments, and period aggregations; key values to note are consolidated revenues (≈2,171 for the six‑month column K), large PP&E and long‑term debt balances (PP&E ~5,941; long‑term debt ~5,634), and recent net loss and cash flow drivers (e.g., net loss D11 = -462 in CF three‑month column, depreciation and noncash conversion expenses materially affecting operating cash flow).
+
+If you want, I can:
+- Map specific crib cells to main statement line items (show the links), or
+- Reconcile a specific total (e.g., Total Assets to source lines) or calculate a derived metric (EBITDA, leverage ratios) using these cells.

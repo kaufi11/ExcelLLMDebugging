@@ -1,0 +1,28 @@
+Found two clear formula errors on the "Select Financial Data" sheet. Short summary and fixes:
+
+1) Wrong sign in Earnings from Operations (1997)
+- Location: Select Financial Data, cell H14 (year 1997).
+- Current formula: =H12+H13
+- Correct formula: =H12-H13  (consistent with other years: =<Total revenues> - <Cost of operations> minus <Other operating (income) and expenses, net>)
+- Why it’s wrong: Row H13 holds "Other operating (income) and expenses, net" (a negative number for income). All other years subtract that row (B14 = B12 - B13 etc). Using + instead of - gives the wrong earnings-from-operations for 1997 and therefore makes H18, H21, H25 and subsequent downstream numbers incorrect.
+- Fix: Replace H14 with =H12-H13 and recalc. Check H18/H21/H25 in 1997 will update automatically.
+
+2) Net Earnings references wrong row range (off-by-one)
+- Location: Select Financial Data, Net Earnings row (row 25): cells B25 through K25.
+- Current formula in each: =SUM(B20:B24) (and similarly for C25: =SUM(C20:C24), etc.)
+- Correct formula: =SUM(B21:B24) (and similarly for other years: SUM(C21:C24), … SUM(K21:K24))
+- Why it’s wrong: Row 21 contains "Earnings before Extraordinary Item and Cumulative Effect of Accounting Change" (the correct starting line). The formula is summing B20 (a label/blank or wrong row) rather than B21, so Net Earnings is calculated from the wrong range.
+- Fix: Change each Net Earnings formula to SUM(<earnings before extraordinary row>:<last adjustment row>) — e.g. B25 = SUM(B21:B24). Recalculate.
+
+Quick steps to apply fixes
+- On "Select Financial Data" sheet:
+  1. Edit H14 → change + to - so formula reads =H12-H13.
+  2. Edit B25 → change =SUM(B20:B24) to =SUM(B21:B24). Copy this corrected formula across C25:K25.
+- After changes, recalc workbook and verify that dependent rows (Earnings before taxes, Net earnings, EPS summaries, balance totals if linked) update and match the source statements.
+
+Why this matters
+- The H14 sign error produces an incorrect earnings-from-operations for 1997 and cascades through pre-tax and net earnings.
+- The SUM range error gives incorrect Net Earnings for all years on that sheet (because it’s including the wrong starting cell).
+- Fixing these restores consistency and correct downstream computations (taxes, EPS, cash-flow linkage if any).
+
+If you want, I can list the exact corrected formulas for every affected cell or verify results vs the "Statements of Earnings" sheet.

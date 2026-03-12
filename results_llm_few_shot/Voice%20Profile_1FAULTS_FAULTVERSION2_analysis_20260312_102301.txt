@@ -1,0 +1,48 @@
+Summary: I found several formula mistakes (typos, wrong references, and omitted columns). Below are the main errors, why they are wrong, and the simple fixes.
+
+1) Example sheet — H14
+- Problem: H14 = 5 (constant). It should be the total local cost.
+- Why wrong: H14 should sum the component local costs (columns B, D, F or B+D+F).
+- Fix: replace with =B14+D14+F14
+
+2) FINANCIAL sheet — Totals that only take G instead of summing C+E+G
+- Cells: I10 and I11
+- Problem: I10 = G10 and I11 = G11 (only one column used).
+- Why wrong: I-column is the total across the data columns C, E and G; using only G ignores the other data.
+- Fix: 
+  - I10 -> =C10+E10+G10
+  - I11 -> =C11+E11+G11
+
+3) FINANCIAL sheet — Wrong cell reference / typo
+- Cell: I22
+- Problem: I22 = IF(C2+E20<>0,...) — uses C2 (wrong) instead of C20.
+- Why wrong: the IF denominator should test the counts for the LONG DISTANCE row (C20 and E20), not C2.
+- Fix (and include G column as well): 
+  - I22 -> =IF((C20+E20+G20)<>0,((C20*C22)+(E20*E22)+(G20*G22))/(C20+E20+G20),"")
+
+4) FINANCIAL sheet — Weighted averages omit the G column
+- Cells: I16, I34, I61 (and other average-duration / weighted-average cells)
+- Problem: formulas use only C and E (e.g. IF((C14+E14)<>0,...) ), omitting G.
+- Why wrong: when data may exist in column G you must include it in numerator and denominator for correct weighted average.
+- Fix pattern (example for I16): 
+  - I16 -> =IF((C14+E14+G14)<>0,((C14*C16)+(E14*E16)+(G14*G16))/(C14+E14+G14),"")
+
+  Apply the same pattern to I34, I61, I22 (already shown), I67 (see next).
+
+5) FINANCIAL sheet — I67 is wrong
+- Problem: I67 = E67 (just copies one source cell).
+- Why wrong: average call length for the 1300 inbound block should be the weighted average of C67/E67/G67 by their call counts C65/E65/G65.
+- Fix example:
+  - I67 -> =IF((C65+E65+G65)<>0,((C67*C65)+(E67*E65)+(G67*G65))/(C65+E65+G65),"")
+
+General guidance
+- Pattern for any “TOTAL” in column I: use =Crow+Erow+Grow
+- Pattern for any weighted average in column I: include all three source columns in numerator and denominator:
+  =IF((Ccount+Ecount+Gcount)<>0,((Cvalue*Ccount)+(Evalue*Ecount)+(Gvalue*Gcount))/(Ccount+Ecount+Gcount),"")
+
+What to do next
+- Correct the cells listed above.
+- Scan column I for other formulas that use only C+E or wrong references (search for formulas with only two terms or with obvious typos like C2).
+- If column G is intentionally always blank for some rows, you can keep 2‑part formulas — but better to use the 3‑part pattern so the sheet stays correct if G gets data later.
+
+If you want, I can produce the exact corrected formulas for every I‑cell in the FINANCIAL sheet (list them out), or check the workbook for any remaining similar typos. Which would you prefer?

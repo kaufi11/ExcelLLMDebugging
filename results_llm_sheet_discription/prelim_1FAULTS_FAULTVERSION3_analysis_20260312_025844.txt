@@ -1,0 +1,25 @@
+Findings (short)
+- Main error: A20 contains =A19-1. That subtracts 1 and breaks the event numbering sequence (creates duplicates: the number goes backward).
+- Secondary symptoms: some A cells are hard-coded (A12, A41 = 26) or reference previous row with +1. Because the column uses chained +1 formulas, a single wrong formula or a deleted row breaks the whole sequence.
+- Minor: A15 (Break-A) has identical start and end times and is marked "Eliminated" — either remove the row or clear times/duration.
+
+Quick fix (fast, minimal change)
+1. Fix the bad formula in A20: change =A19-1 to =A19+1.
+2. Replace any hard-coded numbers that are out of sequence (e.g., change A41's 26 to =A39+1 or to the correct +1 formula).
+
+Why this works
+- All event numbers in column A are intended to be previous+1. A20 was subtracting 1 so it produced duplicate/out-of-order numbers; changing to +1 restores the intended incremental sequence.
+
+Robust (recommended) solution — prevents future breaks
+Replace the chained formulas with a stable formula that bases numbering on a non-empty helper column (column B has the DAY value and is always filled). In A12 put:
+=IF($B12="","",COUNTA($B$12:$B12))
+and fill down the column A range.
+
+Why this is better
+- COUNTA($B$12:$B12) returns 1,2,3… as you go down the sheet counting non-empty DAY cells. It automatically re-numbers correctly if you insert/delete rows or fix a single cell; it will not break if one cell has the wrong +1 formula.
+
+Optional cleanup
+- If Break-A (A15) is truly eliminated, delete the whole row (preferred) or clear its time cells so durations and numbering remain consistent.
+- If you prefer row-based numbering and there are no blank event rows, you can also use =ROW()-11 in A12 and fill down (simple but depends on fixed row positions).
+
+If you want, I can give exact steps to apply the robust formula to the whole column A and clean up the eliminated break row.

@@ -1,0 +1,94 @@
+High-level workbook summary — structure, key inputs, formulas and outputs
+
+Overall layout / conventions
+- Years run across columns (primarily C:H) for 2001–2006. Many blocks repeat by process node (0.25, 0.18, 0.13, 0.09, 0.065) and die-size (200mm/300mm / various die sizes).
+- Common assumptions: 20K fab equivalent, “20” K/mo new fab starts (cell C29/C61), discount factor for announced vs effective capacity = 0.6, overhead SG&A = 0.36, A&T cost per yielded die = 0.7 (used in cost builds).
+- Major calculation types: capacity → yielded dice → variable cost per wafer/die → unit production → demand calibration → price determination → cash flows → IRR. Sheets are heavily cross-linked.
+
+Sheet-by-sheet (concise)
+
+1) DRAM cost side
+- Purpose: quick DRAM market / entrant analysis using Semico/fisher data.
+- Key inputs: industry monthly wafer starts (C4:H4 = 1000 K/month baseline), discount factor in F7 = 0.6, avg yielded die/wafer (row 9), a&t yield = 0.9.
+- Main formulas: convert monthly K to annual (row 6 = 12*C4), effective starts = discount*annual (row 8), baseline units produced (row 11 = effective starts * avg die * yield /1000).
+- Cost computations: var fab cost/wafer (E15 ~ 964.71), apply overhead (D16 = (1+C15)*E15), var A&T cost per yielded die incl ovhd (row 17 uses H15), cap cost per start D19 = 5367 (cap cost/yr excl ovhd).
+- Profit and cashflow: var profit/wafer, cap cost amortized over 5 years, 20K fab cash flow (row 28), ROI via IRR() (B41 uses IRR(C39:H39,0.15)).
+- Competitive (entrant) vs Cournot incumbent logic: compute additional revenues/cash flows and combine with change in incumbent cash flows (rows ~44–52).
+
+2) LEM cost side
+- Purpose: detailed cost model per node/vintage for LEM (logic/embedded memory) manufacturing and equipment/upgrades/new-build capital.
+- Structure: many blocks per node & wafer (vintage, die size, effective wafer starts, yields, throughput learning, effective yielded die/wafer).
+- Key computations:
+  - Effective wafer starts/yr from capacity utilization (D18..I27).
+  - Unyielded dice/wafer computed using die diameter and die-per-wafer approximations (rows 51–61 use (B/2)^2*π / die-area cell).
+  - Throughput learning multipliers (rows 64–73) applied to compute effective yielded die/wafer (rows 75–85).
+  - Variable cost per wafer (rows 88–97) and variable cost per yielded die (rows 100–109).
+  - New equipment, node factors, $M per new equip/K starts, upgrade 1/2 equip costs, new-build and upgrade building capital (rows 110–249).
+- Outputs feed into Capacity&Price Calculation and RoI sheets.
+
+3) LEM Demand Calibration
+- Purpose: calibrate demand and price per “functionality” using Semico forecast (revenues and units).
+- Key inputs: Semico revenues (C3:H3) and units (C4:H4).
+- Fisher index linkage: pulls chained fisher P index from fisher!C40..H40 and computes functionality($2001) per unit (row 9 = revenue / fisher P).
+- Computes functionality per chip (row 10), Moore-law equivalent, assumed price elasticity (-1.5), and linear demand curve parameters:
+  - slope b = -elasticity * Q / P (row 16),
+  - intercept a = Q + b*P (row 15).
+- These (a,b) are used by Capacity&Price Calculation to invert demand.
+
+4) fisher
+- Purpose: detailed demand-side ASP/bit and price-index construction (Laspeyres, Paasche, Fisher), used as the baseline price index for calibration.
+- Inputs: product-level unit forecasts (64M..1G chips), ASPs, constructs aggregated revenues and ASP per 256M-equivalent.
+- Key formulas: SUMPRODUCT for total revenue, index relatives, Laspeyres/Paasche via SUMPRODUCT and reciprocals, Fisher = sqrt(Lasp*Paasch) (rows 37–39), chained price index (row 40).
+- Outputs: chained price index and function-per-chip metrics used across LEM Demand & Capacity sheets.
+
+5) Capacity&Price Calculation
+- Purpose: combine LEM capacity & yields with demand calibration to compute baseline production, functionality produced, inverse demand, economic capacity and retirement-eligible capacity.
+- Inputs linked from LEM cost side (D5..I14) and LEM Demand Calibration (a,b, price-per-function).
+- Calculations:
+  - Baseline capacity per node (C3..C12 pulled from 'LEM cost side').
+  - Baseline units produced (rows 15–24; uses LEM cost side effective yielded die values).
+  - Functionality produced (rows 27–36 = units * functionality-per-chip from demand calibration).
+  - Inverse demand: price per function P = (Q - a) / -b (row 39) then converted to P/chip (row 40).
+  - Variable cost per chip = cost-per-yielded-die + A&T assumption (row 43).
+  - Economic capacity: IF(var cost/chip > price/chip, set capacity to 0) (rows 55–64). Retirement eligible = baseline - economic capacity (rows 68–77).
+- Outputs feed into Static RoI calc and Cash flow blocks.
+
+6) Static RoI calc '02
+- Purpose: static IRR/cash-flow analysis for different options: new fab entrant, upgrade 1, upgrade 2, and Cournot incumbent case.
+- Sections:
+  - New Fab (competitive entrant): builds capital costs (K building and equip from LEM cost side), variable costs, revenues (price after extra fab times added output), net cash flows per year (rows ~67–71), IRR via IRR(range,0.15) (C59 etc).
+  - Cournot incumbent case: assumes incumbent market share (N2 = 0.15) and adjusts cash flows for price effect on incumbents; computes combined net cash flows and IRR (L58..L64).
+  - Upgrade scenarios: similar structure for upgrade capex and delta revenues/var costs, net cashflow and IRRs (rows 70–130+).
+- Cashflow layout: K costs, Variable costs, Revenues -> net cash flow; uses many links to Capacity&Price Calculation and LEM cost side.
+
+7) $ per bit (duplicate / alternate demand calc)
+- Purpose: alternate price-index and functionality calibration (very similar to fisher sheet). Repeats demand/ASP/price index calculations and demand-curve slope/intercepts.
+- Feeds into Capacity&Price calculations where used.
+
+Key formulas & modeling logic (summary)
+- Price index: Laspeyres, Paasche, Fisher (SUMPRODUCT, reciprocal aggregates, Fisher = SQRT(Lasp*Paasch)); chained index across years.
+- Demand linearization: elasticity e (=-1.5) → slope b = -e * Q / P; intercept a = Q + b*P; inverse: P = (Q - a)/-b.
+- Capacity → units: wafer starts * yields * A&T yield → units produced (many conversions between K wafer starts, die/wafer, million units).
+- Variable cost per chip: var cost/wafer ÷ yielded dice + A&T cost; overhead applied via multiplication (1 + SG&A).
+- Economic capacity decision: IF(var cost/chip > price/chip, set capacity to 0) — used to compute retirement-eligible capacity.
+- Cash flows: capital cost (building + equip), variable costs (annualized / monthly starts), revenues from price*units; IRR computes project returns (IRR(range,0.15)).
+
+Primary outputs to look for
+- Chained Fisher price index: fisher!C40..H40.
+- Baseline units & functionality: Capacity&Price Calculation C15..C25 and C27..C37.
+- Price per chip (baseline and with extra/upgrade fab): Capacity&Price Calculation rows 39–40 and rows 104–114, 152–163 etc.
+- Economic capacity and retirement-eligible capacity: Capacity&Price Calculation rows 55–65 and 68–78.
+- Cash flows and IRRs:
+  - New entrant IRR (Static RoI calc '02): competitive-case IRR cells (e.g., C59 for some combinations and B73 / B84 for other summary IRRs).
+  - Upgrade/new-build IRRs: Static RoI calc rows ~126–131 and corresponding IRR cells.
+
+Notes / red flags to check when editing
+- Many hard-coded constants repeated across sheets (e.g., overhead 0.36, A&T cost 0.7, var fab cost 964.70588, cap cost per start 5367). Changing in one place may not propagate unless unified.
+- Several replicated calculation blocks (fisher vs $ per bit vs LEM Demand Calibration) — ensure you’re reading the intended calibration.
+- Numerous inter-sheet dependencies (LEM cost side → Capacity&Price → Static RoI). Change in upstream sheet will ripple widely.
+- IF-based economic-capacity rule can zero-out whole node capacities if cost > price — important for interpreting retirement outputs.
+
+If you want, I can:
+- Extract a compact dependency map (sheet → sheets referenced).
+- List the most important input cells to tweak for scenario analysis (single place and their effects).
+- Produce a short checklist to validate IRR/cashflow calculations (sanity checks).

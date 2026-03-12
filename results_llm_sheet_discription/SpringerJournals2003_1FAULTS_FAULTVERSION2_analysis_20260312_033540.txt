@@ -1,0 +1,32 @@
+Summary of the errors I found
+1. Missing or non‑numeric subscription counts (column F) for many rows. Column G uses =E*F, so blank/text F cells make G wrong or zero and make the sheet total (G407) incorrect.  
+2. One explicit wrong formula: G25 is =E25*525 (hard‑coded 525) instead of =E25*F25. That will cause an incorrect per‑row total and wrong grand total.  
+3. Some postage (column H) values are text (e.g. "incl.") or blank. If you ever calculate postage totals these will break numeric calculations.  
+4. Possible text‑formatted numbers in E or F (numbers stored as text) — will cause SUM/F multiplication problems if present.
+
+Quick fixes (do these first)
+- Fix G25: replace the formula with =E25*F25.
+- Ensure every F cell (F2:F404) has a numeric value. If a journal has zero subscriptions enter 0. Leaving them blank yields incorrect totals.
+- Convert any numbers stored as text to numbers (select column F (and E if needed) → Data → Text to Columns → Finish, or multiply the range by 1 with Paste Special → Multiply).
+- Replace non‑numeric postage values only if you need numeric postage calculations (e.g. change "incl." to 0 or a number in H).
+
+How to find all problematic rows
+Put this helper formula in a spare column (say I2) and fill down:
+=IF(OR(E2="",F2=""),"Missing input",IF(ABS(G2 - E2*F2)>0.01,"Mismatch","OK"))
+- "Missing input" = E or F empty.
+- "Mismatch" = G differs from E*F (captures hard‑coded or wrong formulas).
+- "OK" = G equals E*F.
+
+How to correct all G formulas to be consistent
+1. Put a correct formula in G2: =E2*F2  
+2. Fill (drag or double‑click the fill handle) from G2 down to G404 to overwrite any incorrect formulas (including the hard‑coded G25). This standardizes every row.
+
+Recalculate sheet totals
+- After fixes, ensure F407 =SUM(F2:F404) and G407 =SUM(G2:G404) will reflect correct totals.
+
+Why this works (short explanation)
+- Column G must be a product of rate (E) and count (F). Blank or text F or a wrong formula (like *525) produces wrong per‑row totals and a wrong grand total. Converting text to numbers and standardizing G as =E*F ensures correct per‑row and overall sums.
+
+If you want, I can:
+- give the exact Excel steps to convert text→numbers, or
+- produce a list of rows flagged by the helper formula (Missing input / Mismatch). Which do you prefer?

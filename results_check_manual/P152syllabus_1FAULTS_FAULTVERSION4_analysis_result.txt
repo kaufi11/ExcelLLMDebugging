@@ -1,0 +1,42 @@
+I reviewed the workbook formulas (mostly the schedule sheet). Found one definite formula bug, a few inconsistencies that could be either intentional or mistakes, and some minor data/format oddities you may want to clean up.
+
+Summary of problems and recommendations
+
+1) Obvious formula bug (wrong operator)
+- Cell schedule!C19 formula: = $C$7 + 7/(A19-1)
+  - Problem: uses division (/) instead of multiplication (*). That adds a fractional number of days (7 ÷ (4−1) = 7/3 ≈ 2.333 days) producing a time of day (08:00) rather than a whole-day jump.
+  - Result: schedule!C19 shows 2003-01-15T08:00:00 (unexpected).
+  - Fix: change to = $C$7 + 7*(A19-1) so the date increments by whole weeks like the other rows.
+
+2) Inconsistent year across sheets
+- schedule!D1 = 2003 but the Overview and homework sheets indicate SPRING 2004 (Overview B1, homework C5).
+  - Either the schedule dates (the C: dates) are for 2003 intentionally, or the header year is wrong. Confirm and correct the year so all sheets are consistent.
+
+3) Sudden "-1" adjustment starting at week 8 (possible intentional, please confirm)
+- From week 8 (schedule!C35 and onward) the date formulas switch to patterns like:
+    =$C$7 + 7*(A35-1) - 1
+  and for Thursdays:
+    =$C$9 + 7*(A37-1) - 1
+  - Prior weeks used =$C$7 + 7*(A-1) or =$C$9 + 7*(A-1) with no -1.
+  - This is not a formula error per se, but it is a change in pattern and should be explicit/documented (e.g., if adjusting for a holiday/spring break). If not intentional, remove the "-1" to restore the consistent weekly pattern.
+
+4) Use of two different base cells for weekdays — OK but verify
+- Tuesday rows reference $C$7 (initial Tuesday), Thursday rows reference $C$9 (initial Thursday). That is consistent and correct — just ensure those base dates (C7 and C9) are the intended anchors.
+
+5) Blank strings " " present in some date/text cells
+- Many places use the string " " instead of truly blank cells (schedule!C14, C18, C22, etc., and homework!C28, C34, etc.).
+  - These look fine visually but can cause issues if formulas test ISBLANK or try date arithmetic on those cells. Consider using empty cells (no content) where you mean blank.
+
+6) Minor oddities to review
+- schedule!C8 formula is =C7 (relative reference) rather than =$C$7 — it works here but if you copy formulas around you might prefer absolute reference for clarity.
+- schedule!C19 produced a time component (08:00) because of the fractional days from the division operator — another reason to fix (1).
+- Overview!O17 contains text in column O (far-right) while the rest of the paragraph uses D/E columns — not a formula issue but looks like it may have been placed in the wrong column.
+
+Suggested uniform approach for schedule dates
+- For Tuesday rows: set Cn = $C$7 + 7*(An - 1)
+- For Thursday rows: set Cn = $C$9 + 7*(An - 1)
+- If some weeks require manual offsets (holidays or schedule changes), apply an explicit adjustment and add a comment explaining why (e.g., "-1 because of spring break week").
+
+If you want, I can:
+- Produce an edited list of exact cells to change (e.g., replace schedule!C19 formula).
+- Generate corrected formulas for the whole schedule with a uniform rule, optionally inserting comments where the -1 adjustments were used.

@@ -1,0 +1,29 @@
+I inspected the formulas in sheet "gb_export". I found one clear formula error and one consistent design/inconsistency issue that will likely produce incorrect scores in many rows.
+
+1) Clear formula error (typo)
+- Cell E5 contains "=D5/$E$1" but should be "=D5*$E$1".
+  - Current (wrong) result: E5 = 812.5 → N5 = 893 (ROUND of 812.5 + 13.333 + 5 + 62.4)
+  - Correct result after fix: E5 = 8.125 and N5 should become 89 (ROUND(8.125 + 13.333333 + 5 + 62.4) = 88.858 → 89).
+- Action: change E5 to =D5*$E$1.
+
+2) Averaging inconsistency (logical/design issue)
+- Column I uses formulas like =(F# + G# + H#) / 3 for every row. Excel treats blank cells as zero in that sum, so rows with only 1 or 2 homework entries are still divided by 3. That produces artificially low averages when some homework cells are blank. Examples:
+  - Row 3: F3 is blank, G3=100, H3=100 → I3 = (0+100+100)/3 = 66.6667. If the intent is to average only the existing homework scores, the correct average would be 100.
+  - Row 12: only G12 = 100 (F12 and H12 blank) → I12 = 100/3 = 33.3333 (probably not intended).
+- Recommendation (choose one depending on intended policy):
+  - If you want to average only non-empty homework scores: replace =(F# + G# + H#) / 3 with =AVERAGE(F# : H#). This ignores empty cells.
+  - If blanks should count as zeros (explicitly), keep current formula or use =SUM(F# : H#)/3 (explicit).
+  - If you want to divide by the number of non-empty homework cells but treat missing as absence differently, use: =IF(COUNT(F# : H#)>0, SUM(F# : H#)/COUNT(F# : H#), 0)
+- Action: update the I-column formulas consistently across all rows to the appropriate formula (I recommend =AVERAGE(F# : H#) if blanks mean "not submitted").
+
+3) Other checks
+- D formulas (= (B# + C#) / 2) are consistent.
+- E, J and M formulas mostly use absolute references $E$1, $J$1, $M$1 correctly (weights 0.1, 0.2, 0.65).
+- Column K contains a fixed participation value (5). Note: this is an absolute number, not a percentage; combined with the weights 0.1/0.2/0.65 it gives a total out of 100 (10 + 20 + 65 + 5 = 100). If K being constant 5 is intended, it is fine; otherwise clarify how participation should be weighted/calculated.
+- Final score formula N# = ROUND(E# + J# + K# + M#, 0) is consistent and appropriate given the per-component values.
+
+Summary of concrete fixes to apply now
+- Fix the typo: E5 -> =D5*$E$1
+- Replace all I-column formulas with a consistent averaging method; recommended: I3 (and all I#) -> =AVERAGE(F3:H3) (or the COUNT-based variant if you need custom behavior).
+
+If you want, I can provide the exact formulas to paste (for I3..I31 and E5), or a short VBA/macro or instruction to fill them down for all rows.

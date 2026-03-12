@@ -1,0 +1,30 @@
+Summary of errors
+1) H15 is wrong / inconsistent:
+   - H15 contains =SUM(H8:H14) and therefore excludes H7 (Gift Pledges & Cash). All other column totals in row 15 use rows 7:14 (e.g. B15 = SUM(B7:B14)). This makes H15 incomplete if it’s intended to be the total of the same category range.
+
+2) Hard‑coded arithmetic instead of cell references:
+   - B10 (=1672298-748584) and C10 (=2824612-1091293) use literal numbers rather than referencing the worksheet cells that contain those amounts. That makes the sheet fragile and hard to audit/maintain.
+
+3) Minor: header typo “4rd Qtr.” should be “4th Qtr.” (cosmetic).
+
+Fixes and how to apply them
+1) Fix H15 to include H7:
+   - Replace the formula in H15 with =SUM(H7:H14).
+   - Why: This makes H15 consistent with the other column totals and includes Gift Pledges & Cash in the FY02 total. After the change H15 will equal the sum of H7..H14.
+
+2) Replace hard-coded subtractions with cell references:
+   - Edit B10 so it refers to the cells that supply the two numbers (for example, if 1,672,298 is in cell X and foundations is B9, use =X - B9). If the intended result is simply “Other Sponsors = (subtotal) – Foundations”, point B10 to those cells; if the components are available directly, sum/subtract them instead of typing constants.
+   - Example (generic): replace =1672298-748584 with =<cell_with_1672298> - B9 (or better, compute the subtotal from its source cells).
+   - Why: Using cell references prevents errors when source numbers change and makes the workbook auditable.
+
+3) Cosmetic:
+   - Change B6/G6 header text “4rd Qtr.” to “4th Qtr.” to avoid confusion.
+
+Optional recommended consistency checks
+- Make row 15 formulas uniform across B:H: set B15..H15 each to =SUM(B7:B14), =SUM(C7:C14) … =SUM(H7:H14) so every column totals the same category range.
+- Scan formulas in E7:E14 and other calculated cells to ensure they reference the intended precedent cells (no other hard-coded constants).
+- After changes, recalc (F9) and verify the Resolution narrative quarterly totals match the F/G/H column subtotals.
+
+If you want, I can:
+- Give the corrected H15 value (new total),
+- Provide exact replacement formulas for B10/C10 if you tell me which cells hold the 1,672,298 and 2,824,612 subtotals.

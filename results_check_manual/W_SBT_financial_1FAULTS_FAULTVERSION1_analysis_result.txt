@@ -1,0 +1,31 @@
+I inspected the workbook formulas and found two clear formula mistakes (plus a couple of minor consistency/maintainability notes). Summary first, then details and suggested fixes.
+
+Summary of real errors to fix
+- Sheet "In-Kind Contributions"
+  - R23 has an incorrect reference (=Q23). It should reference the month-12 cell (O23) so month-13 propagates correctly.
+  - AF23 has an incorrect reference (=AE23). It should reference the month-24 cell (AC23) so month-25 propagates correctly.
+
+Why these are errors
+- The "month propagation" pattern used across the workbook is: E = D, F = E, ..., R = O, S = R, ... and AF = AC, AG = AF, ... In row 23 of "In-Kind Contributions" that pattern was broken:
+  - R23 = Q23 — column Q is not part of the timeline (the timeline jumps O -> P (total) -> R). Using Q23 is an off-by-one column error and effectively pulls an empty/incorrect cell.
+  - AF23 = AE23 — AE is the column between AD (Yr 2 Total) and AF, but the intended propagation should take the month-24 value in AC into AF (i.e. AF = AC).
+- Because of these wrong references the values in R23 and the whole chain that follows (S23, T23 ... and AF23 onward) do not properly propagate the month values and will produce incorrect totals in the "In-Kind Contributions" totals and in any sheets that depend on them.
+
+Exact cells, current formula and suggested correction
+- In-Kind Contributions!R23
+  - Current formula: =Q23
+  - Suggested formula: =O23
+  - Rationale: month-13 should be equal to month-12 (O23). Q23 is the wrong (off-by-one) column.
+- In-Kind Contributions!AF23
+  - Current formula: =AE23
+  - Suggested formula: =AC23
+  - Rationale: month-25 (AF) should be seeded from month-24 (AC). AE is the wrong column.
+
+Notes / other observations (not errors but worth checking)
+- The Personnel sheet uses some literal constants (e.g. Personnel!E9 is "=461" rather than a numeric value). It works, but storing plain numbers rather than an =literal might be cleaner.
+- The propagation pattern across many rows is consistent (E = D, F = E, ..., R = O, AF = AC, etc.). After fixing the two cells above, totals on "In-Kind Contributions" (P20/AD20/AR20, P47/AD47/AR47) should calculate correctly and then the "Financial Summary" links will reflect the corrected in-kind amounts.
+- I scanned other sheets for the same off-by-one pattern and did not find additional occurrences of =Q... or =AE... in the timeline propagation. The two cells above appear to be the only broken ones.
+
+If you want, I can:
+- Produce a list of exact dependent cells (which totals and other sheets will change) so you can see the impact, or
+- Create a small patch (list of edits or an Excel macro) you can apply to fix the two formulas automatically.

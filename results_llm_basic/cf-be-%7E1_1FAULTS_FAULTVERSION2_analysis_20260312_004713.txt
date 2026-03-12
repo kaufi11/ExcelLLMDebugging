@@ -1,0 +1,61 @@
+Summary — the file has several types of formula problems. I list the important errors, why they’re wrong, and exact fixes you can apply. Short and clear.
+
+1) Circular reference: Year 1 — Beginning cash for Month 1 (cell B6)
+- Error: B6 = SUM(B55). B55 is “Cash position end of month” for month 1, so B6 depends (indirectly) on B6 → circular reference.
+- Why it’s wrong: Beginning cash for the first month must be an input (opening/startup cash) or come from a startup input cell — it cannot reference the month’s own ending cash.
+- Fix: Replace B6 with the actual opening cash amount or a reference to the proper startup input cell. Example:
+  - If your startup cash input is in sheet “Inputs” cell B1: change B6 to =Inputs!B1
+  - Or make B6 a manual number (enter opening cash).
+- Explanation: Month 2+ may legitimately use prior-month end as beginning cash (C6 = B55 etc). Month 1 must come from an external starting value.
+
+2) Typo / wrong subtraction in Year 1: K55
+- Error: K55 = SUM(K15-90)
+- Why it’s wrong: 90 is not a cell and using SUM with an arithmetic expression is wrong here. It probably was intended to subtract the month’s “Total paid out” (K54).
+- Fix: change K55 to =K15-K54 (or =SUM(K15,K54) if you want SUM but the simplest is =K15-K54).
+- Explanation: Cash position end = total cash available (K15) minus total cash paid out (K54). Use the correct cell.
+
+3) Misplaced/incorrect totals in Year 2 (and similar rows)
+- Example error: On Year 2 row labeled “d. Payroll Expenses (Direct Labor)” the O20 formula in the file is pointing at C22:N22 (i.e. O22) not C20:N20.
+- Why it’s wrong: O20 must sum row 20 (the payroll-expenses row) — pointing to row 22 produces wrong totals and breaks subtotals.
+- Fix: For each O## cell that sums its row, ensure it uses the correct row range: change O20 to =SUM(C20:N20) and P20 to =O20/$O$57 (or =O20/O$57 depending on your absolute reference convention).
+- Explanation: Mis-typed row numbers cause row subtotals and grand totals to be wrong.
+
+4) Variance sheets: wrong “beginning cash” links and other local SUMs
+- Error: Many variance sheets use formulas like =SUM(B55) or =SUM(C55) (local sheet) for “CASH ON HAND (BEGIN. OF MO.)” instead of linking to Year 1 cells.
+- Why it’s wrong: They pull the value from the variance sheet itself (or create a circular dependency) rather than getting the actual values from Year 1.
+- Fix: Replace these with explicit links to the Year 1 cells for that month. Example (Var,Y1,Q1 sheet):
+  - replace C6 (beginning cash month 1) with ='Year 1'!C6
+  - replace F6 with ='Year 1'!D6, I6 with ='Year 1'!E6, etc. (map months consistently)
+- Explanation: Variance sheets should compare to Year 1 values. Use direct links to the correct Year 1 cells, not local SUMs of the variance sheet cells.
+
+5) Percentage-of-sales formulas inconsistent or referencing wrong/unspecified cells
+- Error: Some P column formulas use O57 or O$57 inconsistently (and some rows reference O57/O57 which is 1 — possibly intended for Sales row only). Also some P formulas refer to O$57 but not absolute column/row locking consistently.
+- Fix:
+  - For each percentage-of-sales (P column) row use a single consistent denominator: the total sales cell O57. Use absolute reference to lock it: =O17/$O$57.
+  - Example: P17 should be =IF($O$57=0,"",O17/$O$57) to avoid divide-by-zero.
+- Explanation: Use $O$57 as the constant denominator so every row’s % of sales is calculated the same way, and use IF or IFERROR to avoid #DIV/0!.
+
+6) Variance % formulas may produce #DIV/0! when prior period = 0
+- Error: Formulas like =(D8-C8)/C8 will return #DIV/0! if C8 = 0.
+- Fix: Wrap with IF or IFERROR. Example: =IF(C8=0,NA(),(D8-C8)/C8) or =IFERROR((D8-C8)/C8,"").
+- Explanation: Protects against division by zero and makes output cleaner.
+
+7) Unnecessary use of SUM() with single expressions (clean-up only)
+- Examples: =SUM(B15-B54) or =SUM(B55). They work but are confusing.
+- Fix: Replace with plain arithmetic or direct references: =B15-B54 or =B55.
+- Explanation: Cleaner formulas are easier to audit and less likely to hide mistakes.
+
+Checklist to fix systematically
+- Fix Year 1 B6 to be an input or a proper startup cell reference.
+- Correct K55 to =K15-K54 (and check other months for similar typos).
+- Scan Year 2 (and other sheets) for any O## mis-pointing (like O20 → O22) and correct row ranges.
+- Update all variance-sheet beginning-cash cells to point to the corresponding Year 1 cells (use exact mapping month → column).
+- Make all % of Sales formulas =Oxx/$O$57 and protect with IFERROR or IF to avoid divide-by-zero.
+- Replace risky variance formulas with IFERROR variants.
+- Optionally, remove unnecessary SUM() wrappers.
+
+If you want, I can:
+- produce an exact list of all cells that are wrong (every instance) and provide the corrected formula for each; or
+- generate a corrected copy of the workbook (if you upload it) and return a clean, fixed version.
+
+Which would you prefer?

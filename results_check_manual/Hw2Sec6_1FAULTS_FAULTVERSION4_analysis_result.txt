@@ -1,0 +1,49 @@
+I inspected the workbook formulas and checked them for incorrect references, likely typos, and other inconsistencies. Summary of problems I found (by sheet and cell), with why each is likely wrong and how to fix it:
+
+1) Lab Notes!D47 — incorrect hard-coded number in formula
+   - Formula: =543-B47
+   - Problem: All other profit cells in column D use the pattern =C#-B#. D47 uses the literal 543 instead of C47. That produces an abnormally large value (543) and inflates SUM(D10:D49) and any totals that depend on it.
+   - Suggestion: Change to =C47-B47 (or correct reference to the intended value in C47). If C47 is meant to be blank, consider returning blank (e.g. =IF(OR(B47="",C47=""),"",C47-B47)).
+
+2) Lab Notes: many profit cells reference empty price/value cells (resulting in zeros)
+   - Cells affected include D26:D46, D48:D49, D56... (and many D-cells later such as D26–D46, D48–D49, D56–D95, D82–D95, etc.)
+   - Formula pattern: =C#-B#
+   - Problem: B# and/or C# are blank for these rows, so the formula returns 0 (Excel treats blank as 0). That may be unintended (it hides that data is missing).
+   - Suggestion: If those rows are intentionally empty, change formula to return blank when inputs are missing, e.g.
+     =IF(OR(B26="",C26=""),"",C26-B26)
+     Or ensure B# and C# are populated if data was omitted by mistake.
+
+3) Lab Notes!D117 (and totals) are affected by D47
+   - Because D47 currently equals 543 it has inflated D117 (Total Profits of Demanders = SUM(D10:D49)) to 602.75.
+   - Fixing Lab Notes!D47 to =C47-B47 (or to blank if inputs are missing) will correct D117 and downstream totals D118.
+
+4) Homework: H69 references an empty cell (F55)
+   - Cell: Homework!H69
+   - Formula: =F55
+   - Problem: F55 in the Homework sheet is not populated (there is no F55 value in the sheet data you provided), so H69 evaluates to 0. The intended comparison in Problem 2.7(a) appears to be "mean price from F45 to F55", but F55 is empty.
+   - Suggestion: If you intended to show the competitive predicted mean price for Session 2, either:
+     - populate Homework!F55 with the intended competitive prediction for Session 2, or
+     - change H69 to reference the actual mean on Lab Notes (e.g. = 'Lab Notes'!E114) or to the correct cell that contains the competitive mean for Session 2.
+
+5) Homework: occasional unnecessary use of explicit sheet name for same-sheet references
+   - Example: Homework!F69 formula =Homework!F45 — legitimate but redundant (no error).
+   - Suggestion: Not an error; you can simplify to =F45 for readability. This is just stylistic.
+
+6) Potential robustness / style improvements (not strictly errors)
+   - Lab Notes!D114 and E114 use =SUM(range)/COUNT(range). AVERAGE(range) is simpler and avoids differences if non-numeric cells appear.
+   - Total fishermens' profit formulas (Lab Notes!D116 and E116) use SUM(B...)-10*B109 etc. Confirm that the intended accounting is "sum of prices minus 10 times number of fishermen." If the intention is to sum fishermen profits as (price − cost) per sale, verify whether the cost factor is meant to multiply number of fishermen or number of fish sold.
+   - Many formulas assume blank cells are zero. If you want blank output instead of zero for missing data, wrap formulas with IF checks as shown above.
+
+7) Typos in labels (informational only)
+   - "Total Profits of Fishermane" (Lab Notes A116) — typo "Fishermane".
+   - "supplyl" (Homework A15 "supplyl curve") — minor spelling.
+
+Key action items I recommend:
+- Correct Lab Notes!D47 to =C47-B47 (or conditional blank if inputs are missing).
+- Decide whether empty B/C rows should remain empty (hide) or should be filled; if they should be empty, wrap D formulas to return blank when inputs are missing.
+- Populate Homework!F55 (or change Homework!H69 to reference the correct lab notes cell) so the comparison in Problem 2.7(a) uses the intended value.
+
+If you want, I can:
+- Provide an explicit list of cells to convert to conditional formulas to suppress zeros (I can generate the formulas).
+- Propose exact corrected formulas and apply them (or paste them here for you to insert).
+- Recompute totals assuming D47 is corrected and show the corrected totals.

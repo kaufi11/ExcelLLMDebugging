@@ -1,0 +1,38 @@
+Summary — I found 3 real formula problems and one best-practice issue. Short fixes and explanations below.
+
+1) Faulty cell: J4
+- Error type: #NAME / wrong-function-call (UDF prefix)
+- Explanation: The formula uses a non-standard prefix _xludf.NETWORKDAYS(...) which will break if that add‑in/XLL is not available. NETWORKDAYS is a built‑in function (or use NETWORKDAYS.INTL).
+- Repair formula: =NETWORKDAYS(C4,F4)
+- Why: Removes the UDF prefix and uses the standard function so Excel can evaluate working days between the two dates.
+
+2) Faulty cell: I14
+- Error type: Typo / logical error
+- Explanation: All other “TOTAL (I)” cells use F + H (hours), but I14 is F14 + 447 (a hardcoded constant) — that looks like a mistyped “H14”.
+- Repair formula: =F14+H14
+- Why: Restores consistent logic (total = core + support).
+
+3) Faulty cells: percent formulas referencing the grand total (examples J13, J14, many Jxx; and F40/H40/I40)
+- Error type: Inconsistent absolute referencing (can break when copied)
+- Explanation: Some formulas use I$39, $I39 or plain I39. That yields inconsistent locking of row/column when copying formulas. That can produce wrong denominators when formulas are filled down or across.
+- Repair approach (use one fully absolute reference): replace occurrences like
+  - =IF(I$39>0,I13/I$39,0)
+  with
+  - =IF($I$39>0,I13/$I$39,0)
+  and replace
+  - =IF($I39>0,F39/$I39,0)
+  with
+  - =IF($I$39>0,F39/$I$39,0)
+- Why: $I$39 locks both column and row so every percentage formula always divides by the fixed grand total cell I39 no matter where the formula is copied.
+
+4) Minor/clarifying note: J39
+- What it does: =IF(I$39>0,I39/I$39,0) evaluates to 1 (100%) if total > 0.
+- If you intended showing “100%” for the total row that's fine. If you wanted blank or a different summary, change accordingly (e.g. ="" or =1).
+
+Quick checklist to apply:
+- Replace J4 with =NETWORKDAYS(C4,F4).
+- Fix I14 to =F14+H14.
+- Standardize all formulas that divide by the grand total to use $I$39 as the denominator.
+- Recalculate and spot-check totals (I15, I30, I37, I39) after changes.
+
+If you want I can produce the exact find/replace list for every affected cell (all Jxx, F40/H40/I40 etc.) and a short macro to fix them automatically. Which would you prefer?

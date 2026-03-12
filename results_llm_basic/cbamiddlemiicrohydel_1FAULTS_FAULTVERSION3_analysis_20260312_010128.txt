@@ -1,0 +1,73 @@
+I reviewed the CBA sheet and found several clear errors and a few inconsistencies that will distort the totals, discounting and benefit/cost results. Below I list each problem, why it matters, and a short clear fix you can apply.
+
+Main errors (highest priority)
+
+1) Discount factor chain error (row 19, column K)
+- Error: K19 = 69*(1/1.12) (the “69” is a typo).
+- Why it matters: the DF chain (G19→AA19) is a cascading sequence; one bad cell breaks the whole discount factor row and all present-value calculations that use it (PV of costs and benefits).
+- Fix: Replace K19 with the proper chained formula, e.g.
+  K19 = J19*(1/1.12)
+  (then fill K19 across to AA19).
+- Better (robust) replacement: use the direct power formula so a single mistake cannot break the chain. Put in G19 = 1 and H19 = 1/(1.12)^1, I19 = 1/(1.12)^2 etc. Or use a single formula that can be filled across, e.g.
+  H19 = 1/(1.12)^(COLUMN()-COLUMN($G$19))  (then fill right).
+- Effect: restores correct discount factors and correct present value calculations.
+
+2) Wiring cost placed in the wrong year (row 10, column Q)
+- Error: Q10 = 4275*7.5 (wiring cost appears in 2010 and uses wrong numbers).
+- Why it matters: assumption says wiring is done in the first two years only; putting wiring cost in 2010 (and with wrong unit price/quantity) inflates costs in year 2010 incorrectly.
+- Fix: Clear Q10 (set to 0) and check all columns: wiring cost should only be in H10 and I10 (the first two years after construction). If H10 & I10 are correct (=4297*15 each), remove any other wiring formulas.
+
+3) One-off 2020 items referencing the wrong columns (AA17 and AA29)
+- Error: AA17 = 0.1*G5 + 0.1*G6 and AA29 = 0.02*G5 + 0.02*G6 (they reference G5/G6 explicitly).
+- Why it matters: referencing G5/G6 (year 2000) in AA (2020) can be confusing and error-prone; if later you move the construction values to other columns or change structure the references break intent.
+- Fix (clear and explicit):
+  - If those 2020 amounts should be percentages of the original construction costs (which are in G5 & G6), set
+    AA17 = 0.1*(G5 + G6)
+    AA29 = 0.02*(G5 + G6)
+  - Better: use SUM and absolute reference so intent is explicit:
+    AA17 = 0.1*SUM($G$5:$G$6)
+    AA29 = 0.02*SUM($G$5:$G$6)
+- Effect: makes the calculation explicit and safer to edit later.
+
+Other important issues and inconsistencies
+
+4) Tube-lights cost inconsistent with assumptions (row 11)
+- Error: H11..AA11 use 5.67*30*50*6 (cost Rs.50, changed 6 times/year). But assumptions (A50) say tube lights cost Rs170 and are replaced once a year.
+- Why it matters: mismatched unit cost and frequency produce wrong benefit/cost for lighting and recycling scrap.
+- Fix: Decide which is correct and change the formulas accordingly:
+  - If assumption A50 is right (replace once/year at Rs170): set H11..AA11 = 5.67*30*170
+  - If current formula (50 * 6 times) is intended, update the assumptions text to match.
+- Effect: aligns numbers and prevents wrong annual tube-light cost.
+
+5) Present value rows rely on the DF chain (propagates K19 error)
+- Symptom: PV of costs (row 20) and PV of benefits (row 32) multiply annual values by the DF row. Because K19 was wrong, K20 (and later columns) are wrong.
+- Fix: after you correct the DF row (item 1), re-evaluate/fill PV rows (G20..AA20 and G32..AA32) to ensure they reference the corrected DF values.
+
+6) Fragile DF chaining approach (general suggestion)
+- Issue: the DF rows use a cascading formula that is easy to break (each cell depends on previous). We already saw this with K19.
+- Recommendation: replace cascade with a direct formula for each year:
+  DF for year n (where G is year 0) = 1/(1+rate)^(n)
+  Example: Put the annual discount rate (0.12) in one cell (e.g. $F$19). Then use:
+    G19 = 1
+    H19 = 1/(1+$F$19)^(1)
+    I19 = 1/(1+$F$19)^(2)
+  This is robust and clearer.
+
+7) Minor / check items to review
+- Row 8 (O&M): the formula 55200-(1200*12)-(600*12)+(500*12) returns 39,600 which matches the adjustments described — numerically correct but the components are confusingly named. Consider replacing with an explicit formula: =((1200 + 1500 + 600)*12) so the logic is readable.
+- AA17 & AA29: if you intended the 2020 values to be inflation-adjusted or discounted versions of the 2000 costs, you must apply inflation or a growth factor / discount factor instead of direct percentage of G5/G6. Clarify whether AA17 and AA29 are nominal 2020 amounts or derived from 2000 euros.
+- Check J15/K15/L15 and J16..L16 (washing machines, churners): verify the year placement and quantities — they look manually set and may be missing zeros in other years.
+- Several cells use hard-coded numeric constants (e.g., 1.12). Put the discount rate in one cell (e.g., F19) and reference it: =1/(1+$F$19) to make sensitivity checks easier.
+
+Summary of the immediate fixes to apply now
+1. Correct K19: change to =J19*(1/1.12) (then fill across) OR replace DF row with robust 1/(1.12)^(n) formulas.
+2. Clear Q10 (set to 0) — wiring should be only in H10 and I10 (first two years).
+3. Change AA17 to =0.1*(G5+G6) or =0.1*SUM($G$5:$G$6) and AA29 to =0.02*(G5+G6) or =0.02*SUM($G$5:$G$6).
+4. Fix tube light row (H11..AA11) to match assumptions. If A50 is correct set H11 = 5.67*30*170 (and fill across) or update assumptions if the 50*6 logic is intended.
+5. After 1–4, recalculate/fill PV rows (20 and 32) and the summary (C20, C32, C35, C36, B/C ratio, NPV) to get correct results.
+
+If you want, I can:
+- provide the exact cell formulas ready to paste for each corrected cell (DF row, AA17/AA29, tube lights), or
+- generate a short list of the exact formulas to replace (one per problem) you can copy into Excel.
+
+Which would you prefer?

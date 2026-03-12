@@ -1,0 +1,40 @@
+I checked the workbook and found a few clear formula errors and some minor display issues. Below are the problems, why they matter, and the simple fixes.
+
+1) Wrong % change formula (major)
+- Where: Sheet "By Broad Category", cell I8 (Prepared or Preserved Fish Products % change).
+- Problem: formula is =(H8-H8)/H8 which always returns 0.
+- Why it matters: the % change is wrong/misleading for that category.
+- Fix: replace with the correct percent-change formula:
+  = (H8 - G8) / G8
+  (Or edit I8 and type =(H8-G8)/G8)
+
+2) Wrong value copied / incorrect 2001-02 total (major)
+- Where: Sheet "Processed Food Exports", row for "Total" under Confectionery / Food Preparations with Cocoa, cell E61.
+- Problem: E61 currently equals D61 (280,772,774) but the 2001-02 total should be 313,091,548 (as used elsewhere).
+- Why it matters: that makes totals and any dependent calculations incorrect.
+- Fix: put the correct 2001-02 value into E61 (313091548) or, better, link it to the authoritative source cell (if it exists elsewhere) so totals stay consistent. Example:
+  =313091548
+  or point to the correct cell that holds 313,091,548.
+
+3) Missing year formulas for United Kingdom (consistency error)
+- Where: Sheet "Sector by Country", row for "United Kingdom" (row labelled B27).
+- Problem: C27, D27 and E27 (the full-year columns) are missing formulas; only G27/H27 (6-months) are present.
+- Why it matters: full-year totals for the UK are blank/absent and any rolls-up that rely on them will be incomplete.
+- Fix: add the same pattern of SUM formulas used for other countries. For example, put:
+  C27 = SUM(C58,C88,C118,C149,C179,C209,C239,C269)
+  D27 = SUM(D58,D88,D118,D149,D179,D209,D239,D269)
+  E27 = SUM(E58,E88,E118,E149,E179,E209,E239,E269)
+  (Then keep the existing G27/H27 formulas as they are.)
+
+4) Floating-point decimals in some totals (minor / cosmetic)
+- Where: several SUM results for United Kingdom (and possibly other aggregated rows) show long decimal tails (e.g. 26170999.999999996).
+- Why it matters: looks untidy and may confuse readers.
+- Fix options:
+  - Formatting: set those cells to Number with 0 decimals (Format Cells → Number → 0 decimals).
+  - Or wrap sums in ROUND(...,0). Example:
+    =ROUND(SUM(...),0)
+
+Additional recommendation
+- Scan other % change cells quickly: the correct pattern everywhere should be =(H# - G#) / G#. If you see (H-H)/H or other variants, fix to the pattern above. A quick search for instances of "/H#" where the numerator contains same H references will find copy/paste mistakes.
+
+If you want, I can give the exact cell edits as a list you can paste or a VBA macro to fix all similar errors at once. Which do you prefer?

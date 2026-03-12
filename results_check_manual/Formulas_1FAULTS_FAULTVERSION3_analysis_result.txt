@@ -1,0 +1,73 @@
+I reviewed the formulas in all three sheets and found multiple formula mistakes, typos and consistency issues. Below I list each problem (with cell examples), why it’s a problem, and recommended corrections.
+
+Summary of main problems
+- Wrong numeric multipliers in a final-grade formula (I3). (Likely a typo: 25/12.5 instead of 0.25/0.125.)
+- Many AVERAGE() formulas reference wrong cells (typos like L40..L54 instead of L4..L18). These produce incorrect results.
+- A hard-coded constant appears where a cell reference should be (Sheet3 D12 uses 691 instead of C12).
+- Widespread #DIV/0! results due to AVERAGE over empty ranges (homework/test input cells are blank).
+- Minor: VLOOKUP uses TRUE() (functional but unusual), and several header typos (non-formula but inconsistency).
+
+Detailed issues and recommended fixes
+
+1) Sheet1 — Final Grade for row 3 (Angel, Elizabeth)
+- Cell: Sheet1!I3
+- Current formula: =(C3*0.125)+(D3*25)+(E3*25)+(F3*25)+(G3*12.5)
+- Problem: D3/E3/F3/G3 multipliers look like percent weights scaled by 100 (25 and 12.5) while other rows (I4:I17) use decimal weights (0.25 and 0.125). This is inconsistent and will inflate the result by ~100x.
+- Fix: Use the same weight pattern used in other rows. Correct formula:
+  =(C3*0.125)+(D3*0.25)+(E3*0.25)+(F3*0.25)+(G3*0.125)
+
+2) Sheet3 — AVERAGE formulas referencing L40..L54 (typos)
+- Cells: Sheet3!P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18
+- Examples:
+  - P4 currently: =AVERAGE(D4,F4,H4,J4,L40) — last argument L40 is wrong
+  - P5 currently: =AVERAGE(D5,F5,H5,J5,L41)
+  - ... and similarly P6 uses L42, P7 L43, ..., P18 L54
+- Problem: the last argument should reference the same row’s L cell (L4..L18), not L40..L54. As written, those references are probably blank/out-of-range and make the average wrong or error-prone.
+- Fix pattern (for each row n from 4..18):
+  =AVERAGE(Dn,Fn,Hn,Jn,Ln)
+  e.g. P4 should be: =AVERAGE(D4,F4,H4,J4,L4)
+- Action: update P4:P18 accordingly.
+
+3) Sheet3 D12 uses a hard-coded constant
+- Cell: Sheet3!D12
+- Current formula: =691/$D$24
+- Problem: All other rows compute percent as Cn/$D$24. D12 is inconsistent: it divides 691 by the curve scale rather than using the student’s Test 1 points (C12). The 6.91 value shown (691/100) is suspicious and likely a mistaken paste or extra digits.
+- Fix: Replace with the consistent pattern:
+  =C12/$D$24
+
+4) Many summary AVERAGE cells show #DIV/0! because source ranges are empty
+- Sheets: Sheet2 (P5:P19, C23..L23), Sheet1 (C3..C17 values come from Sheet2 P5..P19), Sheet3 (C22, E22, G22, etc.)
+- Example: Sheet2!P5 =AVERAGE(C5:L5) returns #DIV/0! if C5:L5 contains no numeric values.
+- Explanation: AVERAGE over a fully-empty range returns #DIV/0!. Many of the sheet-wide averages/columns are built before scores are entered, so #DIV/0! is expected until data is entered.
+- Recommendations:
+  - If you prefer blank instead of #DIV/0!, wrap with IF or IFERROR. Prefer COUNT-based check to detect empty numeric ranges:
+    =IF(COUNT(C5:L5)=0,"",AVERAGE(C5:L5))
+    or
+    =IFERROR(AVERAGE(C5:L5),"")
+  - Apply similarly for all summary averages that can run on empty ranges (Sheet2 P5:P19, Sheet2 C23:L23, Sheet3 C22..L22, Sheet1 I3:I17 average calls, etc.)
+
+5) Propagation of errors into other sheets
+- Because Sheet1 C3..C17 are set to =Sheet2!P5..P19 and Sheet2 P5..P19 are #DIV/0!, Sheet1 shows #DIV/0! in many cells (C3 etc) and that then flows into final grade computations and summary rows (I19/I20/I21).
+- Fix: fix the underlying empty-range / reference issues (see point 4) so the #DIV/0! does not propagate.
+
+6) VLOOKUP uses TRUE() — not an error but unusual
+- Cells: Sheet1!J3..J17
+- Current formula example: =VLOOKUP(I3,$K$5:$L$17,2,TRUE())
+- Comments: Excel accepts TRUE() — it returns the boolean TRUE — so this works. It’s unusual but not incorrect. If you want to be conventional, use TRUE (no parentheses) or 1 as the last argument.
+- Check: ensure K5:K17 is sorted ascending (it is: 60,63,66,70,...96) — otherwise approximate VLOOKUP(TRUE) will misbehave.
+
+7) Minor textual inconsistencies (non-formula)
+- Typos in headings: "Sudents" (Sheet1), "Studnets" (Sheet3), "Higest" (Sheet3 row labels). Not formula errors but inconsistent labels.
+
+Action checklist to fix the workbook
+1. Correct Sheet1!I3 multipliers to decimals (0.25/0.125).
+2. Fix Sheet3 P4:P18 to reference L4:L18 (not L40:L54).
+3. Replace Sheet3!D12 =691/$D$24 with =C12/$D$24 (verify C12 contains the intended points).
+4. Wrap AVERAGE formulas that can operate on empty ranges with IF(COUNT(...)=0,"",AVERAGE(...)) or IFERROR to avoid #DIV/0! until scores are entered.
+5. After the above fixes, re-check Sheet1 final grades (I3:I17) and the VLOOKUP conversions in J3:J17.
+6. Optionally standardize VLOOKUP to use TRUE (no parentheses) and ensure K5:K17 sorted ascending.
+7. Fix header typos for clarity.
+
+If you want, I can:
+- produce the exact corrected formulas for all impacted cells (I3, P4:P18, D12 and a list of every AVERAGE with a recommended IF wrap),
+- or patch the workbook programmatically and return a list of modified cells. Which would you prefer?

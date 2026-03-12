@@ -1,0 +1,65 @@
+Overview
+- Workbook has three sheets: "NAIC increase", "Consumer Price Index", and "Sheet3" (empty/unlabeled).
+- Purpose: model NAIC database fee revenue and caps (by year and by groups hitting caps) and provide CPI monthly/annual series for inflation comparisons.
+
+Sheet: NAIC increase (layout and key contents)
+- Title (A1) and assumption row (A3: "Assuming a 4% avg. premium grth rate"). Main table begins row 4 with these important columns:
+  - A: Year (rows 5–9 show 1999–2003).
+  - B: NAIC Revenue (B5=45,753,522; B6=47,440,639).
+  - C: NAIC Expenses (C5=42,091,927; C6=44,535,927; C7=47,728,842; C8=49,836,788).
+  - D: yearly growth for expenses (examples: D7 =(C7-C6)/C6; D8 =(C8-C7)/C7). Note D6 uses an anomalous formula: =(C6-728)/728.
+  - E: total yearly single+group fee revenues (E8=22,602,605; E9=24,900,000). E7 is formula =E8-2,258,280 (references next-row value — forward reference).
+  - F: % change in E (F8 =(E8-E7)/E7; F9 =(E9-E8)/E8).
+  - G / H: cap — Fee change amount split Single (G) and Group (H) per year: G7=50,000 / H7=150,000; G8=65,000 / H8=195,000; G9=85,000 / H9=255,000.
+  - I: % yearly growth for Group cap (I8 =(H8-H7)/H7; I9 =(H9-H8)/H8).
+  - J8 contains a note about cap applicability (premiums > $0.25B).
+- Narrative rows (A11–A13) summarize NAIC estimates of groups hitting cap and their shares of premiums and database fees for 2001–2003.
+
+"Groups hitting cap" calculations (rows 15–18)
+- Headers in C15:G15 describe estimated # groups, % of total premium, $ amount (of total premium), % paid of total database fee, and $ amount paid.
+- 2001–2003 rows:
+  - C16–C18: counts (C16=31; C17=23; C18=17).
+  - D16–D18: % of total premium (D16=0.46; D17=0.43; D18=0.35).
+  - E16 formula =(0.46*C7) and E17 =(0.43*C8); E18 =(0.46*C9) — these multiply a percent by a count (C7/C8/C9) which looks incorrect (likely should multiply percent by total premium/fee amount such as E7/E8/E9).
+  - F16–F18: % of total database fee (F16=0.22; F17=0.2; F18=0.17).
+  - G16 formula =(0.22*E7); G17 =(0.2*E8); G18 =(0.17*E9) — these multiply % of fee by E7/E8/E9 (reasonable if E7–E9 are total database fee amounts).
+- Note: several formulas appear misreferenced or inconsistent (see "Issues" below).
+
+Insurer counts (rows 20–21)
+- Small table: year (A21=2000), insurers (B21=921), insurers that hit cap (C21=29) and related percentages (D21=0.46; F21=0.22).
+
+Sheet: Consumer Price Index (layout and key contents)
+- Title (A1), series metadata (A4–A8: Series Id CUUR0000SA0; Not Seasonally Adjusted; U.S. city average; All items; Base 1982–84=100).
+- Monthly CPI table: Year in column A and months Jan–Dec in B–M for 1991–2001 (rows 11–21). Example annual figures:
+  - 1999 Dec M19=168.3; O19 (Annual) = 166.6.
+  - 2000 M20=174.0; O20=172.2.
+  - 2001 M21=176.7; O21=177.1; Q21=177.1 (duplicate/exhibit value).
+- Calculated columns:
+  - N (Dec % change): formula e.g., N12 =(M12-M11)/M11; N13 similarly down the sheet.
+  - O (Annual average) provided (O11=136.2 etc).
+  - P (Annual % change): P12 =(O12-O11)/O11, etc.
+  - Q column has "Exhibit 8" note; Q21=177.1.
+  - R21 formula =(Q21-Q12)/Q12 (compares Q21 to Q12).
+  - S21 formula =(M21-M12)/M12 (compares Dec 2001 to Dec 1992).
+- The CPI sheet is complete for 1991–2001 monthly values with standard year/annual change calculations.
+
+Sheet3
+- Present but no content provided (likely blank).
+
+Key formulas and anomalies to review (concise)
+- D6 =(C6-728)/728 — suspicious constant (728) rather than prior-year reference.
+- E7 = E8-2258280 — forward reference to E8; may create logical confusion or circularity if extended.
+- E16/E17/E18 multiply a percentage by group counts (e.g., =(0.46*C7)) — likely should multiply by a dollar amount (E7/E8/E9 or total premiums), not by C7/C8/C9.
+- G16 uses E7 (=(0.22*E7)) which is consistent if E7 is total database fee; verify E7/E8/E9 are intended totals.
+- CPI formulas: N and P formulas reference prior year rows correctly (N12 =(M12-M11)/M11; P12 =(O12-O11)/O11). R21 and S21 perform cross-year comparisons (check intended reference years).
+
+Suggested quick fixes
+- Change E16–E18 to multiply D16–D18 by the appropriate total premium amount (e.g., E7/E8/E9) instead of by group counts.
+- Verify D6 uses the correct prior-period cell (probably (C6-C5)/C5).
+- Check forward-reference E7 — consider computing E7 from historical inputs rather than referencing E8.
+- Review caps vs. fees layout to ensure G/H are fee caps per insurer and E column totals align with fee base used in % calculations.
+
+If you want, I can:
+- Provide corrected formulas for the flagged cells,
+- Produce a short list of exactly which cells to change and to what formulas,
+- Or generate a cleaned version of the NAIC table with consistent references. Which would you prefer?

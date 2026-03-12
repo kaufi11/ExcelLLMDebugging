@@ -1,0 +1,37 @@
+I checked the workbook and found the cause of the big imbalance plus one small numeric bug. Short summary first, then the fixes and why they work.
+
+1) Main error (causes assets ≠ equity & liabilities)
+- Problem: Cell C92 (Other operating costs, 2002) is hard-coded to 0. It should be the total of rows C93:C98.
+- Effect: C100 (Total expenditure) is understated by the amount of C93:C98 (R1,828,461). That makes the reported surplus (C102) massively overstated and pushes accumulated funds (C29/C330/C28) up, so Total equity & liabilities (C42) does not equal Total assets (C23).
+
+Fix:
+- Change C92 from 0 to: =SUM(C93:C98)
+
+What that does (rounded):
+- C92 becomes 1,828,461
+- C100 becomes 8,590,540 (was 6,762,079)
+- C102 (surplus) becomes 35,345 (was 1,863,806)
+- C327 = +C102 → 35,345
+- C330 (Accumulated funds total) reduces to 874,837 (was 2,703,298)
+- C29 (Accumulated funds on balance sheet) = 874,837
+- C28 (Capital & reserves) = 1,822,009 (matches the value shown elsewhere)
+- C42 (Total equity & liabilities) then equals C23 (Total assets) = 2,651,815 — the balance sheet balances.
+
+Why this fixes it: the income statement must include "Other operating costs" to calculate correct total expenditure. With C92 = SUM(C93:C98), the income statement surplus becomes correct and the accumulated funds update correctly, bringing the balance sheet into equality.
+
+2) Minor error (off-by-one)
+- Problem: C121 formula is =-26907-7561074 (a hard-coded constant 7,561,074). C120 (cash received from members) is 7,561,073 — a difference of 1 causes C122 / C511 to be off by 1.
+- Fix recommendation: Do not hard-code numbers. Replace the formula with cell references. For example:
+  - If C121 is meant to be "cash paid to suppliers and employees" constructed from two components (-26,907 and -cash received), use:
+    =-26907 - C120
+  - Or better: calculate C121 from the underlying components (sum of supplier payments and salaries rows) instead of hard-coded values.
+- Why: using cell references avoids transcription errors (like off-by-one).
+
+Notes / recommendations
+- Avoid hard-coded subtotals. Use formulas that reference source cells (SUM ranges). This prevents small typos and helps auditability.
+- After applying the C92 fix, recalculate and check other linked sheets (Five Year Review, Cash Flow) — some totals (they reference the corrected cells) should update and now reconcile.
+- If you want, I can give the exact formulas to paste in key cells (C92, C121) and a short test list to confirm everything balances.
+
+If you want, I will:
+- give the exact corrected formulas to paste, and
+- list the key cells to re-check after fixing (C100, C102, C29, C28, C42, C117, C122). Which would you prefer?

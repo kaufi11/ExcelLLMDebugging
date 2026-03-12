@@ -1,0 +1,39 @@
+Summary of the problems (short):
+1. Week 4 column (E7:E12) contains AVERAGE formulas instead of the actual week‑4 hours. That corrupts Total (F) and downstream calculations.  
+2. Some weekly totals and MAX ranges are off by one row (include row 13 or stop early).  
+3. Gross pay formulas double‑count overtime: (F + G) * Rate is wrong if F already includes overtime.  
+4. Overtime hours are hard‑coded instead of calculated.
+
+How to fix (concise instructions + corrected formulas):
+
+A. Fix the Week‑4 column
+- Replace E7:E12 (the cells labeled "week 4") with the actual week‑4 hours values. Remove the AVERAGE formulas from E7:E12.
+- If you meant to show an average per employee, add a new column (for example column H, header "Average") and put:  
+  H7 = AVERAGE(B7:E7) and fill down.
+
+B. Totals and MAX ranges (off‑by‑one)
+- B15 (Weekly total for week 1): =SUM(B7:B12)  (was B7:B13)
+- C15 (Weekly total for week 2): =SUM(C7:C12)  (was C7:C13)
+- G15 (Weekly total for overtime): =SUM(G7:G12)  (was G7:G13)
+- E16 (Max Hours, week 4): =MAX(E7:E12)  (was E7:E11)
+
+C. Overtime (calculate instead of typing)
+- If overtime is hours above 40 for the pay period, use for each employee (row 7 example):  
+  G7 = MAX(0, F7 - 40)  and fill down.  
+  (Change 40 to 160 if your overtime threshold is 40 hours per week × 4 weeks, or compute per‑week overtime separately if required.)
+
+D. Gross pay (don’t double‑count overtime)
+- Option 1 — no overtime premium (overtime paid same rate):  
+  C20 = F7 * B20
+- Option 2 — overtime paid at 1.5× (common):  
+  C20 = (F7 - G7) * B20 + G7 * B20 * 1.5
+- Apply the same pattern for rows 21:25 (use each row’s F & G & rate).  
+Explanation: (F + G) * Rate incorrectly adds overtime hours twice when F already includes overtime.
+
+Quick checklist to apply:
+- Remove AVERAGE from E7:E12; enter real week‑4 numbers or move averages to a new column.  
+- Correct the three SUM/MAX ranges noted above.  
+- Put G7:G12 =MAX(0,F7-40) (or your chosen threshold).  
+- Replace gross pay formulas with one of the two correct options shown.
+
+If you want, I can give the exact formulas for every changed cell (all rows) or produce a corrected copy of the sheet. Which would you prefer?

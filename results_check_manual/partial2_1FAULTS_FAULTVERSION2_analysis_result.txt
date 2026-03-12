@@ -1,0 +1,51 @@
+I inspected the formulas in sheet "gb_export". Summary of found problems and recommended fixes:
+
+1) Clear formula error (typo) — wrong operator
+- Cell E19 currently: =D19/$E$1
+  - Effect: divides by 0.1 -> produces 875 instead of the intended 8.75.
+  - This error propagates to N19 (current N19 = 957).
+- Fix: change E19 to =D19*$E$1
+  - Corrected E19 = 8.75
+  - Corrected N19 = ROUND(8.75 + 20 + 5 + 57.2, 0) = 91
+
+2) Participation weight in K is inconsistent / unused weight cell
+- Top cell K1 = 0.05 (5% weight) but the grade calculation in N uses the raw K value (e.g. 5) directly:
+  - N formula pattern: =ROUND(E? + J? + K? + M?, 0)
+  - That treats K? as "already weighted points" (5 points), while E, J, M are computed by multiplying percentages by weights from E1, J1, M1.
+- This is inconsistent: either
+  - a) K column should contain a percent score (e.g. 100 for full participation) and N should include K*$K$1 (recommended), or
+  - b) keep K as a point value (5) but then remove/mislabel K1 (or set K1=5) to avoid confusion.
+- Recommended correction (clear and consistent): replace the N formula with:
+  - =ROUND(E? + J? + (K? * $K$1) + M?, 0)
+  - OR make the K cells percentages (100 = full participation) and keep N as current but then K1 should be used (K?->$K$1).
+- Example of inconsistency consequences: current full-score student (E=10, J=20, M=65, K=5) sums to 100 — that works, but it masks that K1 is not used; clarify one consistent method.
+
+3) Homework average uses (F+G+H)/3 and counts blanks as zero
+- Current pattern: I? is computed as =(F?+G?+H?)/3
+  - If any of F,G,H is blank, Excel treats blank as 0 in arithmetic, so the result is lowered (e.g. (100+100+blank)/3 = 66.6667).
+- Likely intention: average only the submitted/non-blank homework scores (i.e., ignore blanks).
+- Recommended change: use AVERAGE(F?:H?) instead:
+  - I? = AVERAGE(F?:H?) — AVERAGE ignores empty cells and calculates the average of the present values.
+- Examples of impact:
+  - Row 3 (F3 blank, G3=100, H3=100):
+    - Current I3 = (0+100+100)/3 = 66.6667 -> J3 = 13.3333 -> N3 = 92
+    - With AVERAGE(F3:H3): I3 = 100 -> J3 = 20 -> N3 becomes ROUND(8.75 + 20 + 5 + 65, 0) = 99
+  - Row 5 (F5=100, G5 blank, H5=100):
+    - Current I5 = 66.6667 -> J5 = 13.3333 -> N5 = 89
+    - With AVERAGE(F5:H5): I5 = 100 -> J5 = 20 -> N5 becomes 96
+- If blanks actually should be treated as zeros (i.e. no submission = zero), keep current formula but be explicit and document it. Otherwise, switch to AVERAGE to ignore blanks.
+
+4) Minor / optional consistency suggestions
+- D? formulas use =(B?+C?)/2 — consistent but if you want the same blank-handling behavior as for homeworks, use =AVERAGE(B?:C?) so blanks are ignored instead of treated as zero.
+- Consider using consistent absolute references for all weight uses (you already use $E$1, $J$1, $M$1). If you adopt K*$K$1, use $K$1 as well.
+
+5) Summary of cells that need immediate attention
+- Mandatory fix: E19 (change / to *) — currently produces 875; should be 8.75; N19 should change from 957 to 91.
+- Recommended fixes (choose one approach):
+  - Change I? formulas from =(F?+G?+H?)/3 to =AVERAGE(F?:H?) for all rows.
+  - And/or change N? to include K weighting: =ROUND(E? + J? + (K? * $K$1) + M?, 0) — and update K cell values accordingly (either 5 as points or percent values).
+
+If you want, I can:
+- Provide exact replacement formulas for the whole column range (D, E, I, J, M, N),
+- Produce a list of rows that will change and show before/after totals for those rows,
+- Or produce a VBA/Excel formula script or step-by-step instructions to fix the workbook. Which would you like?

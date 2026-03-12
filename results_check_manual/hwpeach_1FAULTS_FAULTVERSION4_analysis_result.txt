@@ -1,0 +1,35 @@
+I inspected the workbook formulas. Key findings and suggested fixes:
+
+1) Wrong cell reference in homework! (functional error)
+- Cell: homework!F5
+- Current formula: =(C5/$B$29)*100
+- Problem: F column is supposed to be CPI_year relative to CPI_1995 (i.e. B5 / $B$29 * 100). F5 erroneously references C5 (nominal price) instead of B5 (CPI).
+- Consequence: G5 (=C5/(F5/100)) returns 152.4 (nonsense) instead of the real-price value like the other rows.
+- Fix: Change F5 to =(B5/$B$29)*100. After that G5 will match the expected real price (and E5 will match G5).
+
+2) Resulting inconsistent value (symptom)
+- Cell: homework!G5
+- Symptom: 152.4 (far out of range compared with other G-values)
+- Cause: follows from incorrect F5 (see #1).
+- Fix: correct F5, then G5 will be correct.
+
+3) Intentional NA flagged
+- Cell: homework!K8 contains =NA() and displays #N/A. This is intentional (not an error) unless you did not mean to include an NA.
+
+4) Potential fragility in peaches1 year column (non-error but recommended)
+- Cells: peaches1!B14:B49 (and similar)
+- Pattern: many B cells are set as =B(next row)+1 (backwards chain), with the chain anchored by a hard-coded value in B50 (1957).
+- Risk: fragile — if the anchor (B50) is changed or deleted the whole sequence breaks. Consider filling years top-down (e.g. B10 = 1997, B11 = B10 - 1, or use a single formula dragged down) for clarity and robustness.
+
+5) MAX / MIN range / scope (possible oversight)
+- Cells: peaches1!H3 = MAX(C14:N50) and peaches1!L3 = MIN(C14:N50)
+- Note: these ranges cover columns C..N rows 14..50. They exclude column O (MYA) and column P (some annual values). If you intended the RECORD HIGH/LOW to consider the per-year MYA column (or values in column P), expand the range accordingly (for example C14:O50 or C14:P50). If you intentionally wanted only monthly cells, current range is fine.
+- Also: the range starts at row 14 — ensure that all monthly data you want included actually begins at/after row 14.
+
+6) General consistency check
+- Column D formulas (=(C#/B#)*100), column E ( =D#*($B$29/100)) and column G ( =C#/(F#/100)) are consistent with each other (they compute the same real-price measure in different algebraic forms). After fixing F5 the columns are internally consistent.
+
+If you want, I can:
+- Produce an exact list of any other cells that differ from the column pattern (I already found the single misreference at F5),
+- Provide the corrected workbook (with F5 fixed), or
+- Suggest more robust formulas for the year sequence and the MAX/MIN ranges.

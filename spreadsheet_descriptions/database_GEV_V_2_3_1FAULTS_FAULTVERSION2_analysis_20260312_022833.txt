@@ -1,0 +1,71 @@
+High-level summary
+- Purpose: A small database and reporting workbook for GEV (volunteer guard) services. Workflow: set parameters → enter a service (immissione dati) → internal calculation/filters (calcoli) → store/display in database (db) → view reports (visualizza_singolo, visualizza_gruppo). Home and Help provide metadata and instructions. Some actions use macros (warning on Home).
+
+Per-sheet details (concise)
+
+1) Home
+- Title and program info (F3:F4, C21, C22, C24–C25).
+- Shows key totals: "N° servizi presenti nel database" in G21 = calcoli!B60 and "N° gev" in I21 = calcoli!B61.
+- Macro warning in C19 and version/date in C21.
+
+2) immissione dati (data entry)
+- Form for entering a new service: date/time fields (B6–B16), service type (B18), checkboxes/flags for many sanction/report categories (B22:B33).
+- Slots to list up to 5 participating GEVs (G6:G14) and vehicle info (G20, G24).
+- Validation/warning: F16 =IF(calcoli!F15>calcoli!E15,"","Attenzione: orario fine servizio inferiore ora inizio!") — warns if end < start.
+
+3) calcoli (calculation / staging)
+- Central processing sheet that reads immissione dati and parametri to compute durations, per‑member hours and aggregated type.
+- Key input mapping: A15 pulls service ID from immissione dati (='immissione dati'!D6). E11/F11 use INDEX(parametri!B8:B55, ...) to map time codes.
+- Duration: G15 = (HOUR(F15-E15)*60+MINUTE(F15-E15))/60; H15 = G15*H11 (hours × active members).
+- Service-type aggregation: AC15 uses nested IF to map I15 into aggregated groups.
+- Per-GEV fields J15:AA15 use IF(...,0,INDEX(...)) to map/remove placeholders.
+- Filtering flags (AD16:AI16 and AI16 overall) build a boolean to decide whether a db row is included; AJ16:BL16 copy values conditionally into the temporary/filter area when AI16=TRUE.
+- Temporary summary counts and sums for monthly/annual views (e.g., B27 =COUNT(db!AN3:AN4), B28 =SUM(db!AP3:AP4)).
+- Totals: B60 =COUNTA(db!A3:A4) (number of services), B61 =COUNTA(parametri!A1:A4)-1 (number of GEVs).
+
+4) db (master data)
+- Master table of all services in rows, columns include:
+  A: numero RL, B: g (GEV group/person?), C: mese, D: anno, E: ora in, F: ora fi, G: h serv, H: h tot, I: tipo servizio, J–N: gev 1–5, O–Z: sanction/report flags, AA: gev macc, AB: km, AC: tip serv agg.
+- Also contains a set of filtered/temporary mirror columns (AF:... BL) used by reports and filters.
+- Top-row navigation labels (F1 Home, I1 MASTER, AF1 FILTRI, AM1 TEMP).
+
+5) visualizza_singolo (single GEV report)
+- Shows monthly and annual metrics for a single GEV: number of services (row 9), hours (row 10), sanctions (row 11) by month (C8:N11).
+- Annual breakdown by service type and counts/hours (D17:D28, K17:K24 with M/N totals).
+- Chart placeholders for monthly services and service types.
+
+6) visualizza_gruppo (group report)
+- Monthly grid aggregating types (columns grouped by service type: Vigilanza, Scuole, etc.) and totals per month.
+- Per-month formulas to compute totals: e.g., P7 = C7+F7+I7+L7 (total services), Q7 = D7+G7+J7+M7 (total hours), R7 sums kms.
+- Annual sums (row 20) use SUM over months. Chart placeholder for group totals.
+
+7) parametri (parameters)
+- Lookups and lists used across the workbook:
+  - B8:B55: time slots (00:00 to 23:30 as time values).
+  - C8:C20: detailed service type codes/names (e.g., "11 - generico pattugliamento", "21 - mostre", etc.).
+  - E8:E19: months (gennaio..dicembre).
+  - F8:F11: years (2001..2004 present).
+  - G8:G11: aggregated service types (vigilanza, scuole, att.tà part., riunioni).
+  - I8 = SetPar!E5 (group name pulled from SetPar).
+
+8) SetPar (set parameters UI)
+- Small UI to enter group name (E5), add/remove GEV names (E7), and buttons/controls for removals. Values feed parametri and thus the whole model.
+
+9) Help
+- Instructions, usage notes, cautions about macros and sheet protection, contact info.
+
+Key interactions and formula patterns
+- Dataflow: immissione dati -> calcoli (transform & validate) -> db (store/mirror) -> visualizza_* (reporting).
+- Many INDEX lookups to parametri for mapping codes to readable values and times.
+- Aggregation formulas use COUNT, SUM, SUMPRODUCT-like constructs (here mostly SUM and COUNT) across db columns for monthly/annual stats.
+- Filter logic in calcoli uses booleans (AD..AI16) to produce filtered rows in db mirror area; BM16 is a concatenated string of the record for deletion/use.
+- Home picks up summary totals from calcoli (B60/B61).
+
+Notes / cautions
+- Workbook expects macros for some operations (Home warning). Sheets are protected but without password per Help.
+- Some formulas assume fixed row ranges (example uses rows 3–4 or 3–4 in sample formulas); real dataset will expand those ranges — check/adjust ranges if you add many rows.
+
+If you want, I can:
+- Map the main formula flow into a diagram,
+- List the most important formulas with cell-by-cell explanations,
+- Or suggest improvements (dynamic ranges, structured tables, clearer filter logic). Which would you prefer?

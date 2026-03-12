@@ -1,0 +1,34 @@
+Findings (short)
+1. Clear error: Cell F24 has =1/$E24. That’s a typo. It divides 1 by Community Bank’s deposits instead of copying them at 100% like the other banks.
+2. Potential inconsistency (risk of wrong HHI): Column G multiplies the share by 100 in the formula (= $Fxx / $F$36 * 100) while the sheet header shows (%) and column H squares G. If G is formatted as Percentage (Excel stores 0.2 but displays 20%), the *100 will produce the wrong underlying value and H will be wrong. The sheet will be correct only if G is stored/displayed as a plain number (e.g. 20 for 20%). The current layout is ambiguous and fragile.
+
+What to do (fixes and why)
+1. Fix the definite typo (F24)
+   - Change F24 to =E24 (or =1*$E24). 
+   - Why: Community Bank is a Bank, so its weighted deposits should equal its raw deposits (100%). The current =1/$E24 produces a tiny/incorrect weighted value and corrupts totals, market shares and HHI.
+
+2. Make percent / HHI calculation explicit and consistent
+   Option A — Recommended (clean, Excel-standard):
+   - Set Gxx = $Fxx / $F$36  (no *100).
+   - Format column G as Percentage (e.g., 2 decimal places).
+   - Set Hxx = (Gxx^2) * 10000  OR Hxx = (Gxx*100)^2.
+     - Example: if G = 20% (Excel value 0.20), H = (0.20^2) * 10000 = 400.
+   - Why: This stores market share in Excel’s percentage form and makes HHI equal to the conventional 0–10,000 scale. Formulas are easier to audit.
+
+   Option B — Minimal change (if you want to keep current numeric % style):
+   - Keep Gxx = $Fxx / $F$36 * 100 (leave as number like 20), but ensure G cells are formatted as Number (not Percentage).
+   - Keep Hxx = Gxx^2 (because you are squaring the numeric percent already in 0–100 scale).
+   - Why: This preserves the current H = percent^2 logic, but you must ensure G is not formatted as % (otherwise you double-scale).
+
+Which to pick
+- Pick Option A. It is less error-prone and follows Excel conventions (G stores 0.20 and displays 20%). It also makes HHI formula explicit and easy to understand.
+
+Quick steps to implement
+1. Edit F24 -> replace =1/$E24 with =E24.
+2. (Recommended) Edit one G cell: change formula to =F10/$F$36 (adjust row) then fill down for G10:G33. Format G as Percentage.
+3. Edit H10 -> =(G10^2)*10000 (or =(G10*100)^2) and fill down. Recalculate totals in row 36.
+
+Result
+- F36 (total weighted deposits), G (market shares), and H (HHI components and total HHI in H36) will update correctly. The primary source of wrong numbers before was F24; percent-formatting inconsistency could still produce incorrect HHI if not fixed.
+
+If you want, I can give the exact formulas to paste for G and H, or compute the corrected totals/HHI after you confirm which percent convention you'd like to use.

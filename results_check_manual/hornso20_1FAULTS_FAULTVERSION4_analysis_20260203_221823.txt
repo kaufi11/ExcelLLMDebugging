@@ -1,0 +1,53 @@
+I checked the three workbooks you gave. Two clear errors are present (one in E20-9 (2) and several in P20-3B). I list each error, the fix, and a short explanation.
+
+1) Sheet E20-9 (2) — wrong indirect-cost sum
+- Error: C11 = SUM(C5:C6)/C2 — this omits Office rent (C4). Indirect costs should include C4:C6.
+- Fix: change C11 to =SUM(C4:C6)/C2
+- Why: indirect-hourly rate must include all indirect-cost accounts (office rent, support salaries, utilities). Omitting C4 understates indirect cost/hour and understates the job bid.
+- Impact (numbers):
+  - Correct indirect rate = (350,000+860,000+246,000)/16,000 = 91.00
+  - Wrong indirect rate (current) = (860,000+246,000)/16,000 = 69.125
+  - Predicted job cost correct = (140 + 91)*220 = 50,820. Wrong = (140 + 69.125)*220 = 46,007.50 → understate by 4,812.50 before markup (underbid 5,775 after 20% markup).
+- Short rationale: include C4 in the SUM.
+
+2) Sheet P20-3B — multiple cell-reference / aggregation errors
+Summary of logical intent: D10:D12 = direct-material amounts, F10:F12 = direct-labor amounts, I10:I12 = overhead applied per row (overhead rate * that row’s direct labor), D14 = total materials, F14 = total direct labor, I14 = total cost (materials + labor + overhead applied). Several formulas break that flow.
+
+A — Wrong per-row overhead formula
+- Error: I10 = +F14*H10
+- Fix: change I10 to =F10 * H10 (and for other rows I11 = F11*H10, I12 = F12*H10)
+- Why: overhead for each row must be the row’s direct-labor amount times the overhead rate. Using F14 (the total labor) multiplies the rate by the total instead of the row amount.
+
+B — Total cost formula only uses one overhead cell
+- Error: I14 = +I10 + F14 + D14 (this uses I10 only, not I10:I12)
+- Fix: change I14 to =D14 + F14 + SUM(I10:I12)
+- Or equivalently put overhead total in a cell (e.g. I13 =SUM(I10:I12)) and then I14 = D14+F14+I13.
+- Why: total cost must add total materials + total labor + total overhead (all overhead rows), not just I10.
+
+C — Posting of overhead to WIP uses a single-row overhead instead of total
+- Error: F22 = +I10
+- Fix: change F22 to =SUM(I10:I12) (or =I13 if you create an overhead-total cell) before you debit WIP.
+- Why: when you apply overhead to WIP in the journal, you must post the total overhead applied, not just one row’s overhead.
+
+D — Finished-goods transfer / COGS use the wrong cell if I14 is wrong
+- Error / risk: F25 = I14 (this is only correct if I14 equals the total job cost). After fixing I14 as above, F25 may be correct; otherwise it’s wrong.
+- Fix: keep F25 = I14 only after you correct I14 to be the job total. If you use an intermediate cell for job total (recommended), set F25 = that job-total cell.
+- Why: Finished goods should be debited for the full job cost (materials + labor + overhead). Ensure the cell referenced equals the full job total.
+
+Extra small cleanups (optional but recommended)
+- Make I14 the sum of the three components in a single clear expression or use named/header cells so postings (F22, F25, F31) reference clearly labeled totals.
+- Use SUM ranges consistently (e.g. D14 = SUM(D10:D12) instead of D10:D13 if D13 blank).
+- For clarity: put the overhead rate in one cell (H10 fine), compute each row’s overhead in I10:I12, then compute totals D14, F14, I13 (overhead total), I14 = D14+F14+I13.
+
+Concise corrected formulas to enter
+- P20-3B:
+  - I10 = F10 * H10   (and I11 = F11*H10, I12 = F12*H10)
+  - D14 = SUM(D10:D12)
+  - F14 = SUM(F10:F12)
+  - (create I13) I13 = SUM(I10:I12)   — optional but tidy
+  - I14 = D14 + F14 + I13   (or I14 = D14 + F14 + SUM(I10:I12))
+  - F22 = I13   (or F22 = SUM(I10:I12))
+  - F25 = I14
+  - F31 = F25   (COGS = cost of job sold)
+
+If you want, I can give the corrected numeric results for P20-3B after you confirm the missing/blank rows (F11 etc.), or I can produce an annotated screenshot or a version with all corrected formulas filled in.

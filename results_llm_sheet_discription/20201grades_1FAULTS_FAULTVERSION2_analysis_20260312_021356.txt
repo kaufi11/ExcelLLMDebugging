@@ -1,0 +1,60 @@
+Thanks — I reviewed both populated sheets and found a few consistent problems that will make totals/percentages wrong or fragile. Short list of the errors, why they’re a problem, and exactly what to change (simple fixes and example formulas).
+
+1) Inconsistent / hard‑coded denominators (wrong overall % base)
+- Problem: Sheet1 percent formulas use hard‑coded denominators (e.g. Un = Tn/150*100, ARn = AQn/350*100, BUn = BTn/400*100, CFn = CEn/830*100). Hard‑coding is brittle and, in Sheet1, the overall denominator 830 does not match the sum of the category maxima (150 + 350 + 400 = 900). That produces wrong overall percentages.
+- Fix: Compute the category maxima from the point rows (the header row of points) and reference those header totals in percent formulas (use absolute references so formulas copy correctly).
+  - Example setup (choose unused header cells or use the existing header row):
+    - Put Homework max in (for example) $T$1: =SUM(D2:R2)  — sum the point values you placed on row2 for homework.
+    - Put Projects/Lab max in $AQ$1: =SUM(Y2:AP2)  — sum the points for projects/labs in row2.
+    - Put Exams max in $BT$1: =SUM(BA2:BS2)  — sum the exam group header totals (adjust range to match your exam total columns).
+    - Put Total max in $CE$1: = $T$1 + $AQ$1 + $BT$1
+  - Then change student percent formulas to reference these:
+    - Homework % Un: =Tn / $T$1 * 100
+    - Projects % ARn: =AQn / $AQ$1 * 100
+    - Exams % BUn: =BTn / $BT$1 * 100
+    - Overall % CFn: =CEn / $CE$1 * 100
+  - Why this fixes it: totals now automatically reflect the actual point values you entered in the header row; changing an assignment point value updates all derived percents.
+
+2) Some header subtotal formulas are inconsistent or unclear
+- Problem: Some header subtotal cells (e.g. AF1 = SUM(Y2:AF2), AO1 = SUM(AG2:AO2), AQ1 or AQ2 etc.) appear in different places across sheets and a few ranges overlap or differ between sections. This causes confusion and makes copying formulas between sections risky.
+- Fix: standardize header layout:
+  - Put all per‑category "max points" sums in a single, clearly labelled row (e.g. use Row 1 for labels and Row 2 for per‑item points, then Row 1 (or Row 0) for category sums). Example: keep per‑item points in Row2, and create category total cells in Row1 using SUM on Row2 ranges. Use those category cells in all student formulas ($absolute$).
+  - Make the header cell names consistent between sheets (use same column for Homework total, same for Projects total, same for Exams total).
+
+3) Non‑numeric markers in numeric ranges (X, x, +, ., #, text)
+- Problem: You have many non‑numeric markers (X, x, +, ".", "#") inside numeric columns/ranges used by SUM and AVERAGE. If they are plain text Excel ignores them in SUM but they can break formulas or produce errors if they are actual Excel errors (e.g. #N/A, #REF). They also make averages and class statistics misleading if some should be treated as 0 or excluded.
+- Fix (pick one):
+  - Clean the sheet: Find & Replace (Ctrl+H) to replace X, x, +, . with blank cells or numeric 0 depending on meaning (excused = blank, counted as zero = 0).
+  - Or wrap sums with IFERROR/NUMBERVALUE: e.g. use =SUM(IFERROR(range,0)) (entered as normal if ranges are numeric; or for single row use =SUMPRODUCT(N(range)) to coerce numbers and turn text to zero).
+  - For exam subtotals that error because of #N/A, change formulas to: =SUMIF(range,">-9E+307") — this sums only numeric values.
+  - Why: removes spurious text or error values so SUM and AVERAGE return numeric results.
+
+4) Some SUM ranges include blank or extra columns (possible off‑by‑one)
+- Problem: some SUMs include one extra column on the right (e.g. SUM(D:S) while the homework item points are in D:R). This is usually harmless if S is blank but can hide mistakes if a new column gets filled and isn’t intended as homework.
+- Fix: explicitly set SUM ranges to match the exact columns that contain assignment points (e.g. SUM(D2:R2) if D–R are homework). Keep those column endpoints fixed and referenced by the category max cells suggested above.
+
+5) Make summary/average formulas robust
+- Problem: class averages use AVERAGE(U5:U21) etc. If any of those cells show text or error, the average may skip or throw errors.
+- Fix: use AVERAGEIF to average only numeric cells, e.g. =AVERAGEIF(U5:U21,">=0") or =AVERAGE(IFERROR(U5:U21,"")) (array) — or clean the source data so those columns are always numeric.
+
+Concrete minimal steps I recommend now
+1. Create three header cells that sum the point totals on the points row (for each category). Example names:
+   - HomeworkMax (cell T1) =SUM(D2:R2)
+   - ProjectsMax (cell AQ1) =SUM(Y2:AP2)
+   - ExamsMax (cell BT1) =SUM(BA2:BS2)
+   - TotalMax (cell CE1) =T1+AQ1+BT1
+2. Replace hard‑coded denominators in student percent formulas:
+   - U5 (and down): =T5 / $T$1 * 100
+   - AR5: =AQ5 / $AQ$1 * 100
+   - BU5: =BT5 / $BT$1 * 100
+   - CF5: =CE5 / $CE$1 * 100
+   Copy these down the column.
+3. Clean text markers: do Find & Replace for X/x/+/. and replace with blanks (or zero if that’s what you intend). Replace any real Excel error values (like #N/A) by fixing the underlying input or wrap the SUMs with IFERROR(...,0) where appropriate.
+4. Verify each SUM range points to the exact columns of points (no extra or missing columns).
+
+If you want, I can:
+- give the exact formulas to paste for Sheet1 (pointing to the exact cells you use), or
+- produce a step‑by‑step macro/Find&Replace script to clean non‑numeric markers,
+- or scan and list every cell containing non‑numeric markers.
+
+Which of those would you like me to produce next?

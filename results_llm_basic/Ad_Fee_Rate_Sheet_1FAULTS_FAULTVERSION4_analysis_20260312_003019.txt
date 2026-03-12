@@ -1,0 +1,49 @@
+Summary — what’s wrong
+- Many formulas show #REF! because they reference cells that were deleted or moved. Examples: O39:O40, O39:P39:Q39:R39, S44, P45, P50/P51/P53, etc. Any formula containing #REF! will return an error and break downstream calculations.
+- The contract/phase dollar totals are in the wrong column: the subtotal formula for the phase amounts is in E16 (=SUM(D11:D15)) instead of in D16. Same pattern likely for the additional-basic-services subtotal (E29). That inconsistency causes later formulas to reference the wrong cells (or a deleted cell) and produces errors.
+- Some allocation formulas use percent/decimal inconsistently (for example dividing by 100 in one place and not in another) — this will give wrong dollar allocations if not standardized.
+- Some SUMs are unnecessarily odd (e.g., SUM(S44:S44)) — not an error by itself but indicates copy/paste problems.
+
+Why this happened
+- Someone moved or deleted the original source cells (or shifted amounts from column D to column E) after other formulas were built, so dependent formulas now point to missing cells (#REF!).
+- Copy/paste across rows without using absolute references ($) created broken links.
+
+How to fix it (quick, prioritized steps you can do now)
+1) Find every #REF!
+   - Use Excel Find (Ctrl+F) to search for “#REF!” and list every cell.
+
+2) Restore the correct source cell for each #REF!
+   - For each #REF! formula, decide what the missing reference should be by looking at the pattern of nearby rows or a working row.
+   - Typical fixes in this sheet:
+     - Replace any #REF! used to convert discipline-percent → dollars (formulas like =(O50/100)*#REF!) with the worksheet total-of-fees cell. In this workbook that is E62 (E62 = SUM(E36:E57)). So change those formulas to: =(O50/100)*$E$62 (use absolute reference $E$62).
+     - Replace #REF! used to multiply by a discipline base (rows 39–41 area) with the appropriate discipline base cell. In this block the formulas that use ($D$21...) tell you the base was D21, so change #REF! there to $D$21. Example: K40 should be =$D$21*0.713 (or follow the pattern used in K41 which uses $D$21).
+
+3) Put dollar totals back into column D (recommended structural fix)
+   - Move the phase $ Amount subtotal formulas out of column E into column D so the sheet matches the header (D10 = $ Amount). For example:
+     - Put =SUM(D11:D15) into D16 (clear E16).
+     - Put =SUM(D19:D28) into D29 (clear E29).
+     - Put the total basic services into D31 as =D16+D29; place any “Est. Complete Date” in E31 if needed.
+   - After moving the totals, update any formulas that referenced the old E16/E29 to point to D16/D29 (or change them to the canonical total cell you choose).
+
+4) Standardize percent vs decimal logic
+   - When you compute allocations: first compute the percent (e.g., O50 = N50/N49 to get percent as a number like 81.68). If O50 is a percent like 81.68, then dollar allocation should be =O50/100 * $E$62. Use parentheses and $ for the anchor cell.
+
+5) Use Trace Precedents / Evaluate Formula to confirm
+   - For each repaired cell, use Formulas → Trace Precedents and Evaluate Formula to make sure the chain ends at the intended source (the contract total or discipline base).
+
+Concrete examples to paste (replace the broken formulas)
+- Fix allocation dollar cells (P50, P51, P45, P53, etc.):
+  - = (O50/100) * $E$62
+- Fix discipline-percent multiplication cells (example K40 if it should be based on D21):
+  - = $D$21 * 0.713
+- Move subtotal into correct column (example):
+  - Put into D16: =SUM(D11:D15)
+  - Put into D29: =SUM(D19:D28)
+  - Put into D31: =D16 + D29
+
+Final checks
+- After making the replacements, search again for “#REF!” and for any zeros or implausible large numbers (which will indicate a percent/decimal error).
+- Recalculate (F9) and compare the A/E Fees (E99) and Total Basic Services (D31 or E31 depending where you choose to keep it) — they should match the note that says “$ Amount should equal Total Basic Services / Contract Amount above.”
+
+If you want, I can:
+- Provide a small list mapping each broken cell to the exact corrected formula if you tell me which cells you prefer as the canonical totals (D31 or E31 or E62) and confirm the base cells (for example confirm D21 is the discipline base).

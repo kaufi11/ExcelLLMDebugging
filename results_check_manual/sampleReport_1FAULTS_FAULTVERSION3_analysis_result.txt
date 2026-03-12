@@ -1,0 +1,73 @@
+I reviewed the workbook formulas you provided and found several formula errors / inconsistencies. Below I list each issue by sheet, giving the affected cell(s), what is wrong, and a suggested correction.
+
+Summary of problems found
+- OP_EXP (Operating Expenses)
+  - L46: range mismatch vs J46
+- Bal Sht (Balance Sheet)
+  - J36 / L36: totals do not sum the expected items (net investment in real estate + total other assets)
+  - J52 / L52: redundant/odd SUM range (not an error per se, but unusual)
+- Income (Statements of Operations)
+  - L14: contains a hard-coded constant +748 (inconsistent with J14)
+  - J62 / L62: inconsistent sign/operation (J uses +J60, L uses -L60)
+- Cash Flows (Statement of Cash Flows)
+  - L45: range mismatch vs J45 (L45 sums a larger range than J45)
+- Stkhold.Equity
+  - G4: text typo "YEARS ENDED DECEMBER 31, 2001 AND 2001" (not formula, but likely an error)
+
+Detailed items and recommended fixes
+
+1) Sheet: OP_EXP
+- Cell J46 formula: =SUM(J33:J43)
+- Cell L46 formula: =SUM(L33:L44)
+  - Problem: the J and L totals use different ranges (J sums rows 33:43; L sums 33:44). This will produce inconsistent totals between years and likely double-count or miss one row for the L column.
+  - Suggestion: make the ranges consistent. If the intended rows are 33–43, change L46 to:
+    - =SUM(L33:L43)
+  - (Or if the intended range is 33–44 for both, change J46 to =SUM(J33:J44). Use whichever is correct for the layout.)
+
+2) Sheet: Bal Sht (Balance Sheets)
+- Cell J34 formula: =SUM(J21:J33) — TOTAL OTHER ASSETS (this looks OK)
+- Cell J36 formula: =SUM(J23:J35)
+  - Problem: TOTAL ASSETS (J36) is summing J23:J35. That range overlaps with the other-assets block and appears to skip the NET INVESTMENT IN REAL ESTATE value (which is likely in/near J17). Typically TOTAL ASSETS should equal NET INVESTMENT IN REAL ESTATE + TOTAL OTHER ASSETS (i.e., J17 + J34), not SUM(J23:J35).
+  - Suggestion: change J36 to explicitly sum the two major subtotals, for clarity and correctness. For example:
+    - =J17+J34
+  - Do the same for the L column:
+    - L36: =L17+L34
+- Cell J52 formula: =SUM(J51:J51) (and L52: =SUM(L51:L51))
+  - Issue: SUM of a single cell is redundant (works but is unusual). Not necessarily an error, but worth noting for clarity. If J52 is intended to be a subtotal of multiple rows, adjust the range accordingly; otherwise replace with =J51 (or keep, if that's intentional).
+
+3) Sheet: Income
+- Cell J14 formula: =J10+J13 (TOTAL RENTAL INCOME — OK)
+- Cell L14 formula: =748+L13
+  - Problem: L14 adds a hard-coded constant (748) instead of the analogous formula =L10+L13. This is inconsistent with column J and will likely produce wrong totals.
+  - Suggestion: change L14 to:
+    - =L10+L13
+- Cell J62 formula: =J57+J60
+- Cell L62 formula: =L57-L60
+  - Problem: J62 uses addition of the cumulative-effect item (J60), while L62 subtracts the cumulative-effect item (L60). This sign inconsistency is suspicious; both columns should treat the cumulative effect the same way (normally you would add the cumulative-effect amount if it's not already signed).
+  - Suggestion: confirm intended sign of the cumulative-effect line (row 60). Then make both columns consistent. Likely:
+    - J62: =J57+J60
+    - L62: =L57+L60
+  - If row 60 is meant to be a contra (negative) amount entered with its sign, then the formulas should both add that cell (so a negative value reduces the total).
+
+4) Sheet: Cash Flows
+- Cell J45 formula: =SUM(J37:J42)
+- Cell L45 formula: =SUM(L37:L44)
+  - Problem: J45 sums rows 37:42 (the Investing activities lines), whereas L45 sums 37:44 (an extended range). These inconsistent ranges will produce mismatched subtotals between columns.
+  - Suggestion: make the ranges identical. If the intended investing-item rows are 37–42, change L45 to:
+    - =SUM(L37:L42)
+  - Or if the intended range is 37–44 for both, change J45 to =SUM(J37:J44). Use whichever matches the layout.
+
+5) Sheet: Stkhold.Equity
+- Cell G4 value: "YEARS ENDED DECEMBER 31, 2001 AND 2001"
+  - Problem: textual typo — both years are 2001.
+  - Suggestion: correct to the intended pair of years (e.g., "2002 AND 2001") if applicable.
+
+Notes / other observations
+- Several cells use SUM of a single cell (e.g., SUM(J51:J51)). These are not errors but are redundant and reduce clarity.
+- Some IF formulas in Stkhold.Equity return the string "off" when a check fails (O17 and O21). That is a deliberate check but may break numeric totals if downstream formulas assume numeric results. Consider returning 0 or NA() or using a conditional formatting warning instead of a text string if the cell is part of further numeric calculations.
+- I did not run the workbook; my findings are based on the formulas you provided. After applying the recommended fixes, re-check dependent totals and the rest of the workbook for any additional cascading errors.
+
+If you want, I can:
+- produce exact corrected formulas for each affected cell,
+- walk through the logical intended flow for each total (so we can be certain which rows are intended to be included), or
+- if you can upload the actual workbook (or allow me to open it), I can make the corrections and validate that all totals balance.

@@ -1,0 +1,37 @@
+I checked the workbook you pasted. I found a few clear formula mistakes (mostly copy/paste errors) that will give wrong results or confuse reviewers. Short summary, then exact fixes.
+
+1) Wrong row-numbering formula (likely a typing error)
+- Where: annex e, cell B31 (and possibly other B-row increments copied from it)
+- Problem: B31 is set to =B29+775. All other B rows increment by +1. This 775 is almost certainly wrong and will corrupt the "line number" column and any formulas that depend on it.
+- Fix: change B31 to =B29+1 (or set it to the correct sequential number). If other B cells were copied from B31, scan the B column and make each increment +1 consistently.
+- Why: keeps the line numbers consistent and avoids propagating an incorrect large offset into any row-reference logic.
+
+2) Wrong variance % cell for “Total Funds” (copy/paste error)
+- Where: annex e, cell K68 (and also annex f, cell K68)
+- Problem: K68 is =K48. That simply copies the variance % from "Total Net Assets" instead of calculating the variance % for Total Funds.
+- Fix: replace with a proper percentage-of-original calculation, e.g.
+  K68: =IF(H68=0,"N/A",(J68/H68)*100)
+- Why: K68 must show the percent variance of J68 vs H68. Copying K48 gives a wrong/irrelevant value and will misstate materiality.
+
+3) Ambiguous / over-broad SUM in Annex I underlying surplus
+- Where: Annex I, cell H27
+- Problem: H27 = SUM(H10:H26). H10 is probably a header/label and several rows in that range are not intended numeric inputs — the sum range is ambiguous and fragile if rows are moved.
+- Fix: explicitly sum the rows you want, e.g.
+  H27: =SUM(H11,H14,H17,H20)
+  or if the items are contiguous and always numeric: =SUM(H11:H20)
+- Why: exact cell references prevent accidental inclusion of labels/extra rows and make the intention clear.
+
+4) (Check) Cash reconciliation formulas — verify intended cells
+- Where: annex g T26 and annex g T49 (reconciliation with balance sheet)
+- Note: T26 uses 'annex f'!H20 + 'annex f'!H21 and T49 uses 'annex f'!I20 + 'annex f'!I21. That is acceptable only if annex f H20 = short-term investments and H21 = cash at bank. Confirm those two cells are indeed the intended balance-sheet cash/investment lines.
+- If the balance-sheet cash is stored somewhere else, update the references accordingly.
+- Why: a wrong reference here will break the cash reconciliation between cashflow sheet and balance sheet.
+
+Quick checklist to finish:
+- Fix B31 (and other B increments if needed).
+- Fix K68 on annex e and annex f to the correct percentage formula shown above.
+- Adjust Annex I H27 to an explicit sum of the exact add-backs.
+- Review any other Kxx cells copied from K48 — the copy/paste pattern suggests more variance% cells might have been mis-copied.
+- After changes, recalc workbook and check the “>>> THESE CELLS MUST BE ZERO >>>” rows (e.g. H73 etc.) to ensure they reconcile.
+
+If you want I can produce the exact formulas replacement list for every affected cell (search & replace), or produce a quick VBA macro to find K68 formulas equal to K48 and correct them automatically. Which would you prefer?

@@ -1,0 +1,17 @@
+Found one clear error (likely the cause of imbalance):
+
+- Error: Cell F72 (Push‑down worksheet — Retained earnings, New Basis) contains the formula
+  =(264-D72+E72)
+  The literal number 264 is wrong; it should reference the existing Book Value/Old Basis cell for retained earnings.
+
+- Why it’s wrong: All other "New Basis" rows use the pattern =Cxx + Dxx - Exx (or equivalently = (Cxx - Dxx + Exx) depending on sign convention). The hard‑coded 264 replaces the proper cell reference so Retained Earnings is calculated incorrectly and will propagate wrong totals into the consolidation area.
+
+- Fix (quick):
+  1. Go to cell F72.
+  2. Replace the formula =(264-D72+E72) with =(C72-D72+E72)  (or equivalently =C72 + D72 - E72 depending on your sign usage — follow the pattern used in the other F cells; most consistent is =C72+D72-E72).
+  3. Recalculate and then verify proof rows: D76 vs E76 (push‑down proof) and D134 vs E134 (consolidation proof) to ensure totals match.
+
+- Why this fixes it: Replacing the numeric literal with the cell reference makes F72 compute using the actual old basis (C72) plus/minus the adjusting entries (D72, E72), so the new retained earnings balance will be correct and totals will reconcile.
+
+Extra suggestion:
+- Use Find (Ctrl+F) to search for "264" and for any other numeric literals inside formulas to catch similar typos. After fixing, run the macros/load the problem data and verify the proof totals (D76=E76 and D134=E134).

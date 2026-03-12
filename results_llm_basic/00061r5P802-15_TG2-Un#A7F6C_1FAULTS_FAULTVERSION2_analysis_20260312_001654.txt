@@ -1,0 +1,23 @@
+Short summary of problems I found
+- The main formula error is in A63: it is =A62-1 instead of =A62+1. That produces a duplicate/incorrect sequence (A63 becomes one less than it should be) and shifts the numbering from that row onward.
+- There’s a minor structural issue: A52 uses =A49+1, which is odd because rows A50 and A51 are missing. That isn’t necessarily wrong but is fragile if rows were deleted.
+- (Optional) Column J has no header (you have I1 then K1). This is just a layout/headings issue, not a formula error.
+
+Why it’s a problem
+- A63 =A62-1 creates a duplicate number (e.g. A61 and A63 will be the same) and all following rows are off by one. Any processes relying on the sequential index in column A will be wrong.
+
+Quick fixes (pick one)
+1) Fast manual fix
+   - Edit A63 to: =A62+1
+   - Select A63, then drag-fill (or double-click the fill handle) down column A to the last row to restore the +1 sequence.
+
+2) More robust method (recommended if rows may be inserted/deleted)
+   - Replace the whole column A formulas with one of these formulas and fill down:
+     - If you want a simple row-based counter starting at 1 in row 2: =IF($C2<>"",ROW()-1,"")
+     - If you want to number only rows that have a name in column C (handles blanks): =IF($C2="","",COUNTA($C$2:C2))
+   - These do not depend on the cell immediately above and tolerate row insert/delete better.
+
+Notes about A52
+- If A50/A51 were intentionally deleted and you want continuous numbering, the fix above will handle it automatically. If you intended A52 to reference A51, restore the missing rows or use the robust formulas so you don’t have to worry about the missing references.
+
+If you want, I can give the exact formula text to paste into A2 and show how to fill it down. Which fix would you prefer?

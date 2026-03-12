@@ -1,0 +1,62 @@
+I checked the workbook for formula errors and inconsistent/misplaced references. Below are the problems I found (grouped by sheet), why they are wrong, and suggested fixes.
+
+Summary of confirmed issues
+- Q1 (sheet "Q1"): one cell has a hard-coded/incorrect value instead of the consistent DCF formula (E19).
+- Q1 (sheet "Q1 c-d, additional info"): one row is misaligned / missing the rate cell (A16) referenced by a formula (B16).
+- Q2 (sheet "Q2"): several tax-loss-carry-forward formulas are offset by one column (references point to the previous column). This occurs in both the "WITH DEPRECIATION" NO-DEBT block and the "WITH DEPRECIATION" DEBT block.
+
+Details and suggested corrections
+
+1) Sheet "Q1" — wrong value instead of formula
+- Cell: E19
+- Problem: E19 contains =6 (hard-coded) while the pattern in that row is to compute discounted cash flows using =$E$2/(1+$J19)^$E$1. D19, F19 and G19 follow that pattern; E19 does not.
+- Consequence: SUM(D19:G19) in B19 and any downstream results that rely on these discounted cash flows are incorrect.
+- Suggested fix: Replace E19 with the consistent formula:
+  =$E$2/(1+$J19)^$E$1
+  (or copy the formula used in the other period cells in that row and adjust column references accordingly).
+
+2) Sheet "Q1 c-d, additional info" — missing/misaligned rate cell used by NPV
+- Cell: B16 (formula: =NPV(A16,$C$2:$E$2)+$B$2)
+- Problem: The formula references A16 (the discount rate) but A16 is not present in the exported data (no A16 value shown). Surrounding rows show A15 = -0.0099999 and A17 = 0.01, so A16 appears to be the missing 0.00 rate (the row is misaligned).
+- Consequence: NPV is using whatever blank/coerced value Excel treats A16 as (blank → 0) or may be incorrect if the row alignment was intended differently.
+- Suggested fix: Either
+  - Enter the intended discount rate into A16 (likely 0), or
+  - Adjust the formula to reference the correct rate cell if rows were shifted.
+  Example correction if the intended rate is 0:
+  put 0 in A16 (so =NPV(A16,$C$2:$E$2)+$B$2 works as intended).
+
+3) Sheet "Q2" — tax loss carry-forward formulas shifted one column (WITH DEPRECIATION)
+There are multiple occurrences where an IF(...) referring to "[column]47" (taxable income) instead points to the previous column's taxable income cell. This creates incorrect carry-forward calculations.
+
+A. Block: "WITH DEPRECIATION" — NO DEBT scenario
+- Cells with wrong formulas:
+  - E46 currently: =IF(D47=0,SUM(D45:D47),0)
+  - F46 currently: =IF(E47=0,SUM(E45:E47),0)
+  - G46 currently: =IF(F47=0,SUM(F45:F47),0)
+- Problem: E46 checks D47 (previous column) rather than E47; F46 checks E47; G46 checks F47. They should each test the same-column taxable-income cell.
+- Suggested corrections:
+  - E46 → =IF(E47=0,SUM(E45:E47),0)
+  - F46 → =IF(F47=0,SUM(F45:F47),0)
+  - G46 → =IF(G47=0,SUM(G45:G47),0)
+
+B. Block: "WITH DEPRECIATION" — DEBT SCENARIO
+- Cells with wrong formulas:
+  - E70 currently: =IF(D71=0,SUM(D69:D71),0)
+  - F70 currently: =IF(E71=0,SUM(E69:E71),0)
+  - G70 currently: =IF(F71=0,SUM(F69:F71),0)
+- Problem: same as above — they reference the previous column's taxable-income row (row 71) instead of their own.
+- Suggested corrections:
+  - E70 → =IF(E71=0,SUM(E69:E71),0)
+  - F70 → =IF(F71=0,SUM(F69:F71),0)
+  - G70 → =IF(G71=0,SUM(G69:G71),0)
+
+Notes: when you fix these offsets, also confirm the dependent cells (Taxable Income rows 47 & 71) are referencing the correct carry-forward cells (they use IF(D45<0,0,D45+D46) style formulas). After correcting the carry-forward formulas, re-check the taxable-income formulas to ensure the intended logic is preserved (D47 etc use D46, E47 use E46, etc.).
+
+Other observations (not necessarily errors but worth checking)
+- Throughout Q1 you use negative discount rates (column J) for early rows, then positive later — this is unusual but may be intentional for exploring NPV behavior. If unintentional, verify the sign convention you want for discount rates.
+- In sheet "Q1 c-d, additional info", cell G26 displays #N/A but its formula is =IRR(B2:E2,22%). An IRR that doesn't converge would produce #NUM!, not #N/A; if #N/A was entered manually, consider replacing that with the actual IRR error or use IFERROR to capture it.
+- Some exponent references use potentially blank period cells (e.g., $D$1 used in D4 on sheet "Q1"). A blank exponent coerces to 0 in Excel (so (1+rate)^0 = 1), which may be intended (period 0). Just confirm that the period labels/cells are in the intended places (D1 may be intentionally blank for period 0).
+
+If you want, I can:
+- Apply the exact corrected formulas to the workbook and produce a corrected copy, or
+- Run through the sheet again after you confirm whether A16 in "Q1 c-d, additional info" should be 0 (or another value).

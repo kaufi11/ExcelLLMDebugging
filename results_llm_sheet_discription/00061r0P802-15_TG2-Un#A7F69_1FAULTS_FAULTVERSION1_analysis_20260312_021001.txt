@@ -1,0 +1,40 @@
+Summary of problems (short)
+- Numbering error in column A: A29 is =A28 - 1 (should increment). This creates duplicated numbers (26 and 27) and breaks the sequence.
+- Column I has no header and address components are inconsistent across H/I (data misalignment).
+- Duplicate record likely: Joseph A. Paradiso (row 46) and Joe Paradiso (row 49) share the same email — probable duplicate.
+- URLs sheet is unstructured: descriptions and URLs are on separate rows instead of side-by-side.
+- Miscellaneous data quality issues: many emails marked “?”, phone/fax formats inconsistent.
+
+Quick fixes and why they work (clear steps)
+
+1) Fix the numbering (one-line fixes)
+- Quick single-cell fix: edit A29 and change the formula from =A28-1 to =A28+1.
+- Better / robust fix for entire column A: replace column A with a stable formula so this can’t happen again:
+  - In A2 enter: =ROW()-1
+  - Copy / fill down for all rows (A2:A63).
+Why: ROW()-1 creates correct sequential numbers based on row number, avoiding chained formulas that can be accidentally edited.
+
+2) Add missing header and standardize address columns
+- Put a header in I1 (e.g., "Address line 2" or "Building") to make the schema explicit.
+- Standardize addresses: decide on Address Line 1 = H, Address Line 2 = I, City = J, State = K, Country = L, Zip = M. For rows where two address pieces are in H, use Text to Columns (Data → Text to Columns, delimiter = comma) or use Power Query to split consistently.
+Why: explicit header + consistent splitting prevents data from shifting into wrong columns and makes filtering/sorting reliable.
+
+3) Remove / flag duplicates (example for Paradiso)
+- To find duplicates by email: use Conditional Formatting → Highlight Cells Rules → Duplicate Values on column E, or use this helper formula in a new column P:
+  =COUNTIF($E:$E, E2)>1
+  copy down. TRUE = duplicate email.
+- If duplicate confirmed, merge or delete the extra row (keep the record with the most complete data).
+Why: emails are good unique identifiers for contacts. Removing duplicates keeps the directory accurate.
+
+4) Clean the URLs sheet (convert to two columns)
+- Transform the alternating rows into Description / URL columns:
+  - Option A (manual quick): Insert two new headers "Description" (B1) and "URL" (C1). Copy each description into B and the following row (the URL) into C, delete the empty rows.
+  - Option B (Power Query): Load the single column into Power Query, promote every pair of rows into one row (use Index + Pivot or group by index integer division).
+Why: pairing description + URL into one row makes the list usable for lookups and export.
+
+5) Other small cleanup suggestions
+- Replace "?" emails with blanks or attempt to collect valid emails. Use data validation to require an "@" pattern (or use a helper column to flag missing/invalid emails with =IF(ISNUMBER(SEARCH("@",E2)), "OK","BAD")).
+- Normalize phone/fax formatting: use a consistent number format or clean via formula/Power Query (remove spaces/parentheses if needed).
+Why: improved data quality for mail merges and automated processing.
+
+If you want, I can give the exact step-by-step actions for any one fix (e.g., replace the whole column A with ROW()-1, run Remove Duplicates by email, or a Power Query recipe to fix the URLs sheet). Which fix do you want me to show first?

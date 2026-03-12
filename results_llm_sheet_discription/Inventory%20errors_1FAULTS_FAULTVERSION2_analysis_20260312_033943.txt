@@ -1,0 +1,26 @@
+Short answer — two problems and how to fix them:
+
+1) Typo in Sheet2 total assets (makes that year’s balance wrong)
+- Error: Cell C24 on Sheet2 uses =COUNT(B20:B23) instead of SUM, so Total Assets (2001) is wrong.
+- Fix: Change C24 to =SUM(B20:B23).
+- Why: COUNT returns the count of cells (4) instead of summing money values.
+
+2) Balance sheet doesn’t balance when prior-year inventory was misstated
+- Symptom: Sheets 1 & 2 show “Total assets ≠ Total liabilities + equity.” That happens because an inventory error in a prior year changes COGS and net income in that prior year but was not closed/adjusted in retained earnings for the next year.
+- Principle / rule: A prior-year ending inventory error must be corrected by adjusting retained earnings (cumulative effect) so current balance sheet balances. If prior-year ending inventory was:
+  - Overstated by X → prior-year net income was overstated by X → retained earnings must be reduced by X.
+  - Understated by X → prior-year net income was understated by X → retained earnings must be increased by X.
+- How to implement in Excel (simple method used in Sheet3):
+  - Make a small helper cell with the prior-year inventory error amount (Error = CorrectEndingInventory_lastYear − ReportedEndingInventory_lastYear).
+  - Add that error to the retained earnings formula for the next year. Example (using the workbook’s pattern):
+    - Put the error amount in a cell (say sheet cell D? = +17000 for 2001 error).
+    - Set retained earnings for 2002 = NetIncome2002 + Error (or =E17 + 17000 in the example).
+    - Repeat for later years if there are additional prior-year corrections (e.g. F35 = G17 − 25000 in the example).
+- Why this fixes it: The inventory error affected prior-year income but the balance sheet for the following year still carried the wrong inventory amount. Adjusting retained earnings removes the prior-year income distortion from equity so Assets = Liabilities + Equity.
+
+Quick checklist to fix the workbook now
+1. On Sheet2 change C24 to =SUM(B20:B23).
+2. Decide correct historical inventory amounts and compute prior-year errors (e.g., 2001 error = +17000, 2002 error = −25000 as shown).
+3. Add those error adjustments into the retained earnings cells for the following year(s) (as Sheet3 does). Or correct the historical inventory numbers directly if you want the income statements to reflect the corrected amounts.
+
+If you want, I can give the exact cell formulas to paste into each retained earnings cell (sheet-by-sheet) so the sheets balance automatically. Which sheet would you like fixed first?

@@ -1,0 +1,72 @@
+Summary — main problems I found
+- Many cells reference the wrong cells (pulling totals into line rows) so unit counts and unit costs are incorrect.
+- Some formulas have wrong signs (double negatives) — e.g., ending inventory units use "-I10 - SUM(C17:C18)" which gives the wrong sign/number.
+- There are missing/placeholder formulas ("?") so COGS / ending-cost lines are blank or wrong.
+- Some label cells are being referenced as if they were numbers (e.g., D25 = +D6 where D6 is text “Understating”), which returns text instead of a numeric value.
+- Mixed sign convention is used (some quantities/costs are entered negative and then subtracted again). That causes confusion and errors.
+
+How to fix (short, concrete steps + corrected formulas)
+1) Standardize the sign convention first
+- Make sales quantities positive (4000, 7000) and make ending inventory a positive number. Then use explicit subtraction (Goods Available - Sales = Ending Inventory).
+- This avoids double negatives and is easier to follow.
+
+2) Fix the Weighted Average – Periodic block (the biggest set of wrong references)
+Replace the incorrect cell references with explicit, clear formulas. Example corrected formulas (assume sales in C17:C18 are positive units — if they remain negative, use the alternative shown):
+
+- Beginning units (total of the two beginning rows):
+  I8 (or I26 depending on layout) = SUM(C8:C9)
+
+- Beginning cost:
+  K8 = SUM(E8:E9)
+
+- Purchases units:
+  I9 (or I27) = SUM(C12:C13)
+
+- Purchases cost:
+  K9 = SUM(E12:E13)
+
+- Goods available units:
+  I10 = I8 + I9    (or =SUM(I8:I9))
+
+- Goods available cost:
+  K10 = K8 + K9    (or =SUM(K8:K9))
+
+- Periodic ending inventory units (if sales are positive):
+  I11 = I10 - SUM(C17:C18)
+  (If sales are negative as currently entered, use I11 = I10 + SUM(C17:C18))
+
+- Weighted average unit cost:
+  J10 = K10 / I10
+
+- Extended cost of ending inventory:
+  K11 = J10 * I11
+
+- Periodic COGS:
+  K12 = K10 - K11
+
+Why these changes: they remove incorrect references to totals inside line-items (e.g., referencing C10 where you need the single-line units) and they compute ending units and costs with a consistent, easy-to-follow approach: GoodsAvailable - Sales = EndingInventory, and COGS = GoodsAvailableCost - EndingInventoryCost.
+
+3) Replace question marks and logical errors
+- Wherever you see "?" (K11, K12, etc.) fill them with the appropriate derived formula (see K11/K12 above).
+- Where a cell references a text label (D25 = +D6), change it to reference the numeric cell it must reproduce or simply hard-type the header text — don’t use formulas to copy text headers into numeric rows.
+
+4) FIFO / LIFO and Perpetual sections
+- The same principles apply: ensure each row’s Units column references the correct source row (do not reference totals for a single layer), compute remaining units per layer as LayerUnits - UnitsSoldFromLayer, and compute extended cost = remainingUnits * unitCost.
+- Use helper columns for layer remaining units to avoid complex formulas that reference totals that themselves depend on the layers.
+
+Quick examples of common fixes you can apply immediately
+- Wrong sign: change I11 from = -I10 - SUM(C17:C18) to = I10 - SUM(C17:C18) (or = I10 + SUM(C17:C18) if sales are negative).
+- Wrong reference: change I8 from = C10 to = SUM(C8:C9) (so I8 is the sum of the beginning rows, not the total cell that may be used elsewhere).
+- Missing COGS: set K12 = K10 - K11.
+
+Final recommendations
+- Standardize: Make quantities positive and use explicit subtraction. That will eliminate most of the “double negative” mistakes.
+- Trace precedents: use Excel’s Trace Precedents/Dependents to confirm each row references the intended cells.
+- Fix one valuation method first (weighted-periodic) and verify numbers (goods available units should be 17,000; sales 11,000; ending units 6,000). After that, copy the correct structure (units → unit cost → extended cost → totals) to FIFO/LIFO sections.
+- Replace any formulas that copy header text with literal labels; only numeric rows should use numeric formulas.
+
+If you want, I can:
+- Give you an exact list of corrected formulas for each cell (I can produce a sheet-by-sheet correction list), or
+- Provide a small cleaned-up worksheet fragment with corrected formulas for the Weighted Average periodic example so you can copy/paste into your file.
+
+Which would you prefer?

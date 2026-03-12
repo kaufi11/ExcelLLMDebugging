@@ -1,0 +1,34 @@
+Summary of the problem (short)
+- On the In‑Kind Contributions sheet the row "Contributions Displacing Operating Costs → Personnel costs" is wrong in two ways:
+  1) D23 is 0 but the row header says "Personnel costs (from Personnel sheet)" — so it should be linked to Personnel!D20 (not a hard 0).
+  2) The month‑boundary formulas are broken: R23 = Q23 and AF23 = AE23. Columns Q and AE are unused, so months 13 and 25 (and therefore Year‑2/Year‑3 totals) are wrong/zero.
+
+Why this breaks the model
+- Because R23 and AF23 point at blank columns (Q/AE) they do not carry the month‑12 or month‑24 values forward into Year‑2 and Year‑3. That makes the row's year totals (P23/AD23/AR23 and D20/P20 used elsewhere) incorrect and so Total In‑Kind and the Financial Summary are wrong.
+- Also D23 not linked means this row never automatically reflects Personnel!D20; the whole "contribution displacing personnel costs" is not being fed from the Personnel sheet.
+
+How to fix it (explicit and easy)
+1) Link the row to Personnel totals:
+   - On In‑Kind sheet cell D23 enter:
+     =Personnel!D20
+   - Press Enter.
+
+2) Restore correct month propagation across years:
+   - After D23 is fixed, copy D23 across to E23:F23:…:O23 (so months 1–12 propagate).
+   - Set R23 = O23 (month13 should pick up month12), then fill R23 across to AC23 (months 13–24).
+   - Set AF23 = AC23 (month25 should pick up month24), then fill AF23 across to AQ23 (months 25–36).
+
+3) Recalculate/verify:
+   - Ensure P23 = SUM(D23:O23), AD23 = SUM(R23:AC23), AR23 = SUM(AF23:AQ23). These should now reflect the personnel contribution correctly.
+   - Check In‑Kind totals (row20 and row47) and Financial Summary entries (they should update automatically).
+
+Quick alternative (faster):
+- Copy a correct propagation row from the same sheet (for example any other row in Contributions Displacing Operating Costs that already uses O→R and AC→AF propagation), paste the formulas into row 23, then change the D23 source to =Personnel!D20.
+
+Extra check (recommended)
+- Use Find (Ctrl+F) to search for formulas that reference "=Q" or "=AE" (or anything referencing Q/AE) and review them — the Q/AE references are usually accidental and indicate other similar copy/paste errors.
+
+Optional note
+- The Marketing Co‑ordinator in Personnel!E9 is entered as =461 (value is in month 2). If you intended the salary to start in month 1, move that 461 into D9; otherwise the model is correct in propagating from month 2 onward.
+
+If you want, I can produce the exact formulas to paste into the full row 23 (D23:O23, R23:AC23, AF23:AQ23) so you can paste them directly.

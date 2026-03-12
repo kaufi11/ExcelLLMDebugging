@@ -1,0 +1,45 @@
+I checked the workbook and found several clear formula errors that will make numbers cascade wrong across Income → Cashflow → Balance Sheet → Depreciation. Below are the main problems, each with a one-line explanation and the fix.
+
+1) Faulty cells: Income!E12:P12 (Total row)
+- Error: Omission (only sums online sales)
+- Why it’s wrong: E12 = SUM(E10:E10) includes only Online Sales and omits Street Sales (E11).
+- Fix: change to =SUM(E10:E11) (and copy across F:P).
+- Effect: Total, Gross Profit and all downstream Net Profit/Cashflow will become correct.
+
+2) Faulty cells: Income!F8:G8:…:P8 (Sugar price growth formulas)
+- Error: Wrong absolute reference
+- Why: F8 etc use (1+$D$7) — D7 is the lemon-price growth rate, not sugar-price growth (D8).
+- Fix: use (1+$D$8). Example: F8 = E8*(1+$D$8) and copy right.
+- Effect: Sugar prices will grow with the correct rate.
+
+3) Faulty cells: Income!I25 onward (Advertising & Marketing across months)
+- Error: Mis-aligned relative references (formulas point to the wrong months)
+- Why: formulas start referencing the wrong prior column (I25 = F25, J25 = G25, …) so later months pull the wrong value.
+- Fix: make the pattern consistent. E.g. set F25 = E25, G25 = F25, H25 = G25, I25 = H25, etc — or simpler: put = $E$25 in all months if the value is the same each month.
+- Effect: Fixed expenses will be correct and totals (E29, Net Profit) will update.
+
+4) Faulty cell: Balance Sheet!D8 (Long Term Assets — Original Value)
+- Error: Wrong source (links to a liability cell)
+- Why: D8 = D14 (D14 is Lear Jet Finance Co. liability), so asset original value is set equal to a liability number.
+- Fix: point D8 to the correct source for original asset value (example: Depreciation!D6 or Cashflow where investments are recorded). Example: D8 = Depreciation!D6 (or =Cashflow!D9 if that is the investment purchase).
+- Effect: Depreciation and long-term-asset values will be based on the real asset cost.
+
+5) Faulty cell: Balance Sheet!F14
+- Error: Bad hard-coded value / typo
+- Why: F14 = 6 (nonsense) while the row should propagate liabilities across months.
+- Fix: use the correct pattern (e.g. F14 = E14 + Cashflow!F9) — same pattern as E14 which is =D14+Cashflow!E9. Then copy right.
+- Effect: Liabilities and Total Liabilities / Equity reconciliation will be correct.
+
+6) Faulty cells: Depreciation!M11, N11, O11, P11 (Total Depreciation row) and missing L11
+- Error: Broken cumulative pattern / missing formulas
+- Why: cumulative running total starts correctly (E11..K11) then jumps to M11 = M7 (drops the running-sum logic) and some months are missing.
+- Fix: make E11 start as E11 = E7, then F11 = E11 + F7, G11 = F11 + G7 … and continue this pattern across all months (fill across without skipping).
+- Effect: Accumulated depreciation will be properly cumulative and flow to Balance Sheet & Cashflow.
+
+7) (Minor / cosmetic) Many “SUM(cell:cell)” formulas use the single cell range (e.g. SUM(E4:E4)). They work but are misleading. Consider replacing SUM(E4:E4) with just E4 or, when appropriate, expand the range to include all relevant rows (example: Totals rows).
+
+General note on fixing and testing:
+- Fix the upstream cells first (Income sheet errors), then refresh/recalculate and check Depreciation and Balance Sheet links.
+- After changes, verify: Income!E12 now equals E10+E11; Depreciation totals increase/decrease logically; Balance Sheet Total Assets = Equity + Liabilities (E11 = E22) for each month.
+
+If you want, I can produce the exact formulas for all affected cells as a small patch you can paste in (I’ll list each cell and its corrected formula). Which format do you prefer?

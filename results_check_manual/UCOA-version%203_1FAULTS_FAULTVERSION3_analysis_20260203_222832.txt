@@ -1,0 +1,36 @@
+Summary of the error
+- Many header cells on Pages 2–6 use relative/sheet-local formulas like =A$9 or =I12 instead of pointing to the single master header on Page 1.  
+  Examples:
+  - Page 2 A83 shows "FORMULA =A$9" (it references Page2!A9) but the intended source is Page 1 cell A9.
+  - Page 2 I86 shows "FORMULA =I12" (Page2!I12) but the intended source is Page 1 I12.
+  - Page 6 H317 shows "FORMULA =H12" (Page6!H12) but should point to Page 1 H12.
+- Result: header text is wrong or blank on the copied sheets and will break if rows/columns shift because the formulas are not anchored to the master header sheet.
+
+Why it's a problem (short)
+- The formulas point to the current sheet rather than the master header sheet. When you copy rows/sheets or change layout those references become wrong. You want all sheets to read the same single source (Page 1).
+
+Fix (simple, 2 options)
+Option A — Quick direct fix (use explicit sheet references)
+1. On a sheet where the header is wrong, edit the formula so it explicitly references Page 1. Example changes:
+   - change =A$9  → ='Page 1'!$A$9
+   - change =I12  → ='Page 1'!$I$12
+   - change =H12  → ='Page 1'!$H$12
+2. Copy that corrected cell across/ down as needed. Because it contains the sheet name and $ anchors, every sheet will pull from the master header correctly.
+
+Option B — Better: use named ranges (recommended for maintenance)
+1. On Page 1 define names for each header cell: select A9 → Formulas > Define Name → call it Version1 (or something meaningful). Do the same for I12 etc.
+2. On other sheets replace =A$9 or =I12 with =Version1 or =Header_I12. Named references always point back to the single source, are easier to read and safer when moving cells.
+
+How to apply the fix quickly (bulk)
+- Use Find & Replace to update formulas if consistent:
+  - Ctrl+H: Find =A$9 Replace ='Page 1'!$A$9 ; repeat for other commonly used header references (I12, H12, A$10, etc.).
+  - Or edit one cell to use named range, then copy that cell across sheets.
+
+Verify
+- After changes, check a few cells on Pages 2–6. They should now show the same values as Page 1 and not change when you move rows or copy sheets.
+
+If you want, I can:
+- Give the exact Find/Replace list for all header formulas shown in your workbook, or
+- Produce the named-range names and the formula replacements (I can generate a short list you can paste into Excel).
+
+Which would you prefer?

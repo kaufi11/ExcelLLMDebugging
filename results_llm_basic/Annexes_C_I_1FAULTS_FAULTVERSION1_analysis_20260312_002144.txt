@@ -1,0 +1,31 @@
+I reviewed the workbook and found the main formula errors and a couple of risky/ambiguous formulas. Short, clear fixes below.
+
+1) Wrong %‑variance cell in annex f (Total Funds)
+- Problem: annex f cell K68 is set to =K48 (copies the % variance for “Total Net Assets”).
+- Why it’s wrong: K68 should show the % variance for Total Funds (row 68), not reuse the % for a different row.
+- Fix: Replace the formula in annex f K68 with:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Effect/Explanation: This calculates (Revised–Original)/Original for Total Funds and returns "N/A" if the original (H68) is zero to avoid divide‑by‑zero.
+
+2) Cash / balance sheet reconciliation in annex g (original and revised)
+- Problem: annex g uses these reconciliation formulas:
+  - T26 = T19 - ('annex f'!H20+'annex f'!H21)
+  - T49 = T42 - ('annex f'!I20+'annex f'!I21)
+  These subtract only Investments + Cash from the balance‑sheet annex, but the “Financed by” label in annex g says “inc short term investments and bursary/hardship funds” — the unspent bursary/hardship balance is in annex f row 31 (H31/I31) and is omitted.
+- Why it’s a problem: If the intent is to reconcile with (Investments + Cash + Unspent bursary/hardship), the current formula will show a non‑zero difference when H31/I31 ≠ 0.
+- Fix: Change formulas to include the unspent bursary/hardship cell:
+  - T26 = T19 - ('annex f'!H20+'annex f'!H21+'annex f'!H31)
+  - T49 = T42 - ('annex f'!I20+'annex f'!I21+'annex f'!I31)
+- Effect/Explanation: Now T26/T49 compare the cash closing balance in the cash sheet against the balance‑sheet items: investments + bank cash + unspent bursary/hardship, matching the label.
+
+3) Ambiguous sum in Annex I (underlying operating surplus)
+- Problem: annex I H27 = SUM(H10:H26). H10 is unused/blank and the range may include rows that are not intended to be part of the calculation (risk if rows are moved/inserted later).
+- Recommendation/fix: Use an explicit sum of the relevant lines (the sheet shows the intended inputs at H11, H14, H17, H20). Replace with:
+  =H11+H14+H17+H20
+- Effect/Explanation: This is clearer, less error‑prone and will not pick up unintended cells if the layout changes.
+
+Additional note
+- There are many IF(...Hn=0,"N/A",...) constructs to avoid divide‑by‑zero; those are fine and should be left as is.
+- After you change the formulas above, re-check any downstream summaries or charts that rely on K68, T26/T49, and H27 to ensure nothing else needs adjustment.
+
+If you want, I can give you the exact sequence of keystrokes or a short VBA script to update those cells automatically.

@@ -1,0 +1,68 @@
+I inspected the formulas you provided for both sheets and found several formula errors and a number of inconsistent / probably unintended formula patterns. Below I list the concrete problems (by sheet, address), explain why each is wrong or fragile, and give recommended fixes.
+
+MasterMethod_Checks — issues found
+- H19: formula =LOG(A19,517)
+  - Problem: different base (517) than all other H-row log formulas (which use base 2). This is almost certainly a typo.
+  - Fix: change to =LOG(A19,2).
+
+- Row 11 (A11, B11, C11, D11, H11)
+  - Observed: B11 = A11/2 evaluated to 0, C11 = A11^$B$6 evaluated to 0, D11 = B11/C11 -> #DIV/0!, H11 = LOG(A11,2) -> #VALUE!
+  - Problem: n = 0 (A11 = 0) triggers division by zero and log(0). Starting n at 0 will produce these errors.
+  - Fix: start your n sequence at 1 (or guard formulas against n ≤ 0), e.g. wrap D11 as =IF(C11=0,NA(),B11/C11) or ensure A11 ≥ 1.
+
+- Minor: CE calculation (B6 = LOG(B4,B5))
+  - This formula is correct for CE = log_b(a) only because you placed number=a (B4) and base=b (B5). The LOG function is LOG(number, base). If users expect to enter a and b in different cells or with different semantics, be aware of the parameter order. (Not an error with current values; mentioning as a potential pitfall.)
+
+SubstitutionMethod_Checks — issues found
+- Row 10 (n = 1) produces multiple error values
+  - B10 = $B$4*A10*LOG(LOG(A10,2),2) -> #VALUE!
+  - C10 = $B$5*LOG(LOG(A10,2),2) -> #VALUE!
+  - D10 = 5*1 + A10/LOG(A10,2) -> #DIV/0!
+  - E10, F10, G10 -> propagate #VALUE!/#DIV/0!
+  - Reason: LOG(A10,2) = LOG(1,2) = 0, so LOG(LOG(1,2),2) = LOG(0,2) is invalid; dividing by LOG(1,2) causes division by zero.
+  - Fix: either exclude n = 1 from the table, or add guards (IF statements) to handle n ≤ 1 cases. Example: compute the asymptotic expression only for n>1, or wrap with IF(A10>1, formula, NA()).
+
+- C10 inconsistent formula compared to other C rows
+  - C10 uses "=$B$5*LOG(LOG(A10,2),2)" (missing multiplication by A10) while nearly all other C-row formulas are "=$B$5*A##*LOG(LOG(A##,2),2)".
+  - Problem: missing factor A10 is inconsistent and likely a typo.
+  - Fix: change C10 to = $B$5 * A10 * LOG(LOG(A10,2),2) (or apply the same formula pattern used in other rows).
+
+- Column D: inconsistent/incorrect absolute references (many D cells)
+  - Pattern/error: after row 18 the column D formulas change from 5*1 + A/LOG(A,2) to formulas that use references to other D cells as multiplicative constants, e.g.:
+    - D19 = "=5*$D$11 + A19/LOG(A19,2)"
+    - D20 = "=5*$D$11 + A20/LOG(A20,2)"
+    - D21, D22, D23 also reference $D$11
+    - D24..D28 reference $D$12
+    - D29..D33 reference $D$13
+    - D34..D38 reference $D$14
+    - D39 references $D$15
+  - Problem: This is inconsistent and almost certainly unintended. Instead of the constant part being "5*1" (or some fixed scalar), the formula multiplies 5 by an earlier D-value (D11, D12, D13, …). That changes the constant term massively and causes groups of rows to use different constants. It looks like a copy/auto-fill mistake where the constant '1' (or an intended absolute reference) got replaced by absolute references to other D cells.
+  - Evidence: D11..D18 use =5*1 + A/LOG(A,2) → values around 5–8; D19.. show ~38 because 5*$D$11 = 5*7 = 35 plus the small A/LOG(A,2) term.
+  - Fix: make column D consistent. If intended constant is 5*1, use =5 + A#/LOG(A#,2) for every row. If you intended to use a fixed cell constant (say $D$5 or $E$1), use that single absolute reference consistently (e.g. =5*$E$1 + A#/LOG(A#,2) or better, put the constant 1 in a named cell and use it).
+
+- Many D formulas have inconsistent anchoring across rows
+  - Some D cells use =5*1 + A#/LOG(A#,2) while others use =5*$D$11 + A#/LOG(A#,2) or =5*$D$12 + ... etc.
+  - Fix: standardize to one pattern; recommended: set D# = 5 + A#/LOG(A#,2) or use a dedicated constant cell for the 1 and reference it absolutely.
+
+- Propagated logic/IF checks rely on error values
+  - The IF comparisons in E/F/G rows compare values that can be #VALUE! or #DIV/0!, causing E/F/G to also show errors or propagate incorrect booleans.
+  - Fix: protect comparisons with IFERROR/ISNUMBER tests or precondition tests (e.g. only compute comparisons when both sides are numeric).
+
+Other notes / recommendations
+- Use a single cell for fixed constants (like the additive constant 1 in the D formulas) and reference it absolutely ($X$1). That avoids accidental reference drift when copying formulas.
+- For expressions involving nested logs, guard n so that you never compute LOG(LOG(n,2),2) for n ≤ 1. Use IF(A#>1, formula, NA() or "").
+- Where you expect exact equality (like B = 0.5 * C in MasterMethod), your boolean tests use string "TRUE"/"FALSE" comparisons. Consider using direct boolean expressions (e.g. =B# <= E#) which return TRUE/FALSE booleans (instead of IF(...,"TRUE","FALSE")) — that simplifies logic and nested IFs.
+
+Summary of the most important fixes to apply first
+1. Fix H19 in MasterMethod: =LOG(A19,2).
+2. Remove / guard n=0 row in MasterMethod (A11) — start at n=1 or protect formulas against n ≤ 0.
+3. In Substitution sheet:
+   - Fix the inconsistent C10 formula (multiply by A10).
+   - Standardize column D formulas to use =5 + A#/LOG(A#,2) (or consistent absolute reference), removing the unintended references to $D$11, $D$12, etc.
+   - Add guards for n ≤ 1 to avoid nested-log and divide-by-zero errors.
+
+If you want, I can:
+- produce the exact replacement formulas for each affected cell (I can generate a list of corrected formulas for D19:D39, C10, H19, and an example guard wrapper),
+- or generate a cleaned copy of the sheet with these corrections applied (if you provide write access).
+
+Which would you prefer?

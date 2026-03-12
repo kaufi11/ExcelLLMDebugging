@@ -1,0 +1,45 @@
+Summary — main errors found
+1) Wrong cell reference (cross-year): H12 = SUM(H6,I8,H7) — it uses I8 (2000‑01 Room+Board) instead of H8 (2001‑02 Room+Board). This mixes years and gives a wrong Out‑of‑State comprehensive total for that year.
+
+2) Hard‑coded component where other years use formulas:
+   - F8 is a hard value 4892, while G8/H8/I8 are formulas (=G9+G10 etc). Because F8 is not calculated from F9+F10 it can (and does) disagree with its components.
+   - F11 appears entered as the value 7228 instead of using the same formula pattern as the other years (=F5+F8+F7). (You listed F11 as 7228 while the other years use formulas.)
+   - G36 is entered as 584 (hard value) while the corresponding cells in other columns use =SUM(range). This creates inconsistency in the Out‑of‑State required‑fees subtotal.
+
+Why these are errors
+- Incorrect references (H12) produce totals that mix data from different years — wrong numbers.
+- Hard‑coding totals or subtotals bypasses the component cells, so if any component changes the totals won’t update and will be inconsistent with other columns that use formulas.
+
+How to fix (simple steps)
+1) Fix H12 (wrong reference)
+   - Select H12, change the formula to: =H6+H8+H7
+   - Or: =SUM(H6,H8,H7)
+   - Press Enter.
+
+2) Make Room & Board (F8) consistent
+   - Select F8, change the formula to: =F9+F10
+   - Press Enter.
+   - Then copy that formula pattern across the room+board cells (if necessary) to ensure all year columns compute from their Room Only and Board Only rows.
+
+3) Make F11 a proper formula (if it's currently hard-coded)
+   - Select F11, enter: =F5+F8+F7
+   - Press Enter.
+   - Or, once F11 is correct for column F, you can copy/drag the formula across to columns G:I to keep them consistent.
+
+4) Replace hard-coded G36
+   - Select G36, enter: =SUM(G21:G29)
+   - Press Enter.
+   - Do the same for any other column where a subtotal was hard-coded; use the same SUM formula pattern used in the other columns (e.g., D36,E36,F36,H36,I36,J36,K36).
+
+Verify
+- After fixing F8: F8 becomes 4272 (because F9 2466 + F10 1806 = 4272).
+- After fixing F11: F11 becomes 6608 (F5 1168 + F7 1168 + corrected F8 4272 = 6608).
+- After fixing F12 (it’s already a formula =F6+F7+F8) it will update automatically to 14479 (F6 9039 + F7 1168 + F8 4272).
+- After fixing H12 it will use H8 (correct year) and produce the correct Out‑of‑State comprehensive total for that year.
+
+Extra recommendations (short)
+- Replace hard numbers in totals with formulas throughout the sheet so all totals update automatically.
+- Use Fill Right to copy formulas across year columns instead of retyping to avoid reference mistakes.
+- Fix typos in labels (sheet name "Tution" → "Tuition") for clarity (optional).
+
+If you want, I can give the exact corrected formulas for any other specific cells or produce a list of all cells that should be formula‑based so you can fix them in one pass.

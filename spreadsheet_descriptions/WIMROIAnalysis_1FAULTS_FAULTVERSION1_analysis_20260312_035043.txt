@@ -1,0 +1,67 @@
+Overview
+- Workbook: 3 sheets. Sheet1 contains the complete ROI model; Sheet2 and Sheet3 are present but no contents provided (likely blank/unused).
+- Layout convention (Sheet1): column A = labels/benefit descriptions; column C = user input/data; column E = "Min. Savings" (conservative calc); column G = "Max. Savings" (optimistic calc); column I = "Avg. Savings" (average of E and G); column K = "Your Savings" (uses user-selected % in column C). Many intermediate rows are grouped by application.
+
+Main sections (Sheet1)
+1) Header
+   - A1–A2 title/attribution.
+
+2) Receiving Application (rows ~7–42)
+   - Line items: Improve Receiver Productivity, Reduce Inventory Float Dollars, Reduce Clerical Effort, Reduce Paperwork, Reduce Keypunch, Reduce Missing Inventory Research.
+   - Inputs: e.g., C9 = Avg. # of Receivers/Hr (1), C10 = # Hrs/Yr (1920), C11 = Rec. Clerk Rate/Hr Burdened (22.49), C12 = Range low (0.16).
+   - Calculations: E = conservative savings (e.g., E9 = C9*C10*C11*0.16), G = optimistic (e.g., G9 uses 0.25), I = (E+G)/2, K = user scenario (e.g., K9 = C9*C10*C11*C12).
+   - SUBTOTAL row: E42/G42/I42/K42 = SUM of corresponding E/G/I/K rows in the receiving block.
+
+3) Putaway / Picking / Shipping Application (rows ~44–95)
+   - Line items: Improve DOS (billing), Putaway productivity, Picking, Consolidation, Bin-to-Bin, Issue-to-Production, Shipping, Paperwork.
+   - Inputs: typical rates = 17.39/hr, hours per person vary (e.g., C55 = 960); DOS uses Annual Sales (C48), interest rate (C50 = 0.065) and days saved (C51 = 3).
+   - Same E/G/I/K pattern and subtotal at E95/G95/I95/K95 = SUM(E48:E94) etc.
+   - Note: one formula anomaly: G86 shown as =C86*C87*61*0.25 (likely a typo — "61" should probably be C88 or 1).
+
+4) Warehouse Application (rows ~100–149)
+   - Line items: Lift truck productivity, Reduce maintenance, Eliminate physical inventory, Inquiry process, Reduce inventory costs (multiple methods), Keypunch, Paperwork.
+   - Key inputs: C105 = 2080 hrs, many rates default to 17.39; Method 2/3 inventory reduction references C130/C135 which are blank in provided extract.
+   - Subtotal E149/G149/I149/K149 aggregated from individual E/G items.
+
+5) Grand totals and ROI calculations (rows ~151–266)
+   - TOTAL SAVINGS (E151/G151/I151/K151) = sum of Receiving + Putaway/Pick/Ship + Warehouse subtotals.
+   - Summary tables map each line item into a compact summary (rows ~172–238) with same Min/Max/Avg/Your columns.
+   - Consolidated summary (rows ~249–266):
+     - TOTAL ANNUAL SAVINGS (A) in C255/E255/G255/I255 (sums of subtotals).
+     - Capital investments: C257 Hardware = 60,000; C258 Software = 91,121; C259 Depreciation years = 3.
+     - Payback Period (months) = ((B+C)/A)*12 implemented in C262/E262/G262/I262 using the column-specific totals.
+     - Return-on-Investment = (A * D) / (B + C) in C264/E264/G264/I264.
+     - Projected Monthly Cash Generation = A/12 in C266/E266/G266/I266.
+
+Formula patterns and conventions
+- E (Min) typically multiplies count * hours/year * rate * lower% (e.g., *0.16 or calculated days*interest).
+- G (Max) uses the upper% (e.g., *0.25, *0.44, or *4 days).
+- I = average of E and G.
+- K = user-selected/specific scenario: many K cells use a percentage value from a nearby C cell (e.g., C12, C23, C57) so the "Your Savings" column is driven by those input % cells.
+- Many SUM rows aggregate the E/G/I/K columns for subtotals and totals.
+
+Key input values provided (defaults)
+- Receiver: C9=1, C10=1920, C11=22.49, C12=0.16 (range 16–25%).
+- Putaway/Picking: example C54=2 personnel, C55=960 hrs, C56=17.39/hr, default % = 0.25 in C57.
+- Shipping pickers, lift trucks, clerks mostly use rate 17.39 and common hours 1920 or 2080.
+- Capital: Hardware C257 = 60,000; Software C258 = 91,121; Depreciation years C259 = 3.
+- Interest rate for DOS: C50 = 0.065.
+
+Data gaps / notes
+- Several input cells referenced (e.g., C15, C130, C135, C110, C111, C112, C113) are blank in the provided extract — as a result some E/G/K calculations will be zero or incomplete until those inputs are filled.
+- Small formula inconsistency: G86 includes "61" literal which looks like a typo.
+- Many K (Your Savings) formulas depend on the user-entered % cells (column C) for scenario customization.
+
+Intangibles / documentation
+- Rows ~172–206 contain a text list of intangible benefits for each application (Receiving, Putaway/Picking/Shipping, Warehouse) to be considered but not quantified.
+
+Overall flow
+- User fills column C inputs (counts, hours, rates, chosen % savings).
+- Model calculates conservative (E), optimistic (G), average (I) and user-specified (K) savings per line.
+- Subtotals aggregate by application; final summary sums all and computes payback, ROI and monthly cash generation based on capital investments.
+
+If you want, I can:
+- Extract numeric results for the current default inputs,
+- Flag all blank/required input cells,
+- Correct the suspected formula typo(s), or
+- Convert the model to named ranges for readability.

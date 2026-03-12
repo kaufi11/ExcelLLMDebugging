@@ -1,0 +1,46 @@
+I reviewed the formulas in the workbook and checked references, ranges and calculated outputs. Summary first (quick), then details and recommended fixes.
+
+Summary — primary issues found
+- A clear formula error in sheet "900 Class": cell M5 contains a constant (193) instead of referencing L5. That produces a hugely incorrect adjusted score (661.8959).
+- Several minor/informational inconsistencies:
+  - Inconsistent multiplier precision (3.33333 vs 3.333333 vs 3.3333333) across sheets (not a calculation error but inconsistent).
+  - Several cells contain single-space strings (" ") instead of truly empty cells; those will be ignored by COUNT (and SUM) and can produce subtle differences if you expect them to be blank/numeric.
+  - Use of different anchor cells for normalization per sheet (L$85, L$81, L$84) — this appears intentional but is something to verify conceptually (each sheet uses its own baseline).
+
+Details and recommended fixes
+
+1) Hard-coded constant instead of cell reference (error)
+- Location: Sheet "900 Class", cell M5
+- Current formula: =(193+L$85)*3.33333
+- Problem: all other rows on that sheet use the pattern =(Ln+L$85)*3.33333 (where Ln is the per-row L cell). M5 uses the literal 193 which yields ~661.9, clearly inconsistent with other adjusted scores.
+- Likely intended formula: =(L5+L$85)*3.33333
+- Action: replace the 193 constant with L5 (or the correct row reference if L5 is not the intended source).
+
+2) Blank / "space" strings
+- Many cells show a single space (" ") rather than truly empty. Examples on multiple sheets (e.g. many M cells, some B..H cells with "   ").
+- Effect: COUNT(range) and SUM(range) ignore text; so COUNT(L4:L40) will not count these as missing numeric entries — probably intended — but can be confusing if someone expects COUNT to treat them as missing numeric values.
+- Recommendation: if you mean "no value", clear the cell (make it blank) rather than enter a space. If you need an explicit visible indicator use NA(), "-" or a genuine text label, but be aware of how it affects COUNT/SUM.
+
+3) Minor formula/format inconsistencies (cosmetic)
+- Multipliers use slightly different decimal lengths across sheets:
+  - "900 Class" uses 3.33333 (and some rows 3.333333)
+  - "1030 Class" uses 3.333333
+  - "Noon Class" uses 3.3333333
+- Not functionally wrong, but you may want to standardize precision (use one consistent multiplier or, better, a named cell for the constant).
+
+4) Range splitting in summary cells — confirm intention
+- Example "900 Class": L81 = SUM(L4:L40)+SUM(L44:L79), L82 = COUNT(L4:L40)+COUNT(L44:L79)
+- The SUM/COUNT intentionally skip rows L41:L43 (which are header/duplicate header rows). This is fine if intended. Just verify that the ranges are correct and won't miss data in other row blocks.
+- Same approach in the other class sheets (ranges are split around header rows) — consistent pattern, just verify the split boundaries match where data is.
+
+5) Cross-check sample formulas in Sheet1 (spot checks)
+- Formulas in Sheet1 look consistent (e.g. L6 =(J6-K6)/5 and Z6 = Y6*0.75+L6*0.25). I checked a few rows and the numeric outputs match those formulas. No obvious bad hard-coding like the M5 case above in Sheet1.
+
+Anything else to check / suggestions
+- If the adjusted scores in columns M across sheets are meant to be "normalized to a class mean" it is a good idea to document the anchor cell (L$81 / L$84 / L$85) in a single place or use a defined name (e.g. NormalizingOffset) per sheet so formulas are easier to audit and less error-prone.
+- Replace single-space placeholders with real blanks or a clear missing-value marker to avoid confusion in COUNT/SUM.
+- Standardize the multiplier (3.333333...) to a named constant or cell so if the conversion factor changes you only update one cell.
+
+If you want, I can:
+- Generate a list of every cell whose formula deviates from the expected pattern (e.g. all M cells that should be =(Ln+L$xx)*3.3333 but aren't).
+- Provide the exact corrected formulas and optionally rewrite them to use named ranges (per-sheet anchor) for consistency.

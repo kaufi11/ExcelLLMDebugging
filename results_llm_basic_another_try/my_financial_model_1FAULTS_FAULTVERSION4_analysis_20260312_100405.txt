@@ -1,0 +1,45 @@
+Errors found:
+
+1. **Lemonade Price Growth Rate Reference Error (Row 4):**  
+   The growth rate in D4 is set as `=0.08/12` (about 0.0067), but the formulas in E4:P4 use `$D$4` as the growth rate, which is correct. However, the initial price in E4 is set as 4, which is inconsistent with the growth rate of 0.0067 (0.08/12). This means the price jumps from 4 to 4.027 in F4, which is a very small increase compared to the initial price. This might be intentional, but the initial price and growth rate seem mismatched.
+
+2. **Sugar Price Growth Rate Reference Error (Row 8):**  
+   The sugar price growth formulas in F8:P8 use `$D$7` as the growth rate, which is the lemon price growth rate cell, not the sugar price growth rate. The sugar price growth rate should be in `$D$8` but is not used. This causes sugar price to grow at the lemon price growth rate, which is incorrect.
+
+3. **Total Revenue Calculation (Row 12):**  
+   The total revenue in row 12 (E12:P12) sums only the online sales (row 10), ignoring street sales (row 11). It uses `=SUM(E10:E10)` instead of `=E10+E11`. This underestimates total revenue.
+
+4. **Annualized Revenue (Row 13):**  
+   Annualized revenue multiplies total revenue by 12, but since total revenue is incorrect (missing street sales), annualized revenue is also incorrect.
+
+5. **Retained Earnings Cumulative Formula (Balance Sheet Row 19):**  
+   The formula in F19 is `=Income!F33+E19`, G19 is `=Income!G33+F19`, etc. This creates a cumulative sum but references the previous cell in the same row, which can cause circular references or incorrect accumulation if not carefully handled.
+
+6. **Depreciation Total (Depreciation Sheet Row 11):**  
+   The total depreciation formula in M11:P11 only copies the depreciation from M7:P7, missing the cumulative addition like in E11:J11. This inconsistency can cause errors in total depreciation.
+
+Solutions:
+
+1. **Sugar Price Growth Rate Fix:**  
+   Change the sugar price growth formulas in F8:P8 from using `$D$7` to `$D$8`.  
+   Explanation: Sugar price growth should use its own growth rate in D8, not the lemon price growth rate in D7.
+
+2. **Total Revenue Fix:**  
+   Change total revenue formulas in E12:P12 to sum both online and street sales:  
+   For example, in E12: `=E10+E11` instead of `=SUM(E10:E10)`  
+   Explanation: Total revenue must include all sales channels.
+
+3. **Retained Earnings Fix:**  
+   Use a cumulative sum formula that references the previous year's retained earnings correctly without circular reference. For example, in E19: `=Income!E33` (first year), then in F19: `=Income!F33+E19`, G19: `=Income!G33+F19`, etc. This is correct if no circular reference exists. Just verify no circular reference error occurs.
+
+4. **Depreciation Total Fix:**  
+   Make total depreciation in M11:P11 consistent with E11:J11 by summing previous total plus current depreciation. For example, in M11: `=L11+M7`, N11: `=M11+N7`, etc.  
+   Explanation: This ensures total depreciation accumulates correctly.
+
+Summary:  
+- Fix sugar price growth rate reference from `$D$7` to `$D$8`.  
+- Fix total revenue to sum online and street sales.  
+- Verify retained earnings formula for correct cumulative addition.  
+- Fix depreciation total accumulation in last columns.
+
+These fixes will correct calculation errors and improve accuracy.

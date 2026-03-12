@@ -1,0 +1,45 @@
+I reviewed the workbook structure and formulas you gave. I found several real / likely problems that will produce wrong outputs or fragile behavior — plus short fixes and explanations for each. I'll keep it short and clear.
+
+1) Wrong cells pulled into the input-output outcome column (misaligned reference)
+- Problem: input-output!I3 is = 'Data Analysis'!B1 (and H3 = 'Data Analysis'!A2). Those pull header text cells instead of the first outcome's computed total/label. This makes the outcome totals and the Over/Under comparisons misaligned/wrong.
+- Fix: point input-output row 3 (and the whole block) at the Data Analysis row that contains the first outcome's results. Example:
+  - Change input-output!H3 to = 'Data Analysis'!A3 (course/outcome label) and input-output!I3 to = 'Data Analysis'!B3 (first outcome total). Then copy those formulas down so each input-output row i pulls Data Analysis Ai and Bi.
+- Why: you must reference the row that contains the computed outcome value (B3, B4, etc.), not the header (B1) or an off-by-one row.
+
+2) Include-mode check can be brittle (accepts only exact text)
+- Problem: Data Analysis uses IF('input-output'!$I$48="Y",CL#,CM#) to choose totals. If a user types " y " with spaces or some lowercase/typo, the logic may misbehave (or be confusing).
+- Fix (robust): use normalized comparison:
+  - =IF(UPPER(TRIM('input-output'!$I$48))="Y", CL#, CM#)
+  - Also update input-output!O49 to use the same normalization: =IF(UPPER(TRIM($I$48))="Y", "INCLUDES ALL EXTENTS", "ONLY CONSIDERS 4 AND 5 EXTENTS")
+- Why: TRIM/UPPER removes accidental spaces and lower/upper mismatch so the toggle reliably switches modes.
+
+3) Very fragile/verbose "only 4 & 5" formulas
+- Problem: CM# formulas are written as a huge SUM(IF(AU#>=4,AU#,0) + IF(AV#>=4,AV#,0) + ...). This is error-prone, hard to audit, and easy to omit a column.
+- Fix (clean & safer): replace each long expression with a SUMPRODUCT:
+  - Example: replace CM5 with =SUMPRODUCT((AU5:CI5>=4)*(AU5:CI5))
+  - Keep CL# = SUM(AU#:CI#) for the "include all extents" total.
+- Why: SUMPRODUCT version is shorter, easier to maintain, less chance of missing/duplicating columns, and much faster to audit.
+
+4) Totals (I52, J52, B46) use explicit lists instead of ranges (risk of omissions)
+- Problem: input-output!I52 and J52 and Data Analysis!B46 are SUMs of individually listed cells (SUM(I5+I9+I10+...)) or SUM(B4+B8+...). That works but is fragile if you later insert/remove rows or forget to include a row.
+- Fix: use contiguous ranges (or a dynamic named range). Examples:
+  - I52 → =SUM(I5:I46) (or whatever exact outcome-row range is)
+  - J52 → =SUM(J5:J46)
+  - B46 → =SUM(B4,B8,B9,B20,B30,B37,B41,B42,B43,B44,B45) could be left as-is if those particular row groups are non-contiguous, but better to place the section totals in a contiguous block and sum a range.
+- Why: ranges reduce errors from omitted cells and make maintenance simpler.
+
+5) Inconsistent/unclear header mapping (check Data Analysis row2 mapping)
+- Symptom to watch for: Data Analysis row2 is supposed to pull the selection flags (input-output!D#) — verify that each column in row2 actually points to the intended input-output row. There are many columns mapping to input-output D10, D11, F10, etc.; any off-by-one here will cause wrong course inclusion.
+- Fix: audit a few columns: pick a known course in input-output (e.g., CE1030 row) and check Data Analysis the mapped column (D2, etc.) shows the same "x". Correct any column that points to the wrong input-output row.
+- Why: all selection logic depends on correct mapping of the "x" flags in Data Analysis row2.
+
+Summary of the actionable changes I recommend now
+1. Fix the misaligned references on input-output rows so they pull Data Analysis A3/B3 etc., not headers. Copy down consistently.
+2. Make the include-mode tests robust: use IF(UPPER(TRIM($I$48))="Y", ...).
+3. Replace the long CM# IF-sums with SUMPRODUCT((AU:CI>=4)*(AU:CI)) for each outcome.
+4. Replace manual SUM of individual cells with SUM(range) wherever possible (I52, J52).
+5. Verify the course-selection mapping row (Data Analysis row2) points to the correct input-output D-row for each course.
+
+If you want, I can:
+- Give the exact formulas to paste for one full outcome row (CL#, CM#, B#, and the input-output I# formula) so you can copy them down, or
+- Show exactly which input-output→Data Analysis cell mappings look off if you paste the current values in column D (the "x" flags). Which would you prefer?

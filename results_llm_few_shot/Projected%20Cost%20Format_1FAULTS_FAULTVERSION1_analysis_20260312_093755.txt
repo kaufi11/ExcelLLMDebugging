@@ -1,0 +1,39 @@
+Found the main problems (short, with fixes):
+
+1) Sheet "Seq Production Costs" — Other Activities grand total wrong
+- Faulty cell: G21
+- Error: Uses COUNT(G19:G20) which returns a count of filled cells instead of summing dollar values. This corrupts the overall one-year total (B23) and the "Other" % calculations (H20).
+- Fix/formula: change G21 to =SUM(G19:G20)
+- Why: SUM adds the monetary values; COUNT returns a count (1,2, …), not dollars.
+
+2) Sheet "Seq Production Costs" — possible ambiguity for Q20 average cost
+- Cell to check: C11 (=B21/C10 currently)
+- Note: This is only correct if Q20 bases share the shotgun cost pool (B21). If Q20 bases have their own grand cost, it should be =C21/C10 and C21 should be computed (see next).
+- If Q20 uses shotgun cost: keep C11 =B21/C10 (no change).
+- If Q20 has its own grand total: set C21 =SUM(C19:C20) and change C11 to =IF($C$10=0,"",C21/C10)
+- Why: Make sure the numerator (grand cost) matches the column you are dividing by.
+
+3) Sheets "Tech Dev Costs" and "Bioinformatics Costs" — division by zero
+- Faulty cells (examples): TechDev B18 (=B17/B6); Bioinfo B18 (=B17/$B$6), B31 (=B30/$B$6), B44 (=B43/$B$6)
+- Error: B6 on both sheets is 0, so formulas dividing by $B$6 return #DIV/0 or wrong results.
+- Fixes (pick one):
+  a) Enter the correct TOTAL COSTS value into B6 (recommended if you have that number).
+  b) Protect formulas against zero: replace formulas with, for example,
+     =IF($B$6=0,"",B17/$B$6)
+     or
+     =IFERROR(B17/$B$6,0)
+- Why: Dividing by zero is invalid; either provide the correct denominator or guard the formula so it returns blank/0 until B6 is filled.
+
+4) Downstream impact to totals
+- After fixing G21 and the B6 issues, verify:
+  - Seq!B23 =B21+D21+G21 will now produce correct one-year total.
+  - All % cells using $G$21 or $B$6 as denominators will yield correct percentages.
+  - Any #DIV/0 errors will disappear once denominators are non-zero or IF/IFERROR is used.
+
+Quick checklist to apply:
+- Change Seq!G21 to =SUM(G19:G20).
+- Decide whether C11 should use B21 or C21; adjust C21 to SUM(C19:C20) if needed.
+- Populate TechDev!B6 and Bioinfo!B6 with the proper totals, or wrap percentage formulas with IF($B$6=0,"",...).
+- Recalculate and confirm B23 and percentage rows show expected values.
+
+If you want, I can give the exact formulas to paste into each faulty cell (or produce a single corrected summary formula set).

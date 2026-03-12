@@ -1,0 +1,31 @@
+Summary of problems
+1) Consistent bad pattern: many "Remaining" cells use formulas like =SUM(C10-E10). SUM is being used around an arithmetic expression. That usually works (SUM evaluates the single result) but is poor practice and can mask errors. Use plain subtraction instead: =C10-E10.
+
+2) True error (wrong reference): G19 is =SUM(D19-E19). D19 is the wrong column — it should reference C19. This makes G19 show 0 instead of 2.
+
+3) Minor style/consistency: C61, E61, G61 use SUM with pluses: =SUM(C10+C24+...). That works but is nonstandard. Better to use either =C10+C24+... or =SUM(C10,C24,C30,...).
+
+What to change (quick fixes)
+- Replace every =SUM(Cxx-Eyy) in column G with =Cxx-Eyy. Example:
+  - Change G10 from =SUM(C10-E10) to =C10-E10
+  - Change G13 from =SUM(C13-E13) to =C13-E13
+  - …and so on for G14, G15, G16, G17, G18, G20, G21, G22, G23, G27, G28, G29, G33, G34, G35, G36, G40, G41, G42, G43, G44, G48, G49, G50, G54, G55, G56, G57, G58, G67, G69, G75, G76, G77, G78, G79, G80, G81.
+
+- Fix the typo:
+  - G19: change =SUM(D19-E19) to =C19-E19
+
+- Improve totals syntax (optional, but clearer):
+  - Change C61 from =SUM(C10+C24+C30+C37+C45+C51+C59) to =C10+C24+C30+C37+C45+C51+C59 or =SUM(C10,C24,C30,C37,C45,C51,C59)
+  - Same for E61 and G61.
+
+Why this fixes it
+- =Cxx-Eyy explicitly subtracts Year-to-date from Allocation. Using SUM around a single arithmetic expression is redundant and can hide reference mistakes.
+- G19 referenced D19 (blank) so the remaining balance was wrong; pointing it to C19 uses the correct Annual allocation.
+- Using proper SUM argument syntax or plain addition is clearer and less error-prone.
+
+Quick way to implement
+- In G10 type =C10-E10 and drag-fill down to G81. Then manually correct any rows that shouldn't be changed.
+- Manually edit G19 to =C19-E19.
+- Edit C61/E61/G61 to the clearer form if you want.
+
+That will correct the wrong remaining figures and make the workbook easier to audit.

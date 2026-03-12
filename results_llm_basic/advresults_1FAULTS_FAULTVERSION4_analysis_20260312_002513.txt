@@ -1,0 +1,46 @@
+I checked the three sheets. Summary: you have two types of problems: incorrect/ inconsistent RANK ranges (causes wrong places) and inconsistent points logic (you convert Modeling place to "points" but do not convert Strut/Solo places the same way, so Total Points mixes apples and oranges).
+
+Below are the errors found and simple fixes.
+
+1) Incorrect RANK ranges (fix these first)
+- Pre‑Teen J2 is wrong: =RANK(I2,I2:I15) — it should include all contestants (row 16). Use absolute refs so it copies correctly.
+  Correct: =RANK.EQ(I2,$I$2:$I$16,0)  (or =RANK(I2,$I$2:$I$16,0))
+- Pre‑Teen final place L2 uses K2:K13 but your contestant block is rows 2:16:
+  Correct: =RANK.EQ(K2,$K$2:$K$16,1)  (use order=1 if lower total = better)
+- College K2 uses J2:J2 (only itself) — that will always return 1.
+  Correct: =RANK.EQ(J2,$J$2:$J$25,1)  (adjust 25 to the actual last row)
+- Many other RANK formulas use ranges like D2:D30 while only a few rows are filled — that isn't wrong technically, but make ranges consistent and absolute ($D$2:$D$30) or shrink to the actual contestant rows so results are predictable.
+- General rule: use absolute ranges and RANK.EQ (or RANK.AVG) so you can copy formulas:
+  Example for a score column in rows 2..N:
+    =RANK.EQ(D2,$D$2:$D$N,0)  (0 = highest score is rank 1; use 1 for ascending)
+
+2) Inconsistent points calculation (logic error)
+- Modeling: you convert Place to points via F = E*0.5 (fine).
+- Strut and Solo: H and J currently hold "Place" (ranks) but you never convert them to points before summing into Total Points (K). That mixes a half‑point measure (F) with raw place numbers (H and J).
+- Fix: decide consistent weighting. If every place is scored as 0.5 × place, total should be:
+  K2 = F2 + (H2 * 0.5) + (J2 * 0.5)
+  or add explicit StrutPoints and SoloPoints columns:
+    Strut Points (new column) = H2*0.5
+    Solo Points (new column) = J2*0.5
+    Total = F2 + StrutPoints + SoloPoints
+- If you instead wanted places (lower better) summed directly, remove the PRODUCT(E2,0.5) and make Modeling points = E2 (but that would change weights). Be explicit which weighting you want.
+
+3) Small/clean‑up suggestions
+- PRODUCT(E2,0.5) works but is unusual. Simpler: =E2*0.5
+- Use RANK.EQ for modern Excel (gives deterministic tie behavior) and absolute ranges so copying formulas works:
+  - Example Pre‑Teen row 2 set of formulas (assuming contestants are rows 2:16):
+    E2 = RANK.EQ(D2,$D$2:$D$16,0)
+    F2 = E2*0.5
+    H2 = RANK.EQ(G2,$G$2:$G$16,0)
+    J2 = RANK.EQ(I2,$I$2:$I$16,0)
+    K2 = F2 + (H2*0.5) + (J2*0.5)
+    L2 = RANK.EQ(K2,$K$2:$K$16,1)
+- In College, fix each final rank to use the full contestants range, e.g.:
+    D2 = RANK.EQ(C2,$C$2:$C$25,0)
+    E2 = D2*0.5
+    G2 = RANK.EQ(F2,$F$2:$F$25,0)
+    I2 = RANK.EQ(H2,$H$2:$H$25,0)
+    J2 = E2 + G2 + I2
+    K2 = RANK.EQ(J2,$J$2:$J$25,1)
+
+If you tell me the exact number of contestants in each category and whether lower total is better (sum of places) or higher points is better, I will give you the exact formulas you can paste for all rows.

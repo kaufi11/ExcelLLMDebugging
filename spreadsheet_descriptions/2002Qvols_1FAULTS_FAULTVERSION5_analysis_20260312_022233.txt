@@ -1,0 +1,56 @@
+Sheet: Sheet2
+- Purpose/title: "RSA 2002 QUARTERLY CUMULATIVE FUEL SALES IN LITERS BY MARKET CATEGORY AND PROVINCE" (A1). Data is organized by market category (column A) and province (column B) with quarterly product volumes and cumulative totals across the row for 2002.
+
+Layout and column mapping (left → right):
+- Column A: Category (e.g., Construction, General Dealers, Government, etc.).
+- Column B: Province (Eastern Cape, Free State, Gauteng, ...).
+- Q1 (Jan–Mar): product columns C:F
+  - C = DIESEL GAS OIL – ALL GRADES
+  - D = ILLUMINATING PARAFFIN
+  - E = LIQUID PETROLEUM GAS
+  - F = PETROL – ALL GRADES
+  - G = Q1 TOTAL (G = SUM(C:F))
+- Q2 (Apr–Jun): product columns H:K
+  - H–K analogous to C–F
+  - L = Q2 TOTAL (L = SUM(H:K))
+- Q1+Q2 cumulative (half year): columns M:P and Q
+  - M = Diesel cumulative (M = C + H)
+  - N = Paraffin cumulative (N = D + I)
+  - O = LPG cumulative (O = E + J)
+  - P = Petrol cumulative (P = F + K)
+  - Q = Q2 cumulative total for all products (Q = G + L)
+- Q3 (Jul–Sep): product columns R:U and V (V = SUM(R:U))
+- Q1+Q2+Q3 cumulative: columns W:Z and AA
+  - W = cumulative diesel through Q3 (W = M + R)
+  - X = cumulative paraffin through Q3 (X = N + S)
+  - Y = cumulative LPG through Q3 (Y = O + T)
+  - Z = cumulative petrol through Q3 (Z = P + U)
+  - AA = cumulative total through Q3 (AA = Q + V)
+- Metadata/code columns: AB, AC contain small codes/text (e.g., "01", category name), AD repeats province.
+- Q4 (Oct–Dec) input block: AE:AH (diesel, paraffin, LPG, petrol for Q4)
+- Final annual cumulative totals (including Q4): AI:AL
+  - AI = AE + W (diesel final cumulative)
+  - AJ = AF + X (paraffin final cumulative)
+  - AK = AG + Y (LPG final cumulative)
+  - AL = AH + Z (petrol final cumulative)
+
+Formula patterns and aggregation:
+- Most per-row quarter totals use SUM over the quarter product columns (e.g., G = SUM(C:F), L = SUM(H:K), V = SUM(R:U)).
+- Cumulative product additions are explicit pairwise sums (e.g., M = C+H, W = M+R, AI = AE+W).
+- Category totals appear periodically (e.g., "Construction Total" row 15, "General Dealers Total" row 25, etc.) and use SUM across the category province rows for each column (e.g., C15 = 53574627, G15 = SUM(C15:F15) etc).
+- Grand totals: final "Grand Total" row 133 aggregates across all categories. Key provided values on that row:
+  - C133 (Diesel Q1 total): 1,581,074,066
+  - D133 (Paraffin Q1 total): 160,521,567
+  - E133 (LPG Q1 total): 116,638,546
+  - F133 (Petrol Q1 total): 2,543,051,188
+  - H133..K133 .. U133..AA133 follow same pattern for later quarters / totals; Q133, V133 and AA133 are quarter/period totals produced by SUM formulas.
+- Final annual product totals by category are built by summing AI:AL for each category and then summed in AI133..AL133 (AI133 = AI15+AI25+...+AI132 etc).
+
+Notable details / anomalies:
+- Some product cells are blank or missing for certain rows (E, J, AG often blank).
+- Occasional negative values appear (e.g., J9 = -31560, T9 = -9600, E60 = -1,496,201) which the formulas carry forward into cumulative totals.
+- Several rows include inline arithmetic instead of a single cell value (e.g., C75 = 44762024+2009667 rather than a pre-calculated number).
+- Repeated blocks: the sheet repeats province/category details in the right-hand block (AD onward) to capture Q4 inputs and compute final cumulative totals in AI:AL.
+
+Overall structure summary:
+- The sheet is a wide table that records product-level fuel sales per province and market category for each quarter, with per-quarter totals, running cumulative totals after each quarter, category subtotal rows, and an overall Grand Total. Formulas are mainly SUM() for quarter totals and direct additions for cumulative steps; higher-level totals are SUMs over the category/province ranges.

@@ -1,0 +1,31 @@
+I checked the three main Annex sheets and found a small number of real errors that will cause reconciliation mismatches or confusing results. Short summary first, then exact fixes.
+
+1) Main error — cash-flow / balance-sheet reconciliation (critical)
+- Problem: The cash-flow reconciliation cells compare the cash-flow closing balance to the sum of Investments + Cash + Unspent bursary on the balance sheet:
+  - ORIGINAL: Table 3 cell T26 = T19 - (Table2!H20 + Table2!H21 + Table2!H22)
+  - ACTUAL:   Table 3 cell T49 = T42 - (Table2!I20 + Table2!I21 + Table2!I22)
+  This is wrong. The cash-flow closing balance (balance c/f) should reconcile to the balance sheet "Cash at Bank / in Hand" only, not also add investments or bursary balances.
+- Why it’s wrong: Investments and unspent bursary balances are separate balance-sheet items. The cash flow closing balance represents cash (and overdraft), so comparing to a sum that includes investments will give a non‑zero difference whenever investments or bursary balances ≠ 0.
+- Fix: Replace the formulas with a single reference to the balance-sheet cash cell:
+  - Change T26 to:
+    =T19 - 'Table 2.0 BS - Annex E'!H21
+  - Change T49 to:
+    =T42 - 'Table 2.0 BS - Annex E'!I21
+- Check: After change, T26 and T49 should be zero (or very small rounding differences) when the cashflow and balance-sheet data match.
+
+2) Variance % for Total Funds (possible mistake / inconsistent)
+- Problem: Table 2 cell K69 (Variance % for Total Funds) is set equal to K49 instead of calculating J69/H69 like other % cells. This may be intentional, but is inconsistent and can be misleading.
+- Fix (recommended): Make K69 consistent with others:
+  =IF(H69=0,"N/A",(J69/H69)*100)
+- If the original intent was to use the same % as Total Net Assets, keep K69=K49 but document it.
+
+3) Minor / non-blocking issues to review
+- B34 = 525+1 (in Table 2 column B) — looks like a copy/paste or numbering error (should probably be previous row +1). This only affects the printed row-number column; not calculations.
+- Many percentage cells return "N/A" when original forecast (H…) = 0. That is by design but be aware: when both original and revised are 0 the sheet shows "N/A" rather than 0%.
+
+What to do now
+1. Update the two reconciliation formulas (T26 and T49) exactly as above.
+2. Optionally change K69 to the standard IF formula for % variance.
+3. Recalculate / refresh the workbook and check that the "These cells should be zero" cells (T26 and T49) are now zero.
+
+If you want, I can give a one-click VBA snippet (or the exact Find/Replace steps) to change the two formulas quickly.

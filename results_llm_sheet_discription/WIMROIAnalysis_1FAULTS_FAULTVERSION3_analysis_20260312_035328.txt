@@ -1,0 +1,62 @@
+Summary — main problems found
+1. Wrong average formula: I86 uses =(E86+G86)/315 — should divide by 2. This gives a massively wrong Avg for Shipping Productivity.
+2. Inconsistent "Range of Savings" usage: some sections store the min % in the "Range" cell, others store the max. That makes the "Your Savings" column (K) use different defaults across sections and gives inconsistent results.
+3. Missing input cells (blank): e.g., C104/C106 (lift drivers/count or rate), C110–C113 (maintenance/fuel/# trucks), C130 (mean warehouse inventory), C132 (min carrying cost), etc. Blank inputs cause zero results and can lead to #DIV/0! in payback/ROI formulas.
+4. Hard-coded constants and inconsistent references: E133/G133 use hard-coded multipliers (0.04/0.06 and 0.18/0.25) instead of referencing the “Range” cells. K133 uses C131*C133 while other formulas use different cells — inconsistent and confusing.
+5. Potential divide-by-zero: Payback and ROI formulas ((B+C)/A and (A*D)/(B+C)) will error if TOTAL ANNUAL SAVINGS (C255 / E255 / G255 / I255) = 0.
+
+What to fix (simple, actionable)
+1. Fix the shipping average formula
+   - Replace I86 with:
+     =(E86+G86)/2
+   - Reason: averages must divide by 2, not 315.
+
+2. Standardize "Your Savings %" usage
+   - Create a dedicated cell/column for the user-selected percent (e.g., insert column D or use a specific Cxx for “Your %” per line).
+   - Update every K-row formula to reference that dedicated "Your %" cell instead of the various C### “Range” cells.
+   - Example: if you put the chosen % for Putaway into C57_YOUR, change K54 to:
+     =C54*C55*C56<C57_YOUR>  (replace <C57_YOUR> with the actual cell)
+   - Reason: eliminates ambiguity and makes “Your Savings” predictable.
+
+3. Replace hard-coded constants with cell references
+   - For inventory/carrying-cost formulas, create explicit cells for the components:
+     - C130 = Mean Warehouse Inventory Value
+     - C131_Min = One-time reduction % (0.04)
+     - C131_Max = One-time reduction % (0.06)
+     - C132_Min = Carrying cost % (0.18)
+     - C133_Max = Carrying cost % (0.25)
+   - Then set:
+     E133 = C130 * C131_Min * C132_Min
+     G133 = C130 * C131_Max * C133_Max
+     I133 = (E133 + G133)/2
+     K133 = C130 * <Your_Reduction_%> * <Your_Carrying_%>
+   - Reason: readable, editable, avoids hidden magic numbers.
+
+4. Fill required input cells or protect formulas with checks
+   - Populate required inputs (C104, C106, C110–C113, C130, etc.) with real values or placeholders.
+   - To avoid errors when inputs are missing, wrap critical formulas with guards. Example for payback (C262):
+     =IF(C255>0,((C257+C258)/C255)*12,"Enter total annual savings")
+   - And for ROI (C264):
+     =IF((C257+C258)>0,(C255*C259)/(C257+C258),"Enter capital values")
+   - Reason: prevents #DIV/0! and gives user-friendly prompts.
+
+5. Audit and align “Range of Savings” cells
+   - Scan all “Range of Savings” cells (C12, C57, C63, C69, C77, C83, C89, C120, C126, C133, etc.) and ensure each stores either a min OR max consistently, or better: create two cells for Min% and Max% for each benefit. Then compute E (min) and G (max) using those two dedicated cells.
+   - Example:
+     C54_Min = 0.16
+     C54_Max = 0.25
+     E54 = C54*C55*C56*C54_Min
+     G54 = C54*C55*C56*C54_Max
+   - Reason: consistent min/max definitions prevent silent miscalculations.
+
+Quick checklist to apply now
+- Change I86 to =(E86+G86)/2.
+- Add a "Your %" cell per benefit and point each K formula to it.
+- Populate blanks: at least C104, C106, C110–C113, C130.
+- Fix E133/G133 to reference newly-created min/max cells rather than hard-coded values.
+- Protect payback/ROI cells with IF tests to avoid divide-by-zero.
+- After changes, recompute totals and verify payback/ROI return sensible values.
+
+If you want, I can:
+- Provide exact corrected formulas for every affected row (I86, all K cells, E/G for inventory section, payback/ROI),
+- Or produce a small template of the corrected layout (min%, max%, your%) you can copy into the sheet. Which would you prefer?

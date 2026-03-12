@@ -1,0 +1,23 @@
+I checked the formulas in the workbook you provided. Only one clear formula inconsistency/error stands out; everything else appears to be correct.
+
+Problem found
+- Cell G19
+  - Current formula: =468*F19
+  - Current value: 1498.3646470274
+  - Why it's wrong: every other G row (G20:G44) uses =E#*F# (contribution of that symbol to entropy). G19 is the only cell that multiplies F19 by 468, which is inconsistent with the rest of the column. That produces a very large erroneous contribution and makes the G-column sum meaningless.
+  - Likely intended formula: =E19*F19 (to match G20:G44), or if the intent was "total bits for a message of length N", then every G cell should use =E#*F#*N (and the header should state N). As written, the column mixes per-symbol contributions and an inexplicable multiplication by 468.
+  - If corrected to =E19*F19 the corrected value for G19 would be 0.348003680561918 (instead of 1498.3646470274).
+
+Effects / corrected totals
+- Current G46 (SUM(G19:G44)): 1502.27828786002 (invalid because of G19)
+- If G19 is corrected to =E19*F19, corrected SUM(G19:G44) = 4.261644513181918 (this is the per-symbol entropy in bits for the distribution in E19:E44).
+
+Other notes
+- Part 1 formulas (B7:B11 = -LOG(A#,2); C# = A#*B#; H(A) = SUM(C7:C11)) are consistent.
+- C46 = SUM(C19:C44) (left-hand 26-symbol entropy) and the max-entropy formula in C47 (=26*((1/26)*-LOG((1/26),2))) are correct (C47 simplifies to -LOG(1/26,2)).
+- If your intent was to compute "total bits required for 468 symbols", apply the factor 468 uniformly to the final entropy (e.g., =468*SUM(G19:G44) if G-column contains per-symbol contributions; or compute =468*C46 for the left distribution or =468*SUM(E19:E44*F19:F44) for the right distribution). Do not mix per-symbol and per-message calculations within the same column.
+
+If you want, I can:
+- replace the incorrect formula in G19 with =E19*F19,
+- recompute the corrected G-sum and update any dependent cells,
+- or change the sheet to consistently compute total bits for a fixed message length (e.g., 468) and update formulas/headers accordingly. Which would you prefer?

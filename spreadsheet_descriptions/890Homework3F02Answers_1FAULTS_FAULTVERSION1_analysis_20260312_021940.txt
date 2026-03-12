@@ -1,0 +1,82 @@
+High-level summary of the workbook (sheet-by-sheet). I focus on structure, key inputs, formulas and notable values/assumptions.
+
+Sheet: Q1
+- Purpose: DCF sensitivity table for cash flows [-85, 120, 100, -140] at periods 0–3; computes discounted cash flows for many discount rates and sums them.
+- Layout: Row1 = Period headers (0..3). Row2 = nominal cash flows. Column B labels (DCF:, C (discounted) etc.). Column J lists discount rates for each sensitivity row (J4..J44 from -0.10 to 0.30).
+- Key formulas:
+  - Per-period discounted CFs: e.g. D4 = $D$2/(1+$J4)^$D$1 (E4,F4,G4 analogous).
+  - Row sums: B4 = SUM(D4:G4) (repeated down rows B4:B44).
+- Key values/notes:
+  - Input cash flows: D2=-85, E2=120, F2=100, G2=-140.
+  - J4 = -0.10 initial rate; rates increment to 0.30.
+  - A46 states: "The NPV is positive for discount rates which are >7% and <43%."
+  - IRR: sheet reports IRR formula E48 = IRR(D2:G2). Commentary rows note multiple IRR solutions in presence of non‑conventional cash flows.
+- Minor inconsistency: D5..G5 formulas refer to $J5 except G5 uses $K5 in your listing — likely a typo (should be $J5).
+
+Sheet: Q1 a-b, graph
+- Purpose: Same cash flows as Q1, set up explicitly for charting NPV vs rate using Excel NPV function.
+- Layout: Row2 has periods, row3 cash flows (B3..E3 = -85,120,100,-140). Column A (A7:A47) is a series of rates; Column B computes NPV for each via B7 = NPV(A7,$C$3:$E$3)+$B$3 — standard Excel NPV pattern (NPV excludes t=0 then add it).
+- Key formulas: B7..B47 = NPV(rate, future CF range)+initial CF.
+- Key values: rates sweep from -0.10 to 0.30; used for plotting NPV curve to locate sign changes.
+
+Sheet: Q1 c-d, additional info
+- Purpose: Variation of the Q1 case with the final cash flow changed to -138 (instead of -140) to show how IRR roots change; long sweep of discount rates extended to very high rates (up to 0.90+).
+- Layout: Period headers in row1, cash flows in row2. Column A lists many rates (0..0.90+), Column B computes NPV via Bx = NPV(Ax,$C$2:$E$2)+$B$2.
+- Key formulas:
+  - IRR calculations: F26 = IRR(B2:E2) and G26 = IRR(B2:E2,22%) (second argument = guess to find alternate root).
+- Notes: Commentary explains multiple IRRs, demonstrates how changing the later negative CF changes the lower IRR and can mislead IRR-based decisions.
+
+Sheet: Q2
+- Purpose: Project DCF valuation under No-debt and Debt scenarios; repeated with and without depreciation.
+- Key inputs:
+  - Taxes = 25% (C3, C37, C57).
+  - Discount/WACC = 15% (C4, C40, C62).
+  - Loan = 100 with interest 6% (C17/C61 or C58/C61 depending on block).
+  - Project cost = -200 (C28, C74) and recurring inflows of 80 in years 1–4.
+  - Depreciation parameters in blocks with depreciation (C38, C59 etc).
+- Layout:
+  - Time columns at top for years 0..4 and repeated blocks: No-debt (no-depr), Debt, then WITH DEPRECIATION blocks similarly.
+  - For each year: cash inflows, interest, taxable income, taxes, nominal totals, then discounted cash flows and SUM for DCF value of equity (C12, C32, C52, C78).
+- Key formulas:
+  - Taxes: e.g. D8 = -D7*$C$3 (tax on income proxy).
+  - Discounting: e.g. C11 = C10/(1+$C$4)^C6 (or analogous; some discounting in debt scenario uses cost of equity variable C20/C63).
+  - Cost of equity formula (levered) used twice: C20 and C63 = (0.15 - 0.06*(0.5)*0.75)/0.5 — a levered r(e) expression using debt share 0.5 and tax rate 0.75 (verify constants if you need precise theory).
+- Outputs: DCF/Value of equity computed for each scenario (cells C12, C32, C52, C78).
+
+Sheet: Q3
+- Purpose: Ford income statement snapshot and valuation diagnostics (3-year average earnings, perpetuity value, PVGO, P/E).
+- Data: Income statement numbers for 1999–2001 (Total revenue, cost of revenue, operating income, interest expense, net income, etc.). Example: 2001 Net income = -5,453,000,000.
+- Key formulas:
+  - 3-year average earnings: C34 = AVERAGE(C28:E28).
+  - Perpetuity value at 9%: C37 = C34/0.09; at 11%: C51 = C34/0.11.
+  - Market value: C41 = C39*C40 (shares * price) where shares = 1,735,756,535 and price = 15.55.
+  - PVGO: C43 = C41 - C37 (and C53 = C41 - C51).
+  - P/E and related ratios: C46 = C41/C34; E45 = 1/(1 - C43/C41) (commentary linking PVGO to EPS/Price).
+- Notes: Uses market data to compute PVGO and illustrate how market price decomposes into perpetuity of current earnings and growth option.
+
+Sheet: Q4
+- Purpose: Tax effects for Coca‑Cola (info from cited site) — compute tax rate, effect of depreciation and interest on taxable income and tax expense.
+- Key inputs: Income tax expense D6 = 1,691,000,000; Income before taxes D7 = 5,670,000,000; Depreciation D9 = 803,000,000; Interest D16 = 289,000,000.
+- Key formulas:
+  - Tax rate: D8 = D6/D7.
+  - Income less depreciation: D10 = D7 - D9; Tax with depreciation: D11 = D10 * D8.
+  - Tax reduction from depreciation: D13 = D12 - D11 and D14 = D9 * D8.
+  - Similar calculation for interest (D21 = D20 - D19 and D22 equivalent).
+- Notes: Shows how depreciation and interest reduce taxable income and taxes.
+
+Sheet: Q5
+- Purpose: Simple valuation formula demonstration using Gordon growth model.
+- Key formulas and examples:
+  - P/E = 1/(r - g). Example: company with r=10%, g=5% gives P/E = 1/(0.10-0.05).
+  - E/P = r - g (the inverse).
+- Layout: Two example rows for Company 1 (g=5%) and Company 2 (g=2%).
+
+General observations / best-practice notes (concise)
+- NPV vs Excel NPV: the workbook correctly uses NPV(rate, future CFs) + initial CF at t=0. Remember Excel NPV assumes first value is at t=1.
+- Multiple IRRs: non‑conventional sign patterns (negative cash flow after t=0) can produce multiple IRRs — workbook demonstrates this and uses different guesses in IRR() to find alternate roots.
+- Reusable template pattern: many blocks are copies of the same structure (period headers, cashflows, taxes, discounting) with parameters centralized (tax rate, discount, loan, depreciation).
+- Watch for small errors: e.g. one G5 reference to $K5 (likely should be $J5); verify consistent references (some debt/depr blocks use different cell references for the same input).
+
+If you want, I can:
+- produce a one-page narrative explaining the IRR multiple-solution example and show the exact IRR roots; or
+- create a cleaned version of Q1 that avoids the noted reference typo and adds a plotted NPV curve.

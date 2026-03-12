@@ -1,0 +1,29 @@
+I found the key errors and how to fix them. Short and simple.
+
+1) Faulty cell: Select Financial Data!J12
+- Error: Wrong cell referenced (mechanical).
+- Problem: J12 is supposed to be Total revenues minus Cost of operations, but it uses =J9-J11 (cost of sales − cost of operations) instead of using Total revenues in J8.
+- Fix: replace formula with =J8-J11
+- Why: That gives (Total revenues) − (Cost of operations), consistent with the other columns.
+
+2) Faulty pattern: "Net Earnings" formulas use unclear/wrong ranges (fragile / inconsistent)
+- Examples: Select Financial Data!B25 is =SUM(B20:B24) (and copied across). Using B20 (a blank/label row) is confusing and risks errors if rows move or content changes.
+- Fix (preferred, explicit): use the exact contributing cells, e.g.
+  - Select Financial Data!B25 → =B21 + B23 + B24
+  - Copy across for C25: =C21 + C23 + C24, etc.
+- Why: This clearly adds "Earnings before extraordinary/cumulative" plus the extraordinary and cumulative-effect items. It avoids accidental inclusion/exclusion if rows are inserted or labels are shifted.
+
+3) Fragile linkage in Cash Flow beginning-cash chain (advisory)
+- Current: Cash Flow!B42 = C44, C42 = D44, … K42 = 2084 (hard-coded). This is a left-shifted chain that depends on the end-of-year cash in the next column and a hard-coded base in K42.
+- Risk: This works but is fragile and hard to audit.
+- Recommended better approach: set each beginning-of-year cell to reference the previous year’s "Cash and cash equivalents, end of year" cell explicitly (or reference the Balance Sheet sheet end-of-year cash cell if available). Example (if using the Cash Flow sheet end-of-year cells):
+  - B42 = CashFlow!C44 (same as now, but document it), or better,
+  - B42 = 'Select Financial Data'!<cell_with_2002_end_cash> (explicitly point to the Balance Sheet value).
+- Why: Explicitly referencing the Balance Sheet end-of-year cash (or documenting the chain) reduces risk of a hidden circular chain and makes the workbook easier to audit.
+
+Summary of immediate fixes to apply now:
+- Change Select Financial Data!J12 to =J8-J11.
+- Replace Net Earnings formulas like Select Financial Data!B25 =SUM(B20:B24) with =B21+B23+B24 (and copy across).
+- Review/replace the Cash Flow beginning-of-year chain with explicit references to the Balance Sheet end-of-year cash (optional but recommended).
+
+If you want, I can give the exact replacement formulas for every affected cell (copyable across columns).

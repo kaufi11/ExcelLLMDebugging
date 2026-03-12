@@ -1,0 +1,27 @@
+Summary — I found 3 concrete formula errors that make the fit & SSE wrong. Fixes and brief explanations below.
+
+1) Faulty van Genuchten formula (mechanical / math grouping)
+- Where: D12:D16 (the Predicted theta vG formulas)
+- Problem: the formula uses 1 + alpha * (|h|^n) instead of 1 + (alpha * |h|)^n. These are different (alpha must be raised to the n as well).
+- Current pattern: = $B$3 + ($B$4-$B$3)/((1 + $B$5*(-B12)^$B$6)^(1-1/$B$6))
+- Fix: put the alpha*h product inside the power:
+  = $B$3 + ($B$4-$B$3) / ( (1 + ($B$5 * (-B12))^$B$6)^(1 - 1/$B$6) )
+- Why: correct van Genuchten is theta = theta_r + (theta_s-theta_r) / [1 + (alpha*|h|)^n]^(1-1/n). Your original left alpha outside the power.
+
+2) One wrong hard-coded constant (mechanical)
+- Where: E15
+- Problem: E15 = (C15-563)^2 — uses literal 563 instead of predicted value D15.
+- Fix: E15 = (C15 - D15)^2
+- Why: SSE components must use observed minus model prediction, not a fixed number.
+
+3) SSE summation range incorrect (range / omission)
+- Where: E19 currently = SUM(E14:E18)
+- Problem: that range excludes E12 and E13 (your top two residuals) and includes E17:E18 (likely blank). SSE is therefore incomplete.
+- Fix: E19 = SUM(E12:E16)
+- Why: SSE must sum the squared errors for all data rows (E12 through E16 in your setup). After fixing E15 and the D-column formula, this sum will be correct.
+
+Extra check / note
+- B7 is set to =E19 (SSE). After fixes above B7 will show the correct SSE. If you use Solver, point the objective to B7 (or E19) and be sure Solver changes B3:B6 (or whichever parameter cells) and respects sensible bounds.
+- Ensure pressures in column B are negative (so LN(-B...) in F-col is valid) — current LN(-B12) etc are consistent.
+
+If you want, I can write exact corrected formulas for each row (D12:D16, E12:E16, E19) ready to paste.

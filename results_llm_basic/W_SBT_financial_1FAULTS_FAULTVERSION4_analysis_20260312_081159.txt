@@ -1,0 +1,35 @@
+I checked the workbook logic and found a few clear formula mistakes that will break the month-to-month roll-forward and make year totals wrong. Short summary, cause, effect and how to fix:
+
+1) Sheet "In-Kind Contributions" — Personnel costs row (row 23)
+- Errors:
+  - R23 =Q23 (wrong) — Q23 is not the previous month value, so column R (month 13) becomes blank/ wrong.
+  - AF23 =AE23 (wrong) — AF (month 25) should copy month 24, not the year-total AE.
+- Why it matters: the row’s month-by-month chain (D→E→…→O → R → S → … → AC → AF → … → AQ → AR) is broken. That makes P20/AD20/AR20 totals (and Financial Summary links) incorrect.
+- Fix:
+  - Change R23 to =O23
+  - Change AF23 to =AC23
+- After change the forward-fill chain (S23=T23… and AG23=AF23…) will produce correct month values and the year totals will recalculate correctly.
+
+2) Sheet "Personnel" — Technician 1 row (row 12)
+- Error:
+  - E12 is hard-coded to 2 (E12 = 2) instead of following the same roll-forward pattern (every other month cell in that sheet is =previous).
+- Why it matters: it breaks the propagation for months 2–12 for Technician 1 and will make D20:P20 totals wrong (total personnel costs and everything that depends on them).
+- Fix:
+  - Change E12 to =D12 (and ensure F12 =E12, G12 =F12, etc. — copy the same pattern used on other staff rows).
+- If Technician 1 actually should start at 2, enter that 2 in D12 (Month 1) and then use the propagation formulas; don’t hard-code in the middle of the sequence.
+
+3) Recommendation — check for similar off-by-one / wrong-column typos
+- How to find quickly:
+  - Use Find (Ctrl+F) to search for formulas that begin “=Q” or reference “=AE” in the monthly rows — those are likely typos (Q and AE are the skipped “spacer” columns and year totals).
+  - Or select a correct row and copy its formulas across to other rows to enforce consistent patterns.
+- Why: these errors usually appear when one or two cells were typed manually instead of using the same pattern as other rows.
+
+4) Practical steps to repair and test
+- Edit the three cells above (In-Kind!R23, In-Kind!AF23, Personnel!E12).
+- Recalculate (F9) or save/open to confirm totals update.
+- Confirm:
+  - In-Kind P20 = SUM(D20:O20) changes if the row had non-zero values.
+  - Financial Summary C9/C10 (In-Kind totals) update to expected values.
+  - Personnel totals (D20:P20) change and Cash Flows!D83 (operating costs) / Cash Flows!D85 (net cash flow) update downstream.
+
+If you want, I can give the exact corrected formulas you should paste into those cells or scan the workbook for all instances of "Q" and "AE" references and list them. Which would you prefer?

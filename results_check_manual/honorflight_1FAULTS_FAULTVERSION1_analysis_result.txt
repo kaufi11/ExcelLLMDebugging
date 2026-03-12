@@ -1,0 +1,22 @@
+I inspected the formulas in the provided sheet. There are no #REF!, #DIV/0!, or syntax errors, but I found one clear inconsistency and some minor issues/observations you may want to address.
+
+1) Hard-coded literal instead of cell reference (inconsistent)
+- Cell C19
+  - Current formula: =861*50
+  - Problem: all similar Academic rows use the pattern =Brow*factor (e.g., C17 =B17*100, C18 =B18*75). C19 uses the literal 861 instead of referencing B19, so if the count in B19 changes the points in C19 will not update.
+  - Recommended fix: change C19 to =B19*50
+
+2) Confirm rounding/units behavior (possible design issue)
+- Cells C6:C8 use division by 10 (e.g., =B6/10) and return fractional points if B6..B8 are not multiples of 10. If you want integer point counts (e.g., 1 point per 10 push-ups, truncating remainders), consider using INT(B6/10) or ROUNDDOWN(B6/10,0). If fractional points are intended, no change needed.
+- Similar consideration for C10 =B10/50 (yards swam) — decide whether fractions are valid.
+
+3) Minor items (not formula errors)
+- Typo in A13: "Hours playng sports" → consider "Hours playing sports".
+- Duplicate label "Total Points" appears in B14 and B23 — ok, but be aware (one for PT, one for Academic).
+- All SUM formulas look correct:
+  - C14 =SUM(C6:C13) (PT total)
+  - C23 =SUM(C17:C22) (Academic total). After fixing C19 as noted above, this sum will update correctly.
+
+Summary action:
+- Change C19 to =B19*50.
+- Optionally apply INT/ROUND rounding where fractional points are not desired and fix the minor label typo.

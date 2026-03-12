@@ -1,0 +1,33 @@
+Summary — errors found
+1) Cell G43 contains a wrong/typoed formula. All other G-row formulas follow the correct VS real-part formula:
+   correct pattern (example G4): =($B$6*1000*E4 - $B$14*$B$24*F4)/1000
+   G43 instead is something like: =($B$6/1000/E43 - $B$14/$B$24/F43)/1000
+   That is incorrect (uses divisions where multiplications should be) and will give totally wrong VS real values (or #DIV/0).
+
+2) (Checked) ATAN2 usage — the workbook uses ATAN2(G,H) etc. This is correct for Excel because Excel’s ATAN2(x_num,y_num) expects (x = real, y = imag) so the angle = atan2(Im,Re). No change needed.
+
+Why G43 is wrong (short)
+- The VS real-part formula for a lossless line is:
+  VS_real = VR·cos(βd) - Z0·Im{IR}·sin(βd)
+  In the sheet VR is B6 (kV), Z0 is B14 (ohms), Im{IR} is B24 (A). Units require VR*1000 and final divide by 1000.
+- G43’s formula uses division by E43/F43 and divides B6 by 1000 in the wrong place, so it does not implement the physical equation above.
+
+Fix (quick)
+Option A — Single-cell fix:
+- Replace the formula in G43 with:
+  =($B$6*1000*E43 - $B$14*$B$24*F43)/1000
+
+Option B — Bulk/corrective fix (recommended to avoid other copy-paste errors):
+- Select G4, Copy, then paste/fill down from G4 to the bottom of your sweep (e.g., G4:G54). This ensures every row uses the same correct formula (relative references E#, F# adjust automatically).
+- After filling, spot-check a few cells (especially G43) to confirm they match the pattern.
+
+Why the fix works (short)
+- The corrected formula implements VS_real = VR·cos(βd) − Z0·Im(IR)·sin(βd) with proper unit conversions (V↔kV). Copying the single correct formula avoids accidental typographical changes in any row.
+
+Extra suggestion (short)
+- Use Fill-down (or Tables / named ranges) instead of manual edits to prevent single-cell typos.
+- Optionally scan the sheet for other single-cell deviations (use Find for unusual patterns like "/E" or "/F" inside G-column) if you suspect other accidental edits.
+
+If you want, I can:
+- Produce a one-line list of any other cells whose formula differs from the standard row pattern, or
+- Give the exact Excel steps (keyboard/mouse) to fill G4 down to G54.

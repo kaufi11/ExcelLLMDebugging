@@ -1,0 +1,33 @@
+Short summary of the problem
+- On the FRF sheet the "Height off" column (column I) contains entries like the literal text "FORMULA =SUM(H5-J5)" (and one "FORMULA =COUNT(H20-J20)"). Because of the leading text "FORMULA " these are stored as text and not evaluated. One cell also uses COUNT incorrectly (returns a count, not the difference). Several rows also have "N/A" in H or J which will make a plain subtraction return an error.
+
+What’s wrong (concise)
+- "FORMULA =SUM(Hn-Jn)" is text — Excel does not calculate it.
+- Using SUM(...) for a single subtraction is unnecessary (but would work if entered as a real formula).
+- "FORMULA =COUNT(H20-J20)" is wrong: COUNT counts numbers (and here it will return 1) rather than computing H20−J20.
+- Cells with "N/A" in H or J will cause #VALUE! if you try to subtract them.
+
+Fixes (copy/paste ready)
+1) Replace the text formulas with a real subtraction formula (then fill down):
+   I5: =H5-J5
+   Copy I5 down through the column for all instrument rows (I5:I29, I31 etc as applicable).
+
+2) Fix the COUNT cell:
+   I20: =H20-J20
+
+3) Prevent errors when H or J = "N/A" (optional but recommended). Use this version in I5 and fill down:
+   =IF(AND(ISNUMBER(H5),ISNUMBER(J5)), H5-J5, "")
+   (This returns blank if either side isn’t numeric. Replace "" with "N/A" or IFERROR(H5-J5,"") if you prefer.)
+
+Quick bulk-edit tip
+- If many cells literally start "FORMULA =", you can do Find & Replace (Ctrl+H):
+  Find: FORMULA =
+  Replace with: =
+  THEN manually correct any remaining COUNT(...) cells to Hn-Jn and check results. (Do this on a copy of the file first.)
+
+Why this fixes it (one line each)
+- Removing the "FORMULA " prefix makes Excel interpret the entry as a real formula to calculate H−J.
+- Changing COUNT(...) to H−J computes the numeric difference instead of counting values.
+- Wrapping with ISNUMBER avoids #VALUE! when a cell contains text like "N/A".
+
+If you want, I can give the exact range to fix and generate the fill-down formula for you, or produce a small macro to repair all "FORMULA =" entries automatically.

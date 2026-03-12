@@ -1,0 +1,67 @@
+Overview
+- Workbook: 3 sheets. Sheet1 contains the full timing/budget model; Sheet2 and Sheet3 are present but contain no data shown.
+- Layout (Sheet1):
+  - Column A: Item descriptions (noise, skew, ISI, totals, notes).
+  - Columns B (Fast-80) and C (Fast-160): numeric inputs / nominal values for two speed cases.
+  - Column D: comments / clarifications.
+  - Columns J (Setup), K (Setup), L (Hold): per-item split of C-column (mostly J/K = C/2, L = C/2 or equal to C for skew terms) used in setup/hold breakdown.
+  - Column N: named intermediate timing results (receive/transmit setup/hold, net times).
+  - Columns P and Q: two device/method result columns (labeled "Method 1" and "Method 2" / Device). They compute device-level setup/hold margins from the inputs.
+  - Notes in A42:A46 describe assumptions (e.g., halving tolerances for half cycle, treatment of asymmetry/ISI).
+
+Key input nominals (selected)
+- REQ(ACK) period: Fast-80 B4 = 25 ns; Fast-160 C4 = 12.5 ns
+- Data transfer period: B5 = 12.5 ns; C5 = 6.25 ns
+- Ideal setup/hold half-periods: B6 = 6.25 ns; C6 = 3.125 ns
+- Representative input terms (Fast-80 / Fast-160):
+  - Tolerance/2: B9 = 0.3 / C9 = 0.06
+  - Data driver asymmetry: B11 = 0.5 / C11 = 0.5
+  - Data receiver asymmetry: B13 = 0.5 / C13 = 0.35
+  - Crosstalk: B17 = 0.25 / C17 = 0.7
+  - ISI of data: B31 = 0.425 / C31 = 4.0
+  - Cable skew: B29/C29 = 2.5
+  - Two x trace skew: B30/C30 = 0.4
+  - Skew compensation: C37 = 4.4 (only in Fast-160)
+
+Important formula patterns
+- J/K/L per-item values are typically =C?/2 or =C? (skew). Many are implemented as fixed formulas like J9 =$C9/2, etc.
+- Non-compensatable total: B25 = SUM(B9:B24), C25 = SUM(C9:C24).
+- Compensatable total: B35 = SUM(B27:B34), C35 = SUM(C27:C34).
+- Compensation total: C38 = SUM(C36:C37).
+- Total error inputs: B39 = B25 + B35; C39 = C25 + C35.
+- Post-compensation error: B40 = B39 - B38; C40 = C39 - C38.
+- Minimum data valid window (data time - net error): B41 = B5 - B40; C41 = C5 - C40.
+- Device-level calculations in P/Q use combinations of C- and L-/J-column halves to compute transmit and receive setup/hold budgets (examples: P12 = C5 - C9 - C12 - C15 - C21; P13/P14 compute transmit hold/setup after subtracting L-column terms).
+
+Selected computed values (from sheet inputs and formulas)
+- Non-compensatable totals:
+  - B25 (Fast-80) = 2.85 ns
+  - C25 (Fast-160) = 3.56 ns
+- Compensatable totals:
+  - B35 = 6.75 ns
+  - C35 = 8.40 ns
+- Compensation total (Fast-160): C38 = 6.40 ns (C36=2 + C37=4.4)
+- Total error inputs:
+  - B39 = 9.60 ns
+  - C39 = 11.96 ns
+- Post-compensation error:
+  - B40 = 9.60 ns (no compensation applied for Fast-80 in B38)
+  - C40 = 5.56 ns
+- Minimum data valid window:
+  - B41 = 12.50 - 9.60 = 2.90 ns (Fast-80)
+  - C41 = 6.25 - 5.56 = 0.69 ns (Fast-160) — small margin on Fast-160
+- Example device-method intermediate values (column P):
+  - P12 (Transmit assertion period budget) = 6.25 - 0.06 - 0 - 0.25 - 0.25 = 5.69 ns
+  - P13 (Transmit hold time computed from L-side terms) ≈ 4.47 ns
+  - P14 (Transmit setup derived from K6 and L terms) ≈ -1.78 ns (negative indicates insufficient margin in that path)
+  - P15 (Receive hold time = P13 - P11) ≈ -0.38 ns (P11 ≈ 4.85 ns)
+
+Observations / takeaways
+- The sheet separates non-compensatable vs compensatable errors and then applies defined compensation terms for Fast-160. Fast-80 currently has zero compensation in B38.
+- Fast-160 has much larger ISI (C31=4) and a sizable skew compensation (C37=4.4) which reduces the post-compensation error (C40 = 5.56 ns).
+- The resulting minimum data valid window for Fast-160 is very small (~0.69 ns), and some device-level setup/hold results (e.g., P14, P15) are negative, signaling potential timing margin failures that need addressing (change skew/compensation, reduce contributors, or adjust strobe).
+
+If you want, I can:
+- Expand a concise mapping of every formula cell to its references,
+- Recompute all P/Q/N/J/K/L numeric result cells and provide a full table of outputs, or
+- Suggest which inputs to adjust to recover positive margins for Fast-160.

@@ -1,0 +1,32 @@
+Summary of the problems
+1. Column E (Week 4) is wrong — E3:E8 contain =AVERAGE(Bx:Dx). That replaces Week 4 hours with an average. F (Total) then sums an artificial value, and all downstream totals are wrong.
+2. Overtime column (G) uses wrong row references. Example: G3 ends with MAX(E4-40,0) instead of MAX(E3-40,0). Many G formulas are offset by one or point at E10.
+3. Weekly total for Week 4 (E10) is 0 instead of summing E3:E8.
+4. Gross pay formulas (C15:C20) double‑count overtime and pay overtime at the regular rate: they use (F + G) * rate. That both double‑counts G and does not apply an overtime premium.
+
+How to fix (short and exact)
+1. Put real Week 4 hours into E3:E8 (replace the AVERAGE formulas). If you don’t have Week 4 data and want 0, enter 0. Do NOT use AVERAGE(B:D) for the Week 4 cell.
+   - Example: E3 = 8  (or whatever the actual week‑4 hours are)
+
+2. Make Total hours correct (copy down after fixing E):
+   - F3 (and down): =SUM(B3:E3)
+
+3. Fix overtime to reference the same row’s weeks:
+   - G3 (and copy down): =MAX(B3-40,0)+MAX(C3-40,0)+MAX(D3-40,0)+MAX(E3-40,0)
+
+4. Fix Week 4 weekly total:
+   - E10: =SUM(E3:E8)
+
+5. Fix Gross Pay so overtime is paid at a premium and not double counted.
+   - If overtime is paid at 1.5×, and Gx is total overtime hours, use either:
+     - C15 (and down): =(F3-G3)*B15 + G3*B15*1.5
+     or the equivalent shorter formula:
+     - =F3*B15 + G3*B15*0.5
+   - Replace F3/G3/B15 with the appropriate row numbers for each employee.
+
+Notes / quick checks
+- After fixing E3:E8 and G3:G8, update row totals: B10,C10,D10,E10 and F10 should reflect real sums.
+- E11 (Max week4) will be correct once E3:E8 are fixed: =MAX(E3:E8)
+- Copy corrected formulas down; ensure all row references are to the same row (no off‑by‑one references).
+
+If you want, tell me what the correct Week‑4 hours should be (or if you want them computed as an estimate), and I will give you the exact final formulas to paste.

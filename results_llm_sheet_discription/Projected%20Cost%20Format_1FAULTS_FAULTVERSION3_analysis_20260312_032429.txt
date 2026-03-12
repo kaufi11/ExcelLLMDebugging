@@ -1,0 +1,30 @@
+Summary — the workbook has two clear errors that will give wrong numbers or #DIV/0!:
+
+1) Sheet1 (Seq Production Costs) — Other Activities grand total (G21) is wrong
+- Problem: G21 is =COUNT(G19:G20). COUNT returns how many numeric cells there are (0,1,2), not the dollar total. That makes B23 and any totals that include G21 incorrect.
+- Fix: replace with a SUM:
+  - G21 -> =SUM(G19:G20)
+- Why: SUM adds the dollar amounts; COUNT does not.
+
+2) Sheets 2 & 3 (Tech Dev Costs and Bioinformatics Costs) — Total funds cell (B6) is zero causing divide‑by‑zero
+- Problem: B6 is set to 0 (or blank) but used as the denominator in percent formulas (e.g., B18, B31, B44). That produces #DIV/0! or meaningless percents.
+- Fix options (choose one):
+  a) If B6 is meant to be a user input: enter the actual Total Funds Requested in B6 for that sheet (non‑zero).
+  b) If you want formulas to avoid errors when B6 is empty, wrap percent formulas with a guard:
+     - Example: B18 -> =IF($B$6=0,"",B17/$B$6)  (or =IF($B$6=0,0,B17/$B$6) if you prefer 0 instead of blank)
+     - Apply same pattern for B31 and B44 (and any other formulas dividing by $B$6).
+- Why: dividing by zero causes #DIV/0! and hides real percentages; either supply the real total or make the formula conditional.
+
+Additional recommended guards (optional but helpful)
+- Avoid #DIV/0! in averages on Sheet1:
+  - B11 -> =IF(B10=0,"",B21/B10)
+  - C11 -> =IF(C10=0,"",B21/C10)
+  - D11 -> =IF(D10=0,"",D21/D10)
+- For percent columns that use $B$21, $D$21 or $G$21 as denominator, add similar IF checks: e.g. C13 -> =IF($B$21=0,"",B13/$B$21)
+
+Quick checklist to fix now
+- Change Sheet1 G21 to =SUM(G19:G20).
+- Enter real totals in B6 on Sheet2 and Sheet3 OR update percent formulas to use IF($B$6=0,"",…).
+- Add IF guards for the average formulas on Sheet1 to prevent #DIV/0! if volumes are blank.
+
+If you want, I can give you a version of the workbook with these formula fixes applied or provide the exact cells to change across all sheets.

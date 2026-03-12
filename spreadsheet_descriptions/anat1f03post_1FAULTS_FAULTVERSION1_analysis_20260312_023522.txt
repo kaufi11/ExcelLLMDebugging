@@ -1,0 +1,40 @@
+Sheet name
+- post1 — single worksheet containing two identical grade tables (top table for Sec. 8006, second for Sec. 8004) with headers repeated.
+
+Headers / layout (both tables)
+- Title: B1/B31 "Anatomy 1: FALL 2003 Semester Grades"; professor in J1/K31 "Professor Gonsalves".
+- Column C: "Last 4 SS#s" (student identifiers).
+- Columns D–G: Pract. 1–4 (practical scores).
+- Column H: Att./Particip. (attendance/participation, max 50).
+- Column I: Total (w/o A/P) — formula =SUM(D#:G#) (sums the four practicals only).
+- Column J: Class % — formula =I#/400 (divides by total practical points row; mean rows divide by I33/I3 for second table).
+- Column K: Grade — nested IF assigning A/B/C/D/F by percentage thresholds.
+
+Key fixed values / maxima
+- Row 3 / 33: maximum points D=100, E=100, F=100, G=100, H=50; I3/I33 = 400 (total practical points).
+- Student rows: top table rows 6–25 (Sec. 8006); bottom table rows 36–55 (Sec. 8004).
+
+Formulas and summary rows
+- Student total (I6:I25, I36:I55): =SUM(D#:G#).
+- Student percent (J#): =I#/400 (top table uses I#/I3 indirectly since I3=400).
+- Student grade (K#): =IF(J#>=89.9%,"A",IF(J#>=79.9%,"B",IF(J#>=69.9%,"C",IF(J#>=59.9%,"D","F")))) — note: top table student rows use >=; the mean rows use > (inconsistent).
+- Means: Row 26 (top) and row 56 (bottom) labelled "MEAN":
+  - D26,E26,F26,G26,H26,I26 = AVERAGE of the respective student columns (D6:D25 etc).
+  - J26 = I26 / I3 (converts mean total to class %).
+  - K26 = nested IF on J26 (uses > thresholds).
+  - For bottom table D56,E56,G56,H56,I56 use AVERAGE(D36:D55 etc). F56 incorrectly uses SUM(F36:F55) instead of AVERAGE — inconsistency/likely bug. J56 = I56 / I33 and K56 similar nested IF.
+
+Notable data points and anomalies
+- Some practical scores exceed 100 (e.g., F7 = 111) — extra credit appears allowed.
+- Row C55: student row includes D55,E55,F55,H55 but G55 is missing in the provided listing (I55 still uses SUM(D55:G55); blank G55 will be treated as zero).
+- Threshold inconsistency: student grade formulas in top table use >=, mean grade formulas use >. This can cause one-point boundary differences at exactly 89.9%, 79.9%, etc.
+- F56 uses SUM instead of AVERAGE — will inflate the mean for Pract. 3 in second table.
+- Totals in column I intentionally exclude attendance/participation (header says Total w/o A/P) while Class % divides by 400 (practicals total), consistent with that design.
+
+Recommendations (brief)
+- Fix F56 to =AVERAGE(F36:F55).
+- Ensure G55 is populated if intended (or verify blank is correct).
+- Standardize grading thresholds to use >= or > consistently (recommended: >=).
+- If attendance should be included in percent, adjust column I and division denominator accordingly; otherwise consider renaming to "Total (practicals only)".
+
+If you want, I can produce corrected formulas or a cleaned version of the sheet with those fixes applied.

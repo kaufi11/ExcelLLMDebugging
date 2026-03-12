@@ -1,0 +1,46 @@
+Here are the main errors I found, with short explanations and fixes you can apply right away.
+
+1) Faulty cell: K19
+- Error type: Wrong reference (mechanical) → breaks all discounting from year 2003 on.
+- Problem: K19 is =69*(1/1.12). That 69 is a typo so discount factors from K19 onward are wrong → present values (K20:AA20, K32:AA32, NPV, B/C) are wrong.
+- Fix: replace K19 with the pattern used in other years: =J19*(1/1.12)
+- Why: the discount factor each year should be the previous-year factor multiplied by 1/1.12. Fixing K19 will correct all downstream PV calculations.
+
+2) Faulty cell(s): AA29 (scrap value) (and logic for scrap value)
+- Error type: Logical / wrong range
+- Problem: AA29 = 0.02*G5+0.02*G6 only uses two cells (and mixes columns: puts a 2000-year reference into 2020 column). The description says "2% of total cost of the project" but the formula doesn't take the total project cost nor is it clearly placed in the correct year.
+- Fix (recommended): Put the scrap receipt in the year it occurs (e.g., AA29) and calculate it as 2% of the total project cost in year‑2000 prices. Example formula:
+  =0.02*SUM(G5:G17)
+- Why: 0.02*SUM(G5:G17) takes 2% of the full capital/cost base (rows 5–17) rather than only two items and keeps units consistent. If scrap applies only to capital rows (just G5:G6), use =0.02*SUM(G5:G6).
+
+3) Faulty cells: Row 11 (tube-light costs) — H11:AA11
+- Error type: Assumption mismatch / logical
+- Problem: The formulas use 5.67*30*50*6 (cost Rs.50 and 6 replacements). Assumption A50 says tube lights cost Rs.170 and are replaced once a year. The worksheet and assumptions disagree.
+- Fix: Change the row formula to match the assumption. For example (per year): =5.67*30*170
+- Why: That matches "Rs.170, replaced once a year." (If the intent really was Rs.50 replaced 6 times, update the assumption text instead — they must agree.)
+
+4) Faulty cell: G6 (community contribution conversion)
+- Error type: Inconsistency between text and formula
+- Problem: A44 states "Community contribution was Rs. 21,780 in 1993. Equivalent to Rs. 21,780 in year 2000 prices." But G6 is =21780/0.4825 (which inflates a 1993 nominal to 2000 prices). Either the text or the formula is wrong.
+- Fix: Decide which is true:
+  - If 21,780 is the 1993 amount and you want 2000 prices, keep =21780/0.4825.
+  - If 21,780 is already expressed in 2000 prices, set G6 =21780 (no division).
+- Why: Using the wrong conversion changes capital cost totals.
+
+5) Cascading check: PV and NPV cells (G20:AA20, G32:AA32, G35:G36, G38:G39)
+- Error type: Dependent/propagated errors
+- Problem: Because K19 was wrong and some cost/benefit lines were inconsistent, many PV, NPV and B/C results are unreliable.
+- Fix: After applying the fixes above:
+  - Recalculate discount-factor row (G19:AA19) (the pattern G19=1 ; H19=G19/1.12 ; I19=H19/1.12, …).
+  - Recalculate PV rows (G20:AA20 and G32:AA32).
+  - Recalculate C35/C36/C38/C39 (or G35/G36/G38/G39) to get correct B/C and NPV.
+- Why: Discount factor typo cascades to PV and summary metrics.
+
+Quick checklist (apply these edits)
+- Fix K19 → =J19*(1/1.12)
+- Fix AA29 → =0.02*SUM(G5:G17) (or adjust per your scrap definition)
+- Update H11:AA11 → =5.67*30*170 (or change assumption text if intended)
+- Decide and fix G6 (either =21780 or =21780/0.4825)
+- Recalculate the sheet (re-enter or copy formulas across columns to refresh) and verify G20:AA20, G32:AA32, then NPV/BCR.
+
+If you want, I can produce the exact corrected formulas for each affected cell across the whole G:AA range (I can list them column by column) or produce a small corrected snippet you can paste. Which would you prefer?

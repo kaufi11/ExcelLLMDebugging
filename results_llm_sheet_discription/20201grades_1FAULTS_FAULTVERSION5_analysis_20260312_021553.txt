@@ -1,0 +1,46 @@
+I inspected Sheet1 and Sheet2 and found several real errors that will produce wrong totals/percents. Short, clear list below with what’s wrong, why it matters, and exactly how to fix each.
+
+1) Wrong function in one homework total (Sheet1)
+- Problem: T19 contains =COUNT(D19:S19) but every other student’s homework total uses =SUM(D#:S#).
+- Why it matters: COUNT returns the number of numeric cells (not their sum). That makes T19 (and all downstream values that reference it: U19, CB19, CE19, CF19, CA19, etc.) incorrect.
+- Fix: replace the formula in T19 with =SUM(D19:S19).
+- Explanation: SUM adds the scores (what you want). COUNT was a typo and gives a small integer instead of the correct points total.
+
+2) Wrong denominator used for “overall %” on Sheet2 (BU column)
+- Problem: BU formulas on Sheet2 use =BTn/$BS$1*100 (they divide the student’s overall points BT by $BS$1). But $BS$1 is 200 (exams max), not the max for BT. The overall BT total appears to be 400 (BT3 = 400).
+- Why it matters: dividing by 200 instead of 400 doubles the % values or otherwise mis-scores the students’ overall percent.
+- Fix: change BU formulas on Sheet2 to use the overall-BT maximum cell. For example, if BT3 contains 400, use:
+  =BT5/$BT$3*100 (and copy down).
+- Explanation: Always divide by the correct total-points cell for that subtotal. Using the exam max (BS1) was wrong; use the total max (BT3 or another dedicated cell that stores the BT maximum).
+
+3) Inconsistent/hidden max-value constants (recommendation)
+- Problem: Sheet1 uses hard-coded /150 in U formulas (U# = T#/150*100) while the header cells (T1/T3) show different numbers (e.g., 80/150 confusion). Hard-coded denominators make maintenance/error-prone.
+- Why it matters: If you change assignment counts/weights you’ll need to edit many formulas or you risk mismatches like the BU problem above.
+- Fix (best practice): Put the max points for each category in a single cell (example: put Homework max = 150 in T1, Project max = 350 in AQ1, Overall BT max = 400 in BT3, etc.) and change formulas to use those absolute references:
+  - Un: =Tn/$T$1*100
+  - ARn: =AQn/$AQ$1*100
+  - BUn: =BTn/$BT$3*100
+- Explanation: Using an absolute cell for the max keeps formulas consistent and makes changes easy.
+
+4) Text placeholders inside numeric columns (Sheet1 & Sheet2): "x", "X", "x  #", "+ X", "#", ".", etc.
+- Problem: many numeric ranges include text placeholders (x, X, #, ., + X) in BG..BR etc. SUM ignores text, so the subtotals omit those entries — either hiding missing data or producing incorrect totals.
+- Why it matters: Totals and averages will be wrong or inconsistent because some entries are text rather than numbers.
+- Fix options:
+  - Replace placeholders with numeric values (0 if absent) or leave blank for missing but not with text.
+  - If you need a visible marker for missing, use a comment or a separate “status” column rather than typing text into score cells.
+  - If you must keep text, wrap sums in a numeric-only aggregator e.g. =SUMIF(BN5:BR5,"<>",BN5:BR5) or =SUMPRODUCT(--(IFERROR(BN5:BR5,0))) — but simplest: enter 0 or blank.
+- Explanation: SUM will ignore text, so the safest approach is to keep score cells numeric.
+
+5) A few header/subtotal ranges and averages could be mis-ranged (minor)
+- Examples: Averages that use slightly different row ranges (BA19 uses BA5:BA16 while you have data to row 17) or multiple columns labeled “OVERALL” (BT1 and BZ1) — these are confusing and can cause copy/paste mistakes.
+- Fix: standardize header cells, use single cells to hold max values and use consistent average ranges (use whole column ranges with explicit rows or structured tables).
+- Explanation: consistency reduces accidental misreferences.
+
+Summary of immediate repairs I recommend you do now
+1. Fix the clear typo: change T19 to =SUM(D19:S19).
+2. Fix BU formulas on Sheet2 to divide by the correct overall max (e.g., =BTn/$BT$3*100).
+3. Replace hard-coded denominators with references to dedicated “max” cells (put 150, 350, 400, etc. in top-row cells) and update formulas to use absolute references ($T$1, $AQ$1, $BT$3, $CE$1).
+4. Replace text placeholders in numeric score cells with numeric 0 (or blanks) or move the marker to a non-score column.
+5. Scan for any other rows where a SUM was accidentally replaced (like the COUNT case) — search column T for any formula that is not SUM(D#:S#).
+
+If you want I can produce the exact formulas to paste (or an Excel-safe set of replacements) for each faulty cell (T19, BU5:BUn, and the updated U/AR/B U formulas). Which sheet(s) do you want me to generate corrected formulas for?

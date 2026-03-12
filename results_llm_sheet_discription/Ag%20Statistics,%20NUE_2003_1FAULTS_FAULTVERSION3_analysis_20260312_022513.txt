@@ -1,0 +1,56 @@
+Summary — main errors found and how to fix them (short & clear)
+
+1) Wrong cell reference (World 1996)
+- Error: Cell E19 (Rice N removed) uses C20 instead of C19.
+- Fix: Change formula to:
+  =E8*(C19/100)
+- Why: Rice %N is in C19; using C20 pulls barley’s %N and gives a wrong rice N value and wrong totals.
+
+2) Incorrect logic for "N fertilizer savings per 1% increase in NUE" (many sheets: World 1996 E32, World 2002 D44, Developed/Developing sheets E31/E32 etc.)
+- Error: Formulas like =E4*(0.343) - E28 compute a difference between a hard-coded target fraction and current removed N. That does NOT compute the reduction in fertilizer applied when NUE increases by 1 percentage point.
+- Correct (exact) formula for saved applied N when NUE increases by 1 percentage point (absolute 0.01) while yield (crop N removed) stays the same:
+  Let applied = A (cell with cereal fertilizer consumption, e.g. E4 or D6)
+  Let removed = R (cell with fertilizer-derived N removed, e.g. E28 or D31)
+  current_NUE = R / A
+  new_applied_needed = R / (current_NUE + 0.01)
+  savings = A - new_applied_needed
+- Excel form (replace the wrong cell formula with this):
+  = A - ( R / ((R / A) + 0.01) )
+  Example (World 1996): replace E32 with
+  =E4 - (E28 / ((E28 / E4) + 0.01))
+- Why: This computes how much less fertilizer must be applied to achieve the same crop N removal if NUE increases by 0.01 (1 percentage point). The workbook’s current formula instead compares to a fixed fraction (0.343 etc.) and is conceptually wrong for “per 1% increase”.
+
+3) Inconsistent/hard-coded texts and labels
+- Problems:
+  - Sheets contain leftover text like "0.60 * 82,906,340 = 49,743,804 MT in cereals" while the sheet’s input cell is a different total (confusing/stale).
+  - Sheet name vs header mismatch: sheet "Developing 96" has B1 saying "Developed world consumption..." (label/value mismatch).
+- Fix:
+  - Replace hard-coded explanatory numbers with formulas that reference the input cells (for clarity), e.g. set the text cell to:
+    ="0.60 * " & TEXT(E1,"#,###,###") & " = " & TEXT(0.6*E1,"#,###,###")
+  - Or simply remove the hard-coded text and rely on the formula cells (E3 = 0.6*E1).
+  - Rename sheets or header text so the sheet title matches the dataset (Developed vs Developing).
+- Why: Keeps documentation accurate and prevents confusion when inputs change.
+
+4) Inconsistent baseline fractions (0.343, 0.426, 0.295) used without explanation
+- Issue: Different sheets use different hard-coded fractions to compute savings; it’s unclear what they represent.
+- Fix: Document the meaning of every fraction in a single cell and reference that cell in formulas (e.g. put baseline_NUE in a named cell BaselineNUE). If those numbers are intended as target NUE values, compute savings relative to that target with an explicit formula; otherwise remove/harmonize them.
+- Why: Makes the model auditable and prevents accidental use of wrong constants.
+
+5) Suspicious extra multiplications (e.g. multiplying money by 67 in some columns)
+- Issue: Cells like G33/G34 multiply monetary values by 67 — the reason/units are not documented.
+- Fix: Check the intent (maybe converting $/MT to $/kg or per country?) and add a clear comment or replace the hard-coded 67 with a named cell and documentation. Remove if unintended.
+- Why: Undocumented multipliers produce incorrect monetary outputs.
+
+Quick checklist of exact fixes to apply now
+1. World 1996: change E19 → =E8*(C19/100)
+2. Replace all “savings per 1%” formulas (pattern =Applied*(fixed) - Removed) with the correct formula:
+   =Applied - (Removed / ((Removed / Applied) + 0.01))
+   (Apply to World 1996 E32, World 2002 D44, Developed 96 E31, Developing 96 E31, etc.)
+3. Fix header text and sheet names so they match (Developed vs Developing).
+4. Replace hard-coded explanatory numbers with formulas referencing the input cells, or update the text to match the correct numbers.
+5. Audit any unexplained multipliers (67, 0.343, 0.426, 0.295) and either document them in a cell or remove them.
+
+If you want, I can:
+- produce a short patch (list of exact cells and their new formulas) for every sheet in the workbook, or
+- create a small audit sheet that flags wrong references and inconsistent constants (automated check).
+Which would you prefer?

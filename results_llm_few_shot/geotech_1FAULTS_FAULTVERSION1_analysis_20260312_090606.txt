@@ -1,0 +1,40 @@
+I reviewed the two sheets and found the clearest / highest-risk problems. Short, concrete fixes below.
+
+1) Wrong course code (data mismatch)
+- Faulty cell: Data Analysis!AP1 (header)
+- Problem: AP1 reads "MA 2011" but input‑sheet lists MA 2611 (input-output E13). This is a data mismatch (typo) and will make any IF tests that check AP2 inconsistent.
+- Fix: Change Data Analysis!AP1 to "MA 2611" (or change the input value so both match).  
+- Why: Headers must match the course codes used on the input sheet. If they differ, formulas that test AP2 (or display the course) will be wrong or misleading.
+
+2) Duplicate / suspicious link on input-output sheet
+- Faulty cells: input‑output!H3 and input‑output!M2 both point to Data Analysis!A2
+- Problem: H3 and M2 reference the same cell; one looks like it should be a different heading/reference (H4 already points at Data Analysis!A3). This is likely a copy/paste error.
+- Fix: Decide which label you want in H3 and change it to the correct source. For example, if H3 is intended to show the top note/header, set H3 = 'Data Analysis'!A1. If it should be the same as H4, change accordingly.
+- Why: Duplicate/incorrect references cause wrong labels and make it hard to follow the inputs → analysis mapping.
+
+3) Inconsistent / hard‑to‑maintain conditional formulas (risk of hidden logic errors)
+- Where: Many rows in Data Analysis compute per‑course weights and conditional lists via many repeated IFs (examples: CX3:EI3 group, and many CM*/CL* formulas).
+- Problem: There are lots of repeated long IF expressions, and some IFs look overly verbose (SUM(IF(...)+IF(...)+...)) or use SUM with a single arithmetic expression (SUM(A+B+C)). These are not strictly incorrect but are fragile and error‑prone (easy to mistype a weight or range).
+- Fix (recommended):
+  - Keep one dedicated “weight” row (you already have CX3:EI3 doing this). Use those weight cells directly instead of retyping numbers in many IFs.
+  - Replace constructs like SUM(IF(AU5>=4,AU5,0)+IF(AV5>=4,AV5,0)+...) with a single SUMPRODUCT or a SUM of a single helper range. Example pattern:
+    - Put the filtered values into a helper row (e.g., in row 100 put =IF(AU5>=4,AU5,0) copied across), then do =SUM(AU100:CI100).
+    - Or use SUMPRODUCT: =SUMPRODUCT((AU5:CI5>=4)*(AU5:CI5))
+  - Replace SUM(A+B+C) style with SUM(A,B,C) or SUM(range) for clarity.
+- Why: This reduces the chance of typos, makes audits easier, and prevents subtle mistakes when copying formulas.
+
+4) A few places where the displayed text or formatting looks like typos
+- Examples: "Fundamntal Courses" (Data Analysis!CO3) — spelling only; "(no CE 1030 )" (extra spaces/parentheses).
+- Fix: Clean up text if desired. These are cosmetic but worth cleaning for clarity.
+
+Quick actionable checklist you can follow now
+1. Fix Data Analysis!AP1 to match the input sheet (MA 2611).  
+2. Update input‑output!H3 (and/or input‑output!M2) to point to the intended Data Analysis cell (change the duplicate reference).  
+3. Audit the long IF/SUM formulas:
+   - Identify any IF(...) where both true/false results are identical (that’s often a copy error) and correct the true branch to the intended weight/value.
+   - Replace long SUM(IF(...)+IF(...)+...) blocks with SUMPRODUCT or a helper row to make the logic easier to review.  
+4. Recalculate and verify key totals (I52, J52, B46, B87 etc.) after fixes.
+
+If you want, I can:
+- Show the exact corrected formulas for one specific block (pick a row, e.g. the “Technical” row), or
+- Produce a short script/formula replacement plan to convert all CM*/CL* long IF sums to SUMPRODUCT/helper rows automatically. Which would you prefer?

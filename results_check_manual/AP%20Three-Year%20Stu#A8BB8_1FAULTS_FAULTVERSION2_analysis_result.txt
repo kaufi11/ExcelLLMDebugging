@@ -1,0 +1,53 @@
+I reviewed the formulas you included for the "AP Grades" sheet and checked them against the numeric values and surrounding layout. I did not find any #REF, #NAME or other Excel error values, but I found several inconsistencies and at least one incorrect SUM range. Below are the issues (what is wrong or inconsistent), the impact, and recommended fixes (exact formulas where applicable).
+
+1) Incorrect SUM range at F44 (Davidson school subtotal)
+- What I found: F44 contains the formula =SUM(F40:F43).
+- Why it's a problem: The Davidson group rows run 39:43; F39 contains data (F39 = 1) that is omitted by that formula. All other columns in the Davidson subtotal (row 44) use the full block (e.g. C44 uses C39:C43, E44 uses E39:E43).
+- Impact: F44 is undercounted by the value in F39 (missing 1). Current F44 = 4; correct total should be =SUM(F39:F43) = 5.
+- Fix: Replace formula in F44 with:
+  =SUM(F39:F43)
+
+2) Missing formula where others are SUMs: AI10
+- What I found: AI10 has the value 19 but no formula. In the same header block (row 10) nearly every "Total Exams" cell uses =SUM(column rows 5:9).
+- Why it's a problem: AI10 is inconsistent (manual number instead of a SUM). That increases the chance the total will get out of sync if any of AI5:AI9 change.
+- Impact: It's a maintenance risk; the value currently matches the sum of AI5:AI9 but it should be formula-driven.
+- Fix: Replace AI10 with the consistent SUM formula:
+  =SUM(AI5:AI9)
+
+3) Inconsistent use of formulas vs hard-coded totals across the workbook
+- What I found: Some "Total Exams" rows are computed with SUM formulas (e.g. C10, D10, E10, etc., and many subtotals such as E44, F44) while many other "Total Exams" cells later in the sheet are hard-coded numeric totals (no formula). Examples of hard-coded totals: C20, D20, E20, C28, D28, E28, C36, D36, E36, C44 (this one is hard-coded 84 though many columns in that row have formulas), and many others throughout the school-by-school sections.
+- Why it's a problem: Mixing manual totals and formula totals makes the workbook fragile and inconsistent; it is easy for manual totals to diverge from the underlying data.
+- Impact: Hard-coded totals will not update automatically when per-grade numbers are changed, producing silent discrepancies.
+- Fix: For each "Total Exams" cell that is currently a hard-coded number, replace it with a SUM formula that covers exactly the rows for that school block. Example patterns:
+  - If a school block occupies rows X:Y, for column C the total should be:
+    =SUM(CX:CY)
+  - Use the correct rows per school block (for example, for Davidson rows 39:43 use =SUM(C39:C43), =SUM(D39:D43) etc.)
+  I recommend standardizing on SUM formulas for every Total row.
+
+4) Potential ambiguity / inconsistent partial subtotal: E11 =SUM(E5:E7)
+- What I found: E11 contains =SUM(E5:E7) (value 192) while E10 uses =SUM(E5:E9) (value 602).
+- Why it's a possible issue: E11 is a partial sum (E5:E7) and is adjacent to the full-sum row (E10). That may be intentional (e.g. a "9–11" subtotal) but the placement and lack of label makes it ambiguous.
+- Impact: If E11 is supposed to be a subtotal for some subset of grades, it should be labeled; if it's an accidental/incorrect formula it will mislead.
+- Fix: Verify intent. If it's a deliberate subtotal, add a label such as "Subtotal (rows 5–7)" or move it to an explicit subtotal row. If it was intended to be same as E10, change to =SUM(E5:E9).
+
+5) Mixed SUM ranges in some subtotals (spot check)
+- What I found: In the Davidson subtotal block row 44 most columns use =SUM(col39:col43), but F44 is the only column using F40:F43. I flagged F44 above. There may be other columns elsewhere that use a different start row when they should include the full block — because some column formulas were entered manually rather than copied over.
+- Impact: Any such mismatched ranges cause under- or over-counts for the affected columns.
+- Fix: Do a quick search in the sheet for SUM formulas and visually confirm that each SUM's row start and end match the intended block (school) rows. For reliability, copy a correct SUM formula across the entire Total row rather than typing each cell separately.
+
+6) General recommendation: standardize and reduce manual entries
+- Replace hard-coded totals with SUM formulas consistently.
+- Where the same subtotal pattern is used across many columns, enter the SUM formula for the first column, then fill-right to copy it to remaining columns (Excel will adjust column references automatically).
+- Add clear labels for any partial subtotals (so E11-type formulas are not ambiguous).
+- Optionally, use tables or structured ranges so totals auto-expand if you add/remove rows.
+
+Summary of concrete changes I recommend you make right away
+- Change F44 from =SUM(F40:F43) to =SUM(F39:F43)
+- Change AI10 to =SUM(AI5:AI9)
+- Replace hard-coded totals in each "Total Exams" row with proper SUM formulas over the appropriate rows (for example, C20 =SUM(C18:C19)? — check the specific row blocks and use consistent ranges). I can enumerate every hard-coded total and supply the exact SUM formula if you want — tell me which school blocks you want fixed automatically and I will produce a list of exact formulas per cell.
+
+If you want, I can:
+- produce a complete list of every "Total Exams" cell that is hard-coded and provide the exact SUM formula to use there, or
+- open and scan every SUM formula in the workbook and report any other mismatched ranges programmatically.
+
+Which would you prefer?

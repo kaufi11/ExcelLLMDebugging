@@ -1,0 +1,39 @@
+Overview
+- Workbook contains 3 sheets: Sheet1 (primary Cost Proposal Template), Sheet2 and Sheet3 (no content provided).
+- Sheet1 is a task-based labor/cost template for the "Chittenden County MPO 2004 Transportation Model Update" (A1) dated 2004-01-14 (A3).
+
+Layout (Sheet1)
+- Header: title (A1), template label (A2), date (A3).
+- Labor Rates table: label at D4:E4 ("Labor Rates", "$/Hour"), job categories listed in D5:D8 with hourly rates in E5:E8. All rates currently 0. Note about modifying categories in F8.
+- Columns by purpose:
+  - A: Task descriptions (A12:A92).
+  - B/C used for sub-item labels and occasional time-of-day notes.
+  - D–G: Labor hours input by Job Category 1–4 respectively.
+  - H: Labor cost (calculated).
+  - I: Travel cost (input).
+  - J: Other expenses (input).
+  - K: Total cost for each line (calculated).
+
+Key formula patterns
+- Section/subtotal aggregation: Most section header rows (e.g., D14, E14, …) use SUM over their child rows (e.g., D14 = SUM(D15:D17)).
+- Per-task labor cost (column H): Hxx = SUM(Dxx*$E$5, Exx*$E$6, Fxx*$E$7, Gxx*$E$8). This multiplies hours in D–G by the hourly rates in absolute cells $E$5:$E$8.
+- Per-task total (column K): Kxx = SUM(Hxx:Jxx) — sums labor + travel + expenses for that task.
+- Section totals in K: many K section totals are SUM(Kchild:Kchild).
+- Some exceptions / specifics:
+  - K41 (Trip Distribution section total) is hard-coded as 5.
+  - In Mode Choice row (A43) H43, I43, J43 are set to 0 and K43 = SUM(K44:K47).
+  - Calibration subtotal D69/E69/F69/etc use non-contiguous SUMs (e.g., D69 = SUM(D70, D74)).
+- Project totals:
+  - Column totals: D93:G93 are column sums over D12:D92 etc.
+  - Consolidated totals for cost columns: H93, I93, J93 are SUM of a list of section header cells (non-contiguous). K93 = SUM of section totals K12,K13,...,K89.
+  - Summary block at B97–B101: Labor (B98) with C98 referencing K93, Overhead and Fee placeholders, and Total in C101 = SUM(C98:C100).
+
+Data status & implications
+- All hourly rates E5:E8 are zero, so all calculated labor costs (column H) will be zero until rates are entered.
+- Many hour input cells for D–G are not shown (assumed blank); with zero rates and blank hours results will be zero.
+- Structure uses absolute references ($E$5 etc.) so changing rates updates all Hxx calculations automatically.
+
+Notes and recommendations
+- Template is modular: add more job categories by extending columns and updating Hxx formulas (or convert to a formula using a vectorized SUMPRODUCT).
+- Check the hard-coded K41 = 5 if that is unintended.
+- Sheet2 and Sheet3 contain no described content.

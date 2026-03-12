@@ -1,0 +1,49 @@
+Summary — main errors found and how to fix them (short, actionable)
+
+1) Hard-coded/wrong layoff formula on pricing sheet
+- Error: pricing!C15 = 519*Sheet1!$B$20 (uses literal 519 instead of the number laid off cell).
+- Fix: change to =C5*Sheet1!$B$20
+- Why: layoff cost should be (# laid off in this period) * (layoff cost/worker). The 519 is a typo and gives a meaningless result.
+
+2) Overtime cost formulas on Sheet2 reference wrong parameter cells
+- Error examples:
+  - Sheet2!E16 = +E6*Sheet1!B24 (and E17..E20 reference Sheet1!B25..B28)
+  - These point at B24–B28 instead of the overtime-cost cell.
+- Fix (use absolute reference to overtime rate): set Sheet2!E15:E20 to =E5*Sheet1!$B$23, =E6*Sheet1!$B$23, … respectively (or fill down from =E15 with Sheet1!$B$23 absolute).
+- Why: B23 on Sheet1 is the overtime cost/hour. The current formulas pull unrelated/out-of-range cells, producing wrong overtime cost values.
+
+3) Revenue formulas on Sheet2 and Sheet3 are wrong
+- Error: Sheet2!C24 and Sheet3!C24 use =SUM(J5:J10)*31 (multiplying total demand by 31).
+- Fix: replace with SUMPRODUCT of demand and price. If prices are on the pricing sheet (pricing!K5:K10):
+  - =SUMPRODUCT(J5:J10, pricing!K5:K10)
+  - Or if the plan sheet has its own price column K, use =SUMPRODUCT(J5:J10, K5:K10)
+- Why: revenue = sum over periods (demand * price). Multiplying total demand by 31 is incorrect unless every unit price = 31 (and even then it ignores per-period prices).
+
+4) Sheet3 cost rows reference Sheet2 (copy-paste error)
+- Error examples:
+  - Sheet3!B15 = +Sheet1!$B$19*Sheet2!B5 (hiring cost uses Sheet2!B5)
+  - Several other cost cells on Sheet3 reference Sheet2 instead of Sheet3.
+- Fix: point all cost formulas on a plan sheet to that same sheet’s decision variables. For Sheet3 change Sheet2!B5 → Sheet3!B5, Sheet2!C5 → Sheet3!C5, etc. Best: on Sheet3 row 15 use:
+  - B15 = Sheet1!$B$19 * B5
+  - C15 = C5 * Sheet1!$B$20
+  - D15 = D5 * Sheet1!$B$22 * 8 * 20
+  - E15 = E5 * Sheet1!$B$23
+  - F15 = F5 * Sheet1!$B$17
+  - G15 = G5 * Sheet1!$B$18
+  - H15 = H5 * Sheet1!$B$24
+  - I15 = I5 * Sheet1!$B$16
+  - Then fill down for other periods.
+- Why: cost rows must use the plan sheet’s Hired/Laid off/Workforce/etc. Using Sheet2 values corrupts Sheet3’s cost calculations.
+
+5) General clean-up recommendations
+- Make all parameter references absolute (Sheet1!$B$16 etc) and consistent across sheets.
+- Check any other cost rows for accidental sheet references or hard-coded numbers (copy-paste mistakes).
+- If you intend a single source of prices, put them in one sheet and reference that in all revenue formulas (use SUMPRODUCT with the price range).
+
+How to implement quickly
+- Use Find (Ctrl+F) to locate any formulas containing "Sheet2!" on Sheet3 and update them to "Sheet3!".
+- In each plan sheet: fix the overtime column formulas to multiply by Sheet1!$B$23 and use fill-down.
+- Replace the two SUM(...)*31 formulas with SUMPRODUCT as shown.
+- Correct pricing!C15 to =C5*Sheet1!$B$20.
+
+If you want, I can provide the exact corrected formulas for every wrong cell or a short macro to fix all these copy-paste mistakes automatically. Which would you prefer?

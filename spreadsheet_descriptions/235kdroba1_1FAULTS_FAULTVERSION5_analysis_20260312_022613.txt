@@ -1,0 +1,56 @@
+Overview
+- Workbook is a student grading tracker with detailed component breakdowns (Homework, Effort/Participation, Tests) per student and aggregate rows (TOTAL, class averages, medians).
+- Main data on Sheet1 (students rows 3–32, TOTAL row 33, summary rows 35–36). Other sheets hold aggregated scores, precomputed weights/factors, and summary tables.
+
+Sheet1 — layout and key columns
+- Row 1: section labels (G1 = HOMEWORK, T1 = EFFORT PARTICIPATION, AB1 = TESTS, AI1 = FINAL GRADE).
+- Column A: Student IDs/names (A3:A32). Rows 3–32 = individual students; A33 = TOTAL.
+- Decimal homework (three components):
+  - B–D = DEC. PV, DEC NS, DEC COMP.
+  - E = total decimal homework per student (E3 = B3+C3+D3).
+  - F = normalized decimal homework percent (F3 = E3 / $E$33). Row33 holds maxima (B33:D33 = 10 each, E33 = sum = 30).
+- Fraction homework:
+  - G–I = FRACT NS, FRACT P/H, FRACT COMP.
+  - J = sum of G:I (J3 = G3+H3+I3).
+  - K = J / $J$33 (J33 = 30).
+- % Sense / % Comp / % Apply:
+  - L–N are three "% ..." columns.
+  - O = L+M+N (O3) except note O14 uses L14-M14-N14 (likely a typo).
+  - P = O / $O$33 (O33 = 30).
+- Homework total & percent:
+  - Q = LINKAGE (another HW item).
+  - R = Total Homework aggregate: Rn = sum(Bn:Dn, Gn:In, Ln:Nn, Qn) — i.e., E + J + O + Q (explicit formula in rows).
+  - S = R / $R$33. R33 = 100 (max/homework total).
+- Effort / Participation section:
+  - T–W = attendance/participation breakdown (Att., Part., Disp., Peer).
+  - X = SUM(T:W).
+  - Y = X / $X$33. X33 is sum of T33:W33 (T33=10, U33–W33=5 each → X33 = 25).
+- Tests section:
+  - Z, AB, AD = three test components (labeled in header area).
+  - AA = Z / $Z$33 ; AC = AB / $AB$33 ; AE = AD / $AD$33. Denominators: Z33=85, AB33=75, AD33=65.
+  - AF = Z + AB + AD (total tests).
+  - AG = AF / $AF$33 ; AF33 = SUM(Z33:AD33).
+- Final grade:
+  - AI = R + X + AF (total in class).
+  - AJ = AI / $AI$33 (AI33 = R33 + X33 + AF33).
+- Row 33 contains the maxima/denominators used across percent formulas (mostly 10s, 5s and the specific test maxima).
+- Rows 35 (Average) and 36 (Median) compute AVERAGE(...) and MEDIAN(...) across students for each numeric column (e.g., B35 = AVERAGE(B3:B32), etc.).
+
+Notable formulas / patterns
+- Repeated pattern: component total = SUM(component columns); normalized percent = component total / absolute max in row 33 (anchored references like $E$33, $J$33, etc.).
+- Final score composition: Final raw score AI = Homework total (R) + Participation total (X) + Test total (AF). Final normalized (%) = AJ = AI / AI33.
+- Aggregate summary sheets (Sheet2–Sheet5, Sheet3, Sheet4, Sheet6, Sheet7) store precomputed averages and intermediate aggregated factors (see next section).
+
+Other sheets (summary / weights)
+- Sheet2: Final column averages by category (B2 Homework 0.9344, C2 Participation 0.956, D2 Tests 0.8359, E2 Final Grade 0.8861).
+- Sheet3: Averages by type (Decimals 0.94, Fractions 0.9367, Percentages 0.9247, Total 0.9344).
+- Sheet4: Breakout of averages for Decimal HW, Decimal Test, Fraction HW/Test, Percentage HW/Test and totals (B2:I2).
+- Sheet5: Example student row (J) and class averages repeated; J row values in B2:E2.
+- Sheet6 & Sheet7: Small tables with precomputed ratios/weights used for categories (e.g., Decimal HW 0.9633, Decimal Test 0.9059, Fraction HW 0.95, Percent HW 0.93, Effort/Participation 0.972, etc.).
+- Sheets 8–16 are present but appear empty.
+
+Data quality note
+- One inconsistent formula: O14 = L14 - M14 - N14 (should be L14+M14+N14 like other O rows). This looks like a mistake to correct.
+
+Summary
+- Well-structured per-student breakdown with consistent formulas: component sums → normalize by max (row33) → aggregate to Homework (R), Participation (X), Tests (AF) → Final total (AI) and final percent (AJ). Summary sheets provide class-level averages, medians and precomputed category factors.

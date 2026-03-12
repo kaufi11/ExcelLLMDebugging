@@ -1,0 +1,91 @@
+I reviewed the workbook formulas and checked consistency of ranges and references across sheets. Below are the formula issues and inconsistencies I found, grouped by sheet, with recommended fixes and rationale.
+
+Summary of the most important problems
+- AHTF!F14 uses the wrong range (excludes F2) — causes the AHTF recommended total to omit Canus (AHTF!F2).
+- AHTF!E16 and AHTF!F16 use a hard-coded constant (2432890) instead of referencing a cell — fragile and not transparent.
+- Several "Recommend" (column F) cells are blank (or contain text) while totals sum those ranges; totals therefore treat them as zero — likely unintended/missing data.
+- A few single-cell SUMs and isolated formulas are stylistically inconsistent (not errors per se), and one suspicious standalone formula (Municipal!F5 =690) appears likely erroneous.
+
+Detailed findings and recommendations
+
+AHTF sheet
+1) AHTF!F14
+- Current formula: =SUM(F3:F13)
+- Problem: E14 uses =SUM(E2:E13) (includes E2), but F14 starts at F3 and therefore omits F2 from the recommended total. This produces an inconsistent E vs F total for AHTF.
+- Recommendation: Change to =SUM(F2:F13) (or make the ranges identical to E14). If F2 is intentionally omitted because there is no recommendation for Canus, add a comment or explicitly put 0 in AHTF!F2 so the omission is deliberate.
+
+2) AHTF!E16 and AHTF!F16
+- Current formulas: =2432890*0.15
+- Problem: The formula uses a hard-coded number (2432890). If that source amount changes, the formula will not update. Hard-coded constants reduce transparency and increase error risk.
+- Recommendation: Replace the constant with a reference to the cell that holds the 2,432,890 value (e.g., =<CellWith2432890>*0.15). If that total should be computed from other sheet values, change to a SUM or an explicit reference to that cell(s).
+
+3) AHTF!F10
+- Current value: text "Pending Feasibility Study"
+- Problem: Text inside the recommendation column will be treated as zero when summed. If the intent is to exclude the item from the sum until feasibility is known, make that explicit (e.g., set numeric 0 and add a comment) or keep text but be aware totals do not include any numerical value here.
+- Recommendation: Replace with a numeric value (e.g., 0) or add a note; if you want to exclude it from SUMs conditionally, use explicit logic.
+
+Rehab sheet
+4) Rehab!F8 (and related blanks in column F)
+- Current formula: =SUM(F2:F7)
+- Problem: Several recommend cells are blank (Rehab!F2, Rehab!F3, Rehab!F6). The total will treat them as zero; likely you intended to include recommendations for those rows.
+- Recommendation: Fill in Rehab!F2, F3 and F6 (if recommendations exist), or if those items should have no recommendation, document it. If F values should just mirror E when recommended fully, use =E2 etc.
+
+Non Profit sheet
+5) Missing Recommend (column F) entries
+- Cells with E values but no F (recommend) values: 'Non Profit'!F3, F9, F12, F17, F18 (and possibly others).
+- Problem: Non-Profit total F22 = SUM(F2:F21) treats these as zero and may underreport recommended totals.
+- Recommendation: Confirm whether these rows should have recommendations. If so, populate the missing F cells; if intentionally blank, document or explicitly put 0 so it is clear.
+
+6) Non Profit totals using SUM(single cell)
+- Non Profit E28: =SUM(E27)
+- Non Profit F28: =SUM(F27)
+- Problem: Not an error — SUM on a single cell works — but it is inconsistent style compared with direct =E27. It may confuse maintainers.
+- Recommendation: For clarity, use direct references (e.g., =E27) or keep as-is but be aware it’s stylistically unusual.
+
+Municipal sheet
+7) Municipal!F5
+- Current formula: =690
+- Problem: This is odd because the Request (E5) is 147,970 and most other rows either use =E# or a specific recommended cap like 190,000. A flat =690 looks suspicious and is likely a data-entry error.
+- Recommendation: Confirm intended recommendation for Hatboro Borough (row 5). If recommendation should equal requested use =E5, or set the correct recommended value.
+
+8) Municipal column F mixed approaches
+- Some cells in Municipal column F use =E# (e.g., F2 =E2), others use explicit numbers (some reflecting caps at 190,000), and some are blank. That is fine if intentional (policy-based caps), but verify rows where F is blank or unexpectedly small (see F5 above).
+
+County sheet
+9) County summary formulas
+- County E9 =Municipal!E22 — OK
+- County E10 ='Non Profit'!E22 — OK
+- County E11 =Rehab!E8 — OK (Rehab!E8 is Total Rehab Projects)
+- County E12 =E6 — OK (County total)
+- County E13 =SUM(E9:E12) — OK
+- No formula errors observed here; but totals depend on blank or missing recommendations in underlying sheets as noted above.
+
+HOME sheet
+10) HOME totals
+- HOME E8 = SUM(E2:E7) and E11 = SUM(E8:E10) — OK.
+- No formula errors observed.
+
+AHTF sheet - other notes
+11) AHTF!E14 uses =SUM(E2:E13) — OK.
+- But as noted, F14 unaligned with E14 is the main inconsistency.
+
+General stylistic / data-quality observations
+- Several totals use SUM over single cells (SUM(E27)) — works, but inconsistent.
+- Many recommend (column F) cells are blank; totals that sum column F will treat those as zero — verify whether that is intended.
+- Some numeric cells in column F contain text (AHTF!F10). Text will be ignored by SUM formulas — be explicit.
+- Wherever a fixed cap/policy is applied (e.g., 190,000 recommendations in Municipal), consider documenting the rule or computing recommendations with a formula like =MIN(E#,190000) to make policy transparent and avoid manual errors.
+
+Suggested quick fixes (formulas)
+- AHTF!F14 -> =SUM(F2:F13)
+- AHTF!E16 -> replace =2432890*0.15 with =<cell containing 2432890>*0.15 (or compute the 2,432,890 from the appropriate items)
+- AHTF!F16 -> same change as E16
+- Municipal!F5 -> verify and set to the intended number (e.g., =E5 if recommended equals request)
+- Rehab!F2 / Rehab!F3 / Rehab!F6 — enter intended recommendation values or set =E# where appropriate
+- Non Profit: fill missing F3, F9, F12, F17, F18 if recommendations exist
+
+If you want, I can:
+- Propose exact corrected formulas for each suspect cell,
+- Compute updated totals if you tell me intended values for the missing recommend cells (or whether F2 should be included as zero),
+- Or produce a list (CSV) of all cells where column F is blank so you can supply the missing recommendations.
+
+Would you like me to generate a worksheet of all blank/mismatched recommend cells and propose corrected formulas?

@@ -1,0 +1,49 @@
+I checked the workbook and found a few clear, repeatable errors that will give wrong totals or 100% results. Below are the errors, why they are wrong, and exactly how to fix them. Short and simple.
+
+1) Subtotals use COUNT instead of SUM (big impact)
+- Where: Sheet SG1, cell F53 = COUNT(F7:F51)
+- Why wrong: COUNT returns the number of numeric cells (e.g. how many subjects have 2002 values) instead of adding the 2002 entries. That makes F53 (the 2002 subtotal) a small integer and therefore any percent-change (G53) that uses F53 is wrong.
+- Fix: replace F53 formula with:
+  =SUM(F7:F51)
+- Also make G53 robust (optional):
+  =IF(E53=0,"", (F53-E53)/E53)
+- Explanation: SUM gives the actual total of 2002 entries; the IF prevents a #DIV/0! if E53 is blank/zero.
+
+2) Text placeholders (like "-") in numeric cells break calculations
+- Example: Sheet SG1 cell F44 contains "-" (text) for Office & Information Studies 2002.
+- Why wrong: text values are ignored by SUM and not counted by COUNT in ways you might expect; they can make COUNT-based errors worse and make user-visible subtotals misleading.
+- Fix: replace "-" with either an empty cell, 0, or a proper numeric value. If the cell may be legitimately blank and you still want a percent change cell, use a safe formula for the percent-change cell, e.g.:
+  =IF(E44=0,"", (F44-E44)/E44)
+- Explanation: keep numeric columns numeric; use IF to avoid division by zero or misleading percentages.
+
+3) “- as percentages” / “as % of all” rows divide by the wrong cell (self-division = 100%)
+- Symptom: many cells show 100% (or 1) because the formula divides a cell by itself, e.g. =B8/B$8 or =B52/$B52.
+- Examples:
+  - Sheet HG4a (male): cell B9 =B8/B$8 (always 1)
+  - Sheet HG4b (female): cell B20 =B19/$B19 (always 1)
+  - Sheet CS3a and others: same pattern (FORMULA =B8/$B8)
+- Why wrong: dividing a value by itself always returns 1 (100%), so the "% of all" rows are meaningless.
+- Fix (general): Replace the self-division with division by the correct total cell that contains the All-Candidates count for that subject. For example:
+  - For HG4a (English, male): change B9 from =B8/B$8 to =B8/HG3!$B$29
+    (HG3!B29 is the English total entries on the “All candidates” table for Higher Grade)
+  - For HG4b (English, female): change B20 from =B19/$B19 to =B19/HG3!$B$29
+  - For CS3a (English, male): if the total is on CS2!B19, change =B8/$B8 to =B8/CS2!$B$19
+- Explanation: the denominator must be the total entries for the subject (All Candidates), not the same cell; use an absolute reference (with $) so it copies correctly.
+
+4) Inconsistent use of absolute references (copy/paste risk)
+- Symptom: some “as percentages” formulas use =D52/$B52 (no $ on row/col), which can break when copied.
+- Fix: where a fixed denominator is intended, use absolute references like $B$52:
+  =D52/$B$52
+- Explanation: absolute refs keep the denominator fixed when copying formulas.
+
+Summary of actions to apply (quick checklist)
+- Change SG1!F53 from COUNT(...) to SUM(F7:F51).
+- Replace any "-" that belongs in numeric columns with blank or 0; or use an IF wrapper in percent-change cells to avoid errors.
+- Search for formulas of the form =X/X (e.g. =B8/B$8 or =B52/$B52) and replace the denominator with the correct All-Candidates total cell (use an absolute reference, e.g. =B8/HG3!$B$29).
+- Standardise percentage formulas to use absolute denominators (e.g. $B$52) for safe copying.
+
+If you want, I can:
+- give a list of every exact cell that currently has a self-division (I can scan the workbook and list them), or
+- produce the exact replacement formulas for each affected cell (I’ll need permission to update or a list of which sheets you want fixed automatically).
+
+Which would you prefer?

@@ -1,0 +1,54 @@
+I inspected both sheets and found a few concrete mistakes and a few areas that are fragile / likely to produce wrong results. Short fixes and explanations below.
+
+1) Wrong cell references in input-output (visible, definite error)
+- Problem: input-output!Q11 and Q12 are pulling the wrong Outcome cells:
+  - Q11 = I23 (should be I11)
+  - Q12 = I28 (should be I12)
+- Why it’s wrong: those Q-cells are meant to display the Outcome value for that same row. They currently point to other rows so the reported outcomes are wrong.
+- Fix: change formulas to:
+  - Q11 → =I11
+  - Q12 → =I12
+
+2) IF(...) formulas that always return the same value (logical bug)
+- Example (Data Analysis sheet):
+  - DD3 =IF(J$2="x",0,0)
+  - DE3 =IF(K$2="x",0,0)
+  - DF3 =IF(L$2="x",0,0)
+  - DO3, DW3 and several others show IF(some_cell="x",0,0)
+- Why it’s wrong: IF(condition, value_if_true, value_if_false) that returns the same value either way is pointless and typically indicates a copy/paste or mapping mistake (the developer intended a non‑zero weight for the TRUE branch).
+- Fix: decide what the TRUE result should be (for example 0.25, 0.5, 1 etc. like neighboring columns use) and update the formula to use the correct value_if_true. If the intended result is always 0, remove the IF and put 0. Example:
+  - If intended weight is 0.5: DD3 → =IF(J$2="x",0.5,0)
+  - If intended weight is always 0: DD3 → =0
+- Tip: review all IF(...,0,0) instances and correct them to the intended TRUE outcome.
+
+3) Fragile/inefficient SUM usage (clean-up, not strictly wrong)
+- Examples: SUM(I5+I9+I10+...) and SUM(B4+B8+...) work but are non-standard (SUM expects arguments or ranges). They also make maintenance harder.
+- Better: use range or list of arguments:
+  - Replace SUM(I5+I9+I10+...) with =I5+I9+I10+... or =SUM(I5,I9,I10,...) or (if contiguous) =SUM(I5:I46)
+  - Replace B46 =SUM(B4+B8+...) with =SUM(B4:B45) if rows are continuous
+- Why: clearer, less error-prone when rows are added/removed.
+
+4) Inconsistent absolute references (potential source of wrong results on copy/paste)
+- Example: some formulas use D2, others D$2 or D$2 in different rows. That can produce accidental shifts if formulas are copied.
+- Fix: make course selection row references absolute with $ (for example D$2) where intended to be fixed, or convert the Data Analysis input row into a single named range (e.g., SelectedCourses) and use that.
+
+5) Recommendation: replace many long IF sums with table-driven formulas
+- Problem: many rows build sums by creating AU:CI helper columns and then doing SUM(IF(...)) over dozens of columns. It works but is hard to audit.
+- Solution: convert the course matrix to a proper table and use SUMPRODUCT or INDEX/MATCH to compute weighted totals. Example pattern:
+  - Keep a single row with course selection flags ("x") and a matching row with course weights, then use:
+    =SUMPRODUCT(--(SelectionRange="x"), WeightRange)
+  - This reduces copy/paste errors and makes debugging easier.
+
+Quick action plan (what to fix now)
+1. Fix the definite wrong references:
+   - input-output!Q11 → =I11
+   - input-output!Q12 → =I12
+2. Audit and fix all IF(...,0,0) formulas on Data Analysis (replace with correct TRUE value or 0).
+3. Replace B46 with =SUM(B4:B45) (or explicit list if non-contiguous).
+4. Replace odd SUM(...) with proper SUM(range) or SUMPRODUCT where practical.
+5. If you want, I can:
+   - scan the workbook and list every IF that returns identical values,
+   - produce corrected formulas (if you tell me intended weights), or
+   - convert the selection/weight logic into a SUMPRODUCT-based solution.
+
+Tell me if you want me to (A) produce a full list of IF(...,0,0) cells, (B) rewrite B46 and the SUMs for you, or (C) refactor to SUMPRODUCT — I’ll give exact formulas.

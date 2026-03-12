@@ -1,0 +1,90 @@
+I reviewed the formulas you provided for the "Configuration Editor" sheet and found multiple formula inconsistencies and several likely errors. Below I list the problematic cells, explain why each is an issue, and give suggested corrections or checks you should make.
+
+Summary of main problems
+- Several cells reference the wrong column or the wrong totals (e.g. warranty rows referencing F82).  
+- Several cells contain hard-coded constants instead of referencing the D (NPL Price) or the dealer-discount factor in G2.  
+- A few formulas are inconsistent with the general pattern used across the sheet (pattern: Dealer Price E = Quantity * NPL Price * G2; Client Price F = Quantity * NPL Price).  
+- Some SUM ranges are odd/fragile and could be simplified.
+
+Detailed issues and recommendations
+
+1) Warranty rows (rows 85 and 86)
+- D85: current formula =PRODUCT(F82,0.09) — this computes D85 from the total in F82. That is almost certainly wrong (D is supposed to be a per-item NPL Price).  
+- D86: current formula =PRODUCT(F82,0.18) — same issue as D85.
+- E85: current formula =PRODUCT(F85,0.9) — this references F85 (the row’s F) rather than D85 or using the G2 dealer discount.  
+- F85: current formula =PRODUCT(F82,C85,0.09) — multiplies the total F82 by C85 and 0.09; very likely wrong.
+- E86: current formula =PRODUCT(F86,0.9) — references F86 rather than D86/G2.
+- F86: current formula =PRODUCT(F82,C86,0.18) — again references total F82.
+
+Why: warranty formulas are referencing the total (F82) and other same-row F cells, instead of using the usual row-level calculations. This will produce incorrect per-item and per-line amounts and is likely a copy/paste/reference error.
+
+Suggested fixes (pick the one that matches intended logic):
+- If warranty rows should behave like other items:
+  - E85 = PRODUCT(C85, D85, G2)
+  - F85 = PRODUCT(C85, D85)
+  - E86 = PRODUCT(C86, D86, G2)
+  - F86 = PRODUCT(C86, D86)
+- If warranty D85/D86 are intended to be a percentage of a total, clarify which total (E82? F82?) and whether D column should hold a per-item NPL price or the absolute warranty amount. At minimum, remove references to F82 from D85/D86 unless that was intentional and documented.
+
+2) Custom programming rows (rows 78–81)
+- E78/E79/E80/E81: current formulas =PRODUCT(C78,175) (and similar), but D78:D81 = 195. Using 175 instead of Dxx is inconsistent and likely an error. Also they omit G2 (the dealer multiplier) used elsewhere.
+- F78..F81 are =PRODUCT(Cxx,Dxx) which is consistent with F pattern, but E should probably be using Dxx and possibly G2.
+
+Suggested fix:
+- Change E78..E81 to follow the established pattern. For example:
+  - E78 = PRODUCT(C78, D78, G2)
+  - F78 = PRODUCT(C78, D78)
+(and likewise for rows 79–81), unless 175 was intentionally different—confirm and document.
+
+3) Installation / Training rows (rows 91–94)
+- E91/E92/E93/E94: current formula =PRODUCT(C9x,1000) while D9x = 1200. Using 1000 is inconsistent with D column.
+- F91..F94: =PRODUCT(C9x,D9x) (correct pattern for F).
+
+Suggested fix:
+- If Dealer Price (E) should be calculated from NPL price and dealer discount:
+  - E91 = PRODUCT(C91, D91, G2)
+  - etc.
+- If a fixed 1000 is intentional, document why D and E use different base numbers.
+
+4) Hard-coded or unusual values
+- F47 = 6 (formula =6) — every other F row is computed from quantity and NPL Price. Hard-coded 6 is suspicious. If row 47 is intended to be a quantity or licence count, it should be in column C and F47 computed as PRODUCT(C47,D47) (or computed elsewhere). Verify that this hard-coded 6 is intentional.
+- Several D cells contain text "CALL" (D57, D60) — this is ok if price is to be discussed, but any formula that expects a numeric D value must guard against text.
+
+5) Dealer hardware area (rows ~97–108)
+- Many E cells in this section use =PRODUCT(Cxx, Dxx) rather than =PRODUCT(Cxx, Dxx, G2). Earlier sections use G2 as dealer multiplier; hardware area does not. This is an inconsistency to review—either hardware dealer pricing intentionally excludes the G2 discount or the G2 multiplier was omitted by mistake.
+- Example: E97 =PRODUCT(C97,D97) vs earlier E4 =PRODUCT(C4,D4,G2)
+
+Action: decide whether hardware dealer price should include G2; if yes, update E97..E108 to include G2.
+
+6) Use of PRODUCT with range notation (not an error, but a note)
+- Some F cells use PRODUCT(C73:D73) etc (colon range) instead of PRODUCT(C73, D73). This is syntactically valid (it multiplies the cells in the range) and not an error per se, but it’s inconsistent with the comma style used elsewhere. No change required, but you may want to standardize for readability.
+
+7) Totals / SUM formulas
+- E82 = SUM(E4:E81) and F82 = SUM(F4:F81) — OK.
+- E109 = SUM(E82, E85:E108) — this sums E82 (which is sum of rows E4:E81) and E85:E108. That gives effectively SUM(E4:E81) + SUM(E85:E108). This excludes rows E82–E84 (E82 is included but E83/E84 are blank labels), but it's a less clear way to sum the whole software + warranty + hardware area. Consider replacing with:
+  - E109 = SUM(E4:E108)
+  - F109 = SUM(F4:F108)
+for clarity and to avoid accidental omissions.
+- Current F109 = SUM(F82, F85:F108) has the same readability/coverage issue—recommended simplify to SUM(F4:F108) if that matches intent.
+
+8) Rows with text prices
+- D57 and D60 contain "CALL" — these will break any numeric PRODUCT calculations referencing them. If those rows are intended to be calculated later, ensure formulas protect against text (e.g., IFERROR or ISNUMBER checks) or leave E/F blank until numeric values are entered.
+
+9) General pattern inconsistency
+- Most of sheet follows:
+  - E (Dealer Price) = Quantity*C*NPL*G2 (i.e., =PRODUCT(C,D,G2))
+  - F (Client Price) = Quantity*C*NPL (i.e., =PRODUCT(C,D))
+  Many rows deviate from this pattern. I recommend auditing all E and F formulas and enforcing the intended pattern consistently, unless an exception is deliberate and documented.
+
+Action checklist for you
+- Confirm intended formula patterns for each section (software, warranty, installation, hardware). Are Dealer Prices supposed to use G2 everywhere or only for some product groups?
+- Fix the obvious reference errors in warranty rows (85–86), custom programming (78–81), and installation (91–94). Use the standard PRODUCT(Cx,Dx,G2) / PRODUCT(Cx,Dx) pattern unless an exception is needed.
+- Replace hard-coded F47=6 if that value should be derived from quantity and NPL price, or move the 6 into column C and compute F47.
+- Replace E109/F109 with SUM(E4:E108) / SUM(F4:F108) or otherwise simplify totals for clarity.
+- Search the workbook for any other formulas referencing totals (e.g., F82) where a per-row reference was probably intended.
+
+If you want, I can:
+- Produce a corrected list of formulas (exact replacement formulas) for every problematic cell I flagged, based on the "standard pattern" assumption (E = C*D*G2, F = C*D).  
+- Or open and update the workbook to apply chosen fixes (if you provide permission and indicate which rules to enforce, e.g., include G2 for hardware or not).
+
+Which would you prefer?

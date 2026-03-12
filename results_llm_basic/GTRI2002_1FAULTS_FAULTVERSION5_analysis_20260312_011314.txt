@@ -1,0 +1,25 @@
+Summary — main errors I found and how to fix them
+
+1) Wrong conversion (typo) in 2002 Report — cell C30
+- Problem: C30 has formula =G30*1000000 (multiply) but every other conversion in this sheet uses /1000000 (divide) to convert pounds to millions. That makes C30 huge and breaks any totals/ratios that use it.
+- Fix: Change C30 to =G30/1000000 (or =G30/1E6).
+- Why: G30 is in pounds; dividing by 1,000,000 converts to millions. Multiplying was a typo that inflates the number and corrupts sums and percent calculations (for example R23, R24 and any L-sums that include row 30).
+
+2) Stray values in 2003 Report — cells G20 and H20
+- Problem: G20 = 8.449074 and H20 = 0.6381540899 appear on the 2003 Report sheet in columns that have no header/use there. They look like pasted or leftover intermediate results and could be accidentally used by formulas/charts.
+- Fix: If these values are not intentional, delete them (clear cells). If they are needed, move them to a properly labeled place and update formulas to reference that location.
+- Why: Unlabeled stray numbers are a source of confusion and can break calculations or charts that expect blank cells.
+
+3) Layout/column alignment check (possible confusion)
+- Observation: On the 2003 Report the "Transfers Offsite..." header sits in J5 but column J contains year numbers (J7:J20). This suggests the transfer-category columns (K:O) are shifted relative to the header or the sheet layout is inconsistent.
+- Action: Confirm that K:O correspond to the same rows/years in column A. If a header was accidentally shifted, move the header into the correct column (K5:O5) or move the year column so headers align.
+- Why: Misaligned headers make it easy to read wrong columns or write formulas that reference the wrong field.
+
+Quick verification steps after fixes
+- After fixing C30: C30 should = G30/1,000,000 = 6367581 / 1,000,000 = 6.367581. Check related totals (row 30 sums and any percent calculations) to ensure they now match expected values.
+- Clear G20/H20 on 2003 Report and recalc. Make sure no charts or formulas broke.
+- Scan sheet for any other cells using "*1000000" — those are suspicious; use Find (Ctrl+F) for "*1000000" and verify each is correct.
+
+If you want, I can:
+- Give the exact updated formulas for any dependent cells (R23, R24, totals) that were affected, or
+- Search the workbook and list any other cells using *1000000 so you can confirm none are typos.

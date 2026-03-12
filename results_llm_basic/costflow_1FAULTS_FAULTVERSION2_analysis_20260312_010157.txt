@@ -1,0 +1,69 @@
+Summary — what’s wrong (main problems)
+1. Wrong cell references (typos)
+   - Example: I9 = +D14 (D14 is empty/incorrect). It should be I9 = C14 (total purchase units).
+   - Many similar mistakes appear (D14, D27, D25, etc.) where a header/empty cell is referenced instead of the numeric total.
+
+2. Missing / placeholder formulas
+   - Cells flagged with "?" (K11, K12, K41, K57, K76, K96, K123, K132, etc.) are not calculated, breaking COGS / ending inventory totals.
+
+3. Incorrect sign usage (negatives applied in the wrong places)
+   - Examples: K41 = -E47 (negating a positive ending-inventory amount). That gives the wrong sign/amount for totals.
+   - Mixing negative unit rows and negative extended cost rows makes the model hard to follow and leads to sign mistakes.
+
+4. Mixing columns / inconsistent layout
+   - Unit / unit-cost / extended-cost columns are inconsistently used (sometimes E is "extended", sometimes K). This makes many formulas reference the wrong column.
+
+5. Linking to header/text cells instead of numbers
+   - D25 / D26 / F25 / F26 point to header text like D6 or D7 rather than values. That looks like accidental copy/paste of labels.
+
+Concrete fixes (easy to implement)
+1. Fix the obvious wrong reference(s)
+   - Change I9 from =D14 to =C14.
+     Why: I9 should hold total purchase units (C14). D14 doesn’t contain units.
+
+2. Fill in the missing formulas for weighted-average (periodic) area — use consistent, clear formulas
+   - Use these formulas (example cell names from your sheet):
+     - I8 = C10            (beginning units)
+     - K8 = E10            (beginning extended cost)
+     - I9 = C14            (purchases units) — fix from step 1
+     - K9 = E14            (purchases extended cost)
+     - I10 = SUM(I8:I9)    (GAFS units)
+     - K10 = SUM(K8:K9)    (GAFS cost)
+     - J10 = K10 / I10     (weighted unit cost)
+     - EndingUnits = I10 + SUM(C17:C18)   (or set I11 = EndingUnits; use positive units)
+     - K11 = EndingUnits * J10    (ending inventory extended cost)
+     - K12 = K10 - K11          (COGS)
+   - Why: This makes the logic explicit (units → unit cost → ending inventory cost → COGS) and removes sign confusion.
+
+3. Remove incorrect negation of ending inventory extended cost
+   - Wherever you have Kxx = -Eyy to represent ending inventory extended cost, remove the negative sign and make it Kxx = Eyy (or better: compute Kxx as units * unit_cost as shown above).
+   - Why: extended cost is a positive asset; negating it gives wrong values for totals and taxes.
+
+4. Replace references to header/text cells
+   - Example: D25 = +D6 (label) is not useful. Either keep it as text label or link Year2 numeric values to the actual numeric results (e.g., D27 = -D11 for beginning inventory units/cost).
+   - Why: pointing to text headers doesn't transfer numbers and usually hides broken logic.
+
+5. Standardize column roles and signs
+   - Pick one consistent convention:
+     - Units column: always positive for balances (use negative only for sales rows if you prefer),
+     - Unit cost column: positive,
+     - Extended cost column: Units * UnitCost (positive).
+   - Convert any formulas that used double negatives to the clearer positive-equation forms from step 2.
+   - Why: consistent layout prevents reference/sign errors and makes audits easy.
+
+Why these fixes solve the problem
+- Wrong references return empty/incorrect inputs; fixing them feeds the correct numeric inputs into the dependent calculations (avg unit cost, ending inventory, COGS).
+- Filling missing formulas restores the arithmetic chain (GAFS → avg cost → ending inv → COGS → gross profit → taxes).
+- Removing bad negation and standardizing signs keeps totals consistent and prevents accidental sign flips in Net Income / Cash Flow calculations.
+- Standardizing columns makes copy/paste or copying formulas between FIFO/LIFO/perpetual sections safe.
+
+Quick checklist you can run now
+- Fix I9 to =C14.
+- In weighted-average periodic calculate GAFS units/cost first (I10/K10), then J10 = K10/I10, then compute EndingUnits and EndingCost = EndingUnits*J10, then COGS = K10 - EndingCost.
+- Search workbook for any formulas that reference D6, D7, F6, F7 (those are labels) and change them to the intended numeric cells.
+- Search for any formula that equals -Exx where Exx is an ending inventory cost — check if the minus should be removed.
+- Replace all "?" cells with the explicit formulas above.
+
+If you want, I can:
+- Give an exact corrected formula for each specific cell you list, or
+- Create a small corrected example for the Weighted Average (periodic) and one FIFO section and show the exact cell formulas to paste in. Which do you prefer?

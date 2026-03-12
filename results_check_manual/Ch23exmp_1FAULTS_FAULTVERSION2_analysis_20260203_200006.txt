@@ -1,0 +1,28 @@
+I reviewed both sheets and found three clear problems that will produce wrong numbers. Fixing them will make the schedules consistent and self‑balancing.
+
+Summary of errors and fixes
+
+1) Month headers are mis‑placed (column offset)
+- Problem: The month labels are in B16 and D16 but the month data start in C and E (e.g. C17 and E17 hold Sales). This creates a one‑column offset and makes references/labels inconsistent.
+- Fix: Move the month headers one column to the right: put "August" in C16 and "September" in E16 (instead of B16 / D16). Alternative: change every formula that was intended for column C to column B, but moving the headers is simpler and less error‑prone.
+- Why: Headers must be above the column that actually contains that month’s numbers. This keeps formulas and label lookups aligned.
+
+2) Operating expenses subtotal uses the wrong columns
+- Problem: C24 currently =SUM(B21:B24) (and E24 = SUM(D21:D24)). That sums the values in the left column (B or D) instead of the current-month column (C or E).
+- Fix: change
+  - C24 to =SUM(C21:C24)
+  - E24 to =SUM(E21:E24)
+- Why: Subtotals must sum the expense lines in the same column as the month values. After fixing the headers per (1), the expense lines and totals will be in the same columns.
+
+3) Beginning inventory in the Formulas sheet is negative
+- Problem: On the Formulas sheet C30 = -B7 (a negative beginning inventory). Example sheet shows +B7; a negative beginning inventory will flip COGS and break the COGS schedule.
+- Fix: change C30 to =B7 (or =+B7). Keep E30 = C33 (carry forward prior ending inventory).
+- Why: Beginning inventory should be a positive balance taken from the 7/31 inventory cell. The minus sign is a typo.
+
+Quick checklist after you change those three items
+- Verify C32 = C30 + C31 and C34 = C32 – C33 produce positive/expected COGS.
+- Verify gross margin C19 = C17 – C18 (C18 should equal C34).
+- Verify operating income and net income flow through correctly (C24 and E24 now sum same-column expense lines).
+- If you moved headers, also check any labels/formulas that reference B16/D16 and update them if necessary (e.g., B36/D36 may need to point to C16/E16).
+
+If you want, I can give the exact corrected formulas for every affected cell and walk through one example to confirm the numbers match expected results.

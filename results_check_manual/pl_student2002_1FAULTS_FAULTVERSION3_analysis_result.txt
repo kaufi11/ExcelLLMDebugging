@@ -1,0 +1,24 @@
+I scanned the workbook formulas and found one clear formula mistake and a few potential inconsistencies to review.
+
+1) Confirmed formula error (needs correction)
+- Cell V19
+  - Current formula: =(SUM(D19:R19)+U19+U19)/2
+  - Problem: U19 is added twice; T19 (PrologMid) is omitted.
+  - Likely correct formula: =(SUM(D19:R19)+T19+U19)/2
+
+2) Other observations / potential issues to review
+- Most "Sum/2" formulas in column V use the pattern =(SUM(Dn:Rn)+Tn+Un)/2. This is consistent except for the V19 error above.
+  - Note: SUM(Dn:Rn) covers columns D through R; T and U are added separately because they lie after R. That is a reasonable design, but it's fragile if you later insert columns between R and T or if you expect to include all numeric columns in one contiguous sum.
+  - Suggestion (more robust): use an explicit sum of the numeric columns you want, or use SUM(Dn:Un) and exclude/comment columns explicitly if S contains text; e.g. =(SUM(Dn:Un)-Sn)/2 if S is numeric placeholder, or =SUM(Dn,En,...,Un)/2 if you want to avoid capturing intervening text columns.
+
+- Column W ("Course Grade") mixes numeric grades and text (e.g. W2 = "I"). This results in different data types in the same column and can break downstream numeric summaries if you expect all numeric. Confirm intended contents/format for W.
+
+- Row 19 consequences: Because V19 uses U19 twice, V19 shows 105 while course grade W19 is 97. That large mismatch suggests the duplicated U19 inflated the computed total. After fixing V19 to use T19+U19, recalc/check W19 and any totals/averages that use V.
+
+- Aggregate checks:
+  - The SUM/AVERAGE/STDEV formulas in row 53–55 reference D2:D52, E2:E52, etc. Those ranges align with the per-row formulas (which also used rows 2–52), so the ranges themselves are consistent.
+  - However, because some V formulas may be wrong (V19), the V53 / V54 / V55 results will be affected; fix row 19 and then re-check those summary numbers.
+
+If you want, I can:
+- Generate a list of all cells in column V and show the formula per row to confirm none others are mistyped.
+- Produce corrected summary values after fixing V19.

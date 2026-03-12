@@ -1,0 +1,39 @@
+Summary of errors
+- Cell G19 uses the wrong column: its formula is =SUM(D19-E19) but the annual allocation is in C19. This returns an incorrect remaining amount.
+- Many "Remaining" formulas use the odd pattern =SUM(Cx-Ey) instead of simple subtraction (=Cx-Ey). Although Excel will evaluate =SUM(C10-E10), it's unconventional and makes the sheet harder to audit and more prone to mistakes (like the D19 typo). Totals also use =SUM(C10+C24+...) which works but is nonstandard.
+
+Why these are problems
+- The D19 reference is a typo and so returns the wrong value (probably 0 - E19).
+- Using SUM around arithmetic hides mistakes and can make bulk fixes risky/unreliable.
+
+Fixes (short)
+1. Correct G19:
+   - Change the formula in G19 to:
+     =C19-E19
+2. Replace each "Remaining" formula of the form =SUM(Cx-Ey) with simple subtraction:
+   - Example: change G10 from =SUM(C10-E10) to =C10-E10
+   - Do this for G13, G14, G15, G16, G17, G18, G20, G21, G22, G23, G27, G28, G29, G33, G34, G35, G36, G40, G41, G42, G43, G44, G48, G49, G50, G54, G55, G56, G57, G58, G67, G69, G75, G76, G77, G78, G79, G80, etc.
+3. Replace totals that use plus inside SUM with standard SUM arguments (optional but recommended):
+   - Change C61 from =SUM(C10+C24+C30+C37+C45+C51+C59) to either
+     =SUM(C10,C24,C30,C37,C45,C51,C59)
+     or (if contiguous) =SUM(C10:C59) with care.
+   - Same pattern for E61 and G61:
+     =SUM(E10,E24,E30,E37,E45,E51,E59)
+     =SUM(G10,G24,G30,G37,G45,G51,G59)
+
+How to do a quick bulk cleanup
+- If many cells use =SUM(Cx-Ey): use Find & Replace carefully:
+  - Find: =SUM(
+  - Replace with: =
+  - Then manually review any SUM(range) formulas (they will be affected), so only do this if you first restrict the Find to the G column (search within Sheet and within column G).
+- Or better: edit formulas row-by-row to be safe and verify totals.
+
+Why the corrected formulas are better
+- =C19-E19 (and similar) is clear, easy to read and audit.
+- Using SUM(range) or SUM(list) for subtotals is standard and avoids ambiguity.
+- Clear formulas reduce the risk of future reference errors like the D19 typo.
+
+If you want, I can:
+- Provide a list of exact cells to change (I started one above), or
+- Give a single Replace pattern to run safely, or
+- Return corrected formulas for the whole G column. Which would you prefer?

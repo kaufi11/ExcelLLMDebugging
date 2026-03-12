@@ -1,0 +1,33 @@
+Findings (short)
+
+1) Obvious formula typo
+- Faulty cell: A34
+- Formula now: =-A33-1
+- Problem: The minus signs make this compute -(A33) - 1, breaking the sequence (returns a negative/wrong number).
+- Fix: Replace with =A33+1
+
+2) Many numbering formulas reference the wrong previous row after header/section rows
+- Examples: A165 uses =A162+1 (should reference the cell directly above), A191 uses =A188+1, A248 uses =A244+1, etc.
+- Cause: Section headers or blank rows were inserted and someone pasted formulas that referenced an earlier cell rather than the cell immediately above; the result is the sequence jumps/duplicates and numbers are misaligned with the text in column B.
+- Fix (recommended, robust): Rebuild the column A numbering with a single consistent rule so every number references the cell directly above. Two easy options:
+
+Option A — Number only when there is a course title in column B (recommended)
+- Put 1 in A4.
+- In A5 and fill down: =IF(TRIM(B5)="","",A4+1)
+  - This produces consecutive numbers only on rows that actually have a B value and will not be thrown off by inserted headings.
+
+Option B — Always sequential regardless of blanks (fast)
+- In A4 enter: =ROW()-3
+  - Fill down. This produces 1 at row4, 2 at row5, etc. Use this only if you want a simple row-based index.
+
+How to apply the fix quickly
+- Select A5:A327 (or the entire used range in column A), paste the chosen formula, and Fill Down.
+- Correct A34 to =A33+1 before/after filling to avoid a negative number interfering.
+
+Why this fixes it (brief)
+- Using A[row-1]+1 ensures each number is built from the actual previous number and cannot skip because of inserted header rows.
+- The ROW() approach avoids dependencies on other cells and is foolproof when you want simple sequential numbering.
+
+If you want, I can:
+- Give the exact formulas for the full range,
+- Or produce a single formula that will produce numbers only next to non-empty column B entries and skip headers automatically. Which do you prefer?

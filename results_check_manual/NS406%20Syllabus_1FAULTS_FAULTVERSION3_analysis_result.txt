@@ -1,0 +1,27 @@
+I inspected the formulas in column C (the sequential “#” column) and found one clear formula mistake plus a couple of inconsistent/fragile constructions you may want to fix.
+
+Summary of problems
+- C37 (row 37) — incorrect formula/typo
+  - Current formula: =635+C36
+  - Current value: 655 (because C36 = 20 → 635 + 20 = 655)
+  - Why it’s a problem: every other numbered row is incremented by 1 from the prior numbered row. C37’s use of 635 (instead of 1) creates a large, unintended jump in the sequence. Subsequent rows C38..C49 continue incrementing from that incorrect 655, so the whole tail is offset.
+  - Recommended fix: change C37 to follow the same pattern as the rest, e.g.
+    - =1+C36
+    - or, to be robust against skipped rows, =MAX($C$2:C36)+1
+
+- Missing / skipped C-cells (possible fragility, not strictly a formula error)
+  - Several rows have no C value (C4, C6, C8–C9, C11–C15, C19–C20, C23–C24, C25, C29, C40 etc.). The formulas in later rows sometimes reference the last populated C above (e.g. C26 = 1+C22), not always the immediately previous row. That works but is fragile: inserting/deleting rows can break the intended numbering.
+  - If you want robust sequential numbering that ignores blank rows, consider using:
+    - =IF(A2="", "", MAX($C$2:C2)+1) (or adjusted for the current row)
+    - or use =IF(ROW()=2, starting_value, IF(Arow="", "", 1+OFFSET(CELL_ABOVE))) depending on desired behavior.
+
+Other non-formula inconsistencies (worth checking)
+- A25 is dated 2003-02-07 while nearly all other dates are in 2002. Not a formula error, but likely a data entry typo that may explain the blank C25.
+
+Actionable corrections
+- Change C37 formula to:
+  - =1+C36
+  - OR (more robust): =MAX($C$2:C36)+1
+- Optionally: normalize the logic in column C so every row’s formula references the previous numbered cell or uses MAX(...) to avoid breaks when rows are blank/inserted.
+
+If you want, I can produce the exact cell-by-cell corrected formulas for column C (or create a single formula you can paste down the column) to make the numbering robust.

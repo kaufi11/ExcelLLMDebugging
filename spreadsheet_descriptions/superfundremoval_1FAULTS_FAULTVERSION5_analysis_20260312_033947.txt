@@ -1,0 +1,35 @@
+Sheet name and purpose
+- Sheet: "PART Qs & Section Scoring" — a PART (OMB Program Assessment Rating Tool) assessment for the EPA "Superfund Removal" program. It records questions, answers, explanations, evidence, weightings and computes weighted scores and section totals for four PART sections (I. Purpose & Design; II. Strategic Planning; III. Program Management; IV. Program Results).
+
+Layout / columns
+- Column A: question number / section headers / totals.  
+- Column B: question text or sublabels (e.g., Key Goal I).  
+- Column C: answer (Yes/No/N/A or extent values like "Small Extent"/"Large Extent").  
+- Column D: explanation/analysis.  
+- Column E: evidence / data citations.  
+- Column F: weighting for each question (numeric decimals such that section F-sums are intended to equal 1.0 / 100%).  
+- Column G: computed weighted score for each question (formula-based).
+
+Key formulas and scoring logic
+- Individual weighted-score pattern (Sections I–III): Gx = IF(Cx="yes",(1*Fx),IF(Cx="no",(0*Fx),"")) — returns Fx when answer = "yes", otherwise 0 (blank if other).  
+- Section IV score logic (handles extent answers): Gx = IF(Cx="yes",(1*Fx),IF(Cx="no",(0*Fx),IF(Cx="small extent",(0.33*Fx),IF(Cx="large extent",(0.67*Fx),"")))) — uses fractional multipliers for "small/large extent".  
+- Section totals (weighted sum): G12 = SUM(G6:G10), G24 = SUM(G16:G22), G36 = SUM(G28:G34), G56 = G55+G54+G53+G45+G41.  
+- Weight-sum checks: F12, F24, F36, F56 use IF(SUM(F-range)<>100%,"ERROR","100%") to verify weightings sum to 100% (the sheet uses decimals like 0.2 or 0.1428 so Excel’s 100% is equivalent to 1.0).
+
+Notable values and content highlights
+- Program name in A3: "Superfund Removal".  
+- Primary annual output target: 300 removal actions per year (appears repeatedly as the annual goal). Actuals shown: FY00 actual 375; FY01 actual 302; FY02 actual 426. Targets FY00–FY03 listed (e.g., FY01 target 300, FY03 target 350).  
+- Many D/E cells contain statutory citations and evidence (e.g., CERCLA Section 9604(a)(1), Federal Response Plan, RFF 2001 report, CERCLIS database references).  
+- Most question weightings in Sections I–III are ~0.1428–0.143 or 0.2 in Section I; Section IV items have larger weights (e.g., F41 = 0.334, F45 = 0.333, F53 = 0.333).
+
+Potential issues / anomalies to check
+- G21 appears inconsistent with the other weighted-score formulas: it is shown as =IF(C21="yes",(1/F21),IF(C21="no",(0/F21),"")). This divides 1 by the weight (yielding a large number) rather than multiplying 1*F21. Likely intended: =IF(C21="yes",(1*F21),IF(C21="no",0,"")). This is a critical error that will inflate the section total if triggered.  
+- Weight-sum check cells compare SUM(F-range) to 100%: this works if the F values are numeric decimals whose sum equals 1.0; rounding of the many 0.1428/0.143 values could potentially trigger the "ERROR" message due to floating-point rounding—consider using higher-precision or rounding in the check.  
+- The IF tests compare text values (e.g., Cx="yes"). Ensure answers use exact matching text (case-insensitive in Excel, but spelling/spacing must match). Section IV also expects exact phrases "small extent" / "large extent" (lowercase in formulas).
+
+Overall structure summary
+- Four PART sections, each with a block of numbered questions. Each question has an answer, explanation, evidence, a numeric weighting (column F) and a computed weighted score (column G). Section-level totals aggregate the weighted scores and include a weighting-sum validity check. The sheet mixes qualitative explanations and quantitative scoring (annual target 300 removals is the principal performance metric shown).
+
+If you want, I can:
+- Provide corrected formulas (e.g., fix G21) and a suggested improved weight-sum check (using ROUND), or  
+- Produce a brief checklist of cells to validate before using the sheet for official scoring. Which would you prefer?

@@ -1,0 +1,29 @@
+Findings (short)
+1) H15 is wrong: it sums H8:H14 and omits H7 (Gifts). So the FY02 total is understated.
+   - Current H15 (SUM(H8:H14)) = 25,680,401
+   - Correct H15 (should be SUM(H7:H14)) = 29,207,412
+
+2) Fragile/hard-coded formulas in B10 and C10:
+   - B10 = 1672298-748584 and C10 = 2824612-1091293 use literal numbers. That works now but will break or be confusing if source numbers change.
+
+3) Minor: Column header text “4rd Qtr.” is a typo (should be “4th Qtr.”). Not a calculation error but worth fixing.
+
+What to do (exact fixes)
+1) Fix H15:
+   - Replace the formula in H15 with: =SUM(H7:H14)
+   - Result will be 29,207,412.
+
+2) Replace hard-coded subtractions with cell references:
+   - If 1,672,298 and 2,824,612 are totals stored somewhere, change B10 to =<cell_with_1672298> - B9 and C10 to =<cell_with_2824612> - C9.
+   - If those totals are meant to be “Foundations + Other Sponsors” for that year, better is to enter the actual Other Sponsors amount directly or compute Other Sponsors as (TotalSponsorsCell) - B9 using the appropriate total cell reference.
+
+3) Consistency check:
+   - Make all row-15 totals use the same row range: B15 =SUM(B7:B14), C15 =SUM(C7:C14), … H15 =SUM(H7:H14). You can fix H15 and then copy the corrected SUM formula across the row to ensure consistent ranges.
+   - Scan other “FORMULA =” cells to confirm they reference the intended cells rather than typed constants.
+
+Why this fixes it (brief)
+- H15 must include every category row (7–14) to represent the total of those categories. Including H7 fixes the understatement.
+- Using cell references instead of literal numbers makes formulas update automatically when source values change, avoiding silent errors.
+- Consistent ranges and formula patterns reduce the chance of one-off typos (like SUM(H8:H14)).
+
+If you want, I can produce the exact corrected formulas for every total cell and replace the hard-coded constants with references — tell me whether the “1672298” and “2824612” are stored somewhere on the sheet or were one-off figures.

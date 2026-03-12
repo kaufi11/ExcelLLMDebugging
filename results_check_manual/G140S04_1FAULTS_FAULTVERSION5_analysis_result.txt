@@ -1,0 +1,39 @@
+I inspected the workbook formulas and found one clear formula bug plus a few minor inconsistencies/points to check. Summary and recommended fixes below.
+
+1) Critical bug — "900 Class" (wrong SUM/COUNT)
+- Cells:
+  - L81 = =COUNT(L4:L40)+COUNT(L44:L79)
+  - L82 = =COUNT(L4:L40)+COUNT(L44:L79)
+  - L83 = =L81/L82
+- Problem:
+  - L81 and L82 contain the same COUNT(...) formula. That makes L83 = 1 (count/count) instead of the intended class average (SUM/COUNT). Because L85 (=L84-L83) uses L83, the offset used by all the M-column adjustment formulas in this sheet is wrong (currently L85 = 21.5). That in turn inflates all adjusted exam scores in column M for the 9:00 class.
+- Likely intended pattern (matches other sheets such as "1030 Class"):
+  - L81 should be the SUM of the L-values: =SUM(L4:L40)+SUM(L44:L79)
+  - L82 should be the COUNT of the L-values: =COUNT(L4:L40)+COUNT(L44:L79)
+  - L83 then becomes the average: =L81/L82
+  - L84 (22.5) can remain the target value and L85 = L84-L83 gives the correct offset
+- Fix:
+  - Change L81 to: =SUM(L4:L40)+SUM(L44:L79)
+  - Keep/change L82 to: =COUNT(L4:L40)+COUNT(L44:L79)
+  - Leave L83/L84/L85 formulas as-is (they will then compute a correct offset).
+- Effect:
+  - After that change, column M formulas that use L$85 (e.g. =(L5+L$85)*3.33333) will compute adjusted exam scores consistent with the other sheets.
+
+2) Minor inconsistency — multiplier precision
+- Different sheets use slightly different constants for the multiplier in column M:
+  - "900 Class" uses 3.33333 in many M formulas
+  - "1030 Class" uses 3.333333
+  - "Noon Class" uses 3.3333333
+- Impact: only tiny rounding differences; consider standardizing (e.g. 3.333333333 or a single named cell/constant) if you want identical precision across sheets.
+
+3) Blanks referenced (informational)
+- In Sheet1 many W-formulas add a fixed set of columns (N+P+R+T+U+V). In some rows some of those referenced cells are blank. Excel treats blanks as zero so the formulas produce the shown totals — this is not an error, just something to be aware of if you expect blanks to be treated differently.
+- Example: W6 includes U6 and V6 although they are blank — current total is correct because blanks are 0. No change required unless blank handling should be different.
+
+4) Other observations
+- A few M-cells are manually blank/" " where L is blank. That is expected: if L (raw score) is missing the adjusted value is left blank. No direct formula error.
+- Cell N33 (sheet "1030 Class") contains the note "Must be hand graded" rather than a numeric entry — intentional.
+
+If you want I can:
+- produce the corrected formulas for the "900 Class" cells and show before/after sample recalculations, or
+- open and apply the fixes (if you provide permission / updated file).

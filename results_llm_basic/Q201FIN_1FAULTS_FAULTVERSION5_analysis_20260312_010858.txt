@@ -1,0 +1,40 @@
+I checked the P&L and Balance Sheet. I found a few clear formula errors and some poor practices that will create incorrect results downstream. Short summary, corrections and why:
+
+1) P&L — Total revenues (H9) uses COUNT instead of SUM
+- Error: H9 =COUNT(H7:H8) returns 2 (the count of items) instead of the revenue total.
+- Effect: All downstream numbers that use H9 (H20, H27, H33, EPS, etc.) are wrong for the 1999 three-month column.
+- Fix: Change H9 to:
+  =SUM(H7:H8)
+- Explanation: SUM adds the two revenue amounts (29318 + 33166 = 62484); COUNT just returns how many cells have values (2).
+
+2) Balance Sheet — Inconsistent range for Total current assets (G13)
+- Error: G13 =SUM(G7:G12) but the current items listed are G7:G11 (I13 uses SUM(I7:I11)). G12 is not shown/listed and the ranges are inconsistent between G13 and I13.
+- Fix: Change G13 to:
+  =SUM(G7:G11)
+- Explanation: Use the same explicit item range as the matching column (I13). Avoid including an extra (blank/unused) row in one column only.
+
+3) Hard-coded arithmetic and inconsistent references (bad practice / potential mistakes)
+- Examples:
+  - J17 =12615-5000 uses literal numbers rather than cell references.
+  - F46, J46, F52, J52 use hard-coded denominators (32703, 32761) instead of referencing the proper diluted shares cell(s).
+  - L44 and L50 show fixed negative constants instead of consistent formulas.
+- Why it’s a problem: Hard-coding numbers breaks traceability and causes errors if underlying inputs change. It also makes auditing and consistency across columns difficult.
+- Fix (general guidance):
+  - Replace literal-arithmetic with references to the cells containing the components. e.g. if the write-off is in J23 and the gross charge is in some cell (say J17_component), do:
+    =J17_component + J23
+    (or =<cell_with_total_charge> - <cell_with_writeoff>)
+  - Replace hard-coded denominators for Pro Forma EPS with a referenced cell for the pro forma diluted shares (create a cell that contains the pro forma diluted shares and use it: =F44 / $X$1).
+  - Make L44 and L50 formulas consistent with other columns (reference source items) or enter the correct calculated values rather than text "FORMULA =-1526".
+
+4) Minor: leading + in formulas like =+F33/F37 — harmless but unnecessary. You can keep or remove the +.
+
+Quick recommended actions (apply these changes):
+- H9: =SUM(H7:H8)
+- G13: =SUM(G7:G11)
+- Replace J17’s literal with referenced formula (example if write-off is J23 and the pre-write charge is in J17a): =J17a + J23 (or enter the correct numeric total 7615 if that is intended)
+- Create a cell (e.g., Z37) to hold pro‑forma diluted shares and change F46 to =F44 / $Z$37 (and similarly for J46, F52, J52).
+- Fix L44/L50 to use formulas or correct values rather than “FORMULA = -1526” text.
+
+If you want, I can:
+- Give the exact corrected values for the H‑column P&L numbers after fixing H9, or
+- Propose exact cell names/locations for the pro‑forma diluted shares and update the EPS formulas for you. Which would you prefer?

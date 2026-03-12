@@ -1,0 +1,37 @@
+Findings — the main errors
+1. Row 14 total is wrong
+   - I14 = F14 + 447 (hard-coded +447) instead of the normal I14 = F14 + H14.
+   - Consequence: I15, I39 and all percentage shares in column J are inflated/incorrect because one row’s total includes 447 that is not counted in column H. As a result I39 will not equal F39 + H39.
+
+2. NETWORKDAYS call uses a non-standard UDF name
+   - J4 = _xludf.NETWORKDAYS(C4,F4) references an external/user-defined function (xludf). That may not work if the add-in/UDF is missing.
+   - Suggestion: use Excel’s built-in function.
+
+3. J39 is redundant/odd
+   - J39 = IF(I$39>0,I39/I$39,0) always returns 1 (or 100%) when I39>0. It works but is confusing. Use a clearer expression.
+
+How to fix (short, clear steps)
+1. Correct row 14 total
+   - Replace I14 formula with:
+     =F14 + H14
+   - If the 447 was intended to be support hours, instead put 447 in H14 and then use the corrected I14 formula. (Do NOT keep 447 hard-coded inside I14.)
+
+2. Replace the UDF NETWORKDAYS with built-in function (if your Excel supports it)
+   - Change J4 to:
+     =NETWORKDAYS(C4,F4)
+   - Or, if you need custom weekend settings: =NETWORKDAYS.INTL(C4,F4,...) .
+   - This avoids dependency on an external UDF.
+
+3. Make J39 clearer (optional)
+   - Replace J39 with:
+     =IF(I$39>0,1,0)
+   - Or simply enter 1 (or format as 100%) if you want the grand total share to read as 100%.
+
+Quick check after fixes
+- Verify I39 = F39 + H39. If true, column I formulas are consistent.
+- Recalculate and confirm the percentages in column J now sum to 1 (or 100%).
+
+Why this fixes it (brief)
+- Putting H14 in its own cell and using I14 = F14+H14 keeps the totals additive and consistent so subtotals and grand totals match. Removing the UDF dependency prevents #NAME? or missing-function errors on other machines. Replacing J39 with =1 or IF(...,1,0) makes the sheet easier to read and intentionally shows the grand total share.
+
+If you want, I can list any other individual cells whose formulas differ from the expected pattern so you can audit them quickly.

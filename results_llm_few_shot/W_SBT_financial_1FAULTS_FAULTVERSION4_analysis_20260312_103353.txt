@@ -1,0 +1,25 @@
+I checked the workbook and found a few clear formula mistakes. Short list of the faults, why they are wrong, and how to fix them.
+
+1) Sheet "In-Kind Contributions" — row for "Personnel costs (Contributions Displacing Operating Costs)"
+- Faulty cells: R23 and AF23
+- Problem: R23 =Q23 and AF23 =AE23 — these reference the wrong (non‑pattern) columns (Q and AE) instead of the expected O and AC. This looks like a one‑column shift / typo when the row was filled across.
+- Fix:
+  - R23 should be =O23
+  - AF23 should be =AC23
+- Why: All other rows use the pattern "month13 = month12 (O)" and "month25 = month24 (AC)". Correcting these restores the consistent chain so the year totals and sums include the proper months.
+
+2) Sheet "Personnel" — Technician 1 row
+- Faulty cell: E12
+- Problem: E12 is hardcoded as "=2" instead of following the pattern (=D12). That breaks the right‑fill pattern and can give incorrect derived totals/overheads.
+- Fix: Change E12 to =D12 (and then fill right as needed) — or if the intention was to start with an initial count of 2, put 2 in D12 and make E12 =D12 so the row fills consistently.
+- Why: The rest of the row is designed to link each month to the previous month (E12 = D12, F12 = E12, etc.). A hardcoded value in the middle breaks totals and makes copying fragile.
+
+General suggestions to avoid similar errors
+- When you build rows across many months, enter the formula once and drag/fill right rather than typing formulas manually in each cell to avoid column‑shift typos.
+- Use consistent patterns: month13 should reference month12 (O), month25 should reference month24 (AC), etc. If you have year‑total columns (P, AD, AR), treat them as totals — not as part of the month‑by‑month filling.
+- Consider named ranges or a small VBA/Power Query approach if you must repeat many identical formulas; that reduces copy/paste errors.
+- After fixing the two items above, check the year totals (P, AD, AR) and the dependent summary sheets (Financial Summary) to ensure the corrected rows feed totals as expected.
+
+If you want, I can:
+- produce exact Find/Replace steps, or
+- list any other cells that deviate from the normal "previous column" pattern so you can fix them in one pass. Which would you prefer?

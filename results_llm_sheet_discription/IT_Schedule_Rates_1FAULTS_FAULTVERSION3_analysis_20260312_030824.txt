@@ -1,0 +1,30 @@
+Findings (short)
+- Main error: EER SITE cell D21 (Functional Analyst, Senior) has the wrong multiplier. Its formula is =B21*1.9640015287385 instead of =B21*1.04. That yields a much larger Year‑2 rate and every later year (E–H) is then too high because they are chained from D21.
+- Likely secondary issue: many formulas embed the constant 1.04 rather than referencing the per‑row escalation cell in column C. That makes the sheet fragile if you ever change escalation values.
+
+Why it matters (one line)
+- A single wrong multiplier in D21 inflates that entire row for Years 2–6; hard‑coded constants make maintenance/error detection harder.
+
+How to fix (step‑by‑step, easy)
+1. Correct D21:
+   - Replace the formula in D21 with =B21*(1+$C21)
+   - Then copy D21 → E21 → F21 → G21 → H21 (or copy D21 to D21 and copy E21 formula =D21*(1+$C21) to the right). This restores the normal 4% escalation chain.
+2. Standardize other rows (recommended):
+   - For any row with a numeric base rate in column B, set:
+     - Dn = Bn*(1+Cn)
+     - En = Dn*(1+Cn)
+     - Fn = En*(1+Cn)
+     - Gn = Fn*(1+Cn)
+     - Hn = Gn*(1+Cn)
+   - For rows added 8/02 where column B is text and D already contains the year‑2 base, leave D as is and apply the chain for E–H using Cn.
+3. Find other discrepancies quickly:
+   - In an empty helper column (say I6) use:
+     =IF(AND(ISNUMBER(B6),ABS(D6-B6*(1+C6))>0.01),"Mismatch","OK")
+   - Copy down to flag any rows where D is not equal to B*(1+C).
+
+Why this solution works (short)
+- Referencing Cn (the escalation cell) instead of using 1.04 hard‑codes the escalation per row and lets you change one number if escalation changes. Fixing D21 to use C21 returns the row to the same logic as the rest of the sheet and prevents cascading errors.
+
+If you want, I can:
+- Give you a single copy/paste formula block to fill D–H for all rows, or
+- Provide the exact steps to run the helper check for both sheets and produce a list of deviations.

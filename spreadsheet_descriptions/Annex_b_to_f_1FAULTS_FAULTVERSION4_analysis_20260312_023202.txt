@@ -1,0 +1,56 @@
+Summary of workbook structure and contents
+
+Overall
+- Purpose: Financial Forecast Update template (2001/02) for colleges with I&E, Balance Sheet and Cash Flow annexes, commentary and a declaration/signature sheet.
+- Layout: Five main sheets: Declaration - Annex B, Commentary - Annex C, Table 1.0 I & E - Annex D (I&E), Table 2.0 BS - Annex E (Balance Sheet), Table 3.0 CF - Annex F (Cash Flow).
+- Data pattern: most numeric cells are initialized to 0 (placeholders). Key calculations are (a) differences between Revised Outturn (column I) and Original Forecast (column H) (usually J = I − H), (b) percent variances using IF(H=0,"N/A",(J/H)*100), and (c) totals via SUM.
+- Cross-sheet links: Commentary and CF/BS header cells reference Table 1.0 A1/A4; several reconciliation cells link Table 3 CF totals back to Table 2 BS.
+
+Sheet-by-sheet
+
+1) Declaration - Annex B
+- Purpose: cover sheet for return with college contact fields and declaration text.
+- Key cells: A3/A5/C3-C9 contact/name/address text fields; A17-A19 declaration wording; A26/B26/H26/J26 signature, title, date fields.
+
+2) Commentary - Annex C
+- Purpose: open text box for narrative explaining material changes to forecasts.
+- Key cells: A4 pulls = 'Table 1.0 I & E - Annex D'!A4; A6-A11 instruction text. No numeric calculations.
+
+3) Table 1.0 I & E - Annex D (Income & Expenditure)
+- Structure: income lines (rows 9–15), expenditure lines (rows 18–23), surplus lines (25,31,38,43,48,52), bursary/access section (56–61).
+- Key formulas:
+  - Category variances: J9 = I9−H9 (repeated down columns).
+  - Percent variances: K9 = IF(H9=0,"N/A",(J9/H9)*100).
+  - Totals: H15 = SUM(H9:H14), I15 = SUM(I9:I14), similar SUM formulas for expenditure H23/I23.
+  - Surplus: H25 = H15−H23, I25 = I15−I23.
+- Notes: Row numbering in column B uses incremental formulas (e.g. B18 = B15+1) — purely index bookkeeping.
+
+4) Table 2.0 BS - Annex E (Consolidated Balance Sheet)
+- Structure: Fixed assets (rows 7–13), current assets (18–23), creditors short-term (26–33), net current assets (35), total assets less current liabilities (37), long-term creditors (40–44), provisions (47), net assets/reserves/deferred grants/endowments and total funds (52–69).
+- Key formulas:
+  - J = I−H for variances; percent variances with IF(H=0,"N/A",...).
+  - Totals: H13 = SUM(H7:H12), H23 = SUM(H18:H22), H33 = SUM(H26:H32), H37 = H13+H15+H35, H44 = SUM(H40:H43), H49 = H37−H44−H47, H56 = SUM(H52:H55), H67 = SUM(H62:H66), H69 = H56+H59+H67.
+- Checks: Row 74 flagged “THESE CELLS MUST BE ZERO”: H74 = H49−H69 (and I74 = I49−I69, etc.) — ensures Total Net Assets = Total Funds.
+
+5) Table 3.0 CF - Annex F (Operating Cash Flow)
+- Structure: two main sections — ORIGINAL CASH FORECAST (columns H–T for months Aug→Jul) and ACTUAL/REVISED FORECAST (same monthly layout). Rows cover cash in (SFEFC, other grants, other cash), cash out (payroll, other payments, interest), deposits, net cash flow, opening/closing balances, and financing.
+- Key formulas:
+  - Monthly totals: T7 = SUM(H7:S7) etc.; monthly sums for totals use SUM across rows.
+  - Net cash flow: H17 = H10−H15+H16 (monthly repeated).
+  - Running balances: H19 = SUM(H17:H18); consecutive months reference previous month balances (I18 = H19, J18 = I19, etc.) so balance c/f flows across months.
+  - Reconciliations / checks:
+    - Row 25 (H25:S25) = financing − balance c/f (should be zero each month).
+    - T26 = T19 − ('Table 2.0 BS - Annex E'!H20 + 'Table 2.0 BS - Annex E'!H21 + 'Table 2.0 BS - Annex E'!H22) — cross-check of cash/bank items with balance sheet.
+    - For ACTUAL/REVISED block there are equivalent checks (row 48 H48:S48 and T49 linking to Table 2 BS I20:I22).
+  - Difference summary: Rows 51–53 compute differences between revised closing balances and original forecast and percentage variances using IF to avoid divide-by-zero.
+
+General notes / important cells to monitor
+- Many numeric inputs are placeholders (0); replace relevant H (original) and I (revised/actual) inputs to populate J (variance), K (percent) and all aggregate rows.
+- Percent variance pattern: Kx = IF(Hx=0,"N/A",(Jx/Hx)*100) — prevents divide-by-zero.
+- Reconciliation controls to ensure integrity:
+  - Table 2 row 74 must be zero (Net Assets = Total Funds).
+  - Table 3 row 25 / 48 should be zero (financing vs closing balance).
+  - Table 3 T26 and T49 compare CF totals to BS cash/current asset lines.
+- Commentary sheet prompts explanation for material variances (normally > £50k and >10%).
+
+If you want, I can: (a) highlight the specific reconciliation/warning cells in the workbook, (b) generate a checklist of inputs to fill first, or (c) validate formulas for a sample set of inputs.

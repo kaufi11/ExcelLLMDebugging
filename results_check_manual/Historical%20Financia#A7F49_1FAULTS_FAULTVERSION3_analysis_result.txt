@@ -1,0 +1,46 @@
+I inspected the formulas you included for both sheets and found one clear formula error plus several inconsistencies (mixing hard-coded numbers and formulas across the same rows/columns) that can cause maintenance / update problems. Summary below with exact cell references and recommended fixes.
+
+1) Definite formula error (needs immediate fix)
+- Sheet: Nine-Quarter Financial Summary
+- Cell: H14 (Hardware Gross Profit %)
+- Problem: formula is =+H13*H5 (multiplication) which produced 415,120,960 — clearly wrong for a percentage.
+- Correct formula: H14 should be a ratio like the other columns, i.e. =H13/H5 (or =+H13/H5 to match the workbook style).
+
+2) Inconsistent / suspicious formula usage (mix of formulas and hard-coded values)
+Several rows are computed with formulas in some columns but are hard-coded values in others. That is error-prone (if input rows change, the hard-coded cells will not update). I list the principal occurrences so you can standardize them.
+
+A. Seven-Year Financial Summary
+- Total Gross Profit (row 19)
+  - D19 has formula =+D13+D15+D17
+  - J19 has formula =+J13+J15+J17
+  - E19, F19, G19, H19, I19 are hard-coded values (no formula)
+  - Recommendation: make E19..I19 use the same formula pattern (e.g. E19 = E13+E15+E17 etc or use SUM where preferred).
+
+- Income From Operations (row 31)
+  - All columns appear as manual values (D31,E31,...). Expected calculation is Total Gross Profit minus Total Operating Expenses (row19 - row28).
+  - Recommendation: replace with formulas per column, e.g. D31 = D19 - D28, E31 = E19 - E28, etc.
+
+- Total Gross Profit % / Gross Profit % / other ratios
+  - Many of the % rows reference totals that are a mixture of formulas and hard-coded numbers (e.g. D21 = D19/D8 is a formula, but if E19 etc are static, the consistency is broken). After you fix totals to be formulas across all columns, the % formulas will be consistent.
+
+B. Nine-Quarter Financial Summary
+- Hardware Gross Profit % (row 14)
+  - All columns except H14 use =GrossProfit/Revenue. H14 uses multiplication (see #1 above).
+- Income From Operations % (row 31)
+  - H31 is a hard-coded value 0.075 and does not contain the formula used in other columns (=H29/H8). Recommendation: set H31 = H29/H8 for consistency.
+- Income From Operations (row 29)
+  - C29 uses formula =+C19-C26, but D29/E29/F29/H29/... are manual (no formula). Recommendation: use =<TotalGrossProfit> - <TotalOperatingExpenses> across all columns, e.g. D29 = D19 - D26, H29 = H19 - H26, etc.
+- Total / totals that use SUM in some columns but hard-coded in others:
+  - For example C8,D8,E8,F8 etc use SUM formulas; many other summary rows (total liabilities, shareholders' equity, total assets in the Nine-Quarter sheet) are manually entered without formulas. Decide whether you want live formulas (recommended) and standardize.
+
+3) Other observations / best-practice recommendations
+- Use consistent formula patterns across all reporting periods (columns). Either:
+  - compute all period columns from the component rows (recommended), or
+  - mark specific columns as intentionally manual (with a comment). Mixing both without documentation invites mistakes.
+- Prefer SUM ranges for totals where applicable (consistent with the rest of the workbook). Example: use =SUM(D13,D15,D17) or =D13+D15+D17 consistently across columns.
+- Check for places where a value looks plausible numerically but is hard-coded (e.g., several % cells are present but some have formulas while others are constants). Standardize to formulas to ensure automatic recalculation.
+- After fixing H14, scan the sheet for other accidental operators (e.g., * instead of /). I only found H14 as a clear operator typo in the supplied ranges.
+
+If you want I can:
+- Produce a list of every cell that currently contains a formula vs a constant in the rows/columns discussed (so you can see all inconsistent cells), or
+- Provide the exact replacement formulas for each cell you want standardized (I can generate a small patch / CSV of corrected formulas). Which would you prefer?

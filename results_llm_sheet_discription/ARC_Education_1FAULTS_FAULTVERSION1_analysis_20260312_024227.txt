@@ -1,0 +1,65 @@
+Good — I reviewed the workbook description and found several clear data / formula errors and inconsistent formats. Below are the problems, short explanations, and concrete fixes you can apply. I kept each item short and actionable.
+
+1) Wrong function used for a total (Student‑teacher sheet)
+- Error: F56 = COUNT(F45:F55). COUNT returns number of numeric cells, not the sum of teachers.
+- Fix: Replace with =SUM(F45:F55).
+- Why: You need the sum of teachers, not a count of rows with numbers.
+
+2) Wrong SUM ranges for Two‑Year Colleges totals (university sheet)
+- Error: Row 15 totals reference the wrong rows (e.g., C15 = SUM(C5:C14)). That includes the four‑year colleges and double‑counts.
+- Fix: Change each total to sum only the two‑year college rows. Example: C15 = SUM(C12:C14), D15 = SUM(D12:D14), … K15 = SUM(K12:K14).
+- Why: Totals must only include the two‑year college rows (12–14), not 5–14.
+
+3) Percent formatting inconsistency / decimals in "Teachers With Advanced Degrees"
+- Error: Early years show percents as e.g. 50.9 (meaning 50.9%), later years show 0.4690338… (meaning 46.90%) — inconsistent (and some totals have decimals like 1995.8).
+- Fix:
+  - Decide on one format (use % with one decimal). If cells contain proportions (0.469…), format them as Percentage (Format Cells → Percentage, 1 decimal). 
+  - If you want whole-number percent values already showing as 50.9 but later values are 0.469, multiply the decimals by 100 or simply format as %.
+  - For totals that are fractional (e.g., 1995.8), round to whole numbers with =ROUND(original_formula,0) (or get counts from source).
+- Why: Mixing 0.469 and 46.9 breaks interpretation and causes fractional people counts.
+
+4) Numeric typos / misplaced decimal (Student‑teacher — Buford)
+- Error: E15 = 1.548 (attendance) but same row H15 = 1540 and ratio and teacher counts imply ~1,548, not 1.548.
+- Fix: Replace 1.548 with 1548 (or 1,548) after verifying source; then check ratio = attendance / teachers.
+- Why: Attendance should be a large integer; 1.548 is clearly a misplaced decimal point.
+
+5) Ratios stored as text (Student‑teacher sheet)
+- Error: Ratio cells are text like "16.5-1" or "16-1". Those are not numeric so you cannot compute averages or recalc.
+- Fix: Keep a numeric ratio column (e.g., RatioNumeric = students/teachers → 16.5) and use a display column for formatting, e.g.: =TEXT(RatioNumeric,"0.0") & "-1". Or store as "16.5:1" consistently and keep numeric in a hidden column.
+- Why: Text prevents calculations; numeric values allow aggregation, sorting, charting.
+
+6) Inconsistent / truncated scales in State test sheet and other sheets
+- Error: Reading/Math early years are ~216 (expected scale), later years show two‑digit numbers (e.g., 57, 43) — inconsistent scale or truncation. Some cells contain "60?".
+- Fix: Verify original data source for those years. If later columns were accidentally converted/scaled, restore correct scaled scores. Use conditional formatting to highlight values outside plausible range (e.g., <100 or >300) to find anomalies quickly.
+- Why: Mixing scales makes comparisons meaningless.
+
+7) Outlier / missing digits in SAT sheet
+- Error: Some SAT cells contain very small numbers (e.g., 99, 100) while usual values are ~800–1100. These are likely missing digits or data-entry errors.
+- Fix:
+  - Filter or conditional format SAT columns for values outside expected range (e.g., <600 → flag).
+  - Correct flagged cells from source or previous version.
+- Why: Wrong values will skew averages and totals.
+
+8) Totals entered manually rather than formulas (Student‑teacher sheet TOTALs)
+- Error: Some TOTAL rows are hardcoded numbers while others use formulas. Hardcoded totals can become stale/wrong.
+- Fix: Replace manual totals with formulas, e.g., B18 = SUM(B7:B17) (adjust ranges to your rows). Use consistent SUM formulas for each year block.
+- Why: Formulas update automatically when underlying data changes.
+
+Quick checklist (what to do now)
+1. Fix evident formula errors first:
+   - Change F56 → =SUM(F45:F55)
+   - Fix university totals C15:K15 → SUM(row12:row14)
+2. Use conditional formatting to find outliers:
+   - SAT < 600, State test < 100 or > 300, Attendance < 1000 (as appropriate).
+3. Normalize percent columns:
+   - Format decimals as Percentage or multiply by 100 then format; round totals.
+4. Fix obvious typos (e.g., 1.548 → 1548).
+5. Convert ratio text to numeric value + formatted display if you need calculations.
+6. Recompute totals with SUM formulas everywhere.
+
+If you want, I can:
+- Give the exact formulas for each corrected cell range,
+- Produce an Excel macro or step‑by‑step to apply these fixes,
+- Or you can upload the workbook and I’ll correct the errors and return a cleaned file.
+
+Which would you like next?

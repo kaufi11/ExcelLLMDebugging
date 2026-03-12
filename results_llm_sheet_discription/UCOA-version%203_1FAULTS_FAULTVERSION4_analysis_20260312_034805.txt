@@ -1,0 +1,40 @@
+Short summary of the errors I found and how to fix them.
+
+1) Header/version cells on pages 2–6 (and page 3/4 header rows) are not pulling the master values from Page 1
+- What’s wrong: many cells show formulas like =A$9, =B$9, =E$10, =I$12 etc. Those are unqualified references and therefore refer to the same sheet’s A9/B9/E10/I12 — not to the master header on Page 1. The workbook excerpt shows the author intended to duplicate the Page 1 header on other pages, but forgot to include the sheet name. Result = wrong/blank header values on the other pages.
+- Fix: change those formulas to reference the master header sheet explicitly, e.g.:
+  - Replace =A$9 with ='Page 1'!$A$9
+  - Replace =B$9 with ='Page 1'!$B$9
+  - Replace =E$10 with ='Page 1'!$E$10 and so on.
+- Better option (recommended): define named ranges on Page 1 (e.g., Version1 for Page1!$A$9, Version2 for Page1!$B$9, Header990 for Page1!$E$10) and use =Version1 etc. That prevents breakage if you rename the sheet.
+
+2) A-122 sheet sequence formulas are inconsistent / produce incorrect numbering
+- What’s wrong: some numeric sequences use wrong formulas (example excerpt: C6 = C5+1 is OK but C8 = C6-1 is wrong — it breaks the intended continuous numbering). That will produce incorrect cost principle numbers and mis-map references elsewhere.
+- Fix: correct the sequence formulas so each row increments from the previous row (e.g. C6 = C5+1, C7 = C6+1, C8 = C7+1, etc.) or replace with fixed constants if the numbering should not be formula-driven. Review the whole column for similar inconsistent formulas and correct them.
+
+3) Missing / placeholder values that look like errors
+- What’s wrong: some cells contain placeholders or question marks where a code should be — e.g. H285 = "?" (Benefits paid to or for members). Also several rows on pages 2–6 use formulas like =I12 (unqualified) so they don’t pull the intended value from the master header (same problem as #1).
+- Fix: supply the correct activity code for H285 (consult your activity mapping page) or mark intentionally blank with a note. For the formula cells do the sheet-qualified change described in (1).
+
+4) Potential mapping mismatches (spot checks)
+- What to do: I saw a few rows where A and B account numbers differ (e.g. A23 = 1115 but B23 = 1190). That could be intentional (alternate chart numbers) but is worth verifying. Do a quick validation:
+  - Filter rows where A <> B and confirm whether the mapping is supposed to differ.
+  - If they should match, replace B values with =A# or correct constants.
+
+How to implement fixes quickly (practical steps)
+- To fix header references across sheets:
+  - Use Find & Replace in Excel formulas (Ctrl+H). Example: Find =A$9 (or find A$9 in formulas) and Replace with ='Page 1'!$A$9. Do this carefully (do a backup first).
+  - Or create named ranges on Page 1 (Formulas → Define Name) and update the formulas to the names. This is safer and clearer.
+- To fix A-122 numbering:
+  - Go to the first correct cell (e.g. C5) and then set C6 =C5+1, copy C6 down for the entire sequence. Or enter the correct constants and remove formulas.
+- To find other similar errors:
+  - On each sheet use Home → Find (search in formulas) for patterns like "=A$9", "=B$9", "=I12" etc. Those likely should be sheet-qualified or replaced by names.
+
+Short examples
+- Wrong formula (on Page 2): =A$9
+- Fixed formula (explicit): ='Page 1'!$A$9
+- Named-range alternative: =VersionNumber (where VersionNumber is defined as Page1!$A$9)
+
+If you want, I can:
+- generate a list of all formulas that reference A$9 / B$9 / I$12 etc. (so you can fix them in one go), and
+- create the named ranges and produce the corrected formulas for all pages and the A-122 sequence. Which would you prefer?

@@ -1,0 +1,51 @@
+I reviewed the formulas in the workbook you provided and found a few definite formula errors (likely typos) and a few inconsistent practices you may want to fix. Below I list the problem cells, explain why each is wrong or suspicious, and give a suggested correction.
+
+Definite formula errors / likely typos
+- Sheet: annex e
+  - Cell: B46
+  - Current formula: =B43-1
+  - Problem: breaks the sequential row numbering in column B (creates duplicated / out of order numbering). All other row-number formulas use +1 to continue the sequence. This looks like a copy/paste/typo.
+  - Suggestion: change to =B43+1
+
+- Sheet: annex f
+  - Cell: K68
+  - Current formula: =K48
+  - Problem: every other "Variance as % of original forecast" cell uses the pattern IF(Hxx=0,"N/A",(Jxx/Hxx)*100). K68 simply copies the percent cell for Total Net Assets (K48) rather than calculating the percent for Total Funds. This is almost certainly a mistake.
+  - Suggestion: replace with the consistent pattern, for example:
+    =IF(H68=0,"N/A",(J68/H68)*100)
+
+Other items you should review (possible inconsistencies or design issues)
+- Sheet: Annex e
+  - Column B row-numbering now contains a duplicate/shift due to the B46 error noted above. After fixing B46 to =B43+1, the column-B sequence will be consistent.
+
+- Sheet: annex f / annex g (reconciliations)
+  - Cells T26 (annex g) and T49 (annex g) reconcile the cash-sheet totals against annex f:
+    - T26 =T19-('annex f'!H20+'annex f'!H21)
+    - T49 =T42-('annex f'!I20+'annex f'!I21)
+    These reference annex f H20/I20 (Investments) + H21/I21 (Cash at bank). Conceptually that is the correct reconciliation (cash + short-term investments), but please confirm that those are the exact balance-sheet cells you intend to use for reconciliation. (Small risk: if your sheet layout changes these hard-coded addresses will break.)
+
+- Sheet: Annex I
+  - Cell: H27
+  - Current formula: =SUM(H10:H26)
+  - Note: this sums a wide range that includes blank cells and possibly some cells not intended to be part of the "underlying operating surplus/deficit" aggregation. That may be correct for the template as written, but consider summing only the explicit "add back" lines (H11, H14, H17, etc.) to make intent clearer and avoid accidental inclusion of unrelated cells.
+
+- Percent cells returning text "N/A"
+  - Many percent/variance cells use IF(Hxx=0,"N/A",(Jxx/Hxx)*100). This returns a text value "N/A" when Hxx = 0. That is fine for display, but it mixes text and numeric types in the column which:
+    - prevents numeric aggregation in those columns unless you clean or coerce the "N/A"s;
+    - may be undesirable if downstream calculations expect numeric results.
+  - Suggestion: if you need machine-readable results, consider returning NA() or blank ("") or 0, or use a separate column for human-readable text.
+
+Minor / stylistic checks
+- Several sheets use T (total) column differently for balances (e.g. T18 = H18 rather than SUM(H18:S18)). This may be intentional (the T column is meaningful differently for balances vs flows), but is inconsistent with how totals are handled elsewhere. Confirm intended behavior for each T cell.
+
+Summary / recommended quick fixes
+1. Fix the definite typos:
+   - annex e B46: =B43+1
+   - annex f K68: =IF(H68=0,"N/A",(J68/H68)*100)
+2. Review and, if needed, adjust the reconciling references in annex g (T26 / T49) to ensure they point to the intended balance-sheet cells (cash + short-term investments).
+3. Consider changing the percent N/A handling if you require numeric outputs for downstream calculations.
+4. Optionally make Annex I aggregation explicit (sum the specific cells you intend to include) to avoid accidental inclusion of unrelated cells.
+
+If you want, I can:
+- produce a small patch listing exactly how to update the workbook (cell-by-cell formula replacements) or
+- open and automatically apply the fixes and return a corrected workbook (if you give permission).

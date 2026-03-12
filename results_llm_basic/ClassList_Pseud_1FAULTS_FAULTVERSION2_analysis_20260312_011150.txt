@@ -1,0 +1,48 @@
+Thanks — I reviewed the workbook and found several real, concrete formula errors and a few consistency problems that can produce wrong totals or hide grading problems. Below are the problems, why they are wrong and exactly how to fix them (short and clear).
+
+1) Homework sheet — Row 5 total excludes HW10
+- Problem: L5 is =SUM(B5:J5). That leaves out K5 (HW10), so the student’s Total is too small.
+- Fix: Change L5 to =SUM(B5:K5).
+- Why: All other student totals use B:K (HW1–HW10). SUM must cover the same range.
+
+2) Final sheet — Bluesky total uses wrong range
+- Problem: I7 is =SUM(B7:H7). Final has Q1–Q6 in B:G, so I7 includes an extra column and is inconsistent.
+- Fix: Change I7 to =SUM(B7:G7).
+- Why: All other Final row totals use SUM(Bx:Gx). Keep consistency to avoid missing or extra cells.
+
+3) Mid-term sheet — Average row cell B46 is text / wrong
+- Problem: B46 contains the literal text average(C4:C42) (no "=") and the range/column is wrong.
+- Fix: Replace B46 with a proper formula for that column’s average. If you want the average of column B data rows 6–44 use =AVERAGE(B6:B44). If column B has no numeric data, leave it blank.
+- Why: Without "=" it’s not a formula. Use the same row range (6:44) you used for the other column averages (C46–K46 use 6:44).
+
+4) Final Grades sheet — some Totals replaced by text (grade letters / flags)
+- Problem: Some cells in the Total column (F) contain letters like "F" or "P" (e.g. F4 = "F") instead of the numeric SUM. That breaks numeric calculations and ranking.
+- Fix options:
+  a) Restore the numeric total formula for every student: in Fn put =SUM(Bn:E n) and fill down.
+  b) If you want to hide totals for Honor Code pending or flagged students, use a conditional formula, e.g.
+     =IF(OR(Gn="HC",Gn="P"),"",SUM(Bn:E n))
+     (this leaves the cell blank when note is HC or P; otherwise shows numeric total).
+- Why: Letters in total cells stop numerical sorting, averages and grade-cutoff tests from working. Keep numeric totals separate from textual flags.
+
+5) Consistency check — mismatched SUM ranges
+- Problem: There are a few inconsistent SUM ranges across rows (example: Final I7). Any mismatched range causes one-off errors (missing or extra questions).
+- Fix: Standardize each "total" column with one correct formula and fill down. For Final totals use =SUM(Bx:Gx). For Mid-term subtotal columns use the same pattern used elsewhere (e.g. N = SUM(Cx:Gx), O = SUM(Hx:Kx)).
+- How to check quickly: Select the total column, use Find (Ctrl+F) for "SUM(" and scan for ranges that differ from the canonical one.
+
+6) Text markers inside numeric columns (HC, P, x)
+- Problem: Cells like "HC", "P", "x" are placed in numeric score columns. SUM ignores non-numbers, but these mark missing or flagged work and can hide why totals are low.
+- Recommendation: Keep markers in a dedicated "Note" column (you already have one). Replace those markers in score columns with either blank cells or explicit 0 when appropriate. If you must keep markers, consider conditional formulas or ISNUMBER checks to show an error/warning.
+- Example check formula to highlight non-numeric inputs: =NOT(ISNUMBER(B4)) — use it in Conditional Formatting to flag cells.
+
+Quick checklist to implement (copy-paste / apply):
+- Homework L5 -> =SUM(B5:K5)
+- Final I7 -> =SUM(B7:G7)
+- Mid-term B46 -> =AVERAGE(B6:B44) (or delete if column B has no numeric data)
+- Final Grades column F -> Replace text entries with =SUM(Bn:E n) or use the IF(...) conditional above
+- Run a Find for "SUM(" across sheets and make sure every SUM uses the expected column-range for that table
+
+If you want, I can:
+- Provide the exact list of every cell whose SUM/AVERAGE range is inconsistent (I can generate it if you upload the file), or
+- Produce the exact conditional formula to show letter grades while keeping numeric totals.
+
+Which would you like next?

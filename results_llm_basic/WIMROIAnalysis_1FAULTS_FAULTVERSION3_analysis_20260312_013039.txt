@@ -1,0 +1,31 @@
+I reviewed the workbook. I found three real problems (one clear formula typo, several missing inputs that cause zeros, and inconsistent/fragile use of hard‑coded percentages). Below are short, clear fixes and a brief explanation for each.
+
+1) Wrong average formula (typo)
+- Problem: Cell I86 contains =(E86+G86)/315 — dividing by 315 is wrong.
+- Fix: Replace with =(E86+G86)/2
+- Why: I‑columns everywhere else compute the average as (Min + Max) / 2. The /315 is a typo and makes the average meaningless.
+
+2) Blank / missing input cells produce zero outputs
+- Problem: Several formulas reference input cells that are empty (example: C106 (driver rate) is blank but E104 = C104*C105*C106*0.16; K110 references C113 which is not shown). When inputs are blank Excel treats them as zero and the calculated savings are zero or wrong.
+- Fix:
+  - Enter the correct numeric values where required (e.g., put the lift-truck driver burdened rate in C106; fill C110,C111,C112,C113, C130, etc. with the intended numbers).
+  - If you don’t have values, mark them clearly (e.g., “Enter rate”) and protect formulas from 0 by adding a check like =IF($C106="",0,$C104*$C105*$C106*0.16).
+- Why: Missing inputs silently produce 0 results. Explicit inputs or guards avoid incorrect totals.
+
+3) Inconsistent / hard-coded percentages (fragile design)
+- Problem: Many formulas use hard-coded percentages (0.16, 0.25, 0.44, 0.04, 0.18, etc.) while the sheet also has “Your Savings” cells (C12, C57, C89, C131, C133, C143, etc.). Some of those “Your Savings” default values are inconsistent across sections (e.g., some sections default Cxx = 0.25, others 0.16). This is confusing and error-prone.
+- Fix (recommended):
+  - Create two named input cells (or a small input table) for Lower% and Upper% for the common range (e.g., LowerSavingPct = 0.16, UpperSavingPct = 0.25) and reference these names in formulas instead of hard-coded numbers.
+  - Change formulas like E9=C9*C10*C11*0.16 to E9 = C9*C10*C11*LowerSavingPct and G9 = C9*C10*C11*UpperSavingPct.
+  - Ensure the K (Your Savings) formulas all reference the corresponding single “YourSavingsPct” cell for that row (they mostly do, verify consistency).
+- Why: Using referenced cells/names makes it clear which percentages are being used, makes the workbook easier to update, and eliminates inconsistencies where some sections default to the wrong number.
+
+Quick checklist to correct now
+1. Fix I86 to =(E86+G86)/2.  
+2. Fill all missing input cells used by formulas (C106, C110–C113, C130, etc.).  
+3. Search the workbook for any other “/315” or other unusual divisors and for obvious typos (e.g., stray numbers) and fix.  
+4. Replace hard-coded % values with named input cells or make sure each “Your Savings” percent cell is set as intended and used consistently by K‑column formulas.
+
+If you want, I can:
+- produce an exact list of cells that are blank but referenced, or
+- give the exact replacement formulas to convert hard-coded percentages to named references and update every formula automatically. Which would you prefer?

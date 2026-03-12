@@ -1,0 +1,95 @@
+I reviewed the formulas in both worksheets and found a number of errors, likely bugs, and a few inconsistent / fragile formulas. Below I list the problems I found, why they’re problems, and suggested fixes.
+
+Important general note
+- Many of the percentage cells on STEP 2 divide by H6 (total earnings). H6 is pulled from STEP 1 E22 and is currently zero, so many percentage formulas return #DIV/0!. These will clear as soon as a non‑zero earnings total is entered — or you can protect the formulas using IF/HANDLING to avoid DIV/0 errors (examples shown below).
+
+Specific problems, explanations and recommended fixes
+
+1) STEP 1 — G22 is a hard-coded constant (=2)
+- Current: G22 = 2
+- Problem: G22 is used by STEP 2 (H14) as “tax withholding”, but G22 should be the total of the tax-withheld column (G11:G20). Having the hard-coded 2 produces wrong values downstream (for example H14 on STEP 2 = 2).
+- Fix: replace with a sum:
+  =SUM(G11:G20)
+
+2) STEP 2 — many #DIV/0! results (division by zero)
+- Cells showing #DIV/0!: K6, F8, F10, F12, F14, F16, F18, K20, K30, F34, F45 (and possibly others).
+- Cause: these formulas divide by H6 (earnings). H6 = 'STEP 1 OF 2'!E22 is currently 0, so any formula of the form …/H6 returns #DIV/0!.
+- Remedies:
+  - Input a non-zero earnings total in STEP 1 so H6 > 0, or
+  - Wrap percent formulas to avoid division-by-zero, for example:
+    =IF($H$6=0, "", H8/$H$6)
+    or
+    =IF($H$6=0, 0, H8/$H$6)
+  - Use IFERROR as an alternative:
+    =IFERROR(H8/$H$6, "")
+
+3) STEP 2 — incorrect reference in F10 (Saving %)
+- Current: F10 = H8/H6
+- Problem: F10 is the % for Saving (row 10) but formula references H8 (Giving), not H10 (Saving).
+- Fix: change to:
+  =IF($H$6=0, "", H10/$H$6)
+  (or at minimum =H10/H6)
+
+4) STEP 1 — E33 likely wrong range
+- Current: E33 =SUM(E29:E30)
+- Problem: If the “TITHES” area has 3 rows (E29:E31) E33 omits row 31; this might be a range oversight. (If only two rows are intended, OK.)
+- Fix: if there are three tithes rows:
+  =SUM(E29:E31)
+
+5) STEP 1 — E43 sums only a single cell
+- Current: E43 =SUM(E42)
+- Problem: E43 appears to be a “total” and probably should include both E41 and E42 (emergencies + other). SUM(E42) is redundant and likely omits E41.
+- Fix (likely):
+  =SUM(E41:E42)
+
+6) STEP 1 — M43 is a single-cell link rather than a sum
+- Current: M43 = M42
+- Problem: M43 displayed as a total but it only links to M42. If the intent is to total M41 and M42 (plans), it should sum both.
+- Fix (if the intent is to total the two rows):
+  =SUM(M41:M42)
+
+7) STEP 1 / STEP 2 — SUM used with arithmetic expression
+- Examples: I33 =SUM(G32+I32), M33 =SUM(K32+M32)
+- Problem: SUM(G32+I32) works but is odd: SUM expects ranges/arguments; putting an arithmetic expression inside SUM is redundant and less readable. Maintain consistency and clarity.
+- Fix: replace with either
+  =G32+I32
+  or
+  =SUM(G32,I32)
+
+8) STEP 2 — H14 depends on STEP 1 G22 (which is wrong now)
+- Current: H14 = 'STEP 1 OF 2'!G22
+- Because G22 is currently the hard-coded 2 (see item 1), H14 is wrong and that cascades into H16 and the overall budget.
+- Fix: correct G22 to SUM(G11:G20) and H14 will pick up the correct tax total.
+
+9) STEP 2 — H16 result negative because H14 is wrong
+- Current: H16 = H6 - H8 - H10 - H12 - H14
+- Because H14 currently equals the incorrect value 2, H16 becomes negative (-2) given current zero inputs. Fixing G22 will correct that.
+
+10) STEP 2 — percent formulas referencing correct subtotal cells
+- Review all percent formulas to ensure they reference the corresponding H-row (e.g., F8 -> H8, F10 -> H10, F12 -> H12, etc.). We already found F10 incorrect. Re-check others after H6 is non-zero.
+
+11) Use of SUM across mixed columns (STEP 1 E33:M33)
+- Example: M35 = SUM(E33:M33)
+- That sums across many columns and some contain text or formatting placeholders; Excel will ignore text but the formula may be fragile/less clear. Consider summing only the numeric columns or use column-specific totals to avoid accidental inclusion of non-numeric cells.
+
+12) Minor consistency / readability issues
+- Some cells are single-value SUMs (e.g., SUM(E42)) — not an error but inconsistent.
+- Some totals use arithmetic inside SUM (see item 7) — change for clarity.
+
+No circular references detected in the provided formulas.
+
+Recommended immediate changes (concise)
+- Change STEP 1 G22 to =SUM(G11:G20).
+- Change STEP 1 E43 to =SUM(E41:E42) (if you want to include both rows).
+- Change STEP 1 E33 to include the intended range (e.g., =SUM(E29:E31)) if there are three tithes lines.
+- Change STEP 1 M43 to =SUM(M41:M42) if needed.
+- Change STEP 2 F10 to =H10/H6 (or wrapped with IF($H$6=0,"",H10/$H$6)).
+- Wrap all % formulas that divide by H6 in IF or IFERROR to avoid #DIV/0! when earnings are empty, e.g.:
+  =IF($H$6=0,"",H8/$H$6)
+- Replace SUM(G32+I32) with =G32+I32 (and similarly for other cells).
+
+If you want, I can:
+- produce an annotated list of every cell that currently returns #DIV/0! and give a suggested IF-wrapped formula for each, or
+- generate a small patch (list of exact formula replacements) you can paste into the workbook to fix the issues above.
+
+Which would you prefer?

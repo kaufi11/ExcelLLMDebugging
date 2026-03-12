@@ -1,0 +1,20 @@
+Summary — two concrete errors I found and how to fix them.
+
+1) Wrong sign that shifts many dates (Sheet "2000", cell B23)
+- Problem: B23 contains =B19-2. It should be =B19+2.  
+- Why it’s a problem: Using -2 instead of +2 makes B23 four days earlier than intended. Every date that is calculated from B23 (B27, B31, … through the rest of the sheet) is therefore 4 days early.  
+- Fix: Replace the formula in B23 with:
+  =B19+2
+  Then recalc / let the dependent formulas update. All subsequent dates will move forward by 4 days to the correct values.
+
+2) Wrong starting year (Sheet "1999", cell B7)
+- Problem: B7 on the sheet named "1999" contains 2000-08-22 (year 2000). That seeds the whole sheet with 2000 dates.  
+- Why it’s a problem: All formulas that add offsets to B7 will produce 2000 dates, which is inconsistent with a sheet labeled 1999 (and conflicts with the hard-coded final exam date B198 = 1999-12-20).  
+- Fix: Put the correct 1999 seed date into B7 (for example, if the Tuesday start for 1999 was Aug 24, 1999, set B7 to 1999-08-24 00:00:00). After changing B7 the formulas (=B7+2, +1, +4, etc.) will produce dates in 1999 as intended.
+
+Quick checking tips
+- Use Find (Ctrl+F) to catch other accidental minus signs like "-2" in date formulas.  
+- After fixing, scan the sheet for any hard-coded dates (like the final exam) that should match the calculated sequence — update if necessary.  
+- Optional improvement: keep a single “StartDate” cell at the top and reference it everywhere (or use named range), so you only change one cell per year.
+
+If you want, I can (a) show the exact corrected dates after the fixes, or (b) produce a single named StartDate and rewrite the formulas to reference it. Which would you prefer?

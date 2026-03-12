@@ -1,0 +1,25 @@
+Problems found
+1. Broken sequence at A40 — its formula is =565+1 (gives 566) instead of continuing from the previous row. That makes every ID from A40 onward 565 too large.
+2. A header is in the wrong column: A313 contains the text "ORDER 3 List" (should be a B-column header). That can break automation or filling if you expect column A to be numeric only.
+3. (Minor) Many ID formulas use the old =+Aprev+1 style — this works but is confusing. Also header rows in column B have blank A cells; if you want IDs only next to course rows you should use a formula that leaves A blank for header rows.
+
+Quick fixes (steps)
+1. Fix the jump at A40:
+   - Select A40, replace =565+1 with =A39+1 (or =+A39+1), press Enter.
+   - Drag the fill handle from A40 down to the last row (A327) to recalc the correct sequential IDs.
+
+2. Move the misplaced header:
+   - Cut A313 ("ORDER 3 List") and paste it into B313.
+   - Leave A313 blank (or put a header marker if you prefer).
+
+3. (Optional cleanup) Make numbering skip blank/header rows:
+   - Replace the formula pattern with one that only numbers when column B has a course. Example to put in A5 and fill down:
+     =IF($B5="", "", A4+1)
+   - This keeps A blank for header rows and produces a clean continuous sequence for course lines.
+
+Why these fixes work
+- Changing A40 to =A39+1 restores the natural increment so each row adds 1 from the previous ID.
+- Moving the header back to column B keeps column A purely numeric and prevents misalignment or fill problems.
+- The IF formula prevents numbers appearing next to blank or header rows, keeping IDs only next to actual course entries.
+
+If you want, I can give the exact formula to paste into A4:A327 to fully automate numbering (including automatic resets at section starts), or produce the corrected A-column values for you. Which would you prefer?

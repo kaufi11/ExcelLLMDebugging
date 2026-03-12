@@ -1,0 +1,23 @@
+Short answer — error found and how to fix it:
+
+1) Error
+- On sheet "Bulk compost", cell C19 has a sign typo: its formula is =A19+(B19/24)+1.48 but every other row in that column uses =A#+(B#/24)-1.48.  
+- Effect: C19 is 2.96 days (15.53125 +1.48 vs 15.53125 −1.48) out of line with the rest, which will break any time-based plotting or calculations.
+
+2) Quick fix
+- Replace C19 with the correct formula:
+  =A19 + (B19/24) - 1.48
+
+3) Better solutions (recommended)
+- Put the offset (1.48) in a single cell (e.g., Z1) and use an absolute reference so you can’t accidentally type the wrong sign:
+  - Put 1.48 in Z1.
+  - In C4 enter: =A4 + (B4/24) - $Z$1 and copy down.
+- Or (if hours are not pure decimal hours) convert hours robustly by using TIME if minutes are stored as decimal minutes (only do this if B contains hh.mm, not decimal hours):
+  =A4 + TIME(INT(B4), ROUND((B4-INT(B4))*100,0),0)  — then subtract the offset cell as above.
+
+4) How to find similar mistakes
+- Use Excel’s “Inconsistent formula” warning (Formulas → Error Checking).  
+- Or Find (+1.48) / Find formulas that differ: select column C → Home → Find & Select → Go To Special → Formulas to inspect non-matching formulas.
+
+Why this matters (one line)
+- The wrong sign shifts that observation by ~3 days and will distort any time-series analysis or alignment with other sheets.

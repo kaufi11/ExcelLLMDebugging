@@ -1,0 +1,39 @@
+Summary of the problems I found (short & clear), with fixes and why they work:
+
+1) Wrong formula in AC22 (Engineering, upper-level "Other")
+- Problem: AC22 contains =SUM(100-(S22-U22-W22-Y22-AA22)). The operators are subtraction (-) instead of addition (+). That gives a wrong "Other" percent.
+- Fix: Replace with either
+  - =100-(S22+U22+W22+Y22+AA22)
+  - or =100-SUM(S22,U22,W22,Y22,AA22)
+- Why: "Other" should be 100 minus the sum of the listed grade percentages. Using plus signs (or SUM) implements that correctly.
+
+2) Misplaced/extra values in unused columns (columns F and H, and occasional H values)
+- Problem: Some rows (example: Education row 18 has values in F18 and H18; Business row 10 has H10 = 0; Hospitality row 14 has H14 = 0). Those columns are not part of the Lower/Upper grade columns (your layout uses E, G, I, K, M for lower and S, U, W, Y, AA for upper). Values in F or H look like stray/misaligned entries and can corrupt calculations or readability.
+- Fix:
+  - Clear any stray values in columns F and H (if truly not used).
+  - If the value belongs in a grade column, cut the cell and paste it into the correct column (e.g., move a misplaced B% into column G). Do this row by row.
+  - After fixing, re-calculate the "Other" cells with the consistent formula (see 3).
+- Why: Extra entries break the consistent column mapping and can mislead anyone auditing the sheet. Clearing or moving them restores the expected structure.
+
+3) Inconsistent / awkward "Other" formulas: SUM(100-(...))
+- Problem: Many "Other" cells use SUM(100-(E6+G6+...)) — that works but is odd/ redundant and makes errors more likely (as in AC22).
+- Fix: Use a clearer formula pattern:
+  - =100-SUM(E6,G6,I6,K6,M6)
+  - or =100-SUM(E6:I6,K6,M6) (be careful with ranges that include unused columns)
+- Why: This is more readable and less error-prone.
+
+4) How to verify everything after fixes (quick checks)
+- For each row: confirm E + G + I + K + M + O = 100 (for lower level) and S + U + W + Y + AA + AC = 100 (for upper level). Use =ROUND(SUM(...),2) if floating rounding causes 99.9999 vs 100.
+- For totals: verify the Q and AF total formulas use consistent ranges (or SUM of the specific cells). Example: Q30 = SUM(Q6,Q10,Q14,Q18,Q22,Q26) or =SUM(Q6:Q26) but only if no unrelated cells inside that range.
+
+Concrete edits to make now (minimal):
+1. Edit AC22 to: =100-SUM(S22,U22,W22,Y22,AA22)
+2. Inspect rows with values in column F or H (e.g., F18, H18, H10, H14). Either:
+   - Delete those cells if they are stray,
+   - Or move them to the correct grade column (cut → paste into G or I as appropriate).
+3. Replace "Other" formulas like =SUM(100-(E6+G6+I6+K6+M6)) with =100-SUM(E6,G6,I6,K6,M6) for clarity and consistency.
+4. Run the row-sum check (E+G+I+K+M+O and S+U+W+Y+AA+AC = 100) to confirm.
+
+If you want, I can:
+- Give the exact corrected formulas for every problematic cell,
+- Or produce a one-line macro to fix AC22 and convert all "Other" formulas to =100-SUM(...), and clear any data in columns F and H for the data rows. Which would you prefer?

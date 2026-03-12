@@ -1,0 +1,40 @@
+Summary of the problems
+- Many daily cells (columns F→M on each row) contain chained formulas like =SUM(E9), =SUM(F9) etc. That makes every category copy the previous category instead of holding the actual category count. Result: category-level data is wrong/duplicated.
+- E9 = SUM(E42) references row 42 (outside your day rows) — wrong reference.
+- G19 = SUM(5) uses a literal inside SUM (probably unintended).  
+- Totals row is inconsistent: C40:D40:E40 are column totals, but F40:M40 are chained (=SUM(E40), =SUM(F40) …) so only one column’s total propagates across, not real totals per category.
+
+Why this is wrong (short)
+- Daily category cells should be either entered values (counts) or calculated from the same row across categories. They must not be a chain that references the previous column — that copies values across categories.
+- Totals must sum the column’s daily values (e.g., sum F9:F39) — not sum the previous total cell.
+
+Correct (easy) fixes — exact formulas and steps
+1) Daily per-row total (Total #)
+   - Put this in C9 and fill down to C39:
+     =SUM(D9:M9)
+   - This makes C show the total for that day across all service categories.
+
+2) Restore daily category cells D9:M39
+   - Remove the incorrect chained formulas (select F9:M39 and Clear Contents; also fix E9).
+   - Enter the actual counts manually in D9:M39 (or if any should be formula-driven, point them to the correct sources).
+
+   Specific fixes for anomalies:
+   - Replace E9 =SUM(E42) with the actual value for that day (or clear it if no data).
+   - Replace G19 =SUM(5) with either the value 5 (type 5) or the correct cell reference.
+
+3) Monthly totals (row 40)
+   - Replace the chained totals with real column sums. Enter in D40 then fill across to M40:
+     In D40: =SUM(D9:D39)
+     Drag/copy D40 across to M40 (Excel will adjust references to E9:E39, F9:F39, …).
+   - Leave C40 as =SUM(C9:C39) (already correct).
+
+Quick steps to apply in Excel
+- Select C9:C39, put =SUM(D9:M9) in C9 and fill down.
+- Select F9:M39 and press Delete (clear incorrect formulas); enter actual numbers for each day.
+- Fix specific cells E9 and G19 manually (enter correct values).
+- In D40 type =SUM(D9:D39) and drag right to M40.
+
+How this fixes things (one-liner)
+- Daily category values will be actual counts (not copies), daily totals will sum those categories, and monthly totals will sum each category correctly — giving correct per-category and per-month totals.
+
+If you want, I can give a one-click macro or a Find/Replace recipe to clear the bad formula patterns and auto-fill the correct formulas. Which would you prefer?

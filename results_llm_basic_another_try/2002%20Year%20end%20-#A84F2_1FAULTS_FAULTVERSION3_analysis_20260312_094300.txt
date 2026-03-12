@@ -1,0 +1,57 @@
+### Errors Found:
+
+1. **Cell C29 (Accumulated funds 2002) formula error:**
+   - Formula: `=+C330` (refers to C330)
+   - Issue: C330 is the sum of accumulated funds components, but C29 should not refer to C330 (which is a total including C29 itself). This creates a circular reference or incorrect self-reference.
+
+2. **Cell C121 (Cash paid to suppliers and employees):**
+   - Formula: `=-26907-7561074`
+   - Issue: The formula is a hardcoded sum of negative numbers, but the number 7561074 is very close to cash received from members (C120: 7561073). This looks like a manual entry and may cause inconsistency or errors in cash flow.
+
+3. **Cell C147 (Cash and cash equivalents at end of the year):**
+   - Formula: `=+C144+C145`
+   - Issue: C145 is linked to E147 (previous year end cash), but E147 is linked to C147 minus C532 (see G147). This circular reference may cause errors or incorrect cash balances.
+
+4. **Cell C29 referencing C330 (circular reference):**
+   - C330 sums C324:C329, including C329 which is Sanlam shares not previously accounted for.
+   - C29 should be the accumulated funds balance, but referencing C330 creates a circular dependency.
+
+5. **Inconsistent use of negative signs in cash flow:**
+   - For example, in C121, the formula is `=-26907-7561074` which is a hardcoded negative sum rather than referencing cells.
+   - This can cause errors if underlying data changes.
+
+### Solutions:
+
+1. **Fix C29 formula:**
+   - Replace `=+C330` with the correct accumulated funds balance.
+   - Use `=SUM(C324:C329)` in C330 only.
+   - In C29, put the actual accumulated funds value or link to C330 but not both.
+   - Best: In C29, enter the actual accumulated funds balance without referencing C330 to avoid circular reference.
+
+2. **Fix C121 formula:**
+   - Replace hardcoded formula with cell references.
+   - Use: `= -C120 - (sum of cash paid to suppliers and employees)` referencing actual cells instead of hardcoded numbers.
+   - This ensures dynamic updates when source data changes.
+
+3. **Fix cash and cash equivalents circular reference:**
+   - Avoid linking C145 to E147 and E147 to C147 minus C532.
+   - Instead, set C145 as the opening balance (previous year end cash) as a fixed value.
+   - Ensure C147 is calculated as `=C144 + C145` without backward references.
+
+4. **Review all formulas with hardcoded sums:**
+   - Replace hardcoded sums with cell references or SUM formulas for accuracy and maintainability.
+
+### Explanation:
+
+- Circular references cause Excel to either error out or produce unreliable results.
+- Hardcoded numbers in formulas reduce flexibility and increase risk of errors when data changes.
+- Proper linking of opening and closing cash balances ensures the cash flow statement balances correctly.
+- Using SUM and cell references ensures formulas update automatically with data changes.
+
+---
+
+**Summary:**  
+- Correct C29 to avoid circular reference by not referencing C330.  
+- Replace hardcoded numbers in cash flow formulas (e.g., C121) with proper cell references.  
+- Fix circular references in cash and cash equivalents (C145, C147, E147).  
+- Use dynamic formulas (SUM, cell references) instead of hardcoded sums for accuracy.

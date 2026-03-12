@@ -1,0 +1,36 @@
+I checked the workbook formulas you provided and found one clear formula error plus a couple of fragile / non‑intuitive uses of ranges/references that can lead to discrepancies. Summary and recommended fixes below.
+
+1) Wrong sign (formula error) — Select Financial Data sheet, cell H14
+- Current formula: =H12+H13
+- All other columns in that row use =<column>12 - <column>13 (e.g. B14 = B12 - B13).
+- Why it's wrong: H13 is negative in this sheet (‑2,110). Using + rather than − yields H14 = H12 + (−2,110) while the intended calculation is H12 − (−2,110) (i.e. add 2,110). This causes downstream values in that column to be incorrect.
+- Fix: change H14 to =H12-H13 (or copy the formula from G14 and adjust).
+- Effect of the fix (I computed the corrected numbers):
+  - Current H12 = 162,770; H13 = -2,110
+  - Correct H14 should be 162,770 - (-2,110) = 164,880 (currently 160,660)
+  - H18 (currently 146,992) recalculates to H14 - H15 - H16 = 164,880 - 16,899 - (-3,231) = 151,212
+  - H21 (currently 94,309) recalculates to H18 - H19 = 151,212 - 52,683 = 98,529
+  - H25 (Net Earnings, currently 94,309) will become 98,529 (this reconciles with Cash Flow sheet H3 = 98,529)
+- Important: H14 error propagates to H18, H21 and H25 (and any other cells that depend on those). After fixing H14 those other values should match related sheets (Cash Flow, Statements) that show 98,529 for that year.
+
+2) Inconsistent/fragile SUM ranges (possible sources of confusion)
+- Several "Net Earnings" or similar totals sum ranges that include empty rows (e.g. Select Financial Data B25 = SUM(B20:B24)). The formula works because empty cells are treated as zero, but it is fragile: row offsets or inserted rows can cause silent errors.
+- Recommendation: use explicit cell references (SUM of the exact cells containing the items intended) or use named ranges for the block of items to make the intention clear and less error‑prone. Example: instead of SUM(B20:B24) use SUM(B21,B23,B24) if those are the intended contributor rows, or place the items consecutively and sum that explicit range.
+
+3) Cross‑column chained references for "beginning of year" cash — Cash Flow sheet, row 42
+- Pattern used: B42 = C44, C42 = D44, ... K42 is a constant. This is a working technique to set "beginning of year" = previous column's end of year. It works here because column K has a hard anchor (K42 = 2084).
+- Caveat: the chain is non‑obvious and fragile. If columns are re-ordered or if the anchor (K42) is removed, you can introduce circular references.
+- Recommendation: if possible, explicitly set each "beginning of year" to the prior year's end (e.g. B42 = C44), but document this or consider pulling previous-year end values from a dedicated "prior year end" column to improve robustness.
+
+4) Cross-sheet consistency check
+- After fixing the H14 formula, Select Financial Data H25 (Net Earnings) will match Cash Flow H3 for that year (both should be 98,529). At present (with the H14 error) those two cells disagree (Select H25 = 94,309 vs Cash Flow H3 = 98,529), which indicates the propagated error discussed above.
+
+What to do next (action steps)
+1. Change Select Financial Data!H14 from =H12+H13 to =H12-H13.
+2. Recalculate / verify the dependent cells in column H (H18, H21, H25 and any other dependents). Confirm they now match the corresponding numbers on the Statements and Cash Flow sheets (e.g., 98,529).
+3. Optionally adjust the SUM ranges that include blank rows to be explicit (to prevent future off‑by‑one or layout changes from silently breaking totals).
+4. Scan for any other single‑cell deviations (a quick way: compare column formulas across columns for rows that should use the same formula pattern — e.g., copy formula from a correct column to check each other column).
+
+If you want, I can:
+- produce a small list of all formulas that differ from the common pattern (to find other similar typos),
+- or produce the exact corrected values for all affected cells in column H after the fix.

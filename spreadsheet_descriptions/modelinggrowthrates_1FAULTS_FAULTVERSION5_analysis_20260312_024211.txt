@@ -1,0 +1,51 @@
+High-level overview (concise)
+
+Workbook purpose
+- Simulates an exponential growth process Q = A(1+r)^t with additive iid noise, then fits three models: (1) linear Q ~ time, (2) quadratic Q ~ time + time^2, and (3) log-linear ln(Q) ~ time to recover A and r.
+
+Common details
+- Number of observations: 51 (time = 0..50).
+- Constants on Data sheet: A in C4 = 100, r in C5 = 0.04, additive error factor in C6 = 1.
+- Many formulas use absolute references ($C$4, $C$5, $C$6).
+
+Sheet-by-sheet summary
+
+1) Data
+- Cell A1: title. A3..I3 show model Q = A(1+r)^t.
+- Inputs: C4 (A=100), C5 (r=0.04), C6 (additive error factor=1).
+- Rows 8–58 (observations):
+  - Col A: simulated iid random errors.
+  - Col B: time (0 to 50).
+  - Col C: Q computed as =$C$4*(1+$C$5)^B# + A#*$C$6 (i.e. baseline exponential + additive error).
+    - Note: one anomalous formula at C20 reads =$C$4*(278+$C$5)^B20 + A20*$C$6 — likely a typo that will produce a wrong Q at time 12.
+  - Col D: LN(C#) (log of Q).
+  - Col E: time (duplicate of B).
+  - Col F: time^2 (B#^2).
+
+2) Linear (Q vs time)
+- Regression summary: Multiple R = 0.9695, R^2 = 0.9398, Adjusted R^2 = 0.9386, Std. Error ≈ 43.83.
+- ANOVA and coefficients:
+  - Intercept = 24.7039 (SE 12.0963), time coef = 11.53684 (SE 0.41695).
+- Residual output: predicted Q and residuals for each observation (residuals large, especially at higher times — linear misses exponential curvature).
+
+3) Quadratic (Q vs time + time^2)
+- Regression summary: Multiple R = 0.999223, R^2 = 0.998447, Std. Error ≈ 7.1165.
+- Coefficients:
+  - Intercept = 114.10120
+  - time = 0.59022811 (p~0.0313)
+  - time^2 = 0.21893223 (highly significant)
+- Residual output: much smaller residuals than linear; fits the curved trend very well.
+
+4) ln(Q)=f(time) (log-linear)
+- Regression summary: Multiple R = 0.9999435, R^2 = 0.9998870, Std. Error ≈ 0.006267.
+- Coefficients:
+  - Intercept = 4.603471085 (SE 0.00173)
+  - time = 0.03925871234 (SE 5.96e-05)
+- Interpretation: cells K20/K21 show formulas:
+  - r = EXP(coefficient of time)-1 (K20 has =EXP(B18)-1). Using the fitted time coef gives r ≈ exp(0.03925871234)-1 ≈ 0.04003 (≈ 4%).
+  - A = EXP(Intercept) (K21 has =EXP(B17)) → A ≈ exp(4.60347) ≈ ~100.
+- Residual output: tiny residuals in ln space, consistent with the data being generated as exponential with additive small noise.
+
+Important notes / potential issues
+- Typo anomaly: C20 on Data uses (278+$C$5)^B20 instead of (1+$C$5)^B20 — this will create a massively incorrect Q for the observation at time = 12 and will distort any analyses that use that raw Q (check/fix to =$C$4*(1+$C$5)^B20 + A20*$C$6).
+- Overall: the ln(Q) regression recovers the generating parameters (A ≈100, r ≈0.04). Quadratic fits Q directly very tightly (high R^2) but log-linear is the principled model for constant-percent growth.

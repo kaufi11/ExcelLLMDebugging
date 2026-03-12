@@ -1,0 +1,35 @@
+I reviewed the workbook and found a few clear formula errors and some risky hard‑coding. Short summary, why they’re wrong, and how to fix them.
+
+1) Stray “+1” added into formulas (causes all affected totals/percentages to be off by 1)
+- Cells with the problem:
+  - Revenues by Source: C11 contains =141577402+1
+  - General State Financial Aid: B21 contains =3684419+1
+  - FTEE Calculation: E27 contains =SUM(E11:E26)+1
+- Why it’s wrong: adding +1 inside these numeric formulas artificially increases the result by one unit (dollar, hour, FTEE, etc.). That shifts totals and any percentages that reference those totals.
+- Fix: remove the +1. Example corrections:
+  - C11 → =141577402 (or, better, reference the cell that stores 141,577,402)
+  - B21 → =3684419 (or reference the source cell)
+  - E27 → =SUM(E11:E26)
+
+2) Hard‑coded / wrong expression in FTEE (causes a big wrong value for that college)
+- Cell with the problem: F14 is =829/600
+- Why it’s wrong: every other row computes non‑credit FTEE as E#/600. Row 14’s formula uses the literal 829 instead of the E14 cell (366,167) — so the result is tiny and incorrect.
+- Fix: change F14 to reference the cell: F14 → =E14/600
+
+3) Hard‑coded numeric arithmetic instead of cell references (fragile / hard to update)
+- Example: Revenues by Source: C9 is =9432730+111410104
+- Why it’s risky: using literal numbers inside formulas makes the workbook fragile and harder to audit. If those component numbers should come from other cells, the formula should reference them. If the number is a single source value, put just that value in the cell (not an inline sum).
+- Fix (two options):
+  - If C9 should be the sum of two other cells (say X and Y), use references: =SUM(Xcell, Ycell)
+  - If C9 is a single final value, replace the formula with the single number (or a single reference). Example: C9 → =SUM(CellWithPart1, CellWithPart2) or C9 → 120842834
+
+4) Minor: many formulas use the “=+” prefix (e.g., =+C9/$C$15). Not an error functionally, but nonstandard and harder to read. You can leave them — they work — but consider cleaning to just =C9/$C$15.
+
+Quick checklist to finish:
+- Remove all unintended “+1”s in formulas.
+- Fix F14 to =E14/600.
+- Replace any literal arithmetic (like =9432730+111410104) with references or a single value as appropriate.
+- After changes, calculation: press Ctrl+Alt+F9 (recalculate all) and verify totals and percent columns update.
+- To find other instances: use Find (Ctrl+F) and search for “+1” in formulas, and search for patterns like “/600” that are inconsistent.
+
+If you want, I can produce the exact corrected formulas for every affected cell (I listed those above). Do you want me to output a patch list you can paste into the workbook?

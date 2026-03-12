@@ -1,0 +1,53 @@
+I reviewed the workbook and found several clear formula / logic errors. Short, clear fixes below.
+
+1) Problem: Purchase discounts / net purchases cells are using inconsistent columns (wrong references)
+- Faulty cells: D67 and D68 (and therefore E70)
+- Error: D67 uses =SUM(C66:C67) (it sums returns and discounts into the single “discount” cell) and D68 = D65 - E67 (references the wrong column). This mixes columns and double-counts/misplaces amounts.
+- Fix (keep amounts in one column or reference the correct cells). Example corrections assuming:
+  - Purchases = D65
+  - Purchase R&A (returns) = C66
+  - Purchase Discount = C67
+  then:
+  - D67 (Purch. Disc) = C67  (or explicitly =53500*0.02)
+  - D68 (Net purchases) = D65 - C66 - C67
+  - E70 (Cost of goods purchased) = D68 + D69
+- Why: Net purchases must subtract both returns AND discounts from Purchases; formulas must reference the correct cells consistently.
+
+2) Problem: Weighted-average COGS / EI mismatch (calculation error)
+- Faulty cell: D83 (wtd-average COGS shows 60,735 but it should be 60,375)
+- Error: Ending inventory per weighted-average or COGS computed with wrong number (or hard-coded value) instead of using average-per-unit * ending units.
+- Fix (use references so nothing is hard-coded):
+  - Average unit cost (put in e.g. D108): =E92 / C92  (80500 / 10000 = 8.05)
+  - Ending inventory (EI) = Average unit cost * EndingUnits (EI) => =D108 * D93  (8.05 * 2500 = 20,125)
+  - Weighted-average COGS = GAFS value - EI => =E92 - (D108 * D93) => =80500 - 20125 = 60,375
+- Why: Using the derived average cost (E92/C92) guarantees consistent EI and COGS; avoids rounding/hard‑coding mistakes.
+
+3) Problem: Some helper cells multiply dollar amounts by unit cost (nonsense)
+- Faulty examples: K48 (=1500 * 8.15), K52/K53, L89 etc.
+- Error: These multiply a dollar return (1500 USD) by a unit cost (8.15) producing a meaningless number (12,225).
+- Fix: Decide what you mean:
+  - If 1500 is a dollar value (money returned), do not multiply by unit cost. Use 1500 as the value.
+  - If 1500 is units returned, multiply units by unit price to get dollars: UnitsReturned * UnitCost.
+  - To get units from a dollar return when unit cost known: Units = DollarReturn / UnitCost (e.g. =1500 / 8.15).
+- Why: Dollars × dollars-per-unit is wrong dimensionally; keep units and values consistent.
+
+4) Problem: COGAFS / COGS flow depends on the previous two problems (so can be wrong)
+- Faulty cells: E71 (COGAFS) and F73 (COGS) can be wrong if net purchases / EI are wrong.
+- Fix (use a clear flow and cell references):
+  - Net purchases = Purchases - Purchase R&A - Purchase Discount
+  - Cost of goods purchased = Net purchases + Transportation In
+  - COGAFS = Beginning Inventory + Cost of goods purchased
+  - COGS = COGAFS - Ending Inventory
+  - Put each intermediate amount in its own cell and reference those cells.
+
+5) Problem: Hard-coded or inconsistent formulas for gross margin lines
+- Faulty cells: E81/E82/E83 formulas for Gross Margin use 7500*13 - COGS but COGS cells may be wrong.
+- Fix: Keep Gross Margin = Sales - Sales returns & allowances - COGS (or =NetSales - COGS) and reference NetSales cell (F62) and computed COGS cells. Example: =F62 - <COGS cell for the method>
+
+Quick checklist to fix the file now
+- Standardize where monetary amounts live (choose one column for amounts — e.g., column D or E) and move Purchase R&A, Purchase Discount, Transportation-In into that column.
+- Recalculate Net Purchases as Purchases - R&A - Discounts (explicit formula).
+- Recompute Cost of goods purchased, COGAFS, EI and then COGS using referenced cells (not hard-coded numbers).
+- Remove any formulas that multiply money by unit costs unless you are converting dollars ↔ units with a division.
+
+If you want I can give you the exact corrected formulas mapped to the cells in your sheet (using the cell coordinates as they are now). Which section do you want fixed first — Part A income statement or Part B inventory computations?

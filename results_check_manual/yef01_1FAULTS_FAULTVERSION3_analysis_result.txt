@@ -1,0 +1,60 @@
+I reviewed the formulas in the workbook you supplied and found one clear formula error plus several suspicious or inconsistent formula choices/“fudge factors” that can cause small mismatches and make the workbook harder to maintain. Summary below (sheet name!cell).
+
+1) Definite formula error
+- FTEE Calculation!F14
+  - Current formula: =-E14/600
+  - Problem: Produces a negative FTEE (-230.27) even though E14 (138,162) is positive. This is almost certainly a sign error.
+  - Recommendation: Change to =E14/600 (positive). This will also correct downstream values in G14, H14, I14.
+
+2) Manual small offsets and inconsistent rounding (likely causes of tiny mismatches)
+These are not Excel errors but are inconsistent and can hide logic problems. I list where they occur and why they’re problematic:
+
+- FTEE Calculation
+  - C28 = SUM(C12:C27)+0.02 (adds 0.02)
+  - F28 = SUM(F12:F27)+0.03 (adds 0.03)
+  - H12, H13, H15, H16, H22, H24, H26 (some rows): use +0.01 when computing H# = C#+F#+0.01 (but other rows do not)
+  - H28 = SUM(H12:H27)-0.02 (subtracts 0.02)
+  - I20 and I21: I20 = .../$H$28-0.000001 and I21 similarly subtract 0.000001
+  - I28 = SUM(I12:I27)+0.000002
+  - Effect: C28 + F28 ≠ H28 by a small amount (≈0.01), and I28 ends up slightly > 1 (1.00000026). Those tiny constants are inconsistent (different adjustments used in different places) and make totals disagree by small amounts.
+  - Recommendation: remove ad-hoc additions/subtractions; instead:
+    - Keep raw sums (no +0.02/+0.03/-0.02),
+    - Round displayed percentages however you wish (ROUND), and
+    - If you need percentages to sum to exactly 1, compute the last percentage as 1 - SUM(previous rounded percentages) (or use consistent rounding rules).
+
+- Expenditures by Category
+  - B12 = ROUND((C12/$C$16),4)-0.0001
+  - Other B# use ROUND(...,4) without the -0.0001
+  - Effect: one item is nudged down by 0.0001 while others are not — inconsistent.
+  - Recommendation: remove the -0.0001 and use a consistent rounding approach; if you must force the total to 1, adjust only the last item via (1 - SUM(previous rounded items)).
+
+3) Odd/peculiar formulas (not outright errors, but odd)
+- Revenues by Source!C12
+  - Formula: =147577404-1 (instead of just 147577403). Works, but unusual.
+  - Recommendation: replace with the literal constant or compute directly from components for clarity.
+
+- General State Financial Aid!B23
+  - Formula: =12027969 (unnecessary formula returning a constant). Not an error, just odd.
+
+4) SUM ranges include blank rows (harmless but confusing)
+- Revenues by Source!B16 =SUM(B10:B15) and C16 =SUM(C10:C15) — there is no B15/C15 row present in the data you showed. Same pattern in several sheets (Expenditures by Function B20 =SUM(B10:B19), Expenditures by Category B16 =SUM(B10:B15), FTEE Calculation B28 =SUM(B12:B27), etc.)
+  - Effect: Excel will treat missing cells as zero so totals are correct, but it's confusing to readers and makes it easier to inadvertently omit a row.
+  - Recommendation: tighten ranges to exactly the populated rows (e.g., SUM(B10:B14) if only rows 10–14 are used) or make the blank row explicit and labeled.
+
+5) Propagation effects to check after fixes
+- Because F14 is negative now, G14 (F14/H14), H14 (C14+F14) and I14 (H14/$H$28) are negatively affected. After correcting F14 to positive, re-check:
+  - G14 should be positive,
+  - H28 (total FTEE) should equal C28 + F28 if you remove manual offsets,
+  - I28 (sum of % of total) should be 1 (or 100%) if rounding is handled consistently.
+
+6) General suggestion for robust approach
+- Avoid hard-coded tiny adjustments (+0.01, -0.02, +0.000002 etc.). They obscure the logic. Use:
+  - ROUND for display/presentation,
+  - For percentage columns, compute raw values, ROUND them for display, and compute the final item as 1 - SUM(previous rounded items) if you require the rounded percentages to sum to 1.
+  - Keep sum ranges tight and explicit.
+
+If you want, I can:
+- Produce the exact corrected formulas (for example change F14 and remove the +/− fudge constants) and show the expected numerical results after correction, or
+- Create a cleaned version of the workbook with the fixes applied and consistent rounding behavior.
+
+Which would you prefer?

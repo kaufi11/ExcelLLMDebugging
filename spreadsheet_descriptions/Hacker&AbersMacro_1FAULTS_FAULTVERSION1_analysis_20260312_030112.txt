@@ -1,0 +1,58 @@
+High-level summary of the workbook (concise, sheet-by-sheet):
+
+1) Sheet: database
+- Purpose: master mineral-properties lookup table. Most entries are constants (atomic weight, molar volume, density @298K, H2O wt%, thermal expansivity, references) or simple scaling/formula fields derived from those constants.
+- Layout: row 3 contains column labels (phase, gfw, V, r298, wt% H2O, expansivity, notes, KT, KT prime, G, dlnG/dlnr, dG/dP, Grüneisen params, etc.). Rows 5–56 list ~50+ minerals with numeric values and occasional in-cell formulas.
+- Notable formula patterns:
+  - Pressure-dependent Kt entries often use forms like: =KT0/(1+F*0.42*R*298) to adjust a reference KT by expansivity and Grüneisen-like factor.
+  - Shear-bulk relations: P cell P for G' often computed as =(5*G)/(3*KT) or similar.
+  - Some cells reference other mineral rows (e.g. H8 = H9, L12 = L11*H12/H11 etc.).
+- User notes: the sheet header states these are constants that the user may edit; many “FORMULA = …” entries exist and should be preserved if you rely on automatic scaling.
+
+2) Sheet: minerals
+- Purpose: derived mineral properties at a specified P (GPa) and T (°C). This sheet is overwritten each time the macro is run.
+- Layout: top-left shows P (B1) and T (B2). Columns compute properties at ambient (T,0) and at (T,P): alpha (thermal expansivity), rho, Kt, G, finite strain, Kt(T,P), alpha(T,P), Ks(T,P), G(T,P), rho(T,P), Vbulk (Vp), Vp, Vs, and Poisson's ratio.
+- Calculation methods:
+  - Uses database constants and the formulas described there to compute temperature and pressure corrections.
+  - Velocities computed from elastic moduli and density (standard relationships: Vp = sqrt((K + 4/3 G)/rho), Vs = sqrt(G/rho); results in km/s).
+  - Hashin-Shtrikman / Voigt / Reuss bounds and VRH values are produced for aggregates (see rocks sheet for aggregate usage).
+- Example key values (for P=0.6 GPa, T=25°C shown):
+  - Mineral "aqz": rho(T,P) = 2689.19 kg/m3, Kt(T,P) ≈ 4.066E10 Pa, G(T,P) ≈ 4.505E10 Pa, Vp ≈ 6.12 km/s, Vs ≈ 4.09 km/s.
+  - Aggregate outputs (at bottom of this sheet are pre-computed aggregate summaries, see rocks sheet for more).
+
+3) Sheet: rocks
+- Purpose: user specifies modal percentages (vol%) of minerals to form rock compositions; sheet calculates rock physical properties (density, Vp, Vs, bulk and shear moduli, Poisson's ratio) using mixing schemes.
+- Layout & user interaction:
+  - Yellow cells (modal inputs) are modifiable by the user. Do not change the positions of yellow cells.
+  - Green cells are auto-calculated and should not be edited.
+  - Multiple columns represent predefined rock types (greenschist facies, eclogite, harzburgite, diabase, etc.). Rows 5–56 hold mineral modes; row 57 contains SUM(...) formulas for each rock column (e.g. B57 = SUM(B5:B56) etc.) to check totals.
+  - Cells B59:H60 define example P and T sets for multiple rock columns (user can change).
+- Calculations:
+  - Mixture averaging uses Hashin-Shtrikman bounds (and also Voigt/Reuss/VRH) for effective K and G; these bounds are computed and displayed (rows 61–96 give aggregate, H-S, Voigt, Reuss, VRH values and H-S min/max).
+  - Final outputs include aggregate H2O wt% (row 62), bulk density (row 63), Vp (row 64), Vs (row 65), bulk K (row 66) and shear G (row 67), Poisson's ratio (row 68).
+- Example rock result (greenschist facies column B, P=0.5 GPa T=300°C):
+  - H2O = 3.295 wt%, rho = 3.076 g/cm3, Vp = 7.041 km/s, Vs = 3.875 km/s, K ≈ 90.94 GPa, G ≈ 46.18 GPa, Poisson's ≈ 0.283.
+
+4) Sheet: rock mineral modes
+- Purpose: large library of compiled modal mineral compositions for many rock types and metamorphic facies. Intended as a source to copy into the rocks sheet.
+- Layout: many rock types across columns; rows list minerals (aqz, bqz, coe, hAb, etc.) with vol% values. Cells include many pre-filled numbers and formulas (sums in row 57: SUM(...) for each column).
+- Notes:
+  - Contains many corroborating derived numbers and sub-totals used by the rocks sheet.
+  - Yellow cells (user-editable) versus green (calculated) pattern is documented similarly here.
+
+General/formula notes and important relationships
+- Density and moduli propagation: database provides reference r298, KT, G and thermal expansivity. The minerals sheet applies temperature and pressure corrections using relations embedded in the database formulas to produce KT(T,P), G(T,P), rho(T,P).
+- Seismic velocities are computed from K, G, rho using standard elastic formulas (Vp^2 = (K + 4/3 G)/rho; Vs^2 = G/rho).
+- Effective-aggregate elastic moduli use Hashin–Shtrikman bounds and Voigt/Reuss bounds; VRH (Voigt-Reuss-Hill) averages are provided.
+- Many cells explicitly contain formulas referencing other cells and rows (e.g. L12 = L11*H12/H11, P6 = (5*L6)/(3*H6), H6 = 56400000000*1.01097683452934/(1+F6*0.42*R6*298)). Preserve these relations when editing.
+
+User guidance / caveats
+- database sheet: most values are constants but some fields are formula-derived — editing is allowed but beware breaking dependencies.
+- minerals sheet: values are overwritten by the macro when you change P & T — it is not a manual input sheet.
+- rocks and rock mineral modes: user should only edit the yellow modal cells; sums and derived properties are computed automatically (SUM formulas are in row 57 for each column).
+- The workbook is organized so that minerals → minerals sheet calculations → rock mixing (rocks sheet) → aggregate physical outputs. Changes in database propagate through minerals and rocks only if you run the macro (minerals sheet) or copy updated modes into rocks.
+
+If you want, I can:
+- Point to specific formulas and trace dependencies for a given mineral or rock column;
+- Extract the equations used to compute velocities, H-S bounds, or show where P and T are applied;
+- Produce a minimal map of the most important cells to avoid editing (protected cell list).

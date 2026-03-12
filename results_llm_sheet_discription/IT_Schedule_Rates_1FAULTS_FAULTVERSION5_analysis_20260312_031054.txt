@@ -1,0 +1,21 @@
+Summary of the error
+- On sheet "EER SITE", row 21 (Functional Analyst, Senior) cell G21 contains the wrong formula: it is =F21/1.04 (division). Every other row uses multiplication by 1.04 to escalate yearly rates (G should be F * 1.04). That single division makes Year‑5 (G) and Year‑6 (H) wrong for that line.
+
+Why it’s wrong (short)
+- The table escalates each year by multiplying the previous year by 1.04. Dividing by 1.04 undoes the escalation and produces a lower (incorrect) rate for that year.
+
+How to fix (quick)
+1. Change G21 from =F21/1.04 to =F21*1.04.
+2. Verify H21 remains =G21*1.04 (it is already) so the chain will be correct.
+
+Check for other similar mistakes (recommended)
+- Use Find (Ctrl+F) in the workbook and search for "/1.04" (or "/1.04" in formulas). Any occurrences likely indicate the same accidental division—replace with "*1.04" after confirming context.
+
+Make formulas consistent and more robust (recommended best practice)
+- Make Year‑2 (column D) use the escalation cell (column C) when B is numeric:
+  - D6: =IF(ISNUMBER($B6),$B6*(1+$C6),"") 
+- Make subsequent years escalate from the previous year and tolerate rows where D is manually entered:
+  - E6 (and copy to the right): =IF(D6="","",D6*(1+$C6))
+- Then copy those formulas down the table. This keeps the escalation tied to column C and avoids hard‑coded constants.
+
+If you want, I can give the exact steps to apply the robust formulas across the whole sheet or scan both sheets and list any other formula anomalies.

@@ -1,0 +1,34 @@
+I reviewed the workbook. Found the clear mistakes and a few consistency problems that can produce wrong numbers. Short, direct fixes below.
+
+1) Obvious typo in an average formula
+- Faulty cell: I86
+- Problem: formula is = (E86+G86)/315 — dividing by 315 is a typo (all other averages divide by 2).
+- Fix: change to = (E86+G86)/2
+- Why: average should be the mean of min and max, not min+max divided by 315.
+
+2) Inconsistent "Range of Savings" input cells (likely user-intent mismatch)
+- Examples: C57, C63, C69 (and several similar cells in other sections) contain 0.25 while the label says "Range of Savings = 16-25%".
+- Problem: some “Range of Savings” cells hold the max (0.25) while others hold the min (0.16) or a different value. That makes the "Your Savings" (K...) calculations inconsistent depending on which cell they reference.
+- Fix: decide one convention:
+  - If Cxx cells are meant to store the user's chosen savings percent (for K-columns), set them to the user value (e.g., 0.16, 0.20, 0.25) consistently; OR
+  - If they are meant to store the range endpoints, rename them and add a dedicated "Your Savings" input cell (recommended). Then change K formulas to reference the dedicated "Your Savings" cells.
+- Why: consistent inputs prevent accidental use of min/max in places intended for the user's selected percent.
+
+3) Check obviously blank or missing input cells used in formulas
+- Examples: C15, C104, C110, C111, C112, C113, C130 etc. Many formulas multiply these cells; if they are blank/zero the results will be zero.
+- Fix: verify and populate these input cells with the correct numbers (or protect formulas from blanks with IF or N()).
+- Why: a formula that references empty cells returns 0 and gives misleading subtotals.
+
+4) Potential suspicious formula (review)
+- Example: K133 = C130*C131*C133 — K133 multiplies C133 (the same cell referenced in E/G formulas). This may be intended or could be a circular/incorrect reference if C133 is a calculated value or meant to be an input.
+- Action: check intended logic for the "Reduce Carrying Cost" block. If K133 should be C130 * (user percent) then point it at the dedicated "Your savings" cell instead of chaining range cells.
+
+Quick recommended housekeeping (makes the workbook safer):
+- Create consistent input cells for each "Your Savings" percent (one per line), and point K-column formulas at those.
+- Use named ranges (e.g., YourSaving_Putaway) to avoid accidental wrong cell references.
+- Add simple validation (Data Validation) to the input cells to ensure values are between 0 and 1 (or 0%–100%).
+- Scan for other simple typos like the I86 one (search for "/315", or any division by 315).
+
+If you want, I can:
+- Give an exact list of every inconsistent Cxx "Range" cell (I found many) with a recommended replacement value, and
+- Produce the corrected formulas (I can show the edited formulas for the exact cells you want fixed). Which would you like me to do next?

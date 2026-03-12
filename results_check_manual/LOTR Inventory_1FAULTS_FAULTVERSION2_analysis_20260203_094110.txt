@@ -1,0 +1,23 @@
+Summary of error
+- On sheet "Return of the King", cell F229 is a hard-coded value (=2) instead of the expected formula. All rows in column F should sum that row's printing columns (e.g. K:O or K:P depending on the sheet layout). This breaks that card's "Have" count and any sheet totals that include it.
+
+Why it is wrong
+- Other rows compute "Have" with a SUM of the printing columns (e.g. =SUM(K229:O229)). By having 2 in F229, I229 (Have Total) and the sheet summary formulas (and any workbook rollups) show wrong totals for that card and for aggregate counts.
+
+How to fix (quick)
+1. Go to Return of the King → cell F229.
+2. Replace the value 2 with the correct formula:
+   =SUM(K229:O229)
+3. Press Enter. The row's total (I229) and the sheet summary will update automatically.
+
+How to find any other similar errors (recommended)
+- Select column F on each set sheet and run Home → Find & Select → Go To Special → Constants → Numbers. That highlights cells that are numbers (not formulas). Any highlighted cell in rows that should compute :=SUM(...) is suspect.
+- Or insert a helper column with =NOT(ISFORMULA(F2)) copied down; filter TRUE to see cells that are not formulas.
+
+Why that detection helps
+- It finds other accidental hard-coded totals so you can replace them with the standard =SUM(...) formula and restore correct sheet and workbook totals.
+
+One-line check after fix
+- After correcting F229, check the sheet summary cells (e.g. the bottom summary cells that sum column F and count zero-haves) to confirm totals changed back to expected values.
+
+If you want, I can scan the list you posted and list every cell that looks hard-coded (not a formula).

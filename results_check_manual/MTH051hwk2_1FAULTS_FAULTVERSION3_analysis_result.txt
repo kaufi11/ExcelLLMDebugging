@@ -1,0 +1,54 @@
+I inspected the workbook formulas and outputs on Sheet1 and found several formula errors and some inconsistencies between the written text and the actual data/formulas. Below I list the problems I found, explain each one, and give suggested fixes.
+
+1) Wrong sign in one Z‑score formula (definite formula error)
+- Cell: C105 (Allison One)
+- Problem: formula is =(B105+$B$125)/$B$128 (uses + instead of −). This produces ~10 (nonsensical) instead of the correct z‑score.
+- Fix: change formula to =(B105-$B$125)/$B$128
+
+2) Hard‑coded value used instead of cell references for coefficient of variation (inconsistency / fragile)
+- Cell: D79 shows the formula text =(8.672/178)*100 (or equivalent hard‑coded expression).
+- Problem: using the rounded numeric 8.672 and 178 directly instead of referencing the computed StdDev and Mean makes the result sensitive to rounding and breaks if the underlying numbers change.
+- Fix: use cell references: =(D75/D78)*100 (or =(D75/$D$78)*100 depending on layout) so the CV updates correctly if inputs change.
+
+3) Mode returned as 0 — suspicious / possible incorrect use of MODE
+- Cell: F9 (mode for A8:A37) is displayed as 0 while the raw data shown does not contain 0.
+- Problem: a mode of 0 looks wrong given the data (no 0 in the list). Historically Excel behavior varies; MODE can return unexpected values or errors if there is no unique mode or if there are blanks/zeros in the input range.
+- Action / Fix: verify the input range contains only the intended data (no stray zeros). If you want the single mode in newer Excel use =MODE.SNGL(A8:A37) and/or check for multiple modes with =MODE.MULT(...). If there is truly no repeating value, document that the dataset has no mode (MODE.SNGL will return #N/A).
+
+4) Data count mismatch and resulting incorrect median/quartiles (major inconsistency)
+- Cells / text: text in D15–D16 states "Since there are 30 values, the median is the average of the 15th and 16th." The workbook then shows MEDIAN(A8:A37)=48.95 (F14) and explanatory text "Median = (45+52.9)/2 = 48.95".
+- Problem: the A8:A37 block as provided contains only 26 numeric entries (cells A9, A16, A23, A33 appear blank in the sheet extract). If there are actually 26 observations the median should be the average of the 13th and 14th sorted values — the manual calculation and the text referring to 30 values are inconsistent with the actual count. The MEDIAN formula result (48.95) does not match the sorted B column if that column represents the actual 26 sorted values (for 26 values median should be average of 13th & 14th). This indicates either:
+  - some input values are missing from A8:A37 (the data are incomplete), or
+  - the manual count and quartile computations are based on a different dataset.
+- Fix / Action:
+  - Verify and complete the original dataset: fill the missing values in A9, A16, A23, A33 if they were inadvertently omitted.
+  - If the dataset truly has 26 values, update the written comments and the quartile/median calculations to reflect n=26.
+  - Use consistent formulas for median and quartiles that reference the actual data range (e.g., =MEDIAN(A8:A37), =QUARTILE.INC(A8:A37,1) / =QUARTILE.INC(A8:A37,3) or =PERCENTILE.INC(A8:A37,0.25) etc.) so the numeric outputs and the narrative stay synchronized.
+
+5) First and third quartile values / labels appear incorrect
+- Cells: E29 ("1st quartile =") shows value 7 (which does not match what the 8th sorted value should be in the narrative), E30 ("3rd quartile =") shows 70.4.
+- Problem: Given the earlier manual steps (i = (25/100)*30 = 7.5 → rounding up → i=8 → 1st quartile is 8th value) the 1st quartile should be the 8th sorted value (which in the sorted B column looks to be 28.8), not 7. The 3rd quartile calculation/labeling is also inconsistent with the actual sorted list / data count.
+- Fix:
+  - After resolving the data‑count issue in (4), compute quartiles with the built‑in quartile/pctl functions to avoid manual off‑by‑one errors:
+    - =QUARTILE.INC(A8:A37,1) for first quartile (25th percentile)
+    - =QUARTILE.INC(A8:A37,3) for third quartile (75th percentile)
+  - Or =PERCENTILE.INC(A8:A37,0.25) and =PERCENTILE.INC(A8:A37,0.75).
+  - Update the narrative text to match the computed values and the actual n.
+
+6) Inconsistent use of sample vs population formulas — check intent (possible conceptual issue)
+- Examples: VAR and STDEV are used (Excel's VAR and STDEV are sample functions). If the intention was to compute population variance/stddev, the corresponding functions are VARP and STDEVP (older) or VAR.S / STDEV.S vs VAR.P / STDEV.P (newer Excel). The workbook consistently uses sample formulas (VAR and STDEV) so this is probably okay — just confirm whether the sample or population metric was intended.
+- Action: if population measures were intended, replace VAR → VAR.P and STDEV → STDEV.P (or VAR.S/STDEV.S explicitly if sample).
+
+7) Minor: inconsistent precision / rounding in displayed intermediate numbers
+- Example: D75 stores STDEV(A71:A76) = 8.67179335547152 but the CV calculation used 8.672 in the formula. Use cell references to keep full precision (see item 2).
+
+Summary of explicit cell fixes to make immediately:
+- C105: change to =(B105-$B$125)/$B$128
+- D79: change to =(D75/D78)*100 (use correct cell refs)
+- E29/E30 (and any manual quartile cells): replace manual values with =QUARTILE.INC(A8:A37,1) and =QUARTILE.INC(A8:A37,3) (or PERCENTILE.INC)
+- Investigate the A8:A37 range for missing data (A9, A16, A23, A33) and either restore missing inputs or update the written explanations to reflect the correct n (26 vs 30)
+
+If you want, I can:
+- give the corrected formulas for each affected cell,
+- recalculate the correct median and quartiles assuming the currently visible 26 values,
+- or open the file and correct the cells directly and provide a short corrected-sheet summary. Which would you prefer?

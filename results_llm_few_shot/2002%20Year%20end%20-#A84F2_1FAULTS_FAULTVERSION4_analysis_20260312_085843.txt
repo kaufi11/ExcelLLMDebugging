@@ -1,0 +1,29 @@
+I checked the workbook and found the main errors that will cause wrong cash‑flow and reconciliation numbers. Short, clear fixes below.
+
+1) Error — hard‑coded / off‑by‑one in Cash paid to suppliers (C121)
+- Problem: C121 is entered as =-26907-7561074 (hard coded). C120 (cash received) is 7,561,073, but C121 subtracts 7,561,074 (off by 1) and is hard‑coded. This creates a persistent mismatch and is fragile if C120 changes.
+- Fix: Replace the hard‑coded formula with a reference to the cell containing receipts so it always stays consistent. For example:
+  C121 = -(C120 + 26907)
+  (or = -26907 - C120)
+- Why: Using the cell reference eliminates the off‑by‑one and keeps the number dynamic when C120 changes.
+
+2) Error — duplicated & inconsistent "Cash (applied to) / generated from operations" (C122 vs C511)
+- Problem: C122 is a manual number (-26,908) while the same concept is also calculated later as C511 =SUM(C504:C510). Those two should be the same but currently can differ (and do).
+- Fix: Stop using a manual value. Make C122 reference the calculated total:
+  C122 = C511
+  Then update C117 (Net cash inflow from operating activities) to sum the correct lines (if needed):
+  C117 = SUM(C122:C125)  — this will now pick up the correct C511 value via C122.
+- Why: One true calculation prevents inconsistencies between the reconciliation section and the cash‑flow summary.
+
+3) General issue — manual numbers where formulas should be used
+- Examples: C121 (above), some E‑column items like E79 written as 476555.8+3116.33 rather than a cell sum, and C72 shown as "FORMULA =1416" (looks like a manual input). These are easy sources of error.
+- Fix: Replace manual arithmetic with proper cell references or SUM ranges everywhere. E.g. instead of typing =476555.8+3116.33 place those components in cells and use =SUM(range) or reference the cells directly.
+- Why: Keeps the workbook auditable and avoids subtle numeric mistakes.
+
+Quick checklist to apply
+- Change C121 to = -26907 - C120
+- Change C122 to = C511 (or change C511 to feed C122 if you prefer the other way round)
+- Verify C117 after the above so it totals expected items (it should now reconcile)
+- Scan for other hard‑coded arithmetic and replace with cell references / SUM ranges
+
+If you want I can produce the exact corrected formulas for C117/C121/C122 and show the recalculated values (or scan for any other inconsistent hard‑codes). Which would you prefer?

@@ -1,0 +1,40 @@
+Overview
+- Workbook has three sheets: Q'back, drug bust, and lookup. Data tables, metadata, and a grading lookup are present. Several calculated columns use straightforward arithmetic; one formula cell appears to reference the wrong row.
+
+Sheet: Q'back (Quarterback Efficiency)
+- Title in B2: "Quarterback Efficiency".
+- Table headers row 4: Quarterback (A), School (B), Attempts (C), Completions (D), Interceptions (E), Yards (F), TD (G), Completion % (H), Touchdown % (I), Interception % (J), Yards/Attempt (K), Points (L).
+- Player rows A5:A11 list 7 QBs with raw counts in C:E and F:G.
+- Key formulas (row 5 shown, repeated for rows 6–11 with appropriate row numbers):
+  - Hn = Dn/Cn*100 (Completion %). NOTE: H5 is specified as =D5/C6*100 — incorrect reference (should be C5).
+  - In = Gn/Cn*100 (Touchdown %).
+  - Jn = En/Cn*100 (Interception %).
+  - Kn = Fn/Cn (Yards per attempt).
+  - Ln = Kn*8.4 + Hn + In*3.3 - Jn*2 (custom "Points" rating).
+- Observations:
+  - The Points formula mixes percentage values (H/I/J expressed as percent, e.g., ~48.7) with a yards/attempt multiplier. If the intent was to use proportions (0–1) for completion/touchdown/interception rates, H/I/J should be divided by 100 in the Points formula (or calculated without the *100).
+  - Fix H5 to =D5/C5*100 to avoid an incorrect completion percentage (current reference uses C6).
+
+Sheet: drug bust
+- Columns: Year (A), ADULT arrests (B), JUVENILE arrests (C); column E holds metadata/source info.
+- Data spans 1970 (row 3) through 2000 (row 33) with adult and juvenile arrest counts per year.
+- Column E entries include filename, data source, authors, contact, version date, and a description "Estimated arrests for drug abuse violations by age group, 1970-2000".
+- No formulas shown; this sheet is a clean time series + metadata.
+
+Sheet: lookup
+- Header row 3: Student (A), four course scores B:E (Child Management 101, Psychology of seniors, Brewing Science, Taxidermy 200), F = Total /400, G = Average /100, H = Letter Grade.
+- Student rows A4:A9 contain names and scores in B:E. F–H formulas are not listed (appears missing).
+- Grade mapping in F11:G18: points thresholds (F12:F18) mapped to Letter (G12:G18). Example: 45→F, 50→F, 55→D, 60→C, 65→B, 70→A, 75→A.
+- Likely intended formulas (not present): F(row) = SUM(Bx:Ex), G(row) = F(row)/4 or =F(row)/400*100, H(row) = lookup of G or F against the grade scale (e.g., =VLOOKUP(Gx, $F$12:$G$18,2,TRUE) or =LOOKUP(Gx,$F$12:$F$18,$G$12:$G$18)).
+
+Issues & recommended fixes (concise)
+- Correct H5 to =D5/C5*100.
+- Decide whether completion/touchdown/interception rates in the Points calculation should be percentages or proportions:
+  - If using proportions, compute H/I/J as =D/C (no *100) or modify Points to use H/100, I/100, J/100.
+- Add totals/average formulas for lookup sheet:
+  - F4 = SUM(B4:E4)
+  - G4 = F4/4 (or =F4/400*100 if you want percent)
+  - H4 = VLOOKUP(G4, $F$12:$G$18, 2, TRUE) or similar using the grade table.
+- Consider consistent naming/case for sheet names and protecting header rows.
+
+If you’d like, I can (a) provide corrected formulas for every row, (b) compute example numeric results for the Q'back Points column, or (c) produce the exact VLOOKUP formula to grade the students. Which would you prefer?

@@ -1,0 +1,26 @@
+Summary — main error(s) found
+- The Watershed Protection sheet has incorrect cumulative formulas in column I:
+  - I7 = G7 (uses Requested Funds) instead of H7 (Approved/Awarded Funds).
+  - Many subsequent I cells reference column G (requested) instead of H (approved).
+  - I10 contains the literal formula/value "2" (wrong), so the running total after that row is broken.
+- Impact: the cumulative totals (column I) are wrong for that sheet and therefore the “funding committed / remaining” statements are incorrect.
+
+Why this is wrong (short)
+- Column I is supposed to be the running sum of approved (awarded) funds — it must add the H (Approved Funds) values. Using G (Requested) or a hard-coded "2" breaks the running sum and misstates committed funding.
+
+How to fix (quick steps)
+1. Make sure the Awarded/Approved column H contains numeric values (not text). If any H cells are blank, treat them as zero or leave blank depending on policy.
+2. Set the first funded row cumulative to the approved amount:
+   - In I7 enter: =H7
+3. For the next and all following rows, use the running-sum formula that adds the current row’s approved funds:
+   - In I8 enter: =I7 + H8
+   - Drag/fill I8 down through the last row of the table.
+   - (Alternative safer formula to handle blanks: =IF(H8="",I7,I7+H8) )
+4. Replace the bad I10 = 2 with the correct formula (after you correct I9): I10 should be =I9 + H10 (or fill-down from above to fix automatically).
+5. Check the sheet for any remaining I cells referencing G or containing fixed numbers; all should reference the previous I and H of the current row.
+
+Optional extra checks
+- Verify other sheets also reference H (Approved) for column I (your description shows they mostly do, but you can scan for any G references or hard-coded values).
+- If you want, I can list every I cell on that sheet that currently references G or has a hard-coded value — paste a small export of the I-column formulas or permit me to analyze the workbook and I’ll point them out exactly.
+
+If you want, I can provide the exact formula list to paste into Excel or a short macro to auto-fix the entire column.

@@ -1,0 +1,52 @@
+High-level summary
+- Workbook has 2 sheets: "input-output" (control / course list) and "Data Analysis" (calculations / outcome matrix + summaries).
+- Purpose: map selected courses to program outcomes, compute weighted/filtered outcome scores, and produce summary totals tied to WPI goals.
+
+input-output sheet (inputs & simple view)
+- Lists courses by code (column C) and markers (columns D, F and many others are referenced as "x" flags in Data Analysis row 2).
+- Contains target values (column J rows 5:46) and actual per-course outcome totals pulled from Data Analysis (I5:I46 pull from Data Analysis B4:B45 etc).
+- Key controls:
+  - I48: "Include all extents ? Y/N" — user toggle (y/N). O49 shows the explanatory message: IF(I48="Y","INCLUDES ALL EXTENTS","ONLY CONSIDERS 4 AND 5 EXTENTS").
+  - I52: actual sum of selected extents (SUM of specific I cells). J52: corresponding sum of target extents. R22 references I52 as "Sum of all Extents".
+- Many cells in input-output are mirrors of Data Analysis outputs (e.g., M2, M3..M19 pull Data Analysis labels like course clusters).
+
+Data Analysis sheet (main logic)
+- Top row (A1:AR1 etc) defines headers: course codes mapped to columns (D1..AR1 and duplicated CX1..EI1 areas). Row 2 reads the "x" flags from input-output (D2..AR2 = 'input-output'!D10 etc). So selection flags in input-output drive inclusion here.
+- Outcome matrix (rows A4:A45): each numbered outcome/question (A4..A45). For each outcome:
+  - Columns D:AR (and many copies AU:CI) store per-course ratings (numeric 0–5).
+  - AU..CI (per-row) apply IF(D$2="x",D#,0) style logic to zero out ratings for unselected courses.
+  - CL# (e.g., CL5) = SUM(AU#:CI#) — total included rating for that outcome.
+  - CM# uses SUM of IF(AU#>=4,AU#,0)+... to sum only ratings >=4 (this is the "only considers 4 and 5 extents" logic).
+  - B# uses an IF on the input toggle I48 to choose between CL# (include all extents) or CM# (only 4 and 5) for the effective per-outcome included score: e.g., B5 = IF('input-output'!$I$48="Y",CL5,CM5).
+  - C# = B# / $B$46 where B46 is the grand total (see below) — gives normalized fractions.
+- Course-inclusion weights and course-group sums:
+  - CX3:EI3 (and CX4:EI4) set course credit/weight contributions via IF(column_flag="x", weight, 0). EJ3 and EJ4 = SUM(CX3:EI3), SUM(CX4:EI4) produce aggregate credit sums for Fundamental and Background course groups.
+  - CO3..CU3 and CO4..CU4 produce human-readable course lists/labels (e.g., =IF(D2="x","CE 1030","(no CE 1030)")) for Fundamental/Background display.
+- Summary totals and normalization:
+  - B46 = SUM of several grouped B totals (B4 + B8 + B9 + B20 + B30 + B37 + B41 + B42 + B43 + B44 + B45) — grand total of included scores across outcome groups.
+  - Many CL/CM totals per row feed B# and C# normalized scores.
+- Specialty/course-mapping blocks: columns CO:CV, CP:CR etc show quick labels mapping course selection to department/cluster (Structural, Geotech, Environmental, Transportation, Chemistry, Statistics, etc.).
+
+Key formulas / control flow
+- Course selection: Data Analysis row 2 pulls selection flags from input-output; most per-course inclusion is IF(flag="x", value, 0).
+- Inclusion mode: Data Analysis B# rows use IF('input-output'!$I$48="Y", CL#, CM#) so the input toggle controls whether all extents or only >=4 extents are counted.
+- Filtering to only selected courses: AU#:CI# = IF(corresponding course flag="x", rating cell, 0).
+- "Only 4 and 5 extents" logic implemented via CM# rows using SUM(IF(AU#>=4,AU#,0)+...).
+- Aggregate display mapping to WPI goals: A64:A87 read various normalized C# or B# totals (e.g., B64 = C45, B65 = C44, etc) for easy reporting.
+
+Important outputs to check
+- B46: grand total of included scores (used as denominator for normalization).
+- I52 / J52 in input-output: compared actual vs target sum of extents; R22 references I52.
+- O49: indicates current inclusion mode (all extents vs only 4/5) based on I48.
+- CO3/CO4 and CP.. provide textual lists of which Fundamental/Background courses are included.
+
+Overall layout / how to use
+1. Mark courses in input-output with "x" in the appropriate fields (these are read into Data Analysis row 2).
+2. Set I48 to "Y" to include all extents, or "N" to include only ratings >=4.
+3. Review Data Analysis rows (B#, CL#, CM#, C#) for per-outcome totals and normalized scores.
+4. Use the summary block (A64:B87 and input-output I52/J52) to compare totals against targets and to see WPI goal mappings.
+
+If you want, I can:
+- Produce a short dependency map (which input-output cells map to which Data Analysis columns),
+- Flag any potentially inconsistent references (e.g., duplicated/unused columns),
+- Or extract specific numeric totals (B46, EJ3, I52, J52) if you want those values called out.

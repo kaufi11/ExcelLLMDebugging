@@ -1,0 +1,39 @@
+Summary — main errors found and how to fix them (short & simple)
+
+1) Wrong function in Financial summary: I15 uses COUNT instead of SUM
+- Problem: I15 =COUNT(I6:I13) returns the number of numeric cells (about 7) instead of the total dollars of income for 2001. That makes Total Income, Net Income (I30) and all downstream balances (Balance Sheet G13 etc.) wrong. This is very likely the cause of the restatement noted for 2001.
+- Fix: Replace I15 with =SUM(I6:I13)
+- Why: SUM adds the dollar amounts; COUNT only counts cells that contain numbers.
+
+2) Balance Sheet: TOTAL ASSETS rows add the wrong cells (row 2)
+- Problem: E7 (and F7, G7, H7) is =ROUND(E2+E6,5) etc. E2/F2/G2/H2 are heading/year cells (or other unrelated values), not asset amounts. Adding them inflates TOTAL ASSETS and causes the sheet to be unbalanced.
+- Fix: Change E7 to =ROUND(E6,5) (and F7 to =ROUND(F6,5), G7 =ROUND(G6,5), H7 =ROUND(H6,5)) — or, if there are other asset lines that should be included, add the correct cell references (e.g. add fixed assets or receivables cells), not the row-2 year labels.
+- Why: TOTAL ASSETS should be the sum of asset accounts, not the year label or unrelated cells.
+
+3) Balance Sheet asset links are inconsistent / hard-coded
+- Problem: Some "Total Checking/Savings" cells are hard-coded (e.g. Balance Sheet G4 = 12323.99) instead of linking to the Financial summary checking balances (Financial summary!G35). H4 is correctly linked to Financial summary!K35, but other years are inconsistent.
+- Fix: Replace hard-coded values with direct links to the Financial summary checking account totals:
+  - E4 = 'Financial summary'!E35
+  - F4 = 'Financial summary'!G35 (check correct mapping)
+  - G4 = 'Financial summary'!G35
+  - H4 already = 'Financial summary'!K35 — verify mappings by year.
+- Why: Using the live links keeps Balance Sheet synchronized with the Financial summary and avoids manual entry errors.
+
+4) Hard-coded arithmetic in Financial summary (minor, but fragile)
+- Problem: Example: K21 =8821.24-118.52 uses literal numbers instead of referencing the contributing cells, making audits and edits error-prone.
+- Fix: Replace hard-coded subtractions with cell references (for example =cellWith8821.24 - cellWith118.52) or use SUM of the contributing rows.
+- Why: References auto-update and are easier to trace.
+
+How these fixes affect your stated discrepancy
+- The COUNT -> SUM fix in I15 will restore the true Total Income for 2001 (~14,332.45) instead of 7. That will change I30 (Net Income for 2001) and propagate to Balance Sheet G13 and G12, correcting the large negative/positive swing and likely resolving the restatement described.
+
+Suggested immediate actions (quick checklist)
+1. Replace I15 formula with =SUM(I6:I13).
+2. Inspect I30 afterwards — verify Net Income for 2001 matches expected value.
+3. Update Balance Sheet totals:
+   - Change E7/F7/G7/H7 to use the correct asset cells (likely =ROUND(E6,5) etc.).
+4. Link Balance Sheet asset lines to Financial summary checking/money market cells (use 'Financial summary'!xx references).
+5. Replace any other hard-coded arithmetic with cell references where possible.
+6. Re-check Differences row (Financial summary row 39) and Balance Sheet totals to confirm sheets balance.
+
+If you want, I can give the exact corrected formulas for each cell (I15, E7/F7/G7/H7, and the Balance Sheet checking links) and show expected numbers after the corrections. Which would you prefer?

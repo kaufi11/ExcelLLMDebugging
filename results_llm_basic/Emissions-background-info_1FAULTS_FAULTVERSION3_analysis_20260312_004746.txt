@@ -1,0 +1,55 @@
+Summary of errors I found (short, plain English) and how to fix them
+
+1) Wrong unit conversion (biggest, causes 1,000× errors) — EIA_US factors sheet
+- Problem: Some cells convert lbs per MWh to grams per kWh using multiplication by 10^3 instead of division by 10^3. Example shown in the sheet: G20 contains FORMULA =F20*454*10^3 which multiplies by 1,000 instead of dividing — this makes values 1,000 times too large.
+- Why it’s wrong: lbs/MWh -> g/kWh conversion is: multiply by grams per lb (≈453.59237) and divide by 1000 (because 1 MWh = 1000 kWh). So you need *453.59237/1000 (or *0.45359237). Using *10^3 is the opposite operation.
+
+Fix (exact formulas to replace incorrect ones)
+- Convert CO2 in lbs/kWh (column B) to g/kWh (column E):
+  = B5 * 453.59237
+- Convert CH4 or N2O given in lbs/MWh (column F or H) to g/kWh (columns G or I):
+  = F5 * 453.59237 / 1000
+  = H5 * 453.59237 / 1000
+- Practical: find and replace any occurrence of "*454*10^3" (or similar) with "*453.59237/1000" (or simply "*0.45359237"). Then fill down to copy formulas to all rows.
+
+Why this solves it: it uses the correct conversions (1 lb = 453.59237 g; 1 MWh = 1000 kWh).
+
+2) Overly complex but correct formulas in NRCAn data — simplify and verify units
+- Problem: the current formulas use large powers of 10 (e.g. J4 = (F4*10^12*3.6*10^6)/(B4*10^15)). They are mathematically correct but hard to read and easy to break if units are mis-specified. Also risk of unit mismatch (are emissions in megatonnes or million tonnes? energy in PJ?).
+- Better formula (simpler, equivalent) for emissions-factor (g/kWh):
+  If F = emissions in megatonnes (Mt) and B = energy in PJ:
+  EF (g/kWh) = F * 3600 / B
+- Examples for the sheet:
+  J4 (all-fuels EF) -> replace with = F4 * 3600 / B4
+  K4 (electricity EF) -> replace with = G4 * 3600 / C4
+  Then fill down.
+- Why this works: algebraically the long formula reduces to F*(3.6e3)/B — using 3600 is clearer and avoids accidental exponent mistakes. Make sure F/G are in megatonnes and B/C in petajoules (PJ).
+
+3) Data misalignment / missing values — EU Data sheet
+- Problem: several rows look shifted or have odd tiny numbers in the wrong columns (example: row for Czech Republic shows a tiny value in one year cell). That indicates data import/column-shift problems.
+- Fix: re-check source import (CSV/TSV/Excel) and re-align columns so each country’s year columns match header years. If you manually edited rows, compare to original source file and correct the row(s).
+- Why: misaligned rows yield totally wrong time-series and any charting or averages will be incorrect.
+
+4) Minor: rounding/precision
+- Problem: formulas use 454 for grams per pound. That’s a common rounding but introduces a small bias.
+- Fix: use 453.59237 if you need higher precision (recommended for published results).
+
+Quick checklist to fix everything (do these steps)
+1. In EIA_US factors sheet:
+   - Search for formulas that use "*10^3" multiplied (e.g. "*454*10^3") and replace them with "/1000" (use 453.59237 for grams/lb).
+   - Replace G-col formulas with =Fcell*453.59237/1000 and I-col formulas with =Hcell*453.59237/1000. Replace E-col formulas with =Bcell*453.59237.
+   - Fill down the corrected formulas.
+
+2. In NRCAn data:
+   - Replace the long expressions with =F4*3600/B4 and =G4*3600/C4 (and copy down). Confirm the inputs are megatonnes (Mt) and PJ.
+
+3. In EU Data:
+   - Verify every country row lines up under the correct year headers; fix any shifted rows by re-importing or by moving cells.
+
+4. Test:
+   - Spot check a couple of known conversions (e.g. 0.98 lb/kWh -> 0.98*453.59237 = 444.52 g/kWh).
+   - For NRCAn, plug in a single row manually and check units: F (47.8 Mt) and B (867 PJ) => EF = 47.8*3600/867 ≈ 198.5 g/kWh (makes sense).
+
+If you want, I can:
+- Give you an exact Find/Replace list for Excel (strings to replace) and the corrected formula text, or
+- Provide a short macro to scan the workbook and correct the common conversion mistakes and report suspect rows (shifted data). Which would you prefer?

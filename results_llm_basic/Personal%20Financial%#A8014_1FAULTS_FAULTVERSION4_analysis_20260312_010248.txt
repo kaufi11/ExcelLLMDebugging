@@ -1,0 +1,44 @@
+Thanks — I reviewed both sheets and found the actual formula mistakes that will make your budget numbers wrong. Below are the errors, why they’re wrong, and the exact fixes. Short and clear.
+
+1) STEP 1 — Earnings total is summing the wrong column
+- Error: Cell E22 =SUM(E11:E20)
+- Problem: the money values appear to be in column D (D11:D20), while column E holds descriptions. Summing E11:E20 gives zero or text, so your earnings total is wrong.
+- Fix: Change E22 to =SUM(D11:D20) (or put the correct total in D22 and point H6 to that).
+- Why: you must sum the column that actually contains the numeric gross-income values.
+
+2) STEP 2 — Main earnings reference uses the wrong total (symptom of #1)
+- Error: H6 = 'STEP 1 OF 2'!E22
+- Problem: H6 is supposed to be total earnings, but it points at E22 which (per #1) is wrong.
+- Fix: After fixing #1, update H6 (if needed) to point to the corrected total cell. Example: H6 = 'STEP 1 OF 2'!D22 or = 'STEP 1 OF 2'!E22 depending on where you put the corrected sum. They must match.
+- Why: many % and allocation calculations in STEP 2 use H6 as the total base — if H6 is wrong everything downstream is wrong.
+
+3) SAVING percent uses the wrong cell (duplicate of GIVING)
+- Error: F10 =H8/H6
+- Problem: F10 (SAVING %) points to H8 (GIVING total) instead of H10 (SAVING total).
+- Fix: Change F10 to =H10/H6
+- Why: each percent field must divide its own dollar total by total earnings H6.
+
+4) TAXS / WITHHOLDINGS cell is wrong (hard-coded)
+- Error: H14 =3
+- Problem: H14 is hard-coded as 3. It should show the tax withholding dollar amount from STEP 1 (total tax withheld).
+- Fix: Change H14 to refer to the tax total on STEP 1. Example: H14 = 'STEP 1 OF 2'!G22 (if G22 is the STEP 1 tax-withheld total).
+- Why: hard-coding breaks dynamic recalculation and causes the TAX% cell (F14) to be meaningless.
+
+5) Giving total on STEP 1 omits a row
+- Error: E33 =SUM(E29:E30)
+- Problem: Giving entries are rows 29–31, but the sum only covers two rows, so the giving total undercounts.
+- Fix: Change E33 to =SUM(E29:E31)
+- Why: ensure you sum all input rows.
+
+Minor recommendations (not breaking but cleaner)
+- Replace formulas like =SUM(G32+I32) with either =G32+I32 or =SUM(G32,I32). SUM(G32+I32) works (it sums a single computed value) but is unconventional.
+- Scan other percent formulas for similar wrong references (e.g., F8, F12, F34, K20, K30 are correct patterns; verify they reference the intended H- or M- cells after you fix H6).
+
+Summary of exact replacement formulas (copy/paste):
+- E22: =SUM(D11:D20)
+- H6: ='STEP 1 OF 2'!D22   (or keep pointing to E22 after you move the sum there)
+- F10: =H10/H6
+- H14: ='STEP 1 OF 2'!G22
+- E33: =SUM(E29:E31)
+
+After you make those five fixes, recalc the workbook and verify totals and %s. If you want, paste the current values in D11:D20 and G11:G20 and I’ll check the final numbers for consistency.

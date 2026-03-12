@@ -1,0 +1,51 @@
+I checked the three sheets and found a few clear formula / reference errors. Short summary first, then the quick fixes and short explanations.
+
+1) Sheet E20‑9 (the wrong version is "E20-9 (2)")
+- Error
+  - Cell C11 uses the wrong denominator: =SUM(C4:C6)/C3
+- Fix
+  - Change C11 to =SUM(C4:C6)/C2
+- Why
+  - Indirect cost hourly rate = total indirect costs ÷ direct labor hours. You divided by direct labor cost (C3) instead of hours (C2), so the indirect rate (and all amounts that use it) are wrong.
+
+(Other formulas on this sheet are OK — C10 =C3/C2, C12 =C11/C10, C14 =(C10+C11)*C8, C16 =C14*0.2, C17 =C14+C16.)
+
+2) Sheet P20‑3B
+- Error A — wrong cell used to compute overhead amount on line 10
+  - I10 =+F14*H10 (wrong)
+  - Fix: I10 = F10 * H10
+  - Why: You must apply the overhead rate (H10) to the direct labor amount for that line (F10). Using F14 (the total of all labor) multiplies the rate by the total instead of the line amount.
+- Error B — totals ranges include wrong rows
+  - D14 =SUM(D10:D13) (D13 is not used)
+  - Fix: D14 =SUM(D10:D12)
+  - Why: Your direct-materials totals should sum the actual material lines (D10:D12).
+- Error C — total cost formula uses only I10 and mis-aggregates components
+  - I14 =+I10+F14+D14 (wrong)
+  - Fix: Put the job total (Total Cost) as: I14 = D14 + F14 + SUM(I10:I12)
+  - Why: Total cost = total direct materials (D14) + total direct labor (F14) + total allocated overhead (sum of I10:I12). Your current formula only included I10 (one line of overhead) instead of all overhead.
+- Minor / recommended
+  - Make I11 and I12 consistent: each overhead line should be line_amount_in_F * H10 (if applicable). For rows with no direct labor (F11 blank), the overhead for that row should be zero.
+  - Remove unnecessary leading plus signs (they don’t hurt but make formulas harder to read).
+
+3) Sheet P20‑1B (journal entry layout)
+- Symptom / error
+  - Some totals and transfers are placed in the wrong column group. E.g. F14 is being used for a Finished‑Goods total even though the "Finished Goods" amounts belong in the D/E group per the header. G15 is set to =F14 (so you are posting Finished‑Goods amounts into the WIP/COGS column).
+- Fix / recommendation
+  - Align every transaction with the correct account column group:
+    - Work in Process amounts → columns B/C
+    - Finished Goods → columns D/E
+    - Cost of Goods Sold → columns F/G
+  - Move the formula F14 → E14 (or change formulas so the finished‑goods total goes to column E), and credit the corresponding Work in Process cell in column C (or the cell that matches your journal layout), not column G or F.
+- Why
+  - The sheet’s header groups (a) WIP, (b) Finished Goods, (c) COGS must be matched by where you put debits and credits. Putting a finished goods total into the COGS column or posting the credit in the wrong column misstates the accounts.
+
+Final checklist to correct the workbook quickly
+- E20‑9 (2): change C11 to =SUM(C4:C6)/C2.
+- P20‑3B:
+  - I10 → =F10*H10
+  - D14 → =SUM(D10:D12)
+  - I14 → =D14 + F14 + SUM(I10:I12)
+  - Ensure I12 (and I11 if used) = F12*H10 (or zero if no F value)
+- P20‑1B: move totals and transfers into the columns that match the header groups (WIP→C, Finished Goods→E, COGS→G). Fix formulas so debits and credits are in matching columns.
+
+If you want, I can supply the exact corrected formulas for every affected cell and a small annotated screenshot showing which cells to change. Which sheet should I fix first?

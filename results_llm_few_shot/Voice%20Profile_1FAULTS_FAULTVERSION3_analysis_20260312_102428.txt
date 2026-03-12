@@ -1,0 +1,49 @@
+Summary — what’s wrong (short)
+- Many weighted-average and total formulas on the FINANCIAL DATA & ANALYSIS sheet omit the third data column (column G) or reference the wrong cells (copy/paste errors). That produces wrong averages/totals.
+- A similar single-cell error exists on the Example sheet (H68 just points to D68).
+
+Concrete faulty cells and fixes (copy exactly into the cell)
+
+1) FINANCIAL!I16 (AVE. DURATION OF CALLS)
+- Fault: =IF((C14+E14) <>0,((C14*C16)+(E14*E16))/(C14+E14),"")
+- Fix: =IF((C14+E14+G14)<>0,((C14*C16)+(E14*E16)+(G14*G16))/(C14+E14+G14),"")
+- Why: weighted average must include all three data sources (C, E and G) both in numerator and denominator.
+
+2) FINANCIAL!I22 (AVE. DURATION FOR LONG DISTANCE)
+- Fault: =IF(C2+E20<>0,((C20*C22)+(E20*E22))/(C20+E20),"")
+- Fix: =IF((C20+E20+G20)<>0,((C20*C22)+(E20*E22)+(G20*G22))/(C20+E20+G20),"")
+- Why: wrong reference (C2) and missing G column; use all sources and correct row references.
+
+3) FINANCIAL!I34 (AVE. DURATION FOR LD → MOBILES)
+- Fault: =IF(C32+E32<>0,((C32*C34)+(E32*E34))/(C32+E32),"")
+- Fix: =IF((C32+E32+G32)<>0,((C32*C34)+(E32*E34)+(G32*G34))/(C32+E32+G32),"")
+- Why: include G source in weighted average.
+
+4) FINANCIAL!I61 (AVE. CALL LENGTH FOR 1800)
+- Fault: =IF(C59+E59<>0,((C61*C59)+(E61*E59))/(C59+E59),"")
+- Fix: =IF((C59+E59+G59)<>0,((C59*C61)+(E59*E61)+(G59*G61))/(C59+E59+G59),"")
+- Why: the original multiplied the wrong cells and left out G. Numerator must be (calls × avg length) for each source.
+
+5) FINANCIAL!I67 (AVE. CALL LENGTH FOR 1300)
+- Fault: =E67
+- Fix: =IF((C65+E65+G65)<>0,((C65*C67)+(E65*E67)+(G65*G67))/(C65+E65+G65),"")
+- Why: single-cell link is wrong. It should be a weighted average across all sources.
+
+6) EXAMPLE!H68
+- Fault: =D68
+- Fix: =IF((B66+D66+F66)<>0,((B68*B66)+(D68*D66)+(F68*F66))/(B66+D66+F66),"")
+- Why: H68 must be the combined average duration across the three columns, not just D68.
+
+General rule and quick solution
+- Pattern to follow for totals: Total = ColC + ColE + ColG.
+- Pattern for weighted average (average duration/cost-per-call): =IF((Ccount+Ecount+Gcount)<>0, (Ccount*Cavg + Ecount*Eavg + Gcount*Gavg) / (Ccount+Ecount+Gcount), "")
+- Search the FINANCIAL sheet for formulas that use only C+E (or only one column) where the pattern should be C+E+G and correct them with the general pattern above. Use Find (Ctrl+F) for occurrences of formulas like "C14+E14" or "C32+E32" and update.
+
+Why this fixes it (short)
+- Missing the G column means you’re ignoring one whole data source → totals and weighted averages are understated/wrong.
+- Wrong row references (e.g., C2) are copy-paste mistakes that make formulas use the wrong values.
+- The corrected formulas include all sources and multiply counts by average values correctly, so totals and weighted averages reflect all data.
+
+If you want, I can:
+- produce a list of every cell on the FINANCIAL sheet that needs the same fix (I can scan and give exact replacements), or
+- provide the exact Find/Replace strings or a small VBA macro to correct all similar formulas automatically. Which would you prefer?

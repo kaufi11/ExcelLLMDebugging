@@ -1,0 +1,49 @@
+Summary
+- Main problem: Column B uses many inconsistent/wrong incremental formulas. Several B-cells either (a) hard-code a number, or (b) point to the wrong row (often a cell below), so the sequence breaks, duplicates or becomes fragile and error-prone.
+- Why it’s bad: referencing cells below or hard-coding breaks when rows are inserted/deleted and can create confusing results or circular references later.
+- Fix: make the numbering formula consistent and always reference the previous row (above). Use a simple IF test so rows with no item remain blank.
+
+Specific faulty examples and fixes
+1) B26
+- Fault: =602+1 (hard-coded)
+- Fix: =IF(C26="","",B25+1)
+- Why: continue the sequence from the previous numbered row instead of hard-coding.
+
+2) B40
+- Fault: =+B53+1 (points to a cell below)
+- Fix: =IF(C40="","",B39+1)
+- Why: you should increment from the row above, not from a later row.
+
+3) B47
+- Fault: =+B54+1 (points to a cell below)
+- Fix: =IF(C47="","",B46+1)
+
+4) B97
+- Fault: =+B221+1 (points far below)
+- Fix: =IF(C97="","",B96+1)
+
+5) B107
+- Fault: =+B96+1 (likely intended to follow B106, not B96)
+- Fix: =IF(C107="","",B106+1)
+
+6) General pattern (apply to all B rows using =+Bxxx+1)
+- Replace each formula with: =IF(Cn="","",B(n-1)+1)
+  where n is the current row number and Cn is the cell that indicates there is an item in that row (use whichever column in your sheet is the marker for an entry — C appears to be “Products / Services”).
+
+How to fix quickly
+- In the first row of a numbered block (for example B13 where B12=1), enter:
+  =IF(C13="","",B12+1)
+- Drag/fill down for all subsequent rows in column B.
+- Manually correct any rows that should restart numbering (if a new block begins) by setting the new start row to the desired base number (e.g., put 1 or the appropriate start in that row) and then fill down again.
+
+Other small cleanups
+- Remove the unnecessary leading “+” in formulas; it’s harmless but noisy.
+- Check for any cells that intentionally reference a later row — if that was deliberate, document why. Otherwise change to the above pattern.
+
+Why this solution works (short)
+- Referencing the previous row (B(n-1)+1) guarantees sequential numbering that survives row inserts/deletions in the block.
+- The IF(Cn="","",...) keeps empty rows blank so numbering only appears where there’s actually an item.
+
+If you want, I can:
+- Produce an exact list of every B-cell that currently references the wrong row, or
+- Provide a ready-to-paste formula block for all Column B rows based on this sheet. Which would you prefer?

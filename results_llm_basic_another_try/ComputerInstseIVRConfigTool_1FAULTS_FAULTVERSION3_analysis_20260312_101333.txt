@@ -1,0 +1,57 @@
+Errors found:
+
+1. **Cells F47, F73, F74, F75 have incorrect formulas:**
+   - F47 = 6 (a constant, not a formula)
+   - F73 = `=PRODUCT(C73:D73)` (incorrect range in PRODUCT)
+   - F74 = `=PRODUCT(C74:D74)` (incorrect range in PRODUCT)
+   - F75 = `=PRODUCT(C75:D75)` (incorrect range in PRODUCT)
+
+2. **Cells D85, D86 have circular or incorrect formulas:**
+   - D85 = `=PRODUCT(F82,0.09)` (correct)
+   - E85 = `=PRODUCT(F85,0.9)` (F85 depends on C85, which is 0, but E85 depends on F85, circular reference)
+   - F85 = `=PRODUCT(F82,C85,0.09)` (depends on C85 which is 0, so F85 = 0)
+   - Similarly for row 86, E86 and F86 have circular references.
+
+3. **Cells D57 and D60 contain text "CALL" instead of numbers:**
+   - This will cause errors in formulas using these cells.
+
+4. **Cells E78:E81 formulas use 175 instead of D column values:**
+   - E78 = `=PRODUCT(C78,175)` but D78=195, inconsistent.
+
+5. **Cells E91:E94 formulas use 1000 instead of D column values:**
+   - E91 = `=PRODUCT(C91,1000)` but D91=1200, inconsistent.
+
+---
+
+**Solutions:**
+
+1. **Fix F47, F73, F74, F75 formulas:**
+   - F47 should be `=PRODUCT(C47,D47)`
+   - F73, F74, F75 should be `=PRODUCT(C73,D73)`, `=PRODUCT(C74,D74)`, `=PRODUCT(C75,D75)` respectively (use commas, not colon ranges).
+
+2. **Fix circular references in E85, E86, F85, F86:**
+   - E85 and E86 should not depend on F85 and F86.
+   - Correct approach:
+     - D85 = `=PRODUCT(F82,0.09)`
+     - E85 = `=PRODUCT(D85,0.9)`
+     - F85 = `=PRODUCT(D85,C85,0.09)` is incorrect, should be removed or corrected.
+   - Or better, remove E85 and F85 formulas or redesign to avoid circular dependency.
+
+3. **Replace "CALL" in D57 and D60 with numeric values or 0:**
+   - If price unknown, set to 0 or input correct numeric price.
+
+4. **Make E78:E81 formulas consistent:**
+   - Change `=PRODUCT(C78,175)` to `=PRODUCT(C78,D78)` for all these rows.
+
+5. **Make E91:E94 formulas consistent:**
+   - Change `=PRODUCT(C91,1000)` to `=PRODUCT(C91,D91)` for all these rows.
+
+---
+
+**Explanation:**
+
+- PRODUCT function expects numeric arguments; ranges like C73:D73 produce arrays, causing errors.
+- Circular references cause Excel to repeatedly calculate without result.
+- Text in numeric cells breaks calculations.
+- Using constants instead of cell references causes inconsistency and errors.
+- Consistent formulas referencing correct cells ensure accurate calculations.

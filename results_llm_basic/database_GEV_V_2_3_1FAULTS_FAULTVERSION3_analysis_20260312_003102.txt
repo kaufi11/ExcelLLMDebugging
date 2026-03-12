@@ -1,0 +1,46 @@
+Ho esaminato il file: ho trovato alcuni errori/limiti che compromettono i calcoli e la correttezza delle statistiche. Breve elenco dei problemi principali, cosa succede e come correggerli (soluzioni semplici e operative).
+
+1) Ranges bloccati su sole 2 righe (es. A3:A4, AP3:AP4, AX3:AX4, …)
+- Cosa succede: tutte le somme / conteggi nel foglio "calcoli" e in altri fogli considerano solo le righe 3 e 4 del DB. Se aggiungi servizi oltre la riga 4, non vengono conteggiati: i totali risultano sempre bassi/errati.
+- Dove si vede: es. calcoli!B60 =COUNTA(db!A3:A4), calcoli!B27 =COUNT(db!AN3:AN4), molte formule =SUM(db!AP3:AP4), =SUM(db!AX3:AX4) ecc.
+- Soluzione: estendi i range all'intera colonna o a un blocco abbastanza grande, oppure usa una tabella/nomi dinamici.
+  - Esempi:
+    - al posto di =COUNTA(db!A3:A4) usare =COUNTA(db!A:A)-1 (se A1 è intestazione) oppure =COUNTA(db!A3:A10000)
+    - al posto di =SUM(db!AP3:AP4) usare =SUM(db!AP:AP) oppure =SUM(db!AP3:AP10000)
+  - Migliore pratica: converti l’intervallo db in una Tabella (Inserisci → Tabella) e usa riferimenti strutturati: =COUNTA(Table_db[numero RL]) ecc. Questo evita errori quando aggiungi righe.
+
+2) Conteggio GEV in parametri è fragile
+- Problema: calcoli!B61 =COUNTA(parametri!A1:A4)-1 presume che l’elenco GEV sia esattamente in A1:A4 e che A1 sia intestazione. Se modifichi il numero di GEV o la posizione, il conteggio diventa errato.
+- Soluzione:
+  - Usare un range che contenga effettivamente i nomi (es. SetPar!E7:E20) o l’intera colonna: =COUNTA(parametri!A:A)-1 (se vuoi togliere l’intestazione).
+  - Ancora meglio: usare una tabella per i GEV e =ROWS(Table_GEV)-1 (se usi intestazione).
+
+3) Uso di INDEX su intervallo sbagliato per i nomi GEV
+- Problema: formule come =INDEX(parametri!$A$1:$A$4,J11) potrebbero leggere celle che non contengono i nomi reali delle GEV (es. parametri!A1 contiene "--------------").
+- Soluzione: punta l’INDEX sul luogo corretto dove inserisci i nomi (es. SetPar!E7:E11 oppure su un intervallo in parametri dove davvero ci sono i nomi). Esempio: =IF(J11=1,0,INDEX(SetPar!$E$7:$E$11,J11)).
+
+4) Formula del calcolo delle ore (G15): possibile imprecisione o problema con passaggi a mezzanotte
+- Problema: G15 = (HOUR(F15-E15)*60+MINUTE(F15-E15))/60 funziona solo per differenze <24h e non è la forma più semplice/affidabile (ignora secondi e non gestisce passaggi notte senza controllo).
+- Soluzione consigliata (ore decimali, gestisce passaggio notte):
+  - =MOD(F15-E15;1)*24
+  - oppure, se vuoi proteggere esplicitamente: =IF(F15>=E15,(F15-E15)*24,(F15+1-E15)*24)
+  - Nota: se preferisci ore in formato tempo lascia il risultato in ore (non moltiplicare per 24).
+
+5) Uso di OR/IF con riferimenti booleani: comportamento corretto ma poco leggibile
+- Osservazione: ci sono OR che usano riferimenti booleani (es. OR(calcoli!$D$21, calcoli!$C$21=J16, ...)). Non è un errore ma è facile da fraintendere. Se vuoi leggibilità, scrivi esplicitamente =OR(calcoli!$D$21=TRUE, ...).
+
+6) Piccole anomalie sintattiche/cosmetiche (non bloccanti)
+- Esempio: formule come =D7++G7+J7+M7 contengono "++". Excel lo interpreta come +(+G7) e funziona, ma è meglio rimuovere il segno in eccesso per chiarezza: =D7+G7+J7+M7.
+
+Riepilogo e priorità d’intervento (cosa fare prima)
+1. Correggi i range limitati: sostituisci i riferimenti tipo db!A3:A4, db!AP3:AP4, db!AX3:AX4 con intervalli estesi (intera colonna o fino a riga 10000) o, meglio, converti il DB in una Tabella e aggiorna le formule con riferimenti strutturati. Questo risolve la maggior parte degli errori statistici.
+2. Correggi il conteggio GEV (calcoli!B61) usando il range reale dei nomi o una formula che non dipenda da celle fisse.
+3. Aggiorna gli INDEX per leggere l’elenco reale dei nomi GEV (SetPar) anziché parametri!A1:A4, se necessario.
+4. Migliora la formula ore con MOD(...) per gestire passaggi di data e ottenere ore decimali.
+5. Rimuovi i ++ inutili e semplifica OR/IF dove serve per leggibilità.
+
+Se vuoi, posso:
+- generare le formule corrette esatte sostituendo quelle presenti (posso preparare la lista di tutte le sostituzioni per ogni cella),
+- oppure indicarti come convertire db in Tabella e riscrivere 4-5 formule d’esempio.
+
+Dimmi quale preferisci e preparo i dettagli (es.: elenco preciso di celle e formule corrette pronte da incollare).

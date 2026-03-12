@@ -1,0 +1,30 @@
+Found several clear errors. Short fixes and explanations:
+
+1) Faulty cell: R17 (-100)
+- Error type: Data entry (typo)
+- Explanation: The Attr. Value row for Charisma should start at 0 (like the other attribute tables). -100 is nonsense and will break approximate HLOOKUPs.
+- Fix: Change R17 from -100 to 0.
+
+2) Faulty cell: H22 (Base HTH Damage lookup)
+- Error type: Wrong lookup key / wrong function usage
+- Explanation: H22 looks up C22 (carrying capacity) in the HTH damage table. The HTH table maps attribute breakpoints (row with attribute values) to damage (row4). You must lookup by Strength (B16), not carrying capacity, and use the attribute row as the lookup row.
+- Repair formula (robust): =INDEX(R4:AW4, MATCH(B16, R5:AW5, 1))
+- Short explanation: MATCH finds the correct column in the attribute-value row (row5); INDEX returns the corresponding HTH damage from row4.
+
+3) Faulty cell: C23 (Movement Rates)
+- Error type: Hard-coded constant / likely unintended value
+- Explanation: The formula =SUM(B16:B17,532) includes a literal 532 which looks accidental and produces a huge, incorrect total.
+- Fix (if you intended just the two stats): =SUM(B16:B17)
+- If 532 was supposed to be a cell reference, replace the 532 with that cell (e.g., =SUM(B16:B17, Xnn)).
+
+4) Faulty cell: F19 (Hit-points intermediate)
+- Error type: Likely wrong aggregation function
+- Explanation: F19 =PRODUCT(B19:E19) multiplies four lookup results. That is unusual for modifiers (which are normally summed). This then feeds H19 for hit points.
+- Fix (if you intended to combine modifiers): =SUM(B19:E19)
+- Short explanation: SUM will add the four modifiers; PRODUCT multiplies them and will usually produce nonsensical hit point results.
+
+Notes / recommendations
+- Many HLOOKUP formulas use numeric row_index arguments (2,3,5,9, etc.). Those are fragile. Prefer INDEX/MATCH (as shown in H22) or named ranges so you don't rely on "magic" row numbers.
+- After fixing R17 and the lookup formulas, verify H15, G18, B19–E19, B20, E20, etc. to make sure each HLOOKUP is pointing at the intended header row and data row (first row of the table MUST be the sorted lookup row when using approximate (TRUE) HLOOKUP).
+
+If you want, I can update the exact formulas for B19–E19, H15 and any other HLOOKUPs to INDEX/MATCH form so the sheet becomes robust. Which ones should I convert?

@@ -1,0 +1,20 @@
+Findings — main error
+- Cell C19 is wrong: it uses HLOOKUP(H16,R5:AW15,3,TRUE) but H16 is empty / the wrong cell. This yields an incorrect intermediate modifier, so F19 (PRODUCT of B19:E19) and G19 (Hit Points) come out wrong.
+
+Cause
+- C19 should look up the Endurance value (which is in G16), not H16.
+
+Fix
+- Replace the formula in C19 with:
+  =HLOOKUP(G16,R5:AW15,3,TRUE)
+
+Why this fixes it (short)
+- The lookup table in R5:AW15 has the attribute thresholds in row 5 and Endurance modifiers in the 3rd row of that block. Using G16 (Endurance = 12) returns the correct endurance modifier. That makes B19..E19 correct, so F19 and G19 compute correctly.
+
+Optional cleanups (recommended)
+- G19 currently = (F19*E15)+0.49 to simulate rounding. Use a clearer function:
+  - To round to nearest integer: =ROUND(F19*E15,0)
+  - To always round up: =ROUNDUP(F19*E15,0)
+These are clearer and less error-prone than adding 0.49.
+
+I checked the other HLOOKUPs and range references — they look consistent. If you want, I can apply the fix and show new hit points.

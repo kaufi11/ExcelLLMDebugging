@@ -1,0 +1,25 @@
+I checked the workbook and found the clear, fixable formula errors that will produce wrong revenue/COGS and downstream totals. Short list with fixes and explanations:
+
+1) Wrong growth-rate cell used for Sugar price (causes sugar price not to escalate correctly)
+- Faulty area: Income row 8, columns F8:P8
+- Error: Those formulas use $D$7 (lemon price growth) instead of the sugar growth cell $D$8.
+- Fix: change formulas to use $D$8. Example for F8: =E8*(1+$D$8) and fill right through P8.
+- Why: using the wrong absolute reference applies the lemon inflation rate to sugar, producing wrong COGS.
+
+2) Revenue Total row omits street sales (so totals and profits are too low)
+- Faulty cells: E12:P12 (Total row)
+- Error: each is SUM(E10:E10) etc — they only sum the Online sales row and omit the Street sales row (E11).
+- Fix: change to =SUM(E10:E11) (and copy across E→P).
+- Why: Total must include both online (row 10) and street (row 11) to be full monthly revenue.
+
+3) Hard-coded / wrong value in simple income sheet (breaks COGS consistency)
+- Faulty cell: simple income!F8
+- Error: F8 = 284 (hard-coded) while it should mirror E8 (and then copy right).
+- Fix: change F8 to =E8 and fill right (or set all months to =E8 if amounts repeat).
+- Why: hard code diverges from your intended monthly carry-forward pattern and will break month-to-month totals.
+
+Additional suggestions (minor / optional)
+- Many totals use SUM(x:x) for a single cell (e.g. SUM(E4:E4)). That's not wrong but is redundant — you can use =E4 for clarity.
+- Scan other copied ranges for incorrect absolute references (e.g. any formula using $D$7 vs $D$8). Fixing the three items above will correct most cascading errors (annualized totals, gross profit, net profit, cashflow and retained earnings).
+
+If you want, I can give an exact list of the cells to edit and the exact formula strings for a Find/Replace (e.g. replace "$D$7" with "$D$8" in row 8; replace SUM(E10:E10) with SUM(E10:E11) across row 12). Which would you prefer?

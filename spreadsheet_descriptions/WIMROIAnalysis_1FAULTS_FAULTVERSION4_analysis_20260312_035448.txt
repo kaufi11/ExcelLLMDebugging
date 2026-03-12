@@ -1,0 +1,47 @@
+Summary — workbook structure and purpose
+- Single main calculation sheet (Sheet1) with two unused/unspecified sheets (Sheet2, Sheet3).
+- Purpose: a Return-On-Investment (ROI) / annual savings model for Auto‑ID/Warehouse improvements, broken into three application areas: Receiving, Putaway/Picking/Shipping, and Warehouse. Each area computes Min / Max / Avg / “Your Savings” scenarios.
+
+Layout and conventions (Sheet1)
+- Column A: section and line-item descriptions (benefits/activities).
+- Column C: user input/data values (counts, hours, rates, ranges).
+- Columns E (Min Savings), G (Max Savings), I (Avg Savings) and K (Your Savings) are the calculated results for each line.
+- Typical formula pattern: Min = Cx * Cy * Cz * lower_percent; Max = same * upper_percent; Avg = (Min+Max)/2; Your Savings = same * user_selected_percent (often taken from a nearby C cell like C12, C23, etc.).
+- Subtotals per application: Receiving (E42/G42/I42/K42), Putaway/Pick/Ship (E95/G95/I95/K95), Warehouse (E149/G149/I149/K149).
+- Grand totals: E151/G151/I151/K151 (sums of the three application subtotals).
+- Detailed summary tables later in the sheet re-map line-item results into a condensed SUMMARY OF ANNUAL SAVINGS and SUMMARY OF ALL RETURN-ON-INVESTMENT ANALYSIS.
+
+Key inputs and constants (examples)
+- Labor rates: Receiver rate = C11 = 22.49; many clerk/handler/shipper/etc. burdened rates = 17.39 (C22, C33, C40, C56, C62, C68, C76, C82, C88, C119, C125).
+- Typical hours per person/year: 1920, 2080, 960, 950, 500, 450, 300, 250 (various C cells).
+- Savings ranges: many percent ranges use 0.16 (16%) and 0.25 (25%); some ranges noted 2.1–4.0 days or $0.25/page.
+- Capital and financials (bottom of sheet):
+  - Hardware (B): C257 = 60,000
+  - Software (C): C258 = 91,121
+  - Depreciation in years (D): C259 = 3
+- ROI / payback outputs:
+  - Payback months = ((B+C)/A) * 12, where A = total annual savings (C255/E255/G255/I255 variants)
+  - Return-on-Investment = (A * D) / (B + C)
+  - Projected monthly cash generation = A / 12
+
+Important formulas / rollups
+- Line-level: e.g., Improve Receiver Productivity Min = C9*C10*C11*0.16, Max = C9*C10*C11*0.25, Avg = (Min+Max)/2, Your = C9*C10*C11*C12.
+- Subtotals use SUM across the corresponding E/G/I/K ranges (e.g., E42 = SUM(E9:E41)).
+- Warehouse subtotal (E149) sums a set of specific line E values (E104+E110+E116+…).
+- Summary section aggregates min/max/avg/your across the three major areas (C255/E255/G255/I255).
+
+Notable data issues and places to review
+- Several input cells are blank or rely on other blank cells (e.g., C15, C110, C111, C130). Those will make related formulas return 0 or errors.
+- Hard-coded or inconsistent entries:
+  - G86 = 7 (hard-coded) instead of a formula consistent with other rows.
+  - Some “Range of Savings” label vs value mismatches (e.g., label “16–25%” but C57 = 0.25 only; C89 = 0.16 while label says 16–25%).
+- Some formula ranges include multiplying by 0 for Min (intended zero lower bound) — check intentionality (e.g., many Exx = C*...*0).
+- Column M is used in a couple places (M129, M132, M133, M135), but not systematically filled—potential leftover columns for intermediate values.
+- “Your Savings” (column K) depend on user-entered percentages in nearby C cells (e.g., C12, C23, C28, etc.); ensure those user inputs are set as intended.
+
+High-level recommendation
+- Populate missing inputs (C15, C110, C111, C130, etc.), standardize the “your savings” percentage inputs, and correct the inconsistent/hard-coded cells (G86). Then review the subtotal and summary rollups to confirm they reflect intended line items.
+
+If you want, I can:
+- Produce a cleaned checklist of missing inputs and inconsistent formulas (cell-by-cell).
+- Provide a corrected version of the formulas (or an annotated copy of Sheet1) highlighting errors.

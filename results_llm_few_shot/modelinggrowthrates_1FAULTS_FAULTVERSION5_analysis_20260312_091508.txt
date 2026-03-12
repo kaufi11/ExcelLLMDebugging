@@ -1,0 +1,19 @@
+Faulty cell
+- Data!C20
+
+Error type
+- Typo / mechanical error that creates a huge outlier (wrong constant in the formula).
+
+What's wrong
+- C20 uses =$C$4*(278+$C$5)^B20 + A20*$C$6 — the "278" is a typo. All other rows use (1+$C$5)^time. With 278 you raise ~278 to the 12th power, producing an enormous Q and distorting any regression or the log (LN) results.
+
+Fix (repair formula)
+- Replace the formula in C20 with the same pattern as the other rows:
+  =$C$4*(1+$C$5)^B20 + A20*$C$6
+
+Why this fixes it (short)
+- It restores the intended model Q = A*(1+r)^time + additive_error. That removes the single huge outlier and yields correct ln(Q) values and correct regression coefficients. After fixing, recalculate (or refresh) the regression outputs.
+
+Extra quick checks (optional)
+- Scan column C for any values dramatically larger than neighbors or use conditional formatting to flag values > mean+3*stdev to catch similar typos.
+- If you used LN(C#) anywhere, verify there are no nonpositive C values (LN requires >0).

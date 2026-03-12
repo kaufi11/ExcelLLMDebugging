@@ -1,0 +1,104 @@
+I inspected the formulas on both the "Example" and the "FINANCIAL DATA & ANALYSIS" sheets and found a number of incorrect / inconsistent formulas and a few likely typos. Below I list each problem I found (sheet, cell, current formula), explain why it's wrong or inconsistent, and give a recommended corrected formula (or recommended approach) you can use.
+
+Summary of the most important issues
+- Several weighted-average formulas in the FINANCIAL sheet ignore the third data column (column G) and therefore do not match the totals (columns I or the pattern used elsewhere). That produces inconsistent results when data exists in all three source columns (C, E, G).
+- A clear typo in FINANCIAL!I22 uses C2 (a header) instead of C20.
+- Several "total" cells on the FINANCIAL sheet reference only one source column (usually G) instead of summing all three.
+- The Example sheet contains a few formulas referencing blank/incorrect cells (likely copy/paste errors) that produce incorrect or meaningless results.
+
+Details and recommended fixes
+
+Sheet: FINANCIAL DATA & ANALYSIS
+
+1) Cell I10
+- Current formula: =G10
+- Problem: For "NUMBER OF HANDSETS" I10 should sum all source columns (C, E, G) like other totals. Referencing only G10 is inconsistent.
+- Recommended: =C10+E10+G10
+  (Or if you want a guard: =IFERROR(C10+E10+G10,0))
+
+2) Cell I11
+- Current formula: =G11
+- Problem: same as I10 for "PLANNED NO. OF HANDSETS".
+- Recommended: =C11+E11+G11
+
+3) Cell I16
+- Current formula: =IF((C14+E14)<>0,((C14*C16)+(E14*E16))/(C14+E14),"")
+- Problems: (a) The formula ignores column G (a third data source). (b) It divides by C14+E14 but I14 (the total of calls) includes G14 as well.
+- Recommended (include G and use the I14 total): =IF(I14<>0, (C14*C16 + E14*E16 + G14*G16) / I14, "")
+  (Alternative explicit): =IF((C14+E14+G14)<>0,((C14*C16)+(E14*E16)+(G14*G16))/(C14+E14+G14),"")
+
+4) Cell I17
+- Current formula: =C17
+- Comment: if the intent is "MIX: PEAK/OFF-PEAK CALLS (%)" and you want the total, using C17 alone may be intentional. If you want to prefer a combined source, consider =C17 (if only column C used) or a proper aggregation. No sure error here unless you expect summation.
+
+5) Cell I22
+- Current formula: =IF(C2+E20<>0,((C20*C22)+(E20*E22))/(C20+E20),"")
+- Problems: (a) Typo: C2 is a header (text) and is almost certainly incorrect; should be C20. (b) The formula ignores column G.
+- Recommended: =IF(I20<>0, (C20*C22 + E20*E22 + G20*G22) / I20, "")
+  (or explicitly =IF((C20+E20+G20)<>0,((C20*C22)+(E20*E22)+(G20*G22))/(C20+E20+G20),""))
+
+6) Cell I31 / I32 / I33 block
+- I31 and I32: =C31+E31+G31 and =C32+E32+G32 (I31 and I32 are already correct in your file)
+- I33 current formula: =IF(I32<>0,I31/I32,"") — OK
+
+7) Cell I34
+- Current formula: =IF(C32+E32<>0,((C32*C34)+(E32*E34))/(C32+E32),"")
+- Problem: ignores G32; denominator doesn't include G32.
+- Recommended: =IF(I32<>0,(C32*C34 + E32*E34 + G32*G34)/I32,"")
+
+8) Cell I39..I42 etc
+- Many of these are set to =Cxx and that may be fine if the data is only expected in C. Only change if you expect sums from C/E/G.
+
+9) Cell I49, I50, I51
+- I49: =C49+E49+G49 is correct for "COST ($ PER MONTH)" for mobiles.
+- I50: =C50+E50+G50 is correct for "NUMBER OF MOBILES" (the file already uses this pattern for many totals).
+- I51: =C51+E51+G51 is correct for "NUMBER OF CALLS PER MONTH" (the file already uses it).
+- Confirm those are set as expected; if not, change to sum all three.
+
+10) Cell I52
+- Current formula: =C52
+- Problem: If there can be durations in C, E and G, using only C52 is inconsistent with other weighted averages. If only C is expected, keep it; otherwise make it a weighted average by call counts.
+- Recommended (if weighting across sources required): =IF(I51<>0,(C52*C51 + E52*E51 + G52*G51)/I51,"")
+
+11) Cell I61
+- Current formula: =IF(C59+E59<>0,((C61*C59)+(E61*E59))/(C59+E59),"")
+- Problem: ignores G59 (third source)
+- Recommended: =IF(I59<>0,(C61*C59 + E61*E59 + G61*G59)/I59,"")
+
+12) Cell I67
+- Current formula: =E67
+- Problem: This references only E67 (one source). For average call length of the 1300 inbound group it should be a weighted average across available sources (C/E/G) using the corresponding call counts.
+- Recommended (if you want weighted average across columns): =IF(I65<>0,(C67*C65 + E67*E65 + G67*G65)/I65,"")
+  (if only one source expected, keep as-is but it's inconsistent)
+
+General rule for FINANCIAL: where you compute an average/AVE. DURATION or AVE. COST PER CALL you should use the same pool of source columns used when computing totals (C+E+G). In many places the totals are I = C+E+G, but the averages only use C and E (or only one column). That leads to inconsistent results when G is used.
+
+Sheet: Example
+
+13) Cell H17
+- Current formula: =IF((B15+D15)<>0,((B15*B17)+(D15*D17))/(B15+D15),"")
+- Problem: This formula references B17 and D17 (the "AVE. DURATION" cells) but in this sheet B17 and D17 are empty/not populated — probably a copy/paste error. The average duration value for the relevant category seems to be in other rows (e.g., B23 / D23 or B35 / D35 depending on category). As written it will produce a nonsense weighted average (multiplying counts by blanks).
+- Recommended: Replace the references with the actual average-duration cells for the same categories that contributed to B15 and D15. For example, if B15 comes from the "local calls" block whose duration is in B23, use:
+  =IF((B15+D15)<>0,((B15*B23)+(D15*D23))/(B15+D15),"")
+  (Adjust B23/D23 to the correct duration cells that match B15/D15.)
+
+14) Cell H48
+- Current formula: =B48
+- Problem: B48 is blank. If the intent is to mirror a value from B48 to H48 it's fine but if you expect a combined or default value you may want to check.
+
+15) Cell H68
+- Current formula: =D68
+- Problem: H68 simply equals D68; the corresponding structure for 1800 inbound in this workbook calculates a weighted average (H62). For 1300 inbound (row 68) H68 should likely be a weighted average of the durations using B66 and D66 (or B66/D66/F66) rather than just D68.
+- Recommended (analogous to H62): =IF((B66+D66)<>0, ((B68*B66) + (D68*D66)) / (B66 + D66), "")
+  or include F66 if present: =IF((B66+D66+F66)<>0, ((B68*B66) + (D68*D66) + (F68*F66)) / (B66 + D66 + F66), "")
+
+Other notes / best practices
+- Where totals use all three columns (C + E + G) you should base weighted averages on the same set (or use the computed I totals as denominator) to avoid overlooking one source.
+- To avoid repeating the same summations and to reduce errors, consider:
+  - Use the Ixx total cells as denominators (e.g., =IF(I14<>0, (C14*C16+E14*E16+G14*G16)/I14, "") ). That reduces risk of leaving out G.
+  - Or use named ranges or a consistent formula template and copy it across blocks.
+- Any formula that references a header cell (like C2) is almost certainly a typo — fix those.
+
+If you want, I can:
+- Produce an updated list of exact replacement formulas for every cell on the FINANCIAL sheet where I suggested changes (I can paste them ready to copy/paste), or
+- Generate a corrected version of the workbook (apply the fixes) and send back a patch or corrected workbook. Which would you prefer?

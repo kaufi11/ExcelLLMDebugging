@@ -1,0 +1,27 @@
+Summary — two real errors found:
+
+1) Wrong weighting in every "Latent load per person" formula
+- Fault: The latent-average formulas use Occupancy!F19 and Occupancy!F20 (the latent/sensible gain values) in the numerator/denominator instead of using the schedule totals Occupancy!F38 and Occupancy!F39. Example (faulty):
+  =+(Occupancy!F22*Occupancy!F19+Occupancy!F23*Occupancy!F20)/(Occupancy!F19+Occupancy!F20)
+- Why it’s wrong: that divides/multiplies by the per-person gains instead of by the schedule sums, so the weighted average is incorrect.
+- Fix (correct formula):
+  =+(Occupancy!$F$22*Occupancy!$F$38 + Occupancy!$F$23*Occupancy!$F$39) / (Occupancy!$F$38 + Occupancy!$F$39)
+- Where to fix: update the same pattern wherever you see "Latent load per person = ..." (these appear in many sheets — Occ L0, Occ L1-WD, Occ L1-DU, Occ L1-LR, OccL2-*, Occ L3-* etc). Replace the F19/F20 references with F38/F39 exactly as above.
+
+2) Sign mistake in OccL2-WD-DU (row 34)
+- Faulty cell: OccL2-WD-DU!D34
+- Fault: formula has stray minus signs:
+  =-'Occ L3-WD-DU-LR'!E34-'Occ L3-WD-DU-LR'!F34
+- Why it’s wrong: all neighbouring rows sum the two source cells; this one subtracts them, producing wrong (negative) values.
+- Fix (correct formula):
+  =+'Occ L3-WD-DU-LR'!E34 + 'Occ L3-WD-DU-LR'!F34
+
+How to apply fixes quickly
+- For the latent formula error: Use Find (search for "*Occupancy!F22*Occupancy!F19*" or the exact faulty pattern) and Replace with the corrected expression, or edit the "Latent load per person" cell on each sheet and copy the corrected formula across.
+- For the D34 sign: edit OccL2-WD-DU!D34 and remove the minus signs, change to + as shown.
+
+Why these fixes fix your model
+- The latent-per-person number must be a schedule-weighted average (weight by the schedule totals F38 & F39), same logic used for the sensible average. Using F19/F20 was a logical/mis-reference error.
+- Removing the accidental negative signs restores the intended sum of the two source columns.
+
+If you want, I can produce a short list of exact cell addresses (sheet + cell) to change for every occurrence, or generate a one-line find/replace expression you can run. Which do you prefer?

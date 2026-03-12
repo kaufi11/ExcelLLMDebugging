@@ -1,0 +1,52 @@
+High-level summary
+- Workbook has two sheets: "input-output" (user-facing course list, targets, toggles and top-level summary) and "Data Analysis" (calculations that map selected courses to program outcomes and compute weighted totals/percentiles).
+- Purpose: take a set of selected CE courses (marked with "x"), read per-course extent ratings, apply course-to-outcome weightings, then compute outcome totals and comparisons vs fixed target values. There is a toggle (Include all extents Y/N) that changes whether every extent is counted or only extents >=4.
+
+Sheet: input-output (inputs and front-end outputs)
+- Course list & flags: course identifiers are in column C (C10:C46 etc); "x" marks selecting a course appear in adjacent columns (mostly column D and some column F). Data Analysis reads these flags.
+- Per-course outcome totals: column I rows 5..46 display numeric "Outcome" totals (I5, I9, I10, I21, I31, I38, I42, I43, I44, I45, I46 are used in summary).
+- Targets: column J contains target values for many rows (e.g., J5 = 106.2, J6 = 72, J7 = 27, ...).
+- Comparison: column K uses IF(In>Jn,"Over","Under") to label whether a course/outcome sum exceeds its target (e.g., K5).
+- Toggle: I48 is the key control "Include all extents ? Y/N" (O49 displays a message via IF(I48="Y",...)).
+- Totals: I52 = SUM of selected outcome totals (I5+I9+I10+I21+I31+I38+I42+I43+I44+I45+I46); J52 = SUM of corresponding target values. These are the top-level numeric comparison.
+- Some cells pull specific Data Analysis results for display: M2 = 'Data Analysis'!A2, M3..S3 etc pull Data Analysis CO3..CU3 to show grouped course labels; Q11 and Q12 show outcomes via an I23 and I28 reference.
+
+Sheet: Data Analysis (calculation engine / mapping)
+- Row 1: header of courses (columns D:AR and repeated blocks CX:EI). A2..AR2 are formulas pulling the "x" flags from input-output (e.g., D2 = 'input-output'!D10, E2 = 'input-output'!D11, etc.), so course inclusion flows from input-output to here.
+- Outcome totals & percents: Column A lists outcomes (A3 onward). Column B contains computed totals for each outcome (e.g., B4 = SUM(B5:B7); most Bn are set via IF depending on input-output I48 to choose CLn or CMn). Column C typically shows percent Cn = Bn / $B$46 (B46 is the grand-sum denominator).
+- Two result modes (controlled by input-output!I48):
+  - CLn (e.g., CL5, CL6, ...) = SUM(AU:CI) — the straight sum of included course extents (AU..CI are per-course contributions; each AUxx is IF(course-flag, rating,0)).
+  - CMn (e.g., CM5, CM6, ...) = SUM of IF( cell >=4, cell, 0 ) across AU:CI — sums only extents >=4 (used when Include all extents = N).
+  - Bn = IF(input-output!I48="Y", CLn, CMn) — this picks which counting rule applies.
+- Per-course contributions: For each outcome row, there are columns D:AR listing raw rating values (the rating that a given course contributes to that outcome). Columns AU:CI compute per-course contribution = IF(course-flag="x", rating, 0). So course inclusion turns on those ratings.
+- Text mapping and weights:
+  - CO/CP/CR etc (e.g., CO3..CO12 etc) produce textual course grouping names based on course flags (IF(flag,"CE 1030","no CE 1030")).
+  - CX3:EI3 and CX4:EI4 (and similar) set fractional course weights (e.g., CX3 = IF(D$2="x",0.5,0)) and EJ3/EJ4 sum those weights. These appear to produce weighted counts of required fundamental/background courses (EJ3 = SUM(CX3:EI3)).
+- Aggregation & grand totals:
+  - B46 = SUM of category totals (B4 + B8 + B9 + B20 + B30 + B37 + B41 + B42 + B43 + B44 + B45) — used as denominator for outcome percentages.
+  - Many summary lines at A64:A87 pick key C-values (percentages) to present condensed results (e.g., A64: "CE in Societal and Global Context" with B64 = C45).
+- Examples of important formulas:
+  - Data connection: Data Analysis D2..AR2 pull 'input-output' course flags (e.g., D2 = 'input-output'!D10).
+  - Per-course include: AU5 = IF(D$2="x", D5, 0) — enables course D contribution to outcome in row 5.
+  - Include mode selection: B5 = IF('input-output'!$I$48="Y", CL5, CM5).
+  - Conditional count-of-strong-extents: CM5 = SUM(IF(AU5>=4,AU5,0)+... ) — counts only extents >=4 when toggle is N.
+  - Outcome percent: C5 = B5 / $B$46.
+  - Top-level compare: input-output K5.. use IF(In>Jn,"Over","Under"); I52 and J52 provide summed total vs summed targets.
+
+Overall layout & data flow
+- Inputs are the course selection flags (input-output D-column cells marked "x"), the per-course rating matrix (in Data Analysis rows D:AR for each outcome), and the Include-all-extents toggle (input-output I48).
+- Data Analysis reads course flags, multiplies them by per-course rating entries to build AU:CI per-outcome, then either sums them directly (CL) or sums only values >=4 (CM). Those become B (outcome totals) and C (percent of B46).
+- The input-output sheet displays selected Data Analysis outputs, performs per-row Over/Under checks against fixed targets in column J, and gives summary totals I52 (actual) vs J52 (target).
+
+Key control/summary cells to check first
+- input-output!I48 — Include all extents toggle (Y/N) that changes calculation mode.
+- Data Analysis AU:CI columns — per-course included contributions (these are the immediate effect of selecting a course).
+- Data Analysis CLn / CMn — the two result modes (all extents vs only extents >=4).
+- Data Analysis Bn / Cn — outcome totals and outcome percentages used in reports.
+- input-output I52 / J52 — top-level totals (actual vs target).
+- input-output K5:K.. — quick Over/Under labels comparing outcome totals to targets.
+
+If you want, I can:
+- produce a simplified diagram of the calculation flow;
+- extract a minimal list of the output metrics (B and C columns) for quick inspection;
+- or suggest validations to ensure flags/ratings align (e.g., check missing course flags or red-highlighted courses referenced by A1).

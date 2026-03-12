@@ -1,0 +1,72 @@
+**Errors found:**
+
+1. **Inconsistent small business fee logic (C43):**  
+   Formula: `=IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))`  
+   - It checks if B34 (Streamlined # of Sites) is not blank, then returns "N/A". But B34 is a number (# of Sites), so if any number is entered, it returns "N/A" instead of applying half fee.  
+   - It checks B38 (Small business?), but the small business checkbox is in A38, no value in B38 is mentioned. Likely should check B38 or A38?  
+   - The logic is confusing and may not correctly apply half fee for small businesses.
+
+2. **Formula in F5 (Total Fee) is incorrect:**  
+   Formula: `=IF(C43="N/A",C42,C43)`  
+   - This means if C43 is "N/A", use full fee (C42), else use half fee (C43).  
+   - But since C43 can be "N/A" or half fee, this is okay but depends on C43 being correct.
+
+3. **In C41 (Total Points):**  
+   Formula: `=IF(OR(C34>0,C35>0),C36,COUNT(C9:C31))`  
+   - If there are other actions (C34 or C35 > 0), sum those (C36). Else, count the number of numeric entries in C9:C31.  
+   - Using COUNT here counts numeric values, but many formulas in C9:C31 return points (numbers), so this is likely okay.  
+   - However, if points are zero, COUNT ignores zeros, so total points might be underestimated.
+
+4. **In C9 (Emission Units):**  
+   Formula: `=IF(B9<>"",IF(B9<5,5,IF(B9>15,15,B9)),0)`  
+   - This caps points between 5 and 15 based on units. This is okay.
+
+5. **In C30 (PSD Netting):**  
+   Formula: `=IF(B31="",(IF(B30<>"",20,0)),"")`  
+   - If B31 is blank and B30 is not blank, assign 20 points, else 0.  
+   - If B31 is not blank, returns blank "".  
+   - This is inconsistent because blank "" is text, not number, may cause errors in summing points.
+
+6. **In C34 (General Permit):**  
+   Formula: `=IF(B35="",(IF(B34<>"",10,0)),"")`  
+   - If B35 is blank and B34 is not blank, assign 10 points, else 0.  
+   - Else returns blank "".  
+   - Again, blank "" is text, may cause errors in summing.
+
+---
+
+**Solutions:**
+
+1. **Fix small business fee logic (C43):**  
+   Change formula to check the correct small business cell (likely A38 or B38) and streamline logic:  
+   ```excel
+   =IF(B38="x", C42/2, "N/A")
+   ```  
+   Explanation: If small business box (B38) has "x", apply half fee; else "N/A". Remove check on B34.
+
+2. **Fix C30 and C34 to return numeric zero instead of blank:**  
+   Change C30 to:  
+   ```excel
+   =IF(B31="", IF(B30<>"",20,0), 0)
+   ```  
+   Change C34 to:  
+   ```excel
+   =IF(B35="", IF(B34<>"",10,0), 0)
+   ```  
+   Explanation: Returning 0 instead of "" ensures numeric summation works correctly.
+
+3. **In C41 (Total Points), replace COUNT with SUM:**  
+   Change formula to:  
+   ```excel
+   =IF(OR(C34>0,C35>0), C36, SUM(C9:C31))
+   ```  
+   Explanation: SUM adds all points correctly, including zeros, avoiding undercounting.
+
+---
+
+**Summary:**  
+- Correct small business half fee logic to check the right cell and simplify.  
+- Replace blank "" returns with 0 in formulas that contribute to point totals.  
+- Use SUM instead of COUNT to total points accurately.  
+
+These fixes ensure correct fee calculation and avoid errors in summing points.

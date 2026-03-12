@@ -1,0 +1,22 @@
+I inspected the formulas on the "van Genuchten fit theta-h" sheet and found two clear formula errors/inconsistencies plus a couple of points to verify.
+
+1) Wrong formula (typo) in E15
+- Current formula: =(C15-563)^2
+- Problem: 563 is a constant (typo) and produces the very large error value 316,518.76 that dominates the SSE.
+- Fix: replace with =(C15-D15)^2 (consistent with E12, E13, E14, E16).
+
+2) Sum range for the SSE is inconsistent
+- E19 currently: =SUM(E14:E18)
+- Problem: the squared-error rows are E12:E16; the current sum excludes E12 and E13 and includes E17:E18 (likely blank). This is inconsistent with the other squared-error formulas and with what "SSE" should represent.
+- Fix: set E19 to =SUM(E12:E16) (or to the appropriate full range of squared-error rows if there are more rows than shown).
+
+Notes / things to verify
+- B7 contains =E19 (SSE shown at B7). Once E19 is fixed (see item 2) B7 will correctly display the SSE.
+- The van Genuchten prediction formula in D12:D16:
+  =$B$3+($B$4-$B$3)/((1+$B$5*(-B12)^$B$6)^(1-1/$B$6))
+  is structurally OK, but be aware:
+  - It relies on (-B#) being positive (pressure values in column B are negative, so -B# is positive here; that is OK).
+  - Raising large numbers to a non-integer exponent can produce very large intermediate values; that is numerical rather than a formula error, but worth keeping in mind.
+- After correcting E15 and E19, confirm Solver/optimization results (theta parameters, SSE) because the errant 563 made the SSE and fit meaningless.
+
+If you want, I can provide the exact corrected formulas to paste in each cell and check the updated SSE.

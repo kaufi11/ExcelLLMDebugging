@@ -1,0 +1,75 @@
+Errors found:
+
+1. **Inconsistent use of absolute and relative references in formulas:**
+   - Example: In 'Data Analysis'!B4: `=SUM(B5:B7)` but B46 sums many unrelated cells with `=SUM(B4+B8+B9+...)`. The sum of sums might double count or miss values if ranges overlap or are inconsistent.
+   - Suggestion: Use consistent ranges or named ranges to avoid double counting or missing data.
+
+2. **Incorrect SUM formula in 'input-output'!I52 and J52:**
+   - Formula `=SUM(I5+I9+I10+I21+I31+I38+I42+I43+I44+I46+I45)` uses `SUM` with addition inside, which is redundant.
+   - Correct formula should be `=SUM(I5,I9,I10,I21,I31,I38,I42,I43,I44,I46,I45)` or simply `=I5+I9+...`
+   - Same for J52.
+   - Explanation: `SUM` expects a range or list of arguments separated by commas, not a single sum expression.
+
+3. **Inconsistent use of "x" in formulas referencing 'input-output'!D2, E2, etc.:**
+   - Some formulas check `=IF(D$2="x",...)` but D2 is a formula referencing 'input-output'!D9, which is text like "x" or empty.
+   - If the referenced cell is not exactly "x" or has spaces, the condition fails.
+   - Suggestion: Ensure the cells contain exactly "x" with no extra spaces or use `TRIM()` to clean.
+
+4. **In 'Data Analysis'!CL and CM columns:**
+   - CM columns use long formulas like `=SUM(IF(AU5>=4,AU5,0)+IF(AV5>=4,AV5,0)+...)` which is inefficient and error-prone.
+   - Suggestion: Use `SUMIF` or `SUMPRODUCT` for cleaner formulas, e.g. `=SUMIF(AU5:CI5,">=4")`.
+
+5. **In 'input-output'!K5, K6, etc., formulas:**
+   - `=IF(I5>J5,"Over","Under")` compares actual vs target.
+   - But if I5 or J5 is text or empty, it may cause errors.
+   - Suggestion: Add error handling, e.g. `=IF(AND(ISNUMBER(I5),ISNUMBER(J5)),IF(I5>J5,"Over","Under"),"Check")`.
+
+Summary of main errors and solutions:
+
+| Error | Explanation | Solution |
+|-------|-------------|----------|
+| Using SUM with addition inside (e.g. `SUM(I5+I9+...)`) | SUM expects range or list, not sum expression | Replace with `SUM(I5,I9,...)` or simple addition |
+| Long nested IF sums in CM columns | Inefficient and hard to maintain | Use `SUMIF(range, ">=4")` or `SUMPRODUCT` |
+| Possible mismatch in "x" checks due to extra spaces or formula references | Condition may fail if "x" is not exact | Use `TRIM()` or ensure exact "x" in referenced cells |
+| Potential errors in IF comparisons if cells contain non-numeric | May show wrong results or errors | Add ISNUMBER checks in IF conditions |
+
+**Example fix for I52:**
+
+Change from:
+
+```
+=SUM(I5+I9+I10+I21+I31+I38+I42+I43+I44+I46+I45)
+```
+
+To:
+
+```
+=SUM(I5,I9,I10,I21,I31,I38,I42,I43,I44,I45,I46)
+```
+
+**Example fix for CM5:**
+
+Change from:
+
+```
+=SUM(IF(AU5>=4,AU5,0)+IF(AV5>=4,AV5,0)+...)
+```
+
+To:
+
+```
+=SUMIF(AU5:CI5, ">=4")
+```
+
+This is shorter, faster, and less error-prone.
+
+---
+
+**Explanation:**
+
+- SUM function sums ranges or arguments separated by commas. Using addition inside SUM is redundant and can cause errors.
+- SUMIF sums only values meeting a condition, cleaner than multiple IFs.
+- Checking exact "x" requires no extra spaces or hidden characters.
+- Adding ISNUMBER prevents errors when comparing numbers.
+
+Fix these errors to improve accuracy and maintainability.

@@ -1,0 +1,35 @@
+High-level summary
+- Workbook purpose: fiscal summary of TFAC non‑sponsored funds. Each sheet is a fund-level fiscal page (1003, 1043, 1166, 1198, 1856) and a top-level Summary that aggregates those funds.
+- Consistent layout on every sheet: Resources (carry forward), Revenues (by revenue class), Transfers, Total Net Resources, Expenditures (by function and by object class), Total Expenditures, Ending Balance. Columns D–I represent time periods: D=1999‑00 (Actual), E=2000‑01 (Actual), F=2001‑02 (Actual), G=2002‑03 / Period 14, H=2003‑04 (Projected), I=2004‑05 (Budget).
+
+Sheets
+- Summary: Aggregates the five fund sheets. Many cells are formulas referencing either each fund’s specific summary rows (e.g., ='1003'!D25) or using 3‑D SUM across '1003':'1856' (e.g., =SUM('1003':'1856'!D6:D6)). Major summary formulas: Total Revenues = SUM(D9:D13) (pulling each fund’s revenue cell), Total Transfers = SUM of transfer lines pulled across funds, TOTAL NET RESOURCES (D26) = Carry Forward + Revenues + Net Transfers (D6+D14+D24), TOTAL EXPENDITURES (D61) = sum of object‑class totals, ENDING BALANCE = TOTAL NET RESOURCES – TOTAL EXPENDITURES (D63 = D26 – D61).
+- Fund sheets (1003, 1043, 1166, 1198, 1856): same structure as Summary but contain fund‑level numbers and intermediate formulas.
+  - Carry Forward (row 6) is rolled forward with a formula like =+E6+D72-D25-D35 (prior column carry forward + prior col total expenditures − prior col revenues − prior col net transfers).
+  - Total Revenues (row 25) = SUM of revenue classes D9:D24.
+  - Net Transfers (row 35) = SUM of transfer lines D28:D34.
+  - TOTAL NET RESOURCES (row 37) = D35 + D25 + D6.
+  - TOTAL EXPENDITURES (row 72) = SUM of object‑class rows D56:D71.
+  - ENDING BALANCE (row 74) = TOTAL NET RESOURCES − TOTAL EXPENDITURES.
+
+Key formula patterns
+- Summary uses either direct links to fund cells (='1003'!D25) for some rows or 3‑D SUM across '1003':'1856' for rows that are identical across funds (e.g., =SUM('1003':'1856'!D56:D56) to aggregate salaries).
+- Fund roll‑forward/carry formulas reference the same sheet’s totals to maintain running balances.
+- Totals are consistently computed by SUM over the expected ranges (revenues, transfers, expenditures).
+
+Notable numeric values / flags (examples)
+- Fund 1003: G6 carry forward = 21,451,645.94; large central allocation D28 = 85,170,272; Salaries D56 = 31,486,396.83; Utilities D66 = 27,671,224.07; some large negative Repair/Maintenance entries (e.g., E65 = -3,632,507.22 and G65 = -16,370,339.64) — review these negatives for correctness.
+- Fund 1043: Indirect Cost Recovery central allocation D13/D28 = 17,149,795 (consistent across rows); Transfers out mirror allocations (D29 = -17,149,795).
+- Fund 1166: Very large Internal Sales D15 = 43,821,749.30 and large Utilities D66 = 33,886,459.12; Repairs/Maintenance are large negative numbers (D65 = -15,282,267.47).
+- Fund 1198: External sales D14 = 2,296,535.62; Non‑mandated transfers in D32 = 6,126,750.04.
+- Fund 1856: Small balances (G6 = 21,200), small transfers (D32 = 40,067.71). Note H25 uses COUNT(H9:H24) (likely an error: should be SUM).
+
+Other details
+- Report date is present on Summary and each fund (cells E65/F65 or E76/F76) = 2003‑09‑22.
+- Layout and formulas are highly regular, so adding/removing funds requires updating the 3‑D ranges or the list of worksheets used in SUM/link formulas.
+- Potential data issues to check: negative values in Repairs/Maintenance and a COUNT used where SUM is expected (sheet 1856 H25). Also verify consistency of signs for transfers (some funds use negative values for transfers out).
+
+If you want, I can:
+- Produce a compact cross‑sheet mapping (which Summary row maps to which fund cell),
+- Flag all cells where the aggregation uses COUNT instead of SUM,
+- Extract the Summary totals (numeric) by evaluating current formulas.

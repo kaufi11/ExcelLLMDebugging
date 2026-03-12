@@ -1,0 +1,70 @@
+I reviewed all formulas in the workbook and found several real formula errors and a number of inconsistencies/likely bugs. Below I list the problems I found (by sheet & cell), explain why they are wrong, and give recommended corrected formulas or actions.
+
+Summary of the real formula faults
+- Sheet3: many AVERAGE formulas in column P reference the wrong L-row (typo L40..L54). These will produce wrong results or #DIV/0!.
+- Sheet3 J5 uses the constant 888 instead of the cell I5 (wrong numerator).
+- Sheet1 I3 uses incorrect weights (25 and 12.5 instead of 0.25 and 0.125).
+- Grade translation table / VLOOKUP misalignment: the lookup table range and the K column are misaligned (K5 is empty while L5 contains "F"), so approximate VLOOKUPs may fail for scores below 60.
+- Many #DIV/0! results come from empty input ranges (expected behavior) — not a formula bug but important to note.
+
+Detailed items and recommended fixes
+
+1) Sheet3: AVERAGE formulas in column P reference incorrect L-row (typo)
+- Problem cells (examples): P4 contains
+  =AVERAGE(D4,F4,H4,J4,L40)
+  similarly P5 has L41, P6 has L42, ... up to P18 which references L54.
+- Why it's wrong: The L40..L54 references probably should be the corresponding L cell on the same row (L4..L18). L40..L54 are outside the student area and will either be blank or wrong.
+- Fix: replace each Pn formula with
+  =AVERAGE(Dn,Fn,Hn,Jn,Ln)
+  e.g. in P4:
+  =AVERAGE(D4,F4,H4,J4,L4)
+  and so on for P5..P18.
+
+2) Sheet3 J5 (wrong numerator)
+- Current formula: =888/$J$24
+- Why it's wrong: all other test percentage formulas in that column use the student's points cell divided by the curve scale ($J$24). J5 should be =I5/$J$24 (I5 is "Test 4 Points" for that student). Using 888 is almost certainly a mistake and produces an absurd percentage (and skews averages).
+- Fix: change J5 to:
+  =I5/$J$24
+
+3) Sheet1 I3 (incorrect weighting multipliers)
+- Current formula in I3:
+  =(C3*0.125)+(D3*25)+(E3*25)+(F3*25)+(G3*12.5)
+- Why it's wrong: D3, E3, F3 are multiplied by 25 (and G3 by 12.5) instead of decimal weights 0.25 and 0.125 used in other rows. This will massively distort that student's final numeric grade.
+- Fix: make I3 consistent with the other student rows, e.g.
+  =(C3*0.125)+(D3*0.25)+(E3*0.25)+(F3*0.25)+(G3*0.125)
+
+4) Grade translation table / VLOOKUP misalignment (Sheet1 column J)
+- Observations:
+  - VLOOKUP in J3..J17 uses =VLOOKUP(Ix,$K$5:$L$17,2,TRUE()) (approximate match).
+  - The table area is K5:L17, but K5 looks empty (K4 says "GRADE TRANSLATION" and K6..K17 contain numeric cutoffs 60..96). L5 contains "F".
+- Why it's a problem:
+  - For approximate VLOOKUP to work for failing grades you normally need an entry for 0 (or the lowest threshold) in the leftmost column. Right now K5 is blank, so lookups < the smallest numeric key (60 in K6) will produce #N/A or incorrect results.
+  - The "F" in L5 suggests the lookup table was intended to start at row 5 with K5 = 0 → L5 = "F".
+- Fix options:
+  - Add K5 = 0 (and keep L5 = "F"). That makes the table K5:L17 valid for approximate lookup.
+  - Or change the VLOOKUP table range to start at K6 (if you add no 0 threshold) and ensure lookup behavior is as intended. Better approach: set K5 = 0 so the full band map exists (0→F, 60→D-, 63→D-, etc).
+- Also verify the lookup keys are sorted ascending (they appear to be).
+
+5) Many #DIV/0! results come from empty source ranges (expected but worth noting)
+- Examples: Sheet2 P5..P19 are AVERAGE(C5:L5) etc. If all those homework cells are blank, AVERAGE returns #DIV/0!. Same for many MAX/MIN/AVERAGE entries on Sheet1 and Sheet2 that depend on empty inputs.
+- Action: if you want zeros instead of #DIV/0!, wrap averages in IFERROR or check COUNT>0, for example:
+  =IF(COUNT(C5:L5), AVERAGE(C5:L5), 0)
+  or
+  =IFERROR(AVERAGE(C5:L5), 0)
+
+6) Miscellaneous / Cosmetic issues
+- Some headers contain typos (e.g. "Sudents", "Studnets", "Higest"). These are not formula errors but worth fixing for clarity.
+- VLOOKUP uses TRUE() — TRUE() is valid but writing TRUE (no parentheses) or leaving out parentheses is more conventional: =VLOOKUP(I3,$K$5:$L$17,2,TRUE)
+
+Suggested immediate corrections (quick checklist)
+- Fix P4..P18 in Sheet3 to reference L4..L18 instead of L40..L54.
+- Fix J5 in Sheet3 to =I5/$J$24.
+- Fix I3 in Sheet1 to use decimal weights (0.25/0.125) like the other rows.
+- Add K5 = 0 to the grade translation table (Sheet1 column K) so approximate VLOOKUP works for low grades; verify table rows/labels align (K5:L17).
+- Consider wrapping AVERAGE formulas with IF(COUNT(...),AVERAGE(...),0) or IFERROR to avoid #DIV/0! for empty data.
+- Scan for any other accidental hard-coded constants (like the 888) that may be hiding elsewhere.
+
+If you want, I can:
+- Produce the exact corrected formulas (I already gave them above).
+- Generate a patch list (cell-by-cell) you can paste into Excel to fix everything automatically.
+- Re-scan if you make those fixes to find any remaining issues.

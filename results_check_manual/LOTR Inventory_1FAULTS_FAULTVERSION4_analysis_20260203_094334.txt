@@ -1,0 +1,33 @@
+Thanks — I reviewed the workbook. I found the main formula errors and a consistency issue. Short fixes + why they matter below.
+
+1) Summary COUNTIFs are using the wrong column (many sheets)
+- Problem: the summary cell that should count how many cards you have ZERO of uses COUNTIF on column F (the "Have" NON-FOIL column). That ignores foil / equivalents and so mis-reports cards with zero TOTAL. Examples: Promotional I71 (=COUNTIF(F2:F70,0)), Fellowship I367 (=COUNTIF(F2:F366,0)), Mines of Moria I124, many other sheets use the same pattern.
+- Why it’s wrong: a card may have zero non‑foil but have foil (or equivalent) copies — you want to count rows where the total have (column I) = 0.
+- Fix: change COUNTIF(Frange,0) to COUNTIF(Irange,0). Example:
+  - Promotional I71 -> =COUNTIF(I2:I70,0)
+  - Fellowship I367 -> =COUNTIF(I2:I366,0)
+  - Mines of Moria I124 -> =COUNTIF(I2:I123,0)
+  (Repeat the same replacement on all sheet summary rows where COUNTIF uses F-range.)
+
+2) Realms of the Elflords — wrong function in F25
+- Problem: cell F25 is FORMULA =COUNT(K25:O25) but every other "Have" cell uses SUM of the printing columns.
+- Why it’s wrong: COUNT returns the number of numeric entries in K:O, not the total number of cards you have for that row. That produces a small integer (count of filled columns) instead of the sum of those columns.
+- Fix: replace COUNT with SUM:
+  - Realms!F25 -> =SUM(K25:O25)
+
+3) Recommendation: standardize the per-row "Have" / "Have Foil" ranges
+- Observation: different sheets use slightly different SUM ranges (e.g. SUM(K:O) vs SUM(K:P) vs SUM(K:P) etc.). That is sometimes intentional because the column ordering/labels vary (some sheets put Misprint in P, some in O, etc.). However it is easy to accidentally include/exclude a printing variant.
+- Action: for each sheet, confirm which columns are non‑foil printings and which are foil columns, then ensure:
+  - F (Have) = SUM(all non‑foil printing columns for that sheet)
+  - G (Have Foil) = SUM(all foil printing columns for that sheet)
+  - I (Have Total) = SUM(F cell + G cell)  (you already generally use I = SUM(F:H) — confirm H is only equivalents)
+- If you want one consistent method across sheets, consider naming the ranges (or switching to a single set of printing columns per sheet) so formulas are uniform and less error‑prone.
+
+How to implement quickly
+- Use Find (Ctrl+F) for COUNT( K and look for COUNT( in column F ranges to find other accidental COUNT uses (like Realms F25).
+- Find COUNTIF(F2: and replace with COUNTIF(I2: for the appropriate row ranges (do per sheet).
+- After changes, spot‑check the summary totals (I#) vs individual rows to confirm counts now match expected "have 0" counts.
+
+If you want, I can:
+- Give a list of every sheet cell that needs the COUNTIF change (I can generate exact replacement formulas), or
+- Produce a short macro to replace COUNTIF(F...,0) → COUNTIF(I...,0) across all sheets. Which would you prefer?

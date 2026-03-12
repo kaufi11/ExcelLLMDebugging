@@ -1,0 +1,44 @@
+Summary: I found the main formula errors that make the Cost of Goods and Inventory numbers wrong. Fix these and the rest of the sheet will recalculate correctly.
+
+1) Faulty cell: D67
+- Error type: Wrong / circular formula
+- Problem: D67 is set to =SUM(C66:C67) — it either double-counts or references itself.
+- Fix: Calculate the purchase discount on net purchases after returns. Use:
+  = (D65 - C66) * 0.02
+- Why: Discount = 2% of purchases net of returns (55,000 − 1,500 = 53,500 → 1,070).
+
+2) Faulty cell: D68 (Net purchases)
+- Error type: Omission
+- Problem: D68 currently only subtracts the discount and ignores the purchase returns, or vice‑versa depending on D67 error.
+- Fix: Subtract both returns and discount:
+  = D65 - C66 - D67
+- Why: Net purchases = Purchases − Purchase Returns & Allowances − Purchase Discounts.
+
+3) Faulty cell: E91
+- Error type: Wrong static entry
+- Problem: E91 is "2" instead of the total cost of the 2,000 units purchased on 12/24.
+- Fix:
+  = C91 * D91
+- Why: Total cost for that purchase = units × unit price (2,000 × 8.25 = 16,500).
+
+4) Faulty cell: E92 (Total GAFS) and J96 (GAFS)
+- Error type: Dependent / inconsistent totals
+- Problem: E92 =SUM(E88:E91) uses E91 (wrong), so GAFS is wrong; J96 is hard-coded to 80,500 instead of linking to the calculated total.
+- Fix:
+  - Fix E91 first (see #3). Then ensure:
+    E92 = SUM(E88:E91)
+    J96 = E92
+- Why: GAFS must be the sum of each layer total (and downstream calculations should reference the spreadsheet total, not a hard-coded value).
+
+5) Faulty cell: L93 (Ending inventory value shown as 23,400)
+- Error type: Inconsistency / incorrect value
+- Problem: 23,400 does not match the weighted-average result shown elsewhere (unit cost 8.05 → EI = 2,500 × 8.05 = 20,125).
+- Fix:
+  = 2500 * (E92 / C92)   or =2500 * 8.05
+- Why: Weighted-average unit cost = GAFS total / total units; EI = units on hand × unit cost.
+
+Quick checklist after fixes:
+- Recompute D67, D68, E70, E71, E92, J96. That will update COGS, gross margin, and Part B FIFO/LIFO/Wtd Avg results.
+- Replace any hard-coded totals (80500 etc.) with formulas that reference calculated cells so totals stay consistent.
+
+If you want, I can show the exact corrected formulas pasted into each cell or produce an ordered fix list you can paste directly into Excel.

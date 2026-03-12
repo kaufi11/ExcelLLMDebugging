@@ -1,0 +1,89 @@
+I reviewed the formulas in the "Configuration Editor" sheet and found several formula errors and clear inconsistencies. Below I list every problem I found, explain why it’s an issue, and give recommended fixes (exact formulas where appropriate).
+
+Summary of the main problems
+- One likely mistaken hard-coded constant that creates an enormous product (F5).
+- Several cells use inconsistent constants (175, 1000) instead of the NPL price cell — looks like copy/paste mistakes (E78–E81, E91–E94).
+- Warranty rows (85 & 86) contain circular/self-referencing and inconsistent references between D/E/F columns.
+- A few PRODUCT calls use a range argument (Cn:Dn) rather than listing arguments (Cn,Dn) — not an error per se but inconsistent with the rest of the sheet.
+- A number of cells contain text ("CALL") in D-column which is likely intentional but will cause any formula expecting numeric Dn to error if used.
+- Some SUM ranges are awkward/fragile (E109 / F109 patterns).
+
+Detailed items, with recommended corrections
+
+1) F5 (row 5)
+- Current formula: =PRODUCT(887,D5)
+- Problem: The formula multiplies D5 by the literal 887 rather than the Quantity cell (C5). This produces the very large value 5,721,150 and is almost certainly a mistake.
+- Suggested fix: Use the quantity cell: =PRODUCT(C5,D5)  (or =C5*D5)
+
+2) E78 / E79 / E80 / E81 (rows 78–81 — Custom Programming)
+- Current formula (each): =PRODUCT(C78,175) (and analogous for 79–81)
+- Problem: They use the constant 175 instead of the NPL price in column D (which is 195) and they also omit the dealer multiplier G2 (most other E cells use the multiplier G2). This is inconsistent with the pricing pattern used elsewhere (E usually = quantity * NPL * G2).
+- Suggested fix (consistent with pattern used elsewhere): =PRODUCT(C78,D78,G2)  (and similarly for E79, E80, E81)
+- If 175 was intentionally used as a special dealer price, leave it but document why it differs. Otherwise use D78 and G2.
+
+3) E91 / E92 / E93 / E94 (rows 91–94 — Installation/Training)
+- Current formula (each): =PRODUCT(C91,1000) (and analogous)
+- Problem: They use the constant 1000 instead of D91..D94 (which are 1200) and omit G2. Inconsistent with how E is computed elsewhere.
+- Suggested fix: =PRODUCT(C91,D91,G2)  (or =PRODUCT(C91,D91) if Dealer price should equal NPL price — but the sheet usually applies G2 for dealer pricing, so include G2 if wanted)
+
+4) Warranty lines (rows 85 and 86)
+- D85: =PRODUCT(F82,0.09) — this calculates 9% of F82 (Client Total software). That formula is OK if the intent is: NPL price for Extended Warranty = 9% of client price total. (D86 uses 0.18 similarly for 24/7.)
+- E85: =PRODUCT(F85,0.9)
+- F85: =PRODUCT(F82,C85,0.09)
+- E86: =PRODUCT(F86,0.9)
+- F86: =PRODUCT(F82,C86,0.18)
+- Problems:
+  - E85 references F85 (E85 = PRODUCT(F85,0.9)), and F85 references F82 and C85, not D85 or E85. E85 therefore depends on F85 and F85 depends on F82 — but E85 referencing F85 (instead of D85) is inconsistent and possibly circular if F85 were to reference E85. Also F85 uses C85 which is likely blank (quantity), causing F85 = 0 currently. The pattern is inconsistent with how the rest of the sheet computes E (dealer) and F (client).
+  - E86 and F86 mirror the same issues.
+  - Using F82 in the F85 formula is odd: F85 should be a product of its own row's quantity and price, not of the total F82 again.
+- Recommended consistent approach (choose depending on intended semantics):
+  - If D85 is intended to be the NPL warranty price computed from the client total (D85 = F82 * 9%), then compute Dealer and Client columns for the warranty rows directly from D85:
+    - D85 (keep): =F82*0.09
+    - E85 (Dealer): =D85 * G2    (or =PRODUCT(D85,G2))
+    - F85 (Client): =PRODUCT(C85,D85)   (or =D85 if C85 = 1)
+    - D86: =F82*0.18
+    - E86: =D86 * G2
+    - F86: =PRODUCT(C86,D86)   (or =D86 if C86 = 1)
+  - If the warranty price was meant to be based on E82 (dealer total) rather than F82, revise D85 / D86 to use E82 instead. Document which total you want as the base.
+- Key point: Remove the self-reference PRODUCT(F85,0.9) and the PRODUCT(F82,C85,0.09) constructions — they are inconsistent/fragile and create circular or zero results.
+
+5) PRODUCT with a range argument (C73:D73 etc.)
+- Examples: F73 =PRODUCT(C73:D73), F74 =PRODUCT(C74:D74), F75 =PRODUCT(C75:D75)
+- Problem: Not an error; Excel accepts a range in PRODUCT. However it's inconsistent with virtually every other F cell which uses PRODUCT(Cn,Dn) (separate arguments). This inconsistency is not functionally wrong but is a maintainability/style issue.
+- Suggestion: Standardize to =PRODUCT(C73,D73) etc., for consistency.
+
+6) E4..E82 pattern vs some E rows missing G2
+- Observations: Most E cells (dealer price) use =PRODUCT(C,D,G2) (quantity * price * dealer multiplier). Some E cells use only PRODUCT(C,D) (e.g., E97, E104, many hardware rows), and some use PRODUCT(C,1000) or constants as noted above.
+- Action: Decide and document whether dealer price should always use the G2 multiplier. If yes, update E-cells that currently do not include G2 to include it. If not, document which rows are exempt (e.g., dealer hardware may be priced differently).
+
+7) F109 and E109 SUM ranges
+- E109 =SUM(E82,E85:E108)
+- F109 =SUM(F82,F85:F108)
+- Observation: Those formulas add E82 (software total) plus E85:E108 (warranty + hardware tables). This is fine but somewhat fragile/odd: it omits E83:E84 intentionally (they are header rows). It may be simpler and safer to sum a continuous range that contains all priced rows, e.g.:
+  - E109 =SUM(E4:E108)
+  - F109 =SUM(F4:F108)
+  - Or keep as is but document the intent.
+- Suggestion: If you want a robust total that includes all earlier rows, use continuous ranges rather than combining a single cell plus a sub-range.
+
+8) Text values in D57 and D60 ("CALL")
+- D57 and D60 contain text "CALL". No formulas reference these cells directly in your shown entries, but if any price formulas later try to use D57 or D60 as numbers that will produce #VALUE! errors. Keep as text only if intentional; otherwise replace with numeric values or handle text with an IF/ISNUMBER wrapper.
+
+9) General consistency recommendations
+- Standardize the pattern for E (dealer) and F (client) price column formulas:
+  - Dealer price (E) = quantity * NPL price * dealer multiplier (G2): =PRODUCT(Cn,Dn,G2)
+  - Client price (F) = quantity * NPL price: =PRODUCT(Cn,Dn)
+- Replace any literal constants (e.g., 887, 175, 1000) with references to the proper cells unless the constant is intentionally different and documented.
+- Remove any formulas that reference their own cell (self references) unless you intentionally use iterative calculation (and document it).
+
+Quick list of cells I recommend you fix immediately
+- F5: change to =PRODUCT(C5,D5)
+- E78,E79,E80,E81: change to =PRODUCT(C78,D78,G2), etc.
+- E91,E92,E93,E94: change to =PRODUCT(C91,D91,G2), etc.
+- E85/E86 and F85/F86: change as suggested above (make E85 = D85*G2 and F85 = C85*D85; same pattern for row 86). Revise D85/D86 to use the correct base total (F82 or E82) as intended.
+- (Optional) Replace PRODUCT(C73:D73) etc. with PRODUCT(C73,D73) for consistency.
+
+If you want, I can:
+- Produce a full list of every formula that deviates from the majority pattern (e.g., show all E and F formulas that do not follow Dealer= C*D*G2 and Client= C*D).
+- Produce an updated copy of the sheet (or list of cell-by-cell formula replacements) with the recommended fixes applied.
+
+Which would you prefer?

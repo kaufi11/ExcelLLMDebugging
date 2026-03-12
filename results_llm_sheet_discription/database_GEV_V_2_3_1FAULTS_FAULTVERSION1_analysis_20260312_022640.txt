@@ -1,0 +1,27 @@
+Ho trovato 3 errori importanti + 2 pulizie/suggerimenti pratici. Breve e chiaro:
+
+1) Errore critico: cella visualizza_gruppo!Q30 usa COUNT invece di SUM
+- Problema: Q30 = COUNT(M30:N30) restituisce il numero di celle numeriche (0 o 1) invece del totale delle segnalazioni per il mese di maggio. Tutte le altre righe usano SUM.
+- Soluzione: sostituire con =SUM(M30:N30)
+
+2) Bug potenziale nei calcoli della durata (calcoli!G15) e controllo orario (immissione dati!F16)
+- Problema: G15 = (HOUR(F15-E15)*60+MINUTE(F15-E15))/60 non gestisce correttamente servizi che passano la mezzanotte (risultato negativo o sbagliato). Di conseguenza anche il controllo in immissione dati!F16 può segnalare male.
+- Soluzione consigliata (più semplice e robusta): usare la funzione MOD per la durata e controllare su quella:
+  - Sostituire calcoli!G15 con:
+    =MOD(F15-E15,1)*24
+    (restituisce ore decimali corrette anche se l'evento passa la mezzanotte)
+  - Aggiornare immissione dati!F16 per verificare la durata reale (es. controllare G15>0):
+    =IF(calcoli!G15>0,"","Attenzione: orario fine servizio inferiore ora inizio!")
+  (oppure, se vuoi mantenere il controllo diretto su orari:)
+    =IF(MOD(calcoli!F15-calcoli!E15,1)>0,"","Attenzione: orario fine servizio inferiore ora inizio!")
+
+3) Errori di sintassi/leggibilità: doppio segno + nelle somme mensili (es. visualizza_gruppo!Q7 = D7++G7+J7+M7)
+- Problema: la formula con "++" non è elegante e può confondere (Excel interpreta ++ come + +, funziona ma è sbagliato).
+- Soluzione: correggere togliendo il + in eccesso:
+  es. =D7+G7+J7+M7
+
+Suggerimenti rapidi (non bloccanti)
+- Molte formule hanno IF(OR(...),TRUE,FALSE) — sono ridondanti. Puoi semplificare direttamente in OR(...). Esempio: =IF(OR(condizioni),TRUE,FALSE) → =OR(condizioni)
+- Verifica i riferimenti fissi/righe (es. intervalli COUNTA su parametri!A1:A4): se aggiungi più GEV, potresti dover allargare gli intervalli per evitare conteggi errati.
+
+Se vuoi, correggo esattamente le celle per te (ti do le formule esatte da incollare) o ti fornisco una lista completa delle celle con "++" da correggere. Quale preferisci?

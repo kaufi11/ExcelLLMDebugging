@@ -1,0 +1,54 @@
+I reviewed the Configuration Editor sheet and found several formula errors and inconsistencies. Below are the problems, short explanations, and the simple fixes.
+
+1) Hard‑coded / wrong value in F47
+- Fault: F47 = 6 (hard-coded)
+- Why wrong: Client price should be Quantity * NPL Price, not a fixed 6.
+- Fix: F47 = C47*D47  (or =PRODUCT(C47,D47))
+
+2) Extended Warranty rows (85 and 86) — client total calculated incorrectly
+- Faults:
+  - D85 = PRODUCT(F82,0.09) (ok if intended as warranty unit = 9% of software total)
+  - F85 = PRODUCT(F82,C85,0.09) (incorrect — multiplies F82 twice)
+  - Same pattern for row 86 with 0.18
+- Why wrong: F85/F86 should be Quantity * D85/D86, not include F82 again.
+- Fixes:
+  - Keep D85 = F82*0.09 and D86 = F82*0.18 (if that was the intention)
+  - Change F85 = C85*D85  and  F86 = C86*D86
+  - E85 = F85*0.9 and E86 = F86*0.9 (these are already using that pattern)
+
+3) Dealer price formulas using wrong constants (inconsistent formulas)
+- Faults:
+  - E78:E81 use =PRODUCT(C#,175) while D78:D81 = 195 (or another price).  
+  - E91:E94 use =PRODUCT(C#,1000) while D91:D94 = 1200.
+- Why wrong: Dealer price should be Quantity * NPL Price * Dealer factor (G2), or at least reference D# so the sheet is consistent and maintainable.
+- Fixes (recommended):
+  - Use E78 = C78*D78*$G$2  (copy down for E78:E81)
+  - Use E91 = C91*D91*$G$2  (copy down for E91:E94)
+  - If the intention was a fixed dealer unit price (e.g. 175 or 1000), document it — otherwise use D# and the dealer factor.
+
+4) Sum formulas — use contiguous ranges for clarity
+- Faults: E109 = SUM(E82,E85:E108) and F109 = SUM(F82,F85:F108)
+- Why wrong/confusing: awkward and error‑prone (excludes any rows between E82 and E85 if they exist).
+- Fix: E109 = SUM(E82:E108)  and  F109 = SUM(F82:F108)
+
+5) Use absolute reference for G2 when copying dealer multiplier
+- Issue: Many E formulas use G2 relatively. If you copy formulas around, G2 can shift.
+- Fix: Use $G$2 (e.g. =C4*D4*$G$2) so the dealer multiplier is fixed.
+
+6) Non‑numeric “CALL” entries in D57 / D60
+- Issue: D57 and D60 contain text "CALL". That will break numeric calculations if you try to multiply these cells.
+- Fix: If price is conditional, either (a) leave D# blank and handle with IFERROR/IF(ISNUMBER()), or (b) enter a numeric value or a named flag and handle with IF statements. Example: E57 = IF(ISNUMBER(D57),C57*D57*$G$2,0)
+
+Quick checklist of corrected example formulas:
+- E4..E81: =C4*D4*$G$2  (copy down)
+- F4..F81: =C4*D4        (copy down)
+- F47: =C47*D47
+- D85: =F82*0.09
+- F85: =C85*D85
+- E85: =F85*0.9
+- D86: =F82*0.18
+- F86: =C86*D86
+- E109: =SUM(E82:E108)
+- F109: =SUM(F82:F108)
+
+If you want, I can produce a corrected list of exact replacement formulas for every problematic cell and highlight them on the sheet. Which would you prefer?

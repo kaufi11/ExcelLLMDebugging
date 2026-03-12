@@ -1,0 +1,30 @@
+I inspected the workbook and found a few clear formula errors / inconsistencies. Summary and fixes below.
+
+1) Wrong formula in homework! — cell F5
+- Problem: F5 currently contains =(B5/$B$29)/100 (extra "/100"). All other F cells use the pattern =(B#/$B$29)*100. Because of the extra /100, F5 is extremely small and that breaks G5 (G5 = C5/(F5/100)) producing a huge incorrect result (3631.259...).
+- Fix: replace F5 with the consistent formula:
+  =(B5/$B$29)*100
+  After that G5 will recompute correctly (and match the Real price formulas in column E).
+
+2) Inconsistent MAX / MIN range on sheet peaches1 — cells H3 and L3
+- Problem: H3 =MAX(C14:N50) and L3 =MIN(C14:N50). The data / year rows start above row 14 (there are data in rows ~8–13), so those formulas are excluding earlier years. As a result the record high / low may be computed over a subset of the data.
+- Recommendation: change the range so it includes all data rows. For example, if the first data row is row 8, use:
+  H3 =MAX(C8:N50)
+  L3 =MIN(C8:N50)
+  (Adjust start row as appropriate for your actual data block; C10:N50 would be another likely choice if row 10 is the first full-data row.)
+
+3) Misaligned MYA column vs header in peaches1
+- Problem: header row has "MYA" in column O (O5 = "MYA"), but some MYA values are placed in column P (e.g. P10:P12). This misalignment can cause confusion and errors if other formulas reference the MYA column.
+- Recommendation: either
+  - move the monthly/MYA data left one column so MYA values are in column O, or
+  - move the header "MYA" to column P (O5 -> P5),
+  whichever matches your intended layout. Then update any formulas that reference the MYA column.
+
+4) Miscellaneous / housekeeping notes
+- Column G on "homework" uses formula C#/(F#/100). That is algebraically equivalent to the E column approach (CPI-base conversion) assuming F has the expected =(B#/$B$29)*100 form. Once F5 is corrected, G5 will also match E5 as intended.
+- K8 uses =NA() producing #N/A — this appears intentional (Mode not defined), keep if desired.
+- There are many cells where years are filled by chained formulas (e.g. B14 = B15+1). Those chains appear consistent given B50 = 1957 is a base; no action required unless you prefer explicit values instead of chained formulas.
+
+If you want, I can:
+- produce the corrected formulas and exact cell replacements (I listed the exact formulas above), or
+- run the corrections in the file and report the updated values (if you can provide write access).

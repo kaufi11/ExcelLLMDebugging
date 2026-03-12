@@ -1,0 +1,66 @@
+Short summary of the problems and fixes (easy to follow)
+
+MasterMethod_Checks — Errors and fixes
+1) Typo in f(n) at row for n = 8 (A19/B19)
+   - Error: B19 = A19*2 (gives 16) but all other f(n) use A#/2 (n/2).  
+   - Fix: change B19 to =A19/2.  
+   - Why: keeps f(n) consistent = n/2 so comparisons are valid.
+
+2) n = 0 row causes math errors (division by zero & log(0))
+   - Errors: C11 = 0^CE → 0, D11 = B11/C11 → 0/0 (#DIV/0!), H11 = LOG(0,2) → #NUM!.  
+   - Fix options (pick one):
+     a) Remove the n = 0 row so n starts at 1, or
+     b) Guard formulas with IF to avoid invalid operations, e.g.:
+        - C11: =IF(A11<=0,"",A11^$B$6)
+        - D11: =IF(C11=0,"",B11/C11)
+        - H11: =IF(A11<=0,"",LOG(A11,2))
+   - Why: log and exponent/division require positive n; easiest is to start at n>=1.
+
+3) Theta column H is just LOG(n,2) — might be misleading
+   - Issue: H shows log2(n) rather than the expected expression Θ(n^CE) or the result of the case-test.
+   - Fix (simple): show the formal Theta-term or a text result. Example formula to show Theta(n^CE) when both tests true:
+     - =IF(AND(F11="TRUE",G11="TRUE"), "Θ(n^"&$B$6&")", "Not Θ(n^"&$B$6&")")
+   - Why: gives a clear output that matches the Big-Oh/Big-Omega checks.
+
+SubstitutionMethod_Checks — Errors and fixes
+1) Missing factor in C10 (n = 1 row)
+   - Error: C10 = $B$5*LOG(LOG(A10,2),2) — missing multiplication by A10 (asymptotic fcn is n * log log n).  
+   - Fix: change C10 to =$B$5*A10*LOG(LOG(A10,2),2)
+   - Why: makes C10 consistent with C11..C# and the intended c2 * asymptotic_fcn.
+
+2) Many T(n) cells (column D) incorrectly reference other D cells with absolute refs ($D$11, $D$12, etc.)
+   - Error examples: D19 = 5*$D$11 + A19/LOG(A19,2) — this multiplies by the numeric value of another row and is almost certainly unintended. Several ranges use $D$11, $D$12, $D$13, $D$14, $D$15.
+   - Fix: set all D rows to the intended formula (for example) =5 + A# / LOG(A#,2) (no cross-row absolute refs). Example for row 19:
+     - D19: =5 + A19/LOG(A19,2)
+   - Why: T(n) should be a function of n only, not multiplied by other rows’ values.
+
+3) Division / log domain errors at small n (n = 0 or 1)
+   - Errors: LOG(A#,2) is 0 when n=1 (division by zero in A#/LOG(A#,2)); LOG(LOG(A#,2),2) undefined when n<=1.
+   - Fix options:
+     a) Start the table at n>=2 (or n>=3) so all logarithms are defined and nonzero, OR
+     b) Guard formulas using IF to avoid invalid inputs. Example guards:
+        - Asymptotic factor B#: =IF(A#<=1,"", $B$4*A#*LOG(LOG(A#,2),2))
+        - T(n) D#: =IF(A#<=1,"", 5 + A#/LOG(A#,2))
+   - Why: log(log n) requires n>1 and dividing by LOG(n,2) requires LOG(n,2)<>0. Starting at n>=2 avoids these issues.
+
+4) Theta decision cell G uses text "TRUE"/"False" inconsistently (minor)
+   - Observation: G uses IF(E#="TRUE",IF(F#="TRUE","True","False"),"False") — mixed capitalization but functional.
+   - Suggestion: use boolean logic instead of string comparisons for reliability:
+     - =IF(AND(E10, F10), "Θ", "Not Θ") assuming E/F contain TRUE/FALSE booleans (not text).
+   - Why: avoids fragile string comparisons.
+
+Quick checklist to fix the workbook now
+- MasterMethod_Checks:
+  1. Edit B19 → =A19/2
+  2. Remove row with n=0 or wrap formulas with IF checks (recommended: remove n=0).
+  3. Replace H formulas with a Theta-display formula (optional).
+
+- SubstitutionMethod_Checks:
+  1. Edit C10 → =$B$5*A10*LOG(LOG(A10,2),2)
+  2. Replace any D cells that reference $D$11/$D$12/etc. with =5 + A#/LOG(A#,2) (no absolute refs).
+  3. Remove or guard n rows where n<=1 to avoid LOG(1)=0 and LOG(LOG(n)) invalidity.
+  4. Optionally replace the string boolean logic with AND(E#,F#) checks for a cleaner Theta result.
+
+If you want, I can:
+- give the exact corrected formulas for every affected cell (paste-ready), or
+- produce a guarded version that skips/labels invalid n (start at n>=2). Which would you prefer?

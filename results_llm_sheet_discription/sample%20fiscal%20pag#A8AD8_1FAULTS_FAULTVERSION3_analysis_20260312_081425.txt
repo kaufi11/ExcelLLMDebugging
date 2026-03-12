@@ -1,0 +1,40 @@
+Findings (short)
+1) Definite error: Sheet 1856 cell H25 is =COUNT(H9:H24). It should be a SUM. This produces a count of non‑empty rows instead of the total revenue for 2003‑04, so all downstream totals (C25, C35, TOTAL NET RESOURCES, ENDING BALANCE) for sheet 1856 and the Summary will be wrong for column H.
+
+2) Suspicious data/signs (possible errors needing verification): very large negative amounts in Repairs, Maintenance & Supplies on several funds (e.g., 1003 E65 = -3,632,507.22 and 1003 G65 = -16,370,339.64; 1166 D65 etc.). If these are data‑entry sign errors they will distort TOTAL EXPENDITURES and ending balances.
+
+3) Risk/maintenance note (not necessarily an error but unusual): the carry‑forward formulas on each fund use references to the column to the right (example D6 = +E6+D72-D25-D35). That works if you intentionally seeded one column (G6) and propagate backwards, but it’s unconventional and fragile. If this was unintended you should rewrite the roll‑forward formulas to reference the prior period to the left.
+
+Fixes and how to apply them (simple steps)
+A) Correct COUNT → SUM (critical)
+- On sheet 1856, cell H25: replace =COUNT(H9:H24) with =SUM(H9:H24).
+- Press Enter and let recalculation flow. This will correct Total Revenues for 2003‑04 on 1856 and all dependent totals on that sheet and the Summary.
+
+Why: COUNT returns the number of nonblank cells; SUM adds numeric values. Using COUNT on revenue rows gives the row count (small integer) instead of the revenue total.
+
+B) Check negative Repairs/Maintenance values (recommended)
+- Inspect source data for Repairs/Maintenance on funds 1003 and 1166 (and any other large negative cells).
+- If sign was entered incorrectly, change the sign (e.g., =-cell or edit value) or correct the data source.
+- After correcting, verify D72/H72 and the sheet’s ending balance update properly.
+
+Why: negative large expenditures reduce TOTAL EXPENDITURES incorrectly if they were meant to be positive expense amounts.
+
+C) (Optional) Make carry‑forward formulas less fragile
+- If you want forward‑looking roll‑forwards (typical): change formulas so each period references the previous period instead of the column to the right. Example for E6 (2000‑01) use:
+  E6 = D6 + D72 - D25 - D35
+  and copy rightwards as appropriate.
+- If the current backward propagation is intentional, leave as is but document it.
+
+How to find similar COUNT mistakes or other formula problems
+- Use Find (Ctrl+F) and search for "COUNT(" across workbook.
+- Show formulas (Ctrl+`) and scan for unexpected functions in totals.
+- Use Formula Auditing > Trace Dependents to see where a wrong total propagates.
+
+Impact summary
+- Fixing H25 on 1856 will immediately correct that fund’s 2003‑04 Total Revenues and all dependent totals on the 1856 sheet and the Summary H column.
+- Fixing any wrongly signed expenditures will change TOTAL EXPENDITURES and Ending Balances across the affected funds and the Summary.
+
+If you want, I can:
+- Provide the exact corrected numeric totals for Summary column H after applying the SUM fix,
+- Search the workbook for all COUNT occurrences and list them,
+- Produce corrected carry‑forward formulas written left‑to‑right for all funds.

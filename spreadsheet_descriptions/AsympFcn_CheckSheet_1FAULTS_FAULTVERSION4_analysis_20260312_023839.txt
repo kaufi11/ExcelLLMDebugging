@@ -1,0 +1,49 @@
+High-level summary
+- Workbook contains two sheets for checking asymptotic/classification tests: MasterMethod_Checks and SubstitutionMethod_Checks.
+- Both sheets are laid out as parameter cells at the top and a row-by-row table (n increasing down the sheet) that computes function values and boolean checks (Big-Oh / Big-Omega) to decide Theta membership.
+
+MasterMethod_Checks (purpose: test Master Theorem)
+- Parameters (top-left):
+  - A4/B4: a = 3
+  - A5/B5: b = 3
+  - B6: Critical Exponent (CE) = LOG(B4,B5) — computes log_b(a); with a=3, b=3 this yields CE = 1.
+  - B7: constant c = 0.5
+  - Note text D6 reminds to check regularity when Case 3 applies.
+- Main table (columns A:H, rows 10:41):
+  - A = n (0,1,2,...,30)
+  - B = f(n); formula in B11.. typically =A#/2 (so f(n)=n/2). (Exception: B19 is hard-coded as 473/2 instead of =A19/2.)
+  - C = n^CE; formula =A#^$B$6 (uses absolute reference to CE).
+  - D = f(n)/n^CE; =B#/C# (ratio).
+  - E = c * n^CE; =$B$7*C# (uses absolute reference to c).
+  - F = Big-Oh test; =IF(B#<=E#,"TRUE","FALSE") (tests f(n) <= c*n^CE).
+  - G = Big-Omega test; =IF(E#<=B#,"TRUE","FALSE") (tests c*n^CE <= f(n)).
+  - H = "Theta Term"; =LOG(A#,2) (log base 2 of n; presumably the log factor for Case 2).
+- Key idea: because CE = 1 and f(n)=n/2, both F and G evaluate TRUE (equality), so the table indicates Theta(n * log n) behavior (H holding log n factor). Watch the B19 anomaly.
+
+SubstitutionMethod_Checks (purpose: verify Theta by bounding T(n) between c1*asymptotic and c2*asymptotic)
+- Parameters (top-left):
+  - B4: constant c1 = 0.5
+  - B5: constant c2 = 3
+  - A6: n0 >=  (blank)
+- Main table (columns A:G, rows 10:39):
+  - A = n (1..30)
+  - B = c1 * asymptotic_fcn; formula pattern = $B$4 * A# * LOG(LOG(A#,2),2) — interprets asymptotic function as n * log2(log2 n) (LOG(...,2) = log base 2).
+  - C = c2 * asymptotic_fcn; typically = $B$5 * A# * LOG(LOG(A#,2),2) (some early rows show a missing A# multiplier — see anomalies).
+  - D = T(n) function; many rows use D# = 5*1 + A#/LOG(A#,2) (i.e., 5 + n/log2 n) for small n, but several rows reuse fixed references like 5*$D$11 + A#/LOG(A#,2) (copy/paste references to other D cells), which looks intended to simulate recurrence expansion but introduces inconsistent, hard references.
+  - E = Big-Omega test; =IF(B#<=D#,"TRUE","FALSE")
+  - F = Big-Oh test; =IF(D#<=C#,"TRUE","FALSE")
+  - G = Theta()?; nested IF =IF(E#="TRUE",IF(F#="TRUE","True","False"),"False") — returns "True" only if both bounds hold.
+- Asymptotic choice: n * LOG(LOG(n,2),2) (n * log2(log2 n)).
+- Key values: c1=0.5, c2=3. D-column formula structure suggests T(n) ≈ 5*T(...) + n/log n pattern, but the implementation mixes absolute references (e.g., $D$11, $D$12 ...) rather than a consistent recurrence evaluation.
+- Anomalies to check:
+  - Several inconsistent/mistyped formulas from copy/paste:
+    - C10 (and maybe other early C cells) lacks multiplication by A# (so c2*asymptotic is missing the n factor).
+    - B19 on MasterMethod_Checks is hard-coded 473/2 instead of =A19/2.
+    - D cells in SubstitutionMethod_Checks reference fixed cells ($D$11, $D$12, etc.) instead of a coherent recurrence or consistent base formula — this produces inconsistent T(n) values down the column.
+    - Some rows in Substitution sheet use different multipliers in C and B inconsistently.
+- Output logic: Both sheets use simple IF tests to produce TRUE/FALSE for the two bounding inequalities and then a combined Theta indicator.
+
+Overall layout and intent
+- Both sheets are diagnostic tables: vary n row-by-row, compute f(n), n^CE (Master) or asymptotic function (Substitution), then test inequalities to conclude Theta membership.
+- Constants are kept in a few top cells and referenced with absolute ($) references.
+- The workbook is mostly correct conceptually, but several formula-copy errors (hard-coded values and wrong references) should be fixed so the inequality checks are reliable for all rows.

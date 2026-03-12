@@ -1,0 +1,65 @@
+I inspected the workbook formulas and checked totals/summary formulas for consistency. I found a small set of formula mistakes and several inconsistencies that will cause incorrect totals or make the workbook fragile. Summary of problems, examples and suggested fixes are below.
+
+High-priority errors (will affect totals)
+- COUNT used where SUM is expected
+  - 'University Total by Sem.'!O31 has formula =COUNT(O9:O30) and value 20. That counts numeric entries instead of summing percentages. If this cell is intended to be the "Total" (like adjacent columns) replace with =SUM(O9:O30).
+
+- Inconsistent SUM ranges in the same "Total" row
+  - 'University Total by Sem.' totals row (row 31):
+    - B31 = SUM(B9:B29)
+    - C31 = SUM(C9:C29)
+    - D31 = SUM(D9:D30), E31..L31 = SUM(...:9:30) (rows extend to 30)
+  - B31/C31 stop at row 29 while many other columns go to row 30. This inconsistent endpoint will make B/C totals exclude row 30 entries. Either all columns should sum to the same range (B9:B30 etc.) or ranges should be tailored intentionally — but at present they are inconsistent.
+
+- Missing SUM formula where you would expect one
+  - 'University Total by Sem.'!M31 has value 1 but no formula (formula = null in the JSON). It looks like M31 should be =SUM(M9:M30).
+  - There are several other "Total" cells in different sheets that are hard-coded (value present but no formula). Example: 'University Total'!B65 has value 1 and formula=null while C65 has a SUM formula. Hard-coded totals make auditing/deltas brittle. I recommend replacing manually-entered totals with SUM formulas everywhere for consistency.
+
+Medium-priority / likely causes to check
+- Small numeric deviations slightly above/below 1 (rounding)
+  - Several total cells are 1.0003, 0.998, 1.0003 etc. Examples: 'University Total by Sem.'!K31 = 1.0003, L31 = 1.0003, 'Class Grades by div.' G65 = 1.0003, 'Department of Religion' G569 = 1.0003.
+  - These are likely due to accumulated floating-point/rounding from summing rounded percentages. They are not formula errors per se, but if you expect totals to equal exactly 1 consider wrapping SUMs in ROUND(...,n) or normalizing (or check source rounding).
+
+- Unexpected single "1" or other sentinel values inside data rows
+  - I saw individual non-total cells containing 1 (not 1.0003) that look like data-entry placeholders and which cause totals to exceed 1. Examples:
+    - 'Class Grades by div.' (School of Computing) L44 = 1 (row for grade 'A' in column L).
+    - 'Department of Biochemistry' I152 = 1, L152 = 1 (cells within the grade rows).
+    - 'Department of Political Science' L439 = 1.
+  - If those 1s are placeholders (not probabilities/percentages), they should be cleared or replaced by correct values. They will skew column totals and produce >1 results even after rounding.
+
+Lower-priority / style / consistency items
+- Leading "+" in formulas (cosmetic)
+  - On 'Sheet1', formulas such as =+C1/+C24 are used. "=+..." is allowed and works identically to "=" but is redundant. Not an error, just stylistic.
+
+- Totals not uniform across sheets
+  - Some department "Total" rows use SUM formulas for some columns and manual values for others. This makes automated checks harder. I recommend standardizing so every "Total" cell is explicitly a SUM (or wrapped in ROUND).
+
+Recommendations (concrete fixes)
+1) Replace COUNT with SUM where a total is intended:
+   - 'University Total by Sem.'!O31: change =COUNT(O9:O30) → =SUM(O9:O30)
+
+2) Make the SUM ranges consistent in each totals row:
+   - For 'University Total by Sem.' row 31, pick a single consistent range for all grade-category columns (B..O) — e.g. use B9:B30 for all columns that should include row 30 — and update the formulas accordingly. Or if row 30 is intentionally excluded for B/C, document why and keep consistent variations across all similar blocks.
+
+3) Replace hard-coded totals with formulas:
+   - e.g., 'University Total by Sem.'!M31 → set to =SUM(M9:M30)
+   - Search for "Total" rows with formula=null and convert to SUM formulas.
+
+4) Find and verify suspicious single "1" entries
+   - Files contain non-aggregated cells with value 1. Check these cells' source data (examples above). If they are erroneous placeholders, correct or blank them; if they are legitimate, document why.
+
+5) If you want exact totals equal to 1 use rounding/norming:
+   - Use =ROUND(SUM(range),4) (or desired decimals) to avoid small floating errors.
+   - Alternatively present totals with a note about rounding (there is already such a note in the workbook).
+
+Exact cells I recommend reviewing first
+- 'University Total by Sem.'!B31, C31, D31, E31, … L31, M31, N31, O31 (inconsistent ranges / missing formula / COUNT).
+- Any "Total" row where JSON shows "formula": null (those are hard-coded values) — they should be converted to SUM formulas for consistency.
+- Any single data cell containing 1 in the middle of a percentage block (examples listed above).
+
+If you want I can:
+- Produce a list of every "Total" cell (rows labeled "Total") that currently lacks a SUM formula (i.e., formula:null) so you can correct them.
+- Generate corrected formulas (exact text) for the specific cells you name (or for every totals row).
+- Run a pass to replace SUM(...) with ROUND(SUM(...),4) where you prefer exact reporting.
+
+Do you want me to (a) produce a list of all cells labeled "Total" that are hard-coded (formula = null), or (b) produce a corrected formula table to paste into the workbook (for example fixing the ranges and the COUNT → SUM)?

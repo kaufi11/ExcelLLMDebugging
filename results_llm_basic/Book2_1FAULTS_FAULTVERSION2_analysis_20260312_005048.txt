@@ -1,0 +1,28 @@
+Summary — what’s wrong
+1. M10 is a typo: it uses =L10*10 instead of dividing. That gives a huge wrong average for row 10.
+2. Many rows have missing homework scores in B:K. But every M cell uses Lx/10 (divide by 10) — that assumes 10 scores always exist. When scores are missing the average is incorrect.
+
+What to fix (simple, copyable formulas)
+1. Fix the typo in row 10:
+   - Change M10 to =L10/10
+   - Better: use =AVERAGE(B10:K10) instead (explained below).
+
+2. Replace the L/10 approach for all students with a formula that ignores blanks:
+   - In M3 (and fill down to M45) use either:
+     - =AVERAGE(B3:K3)
+     OR (explicit)
+     - =IF(COUNT(B3:K3)=0,"",SUM(B3:K3)/COUNT(B3:K3))
+
+Why these fixes work
+- =AVERAGE(Bx:Kx) computes the average of the non-blank numeric scores only. It automatically ignores missing scores, so a student with only 9 recorded scores will have the correct average of those 9.
+- SUM(...)/COUNT(...) does the same but makes the logic explicit. It also allows returning a blank if there are no scores.
+- Changing M10 to /10 fixes the accidental multiplication error.
+
+How to find rows with missing scores
+- Add a helper column (e.g., column N) and put in N3:
+  - =COUNT(B3:K3)
+  Copy down. Any value less than 10 indicates missing scores that you should review.
+
+Optional: If you want missing scores to be treated as zero (i.e., average always over 10), then keep SUM/10 but first ensure blanks are entered as 0 (or use =SUM(B3:K3)/10). I don’t recommend treating missing as zero unless that’s your grading policy.
+
+If you want, I can give the exact formulas to paste into M3:M45 and N3:N45 and show which rows currently have less than 10 scores.

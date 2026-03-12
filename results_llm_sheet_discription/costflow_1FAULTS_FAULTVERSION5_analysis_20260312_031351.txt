@@ -1,0 +1,37 @@
+Short answer — main error: inconsistent sign convention for ending inventory (entered as negative numbers) causes fragile / confusing formulas (you must negate prior-year ending to get next-year beginning). Fix by storing inventory balances as positive numbers and using subtraction for COGS. Also a few missing/odd formulas elsewhere.
+
+What’s wrong (simple):
+- On the Errors sheet you put ending inventory values as negative (B11 = -150,000; D11 = -125,000; F11 = -175,000). That forces formulas elsewhere to use negation (B27 = -B11), which is error-prone and confusing.
+- Because of those negative inventory values you use SUM(B10:B11) to compute COGS (adding a negative) and then negate again in other places. This works numerically now but is brittle.
+- (Minor) Row 25 in Year 2 (D25 and F25) references the heading cells (D6, F6). That’s odd/ambiguous if you intended static labels.
+- (Workbook-wide) On Valuing Ending Inventory sheet there are cells flagged with “?” (K11, K12) — those are missing formulas and should be completed.
+
+Recommended solution (clear, robust):
+1) Make ending inventory positive:
+   - Change B11, D11, F11 to positive numbers: 150000, 125000, 175000.
+
+2) Replace the COGS formulas to subtract ending inventory (clear arithmetic):
+   - B12 = B10 - B11
+   - D12 = D10 - D11
+   - F12 = F10 - F11
+   (instead of SUM(B10:B11) etc.)
+
+3) Set Year 2 beginning inventory to reference prior-year ending directly (no negation):
+   - B27 = B11
+   - D27 = D11
+   - F27 = F11
+   (instead of = -B11, = -D11, = -F11)
+
+4) Optional cleanup:
+   - Change D25/F25 to static labels (or to reference B6 if you want the same “Correct” label) so headings are consistent.
+   - Fill the “?” formulas on the Valuing Ending Inventory sheet (K11 and K12) — inspect the intended calculation (they should be the aggregated cost components for ending inventory / COGS) and replace “?” with the correct SUM/assignment.
+
+Why this fixes it (plain English):
+- Using positive inventory balances and explicit subtraction (Goods available − Ending inventory) follows normal accounting math and avoids double-negation. Formulas become easier to read and less likely to break if someone edits a sign or copies formulas.
+- Removing the need to negate prior-year ending inventory avoids accidental negative beginning balances and reduces auditing mistakes.
+
+Quick check after fix:
+- Year 1 (Correct): B10 = 600,000; B11 = 150,000; then B12 = 450,000. Year 2 beginning = 150,000 (B27) — everything flows naturally.
+- Taxes and net income formulas remain the same and will produce the same numeric results after switching conventions; formulas will be clearer.
+
+If you want, I can list the exact cells to edit and paste the corrected formulas ready to copy into your workbook. Which would you prefer?

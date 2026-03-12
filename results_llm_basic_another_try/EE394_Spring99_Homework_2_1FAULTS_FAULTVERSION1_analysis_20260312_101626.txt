@@ -1,0 +1,49 @@
+Errors found:
+
+1. In columns J and N (angles in degrees), the ATAN2 function arguments are reversed. The correct syntax is ATAN2(y, x), but formulas use ATAN2(G4,H4) and ATAN2(K4,L4), which should be ATAN2(H4,G4) and ATAN2(L4,K4).
+
+2. In cell B12, the formula for capacitance C uses LN(B4), but B4 is "Outer rad. / inner rad." which is 2.7 (text label in A4, value 2.7 in B4). This is correct if B4 is the ratio, so no error here.
+
+3. In cell B13, the formula for inductance L uses LN(B4), which is consistent.
+
+4. In cell B14, Z0 formula is SQRT(B13/B12), which is correct.
+
+5. In cell B15, Beta formula uses $B$15 inside itself (circular reference). The formula is =2*PI()*B9*SQRT(B13*B12). This is correct; $B$15 is the cell itself, but the formula uses B15, so no circular reference.
+
+6. In column C and D, formulas are =-(ROW()-4)*$B$10 and =-C4, which is consistent.
+
+7. In columns L (Imag(IS)) formulas like =$B$6*1000/$B$14*F4+$B$24*E4 lack parentheses, so order of operations is wrong. For example, =$B$6*1000/$B$14*F4+$B$24*E4 is interpreted as (($B$6*1000)/$B$14)*F4 + $B$24*E4, which may be intended as $B$6*1000/($B$14*F4) + $B$24*E4 or $B$6*1000/($B$14) * F4 + $B$24*E4. Need clarification.
+
+8. In cell B20, formula =IF(B8>0,SQRT(B7*B7-B19*B19),-SQRT(B7*B7-B19*B19)) uses B8>0 to decide sign of reactive power Q. Since B8 is power factor lagging (0.9), this is okay.
+
+Summary of main errors:
+
+- ATAN2 arguments reversed in angle calculations (columns J and N).
+
+- Possible missing parentheses in formulas for Imag(IS) in column L.
+
+Solution:
+
+1. Fix ATAN2 arguments in all angle formulas:
+
+Change all formulas like ATAN2(G4,H4) to ATAN2(H4,G4).
+
+Similarly, ATAN2(K4,L4) to ATAN2(L4,K4).
+
+Explanation: ATAN2(y,x) returns the angle of the point (x,y). Using reversed arguments gives incorrect angles.
+
+2. Add parentheses in Imag(IS) formulas in column L:
+
+Change formulas like:
+
+=$B$6*1000/$B$14*F4+$B$24*E4
+
+to
+
+=($B$6*1000/$B$14)*F4 + $B$24*E4
+
+Explanation: To ensure multiplication and division occur as intended.
+
+These fixes will correct angle calculations and ensure correct order of operations.
+
+No other errors detected.

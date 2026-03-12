@@ -1,0 +1,50 @@
+Summary of the problems I found (short, with quick fixes)
+
+1) Duplicate / inconsistent Property & Equipment blocks (main cause)
+- What’s wrong: You have two sets of property-account lines and totals:
+  - A small summary near the top (rows ~24–34: D30, D32, D34), and
+  - The full detailed block much lower (rows ~155–175: D162, D170, D175).
+  The final Total Assets (D178) uses the detailed block (D162 and D170) while the earlier Net Property (D34) uses the smaller block (D30 & D32). That leads to inconsistent totals and potential double-counting or omissions.
+- Fix (recommended, pick one approach):
+  - Best: Make the worksheet use one canonical property/net property line. For example:
+    - Set D30 = D162 (or delete the upper summary rows and leave only the detailed block).
+    - Set D34 (Net property and equipment) to: =D162 + D170  (if D170 is stored as a negative accumulated depreciation) OR =D162 - ABS(D170) (if you want explicit subtraction).
+    - Change the final Total Assets D178 to use D34 (net property) instead of D162 and D170 separately, e.g. D178 = D18 + D22 + D34 + D36.
+- Why it fixes it: you avoid using two different totals for the same asset class and ensure the net property amount is included exactly once.
+
+2) Incorrect/unsafe SUM ranges that include header or empty cells
+- Examples: D18 is =SUM(D8:D17). D8 is a header ("Current assets:") not a data row—this is fragile and confusing.
+- Fix: use explicit, exact ranges that include only data rows. Example: change D18 to =SUM(D9:D17).
+- Why: prevents accidentally including labels, messing up ranges when rows are moved/inserted.
+
+3) Accounts Receivable and similarly-built subtotals use explicit lists instead of a SUM range
+- What’s wrong: D11 = D98+D99+D102+D103+... is fragile (and references D98 which may not be present). If rows are inserted/moved or you missed an account the formula breaks.
+- Fix: replace the explicit enumerated sum with a clean range: e.g. =SUM(D99:D113) (adjust the start/end to match the actual A/R account rows).
+- Why: simpler, less error-prone, easier to audit.
+
+4) Sign treatment (accumulated depreciation & restrictions)
+- What’s wrong: Net formulas sometimes add a line that is actually a deduction. This is OK only if the deduction is stored as a negative number. For example D34 = D30 + D32 is correct only if D32 is negative.
+- Fix: make it explicit in formula so future readers don’t need to guess. Use:
+  - Net property = Gross property + AccumDep  (only if AccumDep is negative), or safer:
+  - =D162 - ABS(D170)  (explicit subtraction).
+- Why: avoids accidental sign-flips if an accumulated depreciation account accidentally becomes positive.
+
+5) General advice to locate any remaining mismatches
+- Use Excel’s Trace Precedents/Trace Dependents to see whether a total cell pulls from the same detailed accounts used elsewhere.
+- Compare the final Total Assets (D178) and Total Liabilities & Capital (D283). H291 (=D178 - D283) must equal zero. After you consolidate the property lines and fix SUM ranges the difference should go to 0.
+- Replace long enumerated formulas with SUM ranges and remove duplicate summary lines so each account only contributes once.
+
+Concrete quick changes to implement right now (minimal, safe)
+1. Change D18 to =SUM(D9:D17)
+2. Replace D11 with =SUM(D99:D113) (or the correct A/R rows)
+3. Set D34 to =D162 + D170 (or =D162 - ABS(D170))
+4. Set D30 to =D162 (or delete the top property rows and leave only detailed block)
+5. Change D178 to =D18 + D22 + D34 + D36
+
+After making those five edits:
+- Recalculate and check H291 (D178 - D283) → should be 0.
+- If still not zero, use Trace Precedents on D178 and D283 and look for any account that is missing or counted twice.
+
+If you want, I can:
+- Produce the exact cell edits as copy-paste formulas, or
+- Scan for other specific suspicious references (e.g., D98 reference) if you paste the few surrounding rows (90–116 and 150–176).

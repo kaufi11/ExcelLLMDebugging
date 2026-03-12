@@ -1,0 +1,31 @@
+I inspected the formulas and data in "lab grades" and found a few formula inconsistencies and data issues you should check. Summary of problems and recommended fixes:
+
+1) F27 uses an inconsistent range
+- Current: F27 = =AVERAGE(F8:F26)
+- Problem: every other column average on row 27 uses the 7:26 range (e.g. B27 = AVERAGE(B7:B26)). F27 excludes row 7 while the rest include it — likely a typo.
+- Recommended fix: change to =AVERAGE(F7:F26) (or otherwise document why row 7 is intentionally excluded).
+
+2) Row 17, column H is missing / affects I17
+- I17 formula is =AVERAGE(B17:H17). The JSON listing has no H17 value present. I17's numeric result (75.785714...) implies a divisor of 7 was used (or a zero present). AVERAGE normally ignores blanks, so a blank H17 should not cause that value.
+- Action: check H17 on the sheet. Either (a) H17 contains a zero or non-numeric entry (causing a 7-cell average), (b) H17 is intentionally blank but the value in I17 is incorrect for that situation, or (c) H17 was accidentally omitted. Correct H17 (enter the intended quiz score or clear unexpected zero/text) or recompute I17 if you intend to average only the available numeric cells.
+
+3) Inconsistent averaging approach for the overall "Avg" row (I27)
+- Current: I27 = =AVERAGE(I7:I26) (average of each student's row-average)
+- Consideration: That produces the class mean of student averages. If your intent was instead the mean of the per-exercise averages (the average of B27:H27), or the average across all underlying exercise values, the formula should change.
+- Recommendation: pick one consistent method and apply it:
+  - Class average of student averages: keep =AVERAGE(I7:I26).
+  - Average of the per-exercise averages: =AVERAGE(B27:H27).
+  - Overall average across all exercise cells: =AVERAGE(B7:H26) (this gives equal weight per cell).
+
+4) Mixed data types in ID column (A)
+- Some IDs are strings with leading zeros ("0022", "0178") and others are numeric (1321, 1882). Mixed text/number types can cause sorting, filtering, or lookup problems.
+- Recommendation: store all IDs consistently as text (to preserve leading zeros) or all as numbers (if no leading zeros). To convert numeric IDs to text with leading zeros, use TEXT or format as text with custom format.
+
+5) Minor / review items
+- Check for any other blank/mis-typed cells in the B:H ranges (e.g., any cell containing text, stray spaces, or zero) because AVERAGE ignores blanks but includes zeros — this can produce subtle differences.
+- If some rows intentionally allow scores >100 (e.g., 105), confirm that all average calculations are intended to include those extra-credit values.
+
+If you want, I can:
+- Give the exact corrected formulas ready to paste into the workbook,
+- Scan the sheet for any cells that contain text/zeros in numeric ranges (to identify H17 or similar), or
+- Recompute and show how much the class averages change if F27 is corrected and/or H17 is fixed.

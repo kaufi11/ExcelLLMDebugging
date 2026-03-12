@@ -1,0 +1,59 @@
+I inspected the formulas and values you supplied for both sheets and found several formula errors and formula-range inconsistencies that will cause incorrect results (particularly in column H of the P&L). Below is a concise itemized report with the problem, why it matters, and suggested fixes.
+
+Summary of the most important problems
+- H9 contains =0 (hard-coded zero) instead of summing H7:H8 — this is a clear formula error and produces many downstream incorrect results in the H column (H20, H27, H33, H36, H39, etc.). Fixing H9 will change a large portion of the H-column P&L.
+- Several cells use hard-coded numbers or inconsistent formulas (pro‑forma EPS denominators, one-off arithmetic in J17) instead of referencing the data cells. This leads to inconsistency and increased risk of error.
+- A couple of SUM ranges are inconsistent between columns (Balance Sheet total-current-assets ranges differ between G and I).
+
+Detailed items (address → issue → impact → recommended correction)
+
+1) P&L!H9
+- Issue: Formula is =0 (hard-coded).
+- Impact: Total revenues for the "Three Months Ended" (H column) is zero and makes Income (loss) from operations H20 and all downstream values (H27, H33, H36, H39, …) incorrect.
+- Recommendation: Replace with =SUM(H7:H8) (consistent with F9 and J9). Expected value: 29318 + 33166 = 62484 (instead of 0).
+
+2) P&L propagation from H9 error
+- Cells impacted (examples): H20 (=H9-H18), H27 (=SUM(H20:H24)), H33 (=H27-H30), H36 (=H33/H37), H39 (=H33/H40), H27/H33 etc.
+- Impact: All these produce incorrect results while H9 remains =0.
+- Recommendation: Fix H9 first; then review these cells — formulas are OK, their inputs will be corrected.
+
+3) P&L!J17 and F17 inconsistency
+- Issue: F17 is 2615 (hard-coded). J17 is a formula =12615-5000 (result 7615). Using a literal expression (=12615-5000) is fragile and inconsistent with F17 being hard-coded.
+- Impact: Different treatment across columns and reliance on hard-coded constants rather than referenced cells.
+- Recommendation: Either (a) store the constituent numbers in cells and write J17 as =cellA - cellB, or (b) set both F17 and J17 to explicit values with documentation. At minimum, prefer referencing cells rather than embedding constants.
+
+4) Pro forma EPS lines — hard-coded denominators and values (F46, J46, F52, J52, H46, H52)
+- Issues:
+  - F46 =+F44/32703 and F52 =+F50/32703 use hard-coded denominators (32703) instead of referencing a "pro forma shares" cell.
+  - J46 and J52 use 32761 likewise.
+  - H46 and H52 are hard-coded 0.05 (and L46/L52 are hard-coded -0.05) with no formulas.
+- Impact: Lack of traceability and inconsistency with the "Weighted average shares outstanding" rows (F37/F40 etc.). If the pro‑forma share counts change, these EPS cells will not update automatically.
+- Recommendation: Add explicit pro-forma shares cells (e.g., put 32703/32761 in a clearly labelled cell) and change F46 to =F44 / <pro-forma-shares-F> (or reference the correct cell). Do the same for J and H columns. Replace hard-coded 0.05 entries with formulas for transparency and maintainability.
+
+5) Balance Sheet — inconsistent SUM ranges for total current assets
+- Issue: G13 is =SUM(G7:G12) while I13 is =SUM(I7:I11). The G-range includes row G12 while I-range stops at I11. (G12 appears to be empty/missing.)
+- Impact: Inconsistent formulas across columns could confuse reviewers and may hide an omitted row. While the current G13 value matches expected total (G7:G11), the range is inconsistent and includes a non-existent/blank row.
+- Recommendation: Use the same range in both columns. Likely change G13 to =SUM(G7:G11) for consistency (or change both to SUM(...:G11) / SUM(...:I11) as appropriate).
+
+6) Balance Sheet — use of ranges that include blank rows
+- Notes: Several totals use ranges that include blank or missing rows (e.g., SUM(G7:G12)). This is not an error per se but is fragile/documentation-poor.
+- Recommendation: Tighten ranges to exactly the populated rows to avoid accidental inclusion of unintended cells later.
+
+7) Miscellaneous stylistic/inconsistency notes (not calculation errors but worth cleaning)
+- Unary plus in formulas (e.g., =+F33/F37) is harmless but unusual — you may remove the leading + for clarity.
+- Some write-off entries exist in F23 and J23 but not in H23 / L23. Confirm whether write-offs apply only to those periods; if they should appear in H/L columns as 0 explicitly, consider placing 0 so SUM ranges are explicit.
+- Consider replacing formulas that use literal subtraction (e.g., =12615-5000) with cell references for traceability.
+
+Suggested action plan (priority order)
+1. Fix P&L!H9 to =SUM(H7:H8). Recalculate and review all H-column downstream values (H20, H27, H33, H36, H39, H46/H52).
+2. Replace hard-coded/embedded constants used in formulas with cell references (J17, pro‑forma denominators in F46/J46/F52/J52).
+3. Align SUM ranges on Balance Sheet totals (G13 → =SUM(G7:G11) to match I13).
+4. Replace hard-coded pro‑forma EPS values in H and L with formulas referring to pro‑forma shares.
+5. Sweep for other hard-coded values where a reference would be preferable.
+
+If you want, I can:
+- Produce the exact formula edits for each cell (e.g., "change H9 from =0 to =SUM(H7:H8)"),
+- Recalculate and show what the corrected H-column values would be after the H9 fix,
+- Or open and patch the workbook and return a corrected copy.
+
+Which of those would you like me to do next?

@@ -1,0 +1,127 @@
+Errors found:
+
+1. In cell H15: `=HLOOKUP(B15,R2:AG3,2,TRUE)`
+   - Lookup range `R2:AG3` includes only 2 rows, but the lookup row index is 2, which is valid.
+   - However, the lookup value is 170 (weight), but the lookup table in R2:AG2 is weight values (0,31,61,...), so this is correct.
+   - No error here.
+
+2. In cell H18: `=HLOOKUP(B18,R17:AN18,2,TRUE)`
+   - Lookup value is 15 (Charisma).
+   - Lookup range is R17:AN18, which has two rows: first row is values (Charisma values), second row is modifiers.
+   - This is correct.
+
+3. In cell B19: `=HLOOKUP(B16,R5:AW15,2,TRUE)`
+   - Lookup value is Strength (30).
+   - Lookup range R5:AW15 covers rows 5 to 15, columns R to AW.
+   - The row index is 2, meaning second row of the range (row 6 in sheet).
+   - Row 6 is "Str HP Mod" with decimal values.
+   - This is likely incorrect because Hit Mod should be from "Attr. Value" or similar.
+   - The "Hit Mod." label is in A19, and the formula is referencing the wrong row.
+
+4. In cell C19: `=HLOOKUP(G16,R5:AW15,3,TRUE)`
+   - Lookup value is Endurance (12).
+   - Row index 3 means row 7 in sheet: "End HP Mod".
+   - This seems inconsistent with the label "Hit Mod." in A19.
+
+5. In cell D19: `=HLOOKUP(G17,R5:AW15,5,TRUE)`
+   - Lookup value Intelligence (11).
+   - Row index 5 means row 9 in sheet: "Int HP Mod".
+   - Again, this is inconsistent with "Hit Mod." label.
+
+6. In cell E19: `=HLOOKUP(B17,R5:AW15,9,TRUE)`
+   - Lookup value Agility (34).
+   - Row index 9 means row 13 in sheet: "Agl HP Mod".
+   - This is inconsistent with "Hit Mod." label.
+
+7. In cell F19: `=PRODUCT(B19:E19)`
+   - Multiplies the four values from B19 to E19.
+   - If the above lookups are incorrect, this product will be wrong.
+
+8. In cell H19: `=(F19*E15)+0.49`
+   - Multiplies product by Basic Hits (E15) and adds 0.49.
+   - This seems okay if F19 is correct.
+
+9. In cell B20: `=HLOOKUP(G17,R5:AW15,6,TRUE)+HLOOKUP(B17,R5:AW15,10,TRUE)`
+   - Lookup Intelligence (11) in row 6 (row 10 in sheet: Int Dmg Mod)
+   - Lookup Agility (34) in row 10 (row 14 in sheet: Agl Dmg Mod)
+   - This seems consistent.
+
+10. In cell G20: `=E15/HLOOKUP(G16,R5:AW15,4,TRUE)`
+    - Divides Basic Hits (E15) by row 4 (End Heal Rate)
+    - This seems consistent.
+
+11. In cell B21: `=HLOOKUP(B17,R5:AW15,11,TRUE)`
+    - Lookup Agility (34) in row 11 (Det Hidden)
+    - This seems inconsistent because row 11 is "Det Hidden" but label is "Accuracy".
+
+12. In cell G21: `=SUM(B16:B17,G16:G17)`
+    - Sums Strength, Agility, Endurance, Intelligence.
+    - This is fine.
+
+13. In cell C22: `=((B16/10)^3+(G16/10))*(B15/2)`
+    - Carrying capacity formula.
+    - This is fine.
+
+14. In cell H22: `=HLOOKUP(C22,R2:AG4,3,TRUE)`
+    - Lookup Carrying Capacity in R2:AG4 (Weight, Agility Mod, HTH damage)
+    - Row 3 is HTH damage.
+    - This is inconsistent because Carrying Capacity is not weight.
+
+15. In cell B25: `=HLOOKUP(G17,R5:AW15,7,TRUE)`
+    - Lookup Intelligence (11) in row 7 (End HP Mod)
+    - Label is "Det. Hidden" which is row 11.
+    - This is incorrect.
+
+16. In cell G25: `=HLOOKUP(G17,R5:AW15,8,TRUE)`
+    - Lookup Intelligence (11) in row 8 (End Heal Rate)
+    - Label is "Det. Danger" which is row 12.
+    - This is incorrect.
+
+Summary of errors:
+
+- The row indexes in many HLOOKUP formulas do not match the intended data rows.
+- For example, in B19:E19, the row indexes should correspond to the correct attribute modifiers for Hit Mod.
+- Similarly, in B25 and G25, the row indexes do not match the labels "Det. Hidden" and "Det. Danger".
+- In H22, the lookup is done on Carrying Capacity but the table is for Weight and related stats, causing mismatch.
+
+Solutions:
+
+1. Correct row indexes in HLOOKUP formulas to match the intended data rows.
+
+   For example:
+
+   - For Hit Mod. in B19:E19, use rows corresponding to Hit Modifiers, not HP Mods.
+
+   - Check the exact rows for Hit Mod in the table R5:AW15 and use those row numbers.
+
+2. For B25 (Det. Hidden) and G25 (Det. Danger), use row indexes 11 and 12 respectively, not 7 and 8.
+
+3. For H22 (Base HTH Damage), lookup should be based on Weight or Strength, not Carrying Capacity.
+
+4. Verify all HLOOKUP ranges and row indexes to ensure they match the data.
+
+Explanation:
+
+- HLOOKUP's third argument is the row index within the lookup range, starting at 1 for the first row.
+- Using wrong row indexes causes wrong data to be returned.
+- Matching the row index to the correct attribute row fixes the errors.
+
+Example fix:
+
+- For B19 (Hit Mod for Strength 30), if "Hit Mod" is in row 5 of R5:AW15, use row index 5.
+- Adjust all formulas similarly.
+
+# Short Answer
+
+Errors:
+- Many HLOOKUP formulas use incorrect row indexes, returning wrong data (e.g., B19:E19, B25, G25, H22).
+- Lookup ranges and row numbers don't match intended attribute rows, causing wrong results.
+
+Solution:
+- Adjust HLOOKUP formulas so the third argument (row index) correctly points to the intended data row within the lookup range.
+- For example, if "Hit Mod" is on the 5th row of the range, use row index 5 in HLOOKUP.
+- For "Det. Hidden" and "Det. Danger," use their correct row indexes (e.g., 11 and 12).
+- For H22, lookup base damage using Weight or Strength tables, not Carrying Capacity.
+
+Explanation:
+HLOOKUP returns data from the specified row number within the lookup range. Using wrong row indexes fetches incorrect data. Correcting these indexes ensures formulas retrieve the right values, fixing calculation errors.

@@ -1,0 +1,20 @@
+Findings — error(s)
+- Cell O19 (Catering) has the wrong formula: it uses =COUNT(D19-M19). COUNT returns how many numeric arguments there are (1), not the numeric difference. For D19=1 and M19=1 this yields 1 (incorrect) instead of 0 (the true underspend).
+- Because O19 is wrong, any subtotal or total that sums O15:O25 (for Administration) and higher-level roll-ups that include that subtotal (O26, O72, O76, O80, etc.) will be off.
+
+Other minor issues (not causing wrong numbers but poor practice)
+- Several cells use SUM(Dx-Mx) or SUM(C12+C26+...) when a plain subtraction (=D19-M19) or SUM(range) would be clearer. These work but are unnecessarily confusing.
+
+Solution — what to change
+1. Fix the incorrect formula in O19:
+   - Replace =COUNT(D19-M19) with =D19-M19  (or =SUM(D19-M19) if you prefer).
+2. Check dependent subtotals:
+   - After fixing O19, ensure O26 (Administration subtotal) and any higher totals (O72, O76, O80, etc.) recalculate correctly. They should update automatically if formulas are correct.
+
+Why this fixes it (simple explanation)
+- COUNT returns how many numeric entries are provided (it returned 1 because the expression produced a number). You want the numeric difference between the revised annual (D19) and the period total (M19). Subtraction (=D19-M19) gives that difference. Fixing O19 removes the 1-point error and corrects all totals that include that cell.
+
+Extra recommendations (quick)
+- Replace formulas like =SUM(D19-M19) with =D19-M19 for clarity.
+- Prefer SUM(range) for adding many cells (e.g., =SUM(C15:C25)) rather than =SUM(C15+C16+...) — both work but range form is clearer and less error-prone.
+- Scan column O for any other accidental use of COUNT or other wrong functions.

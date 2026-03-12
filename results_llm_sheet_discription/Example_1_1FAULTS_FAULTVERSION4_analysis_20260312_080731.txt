@@ -1,0 +1,33 @@
+Summary of errors (short)
+1) Q4 Homework H5 (Evans) uses COUNT(B5:G5) — it returns 6 (number of numeric cells) instead of the sum of scores. This makes Evans’ Q4 Homework total 6 and breaks downstream calculations.
+2) Q4 Summary F3 (Points Possible, weighted row) uses C3*0 (should be C3*0.1). That produces 270 instead of the correct 300.
+3) Minor robustness issue: Q4 Summary G4:G12 use a hard-coded denominator 300. If points-possible change, percentages will break.
+
+What to change (exact formulas)
+- Q4 Homework H5: replace
+  =COUNT(B5:G5)
+  with
+  =SUM(B5:G5)
+
+- Q4 Summary F3: replace
+  =B3*0.3 + C3*0 + D3*0.4 + E3*0.2
+  with either the corrected literal
+  =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+  or, better (uses the weight cells so it stays correct if you change weights):
+  =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+
+- Q4 Summary G4:G12: replace the hard-coded divisor with the weighted-points cell (F3). For example change
+  =(F4/300)*100
+  to
+  =(F4/$F$3)*100
+
+Why these fixes work (simple)
+- COUNT counts cells; SUM adds their numeric values. Using SUM returns the correct homework total for Evans.
+- The C column weight is 0.1 (Quizzes). Using 0 in F3 incorrectly omitted that category from the weighted “points possible.” Using the correct multiplier (or referencing the weight cells) fixes the weighted total.
+- Using $F$3 as the denominator makes the percent calculation dynamic — if you ever change the points possible or weights, the percentage updates automatically.
+
+Quick example of corrected results
+- After H5 =SUM(...), Evans’ Q4 Homework total becomes 273 (81+21+25+25+50+71).
+- With corrected weighted calculations, Evans’ weighted total (F6) becomes 253 and Q4 % (G6) becomes 84.33%.
+
+Want me to produce the exact corrected sheet formulas for every affected cell or show how the Year Summary letter grades change after fixing these?

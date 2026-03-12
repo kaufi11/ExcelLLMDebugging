@@ -1,0 +1,19 @@
+I checked the sheets and found two concrete formula errors that will produce wrong totals and cascade into other rows. Short fixes below.
+
+1) Faulty cell: Select Financial Data → J11
+- Error: J11 contains =COUNT(J9:J10). COUNT returns how many numeric cells (2) instead of summing the two cost lines.
+- Effect: J11 (Cost of operations) is wrong, so J12 (Total revenues − Cost) and everything downstream in column J are wrong.
+- Fix: replace with =SUM(J9:J10)
+- Why: you want the numeric total of the two cost rows, not a count of them.
+
+2) Faulty cells: Select Financial Data → B25 through K25 (row "Net Earnings")
+- Error: each Net Earnings cell uses =SUM(B20:B24) (and similarly for C..K) but the "Earnings before Extraordinary Item ..." value is in row 21, not row 20. The SUM range therefore starts one row too high and omits the intended row 21 by starting at the label row 20 (or an empty row).
+- Effect: Net Earnings totals are wrong for every year in B25:K25 (and can cause mismatches with other sheets like Cash Flow).
+- Fix: change each formula to start at row 21, e.g. in B25 use =SUM(B21:B24) and similarly C25 =SUM(C21:C24) … K25 =SUM(K21:K24)
+- Why: the correct components are in rows 21–24 (Earnings before extraordinary, Extraordinary item, Cumulative effect, etc.), so the SUM must include those rows.
+
+Quick extra checks I recommend (one-time):
+- Scan the file for accidental COUNT(), AVERAGE(), or other functions where SUM was intended (you already had one).
+- Verify no other totals have an off-by-one range (label rows sometimes shift ranges).
+
+If you want, I can give you a single step VBA or find/replace guidance to correct all B25:K25 at once.

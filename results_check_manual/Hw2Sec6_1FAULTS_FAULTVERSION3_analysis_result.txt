@@ -1,0 +1,45 @@
+I reviewed the workbook formulas (Lab Notes and Homework sheets). No #REF / #DIV/0 errors show up, but I found several formula inconsistencies, likely mistakes or places that will produce unintended results. For each issue I list the cell(s), what is wrong, why it matters, and a suggested fix.
+
+1) Lab Notes — D47 is a hard-coded value instead of using the consistent formula
+- Cell: Lab Notes!D47
+- Current formula/value: =7 (constant)
+- Problem: All the other profit cells in column D use the pattern =C#-B# (profit = value - price). D47 is the only one hard-coded; B47 and C47 are not present in the listing so it looks like the profit was entered manually instead of computed. This breaks consistency and also affects aggregated totals (SUM(D10:D49) etc).
+- Suggestion: Replace the constant with the formula =C47-B47 (or, if row 47 should be blank, clear D47). If you intended a sale on row 47, fill B47 and C47 and use the formula; otherwise set D47 to 0 or blank.
+
+2) Lab Notes — many D cells reference Cx-Bx while Bx and/or Cx are blank (they return 0)
+- Cells: Lab Notes!D26:D46 and D48:D49 (and D26..D46 were set to =C26-B26 etc)
+- Current formula pattern: =C#-B# for these rows, but B# and C# are blank in many rows
+- Problem: Excel treats blank numeric cells as 0, so these D cells evaluate to 0. That may be intended (no trade → profit 0) but could be unintended if you expected blank/NA rather than 0. It also affects averages/totals if blanks should be excluded.
+- Suggestion: If these rows correspond to "no transaction", consider leaving D blank instead of 0 (e.g., wrap formula: =IF(AND(B#="",C#=""),"",C#-B#) ), or ensure B/C are filled if transactions occurred. If you want them counted as non-sales, ensure COUNT ranges used in statistics exclude those rows (you already use COUNT(B10:B49) for number sold).
+
+3) Homework — H69 references an empty cell (gives 0)
+- Cell: Homework!H69
+- Current formula: =F55
+- Problem: Homework!F55 is empty in the workbook (Table 2.8 has D55 populated with the experimental mean but F55 — the "Competitive" mean for session 2 — is blank). H69 therefore shows 0. Given the question in A69 ("mean price of fish (rises?falls?) from ... to ...") it looks like H69 was intended to show the competitive prediction for session 2 — but that value is not present in F55.
+- Suggestion: Put the intended competitive mean for session 2 into Homework!F55 (or change H69 to reference the correct populated cell, e.g. = 'Lab Notes'!E114 if you intended to compare the experimental mean to Lab Notes' session 2 mean). If the competitive mean should be computed from counts/values, compute it explicitly and store in F55.
+
+4) Homework — inconsistent/possibly incorrect self-sheet references
+- Cells: Homework!F69 uses =Homework!F45 (works, but sheet-qualified reference to the same sheet is unusual)
+- Problem: Using the sheet name when referencing a cell on the same sheet is allowed, but inconsistent with the rest of the workbook and may indicate a copy/paste or intended cross-sheet reference. Not an error strictly, but it is an inconsistency and can be confusing.
+- Suggestion: Change to =F45 (or keep if intentional). Review other same-sheet references for consistency.
+
+5) Homework — H69/F69/H69 pair likely intended to compare competitive means but the target cell(s) are empty or incorrect
+- Cells: Homework!F69 (=Homework!F45), Homework!H69 (=F55)
+- Problem: F69 is populated by referencing F45 (competitive mean for session 1) while H69 references an empty F55 (competitive mean for session 2). The second operand is empty, producing 0 and making the comparison meaningless.
+- Suggestion: Fill F55 with the competitive prediction for session 2 (or change H69 to the intended populated cell).
+
+6) Minor: typos and labels
+- Cell: Lab Notes!A116 text "Total Profits of Fishermane" — spelling "Fishermane".
+- Not a formula error, but you may want to correct label(s) for presentation.
+
+Notes and further checks you may want to run
+- If you intended that rows with no trade be excluded from profit sums and means, confirm the ranges used in SUM and COUNT are appropriate. Currently:
+  - Mean price Session 1: =SUM(B10:B49)/COUNT(B10:B49) — COUNT excludes empty prices (OK).
+  - # of Fish Sold Session 1: =COUNT(B10:B49) — OK.
+  - Total profits of fishermen D116 = SUM(B10:B49) - 10*B109 — this uses SUM of prices as revenue and subtracts fixed cost 10 per fisherman * number of fishermen in B109. That matches how the sheet computes it, but check that the intended cost basis and range are correct.
+- Consider protecting consistent formula pattern in column D (profit) so future edits don't introduce manual overrides (like D47). You can use the IF wrapper suggested above to keep blanks blank.
+
+If you want, I can:
+- produce a list of every cell in column D that is formula vs constant,
+- generate corrected formulas (e.g., replace D47 with =IF(OR(B47="",C47=""),"",C47-B47)),
+- or apply these fixes directly and save a corrected version. Which would you like?

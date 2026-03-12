@@ -1,0 +1,50 @@
+I reviewed the formulas in all sheets and found several incorrect or suspicious formulas and a few likely mistakes. Below I list each problem (cell), why it looks wrong, and a recommended correction.
+
+1) Lab Notes!D19 — hard-coded value instead of formula
+- Current: D19 = 6 (a literal)
+- Problem: All other profit cells in column D use the pattern =C#-B#. D19 should be C19-B19 but is hard-coded.
+- Fix: change to =C19-B19
+
+2) Lab Notes!D116 and Lab Notes!E116 — wrong multiplier (uses number of fishermen instead of number of fish sold)
+- Current:
+  - D116 = SUM(B10:B49) - 10*B109
+  - E116 = SUM(B56:B95) - 10*B110
+- Problem: These are labelled "Total Profits of Fishermen". The usual formula is (sum of prices received) - (cost per fish * number of fish sold). You currently subtract 10 times the number of fishermen (B109/B110), not 10 times the number of fish sold. That produces incorrect totals (and propagates into D118/E118).
+- Recommended fixes:
+  - D116 = SUM(B10:B49) - 10*D115  (D115 is # of fish sold for session 1)
+  - E116 = SUM(B56:B95) - 10*E115  (E115 is # of fish sold for session 2)
+
+3) Homework!H69 — references an empty cell (F55)
+- Current: H69 = F55 (on the same sheet). H69 value is 0.
+- Problem: F55 in the Homework sheet is blank; H69 therefore shows 0, which is almost certainly not the intended mean price. Context (Problem 2.7a) suggests H69 should contain the mean price for Session 2 (the value shown elsewhere as 'Lab Notes'!E114 or Homework!D55).
+- Fix: set H69 to the correct cell. For example:
+  - H69 = 'Lab Notes'!E114
+  or
+  - H69 = D55
+  (Both give the Session 2 mean price used elsewhere: 1.875384615...)
+
+4) Column D (Lab Notes) rows 26–49 and 82–95, 26–49 etc — formulas reference missing B/C values
+- Current: many D cells (D26:D49, D82:D95, etc.) are =C#-B# but B# and C# are blank for those rows, so result is 0.
+- Problem: This may be intentional (no transaction = no profit), but if the rows are meant to be empty transactions you might prefer the cells to be blank rather than zero, or ensure the ranges used in SUM/COUNT exclude those empty rows. (COUNT already ignores blanks, so COUNT(B10:B49) returns the correct number sold if blanks are truly empty.)
+- Action: confirm whether these blank B/C entries are intentional. If not, populate B/C or clear the D formulas.
+
+5) Homework!F69 uses an explicit same-sheet sheetname (minor)
+- Current: F69 = Homework!F45
+- Note: this is not an error, but using the sheet qualifier for a cell on the same sheet is unnecessary. No change required.
+
+6) Propagated results relying on the incorrect D116/E116
+- Because D116 and E116 are used in D118/E118 and in Homework references (and comparisons), those downstream totals are affected. After correcting D116/E116 as above, re-check:
+  - Lab Notes!D118 and E118 (Total Profits All Participants)
+  - Homework cells that reference those Lab Notes cells (Homework D47/D49 etc.)
+
+Summary of suggested corrections (copy/paste into Excel):
+- Lab Notes!D19  -> =C19-B19
+- Lab Notes!D116 -> =SUM(B10:B49) - 10*D115
+- Lab Notes!E116 -> =SUM(B56:B95) - 10*E115
+- Homework!H69   -> ='Lab Notes'!E114    (or =D55 on the Homework sheet)
+- Optionally: review D26:D49 and D82:D95 formulas to confirm blanks are intentional.
+
+If you want, I can:
+- Provide the exact updated formulas for every affected cell (ready to paste),
+- Recalculate the corrected totals (D116/E116/D118/E118/Homework totals) and show the new values, or
+- Scan for other non-formula issues (e.g., typos in labels).

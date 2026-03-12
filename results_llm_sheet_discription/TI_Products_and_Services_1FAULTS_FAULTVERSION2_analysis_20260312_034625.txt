@@ -1,0 +1,30 @@
+Short answer — main error
+- Column B numbering is broken. Many B cells use chained formulas like =+B12+1 but several of them point to the wrong row (including forward references) — e.g. B40 =+B53+1, B47 =+B54+1, B97 =+B221+1 etc. These incorrect references produce wrong IDs, are fragile if you insert/delete/move rows and can pick up zeros when the referenced cell is empty.
+
+Why this is a problem (brief)
+- Forward/wrong references give incorrect sequence values and make the numbering brittle (it will change or break when you move rows). Blank referenced cells are treated as 0 so numbering can jump unexpectedly. The =+ prefix is harmless but old style — it doesn’t fix the wrong-target problem.
+
+What to do — two simple solutions (pick one)
+
+1) Quick, reliable fix (recommended)
+- Put a correct starting value in the first ID row (example: B12 = 1).
+- Replace the B-column formulas with a guarded “previous+1” formula so it only numbers when the row actually has data. Example (place in B13 and fill down):
+  =IF(TRIM($C13)="","",B12+1)
+  Explanation: this sets B13 = B12+1 only when column C (your item title) is not blank. That eliminates forward references and prevents numbering through blank rows.
+- How to apply fast: enter the formula in the first B cell below the start, then double‑click the fill handle (or drag) to copy down the entire B column.
+
+2) Robust alternative (numbers only non-empty rows)
+- Use a running COUNT of filled C cells so IDs follow only actual items:
+  In your first ID row (B12) use:
+    =IF(TRIM($C12)="","",COUNTA($C$12:$C12))
+  In B13 and below use same pattern (fill down). This produces 1,2,3 for non-empty C rows even if rows are inserted/removed.
+- Advantage: stable, ignores blank rows, no dependence on other B cells.
+
+Extra tidy-up suggestions (optional)
+- Convert the range to an Excel Table (Insert > Table). Then a calculated column using one of the formulas above will auto-fill reliably for new rows.
+- Remove =+ prefix (optional): use =B12+1 or the IF formulas above; it’s cleaner.
+- Fix any clearly wrong hard-coded forward references (search column B for formulas referencing a row number > current row) if you prefer manual correction.
+
+If you want, I can:
+- list every B cell that currently points to a wrong row, or
+- give the exact formula adapted to the row numbers you use (tell me which row starts the numbering).

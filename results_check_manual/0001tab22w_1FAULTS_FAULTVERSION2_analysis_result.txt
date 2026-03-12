@@ -1,0 +1,66 @@
+I inspected the sheet "Table 22" and checked all formulas and numeric placements. Below are the formula errors, inconsistencies and suspicious / misplaced values I found, with suggested fixes.
+
+Summary of concrete errors and inconsistencies
+1) Wrong operators in AC22 (Engineering, 2000 — upper-level "Other")
+   - Cell: AC22
+   - Current formula: =SUM(100-(S22-U22-W22-Y22-AA22))
+   - Problem: minus signs are used between the referenced cells instead of plus signs. That yields 125.9 (100 - (30.8 - 27.9 - 17.5 - 6.3 - 5) = 125.9) instead of the intended 100 - sum(...).
+   - Correct formula: =100-(S22+U22+W22+Y22+AA22)
+     (or, to keep the workbook style: =SUM(100-(S22+U22+W22+Y22+AA22)))
+   - Effect: this will change AC22 from 125.9 to 12.5 (100 - (30.8+27.9+17.5+6.3+5) = 12.5), which is the expected "Other" percent.
+
+2) Unexpected numeric values in columns that should be empty (misplaced values)
+   - Cells: F18, H18, F19, H19, F20, H20
+   - Values: 24.7 (F18/F19/F20) and 2.1 (H18/H19/H20)
+   - Problem: The grade-percentage columns used by this table are E, G, I, K, M (lower level) and S, U, W, Y, AA (upper level). Columns F and H are not headings for grade categories but contain numeric values for the Education rows (2000/1999/1998). These are extraneous and likely represent misaligned data entry.
+   - Suggested action: Confirm whether those numbers belong in any of the visible grade columns (E/G/I/K/M or S/U/W/Y/AA). If not, clear them. If they are intended values, move them to the correct columns.
+
+   Note: F18/F19/F20 do not match any adjacent column values exactly, so their intended destination is not unambiguous from the sheet — verify with source data.
+
+3) Extra Z-column numeric entries in some rows (possible misalignment)
+   - Cells: Z22 and Z23
+   - Values: 4.5 in each
+   - Problem: The top header for upper-level grade categories uses S, U, W, Y, AA, AC. There is no header for column Z. Z22 and Z23 contain 4.5 and appear to be stray values (they sit between Y and AA). Their presence may indicate data was shifted when entered for some colleges/years.
+   - Suggested action: Determine whether those 4.5 values belong in AA (F/WF), in AC (Other) or are stray duplicates; move or remove accordingly. Note AC22 is already incorrect due to the formula bug above.
+
+4) Inconsistent total formulas across years (some totals use formulas, others are hard-coded)
+   - Cells:
+     - Q30 (Total Lower-level 2000) — has formula: =Q26+Q22+Q18+Q14+Q10+Q6
+     - Q31 (1999) — has formula: =Q27+Q23+Q19+Q11+Q7
+     - Q32 (1998) — value present (40676) but no formula shown
+     - AF30 and AF31 have formulas; AF32 has value but no formula
+   - Problem: 1998 totals (Q32, AF32) appear to be entered as values instead of calculated from the same component cells. This is inconsistent and risks the totals getting out of sync if component values change.
+   - Suggested action: Standardize totals so all three year-total rows use formulas analogous to Q30/Q31 (e.g., set Q32 = Q28+Q24+Q20+Q12+Q8 if those are the correct component cells; same for AF32).
+
+5) Use of SUM around a single expression (cosmetic/inconsistent, not an error)
+   - Example: Many cells use formulas like =SUM(100-(E6+G6+I6+K6+M6)).
+   - Remark: SUM() around a single scalar expression is unnecessary but not an error. You can replace with =100-(E6+G6+I6+K6+M6) for clarity and consistency.
+
+6) Cells with "n/appl" (text) in place of numeric percentages
+   - Cells: many in rows 15 and 16 (Hospitality Management 1999/1998) show "n/appl"
+   - Problem: If any formulas reference these cells (e.g., a SUM), the text will coerce to zero or cause errors depending on formula; verify intended behavior. (In this sheet the rows with "n/appl" appear to be treated as intentionally not applicable.)
+   - Suggested action: If you want these rows to participate in numeric calculations, replace "n/appl" with zeros or use error/NA-handling formulas; otherwise it's fine to leave as text but be aware of downstream effects.
+
+7) Some O column formulas reference K28 which is absent/blank
+   - Example: O28 = SUM(100-(E28+G28+I28+K28+M28)), but K28 was not present in the provided data (treated as blank -> zero).
+   - Remark: Blank references are allowed but double-check whether a missing value in K28 is an omission and should be a numeric 0 (or other percentage).
+
+Quick list of cells you should review first (highest priority)
+- AC22 — formula bug; needs immediate fix to plus signs.
+- Z22, Z23 — stray values; check alignment for Engineering rows.
+- F18, H18, F19, H19, F20, H20 — stray numbers in non-heading columns (Education rows).
+- Q32, AF32 — consider replacing hard-coded totals with formulas to match other years.
+- Rows with "n/appl" — confirm intended treatment.
+
+Suggested corrections (exact formulas)
+- AC22 -> =100-(S22+U22+W22+Y22+AA22)
+- If you prefer SUM for consistency: =SUM(100-(S22+U22+W22+Y22+AA22))
+
+Other notes
+- Aside from AC22, all AC and O formulas follow the same pattern =SUM(100-(...)) and compute the "Other" category correctly where the input cells are placed correctly.
+- Where stray values exist (columns F/H/Z), their presence does not directly cause formula errors in the O/AC formulas (those formulas reference the intended columns), but they indicate data-entry misalignment that should be resolved.
+
+If you want, I can:
+- produce a corrected list of exact formulas to paste in the problem cells,
+- propose a single uniform formula pattern for all "Other" cells and apply it to the two totals rows that are currently hard-coded,
+- or generate a small VBA/Excel script (or step-by-step instructions) to find and clear stray numeric entries in columns that should be empty. Which would you prefer?

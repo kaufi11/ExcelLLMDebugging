@@ -1,0 +1,42 @@
+Summary of the errors I found and how to fix them (short & clear)
+
+1) Inconsistent / wrong summary ranges (main error)
+- Problem: Summary row 69 uses inconsistent start rows. Example: B69 = MAX(B33:B68) but B70/B71 are using B2:B68. Q69 uses Q17:Q68 while Q71 uses Q2:Q68. N70 includes the summary cell (N69) in its MIN (N17:N69). These mismatches omit some student rows from MAX or include summary cells in MIN, producing wrong statistics.
+- Why it’s wrong: MAX/MIN/AVERAGE/STDEV should all use the same data rows (the student rows). Including summary cells or omitting rows distorts results and can even create accidental circular references if you later edit.
+- Fix (do this for every summary cell): change every summary formula to the same, correct data range. For your sheet the student data is rows 2:68, so use:
+  - B69 = MAX(B2:B68)
+  - C69 = MAX(C2:C68)
+  - D69 = MAX(D2:D68)
+  - G69 = MAX(G2:G68)
+  - N69 = MAX(N2:N68)
+  - Q69 = MAX(Q2:Q68)
+  - B70 = MIN(B2:B68), C70 = MIN(C2:C68), D70 = MIN(D2:D68), G70 = MIN(G2:G68), N70 = MIN(N2:N68), Q70 = MIN(Q2:Q68)
+  - B71 = AVERAGE(B2:B68), … N71 = AVERAGE(N2:N68), Q71 = AVERAGE(Q2:Q68)
+  - B72 = STDEV(B2:B68), … N72 = STDEV(N2:N68), Q72 = STDEV(Q2:Q68)
+- Extra tip: If you add/remove students often, convert the data into an Excel Table (Ctrl+T) and use structured references; then the summary will always cover the table automatically.
+
+2) Formulas with mixed operators — possible precedence mistakes
+- Problem: Several HW4 cells use expressions like =17+5/2 or =18+5/2 or =17/2+2. Excel applies operator precedence (division before addition), so =17+5/2 gives 17 + (5/2) = 19.5, not (17+5)/2 = 11.
+- Why it’s wrong: If your intent was to average or to add then divide, the current formulas produce a different numeric result.
+- Fix: Add parentheses to enforce the intended order. Example corrections:
+  - If you meant (17 + 5) / 2 → change =17+5/2 to =(17+5)/2
+  - If you meant 17 / (2+2) → change =17/2+2 to =17/(2+2)
+- Action: Scan column N for any formulas mixing + and / (e.g., N10, N15, N28, N30, N32, N34, N44, N57, N39 etc.) and add parentheses where appropriate according to the intended calculation.
+
+3) Including summary cells in summary ranges (minor but important)
+- Problem: Some MIN/MAX use ranges that include the MAX row (e.g., N70 included N69). That makes MIN consider the summary result and yields wrong output.
+- Fix: Use only the data rows (N2:N68) for all summary calculations. Never include rows 69–72 in those ranges.
+
+4) Mixed use of formulas vs. hard-coded arithmetic in grade columns (design issue)
+- Observation: Many cells in N and Q are direct arithmetic formulas like =20+4 or =41+5. This is not an error per se, but it reduces traceability and makes updates error-prone.
+- Suggested improvement: Break components into dedicated columns (e.g., HW4_part1, HW4_bonus) and compute HW4 as =part1+bonus. That makes summaries and edits clearer.
+
+Quick checklist of actions to perform now
+1. Replace inconsistent summary formulas with the consistent ones above (use rows 2:68).
+2. Correct parentheses in any N (and any Q) formulas that mix +/− with ×/÷ where precedence was likely misapplied.
+3. Optionally convert the data range to an Excel Table so summary formulas auto-adjust.
+4. (Optional) Move components (bonuses, subparts) into separate columns instead of embedding in-cell arithmetic.
+
+If you want, I can:
+- Provide the exact cell-by-cell corrections for B69:D69, N69/Q69 etc., or
+- List every cell in column N (and Q) that contains mixed-operator formulas so you can fix parentheses quickly. Which would you prefer?

@@ -1,0 +1,24 @@
+Findings — error
+- Cell G19 is wrong: it contains =E19/F19 (division). It should be =E19*F19 (multiplication).
+- This makes the column G contributions (and the total in G46) incorrect for the second 26-symbol distribution.
+
+Why it's wrong (short)
+- Entropy contribution per symbol = p(x) * I(x) where I(x) = −log2 p(x). Division p / I is not the entropy term, so G19 currently computes the wrong number.
+
+Fix (quick steps)
+1. Edit G19 and replace the formula with:
+   =E19*F19
+2. Fill (copy) that corrected formula down G19:G44 (drag the fill handle or double-click it).
+3. Recalculate/verify G46 is =SUM(G19:G44).
+
+Alternative single-formula solution
+- Replace G46 with a formula that computes the entropy directly (no helper column needed):
+   =SUMPRODUCT(E19:E44, -LOG(E19:E44, 2))
+
+What to check after fix
+- Confirm SUM(E19:E44) = 1 (probabilities sum to 1).
+- Confirm the corrected H (G46) equals the expected analytic value ≈ 4.2617 bits.
+
+Optional extras (recommended)
+- Use one formula in the top of a column and copy down to avoid inconsistent cells.
+- Use SUMPRODUCT as above for a compact, less error-prone calculation.

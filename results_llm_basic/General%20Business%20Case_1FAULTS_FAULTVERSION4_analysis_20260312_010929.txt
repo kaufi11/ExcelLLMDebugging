@@ -1,0 +1,35 @@
+I checked the workbook and found a few clear, fixable formula errors (and one risky hard‑coded value). Short summary, explanation and exact fixes below.
+
+1) Inconsistent / reversed variance formulas on the Statement of Operations (wrong signs)
+- What’s wrong: The Variance column (column E) should consistently be Actual minus Forecast (Actual in column A, Forecast in column C). Many E‑cells do that (e.g. E6 = A6‑C6) but several are reversed (e.g. E7 = C7‑A7, E9 = C9‑A9, E48 = C48‑A48, E49 = C49‑A49, etc.). That produces incorrect (sign‑flipped) variances.
+- Why it matters: Variances will show the opposite sign and mislead any analysis.
+- Fix:
+  - In Excel, set the correct formula for the variance rows: =A#‑C# (replace # with the row).
+  - Example: change E7 from =C7‑A7 to =A7‑C7; change E9 from =C9‑A9 to =A9‑C9; and so on for all variance rows.
+  - After fixing one cell, drag the fill handle down to propagate the corrected pattern for the whole variance block, or copy/paste formulas for the correct range.
+- Quick check: select an E cell and use Trace Precedents to confirm it points to the intended A and C cells.
+
+2) Hard‑coded constant where a cell reference is expected (C10)
+- What’s wrong: STMT OF OPERATIONS C10 is =477‑C9. The literal 477 looks like a typo/hard‑code. C10 should be Forecast Gross Profit = Forecast Net Sales (C8) minus Forecast COGS (C9).
+- Why it matters: Forecast Gross Profit is wrong if it uses a fixed number instead of C8.
+- Fix:
+  - Change C10 to =C8‑C9 (or whatever the correct Forecast Net Sales cell is in your layout).
+  - Recalculate and verify K/C/M cumulative/forecast columns if they depend on C10.
+
+3) Possible self / wrong references around tax and net profit rows (A52 / E52 / A53)
+- What’s wrong: The listing shows formulas like E52 = C52‑A52 and A53 = A51‑A52. This suggests A52 might be a label or missing numeric cell and some formulas may be referencing the wrong column(s) for tax amounts.
+- Why it matters: If A52 is not numeric (just a label) or if C52/A52 are wrong cells, Net Profit and tax lines will be wrong.
+- Fix:
+  - Inspect A52 and C52: confirm A52 actually holds the Actual tax amount (or adjust references so A53 uses the correct tax cell).
+  - If A52 is a label, move the tax number into the numeric cell and update formulas to reference the numeric cells only.
+  - Use Excel’s Trace Precedents to locate which cells feed A53 and the tax lines; correct any reference pointing to a non‑numeric label cell.
+
+4) General housekeeping checks to run after fixes
+- Use Formulas → Error Checking → Trace Precedents/Dependents to confirm each subtotal and profit line points to the intended numeric cells.
+- Remove hard‑coded numbers (like 477). Replace with cell references so the model updates correctly.
+- After edits, hit Ctrl+Alt+F9 to force a full recalculation and confirm totals balance (e.g., Balance Sheet totals, cash flow linking to cash receipts/disbursements).
+- Consider naming the key ranges (Actual, Forecast, Variance) to avoid filling wrong rows/columns later.
+
+If you want, I can:
+- Provide the exact list of cells with reversed variance formulas (I can generate the list if you allow me to scan for E‑cells where the formula is C#‑A# instead of A#‑C#), or
+- Produce corrected formulas for the whole Statement of Operations that you can paste back into the sheet.

@@ -1,0 +1,64 @@
+I reviewed the NAIC increase sheet (and glanced at the CPI sheet). I found several clear formula errors and a few inconsistent references. Below are the problems, the corrections (exact formulas to use), and short explanations.
+
+1) D6 (Yearly growth) — wrong operator
+- Error: D6 = (C6 - C5) * C5
+- Fix: D6 = (C6 - C5) / C5
+- Why: Growth rate = change divided by the prior-year amount, not multiplied by it.
+
+2) E7 / E8 / E9 (Fee revenue / totals) — inconsistent/backwards reference
+- Error: E7 = E8 - 2258280 (E7 references a later year and a magic number)
+- Fix (preferred, make growth explicit): 
+  - Put the growth assumption (4%) in a cell, e.g. put 0.04 in $A$3 (or another clear cell).
+  - Then use E8 = E7 * (1 + $A$3) and E9 = E8 * (1 + $A$3).
+  - If you must derive E7 from E8, use E7 = E8 / (1 + $A$3).
+- Why: The sheet says “Assuming a 4% avg. premium grth rate.” Use that 4% consistently; don’t hard-code a subtraction from the following year. Use multiplication/division by (1 + growth) so year-to-year values stay consistent.
+
+3) E16 / E17 / E18 (dollars of premiums represented by groups hitting cap) — inconsistent references and wrong % in 2003
+- Errors:
+  - E16 is written as =(0.46*C7) (hard-coded percent and references C7 directly).
+  - E17 = (0.43*C8) (same issue).
+  - E18 = (0.46*C9) — wrong percent (should be 0.35 per your D18).
+- Fixes (use the percent cells and correct percent for 2003):
+  - E16 = D16 * [total premiums for 2001]
+  - E17 = D17 * [total premiums for 2002]
+  - E18 = D18 * [total premiums for 2003]
+  - If the total premiums are actually in C7:C9 then use:
+    - E16 = D16 * C7
+    - E17 = D17 * C8
+    - E18 = D18 * C9
+- Why: Hard-coding the percent duplicates logic and makes maintenance error-prone; E18 used the wrong percent (0.46 vs 0.35). Always reference the percent cell (D16–D18) so the dollar calculation follows the stated percent.
+
+4) G16 / G17 / G18 ($ amount of fee paid by groups hitting cap) — inconsistent references
+- Error: G16 = (0.22 * E7) etc. Percent is hard-coded and source is mixed.
+- Fix: reference the percent cell F16–F18 and the total database fee cell (E7–E9). For example:
+  - G16 = F16 * E7
+  - G17 = F17 * E8
+  - G18 = F18 * E9
+- Why: Keeps formula logic consistent and prevents mismatch if F16–F18 or E7–E9 change.
+
+5) Use cell references instead of hard-coded numbers
+- Problem: many formulas use literal constants (0.46, 0.43, 0.22, 2258280). Hard-coded values cause errors when the source values change.
+- Fix: reference the percent or growth cells (D16–D18, F16–F18, and a single growth cell like $A$3). Example: E8 = E7 * (1 + $A$3) instead of multiplying by 1.04 inline.
+
+6) Specific typo to fix
+- E18 used 0.46 instead of 0.35. Change to use D18 or the correct 0.35.
+
+7) (Optional) CPI sheet: watch for circular or wrong comparisons
+- I noticed R21 = (Q21 - Q12) / Q12 and S21 = (M21 - M12) / M12 — these compare 2001 values to 1992 values. That may be intentional, but verify the intended baseline. Also ensure no cell formula references itself (circular) — if Q21 is a formula that depends on R21 you would have a circular reference.
+
+Summary of exact replacement formulas to use (copy/paste into the sheet after adjusting absolute references to your layout):
+- D6: =(C6-C5)/C5
+- Put growth (0.04) into a single cell, e.g. A3 = 0.04
+- E8: =E7*(1+$A$3)   (and E9: =E8*(1+$A$3), or if E7 missing: E7 = E8/(1+$A$3))
+- E16: =D16 * C7    (or D16 * [cell that holds total premiums for 2001])
+- E17: =D17 * C8
+- E18: =D18 * C9
+- G16: =F16 * E7
+- G17: =F17 * E8
+- G18: =F18 * E9
+
+If you want, I can:
+- produce a corrected sheet with these changes applied,
+- or give an annotated list of every cell/formula that should be changed in your exact workbook layout.
+
+Which would you prefer?

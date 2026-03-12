@@ -1,0 +1,62 @@
+High-level summary
+- Workbook is an aggregate‑planning model with: a parameter sheet (Sheet1), three scenario/calculation sheets (pricing, Sheet2, Sheet3), and many empty sheets (Sheet4–Sheet16).
+- Sheet1 holds demand (Jan–Jun) and all cost / technical parameters used by the other sheets.
+- Each scenario sheet lists period-by-period decision variables (hires, layoffs, workforce, overtime, inventory, stockout, subcontract, production, demand) and computes period costs using the parameters on Sheet1; totals are then summed to get Total Cost (and in the pricing sheet, revenue and profit).
+
+Key cells and parameters (Sheet1)
+- Title: A1 = “Aggregate Planning”.
+- Demand Forecast (A5:B11): Jan–Jun = {1600, 3000, 3200, 3800, 2200, 2200}.
+- Cost / technical parameters (A15:B24):
+  - Materials cost/unit B16 = 10
+  - Inventory holding cost/unit/month B17 = 2
+  - Marginal stockout cost/unit/month B18 = 5
+  - Hiring & training cost/worker B19 = 300
+  - Layoff cost/worker B20 = 500
+  - Labor hours required/unit B21 = 4
+  - Regular time cost/hour B22 = 4
+  - Overtime cost/hour B23 = 6
+  - Subcontract cost/unit B24 = 30
+
+Sheet layout and formulas (common pattern across pricing, Sheet2, Sheet3)
+- Columns (per period): # Hired (Ht), # Laid off (Lt), Workforce (Wt), Overtime (Ot or E), Inventory (It / F), Stockout (St / G), Subcontract (Ct / H), Production (Pt / I), Demand (J), (Price K on pricing sheet).
+- Initial conditions in row for period 0: Workforce = 80 (D4), Inventory = 1000 (F4).
+
+Constraints (visible formulas on pricing/Sheet3)
+- Workforce balance: M_t formula pattern = D_t - D_{t-1} - H_t + L_t (examples: M5 = D5-D4-B5+C5).
+- Production capacity / flow (N column): N_t = 40*D_t + (E_t/4) - I_t (e.g., N5 = 40*D5 + (E5/4) - I5). (40 appears to be hours-per-worker conversion factor.)
+- Inventory balance (O column): O_t = F_{t-1} - G_{t-1} + I_t + H_t - J_t - F_t + G_t (examples: O5 = F4-G4+I5+H5-J5-F5+G5).
+- Overtime relation (P column): P_t = -E_t + 10*D_t (e.g., P5 = -E5 + 10*D5).
+
+Period cost calculations (Aggregate Plan Costs blocks)
+- Per period cost components reference Sheet1 parameters:
+  - Hiring cost (B15..B20) = Sheet1!$B$19 * (# hired)
+  - Layoff cost (C15..C20) = (# laid off) * Sheet1!$B$20
+  - Regular time cost (D15..D20) = Workforce * Sheet1!$B$22 * 8 * 20 (hours per worker * weeks)
+  - Overtime cost (E15..E20) = Overtime * Sheet1!$B$23
+  - Inventory cost (F15..F20) = Inventory * Sheet1!$B$17
+  - Stockout cost (G15..G20) = Stockout * Sheet1!$B$18
+  - Subcontract cost (H15..H20) = Subcontract * Sheet1!$B$24
+  - Material cost (I15..I20 when present) = Production * Sheet1!$B$16
+
+Totals and financials
+- Total Cost:
+  - pricing sheet: C22 = SUM(B15:I20) (sum of period cost components)
+  - Sheet2: C22 = SUM(B15:H20)
+  - Sheet3: C22 = SUM(B15:I20)
+- Revenue and profit:
+  - pricing sheet: Total Revenue C24 = SUMPRODUCT(J5:J10,K5:K10) (demand * price) and Profit C25 = C24 - C22.
+  - Sheet3: C24 = SUM(J5:J10)*31 (uses a single price multiplier of 31).
+
+Notable scenario values (examples)
+- Initial workforce: 80 (period 0) and initial inventory 1000 (period 0) on all scenario sheets.
+- pricing sheet scenario workforce ≈ 64.5833 in periods 1–6; production ≈ 2,583.33 each period.
+- Sheet2 uses workforce 62 and production ≈ 2,480–2,635 depending on period; introduces overtime of 620 in some months and stockout in month 4 (370).
+- Sheet3 uses workforce 51.25–67.5 across periods; includes subcontract (600) and stockout (500) in period 4 in one scenario.
+
+Other sheets
+- Sheet4 through Sheet16 are present but contain no data in the provided extract.
+
+If you want, I can:
+- compute the numeric Total Cost / Revenue / Profit for any scenario sheet, or
+- explain the capacity/production formulas and their units (how 40 and 8*20 factors were derived) or
+- consolidate the three scenario results into a single comparison table.

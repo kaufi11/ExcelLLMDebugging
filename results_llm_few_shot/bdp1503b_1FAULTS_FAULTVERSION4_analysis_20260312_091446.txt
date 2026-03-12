@@ -1,0 +1,30 @@
+Summary of real errors
+1) Hard-coded value
+- Faulty cell: G19
+- Problem: G19 contains the constant 3 instead of calculating Remaining = Allocation – YearToDate.
+- Fix: replace with =C19-E19
+- Why: hard-coded numbers don't update if C19 or E19 change.
+
+2) Unsafe/unclear formulas (recommendation)
+- Many "Remaining" cells in column G use =SUM(Cx-E x) (e.g. G10, G13, G14, G15, …).
+- Problem: =SUM(Cx-Ex) works (Excel evaluates the subtraction then SUMs the single result) but it's confusing and can hide errors or break if someone edits the formula expecting a range.
+- Fix: use plain subtraction: =Cx-Ex (for example G10 -> =C10-E10)
+- Why: clearer, standard practice, less error-prone.
+
+3) Grand totals written oddly
+- Faulty cells: C61, E61, G61 use =SUM(C10+C24+C30+C37+C45+C51+C59) (same pattern for E/G).
+- Problem: SUM with a single arithmetic expression is unnecessary and nonstandard. It will work, but it's harder to read and can mask mistakes. Also if you later want to include additional rows, these hard-coded references can be missed.
+- Fix (preferred): =SUM(C10,C24,C30,C37,C45,C51,C59)
+  Or if your layout allows and you want one contiguous range: =SUM(C10:C59) but be careful not to double-count subtotal rows.
+- Why: comma-separated SUM arguments are explicit; using a range makes future maintenance easier.
+
+Other notes (quick)
+- Blank E cells are treated as zero by subtraction; that is OK but consider entering 0 to make the sheet clearer.
+- C69 is negative (income) — that's fine if intentional; check labeling so users know it is income.
+
+Action list (copy-paste)
+- Replace G19 with: =C19-E19
+- Replace patterns like =SUM(C10-E10) with =C10-E10 throughout column G
+- Replace C61 with: =SUM(C10,C24,C30,C37,C45,C51,C59) (do the same for E61 and G61)
+
+That will fix the hard-coded error and make formulas consistent and easier to maintain.

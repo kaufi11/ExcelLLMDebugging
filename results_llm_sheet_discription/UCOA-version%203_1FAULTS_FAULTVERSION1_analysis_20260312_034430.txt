@@ -1,0 +1,29 @@
+Summary — two clear errors found and how to fix them:
+
+1) Wrong sheet/local references for repeated header values
+- Problem: Many cells on Pages 2–6, Page 7 and A‑122 use formulas like =A$9, =E$10, =I12 (no sheet name). Those refer to A9/E10/I12 on the same sheet — not the master header on Page 1. If your master header text is only on Page 1 those formulas will return blank/wrong values on other sheets.
+- Why it matters: headers and version/standards are supposed to be centralized; wrong references make every page show incorrect header text and break consistency.
+- Fix (quick):
+  - Replace formulas like =A$9 with an explicit sheet-qualified absolute reference to the master header cell. Example: ='Page 1'!$A$9 (use the actual sheet name if different).
+  - Do the same for =E$10 → ='Page 1'!$E$10 and =I12 → ='Page 1'!$I$12.
+  - Copy these corrected formulas across the matching header cells on all sheets.
+- Better alternative (recommended): Create named ranges for header items (e.g., Header_Version, Header_Standard) on the master sheet and use those names on every sheet (e.g., =Header_Version). This prevents future broken links if the master sheet name changes.
+
+2) Broken auto‑increment on A‑122 sheet (column C)
+- Problem: In the A‑122 sheet the column of incremental index numbers uses formulas like =C5+1, =C6+1 ... but one cell is wrong: C20 is set to =3 (hard-coded) instead of continuing the increment. That resets the sequence and makes subsequent C21, C22 etc. wrong.
+- Why it matters: the A‑122 index sequence is supposed to be continuous; a manual value breaks downstream numbering and any lookup that depends on correct sequence.
+- Fix:
+  - Change C20 to the correct formula continuing the chain (for example =C19+1).
+  - Then fill/down from C20 through the rest of the column so every cell uses =previous_cell+1.
+- Check for other hard-coded breaks:
+  - Use Home → Find & Select → Go To Special → Constants (or Formulas) while the C column is selected to find any other non‑formula values.
+  - Replace other hard values with the formula pattern if needed.
+
+Quick checks/tools to apply after fixes
+- On each sheet, use Formulas → Error Checking and Inspect Workbook → Watch for #REF or missing text.
+- To find all header-reference problems: search workbook for =A$9, =B$9, =E$10, =I12 etc and replace with sheet-qualified references or named ranges.
+- To find broken auto-increment: select column C of A‑122 and run Go To Special → Constants to catch any cells that aren’t formula-based.
+
+If you want I can:
+- Provide the exact VBA or Find/Replace strings to update all header formulas at once, or
+- Create a short list of every cell that currently contains a non-sheet-qualified reference so you can correct them in bulk.

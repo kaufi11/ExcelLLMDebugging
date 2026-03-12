@@ -1,0 +1,57 @@
+I reviewed the formulas and values in both sheets and found one clear formula error plus several inconsistencies and places likely to cause future errors or confusion. Below I list the problems, their impact, and recommended corrections.
+
+1) Incorrect formula (direct error)
+- Cell: P&L!H9
+  - Current formula: =SUM(H8:H8)
+  - Value shown: 33166 (equal to H8 only)
+  - Problem / impact: It omits H7. Total revenues for the "H" column is wrong. This error propagates to Income (loss) from operations (H20), Income (loss) before taxes (H27), Net income (H33) and all EPS that depend on those cells.
+  - Fix: Change to =SUM(H7:H8). That will produce the correct H9 (29318 + 33166 = 62484) and update downstream calculations.
+
+2) Hard-coded arithmetic instead of cell references (inconsistent / fragile)
+- Cell: P&L!J17
+  - Current formula: =12615-5000
+  - Problem / impact: Uses literal numbers instead of referencing source cells. If those components change elsewhere, J17 will not update.
+  - Recommendation: Replace with references to the cells that contain the two numbers being subtracted (e.g., =<cell_with_12615>-<cell_with_5000>), or enter the proper source cell addresses. If 12615 represents a sum of other items, use that sum formula directly.
+
+3) Missing values in some columns where other columns have entries (possible omission)
+- Cells: P&L!H17 and P&L!H23
+  - Observation: H17 (charge for in-process R&D) is blank while F17 and J17 have values. H23 (write-off of investment) exists in F23 and J23 but not H23.
+  - Problem / impact: Blank cells are treated as zero in the SUM formulas, so totals are mathematically consistent but it may be an omission (data missing) rather than intentional zero. This can cause misleading comparisons between periods.
+  - Recommendation: Confirm whether H17 and H23 should be zero or should contain values; if non-zero, enter the values. If intentionally zero, consider explicitly entering 0 to make intent clear.
+
+4) Inconsistent SUM ranges across similar rows/columns (inconsistency)
+- Cells: Balance Sheet!G13 vs Balance Sheet!I13
+  - G13 formula: =SUM(G7:G12)
+  - I13 formula: =SUM(I7:I11)
+  - Problem / impact: The ranges are different (G includes a G12 that is blank; I stops at I11). This is not causing an error here, but inconsistent range usage can hide problems if rows are added/removed or if a cell in the omitted row later receives data.
+  - Recommendation: Make ranges consistent and explicit (e.g., =SUM(G7:G11) and =SUM(I7:I11)), or use structured naming / named ranges.
+
+5) Pro forma EPS calculations use hard-coded share counts or isolated constants (inconsistent / fragile)
+- Cells:
+  - P&L!F46 formula: =+F44/32703  (hard-coded denominator)
+  - P&L!J46 formula: =+J44/32761 (hard-coded denominator)
+  - P&L!F52 formula: =+F50/32703
+  - P&L!J52 formula: =+J50/32761
+  - P&L!H46 and H52 show 0.05 with no formula (hard-coded values)
+  - L46 and L52 are hard-coded as -0.05
+  - Problem / impact: These use different denominators (32703, 32761) than the weighted average shares shown earlier on the sheet (e.g., F37=29747, F40=29747, J37=29493, etc.). Hard-coded constants make the sheet brittle and inconsistent: if the underlying share counts change, these pro forma EPS cells will not update.
+  - Recommendation: Create cells (e.g., ProFormaShares_F, ProFormaShares_J) that hold the pro forma weighted-average share counts and reference them. Or, if the intent is to use the existing weighted-average cells, use formulas referring to them (e.g., =F44/$F$37) — but only if that is the correct denominator for the pro forma measure. Make H46/H52 consistent by using formulas instead of static numbers if appropriate.
+
+6) Mixed use of unary-plus and signs (style / minor)
+- Several formulas use forms like =+F33/F37 or =-1526. These are syntactically valid but inconsistent. They don't cause calculation errors, but for clarity use standard forms (e.g., =F33/F37).
+
+7) General consistency remarks
+- Several cells are entered manually (net income, pro forma net income, some EPS) while others are formula-driven. That mixed approach makes auditing harder. Where possible, derive totals and per-share numbers from source-line items and a single set of share-count cells.
+- Check that any blank cells that are included in SUM ranges are intentionally zero; if the blank is actually “missing data,” this should be corrected.
+
+Summary of recommended corrective actions (concrete)
+- Correct the clear error: P&L!H9 → =SUM(H7:H8).
+- Replace hard-coded arithmetic with cell references (example: P&L!J17 → use cell refs).
+- Confirm and fill missing H17 and H23 if values are expected.
+- Standardize SUM ranges on Balance Sheet (make G13 use the same row range as I13).
+- Replace hard-coded pro forma denominators (32703, 32761, 0.05, -0.05) with references to dedicated pro forma share-count cells or the appropriate weighted-average share cells; make the approach consistent across F/H/J/L columns.
+- Optionally: remove leading + in formulas and use consistent sign conventions for negative constants for readability.
+
+If you want, I can:
+- produce the exact corrected formulas for every affected cell (I already have the likely correction for H9),
+- or modify the workbook to implement these corrections and return the adjusted workbook (if you can provide write access).

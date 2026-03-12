@@ -1,0 +1,31 @@
+Here are the main errors I found, each with a short explanation and a fix.
+
+1) Faulty cells: calcoli!J15, K15, L15, M15, N15, AA15  
+- Error type: Wrong lookup range (mechanical / lookup error)  
+- Explanation: these formulas use INDEX(parametri!$A$1:$A$4, …). Column A in parametri does not hold the time/values you need — the times are in parametri column B (B8:B55). So INDEX is returning wrong values.  
+- Repair (example for J15): =IF(J11=1,0,INDEX(parametri!$B$8:$B$55,J11))  
+- Short explanation: point the INDEX to the correct column (B) that contains the hours/times.
+
+2) Faulty cell: calcoli!B29 (label "n° sanz")  
+- Error type: Wrong range end / omission  
+- Explanation: formula =SUM(db!AX3:BG4) stops at BG and therefore misses the last two sanction columns (BH and BI — "segn rifiuti" and "altre segn."). Also the range mixes many columns/rows inconsistently with the other calculations.  
+- Repair: =SUM(db!AX3:BI4)  (or better: =SUM(B33:B44) using the per-type sums already calculated)  
+- Short explanation: expand the summed range to include BH and BI (or sum the per-type totals).
+
+3) Faulty cells: visualizza_gruppo!Q7:Q18 (all monthly Q formulas)  
+- Error type: Typo / cosmetic (mechanical)  
+- Explanation: formulas contain a double plus, e.g. =D7++G7+J7+M7. Excel tolerates ++ (interprets as unary +) but it's a typo and confusing.  
+- Repair: =D7+G7+J7+M7  (apply same fix to every Q-row)  
+- Short explanation: remove the extra + to make formulas clear and avoid mistakes later.
+
+4) Faulty cell: calcoli!H11 (used to compute number of present GEV)  
+- Error type: Logical / wrong COUNT usage  
+- Explanation: H11 = 5-COUNT(J15:N15) counts numeric values in J15:N15. But J15:N15 are computed values (often zeros) and this makes the participant count incorrect/fragile. The presence flags are in J11:N11 (1 = present).  
+- Repair: =5-COUNTIF(J11:N11,1)  (or simply =COUNTIF(J11:N11,1) if you want the number present)  
+- Short explanation: count the presence flags (J11:N11) not the derived numeric values.
+
+Optional robustness improvements (short):  
+- calcoli!B61 =COUNTA(parametri!A1:A4)-1 is fragile: better to COUNTA the actual list of GEV names (where you enter them) or use a defined range/named range so that adding/removing GEVs is handled reliably.  
+- Where you sum many per-month/per-type ranges, prefer summing the per-type subtotal cells (clear structure) instead of big hard-coded multi-column ranges.
+
+If you want, I can produce a corrected list of all exact formulas ready to paste into the workbook (or a small patch file).

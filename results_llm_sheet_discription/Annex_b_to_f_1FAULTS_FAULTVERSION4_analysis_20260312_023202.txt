@@ -1,0 +1,39 @@
+I reviewed the workbook structure and formulas. I found 3 clear formula errors that will cause wrong % variances and wrong cash/financing totals. Below are short explanations and exact fixes.
+
+1) Wrong percent-variance cell on Balance Sheet (Table 2.0 BS)
+- Problem: Cell K69 (Total Funds % variance) contains =K49 (it just references the Total Net Assets % variance).
+- Why it’s wrong: K69 should calculate the percent variance for Total Funds (J69/H69), not copy the percent for Net Assets.
+- Fix: Replace K69 with:
+  =IF(H69=0,"N/A",(J69/H69)*100)
+- Result: K69 will correctly show percent variance of Total Funds (J69 vs H69) and reconciliation checks that use this value will be consistent.
+
+2) Financing totals in ORIGINAL Cash Flow (Table 3.0 CF) use only July instead of summing all months
+- Problem: T22 and T23 are set to =S22 and =S23 (July only) instead of totals across months H:S. That makes T24 (and the T column financing totals) wrong.
+- Why it’s wrong: All other rows in the T (Total) column sum H:S; financing totals should do the same so the year total is correct.
+- Fix (Original CASH FORECAST block):
+  - Replace T22 with:
+    =SUM(H22:S22)
+  - Replace T23 with:
+    =SUM(H23:S23)
+  - (T24 can remain =SUM(T22:T23) — it will now be correct)
+- Result: T22/T23/T24 will show yearly totals (all months), giving a correct T25 reconciliation and correct total financing.
+
+3) Financing totals in ACTUAL/REVISED Cash Flow have the same error
+- Problem: T45 and T46 are =S45 and =S46 (July only) instead of month sums.
+- Fix (ACTUAL/REVISED block):
+  - Replace T45 with:
+    =SUM(H45:S45)
+  - Replace T46 with:
+    =SUM(H46:S46)
+  - (T47 stays =SUM(T45:T46))
+- Result: Actual/revised financing yearly totals will be correct and the T48 reconciliation will work.
+
+Quick checks after fixes
+- Recalculate and confirm these cells are zero (or "N/A" where appropriate):
+  - Table 2: H74 / I74 (Net Assets − Total Funds) should be 0.
+  - Table 3 ORIGINAL: Row 25 (monthly) and T25 should be 0.
+  - Table 3 ACTUAL: Row 48 (monthly) and T48 should be 0.
+  - Table 3: T26 and T49 (reconciliations to the balance sheet) should be 0 after inputs are entered.
+- Also verify K69 now shows the correct % and that related checks (e.g., K74 if used) behave as expected.
+
+If you want, I can list the exact sheets/cells and show how to enter each replacement formula step-by-step.

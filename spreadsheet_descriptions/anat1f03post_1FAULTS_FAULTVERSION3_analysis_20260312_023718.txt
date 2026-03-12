@@ -1,0 +1,49 @@
+Sheet name: post1
+
+Overview
+- Two side-by-side class blocks (same layout repeated):
+  - Block A: header rows 1–26 for "Anatomy 1: FALL 2003" — Section 8006 (student rows 6–25, mean row 26).
+  - Block B: header rows 31–56 — Section 8004 (student rows 36–55, mean row 56).
+- Each block tracks last 4 SS# digits, four practicals, attendance/participation, totals, percentage and letter grade.
+
+Column layout (C → K)
+- C: Last 4 SS#s (and section labels in C5 / C35).
+- D: Pract. 1 (max 100)
+- E: Pract. 2 (max 100)
+- F: Pract. 3 (max 100)
+- G: Pract. 4 (max 100)
+- H: Att./Partcip. (max 50)
+- I: Total (w/o A/P) — SUM(D#:G#) (note header says total w/o A/P but I formulas sum D:G)
+- J: Class % — I#/400 (in block A J# = I#/400; block B same)
+- K: Grade — nested IF mapping percentage to A/B/C/D/F
+
+Key constants and header cells
+- Row 3 (block A): D3–G3 = 100 each; H3 = 50; I3 = 400 (total possible points).
+- Row 33 (block B): D33–G33 = 100 each; H33 = 50; I33 = 400.
+
+Per-student formulas
+- I6:I25 and I36:I55: =SUM(D# : G#)
+- J6:J25 and J36:J55: =I# / 400
+- K6:K25 and K36:K55: =IF(J#>=89.9%,"A",IF(J#>=79.9%,"B",IF(J#>=69.9%,"C",IF(J#>=59.9%,"D","F"))))
+  - Note: Block B uses >89.9% (and >79.9% etc) instead of >= in the provided text — inconsistent with block A.
+
+Summary rows (means)
+- C26 / C56 = "MEAN"
+- D26, E26, F26, G26, H26, I26: =AVERAGE(range of student rows D6:D25 etc) for block A.
+- D56, E56, F56, G56, H56, I56: =AVERAGE(range of student rows D36:D55 etc) for block B.
+- J26 = I26 / I3  (uses I3=400). J56 = I56 / I33.
+- K26 / K56: same nested IF grade based on J26 / J56 (block B again shows > thresholds).
+
+Counts and totals
+- Each section lists 20 student rows (rows 6–25 and 36–55).
+
+Notable inconsistencies / issues to check
+- I column label says "Total (w/o A/P)" but I formulas sum D:G (practicals) only — attendance H is not included in I even though max total in I3 is 400 which implies attendance excluded; verify intended weighting (if attendance should be included, I formula should SUM(D:G,H) and I3 should be 450).
+- Grade IF thresholds differ between blocks (>= vs >) — unify for consistency.
+- Row 55 appears to be missing a Pract. 4 (G55 not provided) but I55 uses =SUM(D55:G55) — check missing G55.
+- Mean formulas: F56 is specified as AVERAGE(F36:F54) (stops at row 54) while other averages use row 55 — likely a typo; verify ranges include all students.
+- Some attendance values are below max (expected) — fine, but verify whether attendance should be included in Total/Class %.
+
+If you want, I can:
+- Correct the inconsistencies (include attendance in totals if intended, fix average ranges, standardize grade thresholds).
+- Produce a corrected version of the sheet with formulas adjusted.

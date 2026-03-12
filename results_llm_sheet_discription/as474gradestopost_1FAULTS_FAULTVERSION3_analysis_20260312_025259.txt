@@ -1,0 +1,32 @@
+Findings (short)
+- F27 is wrong: it uses SUM(F7:F26) while every other column summary (B–E, G–J) uses AVERAGE(...). That makes F27 a total, not an average — inconsistent and misleading.
+- Row 28 (B28:J28) contains 1s as "Highest Possible Score, %" — these look like placeholders, not real maxima or weights. Using 1s will break any weighted calculations.
+
+Why these are errors
+- F27 being SUM means the summary row mixes a total with averages; someone reading the row labeled "Average" (K27) will be misled by F27's number.
+- The 1s in row 28 cannot represent realistic highest possible scores or weights (normally 100 or a weight like 0.10). Any SUMPRODUCT or weighted-score formula using those 1s will give wrong results.
+
+Fixes (what to change)
+1) Make F27 an average (if you intended a per‑assignment average like the others):
+   - Replace F27 formula with:
+     =AVERAGE(F7:F26)
+
+   If you actually intend a total for Ex 5, change the label in K27 from "Average" to "Total" so the summary row is correctly described.
+
+2) Replace the placeholder 1s in row 28 with the real highest possible scores or the real weight fractions for each column.
+   - If you want "highest possible percent" for each column use 100:
+     put 100 in B28:J28 (or the correct max per column).
+   - If row 28 is meant to hold weight fractions (e.g., Ex1 = 0.10), enter those decimal weights (they should sum to 1.00).
+
+How to compute a weighted lab score (example)
+- If row 28 holds weight fractions (summing to 1), the weighted average for student in row 7:
+  =SUMPRODUCT(B7:J7,$B$28:$J$28)
+- If row 28 holds maximum points (e.g., 100) and you want percentage per column then weights in another row (say row29) are used:
+  =SUMPRODUCT(B7:J7,$B$29:$J$29)  (with $B$29:$J$29 being weight fractions)
+
+Short example step-by-step
+- Change F27 to =AVERAGE(F7:F26).
+- Put correct maxima or weights into B28:J28 (e.g., 100 or 0.10).
+- Use SUMPRODUCT for weighted final scores as needed.
+
+That will make summaries consistent and any weighted final grade calculations correct.

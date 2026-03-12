@@ -1,0 +1,27 @@
+I found the main errors/risk points in the workbook and how to fix them. Short and simple.
+
+1) Hard‑coded numerator in Balance of Business (wrong % calculation)
+- Problem: C11 = 450/B$15 (hard-coded 450). All other % rows use the department cell ÷ total (e.g. C5 = B5/B$15). Hard-coding will give wrong % if B11 ≠ 450.
+- Fix: Replace C11 with =B11 / B$15 (and similarly ensure any other rows follow the same pattern).
+- Why: Makes the percent dynamic and correct when B11 value changes.
+
+2) CashFlow does not automatically carry cash-on-hand to the next month (manual step risk)
+- Problem: The sheet requires you to manually copy end-of-month cash to the next month’s "Line D - Cash on Hand" (instructions say “line E becomes line D for the next month” but the workbook doesn’t automate it).
+- Fix (automate): Set each month’s Line D cell to equal the previous month’s End-of-month (row 41) cell. Example formulas:
+  - For Budget columns: E39 = C41, G39 = E41, I39 = G41, K39 = I41, M39 = K41
+  - For Actual columns: F39 = D41, H39 = F41, J39 = H41, L39 = J41, N39 = L41
+- Why: Prevents manual errors and ensures the rolling cash balance is correct month-to-month.
+
+3) Potential divide-by-zero errors in percent/KPI formulas
+- Problem: Percent formulas like =B5/B$15 or =D11/D$15 will return #DIV/0! if the row‑15 total is zero or blank.
+- Fix: Wrap with IFERROR or check for zero. Example:
+  - =IF($B$15=0,0,B5/$B$15)  or  =IFERROR(B5/B$15,0)
+- Why: Keeps the workbook clean and avoids error values when totals aren’t entered yet.
+
+Optional checks / suggestions (quick)
+- Ensure row 15 totals (B15, D15, F15, H15, J15) include all department rows—expand SUM ranges if you add rows.
+- Use consistent rounding if you expect whole numbers (e.g., ROUND(...,0)) to avoid small decimal mismatches (I noticed rounding in the maintained-margin example).
+
+If you want, I can:
+- Give the exact cell-by-cell replacement formulas for all affected cells, or
+- Create the IFERROR versions for every percent cell in Balance of Business automatically.

@@ -1,0 +1,20 @@
+Found 2 clear formula bugs. Short fixes and why:
+
+1) Faulty cell: AN94
+- Problem: formula uses COUNT instead of SUM: =COUNT(AN93*$E$93)
+- Why it's wrong: COUNT(...) returns how many numeric items are present (usually 1), not the numeric product. This gives a wrong total for that column.
+- Fix: replace with the product (no COUNT) — either:
+  =AN93*$E$93
+  or (if you prefer SUM-style) =SUM(AN93*E93)
+- Effect: returns the actual dollar amount (AN93 multiplied by E93) instead of "1".
+
+2) Faulty cell: BK261 (hard-coded)
+- Problem: BK261 is a hard-coded value (12) while all other BK rows are calculated as the sum of participants in that row (BKx = SUM(Fx:BGx)).
+- Why it's wrong: a manual value breaks consistency and breaks totals that sum BK3:BK264 (and downstream totals). If participant counts change this value won't update.
+- Fix: put the proper formula in BK261:
+  =SUM(F261:BG261)
+- Effect: BK261 will auto-update with participant changes and grand totals that use BK ranges will be correct.
+
+Quick tip: after you change BK261, recalc (F9 or press F9) and verify the grand totals (BK268, BL268, BI269, etc.) change as expected.
+
+If you want, I can scan for any other rows that have BK overridden or other COUNT/SUM misuses and give a one-shot list.

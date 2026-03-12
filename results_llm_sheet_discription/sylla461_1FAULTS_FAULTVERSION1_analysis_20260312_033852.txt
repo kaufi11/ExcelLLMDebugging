@@ -1,0 +1,25 @@
+Summary of errors
+1) Sheet "2000" — B11 contains =B7+512. This is a typo. All dates from row 11 downward are computed from B11, so the whole schedule after row 11 is shifted far into the future.
+
+2) Sheet "1999" — B7 is 2000-08-22 (year 2000). That looks like a copy/paste error: the 1999 sheet should start in 1999, not 2000. If B7 is wrong the entire sheet's dates will be off.
+
+Why these are problems
+- The +512 in B11 is not consistent with the established pattern (+2 for Tue→Thu, +1 Thu→Fri, +4 Fri→Tue). A single wrong offset propagates through subsequent date formulas, producing many wrong dates.
+- A wrong start date (wrong year) similarly causes every downstream date to be wrong.
+
+Fixes (simple)
+1) On sheet "2000": change B11 from =B7+512 to =B7+2 (or to whatever the intended offset is; based on the pattern it should be +2).
+   - Steps: select B11 → replace formula with =B7+2 → Enter. All dependent dates will recalculate correctly.
+
+2) On sheet "1999": correct B7 to the intended 1999 start date (for example 1999-08-24 if the semester started that Tuesday), then let the existing formulas propagate.
+   - Steps: select B7 → type the correct 1999 date (e.g., 1999-08-24) → Enter. Verify following rows update properly.
+
+Optional robustness tips (to avoid future copy/paste mistakes)
+- Use explicit weekday-aware formulas instead of hard offsets. Example to get next Thursday after B7:
+  =B7 + MOD( (targetWeekday - WEEKDAY(B7) + 7), 7 ) 
+  (where targetWeekday uses Excel weekday numbers). This prevents accidental large offsets from breaking the sequence.
+- After fixes, check workbook calculation is set to Automatic and scan column B for any unusually large offsets (e.g., >10) to catch other typos.
+
+If you want, I can:
+- give the exact weekday formula tailored to your T/TH/F pattern, or
+- correct the 1999 B7 to the most likely date (I can pick 1999-08-24) and list any remaining rows that still look off.

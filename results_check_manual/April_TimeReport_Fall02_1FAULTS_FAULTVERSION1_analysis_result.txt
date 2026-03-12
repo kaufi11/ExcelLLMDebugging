@@ -1,0 +1,33 @@
+I reviewed every formula you provided for the "Reporting" sheet and found one clear formula error plus several inconsistencies and potential sources of future errors. Summary and recommendations below.
+
+1) Clear formula error (very likely a bug)
+- Cell N24 has formula:
+  =B24-C24-D24-E24-F24-G24-H24-I24-J24-K24-L24-M24
+  That subtracts every column after B from B24, which yields a negative total (-4). The rest of the sheet uses totals as sums; this appears unintended for "Client Meetings". 
+  Suggested fix: replace with a sum, e.g.
+  =SUM(B24:M24)
+  or
+  =B24+C24+D24+E24+F24+G24+H24+I24+J24+K24+L24+M24
+
+2) Inconsistent formula style (risk of errors)
+- Some row weekly totals in column N are built with explicit addition (B4+C4+...+M4), others use SUM over an N-range (e.g. N3 =SUM(N4:N6)), and many category header cells use SUM over vertical ranges (e.g. B3 =SUM(B4:B6)). This mixed approach is not wrong per se, but:
+  - It makes the sheet harder to audit.
+  - Manual addition formulas are error-prone if a new column is inserted or a column is missed.
+  Recommendation: use consistent SUM(range) formulas where possible. For example:
+  - For row totals use =SUM(B4:M4)
+  - For category headers use SUM of their source rows (as you already do for many).
+
+3) Potential missing / manual omissions
+- Many per-row totals explicitly list B..M. This works, but it’s easy to accidentally omit a column when editing. Example (not an error now, but a risk): some rows have values only in non-contiguous columns — double-check if every intended weekly column is included in each N total formula. Using =SUM(B#:M#) avoids this risk.
+
+4) Negative totals / unexpected values to verify
+- N24 (Client Meetings) currently calculates -4 because of the subtraction bug. If you intended to track negative time or offsets, verify that’s deliberate; otherwise change to SUM.
+- Any other negative/zero totals might be the consequence of blank cells vs explicit 0 — verify semantics if necessary.
+
+5) Minor issues / housekeeping
+- Header cell G1 is "Week9 " with a trailing space (cosmetic).
+- Some rows (e.g., rows with many blank weekly cells) have totals that sum blanks; that's normal, but consider filling missing weeks with 0 if you want explicit zeros.
+
+If you want, I can:
+- Produce a corrected version of the workbook with N24 fixed and all row totals converted to consistent SUM(B#:M#) formulas.
+- Produce a short list of every cell that currently uses explicit addition (B+C+...+M) so you can decide which to convert.

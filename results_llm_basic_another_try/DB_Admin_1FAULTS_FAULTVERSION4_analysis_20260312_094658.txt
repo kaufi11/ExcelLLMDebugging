@@ -1,0 +1,56 @@
+There are several errors in the formulas mainly in the Ap sheets (Ap1, Ap2, Ap3):
+
+1. **Inconsistent use of columns for "Proficiency / Expertise" and "Experience" keys in Rate sheet:**
+   - Rate!G11:G20 contains text descriptions (e.g., "Computer and/or network security..."), but Ap sheets use formulas like `=Rate!G11` in B16, B17, etc., which pulls text, not keys or numeric values.
+   - However, the rating formulas in column L (e.g., L16) use `Rate!E11` etc., which is numeric (100). This part is correct.
+   - But in Ap sheets, some rows (e.g., B16, B17) pull text from Rate!G11:G20, which is inconsistent with the numeric keys in column K16, K17, etc.
+
+2. **Wrong cell references in Ap sheets for Experience rating formulas:**
+   - For example, in Ap1:
+     - L32 formula uses `Rate!E17` instead of `Rate!E19` (should correspond to Experience at Rate!E19).
+     - L33 formula uses `Rate!E18` instead of `Rate!E20`.
+   - Similar mistakes appear in Ap2 and Ap3 sheets for Experience rating formulas:
+     - L32 and L33 formulas reference wrong Rate!E cells (e.g., referencing E17 or E18 instead of E19 or E20).
+   
+3. **Incorrect IF logic in Ap3 sheet for L20:**
+   - Formula: `=IF(K20<>2,Rate!E15*0.33,IF(K20<>3,Rate!E15*0.66,IF(K20<>4,Rate!E15*1,0)))`
+   - This uses `<>` (not equal) instead of `=` for checking K20 values, causing wrong results.
+   - It should be `=IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))` like in Ap1 and Ap2.
+
+---
+
+### Solutions:
+
+1. **Fix Experience rating formulas in Ap sheets:**
+   - Correct L32 and L33 formulas to reference the correct Rate!E cells:
+     - L32 should use `Rate!E19` (not E17 or E18).
+     - L33 should use `Rate!E20`.
+   - Example fix for Ap1 L32:
+     ```excel
+     =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+     ```
+   - Apply similar fixes in Ap2 and Ap3.
+
+2. **Fix IF logic in Ap3 L20:**
+   - Change the formula to use `=` instead of `<>`:
+     ```excel
+     =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+     ```
+
+3. **Optional: Clarify or adjust B16:B20 in Ap sheets:**
+   - These cells pull text from Rate!G11:G20, which is fine if intended for display.
+   - Just be sure the numeric keys in K16:K20 correspond correctly to the rating formulas in L16:L20.
+
+---
+
+### Explanation:
+
+- The Experience rating formulas in Ap sheets must reference the correct Rate sheet numeric rating cells (E16 to E20) that correspond to each skill.
+- Using wrong references causes incorrect or zero scores.
+- The IF formula in Ap3 L20 uses `<>` (not equal) which logically fails to assign correct multipliers; it must use `=` to check exact key values.
+- Fixing these ensures correct calculation of weighted scores based on proficiency and experience keys.
+
+---
+
+**Summary:**  
+Correct the Experience rating formulas in Ap sheets to reference the correct Rate!E cells (E19 and E20), and fix the IF formula in Ap3 L20 to use `=` instead of `<>`. This will fix scoring errors and ensure accurate calculations.

@@ -1,0 +1,25 @@
+I found 3 clear errors that will cause wrong totals. Short descriptions and fixes below.
+
+1) Faulty cell: Financial summary!I15  
+- Error: Wrong function (COUNT used instead of SUM).  
+- Why it’s wrong: COUNT(I6:I13) returns the number of numeric entries in the 2001 income range instead of the dollar total. That makes Total Income for 2001 incorrect.  
+- Fix: replace formula with =SUM(I6:I13)  
+- Explanation: SUM adds the monetary amounts; COUNT only counts cells with numbers.
+
+2) Faulty cell: Balance Sheet!G4 (Dec 31, '01 Total Checking/Savings)  
+- Error: Wrong hard-coded value (12323.99) — does not match the Financial summary checking value for 2001.  
+- Why it’s wrong: the Balance Sheet should pull the checking balance from the Financial summary (2001 column) so both sheets agree. The Financial summary checking for 2001 is 12823.99 (Financial summary!I35), but G4 reads 12323.99.  
+- Fix: replace the hard-coded value with a link: ='Financial summary'!I35  (or set value to 12823.99 if you prefer a value).  
+- Explanation: Linking prevents manual-entry mismatches and keeps the Balance Sheet consistent with the source.
+
+3) Faulty cell: Balance Sheet!H12 (Retained Earnings at Dec 31, '02)  
+- Error: Wrong reference (formula =G12+G13).  
+- Why it’s wrong: that adds 2001 retained earnings (G12) plus 2001 net income (G13) again, effectively double-counting 2001 net income. Retained earnings at end of 2002 should be prior retained earnings (end 2001, G12) plus net income for 2002 (H13).  
+- Fix: change formula to =G12+H13  
+- Explanation: retained_ending(current) = retained_ending(previous) + net_income(current year).
+
+Quick checks after fixing:
+- Recalculate totals (Total Equity, Total Assets, Difference rows) and confirm Difference rows (e.g., Financial summary C39, etc.) are near zero or expected balances.
+- Search for other hard-coded balances on the Balance Sheet and replace with links back to the Financial summary where appropriate.
+
+If you want, I can produce the exact corrected formulas for any other cells you want checked.

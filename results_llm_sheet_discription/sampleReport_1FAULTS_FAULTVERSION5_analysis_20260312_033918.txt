@@ -1,0 +1,38 @@
+Summary — I found several formula errors (mostly typos / off‑by‑one ranges). Fix each one below; after applying them recheck totals and cross‑sheet links.
+
+1) Income sheet — TOTAL RENTAL INCOME (2001) wrong
+- What's wrong: L14 = L10 + 951 (951 is a stray constant).
+- Fix: change L14 to =L10+L13
+- Why: J14 uses J10+J13; L14 must mirror that so 2001 rental income equals residential + commercial rent.
+
+2) OP_EXP (Schedule I) — Operating & Maintenance total (2001) range mismatch
+- What's wrong: J46 = SUM(J33:J43) but L46 = SUM(L33:L44) (L includes an extra row).
+- Fix: change L46 to =SUM(L33:L43)
+- Why: the line items run rows 33–43. The extra row in L46 causes an incorrect total (or includes an unrelated cell).
+
+3) Cash Flows — NET CASH PROVIDED BY INVESTING (2001) range mismatch
+- What's wrong: J45 = SUM(J37:J42) but L45 = SUM(L37:L44) (L includes extra rows).
+- Fix: change L45 to =SUM(L37:L42)
+- Why: investing items are rows 37–42. The larger range in L45 will include labels/blank cells and misstate investing cash.
+
+4) Balance Sheet — TOTAL ASSETS ranges exclude beginning asset rows
+- What's wrong: J36 = SUM(J23:J35) and L36 = SUM(L23:L35) — these start at row 23, but other‑assets subtotal uses J21:J33.
+- Fix: change to J36 = SUM(J21:J35) and L36 = SUM(L21:L35)
+- Why: totals must include cash and the first other‑asset rows (J21–J22). Current formulas omit those, under‑reporting Total Assets.
+
+5) Stkhold.Equity — header typo (cosmetic)
+- What's wrong: header reads "YEARS ENDED DECEMBER 31, 2001 AND 2001".
+- Fix: change to "YEARS ENDED DECEMBER 31, 2002 AND 2001"
+- Why: avoids confusion; does not affect formulas.
+
+Optional / Checkpoints (review these)
+- Balance sheet PARTNERS' EQUITY (J52 = SUM(J51:J51)) is unusual (a single‑cell SUM). Confirm the intended rows for partners' equity and change to sum the full equity range (e.g., J51:J51 is fine only if J51 already contains the full partners' equity; otherwise adjust).
+- After the fixes above, recalc L20 (TOTAL INCOME) and all dependent totals — L20 = SUM(L14:L19) will be corrected when L14 is fixed.
+- Re-run workbook checks (Stkhold.Equity IF checks) — the “off” flags will tell you if totals still mismatch.
+
+How to apply quickly
+- Edit each cell formula exactly as shown in the Fix lines.
+- Press F9 / recalc or save to update dependent totals.
+- Verify that cross‑sheet totals (e.g., OP_EXP totals feeding Income J23/L23) now reconcile and that the Stkhold.Equity “off” check returns expected results.
+
+If you want, I can give the exact cell formulas for any other suspicious cells (e.g., partners' equity range) or produce a short checklist you can paste into Excel to find other off‑by‑one ranges.

@@ -1,0 +1,37 @@
+Summary of the problems I found
+- Gross margin (C19) has a sign error on the Formulas sheet: formula is “-C17-C18” instead of “=C17-C18”. That makes gross margin wrong (negative).
+- Total operating expenses (C24 and E24) are summing the wrong columns:
+  - C24 = SUM(B21:B24) — it should sum the expense lines for the same month (the C column).
+  - E24 = SUM(D21:D24) — it should sum the expense lines for the same month (the E column).
+- Several monthly expense formulas are placed in columns B and D while the month values live in columns C and E (misaligned columns). This causes the totals and other rows to add the wrong cells.
+
+Why these are errors (short)
+- The negative sign in C19 flips gross margin to wrong sign/value.
+- Summing B21:B24 (or D21:D24) aggregates the previous/other column, so totals do not reflect the intended month.
+- Misplaced formulas (B/D vs C/E) break the column consistency: every monthly row must use the same column for that month.
+
+Exact fixes (copy these into the indicated cells)
+1) Fix gross margin
+- C19: =C17 - C18
+- E19: =E17 - E18
+
+2) Fix operating expense totals so they sum the same column as the expense lines
+- C24: =SUM(C21:C24)
+- E24: =SUM(E21:E24)
+
+3) Fix month-aligned expense formulas (two ways; pick one)
+- Option A (recommended): Move the expense formulas that are currently in B21 and D21 into C21 and E21 respectively so every month’s items sit under the same column. Example:
+  - C21: =ROUND($B$9 + ($B$10 * C17), -3)
+  - E21: =ROUND($B$9 + ($B$10 * E17), -3)
+  - C22/C23/C24 etc. should be in C column; E22/E23/E24 in E column.
+- Option B: If you prefer keeping formulas where they are, change the sum/formula references instead — but this is more error-prone. Better to align months into the same columns.
+
+4) Quick check for ending inventory logic
+- C33 should be based on next-period sales (E17) — that is correct: =ROUND($B$4 + ($B$5 * E17), -3)
+- E33 should be based on October (B8) — as written =ROUND($B$4 + ($B$5 * B8), -3) is OK if B8 is October sales.
+
+Final checklist to make sure everything is consistent
+- Months (labels) and their numbers should be in consistent columns (e.g., put "August" header in C16 and "September" in E16 or move the numbers into B/D). Pick one layout and keep every row’s values in the same month column.
+- After fixing columns, re-check dependent cells: C18/E18 (COGS), C25/E25 (Operating income), C26/E26 (Tax) and C27/E27 (Net income) should update correctly.
+
+If you want, I can give you a small VBA macro or step-by-step moves to re-align the whole month block automatically. Which would you prefer?

@@ -1,0 +1,36 @@
+Summary of errors I found
+- Many cells in column G are text like "FORMULA =E2*F2" instead of real Excel formulas (=E2*F2). Text formulas do not calculate, so G stays blank/zero and totals are wrong.  
+- One obvious typo: G25 contains "E25*525" (uses literal 525) instead of E25*F25. That cell will give a wrong result.  
+- Possible related problem: column F (number of subscriptions) may contain text values (not numeric). Even a correct =E2*F2 will return 0 or an error if F is text.  
+- If Calculation is set to Manual then even correct formulas won’t update automatically.
+
+How to fix (short, step‑by‑step)
+1. Turn on automatic calculation
+   - Excel: Formulas → Calculation Options → Automatic.
+
+2. Convert the "FORMULA =…" text into real formulas
+   - Select column G. Press Ctrl+H (Find & Replace).
+   - Find: FORMULA = 
+   - Replace with: = 
+   - Click Replace All.
+   This changes "FORMULA =E2*F2" into "=E2*F2" so Excel evaluates it. (If the cells start with an apostrophe ' remove it the same way or retype first cell.)
+
+   Alternative: put in G2 the formula =E2*F2 and fill/drag down to the last row.
+
+3. Fix the typo in G25
+   - Edit G25 and set formula to =E25*F25 (or re-fill column G as in step 2).
+
+4. Ensure column F is numeric
+   - Select column F → Data → Text to Columns → Finish.  
+   - Or enter 1 in an empty cell, copy it, select column F, Paste Special → Multiply.  
+   - Or use VALUE() if you need a helper column: =VALUE(F2).
+
+5. Recalculate totals
+   - After above, F407 =SUM(F2:F404) and G407 =SUM(G2:G404) will show correct sums.
+
+Why this works (short)
+- Excel only evaluates strings that start with = . "FORMULA =E2*F2" is plain text and will never calculate. Replacing "FORMULA =" with "=" or re-entering proper formulas makes Excel compute the product.  
+- Using F25 (not the hard-coded 525) ensures the cell uses the actual subscription count.  
+- Converting F to numeric guarantees multiplication returns numeric results. Automatic calculation ensures results update immediately.
+
+If you want, I can give the exact Find/Replace patterns to run, a short macro to fix column G, or a single formula to re-create column G safely (e.g. =IFERROR(VALUE(E2)*VALUE(F2),0)). Which would you prefer?

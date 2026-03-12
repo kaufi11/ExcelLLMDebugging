@@ -1,0 +1,54 @@
+High-level summary — structure, contents and key formulas
+
+Workbook purpose
+- Monthly cash flow projection for two years (Year 1, Year 2) plus variance/quarterly review sheets. Layout is a standard 12-month cash flow with totals and %‑of‑sales, plus variance analysis comparing actuals to the Year 1 plan.
+
+Common layout (Year 1 & Year 2 sheets)
+- Columns:
+  - C:N = months 1–12
+  - O = TOTAL (SUM of C:N)
+  - P = % of Sales (typically Oxx / O$57 where O57 is total sales)
+- Rows / sections (consistent across sheets):
+  1) Cash on hand (beginning of month) — row 6, derived from prior-month ending cash (row 55).
+  2) Cash receipts (rows 8–13) — cash sales, collections, loans, injections; O8:O13 = SUM(C:N).
+  3) Total cash receipts (row 14) — per-month SUM of rows 8–13.
+  4) Total cash available (row 15) — beginning cash + receipts.
+  5) Cash paid out (rows 17–53) — detailed variable (17–22) and fixed expenses (24–46), then subtotals and other outflows (loan principal, capex, owner withdrawals).
+  6) Total cash paid out (row 54) — SUM of operating + other outflows.
+  7) Cash position end of month (row 55) — cash available (row15) minus cash paid out (row54).
+  8) Essential operating data (rows 56–62) — Sales Volume (row57), A/R, inventory, depreciation, etc.
+- Key totals: O14 total receipts, O54 total paid out, O55 year total ending cash (per month cells represent each month’s end).
+
+Key formulas and calculations
+- Monthly totals: Oxx = SUM(Cxx:Nxx) (used widely for each line).
+- % of sales: Pxx = Oxx / O$57 (O57 = SUM of monthly sales for the year).
+- Month-to-month flows: row 6 (beginning cash) is linked to prior month end (row55). Year‑2 starting cash is pulled from Year‑1 end (example: 'Year 2'!B6 = 'Year 1'!N55).
+- Subtotals:
+  - Subtotal variable expenses: row23 = SUM(rows17:22)
+  - Subtotal fixed expenses: row47 = SUM(rows24:46)
+  - Total operating expenses: row48 = row23 + row47
+- Contribution margin and break-even (Year 1):
+  - B64 = 1 - P23 (P23 is variable expense % of sales)
+  - F64 = (O54 - O23) / B64 — break-even sales formula (uses total paid out less variable expenses divided by contribution margin).
+- Essential operating data totals: O57 = SUM(C57:N57) (annual sales).
+
+Variance and quarterly review sheets (Var,Y1,Q1 … Q4 and similar)
+- Purpose: pull Year‑1 monthly plan values into "Actual" columns and compute Variance columns as percentages.
+- Typical variance formula: Variance = (ActualPeriod - BaselinePeriod) / BaselinePeriod (e.g., E8 = (D8 - C8) / C8).
+- These sheets reference Year 1 cells extensively (e.g., C8 = 'Year 1'!C8) and provide quarter-by-quarter actual vs. plan comparisons and percent variances.
+- Several quarter sheets (Q1–Q4) split months for rolling quarters and compute totals/variances similarly.
+
+Cross-sheet dependencies
+- Year 2 beginning cash references Year 1 month-end totals.
+- Variance sheets read Year 1 values to compute percent differences.
+- % of sales columns and break-even use cells in the Essential Operating Data block (row57 and row23).
+
+Notes / potential issues to check
+- A number of formulas use SUM or COUNT on a single cell (e.g., C6 = SUM(B55), D6 = COUNT(D55)). These are functional but inconsistent/odd — likely intended to reference previous month’s end and should be uniform (direct cell references recommended).
+- Some misplaced/mismatched references appear (examples in Year 2 where O20/O22 etc. are inconsistent). Verify row references for payroll and related rows.
+- Year‑2 P57 = +O57/O57 (division by itself) will always return 1 — confirm intended denominator (probably O$57 or a different cell).
+- Ensure absolute references ($) are correct where totals are used as denominators (many use O$57 but some sheets have variations).
+
+If you want, I can:
+- Produce a one-page mapping of all key cells (totals, starting/ending cash, sales) and their dependencies.
+- Correct inconsistent formulas and standardize cross-sheet links (recommended).

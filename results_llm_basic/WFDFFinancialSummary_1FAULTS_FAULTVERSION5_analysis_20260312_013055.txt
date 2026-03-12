@@ -1,0 +1,38 @@
+I checked the workbook and found a few concrete, high‑impact errors and some risky hard‑coding. Short summary, then exact fixes.
+
+1) Wrong sign in 2002 Net Income (big cause of the bad balances)
+- Problem: K30 is =K15+K27 but every other year uses (Income − Expense). K30 should subtract expenses, not add them.
+- Effect: 2002 Net Income is wrong, so Ending Cash (K33), the next year’s Beginning Cash (M4) and the Balance Sheet Net Income/Retained Earnings are all wrong.
+- Fix: change K30 to =K15−K27.
+- Why that fixes it: Net Income = Total Income − Total Expense. Using + inflated net income and cascaded into wrong ending and opening balances.
+
+2) Balance Sheet hard‑coded / mismatched cash value for Dec 31, 2001
+- Problem: Balance Sheet G4 shows 12323.99 (hard value) but the Financial summary checking for the same date is in 'Financial summary'!I35 = 12823.99. Those should match but don’t.
+- Effect: Total current assets and TOTAL ASSETS are inconsistent/wrong.
+- Fix: replace the hard number in G4 with a link: ='Financial summary'!I35.
+- Why: The Balance Sheet must pull the cash totals from the Financial summary so both sheets reconcile automatically.
+
+3) Hard‑coded arithmetic instead of references (fragile / error‑prone)
+- Examples:
+  - K21 in Financial summary is =8821.24−118.52 (uses constants rather than linking to detailed totals).
+  - Some checking/money‑market cells (E35, G35, etc.) are entered as values instead of consistently linking to the corresponding Ending Cash (e.g. E35 should be =E33 if that is intended).
+- Effect: If the detailed sheets change, summary numbers won’t update; it's easy to get mismatches like #2.
+- Fix: Replace hard constants with references to the detailed totals:
+  - If K21 should come from the Stork expenditures Events column total, set it to something like ='Stork - 2002 Expenditures'!H55 (or H55 minus the specific outstanding 118.52 cell if that is a separate adjustment).
+  - Make checking/money‑market cells equal the appropriate Ending Cash or detailed totals (e.g. E35 = E33, G35 = G33, etc.), or link them directly to the Stork totals where appropriate.
+- Why: Using real links keeps the workbook consistent and makes auditing easy.
+
+Quick checklist to apply and verify
+1. Change K30 to =K15-K27.
+2. Update Balance Sheet G4 to ='Financial summary'!I35.
+3. Search the Financial summary for formulas that contain literal numbers doing arithmetic (e.g. “=8821.24-118.52”) and replace each with references to the source detail totals (Stork sheets) or specific cells for the adjustments.
+4. After changes, recalc and verify:
+   - Financial summary Ending balances (C33:E33:G33:I33:K33:M33) update correctly.
+   - “Difference” row (C39, E39…) should be zero (or show only real reconciling items).
+   - Balance Sheet totals (E7:F7:G7:H7) agree with Financial summary totals.
+
+If you want, I can:
+- Give the exact cell formulas to put in each of the currently hard‑coded cells (list them), or
+- Produce a short macro or Find/Replace plan to locate arithmetic with hard numbers and convert them to links.
+
+Which would you prefer?

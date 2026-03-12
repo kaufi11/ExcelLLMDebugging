@@ -1,0 +1,51 @@
+I checked the three sheets and found the main formula / logic errors and simple fixes. Short, specific items below.
+
+1) Seq Production Costs sheet — Other Activities grand total uses COUNT instead of SUM
+- Problem cell: G21 = COUNT(G19:G20)  
+- Why it’s wrong: COUNT returns the number of numeric cells (1 or 2), not the monetary total. This makes G21 and the One Year Total (B23) wrong.
+- Fix: replace with a sum:
+  - G21 → =SUM(G19:G20)
+- Effect: G21 will show the dollar total for “Other Activities” and B23 = B21 + D21 + G21 will then be correct.
+
+2) Seq Production Costs sheet — hard-coded “1”s for percent totals and inconsistent approach
+- Problem cells: C21, E21, H21 are just “1” (hard-coded). That is inconsistent and fragile (and not tolerant of zero totals).
+- Better approach / Fix (use formula that avoids #DIV/0):
+  - C21 → =IF($B$21=0,0,$B$21/$B$21)   (this will return 1 when B21>0, 0 if B21=0)
+  - E21 → =IF($D$21=0,0,$D$21/$D$21)
+  - H21 → =IF($G$21=0,0,$G$21/$G$21)
+- Explanation: this keeps the “100%” behavior but avoids hard-coding and prevents errors if a category total is zero.
+
+3) Seq Production Costs sheet — One Year Total (B23) depends on G21
+- Problem cell: B23 = B21 + D21 + G21  
+- Why attention needed: because G21 was wrong (see #1), B23 was wrong too.
+- Action: after fixing G21 to SUM, B23 will be correct. No other change required.
+
+4) Tech Dev Costs sheet — division by zero risk / #DIV/0! error
+- Problem cells: B18 = B17 / B6 (and B6 currently equals 0)
+- Why it’s wrong: B6 is “TOTAL COSTS” and is 0 in the template; dividing by zero causes #DIV/0! or invalid percentages.
+- Fix options (pick one):
+  a) Enter the correct total in B6 (preferred): put your actual total for the grant year in B6; then B18 = B17/B6 will work.
+  b) Add a guard to avoid #DIV/0!: change B18 → =IF($B$6=0,0,B17/$B$6)
+- Explanation: either supply the actual total or use IF to avoid dividing by zero and to show blank/zero until the total is entered.
+
+5) Bioinformatics Costs sheet — multiple division-by-zero risks
+- Problem cells: B18 = B17/$B$6, B31 = B30/$B$6, B44 = B43/$B$6 while B6 = 0
+- Why it’s wrong: same divide-by-zero problem as Tech Dev sheet.
+- Fix: either enter actual Total (B6) or guard the formulas. Suggested guarded formulas:
+  - B18 → =IF($B$6=0,0,B17/$B$6)
+  - B31 → =IF($B$6=0,0,B30/$B$6)
+  - B44 → =IF($B$6=0,0,B43/$B$6)
+- Explanation: prevents #DIV/0! and yields sensible zeros until the total is provided.
+
+6) Minor / optional cleanup suggestions
+- G11 currently shows “1 2 3 4 5” — looks like placeholders. Replace with the names of the “Other Activities” you actually included, or remove.
+- Consider formatting the percent columns as Percentage (and use 0–1 values as the sheet expects).
+- For robustness, you can wrap other division formulas (e.g., the % rows such as C13 etc.) in IF($B$21=0,0,...) to avoid temporary #DIV/0! when totals are blank.
+
+Summary of the minimal changes to fix errors immediately:
+- Change G21 to =SUM(G19:G20)
+- Replace hard-coded C21/E21/H21 with IF guards (see formulas above)
+- Either enter real totals in B6 on the TechDev and Bioinformatics sheets, or change B18, B31, B44 to guarded formulas:
+  - =IF($B$6=0,0, <original formula> )
+
+If you want, I can give you the exact full set of replacement formulas ready to paste, or a small macro to apply guards everywhere. Which would you prefer?

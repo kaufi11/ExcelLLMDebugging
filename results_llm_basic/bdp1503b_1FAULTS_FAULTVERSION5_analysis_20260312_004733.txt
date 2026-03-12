@@ -1,0 +1,28 @@
+Summary of problems found
+- Typo in G19: formula uses D19 instead of C19. That will give the wrong remaining amount for "Crown cars/hire of vehicles".
+- Many cells use formulas like =SUM(C10-E10) or =SUM(C10+C24+...) instead of the simpler/clearer arithmetic forms. These mostly work but are unnecessary and make the sheet harder to audit (and can mask reference mistakes).
+- Several E cells are blank (no zero). Blank vs explicit 0 can be confusing when reviewing/printing.
+
+Recommended fixes (short & simple)
+1. Fix the typo in G19:
+   - Change G19 from =SUM(D19-E19) to =C19-E19 (or =SUM(C19,E19)*not recommended* — better is subtraction).
+   - Explanation: D19 is empty; you want to subtract the year-to-date (E19) from the annual allocation (C19). Using C19 fixes the reference.
+
+2. Use direct subtraction instead of SUM for single differences:
+   - Replace formulas like =SUM(C10-E10) with =C10-E10.
+   - Explanation: =C10-E10 is clearer and less likely to hide mistakes. SUM(C10-E10) works because Excel evaluates the expression first, but it looks odd and makes auditing harder.
+
+3. Use SUM correctly for totals across multiple cells:
+   - Replace =SUM(C10+C24+C30+C37+C45+C51+C59) with =SUM(C10,C24,C30,C37,C45,C51,C59) or put the annual allocations in a contiguous range and use =SUM(range).
+   - Explanation: SUM with commas or a range is the intended use; using plus signs inside SUM is confusing.
+
+4. Make empty year-to-date cells explicit where appropriate:
+   - Put 0 (zero) in E cells that are intentionally zero rather than leaving them blank.
+   - Explanation: Distinguishes “no data entered” from “zero spent” and prevents accidental calculation confusion.
+
+Why these changes matter (brief)
+- Fixing G19 corrects an incorrect remaining allocation value.
+- Using =C-E and proper SUM ranges makes formulas easier to read and audit, reducing the chance of hidden reference errors in future edits.
+- Explicit zeros improve clarity of what data is known vs missing.
+
+If you want, I can give you the exact list of cells to update (I already noted G19) and produce the corrected formulas for the whole G column and the total lines. Which would you prefer?

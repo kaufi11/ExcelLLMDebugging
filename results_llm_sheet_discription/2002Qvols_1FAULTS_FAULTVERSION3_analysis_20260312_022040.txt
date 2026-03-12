@@ -1,0 +1,34 @@
+Summary — the sheet has two concrete formula/data errors plus some likely data omissions. Fix both to get correct cumulative totals.
+
+1) Wrong row reference (typo)
+- Error: O23 = E24 + J23 (uses E24 instead of E23). This pulls the LPG Q1 value from the wrong row.
+- Why it’s wrong: O23 is supposed to be the cumulative LPG for Q1+Q2 for row 23; using E24 mixes rows and corrupts the running totals.
+- Fix: Edit O23 to:
+  =E23+J23
+  After fixing, check Q23 / Y23 / AA23 etc. so the later cumulative totals use the corrected value.
+
+2) Missing Q4 LPG cell(s) (blank AG cells) causing AK formulas to be wrong or incomplete
+- Error: Many AK formulas are AKn = AGn + Yn (Q4 LPG + prior cumulative LPG). In some rows (example row 6) AG6 is missing from the AE:AH Q4 block (AE6, AF6 and AH6 exist but AG6 is absent). That makes AK6 compute without the Q4 LPG input (blank treated as zero), so Q4 and year totals for LPG will be wrong.
+- Why it’s wrong: AK is intended to be the cumulative LPG after Q4. If AG (Q4 LPG) is blank or in the wrong column, AK and final totals (AL, AI:AL and Grand Totals) are understated or incorrect.
+- Fix options:
+  a) If data exists but was not entered: enter the correct Q4 LPG value into AG6 (and any other AG cells that are blank).
+  b) If the value was placed in the wrong column (e.g., accidentally typed into AH or AE): move/copy it into AG so formulas point to the right place.
+  c) If there is no Q4 LPG and you want an explicit zero, enter 0 in the blank AG cells so it’s obvious the quarter has zero volume.
+- After filling AG values, recalc; AKn will then return correct cumulative LPG and higher‑level sums will update.
+
+Quick checks to find and fix similar problems
+- Find other wrong-row formula typos: use Home → Find (look for patterns like “=E24+” or use Formula Auditing → Error Checking → Inconsistent Formulas).
+- Find missing Q4 LPG values: filter or use Go To Special → Blanks on column AG in the range AE:AH rows for all detail rows (e.g., AG6:AG132). Or use =COUNTBLANK(AG6:AG132) to count blanks.
+- Trace dependents: use Formula Auditing → Trace Precedents/Dependents on suspicious subtotal cells (AK, AI, AL, AA, Q, G) to see if they point to the correct inputs.
+- Verify negative values intentionally: search for <0 in product columns (they often indicate adjustments/refunds — confirm with data source).
+
+Short action list (do these now)
+1. Fix O23: change formula to =E23+J23.
+2. Inspect column AG for blanks in rows with AE/AF/AH values (e.g., AG6). Fill the correct Q4 LPG values or 0 where appropriate.
+3. Recalculate and verify AI:AL and Grand Total row (row 133) update correctly.
+4. Optionally run Formula Auditing → Inconsistent Formulas to find other stray typos.
+
+If you want, I can:
+- provide a list of all rows where AG is blank,
+- scan for formulas that reference cells in the wrong row (like O23),
+- or give the exact Excel steps/screenshots to run the checks. Which would you like?

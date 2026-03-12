@@ -1,0 +1,23 @@
+Summary — one clear error found:
+
+Faulty cell: O13
+Error type: Typo / formula inversion
+What's wrong: O13 uses division (/) in the denominator (e.g. COUNT(...)/100 etc.) and ends with /100. All other O-cells use multiplication (COUNT(...)*100 etc.) and end with *100. That makes O13 compute the reciprocal / a hugely wrong number, so O13’s Overall Grade (and anything that uses it — averages, std dev, grade counts) is incorrect.
+
+Fix (replace O13 with this formula):
+=(SUM(B13:F13)+SUM(G13:M13)+N13)/
+ (COUNT(B13:F13)*100 + COUNT(G13:J13)*15 + COUNT(K13:M13)*30 + COUNT(N13)*150)
+*100
+
+Why this fixes it (short):  
+- Numerator = total points earned (exams + HW/labs + final).  
+- Denominator = total possible points for the items the student actually has entries for (counts × max points per item).  
+- Multiply by 100 to convert the fraction to a percent.  
+O13 was doing the inverse math because of the slashes.
+
+Action I recommend:
+1. Replace O13 with the corrected formula above.
+2. Then copy the correct O-formula from any correct O-cell (for example O4) down the column O4:O46 so every student uses the same correct formula.
+3. After fixing, re-check A47:O53 (averages, std dev, grade counts) — they will update correctly.
+
+Optional note (if you want): COUNT treats a zero as a valid numeric entry (it counts zeros). If zeros are meant to indicate missing work, you would need a different approach (e.g. use COUNTA on a helper column or treat blanks explicitly).

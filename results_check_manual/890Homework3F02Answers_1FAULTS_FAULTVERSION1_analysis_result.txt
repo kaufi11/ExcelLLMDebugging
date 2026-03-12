@@ -1,0 +1,57 @@
+I reviewed the formulas in the workbook and found a number of formula errors, likely-accidental references, and a few design/inconsistency issues that can cause wrong results or fragile spreadsheets. I list the problem cells, why they are problems, and recommended fixes.
+
+1) Q1 (sheet "Q1") — wrong cell reference / typo
+- Cell: Q1!G5
+- Problem: formula is = $G$2/(1+$K5)^$G$1 — it uses $K5 while the rest of that row use $J5. This is almost certainly a typo; K5 is blank so Excel uses 0 implicitly and the discounting is wrong for that row.
+- Fix: change K5 to J5 (i.e. = $G$2/(1+$J5)^$G$1).
+
+2) Q1 — missing/ambiguous period header (fragile reference)
+- Cells: several discount formulas use $D$1, $E$1, $F$1, $G$1 as period exponents (e.g. Q1!D4 = $D$2/(1+$J4)^$D$1).
+- Problem: D1 is not present in the sheet excerpt (E1,F1,G1 have 1,2,3). If D1 is blank, Excel treats blank as 0 (so the time‑0 CF is undisturbed) — this works but is fragile and unclear.
+- Fix: explicitly put 0 in D1 (and ensure E1=1, F1=2, G1=3) so the intent is clear and future editing won't break.
+
+3) Q1 a-b graph (sheet "Q1 a-b, graph") — missing explicit 0 rate
+- Cell: Q1 a-b, graph!A17 and B17
+- Problem: B17 has =NPV(A17,$C$3:$E$3)+$B$3 but A17 is blank. Excel treats blank as 0 so the row computes the NPV at rate 0, but a blank cell is confusing and fragile.
+- Fix: put 0 explicitly in A17.
+
+4) Q1 c-d, additional info — IRR call returns error for given guess
+- Cell: Q1 c-d, additional info!G26
+- Problem: formula =IRR(B2:E2,22%) returns an error (#N/A / #NUM) for that guess. IRR sometimes fails to converge for a given guess or the cashflow pattern yields multiple roots.
+- Fix / comment: This is not a formula syntax issue but a convergence issue. Remove the second argument or try different guesses (or use multiple starting guesses) to find other IRR roots, or use NPV methodology instead.
+
+5) Q2 (sheet "Q2") — circular references in Tax Loss Carry Forward / Taxable Income logic
+- Examples:
+  - Q2!D46 formula =IF(D47=0,SUM(D45:D47),0) and Q2!D47 formula =IF(D45<0,0,D45+D46)
+  - same pattern for E46/E47 and F46/F47 (and later in the sheet similar pairs at D70/D71, E70/E71, F70/F71)
+- Problem: D46 depends on D47 and D47 depends on D46 → circular reference. Excel will either show a circular reference warning and return 0/blank or requires iterative calculation to resolve. If iterative calc is not enabled or not configured, results will be wrong.
+- Fix: rework the carry-forward logic so it is not circular (e.g., use explicit carry-forward cells that reference prior periods only), or enable and document iterative calculation with appropriate iteration limits and tolerances. If the model intentionally uses iteration to model carryforwards, document that iterative calc must be enabled.
+
+6) Q2 — inconsistent references across sections (fragile / copy‑paste error)
+- Examples:
+  - In the WITH DEPRECIATION / DEBT SCENARIO block (around row 66+), row D67 (Interest) formula = -$C$17*$C$18. In this debt block loan and interest are defined in C58 and C61, not C17 and C18 (C17/C18 are values from an earlier block). The formula works only because the earlier cells happen to contain identical values, but it's inconsistent.
+- Problem: formulas reference cells defined in a different block. That is fragile: if the earlier block changes, these formulas will change unexpectedly.
+- Fix: change the references to the local block (e.g. use $C$58 and $C$61 if those are the intended local loan/interest inputs), or centralize inputs and reference them consistently from all blocks.
+
+7) Q2 / Q2 WITH DEPRECIATION — forward references and order-of-definitions
+- Example: Q2!C39 = C49/C38 uses C49 which is declared later in the sheet (C49 = -200). Forward references are allowed in Excel, but they make the workbook harder to read and maintain.
+- Fix: place input cells above formulas that depend on them, or clearly group inputs together.
+
+8) General comment — unusual negative rates
+- Multiple places (e.g. Q1 column J rates) use negative rate numbers (e.g. -0.10). That can be intentional (searching for NPV sign changes), but it is nonstandard and can confuse readers. Not an error per se, but worth calling out.
+
+9) Minor / cosmetic
+- Q1 cell D3 contains the text "Discounted Cash Flows: " in D3 rather than a header aligned with the discounted row; not an error but inconsistent placement.
+- Several cells contain stray whitespace or comment-like cells (e.g. " " in D26 etc). Not formula errors but tidy up improves clarity.
+
+Summary / recommended actions
+- Fix the clear typo Q1!G5 ($K5 → $J5).
+- Add explicit period header D1 = 0 in Q1.
+- Populate A17 explicitly with 0 in the graph sheet.
+- Resolve circular references in Q2 (rewrite carryforward logic or enable/document iterative calc).
+- Replace cross‑block references with local references in Q2 debt blocks (use C58/C61 instead of C17/C18) or centralize inputs consistently.
+- If IRR errors are important, remove the invalid guess or test multiple guesses and document IRR caveats.
+
+If you want, I can:
+- produce an edited copy with the obvious fixes applied (G5 fix, D1=0, A17=0, adjust debt references),
+- or produce a list of all cells participating in circular references so you can decide how to handle them. Which would you prefer?

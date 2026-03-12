@@ -1,0 +1,23 @@
+I checked the workbook. I found two clear formula mistakes and one risky formula that can produce inconsistent totals. Short fixes and short explanations below.
+
+1) Wrong signs in O11 (Homework total for student O)
+- Error: O11 currently =L11‑M11‑N11 (uses subtraction).
+- Fix: change to =L11+M11+N11
+- Why: O column is the sum of three homework components. Using minus produces a negative total and makes P11 (O11 / O$33) and any averages of O incorrect.
+
+2) Unsafe total formula in AF33 (Tests grand total)
+- Error: AF33 currently =SUM(Z33:AD33)
+- Problem: SUM(Z33:AD33) includes the intermediate columns AA33 and AC33 (and any future columns) — you only want to total the three test component totals (Z33, AB33, AD33). If AA33 or AC33 contain any value later, AF33 will be wrong.
+- Fix: replace with an explicit sum of those three cells, e.g.
+  - =Z33+AB33+AD33
+  or
+  - =SUM(Z33,AB33,AD33)
+- Why: this guarantees AF33 totals exactly the three intended test totals. Downstream percentages (AGx = AFx / $AF$33 and class aggregates) will then be correct and stable.
+
+3) Quick check / recommendation
+- After making the two fixes above, recalc (F9 or File → Calculate) and compare the class final-averages on the summary sheets (Sheet2, Sheet4, Sheet5). If any remaining inconsistencies persist, use Excel’s Trace Dependents/Precedents on the affected totals to find other bad references.
+- Also do a workbook-wide search for any other single-cell typos like “-” where “+” should be (search for “-M11” or patterns “-M” “-N” etc).
+
+If you want, I can:
+- Give the exact cells where the downstream percentages change and show before/after numbers, or
+- Scan the sheet for other anomalies (e.g., any other O-row formulas with minus signs).

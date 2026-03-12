@@ -1,0 +1,18 @@
+Findings (short)
+- Error: cell C20 on sheet Data has a typo. It contains =$C$4*(278+$C$5)^B20+A20*$C$6 instead of using 1. That 278 makes Q at time=12 astronomically large and corrupts the data.
+- Consequence: the bad value propagates to LN(Q) and any regressions that use C20 (can produce wrong coefficients / huge leverage). Fixing C20 is required.
+
+Fix (exact)
+- Replace the formula in Data!C20 with:
+  =$C$4*(1+$C$5)^B20 + A20*$C$6
+
+Why this fixes it (short)
+- The model you generate in Data is Q = A*(1+r)^t + additive_error. The “278” broke the base (should be 1 for (1+r)^t). Restoring 1 returns Q to the same scale as the other rows so LN(Q) and the regressions will no longer be skewed.
+
+Recommended improvement (optional, short)
+- If you intend to model constant percent growth with errors that are multiplicative (so ln Q is linear in time), use a multiplicative error specification:
+  Data!C8 (and fill down) = $C$4*(1+$C$5)^B8 * EXP(A8*$C$6)
+  That makes ln(Q) = ln(A) + t·ln(1+r) + A8*$C$6 and is consistent with running the regression ln(Q) ~ time.
+
+Extra checks
+- After fixing C20, recalculate LN(Q) and re-run regressions (or refresh the analysis output). Also watch for any additive errors that could make Q ≤ 0 (if you keep additive errors) — that would break LN().

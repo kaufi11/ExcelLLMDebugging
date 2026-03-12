@@ -1,0 +1,26 @@
+I inspected the formulas and values in Sheet1 and found one clear formula error plus a few inconsistencies / potential pitfalls. Summary and recommended fixes below.
+
+1) Wrong formula in L19 (Thompson, Celeste)
+- Problem: L19 contains =COUNT(D19:K19). That returns the number of numeric entries (5), not the total points. As a result L19 = 5 and M19 = L19/L$7*1 = 5/195 = 0.02564, which is incorrect for a student's total and percentage.
+- Correct formula: change L19 to =SUM(D19:K19)
+- Correct resulting values after change: L19 should become 187 (25+25+0+18+49+0+70+0) and M19 should become 187/L$7 (≈ 0.9590).
+- Reason: all other student total cells use SUM(Dx:Kx); L19 is the only one using COUNT by mistake.
+
+2) Missing assignment maxima for columns F (Quiz 3), I (Homework 3) and K (Final)
+- Observation: Row 7 (Total Points Per Assignment) has values for D7, E7, G7, H7 and J7 but F7, I7 and K7 are blank (L7 = SUM(D7:K7) = 195).
+- Concern: headers show Quiz 3 (F6), Homework 3 (I6) and Final (K6) but their max-points are not entered. That can be intentional, but is likely an omission and can mislead readers.
+- Recommendation: either enter the intended maximum points in F7, I7 and K7 (so L7 reflects the true maximum) or explicitly mark those assignments as “0” or “N/A” to avoid confusion.
+
+3) Blank student scores in F, I, K
+- Observation: many student rows have blanks in F, I and K. SUM(Dx:Kx) treats blanks as 0, which is consistent mathematically but may mask missing data entry.
+- Recommendation: if blanks indicate missing/ungraded work, consider using a placeholder (e.g., NA() or text "missing") or conditional checks to flag missing scores. Alternatively use data validation / comments so it’s clear whether a blank means zero or “not entered”.
+
+4) Minor / style items (not errors but worth cleaning)
+- M formulas use "*1" (e.g. =L9/L$7*1). The *1 is redundant; you can simplify to =L9/L$7 (or =IF(L$7=0,NA(),L9/L$7) to avoid divide-by-zero).
+- M cells show decimals; consider formatting them as Percent for readability.
+- If you want to protect against accidental edits, consider making row 7 absolute references or using named ranges for the total possible points.
+
+If you want, I can:
+- Provide the exact corrected formulas for the affected cells (I already gave L19 → =SUM(D19:K19)).
+- Recompute and list the corrected L19 and M19 numeric values.
+- Suggest a corrected L7 if you tell me the intended max points for Quiz 3, HW3 and Final.

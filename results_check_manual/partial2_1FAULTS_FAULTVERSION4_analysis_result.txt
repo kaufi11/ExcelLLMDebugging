@@ -1,0 +1,45 @@
+I reviewed the formulas on sheet "gb_export". I found several clear formula errors / inconsistencies and a couple of risky formula patterns that will give incorrect results when cells are blank. Summary with examples and recommended fixes:
+
+1) Typo in M5 (wrong operator)
+- Problem: M5 = L5 / $M$1 (uses division). All other M cells use multiplication.
+- Effect: M5 = 96 / 0.65 = 147.692... which inflates the total (N5 = 174).
+- Fix: change M5 to =L5*$M$1
+
+2) Participation (column K) not scaled by weight cell K1
+- Problem: K1 = 0.05 (weight) but N formulas add the raw value in K (e.g. K3 = 5) directly: N = ROUND(E + J + K + M,0). They do not multiply K by $K$1.
+- Effect: Participation contribution is added as 5 points instead of 5 * 0.05 = 0.25 points. This inflates every student's total by 4.75 points.
+- Fix: change N formulas to include K*$K$1, for example:
+  N3 = ROUND(E3 + J3 + K3*$K$1 + M3, 0)
+
+3) Averaging homeworks/surveys: using (F+G+H)/3 treats blanks as zero
+- Problem: column I is computed as =(F# + G# + H#)/3. When one or more of F/G/H is blank, that blank is treated as 0 and the divisor stays 3. This underestimates average when not all three values exist.
+- Examples:
+  - Row 3: F3 is blank, G3=100, H3=100 → I3 = (0+100+100)/3 = 66.6667; likely intended average of the two present values = 100.
+  - Row 12: F12 & H12 blank, G12=100 → I12 = 33.3333 instead of 100.
+- Fix: use AVERAGE(F#:$H#) which ignores blanks, e.g.
+  I3 = AVERAGE(F3:H3)
+  Or if you want explicit behavior: =IF(COUNT(F3:H3)=0,0,SUM(F3:H3)/COUNT(F3:H3))
+
+4) Inconsistent blank handling also affects J (homework weight)
+- Because J# = I# * $J$1, any error/underestimate in I due to blank-as-zero propagates to J.
+- Example: Row 3 J3 = I3*$J$1 = 66.6667 * 0.2 = 13.3333 instead of 100*0.2 = 20 (if F were intended to be ignored rather than zero).
+
+5) Weight cells are present and sum to 1 — but current formula usage makes final totals incorrect
+- Weights row: E1 = 0.1, J1 = 0.2, K1 = 0.05, M1 = 0.65 (sum = 1.0) — good.
+- But because K is not multiplied by K1, and M5 had a division typo, totals are inconsistent with those weights.
+
+Recommended consistent formulas (pick one pattern and apply down the sheet):
+- D# = (B# + C#) / 2   (no change)
+- E# = D# * $E$1        (no change)
+- I# = AVERAGE(F#:H#)   (instead of (F+G+H)/3)
+- J# = I# * $J$1
+- M# = L# * $M$1
+- N# = ROUND(E# + J# + K# * $K$1 + M#, 0)
+
+Extra notes
+- After fixing M5 and K scaling, many N values will drop (approximately 4.75 points lower because of participation scaling), and row 5’s value will decrease dramatically from 174 down to a correct value.
+- If you intentionally used blank = 0 semantics for I (i.e., missing homeworks count as zero), keep (F+G+H)/3 but be aware it's treating blanks as zero. If instead you want to ignore missing entries, use AVERAGE or SUM/COUNT as suggested.
+
+If you want, I can:
+- Provide an updated sheet with the corrected formulas applied across all rows; or
+- Produce a list of exact corrected formulas for each cell (D3..N31) to paste into Excel. Which would you prefer?

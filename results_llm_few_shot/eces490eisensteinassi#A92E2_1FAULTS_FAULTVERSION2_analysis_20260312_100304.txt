@@ -1,0 +1,31 @@
+Summary of problems (short) and fixes:
+
+1) Faulty cell: F19
+- Error: Value hard-coded as 2 instead of the information content formula.
+- Why it breaks things: G19 = E19*F19 and G46 = SUM(G19:G44) use that wrong value, so the entropy for the E‑distribution is incorrect.
+- Fix: replace 2 with the correct formula:
+  F19 = -LOG(E19, 2)
+
+2) Clarity / labeling problem: E18 header duplicates A18
+- Error: Both columns are labeled "Probabilities P(A)". This is confusing (you have two different distributions in A and E).
+- Fix: rename E18 to something meaningful (e.g. "Probabilities Q(A)" or "Alt P(A)").
+
+3) Possible conceptual error: probabilities vs. "26 symbol alphabet"
+- Observation: A19:A44 use values 0.064516... (2/31) and 0.032258... (1/31) and E19:E44 use 0.108695... (5/46) and 0.021739... (1/46). Both sets sum to 1, but denominators are 31 and 46, not 26.
+- If you intended a uniform 26-symbol alphabet, those probabilities are wrong. To make them uniform:
+  - Set A19:A44 (or E19:E44) = 1/26 (use formula =1/26 and fill down).
+  - Then info content per symbol = -LOG(1/26,2) and entropy = -SUM(range * LOG(range,2)) or simply =LOG(26,2) bits (max entropy).
+- If the non-uniform distributions are intentional, keep them but correct F19 (above) and make the column headers clear.
+
+4) Minor suggestion (not an error): Max H formula
+- Current: 26*((1/26)*-LOG((1/26),2)) works but is redundant.
+- Cleaner: =LOG(26,2) or =-LOG(1/26,2)
+
+Quick checklist to fix and validate:
+- Fix F19 to =-LOG(E19,2).
+- Recompute G19 and G46 (they will update automatically).
+- Rename E18 so it’s clear which distribution each column is.
+- Confirm each probability column sums to 1 (use =SUM(A19:A44) and =SUM(E19:E44)).
+- If you want uniform symbols, set probabilities to =1/26 in the 26 rows.
+
+If you want, tell me whether A or E should be uniform and I will give the exact cell formulas to paste/fill.

@@ -1,0 +1,54 @@
+Errors found:
+
+1. In Ap1 sheet:
+   - Rows B16:B20 reference Rate!G11:G15 correctly.
+   - But in the formulas in L19 and L20, the multiplier references Rate!E14 and Rate!E15, which correspond to rows 14 and 15 on Rate sheet.
+   - However, B19 and B20 reference Rate!G16 and Rate!G15 respectively, which are rows 16 and 15.
+   - So L19 formula uses Rate!E14 but B19 uses Rate!G16 (mismatch).
+   - Similarly, L20 formula uses Rate!E15 but B20 uses Rate!G15 (correct).
+   - So L19 formula is incorrect referencing Rate!E14 instead of Rate!E16.
+
+2. In Ap1 sheet Experience section (rows B29:B33):
+   - L32 formula references Rate!E17 for K32=5, but B32 references Rate!G19.
+   - L33 formula references Rate!E18 for K33=2..5, but B33 references Rate!G20.
+   - So L32 and L33 formulas are referencing wrong Rate!E columns (should be E19 and E20).
+
+3. In Ap2 sheet Experience section (rows B29:B33):
+   - L32 formula references Rate!E17 instead of Rate!E19 (mismatch with B32 referencing Rate!G19).
+   - L33 formula references Rate!E18 instead of Rate!E20 (mismatch with B33 referencing Rate!G20).
+
+4. In Ap3 sheet:
+   - Cell B20 has formula =5 instead of a formula consistent with others.
+   - In Experience section:
+     - L31 formula references Rate!E18 but K31=0 (invalid key).
+     - L32 formula references Rate!E17 instead of Rate!E19.
+   - L31 uses K31=0 which is not handled in IF formula (only 2 to 5 keys handled).
+   - L32 uses wrong Rate!E column.
+
+Summary of main issues:
+- Several formulas in Ap1, Ap2, Ap3 sheets reference wrong Rate!E columns for weighting.
+- Some keys (like 0) are not handled in IF formulas.
+- One cell (Ap3 B20) has a hardcoded value instead of formula.
+
+Solutions:
+
+1. Correct the Rate!E column references in L19, L32, L33 formulas in Ap1, Ap2, Ap3 to match the corresponding Rate!G references:
+
+   - For B19 referencing Rate!G16, L19 should use Rate!E16, not Rate!E14.
+   - For B32 referencing Rate!G19, L32 should use Rate!E19, not Rate!E17.
+   - For B33 referencing Rate!G20, L33 should use Rate!E20, not Rate!E18.
+
+2. Handle keys outside expected range (like 0) by adding a condition to return 0 or appropriate value.
+
+3. Replace hardcoded value in Ap3 B20 with the correct formula similar to others.
+
+Explanation:
+
+- The Rate sheet columns E11:E20 hold numeric ratings corresponding to the qualifications listed in G11:G20.
+- The Ap sheets reference these ratings to calculate weighted scores based on user input keys (K16, K17, etc.).
+- If the formula references wrong Rate!E cells, the weighted score will be incorrect.
+- Ensuring the correct Rate!E cell matches the Rate!G cell referenced in column B fixes the calculation.
+- Handling unexpected keys avoids errors or incorrect zero scores.
+- Consistent formulas maintain integrity and allow easy updates.
+
+In short, fix the Rate!E references in the formulas to align with the Rate!G references, handle unexpected keys, and replace hardcoded values with formulas.

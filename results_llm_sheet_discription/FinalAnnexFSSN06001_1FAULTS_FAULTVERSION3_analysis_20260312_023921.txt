@@ -1,0 +1,81 @@
+Summary of the problems I found (short & concrete) and how to fix them.
+
+Main types of errors
+1) Manual / wrong percentage expressions instead of deriving from amounts
+   - Example: Annex1 C7 = "73.3%+3.7%" and G7 = "0.903+0.048". These are manual additions of percentages or decimals instead of calculating share from the underlying amounts. This is fragile and can hide mistakes.
+
+   Fix: Replace with a formula that divides the actual amount(s) by the relevant total. Example pattern:
+   - If commercial banks' assets for 1992 are in cell X (or are a sum of X:Y), and total assets for 1992 are C6, use
+     = (SUM(X:Y)) / C6
+   - If you must add two percentages stored as numbers (73.3 and 3.7), convert to decimal explicitly:
+     =(73.3+3.7)/100
+   Better: use amounts, not pasted percentages.
+
+2) Hard-coded / inconsistent GDP denominators and constants
+   - Example: Annex1 uses /350 in B9 but uses /341 in other cells; other memo rows use explicit big numbers like 318346 or 341386. Hard-coded constants for GDP in many cells cause inconsistency and are hard to maintain.
+
+   Fix: Put each year’s GDP in a dedicated cell (or a small table) and reference it. Example:
+   - In a small table: GDP1992 in cell G1, GDP1998 in G2 etc.
+   - Then use =C6 / $G$1992 (or use INDEX/MATCH by year). This ensures consistency and easy updates.
+
+3) Wrong sum ranges / omitted rows in SUMs
+   - Example: Annex3 (Assets) B26 sums B27:B31 but L26 sums L27:L30 (missing L31). Similar omissions likely in other columns where someone edited one column but not others.
+
+   Fix: Fix the ranges so they match across years. Use the same row range for all year columns. Example:
+   - Change L26 from =SUM(L27:L30) to =SUM(L27:L31)
+
+4) Cells overwritten with constants instead of formulas
+   - Example: Annex3 H38 = 4 (literal) — but H38 should be the total formula like B38 (B38 = B33+B26+B12). Having a literal value instead of formula breaks every row that references H38 for percent calculations.
+
+   Fix: Restore the correct formula. For H38 use the same structure as column B but with H references:
+   - H38 = H33 + H26 + H12
+   Or: H38 = SUM(H12:H36) (if that range covers all component groups).
+
+5) Wrong denominator references for percent columns (column mismatch)
+   - Example: Annex3 Deposits row for Bank Al-Amal:
+     K52 currently = (J52 / $H$77) — it divides a 1996 amount by the 1995 total ($H$77) (wrong column).
+   - Similar mistakes: some % cells point to totals in the wrong column.
+
+   Fix: Make each percent column divide by the matching column total. Pattern:
+   - If J52 is the amount for 1996, K52 (the % for that amount) must be = IF($J$77=0,0,J52 / $J$77)
+   - Use absolute row for the total (e.g., $J$77) but the same column as the amount.
+
+6) Misc: Formulas written oddly (e.g., "FORMULA =5513" instead of just value) — not a functional error but inconsistent. Also empty rows/cells in some columns that should be consistent.
+
+Concrete corrective steps (quick checklist you can apply)
+1. Create a small control table (top or separate sheet) listing the year and the GDP (and any other constants such as “total market cap” denominators). Replace all hard-coded GDP numbers with references to the control table.
+2. In each section (Assets / Deposits / Credits / Annex2 totals):
+   - Fix sum ranges so they include identical row ranges in every year column. Use SUM(rowStart:rowEnd) consistently.
+   - Replace overwritten constants with the correct formula. Use the B-column formula as the model and copy across to other year columns (paste formula, not value).
+3. Audit percent columns:
+   - For each percent cell that should be amount/total, ensure it divides by the total cell in same year column. Example pattern for 1996:
+     - amount in Jxx → percent in Kxx: =IF($J$TotalCell=0,0,Jxx / $J$TotalCell)
+   - Add IF or IFERROR to avoid #DIV/0.
+4. Replace manual percent additions with real computations from amounts. If you must sum small components, sum the amounts then divide by total, not add percent texts.
+5. Use Excel’s Formula Auditing:
+   - Select a percent column and check its precedents (Formulas → Trace Precedents).
+   - Use Go To Special → Formulas to find cells that are values (numbers) where formulas are expected.
+   - Use Find (search for “/ $H$77” etc.) to find incorrect column references and fix them systematically.
+
+Examples of corrected formulas
+- Annex3 (Assets) — fix missing-sum and overwritten total:
+  - L26 → =SUM(L27:L31)
+  - H38 → =H33 + H26 + H12   (or =SUM(H12:H36) if that captures everything)
+- Annex3 (Deposits) — fix wrong denominator:
+  - K52 → =IF($J$77=0,0,J52 / $J$77)   (assuming J52 is the 1996 amount and J77 is the 1996 total)
+- Annex1 (commercial banks share) — do not add percentages manually:
+  - C7 (correct) → = (SUM(range_of_commercial_bank_assets_for_1992)) / C6
+  - or if you only have two components in numbers 73.3 and 3.7 and want decimal: =(73.3+3.7)/100
+
+Why these fixes work (brief)
+- Using amounts / totals guarantees the % always matches the current data (no manual re-calculation).
+- Consistent SUM ranges ensure totals include all banks across every year.
+- Using a single GDP source avoids conflicting denominators and makes updates simple.
+- Correcting denominator references fixes percentages that were being calculated with the wrong totals (a common cause of wrong % results).
+- Using IF/IFERROR prevents divide-by-zero errors and gives clean output.
+
+If you want, I can:
+- give a prioritized list of the exact cell addresses to edit first (I recommend: H38, L26, all percent columns that reference a different column total like K52), or
+- produce the exact corrected formulas for all suspect cells if you share the workbook (or paste the cells you want fixed).
+
+Which do you want next — (A) a short prioritized edit list with exact formulas for the top ~12 problem cells, or (B) a full audit script (list of every inconsistent formula found)?

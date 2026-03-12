@@ -1,0 +1,36 @@
+Summary of the main errors I found (short and actionable):
+
+1) Grand totals omit the last option column (Off‑by‑one)
+- Where: Sheet "Total LOE" cell B70 uses =SUM(B68:H68) — this excludes Opt.7 total in I68.
+- Also: Sheet "T&M Type" B62 uses =SUM(B60:T60) — this excludes W60 (Opt.7).  
+- Fix: include the last option in the sum.
+  - Total LOE B70 → =SUM(B68:I68)
+  - T&M B62 → =SUM(B60,E60,H60,K60,N60,Q60,T60,W60)  (or =SUM(B60:W60) if you know intermediate columns contain no unwanted numbers)
+
+2) Missing/incorrect Grand Total formulas on other sheets
+- Where: Fixed Price (A61) and Cost Type (A63) appear to have no Grand Total formula shown.
+- Fix: add a Grand Total that sums the option totals (explicitly list every option total to avoid including unrelated columns). Example:
+  - Fixed Price A61 → =SUM(E59,H59,K59,N59,Q59,T59,W59)
+  - Cost Type A63 → =SUM(E61,H61,K61,N61,Q61,T61,W61)
+
+3) Inconsistent escalation rate (typo .023 instead of .02)
+- Where: Many "Opt.4" formulas use *0.023 while the other steps use *0.02 (should be consistent 2% each period).
+- Problem: one option step is increasing by 2.3% instead of 2%, yielding inconsistent numbers.
+- Fix: standardize the rate to 2% everywhere (replace 0.023 with 0.02). Better: put the rate in one cell (e.g. cell Z1 = 0.02) and reference it so mistakes cannot creep in.
+  - Example: Opt1 C14 → =B14*(1+$Z$1)
+             Opt2 D14 → =B14*(1+$Z$1)^2
+             or sequential: C14 =B14*(1+$Z$1), D14 =C14*(1+$Z$1), etc.
+
+4) Hard‑coded value where formula should be (manual override)
+- Where: Sheet "T&M Type" H30 is literally =3 (hard-coded) while every other row uses the formula pattern =E30+(E30*0.02) (or the equivalent).
+- Problem: breaks consistency and will not update when base or rate changes.
+- Fix: replace with the correct formula, e.g. H30 → =E30*(1+$Z$1) (or =E30+E30*0.02).
+
+Extra recommendation (prevents many future errors)
+- Use one named/anchored cell for the escalation rate (e.g. cell Z1 = 0.02 and name it Rate). Then use formulas like:
+  - Opt1 = Base*(1+Rate)
+  - Opt2 = Base*(1+Rate)^2
+  - Grand totals = SUM(all option total cells) (explicit list or contiguous range if safe)
+This makes it easy to change the rate once and prevents typos like 0.023.
+
+If you want, I can produce the exact corrected formulas for every affected row (or give you a small macro / fill pattern) — tell me which sheet(s) you want fixed automatically.

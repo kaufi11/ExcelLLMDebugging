@@ -1,0 +1,23 @@
+Summary — two real problems I found and how to fix them quickly.
+
+1) Many cells show the literal text "FORMULA =A$9" (and similar) instead of evaluating a formula.
+- What’s wrong: those cells contain the text string "FORMULA =..." (or are formatted as Text) so Excel does not evaluate them as formulas. Result: references don’t calculate and downstream values are missing/incorrect.
+- Quick fix (recommended):
+  1. Select the affected range (e.g. the blocks on Pages 2–6 where you see "FORMULA =...").
+  2. Ctrl+H (Find & Replace). Find what: FORMULA =    Replace with: =
+     - (Be sure to include the space after FORMULA.)
+  3. Replace All.
+  4. If cells still show as text, set Format to General (Home → Number → General) and re-enter formulas (select range → F2 → Enter, or use Text to Columns → Finish to force Excel to recalc).
+- Why this works: replacing "FORMULA =" with "=" converts the text into real formulas; changing format / re-entering forces Excel to evaluate them.
+
+2) Broken numeric sequence in column C of the A-122 sheet (column of paragraph numbers).
+- What’s wrong: cell C8 contains =C6-1 (instead of using the previous row), which breaks the sequence. That produces duplicated/wrong paragraph numbers downstream.
+- Fix:
+  - Change C8 to use the previous row, e.g. set C7 = C6+1 and C8 = C7+1 (or simply set C8 = C6+2). Better: set C6 = C5+1, then fill C6 downward with the formula =C5+ROW()-5 or more simply drag the fill handle so each row uses the previous row +1.
+- Why this works: it restores the intended consecutive numbering (29,30,31,...).
+
+Optional sanity checks (quick):
+- After fixes, check a couple of spots where you saw "FORMULA =..." to confirm they now show values (not text) and update when referenced cells change.
+- Check the paragraph number column (column C in A-122) across several rows to confirm it increments correctly.
+
+If you want, I can give the exact Find/Replace string for your workbook or generate the single-cells list of all addresses that currently contain the literal "FORMULA =" so you can target them. Which would you prefer?

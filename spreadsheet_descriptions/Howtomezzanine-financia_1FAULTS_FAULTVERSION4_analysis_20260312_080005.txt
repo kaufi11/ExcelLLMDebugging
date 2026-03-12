@@ -1,0 +1,62 @@
+High-level summary of the workbook (two sheets). Concise description of structure, key inputs, formulas and outputs.
+
+1) Sheet: Rules of thumb
+- Purpose: quick, per-desk and per-sqft pricing/profit "rules of thumb" calculator. Change shaded inputs to see effects on price/profit.
+- Layout: short table of inputs (space per desk, rent, operating costs, vacancy, mark-up, set‑up costs, lease length, interest) and derived rows (costs, charges, profit).
+- Key inputs (editable): 
+  - Space allowed per desk B4 = 90 sq ft/desk
+  - Rent & service charge B7 = 15 per sq ft
+  - Operating costs + manager B8 = 5 per sq ft
+  - Unoccupied space % B11 = 0.15
+  - Mark up on all costs B19 = 0.15
+  - Set up cost B26 = 20 per sq ft
+  - Lease length B27 = 10 yrs, interest B28 = 0.08
+- Important formulas / calculations:
+  - Total operating cost per sq ft B9 = B7 + B8
+  - Cost of unoccupied space B12 = B11 * B9
+  - Total cost per sq ft B14 = B9 + B12
+  - Total cost per desk B15 = B4 * B14
+  - Annual charge to tenant per desk B21 = B15 * (1 + B19)
+  - Annual/monthly per desk: B22 = B21 / B4 (per sq ft), B23 = B21 / 12
+  - Annual repayment of set-up cost B29 = PMT(B28,B27,-1*B26,0,0) per sq ft
+  - Annual operating profit (per sq ft) B30 = B19 * B15 / B4
+  - Gross profit (per sq ft) B32 = B30 - B29
+- Outputs to watch: per-desk annual charge (B21), per-sqft monthly/annual rates, repayment of set‑up cost (B29), and gross profit (B32).
+
+2) Sheet: Mezzanine financial model
+- Purpose: detailed mezzanine-level costing and cashflow model showing per-sqft, per-desk and per-month costs/revenues, initial investment, breakeven and NPV.
+- Layout: left side = input lists (area, costs, revenues, initial capex); middle = unit conversions and per-sqft / per-desk / per-month breakdowns; right side = colour key, totals, breakeven and NPV results.
+- Key inputs (editable):
+  - Total Area C5 = 14,000 sq ft
+  - % Common Area C6 = 0.33
+  - Number of Desks C8 = 160 (Average area per desk C7 = C5 / C8)
+  - Line-item annual costs in C12:C35 (rent, services, office manager, catering, cleaning, phone, etc.)
+  - % mark-up adjustments F12:F35 (per line)
+  - Additional revenue F39 = 3,000 (e.g., conference hire)
+  - Initial investment items C43:C55 (acquisition, build, IT, furniture, etc.)
+  - Start-up funding/grants F59 = 20,000
+  - Lease length C65 = 5 yrs, Occupancy C67 = 0.95, WACC C69 = 0.08
+- Important formulas / mechanics:
+  - Per‑sqft, per‑desk and per‑month conversions use anchors $C$5 (area) and $C$8 (desks): e.g., H12 = $C12/$C$5, J12 = $C12/$C$8, L12 = J12/12.
+  - Basic charge totals: H29/I29/J29/K29/L29/M29 = SUM across H12:H27 etc.
+  - TOTAL CHARGE: C37 = SUM(C12:C35) * 0.9 (note: model applies 0.9 factor here); F37 = C37 + SUMPRODUCT(C12:C35,F12:F35) (applies line-item markups)
+  - Operating totals by unit: H37/I37/J37/K37/L37/M37 aggregate basic + other items
+  - Initial investment totals: C57 = SUM(C43:C55); H57/J57 = per-unit equivalents
+  - Net initial investment after grants: F76 = F74 - F75 (and equivalents per unit)
+  - Operating revenues at occupancy: F79 = (F37 + F39) * C67 (similar for I/K/M)
+  - Operating profit: F80 = F79 - F78
+  - Break‑even payment (annual) to amortize net initial investment: F82 = PMT($C$69,$C$65,-1*F$76,0,0)
+  - NPV of the project: F85 = NPV($C$69, cashflows F80 repeated for the lease length using IF tests) - $F$76 (project value today)
+  - Break-even revenue required: F92 = (F90 + F91) / $C$67 where F90 = PMT(...) for net investment; average markup needed to breakeven: F95 = (F92 - F39) / F91 - 1
+- Key outputs to review:
+  - Initial investment C57 and net after grants F76
+  - Annual operating costs C37 / F78 and operating revenues at occupancy F79
+  - Operating profit F80
+  - Break-even annual payment and revenue (F82, F90, F92) and required per‑desk/month charges (K92/M92)
+  - Net Present Value F85 (accept if > 0)
+- Anchors/assumptions: many formulas use absolute references to C5 (area), C8 (desks), and C69/C65 for discounting/lease length — change those to recalc whole model.
+
+Overall notes
+- Inputs are concentrated in column B/C (Rules sheet) and column C/F (Mezzanine sheet). Change those to see model updates.
+- Reusable functions used: SUM / SUMPRODUCT, PMT for amortization, NPV for project valuation, anchored references ($C$5,$C$8) for unit conversions, IF tests to build cashflow series limited to lease length.
+- Watch for a few non‑obvious multipliers (e.g., C37 uses *0.9) and ensure the occupancy, WACC and lease length assumptions are set before interpreting NPV and breakeven outputs.

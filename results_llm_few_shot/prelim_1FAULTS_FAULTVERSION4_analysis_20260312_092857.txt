@@ -1,0 +1,25 @@
+Summary — found 2 real formula problems that break the Event numbering in the "program" sheet, plus one best-practice issue.
+
+1) Faulty cell: A19
+- Error type: Sign / logic error
+- What’s wrong: A19 = A18 - 1. That subtracts 1 instead of adding 1, so the event number goes backwards and duplicates earlier numbers.
+- Fix: Change the formula to =A18+1
+- Why this fixes it: The column is a running event counter; every row should add 1 to the previous event. Using +1 keeps the sequence increasing.
+
+2) Faulty cell: A41
+- Error type: Hard-coded value / sequencing error
+- What’s wrong: A41 is the constant 26 (manually entered) while the previous auto-number is 23 (A39). The hard-coded 26 breaks the automated sequence and will not update if rows above change.
+- Fix: Replace 26 with a formula: =A39+1  (or if you keep blank rows, use the last event cell + 1, e.g. =A39+1)
+- Why this fixes it: It continues the automatic increment pattern so numbers stay correct when you insert/delete/move rows.
+
+Optional improvement (recommended)
+- Problem: Many cells use chained formulas like =A12+1, =A13+1 … which are fragile if rows are inserted/deleted or if you copy blocks.
+- Better alternatives:
+  - Simple auto-numbering by row: put in A12 =1 and in A13 copy =A12+1 down the column (this is the pattern you already use — keep consistency).
+  - Or use a robust formula based on the row number: in A12 use =ROW()-11 and fill down. That automatically numbers each visible row correctly regardless of insertions.
+  - In Excel 365 you can use =SEQUENCE(<count>,1,1,1) to populate the whole sequence at once.
+
+Small note (not required fix):
+- A15 has start and end times both 10:15 (duration 0) and its note says "Break-A - Eliminated" — that may be intentional. If not, check C15/D15.
+
+If you want, I can give the exact formulas to paste into the whole column A (e.g., a SEQUENCE or ROW-based formula) and update any other inconsistent rows.

@@ -1,0 +1,33 @@
+I reviewed both sheets and found the main formula errors that will give wrong totals/percentages. Below are the problems, the simple fixes (exact formulas to use), and a one-line explanation for each.
+
+1) Sheet "STEP 1 OF 2" — G22 is wrong
+- Current: G22 = 2 (hard-coded)
+- Fix: G22 =SUM(G11:G20)
+- Why: G22 should total the TAX WITHHELD entries. A hard-coded 2 makes all downstream tax % and totals wrong.
+
+2) Sheet "STEP 1 OF 2" — E33 misses a row
+- Current: E33 =SUM(E29:E30)
+- Fix: E33 =SUM(E29:E31)
+- Why: There are three giving rows (E29:E31); the formula omitted the 3rd line so the giving total is too small.
+
+3) Sheet "STEP 1 OF 2" — cleaner / correct sum syntax for combined totals
+- Current: I33 =SUM(G32+I32) and M33 =SUM(K32+M32)
+- Fix (preferred): I33 =G32+I32 and M33 =K32+M32
+- Why: SUM(G32+I32) works but is awkward; using direct addition (or SUM(G32,I32)) is clearer and less error-prone.
+
+4) Sheet "STEP 2 OF 2" — Saving percent uses wrong cell
+- Current: F10 =H8/H6
+- Fix: F10 =H10/H6
+- Why: F10 is the percent for "SAVING (10%)" and must divide H10 (the saving amount) by total earnings (H6). Using H8 repeats the giving percent.
+
+5) Sheet "STEP 2 OF 2" — Household / Personal percent uses wrong total
+- Current: K6 =M18/H6
+- Fix: K6 =H32/H6
+- Why: K6 is labeled "HOUSEHOLD / PERS.(10-15%)" and should show housing as a percentage of earnings (housing total is H32). Using M18 (an unrelated subtotal) produces an incorrect percent.
+
+Notes / recommendations
+- After fixing G22, recalc H14 on Sheet2 (it pulls 'STEP 1 OF 2'!G22). The tax % and any dependent %s will update.
+- Scan other percent formulas for similar misreferences (some percent cells use the right-hand column; ensure each percent divides the corresponding Hxx value by H6).
+- Replace any SUM(a+b) occurrences with either a+b or SUM(a,b) for clarity.
+
+If you want, I can produce a corrected list of every formula cell in the two sheets (so you can paste them in) or highlight all cells that reference the wrong ranges. Which would you prefer?

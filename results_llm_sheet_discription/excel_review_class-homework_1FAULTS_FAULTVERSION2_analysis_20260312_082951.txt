@@ -1,0 +1,37 @@
+Findings (short)
+- Q'back: H5 (Bryant Completion %) is wrong — it uses =D5/C5*180 instead of *100. That inflates Bryant's Completion % and the Points in L5.
+- lookup: Student Total (F) and Average (G) are blank and there is no formula to map Average to Letter Grade (H). The grade table exists (F12:G18) but isn't used.
+
+Fixes and exact formulas (paste into the indicated cells)
+
+1) Q'back — correct Bryant completion %
+- Replace H5 with:
+  =D5/C5*100
+- Then copy H5 down to H6:H11 so the whole column uses the same formula (=D#/C#*100).
+
+Why: Completion % should be completions divided by attempts times 100. The *180 was a typo and caused an inflated percent which flows into the Points (L) calculation.
+
+Example of impact (Bryant)
+- Before (wrong H5): H5 ≈ 87.655; L5 ≈ 141.94
+- After (correct H5): H5 ≈ 48.698; L5 ≈ 102.98
+So Bryant’s Points drop ≈ 39 points after fixing H5.
+
+2) lookup — add totals, averages and grade lookup
+- In F4 (Total) put and copy down to F9:
+  =SUM(B4:E4)
+- In G4 (Average out of 100) put and copy down to G9:
+  =F4/4
+  (since Total is out of 400; dividing by 4 gives average out of 100)
+- In H4 (Letter Grade) put and copy down to H9:
+  =VLOOKUP(G4,$F$12:$G$18,2,TRUE)
+  (use absolute refs $F$12:$G$18; the table is sorted ascending so approximate-match TRUE works)
+
+Why: SUM gives the student total; dividing by 4 converts total/400 into average/100; VLOOKUP with TRUE finds the correct letter by threshold.
+
+Extra notes (brief)
+- Keep H/I/J in Q'back consistent (all *100) if Points formula expects percent points. If you prefer H/I/J as true Excel percentages (0–1), you must change the Points formula accordingly — but the minimal fix is just correct H5 to match the other rows.
+- Ensure the grade lookup table (F12:F18) is sorted ascending (it is) when using VLOOKUP(...,TRUE).
+
+If you want, I can:
+- give the corrected Points values for all QBs,
+- provide the exact corrected sheet formulas to paste for the whole columns.

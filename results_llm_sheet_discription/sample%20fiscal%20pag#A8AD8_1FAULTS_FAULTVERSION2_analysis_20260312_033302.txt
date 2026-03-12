@@ -1,0 +1,34 @@
+Short answer — main errors and fixes
+
+1) Wrong function on sheet 1198: H25 uses COUNT(H9:H24) instead of SUM(H9:H24).
+- Why it’s an error: COUNT returns the number of numeric cells, not their total. That makes Total Revenues (H25) a small integer instead of the sum, and that wrong value flows into Summary and carry‑forwards.
+- Fix: replace the formula in 1198!H25 with:
+  =SUM(H9:H24)
+- After fixing, recalc workbook (F9 or Ctrl+Alt+F9) and verify Summary H-column totals update.
+
+2) Fragile / confusing Carry Forward formulas (all fund sheets)
+- What I found: carry‑forward cells (row 6) use formulas that reference the next column (e.g. D6 = E6 + D72 - D25 - D35). That works only if a single seed value is provided in one column (G6 in your file) and you rely on formulas chaining backwards. This is hard to maintain and can produce circular references or unexpected results if someone changes sheet seed or inserts/removes columns.
+- Recommended fix (clearer, less error‑prone):
+  - Pick the earliest year column (D) as the seed (enter the actual starting carry forward manually into D6).
+  - Use forward formulas for the next years, e.g. on each fund sheet:
+    E6 = D6 + D25 + D35 - D72
+    F6 = E6 + E25 + E35 - E72
+    G6 = F6 + F25 + F35 - F72
+    H6 = G6 + G25 + G35 - G53
+    I6 = H6 + H25 + H35 - H53
+  - Why: “NextCarry = ThisCarry + ThisTotalRevenues + ThisNetTransfers - ThisTotalExpenditures” is intuitive, avoids referencing future cells, and is safer when editing columns or copying the template.
+
+3) (Advice) 3D SUM ranges and sign conventions
+- The Summary uses 3D ranges like SUM('1003:1856'!D6). That’s fine but fragile: inserting sheets outside the 1003:1856 sheet block will change which sheets are included. If you need stability, either:
+  - Create a dedicated aggregation sheet with explicit SUM('1003'!D6,'1043'!D6,...) or
+  - Put all fund sheets inside a fixed workbook section and avoid inserting sheets inside that block.
+- Also double‑check sign conventions for transfers (some funds show transfers as negative numbers). Make sure “transfer out” is negative everywhere and “transfer in” is positive, so SUMs produce correct net transfer numbers.
+
+What I suggest you do now (minimal steps)
+1. Open sheet 1198 and change H25 from COUNT(H9:H24) to =SUM(H9:H24).
+2. Recalculate workbook and check Summary H totals and H6 (carry forward) on Summary update correctly.
+3. If you want long‑term reliability, pick a carry‑forward seed column and convert the backward formulas to the forward pattern shown above on each fund sheet.
+
+If you want, I can:
+- Provide the exact cell-by-cell replacement formulas for every fund sheet (so you can paste them in), or
+- Recompute and report the Summary totals before/after the 1198 fix.

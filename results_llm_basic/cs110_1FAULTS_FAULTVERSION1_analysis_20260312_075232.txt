@@ -1,0 +1,23 @@
+Summary of the problems I found
+- SecA: cell J19 contains the constant 2 instead of the expected sum formula. That makes the Assignment Points (J19) and the Total Points (I19) for that row incorrect.
+- Minor inconsistency: J10 on all sheets is =SUM(R10:AF10) while the other J-rules use R:AE. AF is outside your labeled headers (R:AE). It may be blank and harmless, but it’s inconsistent and could hide errors later.
+
+Why this is a problem
+- I19 uses =MIN(500,SUM(J19:M19,P19:Q19)). With J19 = 2 (not the sum of R19:AE19) the student’s assignment total and final total are wrong.
+- Inconsistent ranges (AF vs AE) can accidentally include an unintended column or hide a typo later.
+
+Fixes (quick, exact)
+1. Replace the constant in SecA J19 with the correct formula:
+   - Put this in J19: =SUM(R19:AE19)
+2. Make the J10 formula consistent (recommended):
+   - Change J10 from =SUM(R10:AF10) to =SUM(R10:AE10)
+3. Copy the correct J formula down the J column where appropriate:
+   - Select a correct J cell (for example J14), drag the fill handle down or copy/paste to the other student rows so every J cell is =SUM(Rn:AEn).
+4. (Optional check) Find any other accidental constants in column J:
+   - Home → Find & Select → Go To Special → Constants → check which cells in column J are not formulas and fix them.
+
+Why these fixes work (simple explanation)
+- J cells are supposed to total assignment columns R:AE for each student. Restoring J19 to =SUM(R19:AE19) makes I19’s MIN(SUM(...)) calculation use the correct assignment total.
+- Making J10 use R:AE keeps ranges uniform and prevents accidentally summing an extra column (AF).
+
+If you want, I can give a short macro or the exact sequence to copy the formula down all J cells and verify there are no other constants.

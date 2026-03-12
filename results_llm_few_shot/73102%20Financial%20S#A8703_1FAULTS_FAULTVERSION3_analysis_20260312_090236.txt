@@ -1,0 +1,35 @@
+Summary — what's wrong
+- The sheet has two sets of totals (a short "summary" area at rows ~8–38 and a detailed area at rows ~72–283). Some summary formulas point at the detailed totals (or at the wrong detailed cells) instead of the detailed components, so totals are inconsistent / effectively double-count or are mixing unrelated totals.
+- Specific faulty formulas (examples):
+  - D26 (Building) = D155+D157+D158+D159+D160 — this pulls from the detailed property block. That is OK only if D26 is meant to be the same as the detailed subtotal, but it creates duplication because the detailed block also has its own subtotal (D162).
+  - D30 (Total property and equipment) = SUM(D24:D29) — this is a separate summary total that is not the same as the detailed total (D162). The two totals are inconsistent.
+  - D32 = D170 (accumulated depreciation) — D32 in the small summary references the detailed total (D170). Then D34 (Net property & equipment) = D30 + D32 mixes the small-summary gross (D30) with the detailed accumulated depreciation (D170) — wrong combination.
+  - There are multiple parallel totals (D38, D178, D283) where some use the summary-area subtotals and others use detailed-area subtotals. That inconsistency causes Assets ≠ Liabilities+Capital checks (H291 ≠ 0).
+
+Why this is a problem (short)
+- Mixing totals from two different groupings (summary and detailed) or pointing a summary line to another summary total causes mismatched totals and hidden double-counting / omissions. The reconciliation cell (H291) will be non-zero and you won't be able to trust the balance sheet.
+
+How to fix (simple, clear steps)
+1. Pick one canonical place for the detailed balances (I recommend the detailed block rows 74+: D74:D275 etc) and keep the grand totals based on those detailed subtotals only.
+2. Fix the small summary formulas so they reference the detailed subtotals (not partial sums nor a mix of partial and detailed totals). Concretely:
+   - Replace D30 with =D162 (so the "Total property and equipment" in the top summary equals the detailed subtotal).
+   - Replace D32 with =D170 (this is OK, but make it clear: D32 should equal the detailed accumulated depreciation).
+   - Replace D34 with =D162 + D170 (Net property & equipment = detailed gross (D162) + detailed accumulated depreciation (D170)). Note: D170 is negative so adding it subtracts accumulated depreciation.
+   - Alternatively, set D34 = D30 + D32 after you set D30 := D162 and D32 := D170 — that will work too.
+3. Make the overall total assets cell consistent:
+   - Set D38 = D178 (or update D38 formula to sum the same detailed subtotals used in D178). This keeps the single source of truth.
+4. After those changes, recalc and verify H291 = 0 (D178 equals D283). If not zero, find any remaining cells in the summary area that still reference wrong ranges (look for summary cells referencing other summary totals instead of detailed subtotals).
+
+Short example of corrected formulas
+- D30 := =D162
+- D32 := =D170
+- D34 := =D162 + D170
+- D38 := =D178  (or make D38 sum the same detailed subtotals as D178)
+
+Why that fixes it (short)
+- All summary lines now reference the same detailed subtotals (single source). No mixing of partial and detailed totals, so nothing is double-counted or omitted and Assets will equal Liabilities + Capital.
+
+Extra note
+- There are a few typos in labels (e.g., "Due rom officers and employeess") — cosmetic only, not affecting calculations.
+
+If you want, I can produce a version-by-version list of every cell that should be changed (I can output the exact replacement formulas for each summary cell). Which do you prefer?

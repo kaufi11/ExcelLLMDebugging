@@ -1,0 +1,57 @@
+I reviewed the workbooks and found a few clear formula errors that will produce wrong totals / percentages. Short summary first, then specific fixes you can make.
+
+Main problems (what’s wrong and why)
+1) Stray “+1” (artificially inflates totals and percent shares)
+   - Sheet “Revenues by Source” C11 = 141577402+1 — the “+1” is accidental. It increases the General State Financial Aid dollar value by 1 and thus skews totals and percent calculations.
+   - Sheet “General State Financial Aid” B21 = 3684419+1 — same problem for SWCC.
+   - Sheet “FTEE Calculation” E27 = SUM(E11:E26)+1 — the total non-credit hours has a +1 added and will inflate E27 and downstream percentages.
+
+   Why: adding +1 alters totals and percent-of-total results. Remove the +1 so SUM/values reflect true data.
+
+2) Negative sign typo producing a negative total FTEE for one college
+   - Sheet “FTEE Calculation” H14 currently = -C14 - F14.
+   - This returns a negative Total FTEE for NCC (row 14) and makes the % of total (I14 and any formula dividing by H27) incorrect.
+
+   Why: Total FTEE should be the sum of credit FTEE (C14) and non-credit FTEE (F14). The leading minus is a typo; it produces a wrong sign and breaks all %s that use that row.
+
+3) A few formulas use explicit additions instead of clean SUM ranges (not strictly an error but risky)
+   - Example: “Revenues by Source” C9 = 9432730+111410104. If those are two components it’s OK, but better to put the components in separate cells and use SUM, or at least verify the numbers are intended. (This is lower priority.)
+
+Exact fixes (copy/paste these corrected formulas)
+1) Remove the stray +1 entries
+   - Revenues by Source!C11 change from
+       =141577402+1
+     to
+       =141577402
+     (or better, replace with a cell reference or SUM if it represents subtotals)
+   - General State Financial Aid!B21 change from
+       =3684419+1
+     to
+       =3684419
+   - FTEE Calculation!E27 change from
+       =SUM(E11:E26)+1
+     to
+       =SUM(E11:E26)
+
+2) Fix the negative sign in FTEE total for NCC
+   - FTEE Calculation!H14 change from
+       =-C14-F14
+     to
+       =C14+F14
+
+3) Optional cleanup (recommended)
+   - Use SUM ranges consistently (makes it easier to audit). E.g. Revenues by Source!C9 should be a SUM of its components: =SUM(componentCell1, componentCell2) or =SUM(range).
+   - Make percent formulas explicit with absolute reference to the total (you already use $C$15 etc — good). Confirm the totals referenced are correct and non-zero.
+
+What this fixes
+- Removing the +1’s returns correct dollar totals and correct percent-of-total values.
+- Changing H14 to =C14+F14 makes NCC’s Total FTEE positive and corrects its percentage and all totals that include H14.
+- Using SUM ranges reduces human error and improves maintainability.
+
+Quick test to confirm correction
+- After making the changes, check:
+  - General State Financial Aid total (B25) decreases by 1 for each +1 removed.
+  - Percent columns that reference those totals (C9:C23, I11:I25, etc.) should change slightly and sum to ~1 (or 100%) (allow rounding differences).
+  - FTEE Calculation row 14 (H14) becomes positive and I27 (percent of total) sums to ~1 (100%) except rounding.
+
+If you want, I can supply the exact numeric results after corrections (showing the before/after totals and percent changes) or prepare an updated workbook with the fixes applied.

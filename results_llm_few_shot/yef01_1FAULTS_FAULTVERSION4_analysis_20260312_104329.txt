@@ -1,0 +1,47 @@
+I checked the workbook and found several clear errors (wrong cell references, pasted constants, and manual “tweaks” that break accuracy). Short list of the problems and exact fixes:
+
+1) Sheet "Revenues by Source"
+- Fault: C12 contains =147577404-1 (subtracting 1 for no obvious reason).
+- Fix: replace with =147577404 (or the correct source value).  
+- Why: the “-1” changes the true dollar amount and will make totals wrong.
+
+2) Sheet "Expenditures by Category"
+- Fault: B12 =ROUND((C12/$C$16),4)-0.0001 (subtracts 0.0001 after rounding).
+- Fix: use =ROUND(C12/$C$16,4).  
+- Why: you should not subtract an arbitrary value after rounding — it distorts percentages.
+
+- Minor: B16 =SUM(B10:B15) and C16 =SUM(C10:C15) — your data rows are 10–14 only. Change ranges to SUM(B10:B14) and SUM(C10:C14) (or ensure row 15 is intentionally blank/used).
+
+3) Sheet "FTEE Calculation" — several, most important:
+- Fault A (off-by-one / wrong reference): H14 =+C15+F14 (references C15 instead of C14).
+- Fix A: change to =C14+F14 (or =C14+F14+0.01 only if that tiny adjustment is intentionally required).  
+- Why: H14 must sum the same-row credit and non-credit FTEE; referencing the next row is a row-shift error.
+
+- Fault B (pasted constants instead of formulas): many D cells contain fixed decimals (e.g. D12 = 0.036029) when they should be calculated percentages.
+- Fix B: set D12 formula to =C12/H12 and fill down for D12:D26 (if D is “credit % of that college”). Adjust if your header means something else, but do not keep hard-coded decimals.  
+- Why: hard-coded percentages won’t update if inputs change.
+
+- Fault C (inconsistent H calculations and rounding hacks): some H rows use +0.01, some don’t; totals and subtotals use tiny manual offsets (+0.02, +0.03, -0.02, +0.000002).
+- Fix C (recommended standardization):
+  - Make each college total FTEE in H = C + F (no arbitrary +0.01). Example: H12 → =C12+F12 and fill down.
+  - Make credit % and non-credit %:
+    - D12:D27 → =C12/$H$28 (or =C12/H12 if % of college; follow your header; be consistent).
+    - G12:G27 → =F12/H12 (if G is non-credit % of college).
+    - I12:I27 → =H12/$H$28 (percent of total FTEE).
+  - Totals (row 28): remove manual tweaks:
+    - C28 → =SUM(C12:C27)
+    - F28 → =SUM(F12:F27)
+    - H28 → =SUM(H12:H27)
+    - I28 → =SUM(I12:I27) (or =1 to show 100%)  
+- Why: the small manual additions/subtractions make percentages and totals inconsistent and non-reproducible. Use proper SUM() and percent formulas so everything updates correctly.
+
+4) General housekeeping (applies workbook-wide)
+- Remove arbitrary tiny adjustments (±0.01, ±0.000001, etc.). If you need to correct rounding display, use ROUND() on displayed percentages or set number formatting — don’t change the underlying sums.
+- Replace any hard-coded percentages copied from other sheets with formulas that reference the source numbers so changes propagate automatically.
+- Optional: remove leading “+” in formulas for readability (Excel accepts it but it’s unnecessary).
+
+If you want, I can:
+- Produce an exact corrected list of formulas for every affected cell (sheet-by-sheet).
+- Or create a corrected copy of the FTEE sheet with the consistent formulas applied.
+
+Which would you prefer?

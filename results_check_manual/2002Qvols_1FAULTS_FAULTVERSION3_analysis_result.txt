@@ -1,0 +1,57 @@
+I examined the formulas you supplied for Sheet2 and checked them for obvious errors, incorrect row references and likely inconsistencies. Summary first, then details and suggested fixes.
+
+Top-level summary
+- One clear formula error was found: O23 references the wrong row (E24 instead of E23). That is almost certainly a copy/paste mistake and should be corrected.
+- Several blocks (notably the "Independent LPG Marketers" rows ~36–43) contain formulas that reference AE/AF/AG/AH cells that are blank / not provided in the row. Those formulas will silently use zero and produce totals that are likely incorrect. This appears to be a systematic data-entry / copy-paste omission rather than an Excel syntax error.
+- A few places use hard-coded arithmetic instead of cell references (e.g. C75 and D75). That is not an error per se, but is an inconsistency in style and can make auditing harder.
+
+Detailed findings and recommended fixes
+
+1) Wrong row reference
+- Cell O23 = "=E24+J23"
+  - Problem: O23 should sum the current row's E and J values (E23 + J23). The formula references E24 (next row) instead of E23.
+  - Consequence: O23 currently uses the wrong source value (E24), producing an incorrect O23 and any downstream totals that include O23.
+  - Fix: Change O23 to =E23+J23.
+
+2) Missing source-data references (likely copy / paste or data omission)
+There is a pattern in the right-hand summary columns (AE..AL) where formulas compute per-row right-side totals as AE# + W#, AF# + X#, AG# + Y#, AH# + Z#. For many rows these AE..AH inputs exist. However for the whole "Independent LPG Marketers" block (rows ~36–43) the AE/AF/AH cells are not present in the row data you provided (they appear blank), while formulas still reference them. Because blank cells are treated as zero, the calculated AI/AJ/AK/AL values will reflect only the W..Z values and ignore missing AE..AH inputs.
+
+Examples (same pattern repeats for rows 36–43):
+- AI36 = "=AE36+W36" — AE36 is not provided (blank). AI36 therefore equals W36 only. The intended AE36 may be missing.
+- AJ36 = "=AF36+X36" — AF36 is blank.
+- AK36 = "=AG36+Y36" — AG36 is present (2169328) so this one computes with a present value.
+- AL36 = "=AH36+Z36" — AH36 blank.
+
+Rows affected (non-exhaustive list from the block you provided): AI36..AI43 (and corresponding AJ/AK/AL formulas) reference AE36..AE43 / AF36..AF43 / AH36..AH43 that are missing in the data extract.
+
+- Problem: Formulas reference source input cells that are blank — this will produce incorrect subtotals and will distort any SUM ranges that aggregate these AI..AL values.
+- Consequence: Aggregate totals such as AI44 = SUM(AI36:AI43) will be wrong if the AE/AF/AH source data was supposed to be non-empty.
+- Fixes:
+  - Confirm whether AE36..AE43, AF36..AF43, AH36..AH43 were intended to contain values. If yes, enter those values.
+  - If the formula should be using AG (or another column) instead of AE for that row, correct the formula accordingly (e.g., change AI36 to =AG36+W36 only if that is the intended logic).
+  - Ensure the block's right-side summary columns (AE..AL) are consistently populated for all rows before aggregating.
+
+3) Inconsistent formula style (audit note)
+- Some rows use direct arithmetic constants in formulas instead of cell references. Examples:
+  - C75 = "=44762024+2009667" rather than pointing at the two cells that contain those parts. D75 similarly uses constants.
+- Not an Excel error, but inconsistent with the rest of the sheet and makes tracing sources harder. Consider replacing these with cell references to improve maintainability.
+
+4) Other observations to verify (no obvious Excel syntax error but possible data issues)
+- Many intermediate columns (E, J, etc.) are blank in many rows but are included in SUM(C#:F#) etc. Blank cells are treated as zero, which is fine if intentional. But audit whether blanks are expected or are missing data.
+- Negative values appear in a few places (e.g., J9 = -31560, E60 = -1,496,201). I flagged no formula errors around them; just verify those negatives are intended.
+- Several labels have small spelling inconsistencies (e.g., "Independant" vs "Independent") — not a formula error but may be useful to correct.
+
+5) Suggested checklist for you to finish the QA
+- Fix O23 as noted.
+- For the "Independent LPG Marketers" rows (36–43):
+  - Confirm whether AE/AF/AH values should be present. If yes, populate them.
+  - If not, adjust AI/AJ/AK/AL formulas to use the correct source columns (AG if that was intended).
+- Recalculate the group totals (AI44, AJ44, AK44, AL44 and all higher-level SUMs) after the corrections and verify they match expected aggregates.
+- Optionally: Replace direct arithmetic formulas (e.g. "=44762024+2009667") with cell references to follow the sheet's general pattern and ease auditing.
+
+If you want, I can:
+- Provide an explicit list of all rows where AE/AF/AG/AH are blank but AI/AJ/AK/AL reference them (I can parse and list them).
+- Produce the corrected formula text for any cells you want fixed (e.g., O23).
+- Recompute the affected totals (AI44, AI52, AI62, … AI133 etc.) after hypothetical fixes to show the impact.
+
+Which follow-up would you like?

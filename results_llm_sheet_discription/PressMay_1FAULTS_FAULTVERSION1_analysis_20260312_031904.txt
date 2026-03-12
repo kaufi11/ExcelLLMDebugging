@@ -1,0 +1,24 @@
+Findings (short)
+- Error: D6 uses =E6/0.7 while every other row uses =E#*0.7. Division is wrong — it increases the price instead of giving the 30% (0.7) of USPrice.
+- Effect (example): E6 = 19.99
+  - Wrong: E6/0.7 = 28.5571… (shows ≈28.56)
+  - Correct: E6*0.7 = 13.993 → ≈13.99
+
+How to fix (quick)
+1. In D6 replace the formula with:
+   =E6*0.7
+2. Press Enter. If D2:D429 should all follow the same rule, fill D6 down or re-fill the correct formula from D2:
+   - Put =E2*0.7 in D2, then double-click the fill handle to fill down to D429 (or drag).
+
+Better options / improvements (recommended)
+- Use a single cell for the multiplier so it's easy to change later:
+  - Put 0.7 in, say, G1 and then use D2 =E2*$G$1 and fill down.
+- Force two-decimal currency rounding to avoid floating precision:
+  - D2 =ROUND(E2*$G$1,2) (or ROUND(E2*0.7,2)).
+
+How to check for any other mistakes quickly
+- Add a helper column (F) and use:
+  =IF(ROUND(D2,2)=ROUND(E2*0.7,2),"OK","CHECK")
+  Fill down and filter for "CHECK" to find inconsistent formulas/results.
+
+If you want, I can give the exact steps to replace formulas for the whole column or produce the helper column for you.

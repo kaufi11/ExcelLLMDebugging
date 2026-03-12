@@ -1,0 +1,38 @@
+Kurzfassung der gefundenen Fehler und Lösungen (auf Deutsch, Formeln im deutschen Format):
+
+1) Fehler: falsches Vorzeichen in O14
+- Problem: O14 ist =L14-M14-N14 – alle anderen O-Zeilen sind Summen (L+M+N). Das führt zu falschem Homework-Total (und falschen nachfolgenden %-Werten in P14, AI14, AJ14).
+- Lösung (einzeilig):
+  =L14+M14+N14
+- Erklärung: O soll die Summe der drei Teilwerte L, M, N sein. Das Minuszeichen ist offenbar ein Tippfehler.
+
+2) Potentielles Fehlerrisiko: AF33 summiert unerwünschte Spalten
+- Problem: AF33 ist =SUMME(Z33:AD33). Das summiert alle Z33, AA33, AB33, AC33, AD33. Wenn AA33 oder AC33 später Zahlen enthalten (statt leer), werden diese fälschlich mitgerechnet.
+- Sicherere Lösung:
+  =SUMME(Z33;AB33;AD33)
+  oder explizit:
+  =Z33+AB33+AD33
+- Erklärung: So summieren Sie nur die drei beabsichtigten Maximalwerte (DEC, FRACT, PERCENT TESTS) und schließen Zwischen-Spalten aus.
+
+3) Inkonsistenzen bei Zusammenfassungswerten auf anderen Sheets (Sheet2..Sheet7)
+- Problem: Auf mehreren Zusammenfassungsblättern stehen manuell eingetragene Werte (z. B. Sheet4 B2,C2,...; Sheet6/7 Werte). Diese können veralten / voneinander abweichen.
+- Empfehlung: Verlinken Sie die Zusammenfassungen direkt auf die berechneten Werte in Sheet1 (Zeile 35 = Durchschnitt oder Zeile 36 = Median) statt manuell eintippen.
+- Beispiele (einfach übernehmen der vorhandenen Durchschnittswerte aus Sheet1):
+  Sheet4 B2 (Decimal HW) :=Sheet1!F35
+  Sheet4 H2 (Total HW)     :=Sheet1!R35
+  Sheet5 B2 (Homework J)   :=Sheet1!F?35  (ersetzen Sie ? durch die entsprechende Spalte falls nötig)
+  Gesamt-Finalwert z.B.    :=Sheet1!AJ35
+- Oder direkt aus Rohdaten berechnen (wenn Sie lieber neu berechnen wollen):
+  =MITTELWERT(Sheet1!R3:R32)    // Durchschnitt Total Homework
+  =MITTELWERT(Sheet1!X3:X32)    // Durchschnitt Participation total
+  =MITTELWERT(Sheet1!AF3:AF32)  // Durchschnitt Tests total
+  =MITTELWERT(Sheet1!AJ3:AJ32)  // Durchschnitt Final Percentage
+- Erklärung: Automatische Verlinkung verhindert Inkonsistenzen und hält alle Sheets synchron.
+
+Wie vorgehen (Kurz-Anleitung)
+1. Korrigieren Sie O14: setzen Sie =L14+M14+N14.
+2. Ersetzen Sie AF33 durch =SUMME(Z33;AB33;AD33) (oder =Z33+AB33+AD33).
+3. Ersetzen Sie in den Übersichtsblättern feste Zahlen durch Verweise auf Sheet1!<Spalte>35 oder durch MITTELWERT-Formeln. Beispiel:
+   =MITTELWERT(Sheet1!R3:R32)  oder =Sheet1!R35
+
+Wenn Sie möchten, kann ich Ihnen genau sagen, welche Zellen auf Ihren Summary-Sheets (Sheet2–Sheet7) mit welchen Sheet1-Zellen ersetzt werden sollen — geben Sie mir kurz, welche Kennzahl auf welchem Sheet genau gemeint ist (z. B. "Sheet4 B2 = Decimal HW").

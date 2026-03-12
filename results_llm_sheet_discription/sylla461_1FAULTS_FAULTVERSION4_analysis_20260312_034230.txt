@@ -1,0 +1,37 @@
+Summary of the problems I found
+1) Sheet "2000" — wrong sign in a date formula:
+   - Cell B11 currently =B7-2 but A11 is "TH" (Thursday). It should be 2 days after B7 (Tuesday → Thursday). B11 =B7-2 produces a date two days earlier and breaks the whole downstream chain (B15, B19, ...).
+
+2) Sheet "1999" — wrong start date value:
+   - Cell B7 is 2000-08-22 (a 2000 date) on the sheet named "1999". That is almost certainly a copy/paste error. All later dates on that sheet are built from B7, so they will be shifted to the wrong year.
+
+Why these are errors
+- The schedule uses relative formulas that propagate forward from the first date. One bad formula or one wrong seed date causes every subsequent date to be wrong.
+- The B11 sign error reverses the intended direction. The B7 value on the 1999 sheet being in year 2000 makes a whole-year mismatch.
+
+How to fix (step‑by‑step, short)
+1) Fix the sign error on the 2000 sheet
+   - On sheet "2000", change B11 from
+     =B7-2
+     to
+     =B7+2
+   - After that, Excel will recalculate B15, B19, etc., and the sequence will be corrected.
+
+2) Fix the seed/start date on the 1999 sheet
+   - On sheet "1999", replace B7’s value (2000-08-22) with the correct 1999 start date for that semester (the actual class-start date). Once B7 is set to the correct 1999 date, the existing relative formulas on that sheet will produce the correct semester dates.
+   - If you don’t know the correct day/date, pick the date that matches column A’s day code (A7 = T means B7 must be a Tuesday).
+
+Quick verification (use these in Excel)
+- To check the weekday matches the Day column: in any row, put
+  =TEXT(B7,"ddd")
+  and verify it equals the A‑column code (T, TH, W, F).
+- To quickly check the chain is fixed: after fixes, glance at a few rows and confirm patterns: Tue→Thu = +2, Thu→Fri = +1, Fri→Tue (next week) = +4 (as used in your sheet).
+
+Optional safety improvements (recommended)
+- Protect the seed date cells (B7 and final exam if hardcoded) so they aren’t accidentally overwritten.
+- Add a Day-check column with =TEXT(Bx,"ddd") or =CHOOSE(WEEKDAY(Bx), "SU","M","T","W","TH","F","S") to flag mismatches automatically.
+- Consider computing dates from a single start date + a weeks/offset table (less fragile than chains of +n).
+
+If you want, I can:
+- Return the corrected dates for the entire "2000" sheet after fixing B11, or
+- Suggest the correct 1999 start date if you tell me which weekday/week the semester began.

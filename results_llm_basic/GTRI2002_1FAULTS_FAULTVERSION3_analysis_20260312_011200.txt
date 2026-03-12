@@ -1,0 +1,37 @@
+Summary — biggest errors found
+1) Critical: Sheet "2002 Report" cell C13 has the wrong operation. It reads:
+   =G13*1000000
+   It should be:
+   =G13/1000000
+   Why it’s wrong: every other row converts raw pounds to millions by dividing by 1,000,000. Multiplying here inflates the air value by a factor of 1,000,000 and breaks the row/column totals (R11, R23, R24, etc.).
+
+2) Potential / layout problems (minor but worth fixing):
+   - Sheet "2003 Report": column J (header = "Transfers Offsite ...") contains year values (J7:J20). That looks like a shifted/duplicated column — J should not contain the years if A already has the years. This is a layout/data-entry mistake that can confuse formulas or readers.
+   - Sheet "2003 Report": cells G20 and H20 contain numeric values while the rest of G/H are blank — check these are not stray values pasted into the wrong columns.
+   - On sheets "data" and "notes" some rows contain hard-coded values instead of the formula pattern used elsewhere (not necessarily an error, but confirm they are intentional).
+
+How to fix (step-by-step)
+1) Fix the million-fold error
+   - Go to 2002 Report → cell C13.
+   - Replace the formula =G13*1000000 with =G13/1000000
+   - Press Enter, recalculate (F9 or save). Verify the value now looks similar scale to the other rows.
+
+2) Recheck totals and dependent formulas
+   - After fixing C13, check R11, R23, R24 and any totals that use rows 11–13 to ensure they changed to expected values.
+   - If any totals still look wrong, use Trace Precedents (Formulas → Trace Precedents) on the total cell to find other bad formulas.
+
+3) Find any other similar mistakes quickly
+   - Use Find (Ctrl+F) → Search in Formulas for "*1000000" to locate any formulas that multiply by 1,000,000. Review each: conversion formulas should use /1000000, not *1000000.
+   - Alternatively, run this formula in a spare cell to locate suspicious formulas (array inspection or inspect named ranges).
+
+4) Fix layout issues in 2003 Report
+   - If J7:J20 are accidental duplicates of the Year column, delete those year values from column J (clear contents) so the "Transfers Offsite" data aligns under J: header and the transfer subcolumns (K..N) line up properly for readers.
+   - Remove/relocate stray numbers in G20 and H20 if they belong elsewhere.
+
+Why these fixes solve the problem (short)
+- Changing *1000000 to /1000000 corrects the unit conversion from raw pounds to millions — this removes the million-fold inflation and makes row sums and totals meaningful.
+- Clearing misplaced year values and stray numbers prevents misalignment that can hide or break formulas and prevents misleading presentation.
+
+If you want, I can:
+- Give the exact expected corrected values for R11/R23/R24 after the C13 fix, or
+- Provide a short VBA or formula-based search to find any other "*1000000" mistakes automatically. Which would you prefer?

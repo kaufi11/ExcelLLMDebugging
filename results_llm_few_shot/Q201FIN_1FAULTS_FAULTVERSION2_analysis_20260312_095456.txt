@@ -1,0 +1,38 @@
+Here are the errors I found, with short explanations and fixes.
+
+1) Faulty cell: H9
+- Error type: Omission / manual override
+- Why: H9 is hard-coded as 0 but should total H7 and H8 (Maintenance + Licenses).
+- Fix: replace with =SUM(H7:H8)
+- Effect: fixes H20, H27, H33 and any downstream results that use H9.
+
+2) Faulty cell: J17
+- Error type: Hard‑coded / unclear reference
+- Why: J17 uses =12615-5000 (literal numbers) instead of a direct value or references. That is fragile and unclear.
+- Fix options:
+  - If the intended result is 7,615 set J17 = 7615, or
+  - Better: put the two components (12615 and 5000) in cells and use =cell_with_12615 - cell_with_5000 so the charge is traceable.
+- Effect: makes J17 transparent and prevents errors if the components change.
+
+3) Faulty cell: F36 / J36 / F39 / J39 (and pro forma EPS cells F46, J46, F52, J52)
+- Error type: Hard‑coded denominators / inconsistent method
+- Why: Pro forma EPS cells use hard-coded denominators (32703, 32761) or different approaches between columns instead of referencing a share-count cell. That makes updates error-prone and inconsistent across columns.
+- Fix: create a cell (or row) with the appropriate diluted/basic shares for each column (e.g., place pro forma diluted shares in a named cell like ProFormaShares_F) and change formulas to reference it, e.g. =F44 / ProFormaShares_F (and similarly for others). For standard EPS use =F33/F37 and =F33/F40 (already used for some).
+- Effect: consistent, auditable EPS calculations that update automatically if shares change.
+
+4) Faulty cell: G13
+- Error type: Range selection / inconsistency
+- Why: G13 =SUM(G7:G12) but there is no G12 item listed; I13 uses SUM(I7:I11). G13 should sum G7:G11 to match the actual listed current-asset rows.
+- Fix: change to =SUM(G7:G11)
+- Effect: consistent and explicit total current assets (avoids accidental inclusion of stray cells).
+
+5) Cascade errors caused by 1 and 2
+- Explanation: Because H9 is 0 and J17 was odd, H20, H27, H33, diluted EPS H36/H39 and other H-column totals are incorrect. Fixing H9 (and J17 if applicable) will correct these downstream figures.
+
+Quick checklist of what to change now
+- H9 -> =SUM(H7:H8)
+- J17 -> 7615 (or better: =cellA - cellB where those two components are stored)
+- G13 -> =SUM(G7:G11)
+- Replace hard-coded denominators in pro‑forma EPS cells with references to dedicated share-count cells (create them if they don't exist).
+
+If you want, I can provide exact cell formulas with sample reference cells for the pro‑forma shares and for the J17 components, or produce corrected values for the affected totals once you confirm the intended component values.

@@ -1,0 +1,45 @@
+I checked the three sheets and found the clear, fixable mistakes that will produce wrong totals/averages. Short summary first, then each problem + fix.
+
+1) Homework sheet — wrong hard-coded total
+- Faulty cell: L19 (Laika row).  
+- Problem: L19 contains =2 instead of summing the HW columns. This gives a wrong per-student total and skews L44 (average of totals).  
+- Fix: replace with =SUM(B19:K19)  
+- Why: every other L-row sums B:K; L19 must do the same so totals and averages are correct.
+
+2) Homework sheet — non-numeric markers in score cells
+- Where: many B:K cells use "x", "HC", "P", "NG", etc.  
+- Problem: these are text. SUM ignores them (treats them as zero), which may hide missing data or produce inconsistent totals if some rows were intended to treat those as zero or to exclude student. Also formulas like average will include the (wrong) totals.  
+- Fix (pick one):
+  - Best: keep numeric cells numeric (replace "x"/"HC"/etc with blank or 0) and keep a separate status column for codes; OR
+  - If you must keep codes in the same cells, use a SUM that ignores non-numeric safely, e.g. =SUMIF(B19:K19,">=0") which sums numeric ≥0 only.  
+- Why: consistency — either have only numbers in numeric columns or explicitly handle non-numeric markers.
+
+3) Mid-term sheet — average row typo / wrong range
+- Faulty cell: B46 (bottom summary). It shows the text average(C4:C42) (missing "=") and refers to C4:C42 (wrong column/range).  
+- Problem: it's not a formula (it's text) and the ranges look inconsistent compared to other column averages. This prevents correct averages.  
+- Fix: change to real formulas and correct ranges. Example: if student scores are in rows 6:44, use:
+  - B46 =AVERAGE(B6:B44)
+  - C46 =AVERAGE(C6:C44)
+  - etc for D46..O46 using their columns and the same row range.  
+- Why: ensures the mean is computed, and all columns use identical row ranges.
+
+4) Final sheet — wrong SUM range (copy/paste error)
+- Faulty cell: I7 (Bluesky).  
+- Problem: I7 is =SUM(B7:H7) while almost all TOTAL cells use =SUM(Bx:Gx). That accidentally includes column H (which is header/unused) — inconsistent and risky if H later gets data.  
+- Fix: change I7 to =SUM(B7:G7) (match others).  
+- Why: consistent ranges avoid subtle errors from stray data in H.
+
+5) Final Grades sheet — Totals overwritten with text
+- Faulty cells: several F-column cells (Total) contain text like "F" or "P" instead of the numeric =SUM(Bx:Ex) formula (examples: F4, F14, F16, F22, ...).  
+- Problem: these text values break numeric totals and any downstream sorting, grade cutoffs, or averages. (You showed many rows where F is the letter grade rather than the summed total.)  
+- Fix: restore the proper formula in those F cells, e.g. F4 =SUM(B4:E4). Put letter grades (A, B, F, P, HC) in a separate column (e.g., column G or H) — don’t overwrite the numeric total.  
+- Why: totals must be numeric to compute final class stats and grade boundaries; put notes/flags in a dedicated column.
+
+Quick checklist to apply after fixing:
+- Replace L19 with =SUM(B19:K19) and then recalc L44 and any averages.
+- Standardize non-numeric markers: either replace them with blanks/0 or use SUMIF as suggested.
+- Fix B46 (and the other average formulas) to be real =AVERAGE(...) formulas with consistent row ranges.
+- Fix I7 to =SUM(B7:G7).
+- Scan Final Grades F4:F42 and restore the SUM formula where overwritten; move letter grades/notes to a separate column.
+
+If you want, I can give the exact formulas to paste for each faulty cell (I can list every cell that currently shows a letter instead of a formula), or produce a small VBA / Find+Replace plan to repair them in bulk. Which would you prefer?

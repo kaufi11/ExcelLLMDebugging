@@ -1,0 +1,33 @@
+Summary — the sheet has a few clear errors that are breaking the math and propagating wrong totals. Fix these three things first and then re-check totals.
+
+1) Typo in J22 (bad token)
+- Problem: J22 contains "= $C2244/244". That is a typo (it points to row 2244 and divides by 244) instead of halving C22.
+- Fix: change J22 to
+  = $C22 / 2
+- Why: J9:J24 (and the SUM at J25) expects the half-cycle values; the wrong formula makes J22 effectively zero or nonsense and distorts your non-compensatable totals.
+
+2) Wrong column references in P11 (logical error that cascades)
+- Problem: P11 is currently =+J17+J29+J31. P-column calculations (Method 1 / device results) are using J-column (setup/half) components instead of the P-column/device-level components. Because many P formulas depend on P11, the whole Method‑1 column will be incorrect.
+- Fix: change P11 to sum the P equivalents (use absolute refs if you copy), e.g.
+  = $P$17 + $P$29 + $P$31
+- Why: keep calculations within the same "level" column. If P is meant to be device/full values, use P cells; using J mixes half/setup numbers and produces wrong downstream results.
+
+3) Numeric / formatting problems (units and decimal separators)
+- Problems:
+  - Some cells include text like "ns" (e.g., B4 "25 ns", C4 "12,5 ns") or use comma as decimal "12,5". Excel treats those as text, so formulas using them will fail or produce 0.
+  - Inconsistent use of $ (absolute) in places where you probably intended fixed references when copying formulas.
+- Fixes:
+  - Remove "ns" from numeric cells (put units in a header or separate column). Use plain numbers: e.g. B4 = 25, C4 = 12.5 (or C4 = 12,5 if your Excel locale expects comma).
+  - If you must keep units as text for display, keep a hidden numeric column that formulas reference.
+  - Make references absolute ($A$1 style) in formulas where a fixed cell must be reused after copying.
+
+Quick checklist to correct and verify:
+- Fix J22 to = $C22 / 2.
+- Fix P11 to = $P$17 + $P$29 + $P$31 (or =P17+P29+P31).
+- Remove "ns" from cells used in calculations and normalize decimal separators.
+- Recalculate the sheet (F9) and verify J25/J39/P25/P39 etc. update correctly.
+- Optionally: audit other mixed-column formulas (look for formulas in column P that reference column J/K/L — confirm whether that was intended).
+
+If you want I can:
+- Provide an exact list of all formulas that reference different columns (J vs P vs K vs L) so you can verify each is intentional.
+- Provide the corrected workbook (or an exported list) after applying these fixes.

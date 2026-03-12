@@ -1,0 +1,58 @@
+Summary — what’s wrong (short)
+- Several formulas are inconsistent or circular and will produce wrong results or errors when quantities are entered.
+- Key problem areas:
+  1. Warranty rows (85–86) are circular: E85 depends on F85 and F85 depends on F82 and C85 — causes circular logic or wrong values.
+  2. Some formulas use text/non-numeric prices (D57, D60 = "CALL", many G cells = "TBD") — these break arithmetic unless handled.
+  3. A few rows are hard-coded or inconsistent with the pattern:
+     - F47 is hard-coded =6 instead of =C47*D47.
+     - E91–E94 use PRODUCT(Cx,1000) while D91–D94 = 1200 (inconsistent unit).
+     - E78–E81 use PRODUCT(Cx,175) while D78–D81 = 195 (inconsistent dealer pricing).
+  4. Some formulas use PRODUCT(range) vs PRODUCT(cell,cell) — PRODUCT(range) is valid but be consistent and simpler with arithmetic.
+
+Correct approach (rules)
+- Standard line-item formulas:
+  - Client Price (F) = Quantity * NPL Price
+  - Dealer Price (E) = Client Price * Dealer multiplier (G2 = 0.75)
+- Avoid using text in price cells; if price must be “CALL” use formulas that ignore non-numeric D values.
+
+Concrete fixes (exact formulas you can paste)
+- Standard line (replace for rows 4:81, 91:94, 97:108 etc.):
+  - E4 (Dealer) = =IF(AND(ISNUMBER($C4),ISNUMBER($D4)),$C4*$D4*$G$2,0)
+  - F4 (Client) = =IF(AND(ISNUMBER($C4),ISNUMBER($D4)),$C4*$D4,0)
+  - Use same pattern for each row (change row numbers).
+  - Simpler alternative if all D are numeric: E4 = $C4*$D4*$G$2 and F4 = $C4*$D4 and lock G2 as $G$2 when filling down.
+
+- Warranty rows (avoid circular reference) — replace current formulas:
+  - D85 = = $F$82 * 0.09
+  - F85 = = D85
+  - E85 = = D85 * $G$2
+  - D86 = = $F$82 * 0.18
+  - F86 = = D86
+  - E86 = = D86 * $G$2
+
+- Handle non-numeric NPL Price cells (like "CALL" or "TBD"):
+  - Use formula that ignores non-numeric D, for example:
+    - F57 = =IF(ISNUMBER($D57),$C57*$D57,0)
+    - E57 = =IF(ISNUMBER($D57),$C57*$D57*$G$2,0)
+  - Or replace "CALL" with blank or a numeric placeholder if you want it included in totals.
+
+- Fix hard-coded / inconsistent items:
+  - F47 change to: =IF(AND(ISNUMBER($C47),ISNUMBER($D47)),$C47*$D47,0)
+  - Review E91–E94 and E78–E81 — confirm business rule: if dealer price should be D*G2 then change E91 = C91*D91*$G$2; if dealer uses a fixed 1000/175, document and apply consistently.
+
+- Totals:
+  - E82 = =SUM(E4:E81) (keep as-is)
+  - F82 = =SUM(F4:F81)
+  - E109 = =SUM(E82,E85:E108)
+  - F109 = =SUM(F82,F85:F108)
+  - Totals will work properly after the row fixes and handling non-numeric values.
+
+Why these fixes work (one-line explanations)
+- Removing circular references makes each cell depend only on previously computed values (no self-dependence).
+- Wrapping with ISNUMBER prevents #VALUE! or wrong arithmetic when price cells contain text.
+- Using $G$2 (absolute) ensures the dealer multiplier stays fixed when formulas are filled down.
+- Standardizing formulas prevents subtle mismatches (e.g., different dealer multipliers or hard-coded numbers).
+
+If you want
+- I can produce the exact corrected formulas for every problematic row, or
+- Provide a short macro (VBA) or step-by-step to replace formulas in bulk. Which would you prefer?

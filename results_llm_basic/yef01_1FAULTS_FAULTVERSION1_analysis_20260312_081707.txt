@@ -1,0 +1,70 @@
+I reviewed the sheets and found several real errors and a number of “work‑around” hacks that make the workbook unreliable. Below are the concrete problems, the fix for each, and a short explanation.
+
+Summary of the main problems
+- A cell with a stray “-1” that will make totals and percentages off by 1 (Revenues sheet).
+- One FTEE row using the literal 20/24 instead of using its Hours cell (FTEE sheet).
+- Many totals SUM() ranges include a blank row (inconsistent ranges).
+- Dozens of tiny manual adjustments (+0.01, -0.02, +0.000002, -0.000001, -0.0001) used to force totals to add — these mask the real problem and make numbers incorrect.
+- Inconsistent use of ROUND vs. raw values (some percentages are rounded, others are not) so displayed totals don’t match underlying data.
+
+Concrete errors and exact fixes
+
+1) Revenues by Source — stray “-1”
+- Problem: C12 is set to =147577404-1 (subtracts 1).
+- Fix: change C12 to =147577404 (or better: reference the source cell that contains 147,577,404).
+- Why: subtracting 1 intentionally skews totals and makes percentage B12 incorrect by 1 unit.
+
+2) FTEE Calculation — wrong cell referenced (literal number)
+- Problem: C14 is =20/24 (uses literal 20 instead of the Hours in B14).
+- Fix: change C14 to =B14/24
+- Why: using a literal breaks the calculation when B14 changes and gives a wrong credit‑FTEE value.
+
+3) Totals using wrong/wider ranges (blank rows included)
+- Problems:
+  - Revenues total B16 =SUM(B10:B15) and C16 =SUM(C10:C15) but data rows are B10:B14/C10:C14 (B15/C15 blank).
+  - Expenditures by Function C20 =SUM(C10:C19) and B20 =SUM(B10:B19) while last data row is row 18.
+  - Expenditures by Category B16 =SUM(B10:B15) and C16 =SUM(C10:C15) but data rows end at row 14.
+- Fix: adjust the SUM ranges to exactly match the data rows. Examples:
+  - Revenues: C16 =SUM(C10:C14) and B16 =SUM(B10:B14)
+  - Expenditures by Function: C20 =SUM(C10:C18) and B20 =SUM(B10:B18)
+  - Expenditures by Category: C16 =SUM(C10:C14) and B16 =SUM(B10:B14)
+- Why: including different or blank rows hides errors and makes totals confusing.
+
+4) Manual tiny adjustments (bad practice)
+- Problems: many formulas add or subtract tiny constants, e.g. +0.01 or -0.000001, and B12 in Expenditures by Category uses =ROUND(...,4)-0.0001.
+- Fix: remove all manual numeric tweaks. Use these approaches instead:
+  - Keep raw calculations for accuracy, e.g. percent = C10 / $C$16.
+  - For display, use formatting or ROUND for visible decimals: =ROUND(C10/$C$16,4).
+  - If you must force the displayed rounded percentages to sum to exactly 100% use a controlled method: compute rounded values for all but the last category, then set the last category = 1 - SUM(other rounded). Do not add/subtract arbitrary constants inside every row.
+- Why: the tiny adjustments alter real values and are not transparent. They cause downstream formulas to be incorrect and make audit/trouble‑shooting impossible.
+
+5) Make FTEE formulas consistent and explicit
+- Recommended consistent formulas for each college row (example for row 12):
+  - C12 (Credit FTEE) = B12 / 24
+  - F12 (Non-credit FTEE) = E12 / 600
+  - H12 (Total FTEE for college) = C12 + F12   (remove any +0.01)
+  - I12 (% of total FTEE) = H12 / $H$28
+  - D12 (if it is “% of college” credit share) = C12 / H12
+- Fix any rows that currently have +0.01 or other tweaks in H cells, and remove tiny adjustments in the Total row formulas:
+  - C28 = SUM(C12:C27)    (remove +0.02)
+  - F28 = SUM(F12:F27)    (remove +0.03)
+  - H28 = SUM(H12:H27)    (remove -0.02)
+  - I28 = SUM(I12:I27)    (remove +0.000002)
+- Why: consistent, direct formulas keep the math correct and easy to audit.
+
+How to implement quickly (practical steps)
+1. Replace the specific wrong formulas:
+   - Revenues C12: =147577404 (or reference)
+   - FTEE C14: =B14/24
+2. Remove all +0.01, -0.02, +0.000002, -0.000001, -0.0001 from formulas.
+3. Correct all SUM ranges to exactly match the data rows (examples above).
+4. For any percent column, use raw formula first then wrap ROUND for display:
+   - Example percent cell: =ROUND(C10/$C$16,4)
+   - If you need the last line to be 100.0000% exactly, implement last cell =1 - SUM(previous rounded cells).
+5. Recalculate workbook and verify: totals C16/C20/C28/H28 should equal the sum of the component rows; percent columns should sum to ~1 (or to exactly 1 only if you explicitly adjust the last row).
+
+If you want, I can:
+- Produce the exact replacement formulas for every affected cell,
+- Or show the single-step edits to apply in your workbook (I can list them row by row).
+
+Which would you prefer?

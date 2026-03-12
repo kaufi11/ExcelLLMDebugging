@@ -1,0 +1,57 @@
+Here are the errors I found, with short explanations and exact fixes you can apply. I kept answers minimal and actionable.
+
+1) Circular / wrong start cash in Year 1 (big problem)
+- Problem: Year 1 B6 =SUM(B55). But B55 (month‑1 ending cash) depends on B6 → circular reference.
+- Why it’s wrong: Month‑1 beginning cash must be an input (initial cash), not computed from its own month end.
+- Fix: Replace B6 with the actual starting cash value (enter the number manually), or link it to a dedicated “Initial Cash” input cell (e.g., B6 = Inputs!B1). Leave the month‑to‑month carry formula for subsequent months (C6 = B55, D6 = C55, ...).
+- Example:
+  - B6: (manual) 10000   — or — B6 = Inputs!B1
+  - C6: =B55
+  - D6: =C55
+  - etc.
+
+2) Typo in Year 1 month K end balance
+- Problem: Year 1 K55 =SUM(K15-90) — “-90” is a typo.
+- Why it’s wrong: That pulls an irrelevant constant and gives wrong result / error.
+- Fix: Use the correct difference between total cash available and total paid out for column K.
+- Correct formula: K55 = K15 - K54
+- (Similarly replace other row55 cells written as SUM(X15-X54) with X15 - X54.)
+
+3) Several end‑of‑month formulas use SUM() around a simple subtraction (style / potential confusion)
+- Problem: e.g., B55 =SUM(B15-B54); many similar cells.
+- Why: SUM() around one arithmetic term is unnecessary and makes auditing harder.
+- Fix (optional but recommended): change to plain arithmetic: B55 = B15 - B54, and similar for other columns.
+
+4) Year 2 row mis‑reference for payroll / O‑totals
+- Problem: In Year 2 the Payroll Expenses line (row 20) shows O22 = SUM(C22:N22) / P22 = O22/O57 instead of O20.
+- Why: O20 should sum row 20 across months; mis‑placed reference means the total for row 20 is wrong and % of sales wrong.
+- Fix: Set O20 = SUM(C20:N20) and P20 = O20 / O$57
+- Check: Audit all O## cells in Year 2 to ensure O# = SUM(C#:N#) for the corresponding row.
+
+5) Year 2 P57 denominator typo (inconsistent / ambiguous)
+- Problem: Year 2 P57 = +O57/O57
+- Why: That divides the cell by itself (returns 1) and is inconsistent with the pattern (should use absolute reference O$57). Functionally P57=1 is expected for "Sales as % of sales", but the formula is nonstandard and may be a copy/paste error.
+- Fix: Make it consistent: P57 = O57 / O$57 (or just =1 if you intend 100%). Better: P57 = O57 / O$57.
+
+6) Variance sheets: potential divide‑by‑zero errors
+- Problem: Variance formulas are (Actual − Budget) / Budget (e.g., =(D8-C8)/C8). If Budget (C8) = 0 → #DIV/0!.
+- Why: Breaks display and can skew Q aggregates.
+- Fix: Wrap with IF or IFERROR. Example:
+  - Change =(D8-C8)/C8 to =IF(C8=0,"", (D8-C8)/C8)
+  - Or =IFERROR((D8-C8)/C8, "")
+
+7) General consistency checks to run (recommended)
+- Search for:
+  - Any cell containing “-90” or other numeric constants inside SUM(...) (this may indicate copy/paste errors).
+  - SUM(cell - cell) patterns — replace with simple subtraction where appropriate.
+  - All O‑column totals: confirm O# = SUM(C#:N#) for every expense/revenue row.
+  - All P‑column % formulas: confirm P# = O# / O$57 (absolute row 57).
+
+Quick action checklist you can copy/paste
+- Replace Year1 B6 with manual starting cash (or link to Inputs cell).
+- Replace K55 formula: =K15 - K54 (and correct any other row55 typos).
+- Replace O20 in Year2: =SUM(C20:N20) and P20: =O20 / O$57.
+- Replace Year2 P57: =O57 / O$57 (or =1).
+- Wrap variance formulas with IF(C<>0, … ) to avoid #DIV/0!.
+
+If you want, I can produce a precise list of every cell that needs changing (exact sheet & cell) and a downloadable patch of corrected formulas. Which do you prefer?

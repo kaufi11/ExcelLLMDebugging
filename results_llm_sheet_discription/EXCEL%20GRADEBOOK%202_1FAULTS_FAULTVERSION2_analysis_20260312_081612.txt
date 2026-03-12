@@ -1,0 +1,20 @@
+Findings (short)
+- Error: Q5 (Classwork average for Reed) has the wrong formula:
+  - Current Q5: =(SUM(J5:O5)+MIN(J5:O5))/(COUNT(J5:O5)+1)
+  - All other classwork rows use the drop‑lowest formula: (SUM - MIN)/(COUNT - 1)
+- Effect: Q5 produces a wrong (inflated) classwork average and makes AE5 (Reed's final grade) incorrect.
+
+Fix (one-line)
+- Replace Q5 with the correct formula:
+  =(SUM(J5:O5)-MIN(J5:O5))/(COUNT(J5:O5)-1)
+
+Quick ways to apply the fix
+- Option A (single edit): Select Q5, paste the formula above and press Enter.
+- Option B (ensure consistency): Select Q2 (correct formula) and drag its fill handle down through Q6 (or use Fill Down) so every classwork-average cell is identical.
+
+Why this fixes it (simple)
+- The intended policy is “drop the lowest score”: subtract the MIN from the SUM and divide by (COUNT − 1). Q5 was adding the MIN and adding 1 to COUNT, which does the opposite and yields a wrong average. Restoring the (SUM−MIN)/(COUNT−1) calculation returns the correct drop‑lowest average and corrects the final grade.
+
+Optional small improvements (recommended)
+- Make weight cell references fully absolute ($C$1, $K$1, $S$1, $Z$1) or use named ranges so formulas never shift if moved.
+- To avoid divide-by-zero if a student has fewer than 2 scores, wrap the formula with an IF(COUNT(...)>1, …, "") or similar.

@@ -1,0 +1,45 @@
+Summary of the problems I found
+1) Wrong operator in Total-University (lower level) Other (O30)
+   - O30 contains =SUM(100+(E30+G30+I30+K30+M30)) — it adds the subtotal instead of subtracting it. Result will be >100 (wrong).
+
+2) Stray / misaligned data in column Z for Engineering rows
+   - Z22 and Z23 contain numeric values (4.5) but there is no header for Z. The Upper‑level category columns are S, U, W, Y, AA (F/WF) and AC (Other = computed). The values in Z are not included in the AC formulas, so those numbers are effectively ignored or have shifted the intended values into the wrong columns.
+
+3) Numbers entered in the spacer columns (F, H, etc.)
+   - Some rows (Education row 18, others) have numbers in columns F and H (spacer columns). These columns are not referenced by the percentage formulas and look like mis-entries (data in the wrong place).
+
+4) Cosmetic / unnecessary formula usage
+   - Many “Other” formulas use SUM(100-(...)) instead of the clearer =100 - SUM(...). SUM(100-(...)) works but is confusing and harder to maintain.
+
+How to fix each error (short and exact)
+
+1) Fix O30 (wrong sign)
+   - Replace the formula in O30 with either:
+     =100 - SUM(E30,G30,I30,K30,M30)
+     OR
+     =100 - (E30+G30+I30+K30+M30)
+   - Why: Other should be 100 minus the sum of the listed percentages. The current + makes the result incorrect.
+
+2) Fix stray values in column Z (rows 22 and 23)
+   - Action:
+     - Cut Z22 and paste it into AA22 (the F/WF column) — overwrite the misentered value in AA22.
+     - Clear Z22.
+     - Repeat for row 23 (cut Z23 → paste into AA23, clear Z23).
+   - After this, the AC formulas (Other = 100 - SUM(S,U,W,Y,AA)) will compute correctly.
+   - Why: Those values were entered one column too far left (or an extra column was inserted). Moving them into the correct column aligns the data with the headers and formulas.
+
+3) Fix numbers in spacer columns (F, H, etc.)
+   - Inspect any numeric values in F, H, J, L (the blank columns between percentage columns). If they belong to a percentage column, cut → paste into the correct header column (E, G, I, K, M, S, U, W, Y, AA). If they do not belong, delete them.
+   - Why: Having data in non‑header columns can lead to misinterpretation and errors if someone later uses range sums.
+
+4) Clean up formulas for clarity (optional but recommended)
+   - Replace formulas like =SUM(100-(E6+G6+I6+K6+M6)) with =100 - SUM(E6,G6,I6,K6,M6).
+   - Why: Easier to read and less error-prone.
+
+Quick checklist you can follow
+- Change O30 formula (see #1).
+- Move Z22 → AA22 and Z23 → AA23, then clear Z22/Z23 (see #2).
+- Scan sheet for numbers in columns F, H, J, L, Z (spacers); fix/move/delete as needed (see #3).
+- Optionally replace SUM(100-(...)) formulas with =100 - SUM(...) for all “Other” cells (see #4).
+
+If you want, I can give the exact list of cells that currently have stray values (I already noted F18, H18, H19, H20, H22 etc.) and provide the exact corrected formulas for every “Other” cell. Which would you prefer?

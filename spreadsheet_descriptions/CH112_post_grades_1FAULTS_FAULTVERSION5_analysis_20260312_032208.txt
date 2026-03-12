@@ -1,0 +1,32 @@
+Overview
+- Single sheet ("Sheet1") titled "Grades CH 112 Lecture Fall 2003". Rows 4–46 contain student records; rows 47–53 contain class summary statistics.
+
+Structure / columns
+- A: Student # (A3 header, A4–A46 student IDs).
+- B–F: Exam grades (five exams, each scored out of 100).
+- G–M: OWL homework by chapter (G:J appear to be 15‑point assignments; K:M are 30‑point assignments).
+- N: Final exam (appears scored on a 150‑point scale).
+- O: Overall Grade (percent) — formula per student.
+- P: Letter Grade — IF formula mapping Overall to A–F.
+
+Key formulas
+- Overall percent (cells O4:O46):
+  =(SUM(Bx:Fx)+SUM(Gx:Mx)+Nx) / (COUNT(Bx:Fx)*100 + COUNT(Gx:Jx)*15 + COUNT(Kx:Mx)*30 + COUNT(Nx)*150) * 100
+  - Interpreted weighting: each exam = 100 pts, OWL (G–J) = 15 pts each, OWL (K–M) = 30 pts each, final = 150 pts. The denominator uses COUNT to scale by how many nonblank items are present.
+- Letter grade (cells P4:P46):
+  =IF(Ox<59.4,"F",IF(Ox<69.4,"D",IF(Ox<79.4,"C",IF(Ox<89.4,"B","A"))))
+  - Cutoffs: >=89.4 A, >=79.4 B, >=69.4 C, >=59.4 D, else F.
+- Summary rows:
+  - Row 47: AVERAGE across students for each column (B47:O47).
+  - Row 48: STDEV across students for each column (B48:O48).
+  - Rows 49–53: Grade distributions (# of A/B/C/D/F) by column using COUNTIF with thresholds appropriate to the column scale. For final exam (N) thresholds use 135/120/105/90; for overall (O) thresholds use 90/80/70/60.
+
+Notable data / issues to check
+- Many OWL/homework cells contain fractional values (partial credit or normalized values).
+- The overall formula uses COUNT for denominator so missing (blank) cells change the weighting — this may produce inconsistent weighting if some students have blanks.
+- O46 contains an incorrect formula (it uses COUNT(B46:F46)+COUNT(G46:M46)+N46 in the numerator instead of SUM(B46:F46)+SUM(G46:M46)+N46) — likely a copy/paste error; will produce wrong Overall for that row.
+- Several student rows have many blanks (e.g., row 17, 25, 28, 35), so their computed overall depends heavily on how COUNT treats those blank cells.
+
+If you want, I can:
+- Provide corrected overall formula text to paste and a change to make weighting fixed (so missing scores count as zero), or
+- Point out any specific student rows with suspicious values and recalculate corrected overall percents.

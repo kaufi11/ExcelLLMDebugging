@@ -1,0 +1,28 @@
+Errors found:
+
+1. **Weighting Sum Checks (F12, F24, F36, F56):**  
+   - The formulas check if the sum of weights equals 100%. However, the weights are decimals (e.g., 0.2, 0.1428, 0.333) and their sums are close to 1, not 100%. So the condition `SUM(...)<>100%` is always true, causing "ERROR" to appear incorrectly.
+
+2. **Formula in G21 (Section II, Question 6):**  
+   - Formula: `=IF(C21="yes",(1/F21),IF(C21="no",(0/F21),""))`  
+   - This divides 1 or 0 by the weighting (F21), which is incorrect. It should multiply 1 or 0 by the weighting to calculate the weighted score.
+
+---
+
+**Solutions:**
+
+1. **Fix Weighting Sum Checks:**  
+   - Change the condition to check if the sum equals 1 (or 100%) in decimal form. For example:  
+     `=IF(ROUND(SUM(F6:F10),4)<>1,"ERROR","100%")`  
+   - Use `ROUND` to avoid floating point precision errors.
+
+2. **Fix Formula in G21:**  
+   - Change formula to multiply by weighting, not divide:  
+     `=IF(C21="yes",(1*F21),IF(C21="no",(0*F21),""))`
+
+---
+
+**Explanation:**
+
+- Weightings are decimal fractions summing to 1 (100%), so the sum check must compare to 1, not 100%. Using 100% (which is 1) as a percentage in the formula causes a mismatch.  
+- Weighted scores are calculated by multiplying the answer value (1 for Yes, 0 for No) by the weighting to get the weighted contribution. Dividing by weighting inflates the score incorrectly.

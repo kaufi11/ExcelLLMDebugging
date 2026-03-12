@@ -1,0 +1,27 @@
+Findings — errors
+1) Typo in Q5 (Reed, row 5). Current formula:
+   =(COUNT(J5:O5)-MIN(J5:O5))/(COUNT(J5:O5)-1)
+   Error: numerator uses COUNT instead of SUM, so it returns a wrong (very small) classwork average.
+
+2) (Risk/cleanup) Weights are stored inside the block of header cells (C1, K1, S1, Z1). That works now but is easy to accidentally include in ranges if you change layout or copy formulas across. Also the final-grade formulas use C$1 etc — row-locked but not column-locked — which is fine when copying down, but could shift if copied sideways.
+
+Fixes and how to do them
+1) Fix Q5 formula (one-step fix):
+   Replace Q5 with:
+   =(SUM(J5:O5)-MIN(J5:O5))/(COUNT(J5:O5)-1)
+   Why: numerator must be the sum of the classwork scores (not the count). This makes Q5 consistent with Q2–Q4 and Q6.
+
+2) (Optional but recommended) Make weight references fully absolute and/or move weights to a dedicated place:
+   - Change final-grade formula from, for example,
+     =(I5*C$1)+(Q5*K$1)+(X5*S$1)+(AD5*Z$1)
+     to
+     =(I5*$C$1)+(Q5*$K$1)+(X5*$S$1)+(AD5*$Z$1)
+   - Or move the four weight values to a separate small table (e.g., cells $AA$1:$AD$1) and reference those cells.
+   Why: $C$1 locks both column and row so the weight references never change if you copy or move formulas. Placing weights outside score columns avoids accidental inclusion when editing ranges.
+
+Quick checklist
+- Correct Q5 to use SUM.
+- Copy the corrected Q5 formula down or verify other rows use the same pattern.
+- Optionally convert weight refs to $C$1, $K$1, $S$1, $Z$1 or move weights to dedicated cells for safety.
+
+If you want, I can give the exact corrected AE5 formula or update all formulas for you.

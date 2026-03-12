@@ -1,0 +1,24 @@
+Summary — main errors found and fixes (short & clear)
+
+1) Wrong %N cell used for Rice in World 1996
+- Faulty cell: World 1996!E19
+- Problem: formula uses C20 (Barley %N) instead of C19 (Rice %N). That makes Rice N removal wrong.
+- Fix: change E19 to:
+  =E8*(C19/100)
+- Why: E19 should multiply Rice production (E8) by Rice %N (C19). Using C20 gives the wrong percent.
+
+2) Mismatch between label and data in Developed 96 (cereal fertilizer total)
+- Faulty area: Developed 96 row with “0.60 * 82,906,340 = 49,743,804 MT in cereals” and E3
+- Problem: the text/number (82,906,340) is from another sheet but the sheet’s E1 value is 29,967,560. E3 is =0.6*E1 (which yields 0.6*29,967,560) so the label and formula disagree — looks like a copy/paste leftover.
+- Fix (choose one, depending on intent):
+  - If the sheet should use 82,906,340: set E1 = 82906340 (update the source total), then keep E3 = 0.6*E1; OR
+  - If the sheet should use the sheet’s own E1 (29,967,560): correct the text label to match E1 (0.6 * 29,967,560 = 17,980,536).
+- Why: keep the displayed text consistent with the cell values; otherwise downstream calculations are misleading.
+
+Other recommendations (quick)
+- Search for other copy/paste mistakes: look for formulas that reference the wrong %N cell (e.g., any E## that uses C20 but is not Barley). Use Home → Find (search for “C20” in formulas) or use Formula Auditing → Trace Precedents.
+- Run a quick audit: check all E-row N-removal formulas follow the pattern =ProductionCell*(correct %N cell/100). Fix any that don’t.
+
+If you want, I can:
+- Give a list of every cell formula that references a %N cell and verify them, or
+- Provide an edited version of the workbook with corrected formulas. Which would you prefer?

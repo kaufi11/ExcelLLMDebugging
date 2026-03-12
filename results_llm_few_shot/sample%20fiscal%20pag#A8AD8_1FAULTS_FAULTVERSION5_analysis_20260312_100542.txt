@@ -1,0 +1,29 @@
+I checked the workbook and found two real problems that will produce wrong totals — plus one structural fragility to fix to avoid future surprises.
+
+1) Wrong hard-coded cell (definite error)
+- Where: Sheet 1856, cell H25 (Total Revenues for 2003‑04).
+- Problem: H25 is set to the value 3 (hard-coded) instead of totaling the revenue lines H9:H24. That will make the fund’s carry‑forward and every rollup that includes that cell wrong (1856 → Summary).
+- Fix: Replace the 3 with the correct formula:
+  =SUM(H9:H24)
+- Why this fixes it: H25 must be the sum of the revenue rows for that year. Once H25 is corrected the carry forward (H6) and the Summary totals that link to 1856 will calculate properly.
+
+2) Fragile use of 3D SUM ranges (likely source of future errors)
+- Where: Summary sheet uses formulas like =SUM('1003:1856'!D6) (and similar for other columns).
+- Problem: A 3D reference (Sheet1:SheetN) sums the same cell from every sheet between the two endpoint sheets in the workbook tab order. If a non‑fund sheet is inserted between 1003 and 1856 or if the sheet tab order changes, the SUM will include unintended sheets (or miss funds).
+- Fix options (pick one):
+  - Ensure all fund sheets (1003, 1043, 1166, 1198, 1856) are contiguous in the tab order with 1003 first and 1856 last, and keep non‑fund sheets outside that block.
+  - Replace the 3D SUM with an explicit sum of each sheet:
+    =SUM('1003'!D6,'1043'!D6,'1166'!D6,'1198'!D6,'1856'!D6)
+  - Or build a small named list of sheet names and use an INDIRECT/SUMPRODUCT approach (more advanced) to avoid depending on tab order.
+- Why this fixes it: Explicitly summing the specific fund sheets prevents accidental inclusion/exclusion of sheets when workbook structure changes.
+
+(Quick note) Many cells show a leading + (e.g., =+D24+D14+D6) — harmless, Excel accepts that. Also some negative transfer lines are intentional (outflows) — verify business rules if any signs look suspicious.
+
+Summary of actions I recommend now
+1. Change sheet 1856 H25 to =SUM(H9:H24).
+2. Recalculate and verify H6 and any Summary totals that change.
+3. Decide on a safer approach for the 3D sums (make the fund sheets contiguous or replace with explicit sheet list).
+
+If you want I can:
+- Give the exact explicit SUM formulas to replace each 3D reference on the Summary, or
+- Produce a short macro or INDIRECT formula to sum an explicit list of fund sheets so it won’t break if sheet order changes.

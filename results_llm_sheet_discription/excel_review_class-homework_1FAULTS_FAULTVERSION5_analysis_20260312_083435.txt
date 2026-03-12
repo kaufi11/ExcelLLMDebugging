@@ -1,0 +1,37 @@
+Short answer — main error and fixes
+
+1) Bug in Q'back (row 5)
+- Error: H5 contains =D5/845*100. That uses the constant 845 instead of the attempts in C5, so Bryant's Completion % (and therefore L5 Points) is wrong.
+- Fix: replace H5 with =D5/C5*100
+- Better: use =D5/C5 and format H5 as Percentage (Home → Number → Percentage). That avoids the *100 confusion and is clearer.
+
+Why this fixes it: using C5 as the divisor computes completion rate per attempt for Bryant the same way as for the other players. Changing H5 corrects H5 and the dependent L5 calculation.
+
+2) Potential percent-formatting problem (applies to H, I, J)
+- Issue: current formulas use D/C*100 (yielding e.g. 54.3). If those cells are also formatted as Percentage, Excel will display 5430% (double scaling).
+- Recommendation: pick one approach and be consistent:
+  - Preferred: use =Dn/Cn (no *100) and format the cell as Percentage (e.g. 1 decimal).
+  - Or keep =Dn/Cn*100 but format the cell as Number (not Percentage).
+- Why: prevents accidental doubling and makes downstream math predictable.
+
+3) Check downstream formula use in L (Points)
+- L uses H, I, J and K directly: Ln = K*8.4 + H + I*3.3 - J*2 (as given).
+- If you change H/I/J to be true fractions (0.543 instead of 54.3), you must adjust the L formula accordingly (either multiply H/I/J by 100 inside L or change coefficients) — i.e., keep consistent units. Example:
+  - If H/I/J are fractions (Dn/Cn), then use: =K*8.4 + H*100 + I*100*3.3 - J*100*2 (or better: keep H/I/J as percent points and use =Dn/Cn*100, but format as Number).
+
+4) Minor / optional improvements
+- Use consistent formulas and copy down. Example row 5 final formulas to copy down:
+  - H5: =D5/C5 (format as %)
+  - I5: =G5/C5 (format as %)
+  - J5: =E5/C5 (format as %)
+  - K5: =F5/C5
+  - L5: =K5*8.4 + H5*100 + I5*100*3.3 - J5*100*2   (only if H/I/J are fractions); or if H/I/J are percent-values (D/C*100) then L5 = K5*8.4 + H5 + I5*3.3 - J5*2
+
+5) Other sheets (quick notes)
+- drug bust: no formula errors shown; metadata in column E is fine but could interfere with some automatic charts if you select full columns — select A:B (and C) only.
+- lookup: the student table has no formulas shown for Total, Average, Letter Grade. Suggested formulas:
+  - F4: =SUM(B4:E4) and copy down
+  - G4: =F4/4 and copy down (or =AVERAGE(B4:E4))
+  - H4: =VLOOKUP(G4,$F$12:$G$18,2,TRUE) — ensure F12:F18 (thresholds) are sorted ascending; or use LOOKUP(G4,$F$12:$F$18,$G$12:$G$18)
+
+If you want, I can give the exact corrected formulas for each cell and show how to copy them down, or produce the corrected workbook steps.

@@ -1,0 +1,19 @@
+Summary — main errors found
+1) Faulty cell: H15
+   - Error type: Range/Mechanical error
+   - Explanation: H15 =SUM(H7:H13) but every other column total (B15:G15) sums rows 7:14. H15 therefore omits row 14 from the FY02 total, so the H-column total is wrong.
+   - Fix: Change H15 to =SUM(H7:H14)
+   - Why: Makes the H total consistent with the other column totals and includes the Advanced Manufacturing Center row.
+
+2) Faulty cells: B10 and C10 (and any similar formulas using hard-coded constants)
+   - Error type: Hard-coded / fragile formula
+   - Explanation: B10 is written as =1672298-748584 and C10 as =2824612-1091293. Those formulas subtract the Foundation values using literal numbers (1672298, 2824612). If the referenced totals or the foundation amounts change, these formulas will not update correctly and are hard to audit.
+   - Fix: Replace hard-coded constants with cell references. For example, if the "1672298" total is in cell B? (a cell that holds the combined total you intend), change B10 to something like =<cellWith1672298>-B9. If there is no helper cell, enter the actual Other Sponsors figure directly or compute it from the proper source cells.
+   - Why: Using cell references keeps formulas dynamic, auditable and prevents stale/incorrect results when source numbers change.
+
+Quick checklist to ensure correctness
+- Update H15 to =SUM(H7:H14).
+- Search the sheet for any formulas that use literal numbers to subtract or derive other rows (like "=1672298-748584") and replace them with references to the appropriate cells.
+- After changes, verify row 15 totals across all columns (B15:H15) and any summary lines (e.g., resolution lines) match expected subtotals.
+
+If you want, tell me which cell contains the "1672298" and "2824612" totals (or paste the nearby cells), and I will give you the exact replacement formulas.

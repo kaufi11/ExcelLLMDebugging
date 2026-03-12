@@ -1,0 +1,115 @@
+I reviewed Sheet1 and found several formula, placement and accounting-entry errors. Below are the problems, the fixes (with exact formulas where helpful), and brief explanations.
+
+Part A — journal entries and income statement errors
+Problems found
+- Missing/incorrect journal entries:
+  - The cash collection of $28,000 on accounts receivable (transaction e) is not recorded.
+  - The purchase return and payment with discount entries are placed/confused (debits/credits and labels are mixed).
+  - Some stray values appear in column K (K48, K51, K52, K53) that are unrelated and confusing the sheet.
+- Income statement layout/formula issues:
+  - Net purchases calculation is OK, but the sheet has inconsistent placement of amounts (some values in C vs D vs E columns). This makes SUM ranges error-prone.
+  - Overall, the calculated Gross Margin and COGS look right once the correct entries are used, but the sheet is cluttered with stray formulas/values.
+
+Corrected journal entries (periodic system) — enter these cleanly with debit on left, credit on right:
+a) Purchased merchandise on account
+  - Purchases .......... Dr 55,000
+  - Accounts Payable ... Cr 55,000
+
+b) Returned defective merchandise (to supplier)
+  - Accounts Payable ... Dr 1,500
+  - Purchase Returns & Allowances (PR&A) ... Cr 1,500
+
+c) Paid amount owing (within discount period)
+  - Accounts Payable ... Dr 53,500  (55,000 - 1,500)
+  - Purchase Discounts ... Cr 1,070  (53,500 * 2%)
+  - Cash ............... Cr 52,430  (53,500 - 1,070)
+
+d) Sales for the month
+  - Cash ............... Dr 55,000
+  - Accounts Receivable  Dr 54,000
+  - Sales .............. Cr 109,000
+
+e) Collections on account (receipt of AR)
+  - Cash ............... Dr 28,000
+  - Accounts Receivable  Cr 28,000
+
+f) Sales allowance (customer dissatisfied)
+  - Sales Returns & Allowances Dr 1,700
+  - Accounts Receivable        Cr 1,700
+
+g) Freight costs (Transportation-in)
+  - Transportation-in (Freight-in) Dr 5,200
+  - Cash ........................... Cr 5,200
+
+Explanation: Returns reduce A/P; paying A/P uses the discount (credit Purchase Discounts) and reduces cash. Sales and allowances reduce sales (Sales R&A debited). Collections reduce A/R and increase cash.
+
+Income statement (numbers to use)
+- Sales 109,000
+- Less Sales Allowances 1,700 → Net Sales = 107,300
+- Beginning Inventory = 15,000
+- Purchases = 55,000
+- Less Purch R&A = 1,500
+- Less Purchase Discounts = 1,070
+- Net purchases = 55,000 - 2,570 = 52,430
+- Add Transportation-in = 5,200 → Cost of goods purchased = 57,630
+- COGAFS = BI + Cost of goods purchased = 15,000 + 57,630 = 72,630
+- Less Ending Inventory (11/30) = 12,500 → COGS = 60,130
+- Gross margin = Net Sales - COGS = 107,300 - 60,130 = 47,170
+
+Fixes to spreadsheet
+- Remove stray values in column K (K48, K51, K52, K53) unless they are used for calculations; they are confusing.
+- Put each journal entry in its own neat row/area (Debit amounts in one column, Credit amounts in the next) — this prevents mixing up debit/credit when building the income statement.
+
+Part B — inventory costing (errors and fixes)
+Problems found
+- E91 (total cost for 2000 units @ 8.25) contains "FORMULA =2" instead of =C91*D91. This breaks the GAFS total.
+- Some cell results are incorrect:
+  - Weighted-average COGS shown as 60,735 (D83) — incorrect.
+- There are many stray helper formulas in various columns that make it hard to follow (K and L columns).
+
+Correct approach and formulas (clean these exact cells)
+1) Compute totals per layer:
+  - E88 = C88 * D88  → 1000 * 8 = 8,000
+  - E89 = C89 * D89  → 3000 * 7.8 = 23,400
+  - E90 = C90 * D90  → 4000 * 8.15 = 32,600
+  - E91 = C91 * D91  → 2000 * 8.25 = 16,500
+
+2) Totals:
+  - Total units (C92) = SUM(C88:C91) = 10,000
+  - GAFS value (E92) = SUM(E88:E91) = 80,500
+
+3) Weighted-average per unit:
+  - avg_unit = E92 / C92 = 80,500 / 10,000 = 8.05
+
+4) Ending Inventory (2500 units) and COGS computations:
+  - FIFO ending inventory (most recent costs):
+    - = 2,000 * 8.25 + 500 * 8.15 = 16,500 + 4,075 = 20,575
+    - FIFO COGS = GAFS - EI = 80,500 - 20,575 = 59,925
+  - LIFO ending inventory (oldest costs):
+    - = 1,000 * 8.00 + 1,500 * 7.80 = 8,000 + 11,700 = 19,700
+    - LIFO COGS = 80,500 - 19,700 = 60,800
+  - Weighted-average ending inventory:
+    - = avg_unit * 2,500 = 8.05 * 2,500 = 20,125
+    - Wtd‑avg COGS = 80,500 - 20,125 = 60,375
+
+5) Gross margin (sales = 7,500 units * $13 = 97,500):
+  - FIFO gross = 97,500 - 59,925 = 37,575
+  - LIFO gross = 97,500 - 60,800 = 36,700
+  - Wtd avg gross = 97,500 - 60,375 = 37,125
+
+Why these fixes?
+- E91 was wrong, so GAFS and average were off. Once you compute each layer total correctly and compute avg = total value / total units, the EI and COGS follow cleanly.
+- Use direct formulas (C*D) for each layer and use SUM of those cells for totals. For the inventory layers use explicit multiplication (e.g., =2000*8.25) so the FIFO/LIFO picks are transparent.
+
+Quick checklist to fix the workbook now
+- Fix cell E91 to =C91*D91 (16,500).
+- Ensure E88:E91 are all C*D formulas and E92 =SUM(E88:E91).
+- Ensure C92 = SUM(C88:C91) is 10,000.
+- Put avg_unit formula somewhere and reference it: =E92 / C92.
+- Replace wrong D83 formula with =E92 - (avg_unit * 2500) or directly =E92 - (avg_unit*2500) giving 60,375.
+- Remove or relocate stray helper numbers in columns K/L so they don’t confuse readers.
+- Enter the missing cash collection journal entry (Cash Dr 28,000; A/R Cr 28,000) on Part A.
+
+If you want, I can:
+- Provide the exact corrected cell formulas to paste into the sheet,
+- Or return a corrected small sample workbook (list of changed cells and new values). Which do you prefer?

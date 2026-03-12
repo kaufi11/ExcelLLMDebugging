@@ -1,0 +1,54 @@
+Summary of the main problems I found (short, with fixes and short explanations):
+
+1) Wrong/hard-coded value for Rice N removal (World 1996)
+- Error: Cell E19 contains "5" instead of the calculated value.
+- Why wrong: it should be production * %N like the other crops.
+- Fix: Replace E19 with =E8*(C19/100)
+- Explanation: this matches the method used for all other crops (production × %N).
+
+2) Hard-coded constants / stale text (many sheets)
+- Error: Descriptive text cells show old numbers (for example: "0.60 * 82,906,340 = 49,743,804" appears in Developed/Developing sheets though those sheets use different totals).
+- Why wrong: text is inconsistent with the actual formulas and can mislead users.
+- Fix: Either remove the hard-coded numeric text or change it to a formula-driven note (e.g., in a cell use = "0.60 * " & TEXT(E1,"#,##0") & " = " & TEXT(0.6*E1,"#,##0")) or simply update the static text to match the sheet's E1 value.
+- Explanation: Keep displayed numbers driven by cells so the text always matches the calculations.
+
+3) Mislabelled sheet headings
+- Error: "Developed 96" sheet has B1 = "World consumption..." (should say Developed) and "Developing 96" has B1 = "Developed world consumption".
+- Why wrong: label confusion makes it hard to interpret which numbers belong to developed vs developing.
+- Fix: Correct the labels to match the actual data in each sheet (e.g., on Developed 96 set B1 = "Developed world consumption of fertilizer‑N"; on Developing 96 set B1 = "Developing world consumption of fertilizer‑N").
+- Explanation: Accurate labels prevent interpretation mistakes.
+
+4) Savings formulas use hard-coded NUE values (e.g., 0.343, 0.426, 0.295) instead of the calculated NUE cell
+- Error: Formulas like E32 =(E4*(0.343)-E28) (World 1996) hard-code the NUE (0.343). Similar for other sheets.
+- Why wrong: If computed NUE changes, the savings formula will not update. Also it is unclear where those constants came from.
+- Fix (recommended universal pattern):
+  - Let cell that contains the current estimated NUE be used (World 1996 uses E30). For a 1 percentage-point (0.01) absolute increase, use:
+    - E32 (savings for +1% NUE) = E4*(E30 + 0.01) - E28
+  - For 20% absolute increase:
+    - E37 (savings for +20% NUE) = E4*(E30 + 0.20) - E28
+  - Or equivalently compute incremental savings = E4*0.01 for each absolute 1% and then convert to metric tons minus current removed as required depending on your approach.
+- Explanation: referencing the computed NUE cell keeps the sheet dynamic and avoids silent errors when inputs change.
+
+5) Strange/manual stray calculations and inconsistent references
+- Error: I33 contains a manual expression "49743804*0.343 - 16,572,232"; some cells multiply by 67 or other numbers without clear references.
+- Why wrong: manual calculations scattered in text columns create duplication and risk inconsistency.
+- Fix: Replace manual calculations with explicit formulas referencing the authoritative cells (for instance, if E33 is the monetary value, show =E32*479, and if you need a per-country scaling use a referenced multiplier cell rather than hard-coding 67).
+- Explanation: keep all computations in one consistent place and reference them.
+
+6) Unit/label consistency
+- Error: Some cells show "mT" vs "MT" or inconsistent unit labels; comments sometimes say "mT of fertilizer were applied" — be consistent.
+- Fix: Standardize unit text (e.g., use "MT" for metric ton) and put units in a header row or a note cell.
+- Explanation: clear units reduce misinterpretation.
+
+Quick checklist of exact cell fixes to implement now (World 1996 example):
+- E19: change to =E8*(C19/100)
+- E32: change to =E4*(E30+0.01) - E28
+- E37 (20%): change to =E4*(E30+0.20) - E28  (or =E32*20 if you truly mean 20× the 1% change)
+- Remove or replace any hard-coded textual numbers (e.g., B3/B4 text) with formulas or update text to match sheet values.
+- Fix labels B1 on Developed 96 and Developing 96 to the correct descriptions.
+
+If you want I can:
+- produce the exact replacement formulas for Developed 96, Developing 96 and World 2002 (I listed the pattern above), or
+- generate a short macro / Find&Replace list to locate and replace the specific hard-coded constants (0.343, 0.426, 0.295, the "5" in E19, etc.).
+
+Which would you prefer?

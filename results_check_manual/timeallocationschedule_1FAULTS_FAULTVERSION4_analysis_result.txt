@@ -1,0 +1,33 @@
+I reviewed the formulas in the TAS sheet you supplied and found a small number of formula errors/inconsistencies and some style/consistency issues that are likely to cause mistakes or make the workbook harder to maintain.
+
+Summary of actual formula errors and recommended fixes
+- I14 contains a hard-coded constant instead of using the support-hours cell:
+  - Present formula: =F14+447
+  - Problem: all other rows compute their total as Fxx+Hxx; here the H14 value (support hours) is not used — instead 447 is hard-coded. That will break if H14 is updated or if 447 was a typo.
+  - Suggested fix: change to =F14+H14 (or, if 447 is intended and should be stored in H14, put 447 into H14 and use =F14+H14).
+
+- Inconsistent absolute/relative references (harmless but confusing)
+  - Some rows/columns use I$39 (row locked) while others use $I39 (column locked). Examples:
+    - J13..J37 etc use =IF(I$39>0,I13/I$39,0)
+    - F40 uses =IF($I39>0,F39/$I39,0)
+  - Functionally these all refer to cell I39 in this sheet, but the use of different dollar placements is inconsistent and may confuse maintainers or cause copying errors.
+  - Suggested change: standardize to one style, e.g. use $I$39 (both row and column absolute) or I$39 (lock row only) for all formulas that divide by the total in I39.
+
+- VLOOKUP syntax — not an error but unusual
+  - C6: =VLOOKUP(C5,R7:T136,3,FALSE())
+  - FALSE() with parentheses is accepted by Excel, but more common is FALSE without parentheses. Not an error, just stylistic.
+
+Other observations that may be intentional but you should confirm
+- J39: =IF(I$39>0,I39/I$39,0) — this will always return 1 when I39>0 (because I39/I39 = 1). That may be intended (total's share = 100%), but verify that this is purposeful.
+- Several S-column entries are short codes (X##) and some are the text "X39" (S13 and S14). That is probably deliberate (cost-centre codes) but because the literal "X39" appears in two places while cell I39 is a numeric total, double-check that those text codes are not intended to be references to cell X39 — they are text values, not references.
+- Many J-row formulas compute share as Ixx/I$39 — verify that the denominator should be the workbook total in I39 (looks correct based on pattern).
+
+What to check next
+- Confirm intended support-hours value for row 14 (H14). If 447 belongs in H14, move it there and change I14 to =F14+H14.
+- Decide and standardize a convention for absolute referencing to the total cell (I39). I recommend using $I$39 where the formula must always point to that single cell regardless of where formulas are copied.
+- Review J39 if you expect a different behavior than returning 100%.
+
+If you want, I can:
+- produce an updated list of exact replacements for the inconsistent formulas,
+- generate a corrected copy of the workbook with the fixes applied,
+- or scan for additional logical inconsistencies if you provide the intended H-column values (support hours) for rows that currently look unusual.

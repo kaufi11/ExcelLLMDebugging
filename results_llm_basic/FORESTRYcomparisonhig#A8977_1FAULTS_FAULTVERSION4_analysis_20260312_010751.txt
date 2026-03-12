@@ -1,0 +1,42 @@
+Summary — main problems I found
+1) Wrong lookup row in one VLOOKUP:
+   - Cell C13 uses =VLOOKUP(D14,sort0,2,FALSE) but should look up D13. This makes C13 return the same result as C14.
+
+2) VLOOKUP is returning the wrong column in the lookup table (likely):
+   - All C5:C29 use VLOOKUP(...,2,...). If your lookup table is Title page A6:C30 (species in column A and the ORDER number in column C) then col_index_num must be 3, not 2. Using 2 returns the second column (duplicate species name) instead of the ORDER number.
+
+3) Numbers converted to text by TEXT():
+   - DATA TEXT column E/F/G use formulas like =TEXT(DATA!E5,"#,##0"). TEXT() returns text, so those cells are not numeric — you cannot sum, chart or format them as numbers/percentages anymore.
+
+Minor / tolerable item
+- Total F27 is one unit different from the sum of its parts (likely rounding). Footnote already explains rounding — not an error unless you need exact match.
+
+How to fix (short, exact steps)
+
+1) Fix the wrong cell reference
+   - Change C13 to:
+     =VLOOKUP(D13,sort0,2,FALSE)
+   (or to use the corrected column index from step 2 if you change that)
+
+2) Make VLOOKUP return the ORDER number
+   - If sort0 refers to Title page A6:C30 (first column = species, third column = ORDER), update the formulas in C5:C29 to:
+     =VLOOKUP(D5,sort0,3,FALSE)
+     then fill down.
+   - Alternative: redefine the named range sort0 so its first column is the species and the second column is the ORDER (e.g. set sort0 to B6:C30). If you do that, keep col_index_num = 2.
+
+   Key rule: VLOOKUP looks in the first column of the lookup range. Make sure the species column is first and the column index points to ORDER.
+
+3) Stop using TEXT() for values you need as numbers
+   - Replace formulas like:
+     =TEXT(DATA!E5,"#,##0")
+     with
+     =DATA!E5
+     Then apply number formatting to the cell (Home → Number format → Use 0 decimal and Thousands separator or custom "#,##0").
+   - For the % column, better formula and formatting:
+     =IFERROR((F5-E5)/E5,"")
+     and format the cell as Percentage (0 decimals) so it shows "33%" rather than "33" or a text "33".
+
+4) Verify totals after fixes
+   - After removing TEXT(), confirm formulas like E26 and F26 (SUMs) still work and totals match. If you need exact matching avoid rounding until final display.
+
+If you want, I can give the exact corrected formulas for every affected cell and the exact named-range definition to use.

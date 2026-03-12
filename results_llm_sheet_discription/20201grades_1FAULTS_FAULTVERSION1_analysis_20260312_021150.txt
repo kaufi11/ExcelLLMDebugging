@@ -1,0 +1,52 @@
+Summary of the real problems I see and how to fix them (short & direct)
+
+1) Double‑counting in the project header formulas (AF1 / AO1 and related)
+- What’s wrong: AF1 = SUM(Y2:AF2) and AO1 = SUM(AG2:AO2) include the subtotal cells AF2 and AO2 themselves. AF2 and AO2 already contain sums of the item cells. By summing Y2:AF2 you add the item cells and then add AF2 again → double count.
+- Fix: have the header reference the subtotal cell directly or sum only the item columns (exclude the subtotal cell). Example fixes:
+  - AF1 → =AF2   (shows the first‑project total that is already in AF2)
+  - AO1 → =AO2   (shows the second‑project total that is already in AO2)
+  - OR change the ranges to exclude the subtotal: AF1 → =SUM(Y2:AE2), AO1 → =SUM(AG2:AN2)
+- Why this fixes it: you remove the duplicate inclusion of the subtotal cell so the header total equals the actual item total.
+
+2) Inconsistent “maximums” used for percent calculations (overall percent is wrong)
+- What’s wrong: component % formulas use different denominators than the overall % denominator. Example on Sheet1:
+  - Assignment % uses /150 (Un = Tn/150*100)
+  - Research % uses /350
+  - Exams/Labs % uses /400
+  - BUT the overall percent CF is dividing by 830 (CE/830*100). 150+350+400 = 900, not 830. That makes CF (overall %) incorrect.
+- Fix (pick one consistent scheme):
+  - Preferred: put the three component maximums in three single cells (e.g. T1 = 150, AQ1 = 350, BS1 = 400) and use those absolute refs in all percent formulas. Then set CE1 = SUM(T1,AQ1,BS1).
+  - Update per‑student formulas:
+    - Un → =Tn/$T$1*100
+    - ARn → =AQn/$AQ$1*100
+    - BUn → =BTn/$BS$1*100
+    - CFn → =CEn/$CE$1*100
+- Why this fixes it: all percentages will be driven by a single, visible set of maxima; no more accidental mismatches (830 vs 900).
+
+3) Text placeholders (x, X, ., #, +, etc.) inside numeric ranges
+- What’s wrong: some score cells contain non‑numeric text ("x", "X", ".", "+", “#”) or error tokens. Text will be ignored by SUM but:
+  - If a cell contains an actual error value (e.g. #VALUE! or #N/A) it will make SUM or other formulas return an error.
+  - Text placeholders make it unclear whether you intended a zero or a missing score.
+- Fix:
+  - Clean the source: Find & Replace (Ctrl+H) to replace "x", "X", ".", "+" with blank or 0 as appropriate. Remove or correct any true error values (#VALUE!, #DIV/0!, etc.).
+  - Optionally protect formulas by using IFERROR around sums: =IFERROR(SUM(BN5:BR5),0) so a broken cell won’t propagate an error.
+  - Better: use data validation to allow only numeric entries so this does not recur.
+- Why this fixes it: sums and averages will be reliable and won’t return # errors or silently ignore intended zeros.
+
+Quick checklist of exact edits I recommend you make now
+1. Replace AF1 with =AF2 and AO1 with =AO2 (or change the sum ranges to exclude the subtotal cells).  
+2. Create three “max” cells (if not present) and move hard‑coded denominators to them:
+   - T1 = 150 (assignments max)
+   - AQ1 = 350 (projects max)
+   - BS1 = 400 (exams/labs max)
+   - CE1 = SUM(T1,AQ1,BS1)
+3. Change student % formulas to use absolute refs:
+   - U5 (and down) = T5/$T$1*100
+   - AR5 (and down) = AQ5/$AQ$1*100
+   - BU5 (and down) = BT5/$BS$1*100
+   - CF5 (and down) = CE5/$CE$1*100
+4. Clean non‑numeric placeholders: Find & Replace "x","X",".","+","#" → blank or 0; fix any real Excel error cells. Optionally wrap risky SUMs with IFERROR(...,0).
+
+If you want, I can:
+- Give the precise replacement formulas for a sample row (e.g. row 5), or
+- List every cell that currently contains non‑numeric placeholders so you can clean them quickly. Which do you want?

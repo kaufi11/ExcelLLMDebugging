@@ -1,0 +1,49 @@
+Summary — two problems I found and how to fix them
+
+1) Broken sequential numbering in the A-122 sheet (Column C)
+- What’s wrong:
+  - The C-column is supposed to be a continuous +1 sequence (29, 30, 31, 32, …) but some cells use the wrong reference or the wrong operator.
+  - Examples from your export:
+    - C8 uses =C6+1 (it should use the previous row, =C7+1). That creates a duplicate number.
+    - C17 uses =C16-1 (a subtraction), which breaks the sequence after that row.
+  - Result: the C numbers go off-sequence (duplicates and wrong values).
+- Why it matters:
+  - Any process relying on that number sequence will be wrong (indexing, lookups, reports).
+- Fix (quick and safe):
+  1. Put a correct seed value in the first cell (C5 = 29).
+  2. In C6 enter =C5+1.
+  3. Select C6 and drag the fill handle down the column as far as needed — Excel will produce C7 =C6+1, C8 =C7+1, etc.
+  4. Alternatively, set a robust formula in row 6 and copy down, e.g. in C6: =C$5 + (ROW()-5) and fill down.
+- Explanation: the sequence must reference the immediately prior row (+1). Using the wrong row or -1 breaks the progression; using the fill handle (or the ROW() formula) ensures consistent relative references.
+
+2) Cells showing literal text "FORMULA =..." or unqualified sheet references on other pages
+- What’s wrong:
+  - On Pages 2–6 (and other sheets) many cells show "FORMULA =A$9" (or similar) instead of working formulas. Two possible underlying causes:
+    - The formulas were pasted/stored as literal text prefixed with "FORMULA " (so Excel treats them as text), or
+    - The author intended to pull values from Page 1 but used =A$9 (no sheet name), which only references the current sheet.
+- Why it matters:
+  - Text like "FORMULA =A$9" does nothing — headers/labels don't update.
+  - Missing sheet name means the cell refers to the wrong sheet (or a blank cell) instead of Page 1.
+- Fix (pick the applicable one):
+  A) If the cells contain literal text "FORMULA =...":
+     - Use Find & Replace to convert them back to formulas:
+       - Find: FORMULA =
+       - Replace with: =
+       - Make sure the target cells are formatted General (not Text) before replacing.
+       - After replace, press F2+Enter on a sample cell or Recalculate to ensure Excel evaluates the formula.
+     - Or run a simple VBA loop: For each cell where Left(value,8)="FORMULA ", set .Formula = Mid(.Value,9).
+  B) If the formulas are supposed to reference Page 1 but use =A$9 (no sheet):
+     - Change them to a sheet-qualified reference, e.g. ='Page 1'!$A$9 (or the actual sheet name). Then copy across pages.
+     - Or create a named range (e.g. VersionHeader) on Page1 and use =VersionHeader everywhere — more robust.
+- Explanation: Excel treats strings as text unless they begin with "=". Removing the "FORMULA " prefix and ensuring correct sheet-qualified references makes the cells evaluate and pulls the correct values.
+
+Quick checklist to perform now
+1. On A-122 sheet: fix the broken C formulas by correcting the offending cells (C8, C17, and any others) and then fill down the sequence from the correct seed.
+2. On Pages 2–6: test a few of the “FORMULA =…” cells:
+   - If they evaluate after replacing “FORMULA =” with “=”, do that across the sheet.
+   - If they were intended to pull Page 1 values, change them to ='Page 1'!$A$9 (or use a named range).
+3. Recalculate workbook (F9) and scan both Column C on A-122 and header cells on pages to confirm numbers/headers now correct.
+
+If you want I can:
+- Give the exact Find/Replace steps with screenshots or keyboard steps, or
+- Provide a short VBA macro to fix "FORMULA " prefixed cells and to re-sequence column C automatically. Which would you prefer?

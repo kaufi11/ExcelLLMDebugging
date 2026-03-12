@@ -1,0 +1,40 @@
+I reviewed the formulas on the workbook (sheet "Tution and Fees" is where all formulas are). Summary of actual problems and inconsistencies, with recommended fixes and the immediate numeric impact of the main error.
+
+1) Incorrect cell reference (likely a copy/paste typo) — NEEDS FIX (primary error)
+- Cell: H8
+- Current formula: =I9+H10
+- Why it's wrong: column H formulas should use H9 (Room Only for 2001–2002) + H10 (Board Only for 2001–2002). Instead H8 uses I9 (room for 2000–2001) + H10, i.e. it mixes columns.
+- Correct formula: =H9+H10
+- Current value (with bad formula): 3700 (= I9 1894 + H10 1806)
+- Corrected value (if changed to =H9+H10): 3864 (= H9 2058 + H10 1806)
+- Cells that depend on H8 and will change if you fix H8:
+  - H11 (Comprehensive tuition/room/board/fees In-State): current 5651 -> corrected 5815 (H5 854 + corrected H8 3864 + H7 1097)
+  - H12 (Comprehensive tuition/room/board/fees Out-of-State): current 12070 -> corrected 12234 (H6 7273 + H7 1097 + corrected H8 3864)
+- Recommendation: change H8 to =H9+H10 and then verify downstream totals and any other manual entries that may have been adjusted to match the erroneous numbers.
+
+2) Hard-coded values where neighbors use formulas — inconsistency (not necessarily wrong numerically, but makes maintenance/error-prone)
+- Cell: G36 (Required Fees for Out-of-State)
+  - Current: value 584 (no formula)
+  - All other columns in that row use =SUM(<fee cells>). G36 equals SUM(G21:G29) but is hard-coded.
+  - Recommendation: replace with formula =SUM(G21:G29) for consistency and to avoid desync if fee lines change.
+- Similar inconsistency: F11 is hard-coded (7228) while G11/I11/H11 use formulas (G11 =G5+G8+G7, etc).
+  - Recommendation: set F11 =F5+F8+F7 (or =SUM(F5,F8,F7)) for consistency.
+
+3) Inconsistent use of SUM vs explicit addition / different SUM argument styles — stylistic inconsistency
+- Examples:
+  - F12 uses =F6+F7+F8 (explicit +)
+  - G12 uses =SUM(G6,G8,G7) (SUM with listed arguments, unusual order)
+  - H12 uses =SUM(H6,H8,H7)
+- These are not errors functionally, but inconsistent (makes auditing and copy/paste more error-prone). Suggest standardizing to consistent style, e.g. =SUM(range) where appropriate, or =F6+F7+F8 consistently across columns.
+
+4) Propagation / audit recommendation
+- Because H8 was referencing the adjacent column, that erroneous number was used by several summary cells (H11 and H12). After correcting H8, review any numbers that were manually entered to match old totals (for example, if any other cells were hard-coded to match the earlier wrong totals).
+- Check F8 (4892) vs F9+F10 (2466+1806=4272): that is not a formula error but is a noteworthy data mismatch (F8 is not equal to F9+F10). This may be intentional (different rates) but confirm the source data.
+
+5) Minor / cosmetic
+- Sheet name "Tution and Fees" is misspelled (should be "Tuition...") — not a formula error but worth fixing for clarity.
+- There are a few places where formulas include blank rows or headers in ranges; nothing breaks now, but consider using exact ranges to avoid including accidental text cells in future.
+
+If you want, I can:
+- Produce a small list of exact formula replacements to paste in (H8, G36, F11, etc.), and recompute all affected totals for you.
+- Run a quick pass that converts matching hard-coded totals into formulas across the whole table to make the sheet uniform.

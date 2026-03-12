@@ -1,0 +1,31 @@
+Summary — main errors found
+1) Hard-coded totals (manual numbers instead of SUM formulas)
+- Cells: C44 (=84), D44 (=73), AI10 (=19) — and there are other places in the sheet where totals are entered as numbers instead of formulas.
+- Problem: If source rows change these totals won’t update and will produce wrong % and mean values.
+- Fix: Replace with SUM formulas. Examples:
+  - C44 → =SUM(C39:C43)
+  - D44 → =SUM(D39:D43)
+  - AI10 → =SUM(AI5:AI9)
+- Why: Totals must be calculated from their detail rows so they update automatically.
+
+2) Incorrect SUM ranges (omitting a row)
+- Cell: F44 currently =SUM(F40:F43)
+- Problem: It omits row F39 (one year of data), so the total is too small.
+- Fix: F44 → =SUM(F39:F43)
+- Why: Ensure the SUM range covers the full block (same start/end rows as the other columns).
+
+3) Partial-range SUM where full range expected
+- Cell: E11 is =SUM(E5:E7)
+- Problem: It only sums rows 5–7 but the “Total Exams” blocks elsewhere sum rows 5–9. This likely omits rows E8:E9.
+- Fix: E11 → =SUM(E5:E9)
+- Why: Keep the same row span for totals across columns/blocks.
+
+Quick, practical recommendations
+- Convert each block to a consistent pattern: totals = SUM(columnStart:columnEnd) where columnStart/columnEnd match the data rows for that block. Then copy the correct total formula across the row (fill right).
+- Replace hard-coded totals with formulas so % and mean calculations remain correct.
+- Audit the sheet: press Ctrl+` (Show Formulas) and scan the total rows for any constants or inconsistent ranges.
+- Use Trace Precedents/Dependents on suspicious % or Mean cells to find which totals feed them.
+
+If you want, I can:
+- Provide a list of every total cell that is a hard-coded number vs formula, or
+- Give the exact corrected formulas for the whole “Total Exams” rows so you can paste them across. Which would you prefer?

@@ -1,0 +1,22 @@
+Problem found
+- Cell D17 (2001 "All Grades" — Tested total) is wrong. It uses =SUM(D11:D16) and therefore omits Grade 3 (D10).
+- Because F17 = E17/D17, the All Grades percent for 2001 is massively incorrect.
+
+Impact (numbers)
+- Correct tested total D10:D16 = 1,882,232
+- Current D17 (D11:D16) = 1,616,875 (missing 265,357)
+- E17 (Passing) = 1,536,561
+- Current F17 = 1,536,561 / 1,616,875 = 95.01% (incorrect)
+- Correct percent = 1,536,561 / 1,882,232 = 81.66%
+
+Fix (quick)
+- Change D17 to =SUM(D10:D16).
+
+Better (safer) fix
+- Replace F17 with a single formula that sums numerator and denominator together to avoid range-mismatch errors:
+  =SUM(E10:E16)/SUM(D10:D16)
+  (or keep D17 & E17 and set F17 =SUM(E10:E16)/SUM(D10:D16))
+
+Recommendation to prevent recurrence
+- Use the SUM(Estart:Eend)/SUM(Dstart:Dend) pattern for the All Grades percent so it cannot produce a wrong percent when one of the subtotal ranges was mis‑entered.
+- After fixing, scan other "All Grades" rows to confirm their SUM ranges include the Grade 3 row (they appear correct for other years).

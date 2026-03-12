@@ -1,0 +1,42 @@
+I inspected the formulas in the sheet you provided. I found one clear formula error and a number of inconsistent / non‑idiomatic formulas that are likely to confuse reviewers and can propagate incorrect totals.
+
+1) Concrete error (wrong function)
+- Cell O19 contains:
+  =COUNT(D19-M19)
+  Value in the file: 1
+
+  Why it's wrong
+  - COUNT() counts numeric items passed as arguments. COUNT(D19-M19) evaluates the subtraction first (gives 0) and then COUNT returns 1 (because there is one numeric argument). That is not the intended arithmetic difference. The expected result is D19 - M19 = 0, not 1.
+
+  Fix
+  - Replace with either:
+    =D19-M19
+    or
+    =SUM(D19-M19)
+  Either will give the correct numeric difference (0). I recommend =D19-M19.
+
+  Impact
+  - O19 being 1 instead of 0 causes O26 (Subtotal administration = SUM(O15:O25)) to be 1 (incorrect) and that in turn makes O72 (Total campaign underspend) show 1 instead of 0. Fixing O19 will correct O26 and all dependent totals.
+
+2) Inconsistent / non‑idiomatic formula usage (recommendations)
+- Many "underspend" cells use =SUM(Dxx-Mxx). That is technically working (SUM of one numeric), but it's unusual. Prefer plain subtraction for clarity:
+  - Replace =SUM(D12-M12) with =D12-M12 (and similarly in other O## cells).
+
+- Many totals use SUM with + inside, e.g.:
+  =SUM(C12+C26+C31+C38+C56+C62+C70)
+  This works but is unconventional. Prefer either:
+  - =C12+C26+C31+C38+C56+C62+C70
+  or if these were contiguous ranges use a range argument. (Not an error, just inconsistent.)
+
+- General recommendation: use SUM(range) for ranges, and simple arithmetic operators (+, -) for explicit additions/subtractions. This improves readability and reduces chance of mistakes like the COUNT above.
+
+3) Other findings
+- I scanned the workbook for other COUNT() uses and only found the COUNT in O19. No other obvious formula typos (invalid ranges, e.g. off‑by‑one ranges) were detected in the list you provided.
+- Monthly totals M## all use =SUM(F#:L#) which is correct even when some monthly cells are blank.
+- Subtotals and grand totals reference the expected component cells; once the COUNT error is corrected the cumulative totals (O26, O72, etc.) will be consistent.
+
+Summary of actions to take
+1. Change O19 from =COUNT(D19-M19) to =D19-M19.
+2. (Optional but recommended) Replace instances of =SUM(Dxx-Mxx) with =Dxx-Mxx and replace =SUM(A+B+C) with A+B+C (or explicit range SUM where appropriate) to improve clarity and avoid accidental misuse of functions.
+
+If you want, I can produce a list of every cell that currently uses =SUM(Dxx-Mxx) (or other non‑idiomatic patterns) so you can standardize them automatically.

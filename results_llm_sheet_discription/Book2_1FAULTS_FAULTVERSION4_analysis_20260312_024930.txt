@@ -1,0 +1,49 @@
+Short summary of the errors, why they matter, and exact fixes.
+
+Errors found
+1) Typo / wrong divisor in M3
+   - M3 = L3/944 is clearly wrong (should be dividing by number of homeworks). This distorts M3 and the column-average M47.
+
+2) Inconsistent averaging method (all row averages use a fixed divisor 10)
+   - Most Mn use =Ln/10 even when some homework cells are blank. That under‑reports averages for rows with missing scores (SUM counts blanks as 0 but you probably want average of the present scores).
+
+3) Missing / possibly mis‑aligned score cells in many rows
+   - Several rows have blank cells in B:K (e.g., row4 missing E4 and J4, row25 missing B25, etc.). That creates ambiguous totals/averages (is blank = 0, or is it "not entered"?). If blanks were unintended (data shift), totals/averages are wrong.
+
+4) Column averages (row 47) are affected by the above
+   - M47 = AVERAGE(M3:M45) uses the bad M3 and the fixed-divisor Mn values, so it is not a reliable class average.
+
+Exact fixes (apply these)
+
+A) Fix the M3 typo
+- Replace M3 with either:
+  =AVERAGE(B3:K3)
+  or (if you prefer using the total) =L3/COUNT(B3:K3)
+
+B) Make all per‑row averages robust (replace Ln/10)
+- Best: use AVERAGE so blanks are ignored:
+  In M3 enter:
+    =AVERAGE(B3:K3)
+  then fill/copy M3 down to M45.
+- Alternative (explicit count):
+    =IF(COUNT(B3:K3)=0,"",L3/COUNT(B3:K3))
+  This returns blank if no scores, otherwise uses only present scores.
+
+C) Audit/fix missing data or mark them
+- If blank cells mean "missing entry" (not zero): leave blanks and use the AVERAGE approach above.
+- If blanks actually represent zero scores, fill with 0 or use =IF(Bn="",0,Bn) approach.
+- To find rows with missing items quickly, use conditional formatting or a helper column:
+    Helper formula (in e.g. N3): =COUNT(B3:K3)  — shows how many scores present.
+  Or highlight rows where COUNT(Bn:Kn)<>10 to check.
+
+D) Recalculate column averages
+- After fixing M3..M45, row 47 formulas (AVERAGE(B3:B45), etc.) will automatically be correct. If you changed Mn formulas to AVERAGE(), M47 will now show the true mean of per‑row averages.
+
+Why these fixes work (short)
+- AVERAGE(Bn:Kn) ignores blanks — so it divides by the number of submitted scores only.
+- COUNT(Bn:Kn) lets you divide by actual number of numeric entries when you need the total divided by entries (L n / COUNT(...)).
+- Fixing the M3 typo removes the single outlier that was skewing column M's average.
+
+If you want I can:
+- Provide a single formula you can paste into M3 and fill down to fix all rows.
+- List every row that currently has fewer than 10 scores (so you can check for misalignment). Which would you like?

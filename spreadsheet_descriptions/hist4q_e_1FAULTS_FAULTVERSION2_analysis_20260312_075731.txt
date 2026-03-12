@@ -1,0 +1,50 @@
+Summary of workbook structure and contents (concise)
+
+General layout
+- Columns C:R cover four years (2000–2003) by quarter: C–F = 2000 (Q1–Q4), G–J = 2001, K–N = 2002, O–R = 2003. Row 3 lists quarter names; B4 notes units = Millions of yen.
+- Common formula patterns: SUM for totals, subtraction for margins (Net Sales − Cost = Gross profit), IF tests to avoid divide-by-zero for percent-of-sales (two variants: IF(...,"-  ",...) on Sheet1 and IF(...,"",...) on Sheet2).
+- Notes/footnotes about accounting standard changes and restatements appear at bottom of sheets.
+
+Sheet 0 — Table of Contents
+- Simple index pointing to Sheet 1 (“Quarterly Statement (1): Sales by Product and P&L; Sales by Region”) and Sheet 2 (“Quarterly Statement (2): Segment Information by Product”).
+
+Sheet 1 — 1. Quarterly Statement (1)
+- Section: Sales by Product and P&L
+  - Product lines: Business machines (broken into Office imaging products, Computer peripherals, Business information products), Cameras, Optical & other.
+  - Row C12:R12 = Business machines total (FORMULA =SUM(<three product rows>)), though note H12 incorrectly uses COUNT(H9:H11) instead of SUM.
+  - Row C15:R15 = Total net sales (SUM of Business machines total, Cameras, Optical).
+  - Net sales repeated in Row 17 (Net Sales*1) by simple reference to totals above.
+  - Cost of sales (Row 18) are input numbers. Gross profit (Row 19) = Net sales − Cost (e.g., C19 = C17 − C18).
+  - SG&A (Row 21) input. Operating profit (Row 22) = Gross profit − SG&A.
+  - Other income/(deductions) rows 25–27 sum to Row 28 (SUM). Income before taxes Row 29 = Operating profit + Other (Row 22 + Row 28).
+  - Income taxes (Row 31) and Minority interests (Row 32) used to compute Income before cumulative effect (Row 33 = Row29 − SUM(Row31:Row32)).
+  - Cumulative effect of accounting change present in G34 = 3,692 (applies only to 2001 Q1); Net income Row 35 = SUM(Row33:Row34).
+  - Percent-of-sales rows use IF to avoid divide by zero (Row 20, 23, 30, 36).
+- Section: Sales by Region (Rows 40–46)
+  - Japan (Row 40), Overseas broken by Americas/Europe/Other (42–44); Overseas total Row 45 = SUM(42:44); Grand Total Row 46 = Japan + Overseas.
+
+Sheet 2 — 2. Quarterly Statement (2): Segment information by product
+- Segment blocks for Business machines, Cameras, Optical & other, Corporate & Eliminations.
+  - For each segment: Net sales and Operating profit (inputs shown), plus a % of sales row that uses IF(segment_net=0,"",operating/ net).
+  - Corporate & Eliminations (Row 30) contain negative net-sales and negative operating-profit entries (eliminations).
+- Consolidation / reconciliation (Rows 36–39)
+  - Consolidated Net sales Row 37 = SUM(segment net sales including Corporate/Elims) and Operating profit Row 38 = SUM(segment operating profits (including Corporate/Elims)).
+  - Row 39 shows consolidated operating-profit as % of consolidated net sales (IF(...,"",...)).
+- Purpose: provides segment-level detail and reconciles to the consolidated totals (Sheet1 values match these consolidated results).
+
+Notable formula/consistency observations
+- H12 uses COUNT(H9:H11) instead of SUM (likely a mistake; all other columns use SUM). Verify H12 if you expect a sum.
+- Sheet1 percent IF expressions return the string "-  " for zero net sales; Sheet2 percent IF expressions return "" (blank). This is an intentional difference to watch for when parsing text vs blank.
+- Cumulative effect value (G34 = 3,692) affects Net income only for 2001 Q1.
+
+Example key figures (2000 Q1, column C)
+- Total net sales (Sheet1 C17) = 641,118 million yen.
+- Cost of sales C18 = 372,574 → Gross profit C19 = 268,544.
+- SG&A C21 = 197,959 → Operating profit C22 = 70,585.
+- Other (C28) = -2,855 → Income before taxes C29 = 67,730.
+- Income taxes + minority (C31+C32 = 31,656) → Income before cumulative effect C33 = 36,074 → Net income C35 = 36,074 (no cumulative effect in column C).
+
+If you want, I can:
+- Export a reconciliation table for a specific quarter/year,
+- Flag all cells that differ from expected SUM patterns (e.g., H12),
+- Or produce a compact pivot-style summary (by year/quarter) of Net Sales, Operating profit, Net income.

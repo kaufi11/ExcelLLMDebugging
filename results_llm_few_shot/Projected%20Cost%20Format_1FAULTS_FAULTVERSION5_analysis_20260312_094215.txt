@@ -1,0 +1,41 @@
+I checked the three sheets and found the main formula problems and risks. Short, clear list below with fixes and brief explanations.
+
+1) Sheet "Seq Production Costs" — G21 uses COUNT instead of SUM
+- Faulty cell: G21
+- Problem: =COUNT(G19:G20) counts how many numeric cells exist (1 or 2), not the dollar total.
+- Fix: replace with =SUM(G19:G20)
+- Why: Grand Cost Total for "Other Activities" must be the sum of direct+indirect costs, not a count.
+
+2) Sheet "Seq Production Costs" — hard-coded "1" in percent-total cells
+- Faulty cells: C21, E21, H21 (currently set to 1)
+- Problem: These were entered as hard-coded 1 (100%). If the component percent formulas change they can fall out of sync.
+- Fix: replace with sums of the percent rows:
+  - C21 -> =SUM(C19:C20)
+  - E21 -> =SUM(E19:E20)
+  - H21 -> =SUM(H19:H20)
+- Why: Keeps the percent totals automatic and consistent (should equal 1 or 100%).
+
+3) Sheet "Seq Production Costs" — total-year sum depends on G21
+- Faulty cell: B23
+- Problem: B23 =B21+D21+G21 will be wrong while G21 is a COUNT. (Once G21 is fixed, B23 will be correct.)
+- Fix: No change after fixing G21. Optionally add a check cell: =B23-(B21+D21+G21) to ensure zero difference.
+
+4) Sheet "Tech Dev Costs" — division by zero risk
+- Faulty cell: B18 (and any other formula dividing by B6)
+- Problem: B6 is 0, so B18 =B17/B6 will produce #DIV/0! if B6 is zero.
+- Fix: Either enter the correct total in B6, or make the formula robust:
+  - =IF($B$6=0,0,B17/$B$6)
+  - Or =IFERROR(B17/$B$6,0)
+- Why: Avoids #DIV/0 and returns a safe result (or a clearer 0) until B6 is filled.
+
+5) Sheet "Bioinformatics Costs" — same division-by-zero risk
+- Faulty cells: B18, B31, B44 (and any formula using $B$6)
+- Problem: B6 is 0; formulas like =B17/$B$6 will error.
+- Fix: Same approach as Tech Dev sheet: fill B6 with the correct total or wrap divisions with IF($B$6=0,…) or IFERROR.
+
+Optional suggestion (consistency / integrity checks)
+- Add verification formulas to catch problems automatically:
+  - Percent totals: =ABS(1-SUM(C19:C20)) and flag if not near 0.
+  - Grand totals cross-check: =B23 - (B21+D21+G21) should be 0.
+
+If you want, I can give the exact updated formulas placed into the sheet (I listed them above), or produce a short checklist to run through the file and fix every instance of COUNT→SUM and division-by-zero. Which would you prefer?

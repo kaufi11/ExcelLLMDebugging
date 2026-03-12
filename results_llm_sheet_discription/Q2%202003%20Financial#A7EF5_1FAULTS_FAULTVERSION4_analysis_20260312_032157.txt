@@ -1,0 +1,43 @@
+I checked the workbook and found a small set of consistent “range / inclusion” mistakes in the BS Crib → Balance Sheet totals that will cause asset totals and the balance-sheet reconciliation to be wrong. These are easy to fix.
+
+Summary of errors
+1) PP&E subtotal uses inconsistent row ranges across periods
+- D59 = SUM(D54:D58) (correct) but F59/G59/H59/J59 use SUM(<col>53:<col>58) (incorrect). That mixes in the wrong row for the other periods.
+
+2) “Other Assets” subtotal uses inconsistent ranges
+- D98 = SUM(D86:D97) (correct) but F98 = SUM(F88:F97)+F86 (and similar odd constructions in other period columns). This is inconsistent and fragile.
+
+3) Total Assets (row 100) omits the restricted securities subtotal in some columns
+- D100 = D50 + D59 + D98 + D79 (missing D64). F100 includes F64, so columns are inconsistent. One column excludes the restricted-security subtotal (D64) while others include it.
+
+Why this matters
+- Because the period columns are not using the exact same components/ranges, Total Assets will differ between periods or not match the detailed source lines. That will break the balance-sheet check (D204 = Total Liabilities & Equity − Total Assets) and produce apparent imbalances.
+
+Exact fixes (what to change)
+1) Standardize the PP&E subtotal row 59 in every period
+- Change F59 to: =SUM(F54:F58)
+- Change G59 to: =SUM(G54:G58)
+- Change H59 to: =SUM(H54:H58)
+- Change J59 to: =SUM(J54:J58)
+(Keep D59 = =SUM(D54:D58).)
+
+2) Standardize the “Other Assets” subtotal row 98
+- Change F98 to: =SUM(F86:F97)
+- Change G98 to: =SUM(G86:G97)
+- Change H98 to: =SUM(H86:H97)
+- Change J98 to: =SUM(J86:J97)
+(Keep D98 = =SUM(D86:D97).)
+
+3) Make Total Assets include restricted securities (row 64) consistently
+- Change D100 to: =D50 + D59 + D64 + D98 + D79
+- Ensure F100/G100/H100/J100 use the exact analogous components: =<that column>50 + <that column>59 + <that column>64 + <that column>98 + <that column>79
+
+How to verify
+- After fixing, recalc and check D204 (and the equivalent checks for other columns): D204 should equal 0 (Total Liabilities & Equity − Total Assets = 0). Run the same check for F/G/H/J columns.
+
+Why these fixes solve it
+- They ensure every period column aggregates the identical component rows (no missing rows, no extra cells). Once ranges/components are identical, totals will exactly equal the sum of source lines and the balance-sheet reconciliation will clear.
+
+If you want, I can:
+- Give the exact Excel copy/paste formulas for every affected cell, or
+- Check D204 after you make the fixes and, if it still doesn’t balance, trace the remaining mismatch(s).

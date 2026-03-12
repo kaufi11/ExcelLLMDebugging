@@ -1,0 +1,79 @@
+Summary of workbook structure and key calculations (concise)
+
+Overall layout / common logic (applies to each populated sheet)
+- Purpose: estimate nitrogen (N) removed in cereal production, partition N removed between soil vs fertilizer, compute estimated NUE (nitrogen use efficiency) and annual fertilizer (and value/energy) savings from incremental NUE improvements.
+- Typical columns/fields:
+  - Crop rows (wheat, corn, rice, barley, sorghum, millet, oats, rye) with production (MT), harvested area (ha) and yield (Mg/ha or converted bu/ac), and %N (grain N concentration).
+  - N removed by crop = production * (%N / 100).
+  - Total N removed in cereals = SUM(crop N removed).
+  - Partition: 50% of N removal attributed to soil, 50% to fertilizer (E*0.5 and E*(1-0.5)).
+  - Estimated NUE = fertilizer-derived N removed / cereal fertilizer N consumed.
+  - N savings per 1% (and 20%) increase in NUE computed as difference between a baseline retained fraction of cereal fertilizer consumption and current fertilizer N removed; then monetized using $/metric ton and converted to energy/natural-gas savings in some sheets.
+- Units: mT (metric tons) for mass.
+
+Sheets
+
+1) Sheet: "World 1996"
+- Top inputs: World fertilizer-N consumption (B2/E2 = 82,906,340 mT); cereal share = 60% → E4 = FORMULA = 0.6*E2 (49,743,804 mT).
+- Cereal production (E6:E13) listed per crop with areas (G6:G13) and yield formulas in H (Hn = E/G).
+- Total cereal production: E14 = SUM(E6:E13).
+- Crop %N in C17:C24 → crop N removed E17:E24 = E6*(C17/100) etc; total E25 = SUM(E17:E24).
+- Partition: E27 = E25*0.5 (soil), E28 = E25*0.5 (fertilizer).
+- Estimated NUE: E30 = E28 / E4.
+- N savings per 1% NUE: E32 = (E4*(0.343) - E28). (Baseline fraction 0.343 used here)
+- Monetary conversions: E33 = E32 * 479 (1998 $479/MT); E34 = E32 * 636 (2001 $636/MT). Additional G33/G34 multiply by 67 (noted).
+- Energy/natural gas notes and cost: rows B52:B61 list BTU and cubic-ft conversions and cost per kg N ($0.146), deriving $64,572,150 savings for 1% NUE and 2.49e9 cubic ft gas savings per 1% NUE.
+- Issues/notes: E19 formula references C20 instead of C19 (likely a typo — should be =E8*(C19/100)). Many annotation lines (B49–B61) are explanatory rather than formulas.
+
+2) Sheet: "Developed 96"
+- Top: World consumption of fertilizer-N for developed world in E1 = 29,967,560 mT; cereal share E3 = 0.6 * E1 (note: some explanatory text elsewhere still references the global 82,906,340 number).
+- Cereal production E5:E12 listed; total E13 = SUM(E5:E12).
+- N removal per crop E16:E23 = E5*(%N) etc; total E24 = SUM(E16:E23).
+- Partition: E26 = E24*0.5; E27 = E24*0.5.
+- Estimated NUE: E29 = E27 / E3.
+- N fertilizer savings per 1%: E31 = (E3*(0.426) - E27) — here baseline fraction is 0.426 (different from World sheet).
+- Monetary: E32 = E31 * 479 (1998 $).
+- Notes: check that E3 uses E1 correctly (0.6*E1) — this sheet contains text copy-paste lines referring to the global 82,906,340 which can be confusing.
+
+3) Sheet: "Developing 96"
+- Top: Developed world consumption stated in E1 = 52,938,780 mT (seems labeled "Developed world" but sheet title is Developing 96 — check naming/inputs).
+- Cereal share E3 = 0.6 * E1.
+- Production E5:E12 and totals E13.
+- N removal E16:E23; total E24.
+- Partition E26/E27.
+- Estimated NUE E29 = E27 / E3.
+- N savings per 1%: E31 = (E3*(0.295) - E27) — baseline fraction 0.295 here.
+- Monetary: E32 = E31 * 479.
+- Notes: sheet header/label inconsistencies (sheet title says Developing but B1 text says Developed world consumption). Verify the intended dataset.
+
+4) Sheet: "World 2002"
+- Inputs: World fertilizer-N consumption D4 = 81,969,570 mT; cereal share D6 = 0.6*D4 (produces D6 = 49,452,821 per the text).
+- Production D9:D16 with area F9:F16; average yield G = D/area; bushels/acre conversion H = formula using G.
+- Crop N removed D20:D27 = D9*(%N) etc; total D28 = SUM(D20:D27).
+- Partition: D30 = D28*0.5 (soil), D31 = D28*0.5 (fertilizer).
+- Estimated NUE: D33 = D31 / D6 (result E33 shown 0.326).
+- Homework and scenario analysis: D36 shows NUE if cereal fertilizer total = 40,000,000 mT; D39–D42 compute lost N and value if retained at $550/mT.
+- N fertilizer savings per 1%: D44 = (D6*(0.343) - D31) with F44 = 0.67; D45 = D44*479; D46 = D44*550; 20% scenarios in D49:D51.
+- Notes: D44 uses baseline 0.343 again. Several explanatory references and sources listed below.
+
+5) Sheets "Developed 00" and "Developing 00"
+- Present but no detailed content provided (likely placeholders).
+
+Key values / baselines used across sheets
+- Cereal share of global fertilizer-N: 60% (used as 0.6 * total fertilizer N).
+- Grain %N values (common across sheets): wheat 2.13%, corn 1.26%, rice 1.23%, barley 2.02%, sorghum 1.92%, millet 2.01%, oats 1.93%, rye 2.21%.
+- Partition assumption: 50% of grain N removal comes from soil, 50% from fertilizer.
+- Baseline retained fractions differ by dataset: 0.343 (World 1996/2002), 0.426 (Developed 96), 0.295 (Developing 96). These are used to compute potential savings for a 1% NUE change.
+- Price assumptions used: $479/MT (1998), $636/MT (2001), $550/MT (2002).
+- Energy to produce N: ~52,249 BTU/kg N; cost per kg N ~$0.146; derived natural gas savings per 1% NUE ≈ 2,490,000,000 cubic ft and ~$64.6M (in specific sheet calculation).
+
+Errors / inconsistencies to check (recommended fixes)
+- World 1996: E19 uses C20 instead of C19 — change to =E8*(C19/100).
+- Some sheets contain copied explanatory text referencing the global 82,906,340 figure even when sheet-specific totals differ — verify and correct textual notes to match each sheet’s input cells.
+- Sheet naming/labels: "Developing 96" shows "Developed world consumption" in B1/E1 — confirm whether E1 is developed or developing dataset and rename/relocate as appropriate.
+- Confirm baseline factors (0.343, 0.426, 0.295) and their rationale/source; they vary across sheets and drive the savings results.
+
+If you want, I can:
+- Produce a compact mapping of all cell formulas into a consistent table,
+- Fix the identified formula errors and normalize header text,
+- Or generate an audit sheet that flags mismatches and computes reconciliation numbers across sheets. Which would you like?

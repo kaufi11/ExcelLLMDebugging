@@ -1,0 +1,34 @@
+Short summary of the problems I see
+
+1) Bad numbering formula at A31
+- A31 currently has =A30-1. That produces duplicates (28, 29, etc.) and corrupts all downstream row numbers.
+
+2) Resulting odd jump at row 52 is a symptom, not a separate root cause
+- Because of the A31 error the numbering misaligns and you see formulas like A52:=A49+1 (and blank rows 50–51). Fixing A31 will restore continuous numbering.
+
+3) Header / column labeling issues (not calculation errors but confusing)
+- M1 reads "CNTY" but contains country codes (e.g. USA). Rename M1 to "Country".
+- J1 header is missing even though some rows use J for address line 2. Add a header like "Address 2" or "Addr Line 2".
+- (Optional) minor spelling typos in data (e.g. "Virgina" → "Virginia").
+
+How to fix (quick, safe steps)
+
+1) Fix the bad formula in A31
+- Replace =A30-1 with =A30+1
+
+2) Make numbering consistent for the whole column (recommended)
+- Method A (simple): in A2 put 1, in A3 put =A2+1, then drag/fill that formula down the whole column to the last row.
+- Method B (automatic row-based): in A2 put 1 and in A3 put =ROW()-1 then fill down. (Adjust the -1 if your first numbered row is different.)
+- Method C (hide numbering on blank rows): use =IF(TRIM($C3)="","",A2+1) in A3 and fill down so empty name rows stay blank.
+
+3) Fix headers
+- Change M1 from "CNTY" to "Country".
+- Add J1 = "Address 2" (or whatever fits your layout).
+
+4) Optional cleanup
+- Run a quick spell-check for city/university names (e.g. Virginia).
+
+Why this fixes it (short)
+- A31 used subtraction so it created duplicate numbers and shifted the sequence; changing it to +1 restores the intended increment. Filling a consistent +1 formula down guarantees continuous numbering and prevents accidental breaks. Renaming headers removes confusion about what data lives in each column.
+
+If you want, I can give the exact fill-down formula to paste for A2:A75 (or produce a one-step renumbering formula using ROW()), or I can produce a small macro to renumber only rows with a name in column C. Which do you prefer?

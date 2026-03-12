@@ -1,0 +1,37 @@
+Overview
+- Workbook contains 3 sheets: Sheet1 ( populated ), Sheet2 (empty), Sheet3 (empty).
+- Sheet1 is a catalog of books with one header row (row 1) and data rows 2–464 (463 records).
+
+Layout (Sheet1 columns)
+- A: Discipline (text)
+- B: Sub-Discipline (text)
+- C: Title (text)
+- D: Author 1 (text)
+- E: Series (text, sometimes blank)
+- F: eBook ISBN (text)
+- G: Print ISBN (text)
+- H: Book Price (numeric; retail hardcopy list price)
+- I: E-Book Price RETAIL (numeric; appears derived from H)
+- J: E-Book Price INSTITUTIONAL (formula-based)
+
+Formulas and derivations
+- Column I values correspond to 0.7 × H in each visible example (e.g., H3 = 135 → I3 = 94.5). They are stored as values in the sheet.
+- Column J is consistently a formula that multiplies Book Price by 1.5 (Jn = Hn * 1.5) for nearly every row. Notable exceptions:
+  - J41 uses J41 = H41 / 1.5 (division instead of multiplication) — an inconsistency to check.
+  - Row 2: I2 contains an openpyxl ArrayFormula object (openpyxl.worksheet.formula.ArrayFormula) rather than a plain value; J2 shows the formula =H2*1.5.
+- Some rows have explicit zeros in H and I (e.g., row 427 H427 = 0, I427 = 0).
+
+Key values / data notes
+- Total records: 463 (rows 2–464).
+- Highest Book Price in the data shown: H280 = 982 (row 280), with I280 = 687.4 and J280 = H280*1.5.
+- Typical pricing scheme: E-book retail ≈ 70% of print price; institutional e-book ≈ 150% of print price.
+- ISBNs in F and G are stored as text strings; some rows have missing or duplicate/odd ISBN formatting (worth validating if you need to use them programmatically).
+
+Recommendations / checks
+- Fix the inconsistent J41 formula (division) and verify row 2’s ArrayFormula in I2.
+- If you want I calculated rather than stored, convert Column I to a formula like =Hn*0.7 so it updates automatically.
+- Consider normalizing ISBN formats (remove spaces, ensure consistent string type) if you’ll use them for lookups or joins.
+
+If you want, I can:
+- Provide a small report listing all formula inconsistencies and rows with nonstandard entries (e.g., J ≠ H*1.5, H = 0, nonnumeric H), or
+- Generate formulas to fix Column I and the J41 anomaly.

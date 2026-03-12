@@ -1,0 +1,29 @@
+Summary — main errors found
+1. D6 is wrong: it shows =200/C6 (division). It should multiply the daily rate by days.
+2. D82 references C82 but C82 is missing (blank). That will give 0 or an error and makes the price wrong/empty.
+3. Risk/quality: many rows hard-code rate*days. This invites manual mistakes (like #1). I recommend standardizing with a Rate column or lookup and adding simple checks for blank durations.
+
+Exactly what to change and why
+- Fix D6:
+  - Change =200/C6  to  =200*C6
+  - Why: price = rate per day * number of days. Division gives a wrong number or a #DIV/0! when C6 = 0 or blank.
+
+- Fix D82 (and any formula that multiplies a missing C cell):
+  - Option A — supply the missing duration: put the correct number of days into C82.
+  - Option B — make the price cell return blank when duration is missing:
+    - Example: =IF(C82="","",250*C82)
+    - Or: =IF(ISNUMBER(C82),250*C82,"")
+  - Why: prevents showing 0 or an incorrect price when days are not entered.
+
+Recommended improvements (prevent similar errors)
+1. Add a "Rate" column (e.g., insert new column E) and put the per-day rate there (200, 250, 300...). Then use a simple formula in Price:
+   - Example (if Rate is column E): =IF(C4="","",C4*E4)
+   - Benefits: easier to update rates, reduces copy-paste formula errors.
+2. Or create a small rate lookup table (category → rate) and compute D with VLOOKUP/INDEX-MATCH:
+   - Example: =IF(C4="","",C4 * VLOOKUP([category],RatesTable,2,FALSE))
+3. Search for other accidental "/" uses:
+   - Use Excel Find (CTRL+F) to search for "/C" or for literal " / " in formulas to catch other accidental divisions.
+
+If you want, I can:
+- Give the exact formula to add a Rate column and convert all current D formulas automatically.
+- Provide a small VBA or formula approach to scan and list cells with suspicious formulas (division by C, references to blank C).

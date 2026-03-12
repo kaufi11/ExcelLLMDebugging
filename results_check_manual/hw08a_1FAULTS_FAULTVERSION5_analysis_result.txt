@@ -1,0 +1,47 @@
+I inspected every formula you provided. Summary: the sheet mostly calculates electricity costs correctly, but there are two important errors/inconsistencies that will produce wrong cumulative bulb costs for the incandescent lamps and a missing electricity formula in row 17. I also identified a robustness/maintainability issue (hard‑coded constants).
+
+1) Cell C17 (incandescent bulb cost at time 0) is wrong
+- Current formula: =200/0.88
+- Problem: this divides instead of multiplying. 200/0.88 = 227.27 is nonsense here; the initial purchase cost for 200 incandescent bulbs at $0.88 each should be 200 * 0.88 = $176. Because C17 is incorrect all subsequent C values (which are built by adding $176 each cycle) are shifted upward by the same error.
+- Fix (simple): change to =200*0.88
+- Better (robust cumulative formula for any row using hours in column A and an incandescent life of 1000 h):
+  = (INT(Ax/1000) + 1) * 200 * 0.88
+  (Put this in Cx for the row with hours in Ax. This computes cumulative bulb purchases = number_of_sets_used * cost_per_set. INT(Ax/1000)+1 gives 1 set at 0 h, 2 sets at 1000 h, etc.)
+
+2) D17 (incandescent electricity cost at 0 hours) is missing a formula
+- D17 is blank (treated as 0 in E17). For consistency every row should calculate electricity using the same formula as the other rows.
+- Use: =200 * 60 * A17 * 0.06 / 1000
+  (or more generally for row x: =200 * 60 * Ax * 0.06 / 1000)
+
+3) Fluorescent bulb cost column (F) — check replacement behavior / consistency
+- Current: F17..F27 all =200*12 (i.e., 2400) repeated. That is correct if you intend no replacements until after 10000 h. But note:
+  - At A = 10000, a fluorescent with nominal life 10000 h probably needs replacement; your sheet currently keeps F=2400 at A=10000. If you want true cumulative bulb cost, use the same pattern as for incandescent with the fluorescent lifetime:
+    = (INT(Ax/10000) + 1) * 200 * 12
+- If you intentionally want to show only initial purchase cost for fluorescents until after lifetime, document that. Otherwise switch to the INT(...) formula for cumulative cost.
+
+4) General robustness / maintainability issues
+- Many formulas hard-code constants (200, 60, 0.88, 12, 1000, 10000, 0.06, 1820). That makes changes error‑prone. Recommended improvement:
+  - Create an inputs block (e.g. B1:B8) that contains:
+    number_of_bulbs = 200
+    incand_price = 0.88
+    incand_life = 1000
+    fluor_price = 12
+    fluor_life = 10000
+    rate = 0.06
+    hrs_per_year = 1820
+  - Then use formulas that reference those cells. Example (using named cells or absolute references):
+    Cx (incand cumulative bulb cost) = (INT(Ax / $B$incand_life) + 1) * $B$number_of_bulbs * $B$incand_price
+    Dx (incand electricity cost) = Ax * $B$number_of_bulbs * 60 * $B$rate / 1000
+    Fx (fluor cumulative bulb cost) = (INT(Ax / $B$fluor_life) + 1) * $B$number_of_bulbs * $B$fluor_price
+    Gx (fluor electricity cost) = Ax * $B$number_of_bulbs * 13 * $B$rate / 1000
+    Ex = Cx + Dx ; Hx = Fx + Gx
+
+5) Specific suggested changes to your sheet
+- Change C17 from =200/0.88 to =200*0.88 (or to the INT(...) cumulative formula shown above).
+- Add D17 =200*60*A17*0.06/1000 (or the general formula using references).
+- If you want cumulative fluorescent bulb cost, change Fx to =(INT(Ax/10000)+1)*200*12 (for each row).
+- Replace the repeated hard-coded +176 in C18..C27 with a single formula approach so the sheet will still be correct if price or number-of-bulbs changes.
+
+If you want, I can:
+- give exact formulas row-by-row ready to paste,
+- or propose a small input table and a set of formulas referencing it so the workbook is easier to maintain. Which would you prefer?

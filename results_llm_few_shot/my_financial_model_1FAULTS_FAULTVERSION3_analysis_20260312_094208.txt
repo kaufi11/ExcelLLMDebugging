@@ -1,0 +1,45 @@
+I scanned the file and found several clear, fixable formula mistakes. Short list (cell examples + quick fixes and why):
+
+1) Wrong inflation-rate reference for sugar price (typo)
+- Faulty cells: F8 (and copied across G8:P8)
+- Problem: these use $D$7 (lemon price growth) instead of the sugar growth cell $D$8.
+- Fix (example F8): =E8*(1+$D$8) — update the range so all sugar price cells reference $D$8.
+- Why: otherwise sugar prices inflate by the lemon rate, producing wrong COGS.
+
+2) “Total” (monthly revenue) omits Street Sales
+- Faulty cells: E12:P12 (they use =SUM(E10:E10), etc.)
+- Problem: each total sums only the Online line and ignores Street Sales.
+- Fix (example E12): =SUM(E10:E11) — copy across.
+- Why: totals must include both online and street sales to be correct.
+
+3) Street Sales proportion should be locked (avoid copy errors)
+- Faulty cell: D11 = 1-D10 (works in column D but fragile when copying)
+- Problem: the ratio is in D10 and other formulas use $D$11 as a fixed factor; if D11 is overwritten when copying you’ll break totals.
+- Fix: set D11 to =1-$D$10 and keep references to $D$11 where used (or replace downstream with 1-$D$10 directly).
+- Why: makes the 60% street / 40% online split stable and copy-safe.
+
+4) Depreciation cumulative total broken after column K
+- Faulty cells: M11, N11, O11, P11 (and possibly L11 if present)
+- Problem: cumulative pattern breaks — e.g. M11 = M7 (resets) instead of adding previous cumulative + M7.
+- Fix pattern (example): 
+  - E11 = E7
+  - F11 = E11 + F7
+  - G11 = F11 + G7
+  - ...
+  - M11 = L11 + M7
+  - N11 = M11 + N7
+  - etc.
+- Why: cumulative depreciation must add the current-period depreciation to the prior cumulative value.
+
+5) Many one-cell SUM ranges (copying/layout mistake)
+- Examples: lots of cells use SUM(E4:E4), SUM(E10:E10), SUM(E14:E14) etc.
+- Problem: these are harmless if there truly is only one row to sum, but they look like copy-range errors and in several places (see #2) they do omit rows.
+- Fix: review every SUM that is a single-cell range and expand to include all intended rows (or use direct addition if only two lines).
+- Why: prevents omitted items if rows are later added or the sheet is edited.
+
+How to proceed quickly
+- Fix the sugar price formulas (change $D$7 → $D$8) and update E12:P12 totals to SUM(row10:row11). Recalculate and check Net Profit / COGS numbers — most downstream problems will be resolved.
+- Then fix the Depreciation cumulative column formulas (M11 → L11+M7, N11 → M11+N7, etc.).
+- Finally do a quick audit for any other single-cell SUMs and for inconsistent absolute references ($).
+
+If you want, I can produce the exact formulas for each affected cell (I can list the corrected formula for every column) or produce a small macro-like script to replace the wrong references automatically. Which would you prefer?

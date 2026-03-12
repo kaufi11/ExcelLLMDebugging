@@ -1,0 +1,95 @@
+I inspected all formulas in both worksheets and found several actual errors and a number of inconsistencies / fragile constructions that will produce wrong results or error values if the input (earnings, amounts) is blank or zero. Below I list the issues, explain why each is a problem, and give recommended fixes.
+
+Summary of the main problems
+- A clear formula bug: one cell uses the wrong source cell (F10).
+- Many cells show #DIV/0! because several formulas divide by H6 (total earnings) while H6 is zero (no earnings entered yet).
+- A likely incorrect hard-coded cell (=1) for taxes (H14).
+- Several odd/fragile uses of SUM() (SUM with an arithmetic expression or SUM of a single cell) and references to text/blank cells which cause totals to be zero or ignored.
+
+Detailed findings and recommended fixes
+
+1) Wrong reference in SAVING (10%)
+- Location: STEP 2 OF 2, cell F10
+- Current formula: =H8/H6
+- Problem: F10 is the "SAVING (10%)" % cell — it should divide the saving amount in H10 by total earnings H6. It incorrectly re-uses H8 (giving) instead of H10.
+- Recommended fix: change to =IF($H$6=0,"",H10/H6) (or =H10/H6 if you prefer a simple fix). Using IF(...,"",...) or IFERROR(...,...) will avoid #DIV/0! while earnings are blank.
+
+2) Many division-by-zero errors (root cause: H6 = 0)
+- Cells showing #DIV/0!: K6, F8, F10 (see item 1), F12, F14, F16, F18, K20, K30, F34, F45 (these are all cells of the form something/H6)
+- Reason: H6 (total earnings) is zero because 'STEP 1 OF 2'!E22 = 0 (no income entered yet). Dividing by H6 gives #DIV/0!.
+- Recommendation:
+  - Either ensure E22 (gross income) is populated before these percentages are calculated, OR
+  - Wrap all percentage formulas to guard against zero denominator. Example pattern:
+    - =IF($H$6=0, "", H8/H6)
+    - or =IF($H$6=0, 0, H8/H6)
+    - or =IFERROR(H8/H6,"")
+  - Apply the guard to all formulas dividing by H6 (and any other potential zero denominators).
+
+3) H14 is suspicious / probably incorrect
+- Location: STEP 2 OF 2, cell H14
+- Current formula/value: =1 (cell value 1)
+- Problem: H14 is labelled "TAX W/H & PAYMENTS (15-25%)" — a hard-coded 1 is unlikely to be correct (and it also participates in H16 calculation, causing incorrect "ENJOYING" amount).
+- Recommendation:
+  - Likely you want H14 to reflect taxes withheld from STEP 1 (for example 'STEP 1 OF 2'!G22 if that holds total tax withheld), or to be an entered numeric amount. Example:
+    - If tax total is in STEP 1 G22: set H14 = 'STEP 1 OF 2'!G22
+  - After correcting H14, wrap percentage formulas that divide by H6 with IF(H6=0,...) as noted above.
+
+4) ENJOYING calculation depends on H14 and may be negative due to (3)
+- Location: STEP 2 OF 2, cell H16
+- Current formula: =H6-H8-H10-H12-H14
+- Notes: This is OK logically (ENJOYING = earnings minus tithes, saving, repaying, taxes), but because H14 was =1 and H6 is 0 the result becomes -1. Fixing H14 and guarding divisions will correct downstream results.
+
+5) Fragile/misused SUM() usage (not fatal but inconsistent)
+- Locations:
+  - STEP 1, I33 =SUM(G32+I32) (should be SUM(G32,I32) or G32+I32 — SUM with an expression is accepted, but inconsistent)
+  - STEP 1, M33 =SUM(K32+M32)
+  - STEP 1, E43 =SUM(E42)
+  - There are other uses where SUM() is used around a single arithmetic expression or a single cell.
+- Recommendation: use clearer syntax:
+  - For adding two cells use =G32+I32 or =SUM(G32,I32).
+  - For single-cell sums simply reference the cell, or keep SUM(cell) if you prefer — it's not an error, just inconsistent.
+
+6) STEP 1 M43 references a text/blank cell
+- Location: STEP 1 OF 2, cell M43
+- Current formula: =M42
+- Problem: M42 contains a blank/space (text), so M43 becomes text as well. Later M45 uses =SUM(E43:M43) — SUM ignores text, so M43 contributes nothing. If M43 was intended to be numeric, that is an error.
+- Recommendation: ensure M42 (the source) is numeric or make M43 compute the numeric value you expect. If you intended M43 to mirror a numeric total, change M42 to a number or change the reference.
+
+7) Totals that include many text/placeholder cells will be 0
+- Examples: many SUM() formulas in STEP 1 and STEP 2 sum ranges that currently contain placeholders like "_______________" or "___________" and therefore evaluate to 0.
+- Note: Excel SUM ignores text. This is expected behavior, but be aware: until users enter numeric values in those input cells the totals will remain 0.
+- Recommendation: If you want visible 0 vs blank vs error, use IF() or formatting logic; otherwise instruct users to fill numeric inputs.
+
+8) Combined total formula in STEP 2 M43 looks correct but depends on many inputs
+- Location: STEP 2 OF 2, cell M43
+- Formula: =H32+H43+H50+M18+M28+M40
+- Note: This consolidates the main expense totals. It is fine; just be aware it will be 0 until the component cells are numeric.
+
+9) Minor stylistic / consistency suggestions
+- Use consistent SUM arguments (SUM(range) or SUM(a,b)), avoid SUM(arithmetic-expression) which may confuse maintainers.
+- Wrap division formulas in IF(H6=0,...) to avoid #DIV/0! when earnings are not yet entered.
+- Make sure all "source" totals in STEP 1 (E22, G22, M22, etc.) are numeric and pulling from the intended ranges.
+
+Concrete quick fixes (copy/paste)
+- Fix F10:
+  - Replace =H8/H6 with =IF($H$6=0,"",H10/$H$6)
+- Guard other percentage formulas (examples):
+  - K6: =IF($H$6=0,"",M18/$H$6)
+  - F8: =IF($H$6=0,"",H8/$H$6)
+  - F12: =IF($H$6=0,"",H12/$H$6)
+  - F14: =IF($H$6=0,"",H14/$H$6)
+  - F16: =IF($H$6=0,"",H16/$H$6)
+  - F18: =IF($H$6=0,"",H32/$H$6)
+  - K20: =IF($H$6=0,"",M28/$H$6)
+  - K30: =IF($H$6=0,"",M40/$H$6)
+  - F34: =IF($H$6=0,"",H43/$H$6)
+  - F45: =IF($H$6=0,"",H50/$H$6)
+- Fix H14 if intended to use STEP 1 taxes:
+  - Change H14 from =1 to ='STEP 1 OF 2'!G22 (or to a user input cell).
+
+If you want, I can:
+- Produce a list of every formula that currently divides by H6 (so you can update all at once).
+- Generate the exact corrected formulas for every affected cell (with IF(H6=0,"",...) wrappers).
+- Apply the changes and produce an updated workbook (if you upload it or allow me to modify).
+
+Would you like me to prepare the full set of corrected formulas to paste into the sheet (I can list them cell-by-cell)?

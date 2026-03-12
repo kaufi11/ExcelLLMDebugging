@@ -1,0 +1,25 @@
+Summary — one clear error found:
+
+Faulty cell: O46
+- Problem: The numerator uses COUNT instead of SUM:
+  =(COUNT(B46:F46)+COUNT(G46:M46)+N46)/(...)*100
+  That returns a small integer (counts of cells) instead of the sum of the student's scores, so O46 (Overall %) is wrong and P46 (Letter) is wrong.
+- Fix (replace O46 with this formula):
+  =(SUM(B46:F46)+SUM(G46:M46)+N46)/
+   (COUNT(B46:F46)*100 + COUNT(G46:J46)*15 + COUNT(K46:M46)*30 + COUNT(N46)*150)
+   *100
+
+Why this fixes it (short):
+- Numerator must add the actual scored points (SUM), not the number of items (COUNT). The denominator correctly computes the maximum possible points using COUNT×weight. Using SUM in the numerator matches the denominator's logic so the percent is computed correctly.
+
+Quick steps to correct all:
+1. Put the corrected formula in O46.
+2. To ensure consistency, copy O4 (which has the correct pattern) and Fill Down through O46 (or copy the corrected O46 and fill up/down as needed).
+3. Recalculate / verify P46 and the summary rows (A47:O53) update.
+
+Optional improvement (avoid divide-by-zero if a row has no scores):
+- Wrap denominator check:
+  =IF(denom=0,"", (SUM(...)+N...)/denom*100)
+  where denom is the denominator expression.
+
+If you want, I can give the exact IF-wrapped formula to paste into O4:O46.

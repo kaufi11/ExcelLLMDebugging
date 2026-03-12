@@ -1,0 +1,30 @@
+I found two clear errors (one formula-mistake repeated on several sheets, and one stray minus sign). Fixes and short explanations below.
+
+1) Wrong weighting in "Latent load per person" formulas (units/refs mixed up)
+- Problem: Several sheets calculate latent load per person with this pattern:
+  =(Occupancy!F22*Occupancy!F19 + Occupancy!F23*Occupancy!F20) / (Occupancy!F19+Occupancy!F20)
+  That uses F19/F20 (sensible BTU/person values) as weights/denominator — wrong units and wrong weighting. This appears in:
+  - Sheet Occ L0 F10
+  - Sheet Occ L1-WD F10
+  - Sheet Occ L1-DU F10
+  - Sheet OccL2-WD-DU F11 (and similar cells in other L2/L1/L0 variants)
+- Why it’s wrong: You must weight latent loads by the number of people (or person-hours) represented by the living/bedroom schedules (Occupancy!F38 & Occupancy!F39), not by sensible-load BTU/person numbers.
+- Fix: Replace those formulas with a weighted average using the schedule sums (F38 and F39). Correct formula:
+  =(Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- Put simply: use F38/F39 (person-hours from the Living / Bedroom schedules) to weight the latent gains, not F19/F20.
+
+2) Stray negative signs in Occ L1-WD (Weekend column, hour 5)
+- Problem: On sheet Occ L1-WD cell D20 the formula is:
+  =-'OccL2-WD-DU'!D20*Occupancy!$F$35 - 'OccL2-WD-DU'!F20*Occupancy!$F$36
+  (it uses leading minus signs)
+- Why it’s wrong: All other rows add the two terms. These minus signs will produce a negative occupancy fraction/hours which is incorrect.
+- Fix: Change D20 to use addition, same form as other rows:
+  ='OccL2-WD-DU'!D20*Occupancy!$F$35 + 'OccL2-WD-DU'!F20*Occupancy!$F$36
+
+Extra quick checks I recommend
+- Scan other rows/columns for accidental leading minus signs — D20 looks like a one-off typo but check consistency.
+- Verify sheet-name references where spacing differs (e.g. 'OccL2-WD-DU' vs 'Occ L2-WD-DU') — if you ever get #REF! those inconsistent names can be the cause. In your extract the names appear both ways; confirm actual sheet tabs match the formulas.
+
+If you want, I can:
+- Provide a full list of every cell I found with the incorrect latent-formula so you can replace them.
+- Produce the exact corrected formulas for each specific cell (paste-ready).

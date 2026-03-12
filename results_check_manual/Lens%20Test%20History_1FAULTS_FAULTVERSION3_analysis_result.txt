@@ -1,0 +1,90 @@
+I reviewed the formulas in the workbook (all sheets you supplied). Below are the formula errors, likely mistakes and notable inconsistencies I found, with examples and suggested fixes.
+
+Summary of the main issues
+- One clear formula typo/inconsistency in the "Coil slope intercepts" sheet (E‑difference vs. addition).
+- Many true #DIV/0! results caused by formulas that divide by a zero (often G/H where H = 0). These are data/domain issues (division by zero) rather than syntax errors, but they should be handled or flagged.
+- Several cells contain non-date text in date columns (inconsistent/invalid date strings).
+- Inconsistent usage of the measured/calculated ratio column: most sheets use IF(O/N>0.5,O/N,"") but a few cells simply use O/N (no IF) — inconsistent behaviour.
+- Some cells show unusual or suspicious constants/formulas (I list them), and a few formulas produce extremely large fractional deltas — these are usually caused by tiny denominators (again division by near-zero numbers).
+
+Detailed findings, examples and recommendations
+
+1) Obvious formula typo in "Coil slope intercepts"
+- Cell: Coil slope intercepts!U5
+- Formula present: =(E5+$E$15)/$E$15
+- Context: All other fractional-delta columns in that block use the form =(E#-$E$15)/$E$15 (subtract the average in $E$15).
+- Why it's a problem: U5 uses addition instead of subtraction, producing a different (and likely incorrect) fractional delta.
+- Suggested fix: change to =(E5-$E$15)/$E$15 so it matches the pattern used elsewhere.
+
+2) Division-by-zero results (#DIV/0!)
+- Many cells intentionally compute ratios G/H (grad(Bdot)/grad(Rog)) or similar; wherever H (or the denominator) is zero you get #DIV/0!.
+- Examples (not exhaustive; I found many occurrences across the workbook):
+  - Lens 16: I25, I26, I27, I28 are #DIV/0! (G and/or H are zero for those rows).
+  - Lens 18: several I‑cells (I7, I8, I11, I12, etc.) are #DIV/0! where H=0.
+  - Lens 22, Lens 23, Lens 24 retest, Lens 27, Lens 28: multiple rows have #DIV/0! entries in the "grad(Bdot)/grad(Rog)" column (I).
+- Recommendation:
+  - If dividing by zero is expected (missing calibration or intentionally zero), wrap the division to avoid the error and make intent explicit, e.g.:
+    - =IF($Hn=0,"", $Gn/$Hn) or =IFERROR($Gn/$Hn,"") or =IF($Hn<>0,$Gn/$Hn,"")
+  - Or, check upstream data to avoid zeros in H where they are not meaningful.
+
+3) Inconsistent date text / non-standard date strings
+- Some date columns contain strings that are not standard ISO/Excel dates. These are likely typos and will prevent Excel from treating them as dates.
+- Examples:
+  - Lens 20: E8 has the text "10/*1/95" — looks like a typo.
+  - Lens 25: E8 has "5./15/99" (non‑standard formatting/extra period).
+  - Lens 16, Lens 28, others: there are a few cells where date values are plain text (not necessarily wrong) — but the two above look like mistakes.
+- Recommendation:
+  - Replace non-date text with real date values (YYYY-MM-DD or a recognized Excel date) or document why those entries are text.
+  - If string dates are intended, convert them to real dates (DATEVALUE or consistent formatting).
+
+4) Inconsistent handling of measured/calculated ratio (P column)
+- Pattern used in many sheets: P# = IF(O#/N# > 0.5, O#/N#, "")
+  - This shows the ratio only if it's > 0.5, otherwise blank.
+- Inconsistent example:
+  - Lens 28: P8 (and P9, P10) are simply =O8/N8 (no IF). They therefore always show a numeric ratio, even when similar rows on other sheets would be blank for small ratios.
+  - Coil/Lens other sheets: most use the IF form.
+- Why this is a problem: inconsistent UI/behavior across sheets — some rows show the ratio even when others are blank. If the IF gate is intentional (to hide low/invalid ratios), then cells without it are inconsistent.
+- Recommendation:
+  - Decide on a single rule for showing the measured/calculated ratio and apply consistently. If you want blanks for small ratios, change direct formulas to the same IF wrapper, e.g.:
+    - =IF(N8=0,"",IF(O8/N8>0.5,O8/N8,""))
+  - Also guard against N=0 with IF or IFERROR.
+
+5) Very large fractional deltas (likely caused by tiny denominators)
+- Example: Coil slope intercepts!W3 value is -2.0139... formula =(G3-$G$15)/$G$15 but $G$15 = -0.013709090909..., so small denominator results in very large fractional changes for modest numerator differences. That's not a formula bug, but be aware:
+  - If $G$15 is near zero (e.g. small negative average), fractional change is not a stable metric — it exaggerates differences.
+- Recommendation:
+  - Consider using absolute differences or only compute fractional delta when the baseline is sufficiently large:
+    - =IF(ABS($G$15)>some_threshold, (G3-$G$15)/$G$15, "")
+
+6) Inconsistent or unusual literal strings in date/label cells
+- A number of cells in date columns are textual ISO-like strings (e.g. "1991-04-12T00:00:00") — these are OK if intended, but inconsistent with other date cells that are proper Excel date values.
+- Recommendation:
+  - Convert consistently to Excel date/times to enable date math and sorting.
+
+7) Other small inconsistencies / observations
+- Many sheets use absolute references to the block constants ($D$3, $G$1, $G$2, $G$3) consistently — that's good. I did not see obvious reference-range typos other than the U5 issue noted.
+- Several cells contain a negative computed O value (peak current formula) that makes the IF condition blank (IF(O/N>0.5,"",...)). That is fine if intended, but worth checking if negative O values are expected (for example Lens 16 O25 is negative and P25 becomes blank).
+- A few sums and subtotals look redundant but not erroneous (e.g., many K# cells compute B#-B(previous) — correct as pulse increments).
+- Some cells use plain =O#/N# while others use =IF(O#/N#>0.5,O#/N#,"") — see item 4 above.
+
+Actionable checklist to fix/clean the workbook
+1. Fix the apparent typo:
+   - Coil slope intercepts!U5: change to =(E5-$E$15)/$E$15
+2. Add division guards to all formulas that do Gn/Hn (or any division) so they do not return #DIV/0!. Example template:
+   - =IF($Hn=0,"", $Gn/$Hn)  or =IFERROR($Gn/$Hn,"")
+   - Apply across all sheets where G/H is used (many I columns).
+3. Standardize the measured/calculated ratio rule:
+   - Choose either always show ratio or show only if > 0.5. Apply consistently to P columns (and fix the P8, P9, etc. that are plain O/N).
+   - Consider also protecting against N=0 (see point 2).
+4. Clean date fields that are plain text or malformed:
+   - Replace "10/*1/95", "5./15/99", "5./15/99", "10/*1/95" etc with proper Excel dates or consistent text if intended.
+5. Consider avoiding fractional-delta when the baseline average is very small (close to 0). Add a guard:
+   - =IF(ABS($G$15)>threshold, (Gn-$G$15)/$G$15, "n/a")
+6. Optionally: apply IFERROR around complex expressions that can produce domain errors (SQRT of negative, SIN of weird, etc.) if you expect invalid inputs sometimes.
+
+If you want, I can:
+- Produce a short list of every cell that currently returns #DIV/0! (I can scan all sheets and list exact addresses).
+- Produce a one-click patch (a list of exact formula edits) to fix Coil slope intercepts!U5 and normalize the P columns or wrap the Gn/Hn formulas with guards.
+- Convert problematic date text to proper Excel dates (if you tell me the intended dates).
+
+Which of these would you like me to do next?

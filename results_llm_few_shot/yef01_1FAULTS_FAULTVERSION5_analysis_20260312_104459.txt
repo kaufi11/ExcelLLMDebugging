@@ -1,0 +1,61 @@
+Summary — main problems found
+- Many formulas use wrong ranges (they include non‑existent rows like row 15 or 19) so totals omit or expect cells that aren’t there.
+- Several formulas contain manual “fudge” adjustments (+0.02, +0.03, -0.0001, -1, +0.01, +0.000002, -0.000001). These hide the real calculation problem and produce inconsistent / misleading totals.
+- Some cells are hard‑coded values where they should be formulas (and some formulas pull the wrong column). This causes inconsistent percent and FTEE calculations.
+
+Fixes (short, actionable) — change these formulas
+
+1) Sheet “Revenues by Source”
+- Problem: total formulas sum through row 15 but the data rows stop at row 14; C12 has “-1” tacked on.
+- Fix:
+  - C16 (Total $): =SUM(C10:C14)
+  - B16 (Total %): =SUM(B10:B14)
+  - Remove the “-1” in C12; enter the correct number (147577404) or use the intended formula without the -1.
+- Why: totals must sum exactly the rows that contain data. The stray “-1” is a manual adjustment and will misstate revenue.
+
+2) Sheet “Expenditures by Function”
+- Problem: total formulas use ranges down to row 19 (no row 19 data).
+- Fix:
+  - C20 (Total $): =SUM(C10:C18)
+  - B20 (Total %): =SUM(B10:B18)
+- Why: using the correct range ensures totals reflect the listed function rows only.
+
+3) Sheet “Expenditures by Category”
+- Problems: totals sum to row 15 but data rows stop at 14; B12 contains a manual subtraction “-0.0001”.
+- Fix:
+  - C16 (Total $): =SUM(C10:C14)
+  - B16 (Total %): =SUM(B10:B14)
+  - B12: remove the “-0.0001”. Use: =ROUND(C12/$C$16,4) (or =C12/$C$16 and format to 4 decimals).
+- Why: manual tiny adjustments produce wrong/perplexing percentage totals. Use ROUND (or cell formatting) for presentation only.
+
+4) Sheet “FTEE Calculation” (major corrections)
+- Problems:
+  - Many cells add small constants (+0.01) to totals, or have hard‑coded numbers instead of formulas.
+  - Totals C28, F28, H28, I28 have +0.02/+0.03/-0.02/+0.000002; these are manual fudges.
+  - Some rows compute percent using values coming from other sheets (wrong column used).
+- Fix (standardize the logic for each college row, copy down):
+  - Credit FTEE (column C): =B12/24
+  - Non‑credit FTEE (column F): =E12/600
+  - Total FTEE for the college (column H): =C12+F12
+  - Percent of total FTEE (column I): =H12/$H$28
+  - Totals:
+    - B28: =SUM(B12:B27)
+    - C28: =SUM(C12:C27)
+    - F28: =SUM(F12:F27)
+    - H28: =SUM(H12:H27)
+    - I28: =SUM(I12:I27)  (or =1 if you want the sum to be exactly 100% and formatting controls decimals)
+  - Remove all +0.01, +0.02, +0.03, -0.02 and tiny adjustments and replace hard-coded numbers with the formulas above.
+- Why: credit and non‑credit FTEE should be computed from hours using fixed divisors (24 and 600), total is the sum of those two numbers, and percent of total should be each college’s total divided by the grand total. Manual constants distort the results and create circular or inconsistent totals.
+
+5) General guidance for all sheets
+- Never use tiny manual adjustments to “force” totals to sum to 100% or a round number. Instead:
+  - Compute exact shares (raw = value / grand_total).
+  - Display rounded values using ROUND for display only: e.g., =ROUND(raw,4) or set cell number format to show 2–4 decimals.
+  - If you must force the printed percentages to sum to exactly 100% after rounding, compute all but one row as rounded and set the final row =1 - SUM(other rounded rows) — do that intentionally and document it.
+- Replace any hard-coded numbers with formulas that reference source cells so the sheet remains auditable and updates correctly.
+
+If you want, I can:
+- Provide an exact list of corrected cell formulas copied into the workbook for each row, or
+- Generate corrected formulas for the FTEE sheet specifically (it has the most inconsistencies) and show how to make the last row adjust for rounding.
+
+Which would you prefer?

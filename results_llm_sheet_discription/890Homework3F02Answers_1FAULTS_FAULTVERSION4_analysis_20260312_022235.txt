@@ -1,0 +1,36 @@
+Summary — I found 3 real formula errors (plus one conceptual IRR warning). Fixes and short explanations below.
+
+1) Q1 — typo in one discounted‑CF formula (causes wrong NPV at that rate)
+- Where: Sheet "Q1", cell E19 (row where J19 = 0.05).
+- Error: formula uses 1 - $J19 instead of 1 + $J19:
+  Wrong: =$E$2/(1-$J19)^$E$1
+- Fix: change to
+  Correct: =$E$2/(1+$J19)^$E$1
+- Why: discounting must use (1 + rate)^period. The minus sign makes that single discounted cash flow wrong and distorts the NPV profile and any conclusions drawn at that rate.
+
+2) Q2 — mis‑shifted (copy/paste) references in Tax‑Loss Carryforward formulas
+- Where: Sheet "Q2"
+  a) Cell E46 (Tax Loss Carry Forward, no‑depr / first block)
+  b) Cell E70 (Tax Loss Carry Forward, with‑depr / second block)
+- Error: E46 and E70 reference column D ranges instead of their own column:
+  Example wrong: E46 = IF(D47=0, SUM(D45:D47), 0)
+- Fixes:
+  - E46 should be: =IF(E47=0, SUM(E45:E47), 0)
+  - E70 should be: =IF(E71=0, SUM(E69:E71), 0)
+- Why: the formulas were copied across but left pointing to the previous column, so the tax‑loss carryforward is computed from the wrong column and will produce incorrect taxable income / tax / cashflow results for that year.
+
+3) Q1 / Q1 c‑d — IRR ambiguity (not a formula bug but important)
+- Where: Sheets "Q1" and "Q1 c-d"
+- Issue: Cash flows change sign more than once -> multiple IRRs exist. Excel's IRR() returns one root (depends on guess) which can be misleading.
+- Advice / Fix:
+  - Use the NPV profile (you already compute NPVs across many rates) to identify all sign changes of NPV and find all roots visually.
+  - To find other IRR roots use IRR(range, guess) with different guesses or use Goal Seek/Solver to find additional rates where SUM(discounted CFs)=0.
+  - Prefer the NPV rule (choose discount rate = WACC) rather than IRR when cash flows have multiple sign changes.
+
+Quick general recommendations to avoid copy/paste errors
+- When you fill the same formula across columns, use relative/structured references (e.g., =D$2/(1+$J4)^D$1 copied across) or fill‑right instead of manual editing.
+- Use named ranges for the rate and period (e.g., rate_cell, period0) so copying cannot shift references.
+- Use Excel’s Trace Precedents / Evaluate Formula to check suspicious results.
+- After fixes, recalc and replot the NPV profile to confirm monotonicity/multiple roots are due to economics (CF signs) not sheet errors.
+
+If you want, I can give the exact corrected formulas for any other specific cells or produce a small macro/text you can paste to correct all mis‑referenced cells at once.

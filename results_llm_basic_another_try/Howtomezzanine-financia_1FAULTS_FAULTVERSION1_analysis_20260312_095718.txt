@@ -1,0 +1,46 @@
+Errors found:
+
+1. **Rules of thumb sheet:**
+   - Cell B30 formula: `=+B19*B15/B4`
+     - B30 is labeled "Annual operating profit for CAN" per sq ft, but dividing by B4 (space per desk) is incorrect because B15 is already "Total cost per desk" (B4 * B14). Dividing by B4 again distorts the units.
+     - **Error:** Incorrect unit calculation leading to wrong profit per sq ft.
+
+2. **Mezzanine financial model sheet:**
+   - Cells C37 and F37:
+     - C37 formula: `=SUM(C12:C35)*0.9`
+       - This applies a 10% discount on total costs without explanation or input cell for discount.
+     - F37 formula: `=C37+SUMPRODUCT(C12:C35,F12:F35)`
+       - This adds C37 (discounted total) plus a weighted sum of costs times markups (F12:F35). This double counts costs because C37 already sums costs.
+     - **Error:** Double counting costs in total charge calculation.
+
+3. **NPV calculation in B85:**
+   - Formula uses multiple IFs to include F80 (Operating Profit) for years 1 to 10 depending on lease length.
+   - However, NPV function expects a range of cash flows, not repeated same value.
+   - **Error:** Using repeated F80 instead of an array of cash flows for each year; also, NPV does not include initial investment subtraction correctly (should subtract initial investment after NPV).
+
+---
+
+**Solutions:**
+
+1. **Rules of thumb B30 fix:**
+   - Change formula in B30 to: `=B19*B15`
+   - Explanation: Annual operating profit per desk = markup % * total cost per desk. No division by space per desk needed.
+
+2. **Mezzanine model total charge fix:**
+   - Change C37 formula to: `=SUM(C12:C35)`
+   - Change F37 formula to: `=C37 + SUMPRODUCT(C12:C35, F12:F35)`
+   - Or better, if F12:F35 are markups, total charge should be: `=SUM(C12:C35 * (1 + F12:F35))`
+   - Explanation: Avoid double counting by summing costs with markups once.
+
+3. **NPV calculation fix:**
+   - Use a range of cash flows for each year, e.g., create a column with yearly profits (F80) repeated for the lease length.
+   - Then use: `=NPV($C$69, range_of_yearly_profits) - initial_investment`
+   - Explanation: NPV function discounts a series of cash flows; repeating same value with IFs is inefficient and error-prone.
+
+---
+
+**Summary:**
+
+- Fix B30 formula to remove division by B4.
+- Correct total charge calculation to avoid double counting costs and markups.
+- Revise NPV calculation to use proper cash flow range and subtract initial investment outside NPV function.

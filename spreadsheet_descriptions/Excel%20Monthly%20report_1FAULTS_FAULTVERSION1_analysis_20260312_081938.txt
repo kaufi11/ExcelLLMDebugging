@@ -1,0 +1,32 @@
+Summary — workbook structure
+- Sheets: Sheet1 (main), Sheet2 and Sheet3 (present but no details provided).
+- Sheet1 title: A2 = "Monthly Operation Statistics". Month and Year input at I3 and K3.
+- Main table starts at row 7: headers in A7:M7:
+  - A: Day, B: Date, C: Total #, D–M: service categories (Homework, Job Search, Games, Internet, College, Business, Class, New, Web Design, Other). D6 also labeled "SERVICES".
+- Row 8 has two sublabels: K8 = "member", L8 = "Specialist".
+- Rows 9–39 are day rows for days 1–31 (B9:B39 show day numbers 1–31). These are the per-day service counts.
+- Row 40 is the TOTAL row (A40 = "TOTAL") intended to sum each column.
+
+Formulas and key values (notable entries)
+- Many per-day service cells (D9:M39) appear intended to hold counts, but the provided formula list shows most cells set to simple SUM formulas that reference a single cell (e.g., F9 =SUM(E9), G9 =SUM(F9), etc.). These create chains rather than real sums of input ranges.
+- E9 = SUM(E42) — references E42 (outside the data block) and is likely incorrect.
+- J19 = COUNT(I19) — inconsistent with other rows (others use SUM).
+- Row 40 (totals) mostly uses column sums (C40 = SUM(C9:C39), D40 = SUM(D9:D39), E40 = SUM(E9:E39)), but several totals are wrong/cascading:
+  - F40 = SUM(E40), G40 = SUM(F40), H40 = SUM(G40), etc. — these reference other total cells rather than summing their own column ranges and create a cascading/circular dependency.
+- Many per-row formulas (e.g., F10 = SUM(E10)) are incorrect if the intention is to use direct daily input values; they simply mirror adjacent cells.
+
+Issues and recommended fixes (concise)
+1. Per-day service cells (D9:M39) should be direct numeric inputs (counts). Remove SUM-of-single-cell formulas.
+2. Day total (C9:C39) should be computed as =SUM(D9:M9) for each row.
+3. Per-service column totals in row 40 should be e.g. D40 = SUM(D9:D39), E40 = SUM(E9:E39), F40 = SUM(F9:F39), etc. — not SUM of other total cells.
+4. Fix E9 (SUM(E42)) to either be direct input or reference the correct source range.
+5. Replace J19 = COUNT(I19) with SUM or a consistent aggregation unless COUNT was intentional.
+6. Check for any circular references introduced by totals referencing each other (e.g., F40 -> E40 -> …).
+
+Overall layout intent
+- Monthly tracker: each day lists service counts across categories; totals per day (column C) and totals per service (row 40) summarize activity. Month/Year fields likely for labeling or driving filters on Sheet2/Sheet3 (which appear empty/unspecified).
+
+If you want, I can:
+- Provide corrected formulas for each column/row,
+- Generate a cleaned version of Sheet1 with corrected formulas,
+- Or inspect Sheet2/Sheet3 if you upload their contents.

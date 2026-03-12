@@ -1,0 +1,46 @@
+Breve descrizione struttura e contenuti (concisa)
+
+Panoramica generale
+- Flusso logico: immissione dati → foglio calcoli (converte/valida) → tabella master (db) → fogli di visualizzazione/statistiche. Parametri e SetPar contengono lookup e gestione GEV; Help e Home forniscono informazioni e comandi.
+- Funzioni principali usate: INDEX, IF, SUM, COUNT/COUNTA, HOUR/MINUTE (calcolo durata), CONCATENATE. Sono presenti macro (avviso in Home C19).
+
+Foglio: Home
+- Pagina principale/etichetta: mostra nome gruppo (F3/F4/D6 prende parametri!I8/SetPar!E5), versione e autore.
+- Riepilogo numerico: N° servizi = calcoli!B60 (G21→G21 formula =calcoli!B60), N° GEV = calcoli!B61 (I21).
+
+Foglio: immissione dati
+- Maschera di inserimento nuovo servizio (giorno/mese/anno, ora inizio/fine, tipo servizio, elenco fino a 5 GEV, sanzioni/segnalazioni, km, auto).
+- Controllo orario in F16: IF(calcoli!F15>calcoli!E15,"","Attenzione: orario fine servizio inferiore ora inizio!").
+
+Foglio: calcoli
+- Trasformazioni/validazioni: legge immissione dati (A15 formula = 'immissione dati'!D6, varie INDEX per ore/tipologie), calcola durata G15 = (HOUR(F15-E15)*60+MINUTE(...))/60 e altri campi.
+- Determina quali record includere tramite filtri (AD/AE/AF... colonne booleane) e produce righe pronte per inserimento in db (AJ:BL con IF($AI16,...)).
+- Sommatorie temporanee per singola GEV e per gruppo (es. B60 = COUNTA(db!A3:A4) in calcoli!B60, B61 = COUNTA(parametri!A1:A4)-1 in B61).
+- AC15 mappa tipo servizio in categoria aggregata con IF annidati.
+
+Foglio: db
+- Tabella master (righe di servizi) con colonne dettagliate: numero RL, giorno/mese/anno, ora in/ora fin, h serv, tipo servizio, 5 colonne GEV, indicatori di sanzioni/segnalazioni, auto, km, tipo servizio aggregato, campi filtro/messi in TEMP/FILTRI.
+- Contiene anche aree helper (MASTER / FILTRI / TEMP) e colonne duplicate per filtri/visualizzazioni.
+
+Foglio: visualizza_singolo
+- Statistiche mensili e annuali per una singola GEV: tabella mesi (n° servizi, ore, n° sanzioni) e riepilogo annuale per tipi di servizio. Valori precompilati/collegati a calcoli/db (es. celle F17-F26, etc.). Include grafici placeholder.
+
+Foglio: visualizza_gruppo
+- Statistiche totali del gruppo per mese e tipologie (vigilanza, scuole, attività particolari, riunioni, totali). Per ogni mese somma per tipo; colonne P/Q/R calcolano totali per mese (es. P7 = C7+F7+I7+L7; Q7 = D7+G7+J7+M7; R7 = E7+H7+K7+N7).
+- Righe "anno" con SUM mensili (es. C20 = SUM(C7:C18) ... Q20 = SUM(Q7:Q18)). Include grafici placeholder.
+
+Foglio: parametri
+- Lookup principali usati ovunque: elenco orari (B8:B55), codici tipo servizio e descrizioni (C8:C20), giorni numerici (D8:D38), mesi (E8:E19), anni (F8:F11), tipi servizio aggregati (G8:G11). Cell I8 rimanda al nome gruppo (SetPar!E5).
+
+Foglio: SetPar
+- Gestione parametri utente: inserimento nome gruppo (E5 → parametri!I8), aggiungi/rimuovi GEV. Serve per personalizzare liste usate da parametri e calcoli.
+
+Foglio: Help
+- Istruzioni d’uso, avvisi su protezione fogli e uso macro, contatti autore.
+
+Note operative e collegamenti chiave
+- I dati inseriti in "immissione dati" passano a "calcoli" tramite riferimenti e vengono filtrati/formatati per essere inseriti nella tabella "db".
+- I fogli di visualizzazione (visualizza_singolo / visualizza_gruppo) leggono da db e calcoli per popolarsi; le somme annuali/mensili sono realizzate con SUM/COUNT su colonne del db.
+- Contatori globali: calcoli!B60 (numero servizi via COUNTA su db!A3:A4) e calcoli!B61 (numero GEV via COUNTA su parametri!A1:A4 -1) sono mostrati in Home.
+
+Se vuoi, posso: 1) mappare precisamente dove vengono scritti i nuovi record nel foglio db; 2) verificare formule con valori campione; 3) suggerire semplici miglioramenti (es. evitare formule con ++ o protezione fogli).

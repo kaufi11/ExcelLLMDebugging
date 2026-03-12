@@ -1,0 +1,39 @@
+Summary — main problems found
+1) Many formulas only read rows 3:4 of the database (db!…3:4). That means all your totals/counters use only the first two data rows and ignore the rest of the DB — this is the primary logical/omission error.  
+2) A hard-coded value: calcoli!F39 is set to =1 (looks accidental) and will give a wrong annual total.  
+3) Cosmetic / possible typo: several formulas in visualizza_gruppo use "D7++G7+…" (double plus). Excel accepts it, but it’s sloppy and should be cleaned.
+
+Why these are errors (short)
+- Using db!…3:4 (or other tiny ranges) limits sums/counts to only two rows — real DB will have many more rows, so statistics are wrong.  
+- Hard-coded 1 in F39 breaks the annual aggregation.  
+- "++" is not an error for calculation but is confusing and may hide real mistakes.
+
+What to change (concrete fixes)
+Replace the small 3:4 ranges with full-column ranges (or with a realistic full data range / a proper Excel Table). Examples:
+
+- Monthly / temporary sums that read AP3:AP4, AP3:AP4 etc:
+  - Replace =SUM(db!AP3:AP4)  → =SUM(db!AP:AP)
+  - Replace =SUM(db!AX3:AX4)  → =SUM(db!AX:AX)
+  - Replace =SUM(db!BK3:BK4)  → =SUM(db!BK:BK)
+  (Do the same for all similar formulas that use ...3:4.)
+
+- Counters and counts:
+  - Replace =COUNTA(db!A3:A4)  → =COUNTA(db!A:A)-1
+    (Assumes header in row 2; adjust the -1 if you have a different header row.)
+  - Replace =COUNT(db!AN3:AN4)  → use COUNT or COUNTA on the whole column depending on data:
+    - If AN contains numbers: =COUNT(db!AN:AN)
+    - If AN contains text/non-numeric: =COUNTA(db!AN:AN)-1
+
+- Fix the hard-coded total:
+  - Replace calcoli!F39 =1  → =SUM(F26:F37)
+
+- Clean up the double plus signs (optional tidy):
+  - Replace formulas like =D7++G7+J7+M7  → =D7+G7+J7+M7
+
+Better long‑term (recommended)
+- Convert the db sheet to an Excel Table (Insert → Table). Then use structured references (e.g., =SUM(Table1[AP])) so formulas automatically expand as you add rows. This is the safest and cleanest approach.
+- Use consistent header rows and avoid hard-coded row-limits.
+
+If you want, I can:
+- Produce a list of every specific cell/formula in the file that uses a 3:4 range (so you can replace them), or
+- Give the exact replacement formulas for each faulty cell. Which would you prefer?

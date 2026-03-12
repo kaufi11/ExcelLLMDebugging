@@ -1,0 +1,26 @@
+Summary — two errors found:
+
+1) Many ATAN2 angle formulas have the arguments reversed.
+- Problem: the sheets use ATAN2(Gx,Hx) and ATAN2(Kx,Lx) (and similar uses like ATAN2(B28,B29)). For angle of a phasor with Real = R and Imag = X you must compute atan2(Imag, Real). In your sheet you passed (Real, Imag) so the angles are wrong (off by 90° signs and quadrants).
+- Fix (pattern): replace ATAN2(Gn,Hn)*180/PI() with ATAN2(Hn,Gn)*180/PI() and replace ATAN2(Kn,Ln)*180/PI() with ATAN2(Ln,Kn)*180/PI().
+- Example corrections:
+  - J4 should be: =ATAN2(H4, G4)*180/PI()
+  - N4 should be: =ATAN2(L4, K4)*180/PI()
+  - B32 should be: =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*COS(ATAN2(B29,B28)-ATAN2(B31,B30))
+  - B33 should be: =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*SIN(ATAN2(B29,B28)-ATAN2(B31,B30))
+
+Why: Excel expects the imaginary (y) then the real (x) when you want the phasor angle; the current order gives a wrong quadrant and magnitude for the computed angle.
+
+2) Typo / wrong expression in G43
+- Problem: G43 is inconsistent with every other G cell. It currently reads something like:
+  ($B$6/1000/E43 - $B$14/$B$24/F43)/1000
+  which divides by E43 and F43 instead of multiplying — wrong units and wrong math.
+- Fix: make G43 match the pattern used everywhere else:
+  G43 should be: =($B$6*1000*E43 - $B$14*$B$24*F43)/1000
+
+Quick remediation steps
+- For the ATAN2 fixes: go through columns J and N (and any cell where you used ATAN2 with a real then imag order) and swap the two arguments. Also fix B32 & B33 as shown.
+- For G43: edit that cell and paste the corrected formula above.
+- After edits, verify by checking one known case (e.g., real=1, imag=0 should give angle 0°).
+
+If you want, I can produce a small VBA macro to automatically find all ATAN2(...) uses and swap their two arguments, and fix G43 automatically — tell me if you want that.

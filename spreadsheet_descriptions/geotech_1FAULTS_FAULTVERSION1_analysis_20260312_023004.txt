@@ -1,0 +1,51 @@
+Summary of workbook structure and logic (concise)
+
+Sheets
+- input-output (primary user sheet)
+  - Lists courses (col C), a selection flag column (col D contains "x" for courses to include), course codes/details in cols E–F, and per-outcome target values in col J (e.g., J5=106.2, J6=72, J7=27, J8=7.2, ...).
+  - Rows H:I/J: H pulls outcome labels from Data Analysis (H3.. etc); I pulls Outcome Totals from Data Analysis (I3..I46). K contains comparison formula =IF(I#>J#,"Over","Under").
+  - I48 is a user toggle "Include all extents ? Y/N" (default y). O49 displays a message based on I48 (IF(I48="Y", "INCLUDES ALL EXTENTS","ONLY CONSIDERS 4 AND 5 EXTENTS")).
+  - I52 = SUM of selected outcome totals (I5+I9+I10+...); J52 = SUM of the corresponding target values. These are used to compare achieved vs target totals.
+  - Many cells in row M..S and T.. beyond pull individual course-category labels from Data Analysis (e.g., M3..S3 use Data Analysis CO3..CU3).
+
+- Data Analysis (calculation engine)
+  - Header maps course columns to course codes (D1: AL1, many columns); row 2 pulls selection flags and small metadata from input-output (e.g., D2='input-output'!D10 etc., many columns map to input-output D# or F#).
+  - Rows 3–46 implement the assessment model. For each outcome/criterion:
+    - Two computed totals per row:
+      - CL# (e.g., CL5) = SUM(AU#:CI#): sum of contributions of selected courses (AU:CI are per-course contributions — zero if the course is not selected).
+      - CM# (e.g., CM5) = conditional-sum only counting contributions >=4 (constructed as long SUM of IF(AU#>=4,AU#,0)+ ...). This represents the "only consider extents 4 & 5" mode.
+    - B# on each outcome row chooses which total to show depending on input-output!I48: e.g., B5 = IF('input-output'!$I$48="Y", CL5, CM5).
+    - C# computes ratio to overall total B46 (C# = B# / $B$46). B46 is the grand sum of the major section totals (B4 + B8 + B9 + B20 + B30 + B37 + B41 + B42 + B43 + B44 + B45).
+  - Course-weight helpers:
+    - Columns AU:CI on each outcome row are set by IF(course-flag="x", course rating value, 0). Rating values (D#..AL#) are hard-coded numeric scores (1–5) by course/outcome in the sheet.
+    - CX3:EI3 (and similar) contain fractional credit/weight equivalents for fundamental/background categories; EJ3 (and EJ4) = SUM of those fractions (used to compute total course equivalences).
+  - Category labeling: Many CP/CO/CR/… cells generate human-readable category/course labels using IF on selection flags (e.g., CP3 = IF(D2="x","CE 1030","(no CE 1030 )")) and similar for structural, geotech, etc.
+  - Several summary blocks (A64:A87, B64:B87, C77:C87) copy important ratios and totals (e.g., B64 = C45, A71..A74 map to specific outcome names). These provide a compact summary of the computed outcome ratios and totals.
+
+Key formulas & logic patterns
+- Selection-driven inclusion: IF(course_flag="x", course_rating, 0) populates AU:CI; aggregates then compute per-outcome sums.
+- Two aggregation modes:
+  - CL# = SUM(all included course contributions)
+  - CM# = SUM(only included contributions >=4) — implemented as long SUM of IF(cell>=4,cell,0) terms
+  - B# chooses CL# vs CM# via IF(input-output!I48="Y", CL#, CM#)
+- Comparisons to targets: input-output K# = IF(I# > J#, "Over","Under")
+- Totals: I52 sums selected outcome totals; J52 sums target values; B46 is grand total across main sections.
+
+Important control & output cells
+- input-output!D# — course selection flags ("x") — primary control for what's included.
+- input-output!I48 — mode toggle (Y = include all extents; N = only count 4 & 5).
+- input-output!I# — Outcome totals (linked from Data Analysis B#).
+- input-output!J# — Targets (manual numbers).
+- input-output!K# — Over/Under comparisons.
+- Data Analysis CL# and CM# — row-level aggregates (all-extents vs 4&5-only).
+- Data Analysis EJ3 / EJ4 — summed weighted course equivalents for fundamental/background courses.
+- Data Analysis B46 — denominator used to compute C# ratios.
+
+Overall layout / flow
+1. input-output: user marks courses with "x" and sets include-mode (I48) and targets (col J).
+2. Data Analysis reads those flags and per-course rating matrix, computes AU:CI contributions, then CL# and CM# aggregates for every outcome/criterion.
+3. input-output pulls outcome totals and displays comparisons (Over/Under) and group totals (I52 vs J52). Summary block at bottom (A64:A87, A77:A87) collects key ratios and totals for reporting.
+
+If you want, I can:
+- Produce a simplified diagram of dependencies, or
+- Extract the key summary values (current I52, J52, Over/Under counts, B46, EJ3/EJ4) if you provide the course-selection flags currently in column D (or the workbook file).

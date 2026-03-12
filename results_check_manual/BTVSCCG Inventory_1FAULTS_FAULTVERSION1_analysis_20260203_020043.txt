@@ -1,0 +1,45 @@
+I checked the workbook. The formulas are logical (E = limited+unlimited, F = first‑patrol, G = foil limited+foil unlimited, H = E+F+G). The actual problem is inconsistent data entry: some cells that must be formulas were overwritten with constants (so totals stop updating) and some numeric counts were put into the wrong columns.
+
+What I found (examples)
+- Pergamum Prophecy row 170: F170 is not the expected formula (=SUM(K170)) — it contains a literal 4. The sheet shows "F170: FORMULA =4" (i.e. a manual value instead of the formula). That breaks the H total if K170 is later changed.
+- Many other rows show the same pattern in E/F/G/H: those columns are supposed to contain formulas but some rows have had those formulas overwritten with numbers.
+- Possible secondary issue: some counts may be entered as text (e.g. "8" stored as text) which SUM will ignore.
+
+Why this is wrong
+- E/F/G/H are calculated fields. If you or someone types a number there, the live calculation is lost and totals won't update when you change the input columns (I,J,K,L,M).
+- Numbers-as-text cause SUM to return wrong/zero values.
+
+Quick solutions (safe, short)
+1. Fix the specific bad cell (example)
+   - Go to Pergamum Prophecy → row 170:
+     - Move the 4 into the input column for first patrol (K170), OR
+     - Restore F170 to the formula: =SUM(K170)
+   - After that H170 will update automatically (H170 = E170 + F170 + G170).
+
+2. Find and repair all overwritten formulas (recommended)
+   - On each sheet select columns E:H (these should be formulas).
+   - Home → Find & Select → Go To Special → Constants. Excel will select any cells in E:H that contain manual values.
+   - For each selected cell either:
+     a) Move the value into the appropriate input column (I,J,K,L or M) and restore the formula in E/F/G/H, OR
+     b) Replace the cell with the original formula:
+        - E row n: =SUM(I n:J n)
+        - F row n: =SUM(K n)
+        - G row n: =SUM(L n:M n)
+        - H row n: =SUM(E n:G n)
+        (You can enter formulas for the first row and then fill down.)
+
+3. Convert text-numbers to real numbers
+   - Select I:M, Data → Text to Columns → Finish (this quickly converts numeric text to numbers), OR multiply the selection by 1.
+   - To detect: use =ISNUMBER(cell) or conditional formatting for text values.
+
+4. Prevent it happening again
+   - Protect formula columns (E:H): Review → Protect Sheet (lock formula cells, leave input columns unlocked), or
+   - Use data validation to forbid typing in E:H (or add a note/header).
+
+One-line checklist you can run now
+- On each sheet: Select E:H → Go To Special → Constants. If any cells are found, fix them as above.
+- Convert numeric text in I:M to numbers (Text to Columns).
+
+If you want, I can:
+- Give a one‑click VBA macro to automatically restore E:F:G:H formulas for every used row and report rows that have constants, or
+- Scan the workbook and list every cell in E:H that is not a formula (I can produce the exact list). Which would you prefer?

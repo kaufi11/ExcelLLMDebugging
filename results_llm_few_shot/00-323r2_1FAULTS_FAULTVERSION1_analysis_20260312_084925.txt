@@ -1,0 +1,36 @@
+Findings — clear errors and easy fixes
+
+1) Fault: L30 is hard-coded to 1 (L30 = 1) while J30 and K30 use C30
+- Why it’s wrong: J30 and K30 pull the Two x trace skew from C30 (0.4). L30 = 1 breaks consistency across the three columns and propagates a wrong value into every L‑column formula that uses L30.
+- Fix: replace the 1 with =C30 (or =$C30).
+- Effect: all L‑column results that depend on L30 will match the J/K columns (removes the single-cell inconsistency).
+
+2) Fault: C36 value inconsistent with note (H36 says “Should be listed as 1” but C36 = 2)
+- Why it’s wrong: the comment/intent says ISI Compensation should be 1, but the sheet currently uses 2. That inflates compensation totals (C38, J38, etc.) and post‑compensation errors.
+- Fix: change C36 to 1 (and any copied J36/K36/L36 will update if they reference C36).
+- Effect: lowers the compensation total and corrects post‑compensation error numbers.
+
+3) Fault: C31 appears incorrect relative to the note (H31: “Should be listed as 2”, but C31 = 4)
+- Why it’s wrong: the comment indicates the ISI term should be 2 (not 4). Using 4 doubles this ISI contribution and inflates many downstream totals (J31/K31/L31, totals).
+- Fix: set C31 = 2 if the note is authoritative.
+- Effect: halves the ISI contribution and fixes all dependent sums.
+
+4) Possible / likely fault: C24 (Data delay tolerance) is 0 while H24 says “Was 0.5”
+- Why it matters: if the original value was 0.5, setting it to 0 removes a known non‑compensatable term and underestimates total error.
+- Action: confirm whether C24 should be 0.5; if yes, change C24 = 0.5 and update sums.
+
+5) General consistency / double counting flags
+- There are several “Double counting” notes in D12, D14, D18. Also some terms appear both in transmitter and receiver sections. That can cause the same physical effect to be included twice.
+- Fix / audit: review each summation (P12, P13, P14, P21, P22, P17, P18, P23, P25 etc.) to ensure each physical contributor is included once and split correctly between Tx/Rx where intended. Remove duplicates or split terms (e.g., half to Tx, half to Rx) consistently.
+- Tip: add comments in cells where a term is intentionally split, and use absolute/anchored references ($C9 or $C$9) consistently so copying formulas doesn’t introduce accidental double counts.
+
+How to implement quickly
+- Change L30 from 1 to =C30
+- Change C36 from 2 to 1 (if that matches the note)
+- Change C31 from 4 to 2 (if that matches the note)
+- Verify C24 and set to 0.5 if the note “Was 0.5” applies
+- Recalculate sheet and then scan totals: C38, C39, C40, C41 and the analogous J/K/L columns — they should change after the fixes. If totals still look off, trace any duplicated references in the summed formulas (SUM ranges / explicit subtractions).
+
+If you want, I can:
+- Give the exact list of formulas that will change after these fixes, or
+- Recompute the main totals (post‑fix) and show the corrected numbers — tell me which fixes you want applied and I’ll produce the corrected results.

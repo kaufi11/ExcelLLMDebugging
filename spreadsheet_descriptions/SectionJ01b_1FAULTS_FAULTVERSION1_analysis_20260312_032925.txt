@@ -1,0 +1,56 @@
+Summary of workbook structure and key contents
+
+Overall
+- Purpose: LOE (level-of-effort) and pricing workbook for a small-business set‑aside procurement showing Base Period + Options 1–7 by labor category across three task‑order types: Fixed Price (1% LOE), Cost Type (29% LOE) and T&M/Labor‑Hour (70% LOE).
+- Common layout across sheets: Column A = Labor Category; Columns B = Base Period (hours or hours × rate); subsequent groups of 2–3 columns represent Options 1–7 (hours, rates/unit price/loaded rate, extended price).
+- Main calculation pattern: Option values cascade from the prior period with a +2% uplift per option (i.e., next = prior + prior*0.02). In several places the Option 4 step uses +2.3% (0.023) instead of 2% — see anomalies below.
+- Totals: Each sheet has a “Total” row summing the option columns, and a “Grand Total” aggregating across periods.
+
+Sheet-by-sheet
+
+1) Sheet: Total LOE
+- Purpose: Master hours by labor category (hours only).
+- Header rows with procurement notes and LOE mix: 29% Cost, 70% T&M, 1% FFP, 100% Total.
+- Columns: A = Labor Category; B = Base Pd; C–I = Opt.1–Opt.7 (hours).
+- Formula pattern: For rows with base hours, C = B + B*0.02, D = C + C*0.02, etc., cascading through I.
+- Populated base hours (examples): Biostatistician B14=1240; Computer Programmer I B18=6240; Computer Programmer III B20=10400; Data Analyst II B26=1040; Data Entry Operator I/II B31/B32=8320; Graphics Specialist B33=100; Program Director row B43=1040 (repeated across options as constants), Program Manager B44=4160 (constant), Systems Analyst II B50=12480, Sys Analyst III B51=1040, Task Manager B57=1040, Technical Automation Specialist B58=4160, Technical Info Specialist B59=6240, Tech Writer B60=400.
+- Totals: Row 68 sums each column (B68 = SUM(B14:B67), etc.). Grand Total B70 = SUM(B68:H68) (note: this sums B68:H68, not up to I68).
+
+2) Sheet: Fixed Price
+- Purpose: Fixed‑price task order hours/pricing (1% LOE).
+- Columns: A = Labor Category; B = Base Pd Hrs; C = Unit Price; D = Extended Price; then repeated groups for Opt.1–Opt.7 (Hrs, Unit Price, Extended Price).
+- Formula pattern: Option hours (E, H, K, N, Q, T, W) cascade from B with +2% per option; Option 4 (N) often uses +2.3% for that step as specified.
+- Totals: Row 59 sums E/H/K/N/Q/T/W ranges (E59 = SUM(E5:E58) etc.). A Grand Total row exists but formula not listed.
+
+3) Sheet: Cost Type Task
+- Purpose: Cost‑type task orders (29% LOE). Note: estimated cost should exclude indirects and fixed fee.
+- Columns: A = Labor Category; B = Base Pd Hrs; C = Hourly Rates; D = Extended Price; then groups for Opt.1–Opt.7 (Hrs, Hourly Rate, Extended Price).
+- Formula pattern: Option hours columns (E, H, K, N, Q, T, W) cascade same +2% step, with Option 4 using +2.3% at several rows.
+- Totals: Row 61 sums each option hours column (E61 = SUM(E7:E60), etc.). Grand Total row present but formula not specified.
+
+4) Sheet: T&M Type
+- Purpose: Time & Material / Labor Hour orders (70% LOE) using loaded labor rates.
+- Columns: A = Labor Category; B = Base Pd (hours); C = Loaded Rates; D = Extended Price; then groups for Opt.1–Opt.7 (Opt hrs, Loaded Rates, Extended Price).
+- Formula pattern: Option hours (E, H, K, N, Q, T, W) cascade using the same +2% pattern; Option 4 sometimes uses +2.3%.
+- Noted anomaly: K20 is explicitly given as K20 = 670 + (670*0.02) — a hard‑coded numeric source rather than relative propagation from prior column.
+- Totals: Row 60 sums base and all option totals (B60 = SUM(B6:B59), E60 = SUM(E6:E59), etc.). Grand Total B62 = SUM(B60:T60).
+
+5) Sheet: OPTION 4 J.25
+- Present in workbook list but no content included in the provided extract.
+
+Key formula patterns and noteworthy inconsistencies
+- Repeating pattern: Options = previous_option + previous_option*0.02 (2% cascade) across sheets.
+- Option 4 step: many N‑column formulas use +0.023 (2.3%) instead of 2% — intentional? (seen in Fixed Price, Cost, T&M at N#).
+- Hard‑coded numeric exception: T&M sheet K20 uses 670 base literal in formula rather than referring to preceding column.
+- Range mismatch: Total LOE B70 sums B68:H68 (omits I68) while totals rows elsewhere include up to option 7; verify intended range (should probably include I68).
+- Some roles in Total LOE (e.g., Program Director, Program Manager) have identical numeric values repeated across options (no cascade formula) — likely intentional fixed hours per option.
+
+Recommendations to review (brief)
+- Confirm whether Option‑4 uplift should be 2% or 2.3% consistently.
+- Replace hard‑coded K20 numeric reference with a relative formula to maintain consistency.
+- Verify grand‑total ranges (Total LOE B70 should likely sum across all option totals including column I).
+- Check whether any columns for rates/extended prices (Fixed Price/Cost/T&M) are missing formulas for extended price = hours × rate.
+
+If you want, I can:
+- Produce a cleaned checklist of every inconsistent formula/cell (with exact addresses), or
+- Provide corrected formulas for the anomalies (e.g., N‑column consistency, K20 fix, grand total range).

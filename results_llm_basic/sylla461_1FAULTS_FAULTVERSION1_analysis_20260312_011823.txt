@@ -1,0 +1,25 @@
+Summary — I found two clear errors (one bad formula, one wrong starting date). Fixes are quick.
+
+Errors
+1) Sheet "2000" cell B11 contains =B7+512. That +512 is a typo. It jumps the schedule far ahead and breaks every subsequent date in that sheet.
+2) Sheet "1999" cell B7 is 2000-08-22 (the 2000 start date) instead of the 1999 semester start date. The sheet was copied but the initial date wasn't updated, so the whole 1999 schedule is shifted to year 2000.
+
+Why these are wrong
+- The schedule is built by adding small day offsets (e.g. +2 for Tue→Thu, +1 for Thu→Fri, +4 for Fri→Tue). +512 is not part of that pattern and produces a date many months away.
+- If the seed date (first class) is the wrong year, all dates calculated from it are wrong even if the formulas are correct.
+
+How to fix (simple steps)
+1) Fix the 2000 sheet:
+   - Change B11 from =B7+512 to =B7+2 (A11 is TH so you add 2 days to the Tuesday in B7).
+   - Press Enter and verify the downstream dates correct themselves. If any later cells were manually overwritten, re-fill the correct formulas down the column.
+
+2) Fix the 1999 sheet:
+   - Replace B7 with the correct 1999 start date (the Tuesday start for that semester). If you want the same weekday alignment as the 2000 sheet, set B7 = 1999-08-24 (or your official semester start date).
+   - The rest of that sheet uses correct relative formulas (e.g. +2, +1, +4) so they will then produce the correct 1999 dates.
+
+Optional improvement (prevents this class-of-errors)
+- Instead of hard-coding offsets like +2 or +512 by hand, use a formula that adds days based on the Day code in column A (so a typo like 512 is less likely). Example pattern for each new row (assuming column A of the previous row contains "T","TH","F","W"):
+  =Bprev + IF(Aprev="T",2,IF(Aprev="TH",1,IF(Aprev="F",4,IF(Aprev="W",1)))) 
+  (Adjust mapping if your weekday transitions differ.) This centralizes the logic and reduces manual mistakes.
+
+If you want, I can give the exact fill-down formula using your Day codes or scan the workbook for other accidental large offsets like +512.

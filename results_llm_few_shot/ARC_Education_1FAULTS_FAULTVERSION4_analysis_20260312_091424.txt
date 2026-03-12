@@ -1,0 +1,51 @@
+I scanned the workbook and found several clear errors (formula range mistakes, wrong functions, data-entry/format issues, and inconsistent units). Below are the key problems, a short explanation for each, and the fix to apply.
+
+1) Sheet: Student-teacher (multiple years)
+- Problem A — BUFORD (row 15), cell E15 = 1.548  
+  - Why: Attendance values in this table are in the thousands; 1.548 is almost certainly a misplaced decimal (should be 1548).  
+  - Fix: Replace 1.548 with the correct value from source (likely 1548). If this came from a bad division, re-enter the original attendance number.
+
+- Problem B — TOTAL ratio missing / totals inconsistent (row 37)  
+  - Why: Totals for attendance/teachers exist, but the overall ratio cells are "**" or blank. The ratio should be TotalAttendance / TotalTeachers (students per teacher).  
+  - Fix (numeric ratio in M37 for year in K/L): =K37 / L37 (then format to one decimal). If you want the "x-1" text style used elsewhere: =ROUND(K37/L37,1) & "-1"
+
+2) Sheet: Student-teacher (1997–1999 block)
+- Problem — F56 uses COUNT instead of SUM (F56 =COUNT(F45:F55))  
+  - Why: COUNT returns the number of numeric cells (count of schools) not the total number of teachers.  
+  - Fix: Replace with =SUM(F45:F55)
+
+3) Sheet: University — Two-Year Colleges totals (row 15)
+- Problem — wrong sum ranges for many columns (C15..K15 use rows 5:14 instead of 12:14)  
+  - Why: The formula includes the four-year college rows (rows 5–8) so the two-year totals are wrong. Example: C15 =SUM(C5:C14) is wrong.  
+  - Fix: Change each formula to sum only the two-year rows 12–14:
+    - C15 =SUM(C12:C14)
+    - D15 =SUM(D12:D14)
+    - … through K15 =SUM(K12:K14)
+
+4) Sheet: Teachers With Advanced Degrees
+- Problem A — Later-year "Percent" cells show decimals (0.46903…) instead of percent format (46.9)  
+  - Why: Values are in decimal form (0.469…) while earlier percentages are shown as e.g. 50.9. This is an inconsistent unit/format issue.  
+  - Fix: Format those cells as Percentage (Format Cells → Percentage, set decimal places as needed). If the stored value is already 46.9 (not 0.469), do NOT multiply—only change format. If values are true decimals and you want the number 46.9, use =cell*100 and then format Number or Percent consistently.
+
+- Problem B — "Total No." columns contain fractional values (e.g., 1995.8, 1789.9)  
+  - Why: Totals of people should be integers; fractional results mean a formula produced a non-integer (e.g., percent * staff) and was not rounded.  
+  - Fix: Wrap those formulas in ROUND: =ROUND(<formula>,0) so counts become whole numbers (or use INT if you intentionally truncate).
+
+5) Sheet: State test (Readings & Math blocks)
+- Problem — many year-columns (columns D:K) have values on a very different scale (e.g., 57, 53, 43) while earlier years are ~200. Some cells contain "60?" or a question mark.  
+  - Why: The numbers in those columns are inconsistent with prior-year scores — either wrong dataset was pasted over these columns, or decimal/scale is incorrect. The "?" indicates manual annotation left in a cell.  
+  - Fix: Compare these columns against the original source and restore the correct numbers. Quick checks to find suspect cells: use a filter or formula to flag values outside an expected range, e.g. =OR(cell<100, cell>350) to identify likely errors. Remove any non-numeric characters like "?" and re-enter correct numeric values.
+
+6) Sheet: SAT
+- Problem — several SAT entries are implausibly small (examples: D10 = 99, D11 = 100, D5 or other cells = ** or small numbers). Most SAT scores should be ~800–1100 (for this sheet).  
+  - Why: Likely data-entry typos (missing leading digit(s)) or paste/format mistakes.  
+  - Fix: Review these small numbers against the source and correct them. To spot problem cells use: conditional formatting for values <700 (or another sensible threshold) to highlight suspicious entries.
+
+7) General / housekeeping suggestions
+- Replace text markers (**) with real blanks or NA() if needed; SUM treats blanks as zero, but text like "**" will break numeric checks and functions that expect blanks or numbers.
+- Use consistent formatting: percentages formatted as %; counts as integers; ratios either numeric (students per teacher) or text with "-1" suffix but don’t mix.
+- Add validation rules or conditional formatting to catch out-of-range values (e.g., attendance < 50 or > 1,000,000; SAT < 700 or > 1600 for this dataset) so future bad entries are flagged.
+
+If you want, I can:
+- Provide the exact corrected formulas for each affected cell (I listed the main ones above), or
+- Produce a small set of diagnostic formulas you can put on a helper column to highlight suspect rows (e.g., flag where values are far outside expected ranges).

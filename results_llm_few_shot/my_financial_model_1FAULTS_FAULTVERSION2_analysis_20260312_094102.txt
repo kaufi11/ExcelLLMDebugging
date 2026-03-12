@@ -1,0 +1,39 @@
+I found the main, clear errors that will produce wrong numbers. Short fixes and why they work below.
+
+1) Fault: Income!G3 — wrong growth factor
+- Problem: G3 = F3*(45+$D$3). The "45" is a typo; that multiplies production by ~45 instead of applying the growth rate.
+- Fix: =F3*(1+$D$3)
+- Why: use 1 + growth-rate (D3) to increase F3 by the percent in D3.
+
+2) Fault: Income!F8 (and G8:H8...P8) — wrong inflation reference for sugar price
+- Problem: These cells use $D$7 (lemon inflation cell) instead of $D$8 (sugar inflation), e.g. F8 = E8*(1+$D$7).
+- Fix (example for F8): =E8*(1+$D$8) — then copy across.
+- Why: you must reference the sugar inflation input (D8) so sugar price compounds by the correct rate.
+
+3) Fault: Income!E12:P12 (Total row) — totals omit street sales
+- Problem: E12 = SUM(E10:E10) (and analogues) only sums Online Sales; Street Sales (E11) is excluded.
+- Fix (example for E12): =SUM(E10:E11)  (or =E10+E11). Copy across.
+- Why: Total revenue must include both online (row10) and street (row11).
+
+4) Fault: Balance Sheet E20:P20 (Total Equity) — wrong sum range
+- Problem: E20 = SUM(E17:E19) — E17 is not the initial investment row; this incorrectly includes/misses cells.
+- Fix (example for E20): =SUM(E18:E19)
+- Why: Total equity should sum Initial Investment (E18) + Retained Earnings (E19).
+
+5) Fault: Balance Sheet cash running balance (E6:F6:…)
+- Problem: E6 is set to Cashflow!D13 (net change in cash) instead of an opening cash balance. Then subsequent cells add net changes to that, producing incorrect cumulative cash.
+- Fix:
+  - Put your opening cash as an input in E6 (e.g., a number or link to an "opening cash" input cell).
+  - Then set F6 = E6 + Cashflow!E13, G6 = F6 + Cashflow!F13, etc. (or use F6 = E6 + Cashflow!E13 and copy right).
+- Why: cash balance = prior period balance + that period's net change. Currently you were starting from net change, not an opening balance.
+
+6) (Pattern to watch) Many single-cell SUM ranges
+- Problem: formulas like SUM(E4:E4), SUM(E10:E10) appear a lot — sometimes OK (only one category) but often indicate a range-selection error (see E12 above).
+- Fix: review every SUM that looks like SUM(Xn:Xn). If it should total multiple rows, expand the range (e.g., SUM(E10:E11)). If it's intentionally a single-cell copy for consistency, you can leave it.
+
+How to apply quickly
+- Correct G3 and the sugar-price formulas first — they will immediately fix huge production/price distortions.
+- Fix Income totals (row12) next so revenue, gross profit, net profit flow correctly.
+- Then fix Balance Sheet equity and cash formulas so the statements reconcile.
+
+If you want, I can produce the exact corrected formulas for each affected cell (copy/paste ready) or check any other cell that looks suspicious. Which would you prefer?

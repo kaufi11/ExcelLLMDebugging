@@ -1,0 +1,38 @@
+I inspected the formulas in the workbook and found a few clear formula errors / inconsistencies and some places where formulas are fragile (hard-coded numbers). Summary with exact cell addresses and recommended fixes:
+
+1) C120: wrong reference / obvious error
+   - Current formula: =(50-$B$125)/$B$128
+   - Problem: it uses the literal 50 instead of the camera rating in B120 (B120 = 2.32). Resulting z‑score (56.70...) is nonsense.
+   - Fix: change to =(B120-$B$125)/$B$128
+
+2) D79: uses hard-coded constants instead of referencing computed cells
+   - Current formula: =(8.672/178)*100
+   - Problem: the formula uses rounded numeric constants rather than the standard deviation and mean cells. If the mean or stdev change this will not update.
+   - Fix: change to =(D75/D78)*100 (or =(D75/$D$78)*100 if different layout) — i.e. reference the STDEV cell and the Mean cell.
+
+3) F9 (mode) looks suspicious
+   - Current formula: =MODE(A8:A37) and displayed value is 0.
+   - Problem: 0 is not in the data shown and MODE should return either a value present in the range or #N/A if there is no single mode. A returned 0 is suspicious and indicates either:
+     - the dataset actually contains zeros, or
+     - some non-numeric/blank entries are causing an unexpected result, or
+     - an accidental overwrite of the cell value (not formula) with 0.
+   - Check: verify A8:A37 contains only the intended numeric data and that F9 really contains the formula (not a hard-coded 0). If there is no repeated value, consider showing a message like "no mode" or use IFERROR(MODE.SNGL(...),"no mode").
+
+4) Quartile / "1st quartile" / manual indices are inconsistent (cells around E22:E30 / E29/E30)
+   - Problem(s):
+     - E29 shows "1st quartile =" and the adjacent value is 7 (this looks like the i index or an accidental leftover value, not the quartile).
+     - E30 shows "3rd quartile =" with 70.4 which may or may not be the correct Q3 depending on how the sorted list is being indexed.
+     - The sheet mixes manual indexing/rounding steps (i = (25/100)*30 = 7.5 → i = 8) with hard-coded values instead of using Excel percentile/quartile functions, making the result error-prone.
+   - Recommendation/fix:
+     - Use built-in functions to avoid indexing errors: =QUARTILE.INC(A8:A37,1) for Q1 and =QUARTILE.INC(A8:A37,3) (or =PERCENTILE.INC(A8:A37,0.25) and 0.75) so results update automatically.
+     - Remove the stray numeric "7" (looks like the i index) from E29 and show the quartile value instead.
+
+5) Inconsistent use of literal numbers elsewhere (fragile formulas)
+   - Example: D79 already noted. Scanning the sheet there are a few places where literal constants are used in formulas (instead of referencing the cells that hold those values). This is brittle and can lead to incorrect results if upstream values change. Replace literals with cell references where possible.
+
+6) Minor check: MODE and quartile methods
+   - Note: Excel has multiple MODE variants (MODE, MODE.SNGL, MODE.MULT) and multiple quartile functions (QUARTILE, QUARTILE.INC, QUARTILE.EXC). Choose the one appropriate for your Excel version and the statistical definition you want, and be consistent across the sheet.
+
+If you want, I can:
+- produce suggested corrected formulas for each affected cell and the exact formula text to paste,
+- or run through the workbook and return a list of any cells that contain constants in formulas (so you can replace them with references).

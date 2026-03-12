@@ -1,0 +1,40 @@
+I scanned the "Activity Log" sheet formulas and found one clear formula error and a few inconsistencies / maintainability issues you should check. Summary (location, what’s wrong, effect, suggested fix):
+
+1) Cell Z19 — incorrect hardcoded value
+- Problem: Z19 contains the literal string/number "=5" (a constant) rather than the normal formula used in other rows (=Y19/F19).
+- Effect: That makes the attendance ratio in Z19 equal to 5 (>>1) and causes G19 (=(J19+P19+Z19)/3) to be 2.333333…, which is nonsensical for an attendance proportion (should be ≤ 1).
+- Fix: Replace the constant with the same formula used elsewhere:
+  =Y19/F19
+
+2) Missing or out-of-sequence AL11 (possible data omission)
+- Observation: In the exported row 11 data AL11 is not listed before AM11 (most rows have AL then AM). AM11 is =AL11/F11 and shows 0 in the export. This suggests AL11 might be 0 or the AL11 cell was omitted from the export.
+- Effect: If AL11 was accidentally removed/blanked the AM11 result could be wrong or ambiguous. If AL11 is intended to be present, confirm the attendance # in AL11.
+- Action: Verify AL11 actually exists and contains the intended attendance count. If missing, restore the value. If intentionally zero, no change needed.
+
+3) One obvious symptom caused by (1): G19 > 1
+- Because Z19 is wrong, G19 = (J19 + P19 + Z19) / 3 = (1 + 1 + 5)/3 = 2.3333. Attendance averages/proportions should be in [0,1]. Fixing Z19 will fix this.
+
+4) Hard-coded denominators and explicit IF chains — maintainability risks (recommendations)
+- Many cells use formulas like:
+  - Kn = (IF(Ln="x",1)+IF(Mn="x",1)+IF(Nn="x",1))/3
+  - Qn = (IF(Rn="x",1)+...+IF(Xn="x",1))/7
+  - AAn = (IF(ABn="x",1)+...+IF(AKn="x",1))/10
+  - An = (IF(AOn="x",1)+...+IF(AWn="x",1))/9
+- These work, but are fragile if columns are added/removed or you change the mark used other than "x".
+- Suggest simpler, less error-prone formulas using COUNTIF and explicit ranges, e.g.:
+  - Kn: =COUNTIF(Ln:Nn,"x")/COUNTA(Ln:Nn)  (or /3 if the numerator should always be out of 3)
+  - Qn: =COUNTIF(Rn:Xn,"x")/7
+  - AAn: =COUNTIF(ABn:AKn,"x")/10
+  - An: =COUNTIF(AOn:AWn,"x")/9
+- Using COUNTIF(range,"x") is easier to read and less likely to produce mismatches when columns change.
+
+5) Blank cells inside the IF chains (not errors, but check intent)
+- Several rows have blanks among columns used in the IF sums (for example Wn/Xn may be blank for some rows). The IF() constructs treat blanks as not equal to "x" so they return 0, which may be intended. Just call out to confirm blanks are intended and not accidental omissions.
+
+6) Division-by-zero check
+- Most division denominators are constants (3,4,7,9,10) or refer to Fn (e.g. =I#/F#). Ensure F# (the "pt positions" or denominator) is never zero to avoid #DIV/0! errors. In your file F is consistently 6 or similar, but it’s something to keep in mind.
+
+If you’d like, I can:
+- produce a list of every cell whose value is >1 or <0 (quick sanity-check),
+- generate corrected formulas (bulk replace) for the IF chains to COUNTIF versions,
+- or open and scan the workbook to verify AL11 and the actual Z19 cell and correct them automatically. Which would you prefer?

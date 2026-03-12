@@ -1,0 +1,80 @@
+Overview
+- Workbook models an aggregate production plan for 6 periods (Jan–Jun) with demand, cost parameters, decision-variable tables and cost/revenue summaries. Key outputs: total cost, total revenue and profit.
+
+Sheet-by-sheet summary
+
+Sheet1 (Aggregate Planning)
+- Top left: Demand Forecast table (A5:B11) — monthly demand Jan–Jun: 1600, 3000, 3200, 3800, 2200, 2200.
+- Costs table (A13:B24) — key parameters:
+  - Materials cost/unit = 10
+  - Inventory holding cost/unit/month = 2
+  - Marginal stockout cost/unit/month = 5
+  - Hiring & training cost/worker = 300
+  - Layoff cost/worker = 500
+  - Labor hours/unit = 4
+  - Regular time cost/hour = 4
+  - Overtime cost/hour = 6
+  - Subcontracting cost/unit = 30
+- This sheet is primarily a parameter input sheet referenced by other sheets.
+
+pricing (named sheet)
+- Layout:
+  - Left: decision-variable table (A3:K10) with columns for Ht (# hired), Lt (# laid off), Wt (workforce), Ot (overtime), It (inventory), St (stockout), Ct (subcontract), Pt (production), J = demand, K = price.
+  - Right (M1:P?) contains constraint-check formulas (workforce, production, inventory, overtime).
+- Initial/period values:
+  - Period 0: workforce 80, inventory 1000.
+  - Periods 1–6 show a plan with workforce ~64.5833 each month, production Pt = 2,583.3333 units each month, price = 40.
+  - Inventories and one stockout in period 4 (stockout = 266.6667) appear; inventory values vary per month.
+- Key formulas (per period):
+  - Workforce balance (M#): = Dn - D(n-1) - Ht + Lt
+  - Production check (N#): = 40*Wt + (Ot/4) - Pt  (40 = productivity factor: 8 hrs/day * 20 workdays / 4 labor-hours-per-unit)
+  - Inventory balance (O#): = previous inventory - stockout + Pt + subcontract - demand - inventory change + stockout (formula written as +Fprev - Gprev + I + H - J - F + G)
+  - Overtime relation (P#): = -Ot + 10*Wt  (seems to enforce a limit or relation)
+- Costs section (A12:I20):
+  - Per-period cost rows compute hiring, layoff, regular-time labor, overtime, inventory holding, stockout penalty, subcontracting, material cost.
+  - Examples:
+    - Hiring cost: = Sheet1!$B$19 * # Hired (hiring cost/worker * hires)
+    - Regular time: = Dn * Sheet1!$B$22 * 8 * 20  (workforce * regular hourly wage * 8hrs/day * 20 days)
+    - Material cost: = Pt * Sheet1!$B$16
+  - Totals:
+    - Total Cost (C22) = SUM(B15:I20)
+    - Total Revenue (C24) = SUMPRODUCT(J5:J10, K5:K10) — demand * price
+    - Profit (C25) = Total Revenue - Total Cost
+- Note: some cost formulas show anomalies (e.g., C15 = 519*Sheet1!$B$20) — likely typos (see inconsistencies below).
+
+Sheet2 (Alternative aggregate plan)
+- Similar structure to pricing sheet (decision variables A3:J10 and cost table A12:H20).
+- Initial values: workforce 80, inventory 1000.
+- Workforce is constant at 62 from period 1 onward; production Pt = 2,480 (periods 1–2) and 2,635 (periods 3–6); overtime = 620 in periods 3–6; inventory depleted mid-horizon with a stockout in period 4 = 370.
+- Cost table computes same cost categories as pricing sheet referencing Sheet1 cost parameters.
+- Totals:
+  - Total Cost (C22) = SUM(B15:H20)
+  - Total Revenue (C24) = SUM(J5:J10)*31 — this multiplies demand sum by 31 (unusual; likely an error vs. expected SUMPRODUCT(demand, price)).
+
+Sheet3 (Third aggregate plan)
+- Same decision-variable layout and constraints as other plan sheets.
+- Workforce varies: drops to 51.25 in period 2, back up later; production Pt = 2,050 (periods 1–2), 2,700–2,700 later; subcontracting and stockout used in period 4 (H8 = 600 subcontract, G8 = 500 stockout).
+- Cost table similar to others; material cost included.
+- Total Cost (C22) = SUM(B15:I20)
+- Total Revenue (C24) = SUM(J5:J10)*31 (again uses multiplier 31 rather than per-period price multiplication).
+
+Other sheets
+- Sheet4 through Sheet16 exist but are empty (no content listed).
+
+Key values and assumptions (central references)
+- Starting workforce: 80 (Sheet?/period 0)
+- Starting inventory: 1000 units
+- Monthly demands: Jan–Jun = 1600, 3000, 3200, 3800, 2200, 2200
+- Cost parameters on Sheet1 (used across sheets): materials 10/unit, holding 2/unit/month, stockout penalty 5/unit/month, hiring 300/worker, layoff 500/worker, labor hours per unit 4, regular wage 4/hr, overtime wage 6/hr, subcontract cost 30/unit.
+- Productivity implicit factor 40: derived as (8 hrs/day * 20 days) / 4 hrs per unit = 40 units per worker per month.
+
+Noted inconsistencies / potential issues (brief)
+- Some cost formulas appear mistyped:
+  - pricing C15 uses "519*Sheet1!$B$20" instead of C5*Sheet1!$B$20.
+  - Several formulas drop the sheet name or reference unexpected cells (e.g., Sheet2/E16 references Sheet1!B24 or B25..B28 in various rows — inconsistent absolute references).
+  - Total Revenue in Sheet2 and Sheet3 uses SUM(J5:J10)*31 rather than SUMPRODUCT(demand, price) — likely incorrect if per-period prices differ.
+- Constraint formulas are present but check formulas (N#, O#, P#) should be validated for sign/logic correctness.
+
+If you want, I can:
+- Flag and correct formula errors and make consistent references across sheets, or
+- Extract per-plan total cost/revenue/profit comparisons into a summary sheet.

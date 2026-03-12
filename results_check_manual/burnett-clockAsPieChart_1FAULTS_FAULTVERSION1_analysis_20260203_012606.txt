@@ -1,0 +1,21 @@
+Summary
+- Root cause: the chart slices change order when minute% becomes larger than hour% (so Excel swaps the slice order and the colors). That happens because A4 and C4 are computed so their values (and order) flip depending on which is larger, and C4 uses MIN where it should use a minimum-size guard (so the gap is wrong).
+- Fix: keep the hour slice fixed (A4 = hour share), make C4 the absolute gap between hour and minute and ensure a minimum width with MAX (not MIN). E4 stays =1-A4-C4.
+
+Problems & corrected formulas (short)
+1) C4 is wrong: it uses MIN(...,0.01). That clamps the gap down to 0.01 when the true gap is larger. Use MAX with ABS instead.
+   Replace C4 with:
+   =MAX(ABS(A3 - C3), 0.01)
+   (or =MAX(ABS(A3-C3), $B$4) if you want to use the 0.01 cell)
+
+2) A4 should not switch which value it shows. Make A4 always the hour share:
+   Replace A4 with:
+   =A3
+
+3) Keep E4 as:
+   =1 - A4 - C4
+
+Why this fixes it (short)
+- Charts assign colors by series order. If your formulas change the order of the slices when minute% > hour%, the colors appear to swap. Fixing A4 to always be the hour slice and making C4 the absolute difference (with a small minimum) keeps the slices in the same order and prevents color swapping.
+
+Optional: you can remove F3 entirely if it's only used to choose branches.

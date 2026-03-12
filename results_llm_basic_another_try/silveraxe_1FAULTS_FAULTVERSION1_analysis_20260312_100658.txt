@@ -1,0 +1,65 @@
+Errors found:
+
+1. **H15 formula error:**
+   - Formula: `=HLOOKUP(B15,R2:AG3,2,TRUE)`
+   - Issue: The lookup range `R2:AG3` contains numeric values in row 2 and modifiers in row 3, but the lookup value is weight (170). The weight values in row 2 jump from 0 to 245761, which is not sorted properly for HLOOKUP with approximate match (`TRUE`). This causes incorrect or #N/A results.
+
+2. **H18 formula error:**
+   - Formula: `=HLOOKUP(B18,R17:AN18,2,TRUE)`
+   - Issue: The lookup range `R17:AN18` has Charisma values in row 17 and modifiers in row 18. The lookup value is 15, but the Charisma values start at -100 in R17 and increase. The range is sorted, but the lookup value 15 is present at column Z17 (value 21). The lookup should work but check if the range includes the value 15 exactly. If not, approximate match might cause issues.
+
+3. **B19, C19, D19, E19 formulas referencing wrong rows:**
+   - Formula example: `=HLOOKUP(B16,R5:AW15,2,TRUE)`
+   - Issue: The lookup range `R5:AW15` has attribute values in row 5 and modifiers in rows 6 to 15. The formula uses row index 2, 3, 5, 9 which correspond to rows 6, 7, 9, 13 in the sheet. This is inconsistent and likely incorrect because the attribute values are in row 5, and modifiers start from row 6. The row index should be adjusted to match the correct modifier rows.
+
+4. **H22 formula referencing wrong range:**
+   - Formula: `=HLOOKUP(C22,R2:AG4,3,TRUE)`
+   - Issue: The lookup range `R2:AG4` has weight values in row 2, agility mod in row 3, and HTH damage in row 4. The formula uses row index 3, which corresponds to row 4 in the sheet, which is correct. However, the lookup value `C22` is carrying capacity calculated as `=((B16/10)^3+(G16/10))*(B15/2)`. This value may not correspond to the weight values in row 2, causing incorrect lookup.
+
+5. **C23 formula:**
+   - Formula: `=SUM(B16:B17,532)`
+   - Issue: Adding 532 directly to the sum of Strength and Agility seems arbitrary and likely incorrect or a placeholder.
+
+---
+
+**Solutions:**
+
+1. **Fix H15:**
+   - Use a proper lookup range with sorted weight breakpoints.
+   - Example: Create a sorted weight table with corresponding agility modifiers.
+   - Or use `VLOOKUP` with exact or approximate match on a properly sorted table.
+   - Alternatively, use `INDEX/MATCH` for better control.
+
+2. **Verify H18:**
+   - Confirm that Charisma values in `R17:AN17` include 15 or use approximate match carefully.
+   - If needed, adjust lookup range or use `MATCH` to find closest value.
+
+3. **Fix B19, C19, D19, E19:**
+   - Adjust row index in `HLOOKUP` to match the correct modifier rows.
+   - For example, if attribute values are in row 5, and modifiers start at row 6, then:
+     - For Strength modifier: `=HLOOKUP(B16,R5:AW15,2,TRUE)` (row 6)
+     - For Endurance modifier: `=HLOOKUP(G16,R5:AW15,3,TRUE)` (row 7)
+     - For Intelligence modifier: `=HLOOKUP(G17,R5:AW15,5,TRUE)` (row 9)
+     - For Agility modifier: `=HLOOKUP(B17,R5:AW15,9,TRUE)` (row 13)
+   - Ensure these row indices correspond exactly to the modifier rows.
+
+4. **Fix H22:**
+   - Ensure `C22` value matches weight breakpoints in `R2:AG2`.
+   - If not, create a proper lookup table for carrying capacity to base HTH damage.
+   - Or use a different method to calculate base HTH damage.
+
+5. **Fix C23:**
+   - Replace `=SUM(B16:B17,532)` with a meaningful formula.
+   - Possibly `=SUM(B16,B17)+532` if 532 is a base movement rate.
+   - Or clarify the purpose of 532 and adjust accordingly.
+
+---
+
+**Summary:**
+
+- Ensure lookup tables are sorted and lookup values match the table keys.
+- Adjust `HLOOKUP` row indices to point to the correct rows.
+- Verify that calculated lookup values (like carrying capacity) correspond to lookup table keys.
+- Replace arbitrary constants with meaningful formulas or references.
+
+This will fix errors and ensure correct data retrieval.

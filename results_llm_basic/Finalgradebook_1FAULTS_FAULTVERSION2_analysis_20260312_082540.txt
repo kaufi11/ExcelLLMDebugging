@@ -1,0 +1,51 @@
+Summary — main problems I found
+- Lots of wrong cell references / typos on the Test sheet (Sheet3) that break the per‑student averages. These are the biggest functional errors.
+- Some summary formulas on Sheet1 use the wrong ranges or the wrong function (e.g. MAX where AVERAGE is needed).
+- Risk of scale mismatch: Homework averages (Sheet2!P...) are in 0–100 but some formulas elsewhere expect decimals (0–1). That makes the workbook fragile. (I give a robust I (Final Grade) formula below.)
+
+What to fix (short, exact fixes)
+
+1) Fix the errors in Sheet3 (Test worksheet)
+- Many student "Average" formulas in column P reference bad cells like L40, L41…L54 or contain a typo "331". Replace the whole column P with a correct per‑row average formula and fill down.
+  - P4 (and fill down to P18): =AVERAGE(D4,F4,H4,J4,L4)
+    - That ensures Pn = average of the five test percentage cells Dn, Fn, Hn, Jn, Ln.
+- Fix the one explicit typo you showed:
+  - F14 is currently =331/$F$24 — replace with =E14/$F$24
+- After these changes check all D/E/F/etc formulas in Sheet3 are consistent (they should be Cn/$D$24, En/$F$24, etc.) and that no formula still references L40..L54.
+
+Why: the bad references produce wrong/blank averages and propagate incorrect test averages into Sheet1 (through Sheet3!P).
+
+2) Fix Sheet1 summary rows (Low / Average)
+- Low Grade row (C20): change =MIN(C4:C18) → =MIN(C3:C17)
+- Class Average row (C21): change =MAX(C5:C19) → =AVERAGE(C3:C17)
+- Check the other summary formulas in rows 19–21 for consistency (they should all use the same student row range C3:C17, D3:D17, etc.). Example:
+  - I21 (class average for final grade) should remain =AVERAGE(I3:I17)
+
+Why: the current ranges skip the first student (row 3) and in one case use MAX instead of AVERAGE, so the reported class stats are wrong.
+
+3) Make the Final Grade formula robust (Sheet1 column I)
+Problem: homework (Sheet2!P) is on 0–100 scale while tests/midterm/final/participation are decimals (0–1). Your current I formula mixes multipliers like 0.125, 25, 12.5 — that can work but is fragile and hard to read. Use a single clear formula that always returns Final Grade as a percent (0–100):
+
+Replace the I3 formula with (and fill down):
+= (C3/100)*12.5 + (D3*25) + (E3*25) + (F3*25) + (G3*12.5)
+
+Explanation:
+- C3/100 converts the homework average (90 → 0.9).
+- Multiplying by 12.5,25,25,25,12.5 produces the point contribution out of 100.
+- The result is a Final Grade percentage (0–100), which matches the K lookup thresholds.
+
+(If you prefer to standardize inputs instead, an alternative is to make all Sheet2 and Sheet3 per‑student averages be decimals 0–1 and then use weights 0.125/0.25 etc. Either approach is fine — pick one and apply consistently.)
+
+4) VLOOKUP (Sheet1 column J)
+- Your VLOOKUP formula =VLOOKUP(I3,$K$5:$L$17,2,TRUE()) is okay if:
+  - column K contains ascending numeric thresholds (it does), and
+  - the lookup value I3 is on the same scale as K (both must be percent 0–100).
+- After you make I3 deliver a percent (see step 3), the VLOOKUP will return correct letter grades. You can also use TRUE (approximate) or just TRUE without parentheses: =VLOOKUP(I3,$K$5:$L$17,2,TRUE)
+
+Notes / minor cleanups
+- Fix spelling labels ("Sudents", "Studnets", "Higest") if you care about polish.
+- After the changes, do a spot check: pick 2 students (one high, one low) and calculate final grade by hand to confirm the sheet now matches.
+
+If you want, I can:
+- Provide the exact range of all Sheet3 cells that need replacing (I can produce a fill‑down script or the sequence of corrected formulas).
+- Produce one consolidated list of corrected formulas for each problematic cell (P4:P18, F14, I3:I17, C20, C21, etc.).

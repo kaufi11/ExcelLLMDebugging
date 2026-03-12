@@ -1,0 +1,74 @@
+I checked the formulas in both sheets and found a number of formula errors and inconsistent / likely unintended references. Below I list the problems I found, explain why they are wrong, and give recommended fixes.
+
+Summary of the main problems
+- MasterMethod_Checks: one clear copy/paste error in B19 (and resulting wrong test outcome).
+- SubstitutionMethod_Checks: several inconsistent / incorrect formulas in column C (row 10) and many incorrect absolute references in column D (copy/paste mistakes). Also domain errors for log(log(n)) at n=1.
+
+Detailed issues and recommended fixes
+
+MasterMethod_Checks
+1. Cell B19
+- Current formula: =473/2 (value 236.5)
+- Problem: All other Bn cells use =A#/2 (B11..B41 are =A#/2 via pattern). B19 is an outlier and appears to be a mistaken literal (likely copy/paste or accidental edit).
+- Effect: D19 (=B19/C19) and the Big-Oh/Big-Omega tests for row 19 become incorrect because the f(n) value is wrong.
+- Recommended fix: Replace with =A19/2.
+
+2. Blank n (row 11 / A11)
+- A11 is blank which produces 0 in B11 and C11 and causes D11 = B11/C11 to be #DIV/0! and H11 = LOG(A11,2) to be #VALUE!.
+- Recommendation: Either remove that blank row or ensure A11 contains a valid n (or wrap formulas to handle blank input).
+
+SubstitutionMethod_Checks
+3. Row 10, column C (C10)
+- Current formula: =$B$5*LOG(LOG(A10,2),2)
+- Problem: This is inconsistent with the rest of column C where C11.. etc are =$B$5*A11*LOG(LOG(A11,2),2). C10 is missing the multiplication by A10.
+- Effect: C10 returns #VALUE! (also log/log domain problem at n=1), and comparisons using C10 will be wrong.
+- Recommended fix: Change to =$B$5*A10*LOG(LOG(A10,2),2)
+
+4. Row 10, column B (B10) and column C for n=1: domain error
+- B10 formula: =$B$4*A10*LOG(LOG(A10,2),2)
+- Problem: LOG(LOG(1,2),2) is undefined because LOG(1,2)=0 and LOG(0,2) is invalid. That produces #VALUE!/#NUM! for n=1.
+- Recommendation: Start n at 2 (or higher) for tests that use log(log(n)), or guard the formula with IF to avoid evaluating log(log(n)) for n<=1, e.g. =IF(A10>1, $B$4*A10*LOG(LOG(A10,2),2), <fallback> ), or use IFERROR to handle the domain error.
+
+5. Column D: many inconsistent / incorrect absolute references (copy/paste errors)
+- Expected pattern (based on earlier rows): D# should be =5*1 + A#/LOG(A#,2)  (i.e., 5 + n / LOG(n,2))
+- But many D cells instead contain formulas like:
+  - D19 = =5*$D$11 + A19/LOG(A19,2)
+  - D20 = =5*$D$11 + A20/LOG(A20,2)
+  - D21 = =5*$D$11 + A21/LOG(A21,2)
+  - D24..D28 reference $D$12
+  - D29..D33 reference $D$13
+  - D34..D38 reference $D$14
+  - D39 references $D$15
+  - etc.
+- Problem: Using 5*$D$11 (and other $D$xx) multiplies by the entire value of some other D cell rather than the intended constant 1 (or 1*5). These are clearly copy/paste/absolute-reference mistakes and lead to wildly incorrect values in column D.
+- Effect: The Big-O / Big-Omega comparisons (E and F) are wrong for those rows because the target function is wrong.
+- Recommended fix: Replace all D cells with the consistent formula, e.g.
+  - Dn = 5 + A n / LOG(A n, 2)
+  In Excel syntax (for row 19): =5 + A19/LOG(A19,2)
+  (i.e. do not multiply 5 by another D cell; do not use $D$11, $D$12, etc.)
+
+6. Column G (Theta check) uses textual "TRUE"/"FALSE"
+- Observations: The sheet uses IF(...,"TRUE","FALSE") returning text strings rather than Boolean values TRUE/FALSE. Later checks use IF(E#="TRUE",...), so the current setup is internally consistent.
+- Recommendation: Consider returning Boolean values without quotation marks (IF(cond,TRUE,FALSE) or simply cond) to simplify logic and avoid fragile string comparisons. Not strictly an error, but a potential source of bugs.
+
+Other general notes and suggestions
+- Use consistent formulas and absolute references only where needed. Many errors here are typical copy/paste absolute-reference mistakes.
+- Log/log domain: any formula that computes LOG(LOG(n,2),2) is invalid for n <= 1 and yields errors. If you intend to test asymptotics starting at n0, ensure n0 >= 2 (or the minimal safe value) or protect formulas with IF or IFERROR.
+- For the MasterMethod sheet, returning the strings "TRUE"/"FALSE" is okay but using actual booleans (without quotes) and combining tests with AND/FALSE, etc., is more robust.
+- Consider wrapping divisions by n^CE with IF(Cn=0,"",Bn/Cn) or IFERROR to avoid #DIV/0! when n=0 or n missing.
+
+List of specific cells to correct (quick checklist)
+- MasterMethod_Checks:
+  - B19: change =473/2 to =A19/2
+  - (Optional) A11: fill or remove blank row to avoid 0/0 and LOG(blank) errors.
+
+- SubstitutionMethod_Checks:
+  - B10: consider guarding LOG(LOG(A10,2),2) for A10<=1
+  - C10: change to =$B$5*A10*LOG(LOG(A10,2),2)
+  - D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, D29, D30, D31, D32, D33, D34, D35, D36, D37, D38, D39:
+    - Replace the current formulas that reference $D$11, $D$12, $D$13, etc with =5 + A#/LOG(A#,2) (for each appropriate row).
+  - (Optional) Replace textual "TRUE"/"FALSE" outputs with boolean TRUE/FALSE or use AND() to combine tests.
+
+If you want, I can:
+- Produce an explicit list of the exact corrected formulas for each affected cell (I can output a table of address -> corrected formula),
+- Or produce a corrected copy of the workbook with the fixes applied (if you can supply write access or want me to output the changes).

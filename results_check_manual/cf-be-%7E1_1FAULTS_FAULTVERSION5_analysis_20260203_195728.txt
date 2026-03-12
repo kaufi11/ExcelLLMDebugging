@@ -1,0 +1,62 @@
+I reviewed the three main workbooks (Year 1, Year 2 and the Variance sheets). Below are the clear errors I found, short explanations of why they are wrong, and simple fixes (with example corrected formulas). I kept answers short and actionable.
+
+1) Circular / wrong “Begin. of Mo.” for first month (Year 1 B6)
+- Problem: Year 1 B6 =SUM(B55). B55 is the end-of-month cash for the same column. That makes Month 1 beginning equal to Month 1 end → circular / wrong logic.
+- Why it matters: The first-month starting cash must be an input (opening balance), not calculated from the same month’s result.
+- Fix: Replace B6 with the actual opening cash (manual entry) or link it to a dedicated "Starting Cash" input cell. Keep the rest of the month-begins pointing to previous column's end.
+  - Example:
+    - B6: enter starting cash (e.g. 10000) or =Inputs!B1
+    - C6: =B55
+    - D6: =C55
+    - E6: =D55
+  - (Do NOT use B6 = B55.)
+
+2) Wrong hard-coded value in Year 1 (M6 = 5)
+- Problem: M6 has the number 5 while all the other month-begin cells pull previous month end.
+- Why it matters: A single hard-coded month-begin breaks continuity and will produce wrong totals.
+- Fix: Change M6 to use the previous month’s end (L55).
+  - Example: M6: =L55
+
+3) Wrong row references / shifted formulas (Year 2 — payroll/expense lines)
+- Problem: Some formulas in Year 2 are pointing to the wrong rows (example: the Payroll Expenses line shows O22 =SUM(C22:N22) while it should sum row 20). This indicates rows got shifted / the O-column sums are not on the same row as their expense label.
+- Why it matters: Summing the wrong row gives incorrect totals and %-of-sales numbers.
+- Fix: For every "O" cell in Year 2, ensure the sum references the same row. Use a consistent pattern and copy across.
+  - Example (for row 20): O20: =SUM(C20:N20)
+  - Audit all O17:O53 and correct to =SUM(C[row]:N[row]) where [row] matches the label row.
+
+4) Percent-of-sales formulas use inconsistent / self-referencing denominators
+- Problem: Some % formulas use O57/O$57 or O57/O57 (dividing the total column by itself), or inconsistent $ locking. Others use O17/O57 (no $) so copying may shift the reference.
+- Why it matters: You want every row’s Oxx divided by the absolute total sales cell (O57) so copying works and denominator stays fixed.
+- Fix: Use an absolute reference to the total sales cell $O$57 and protect against divide-by-zero.
+  - Example (put in P17 and copy down): =IF($O$57=0,"",O17/$O$57)
+
+5) Many unnecessary / confusing SUM(...) wrappers and subtraction inside SUM
+- Problem: Formulas like =SUM(B15-B54) or =SUM(B55) wrap simple math in SUM(). These aren’t errors per se, but they are poor style and prone to confusion.
+- Why it matters: Makes auditing harder and can hide logic problems; clean formulas are easier to maintain.
+- Fix: Replace with simple arithmetic.
+  - Example: replace =SUM(B15-B54) with =B15-B54 and =SUM(B55) with =B55 (or direct reference or input).
+
+6) Variance sheets: risk of #DIV/0! and mapping mistakes
+- Problems:
+  - Many variance formulas use (D - C) / C, which will error if C = 0.
+  - Some variance sheets may have column mapping mistakes depending on how they were copied across quarters (verify actual vs budget columns).
+- Fixes:
+  - Avoid divide-by-zero: wrap formulas with IF or IFERROR.
+    - Example: =IF(C8=0,"", (D8-C8)/C8 )
+    - Or =IFERROR((D8-C8)/C8,"")
+  - Audit each variance cell to ensure the “Actual” and “Budget/Plan” cells are pointing to the intended columns before copying formulas across quarters.
+
+Priority of corrections (do these in order)
+1. Fix Year 1 B6 to be the actual starting cash (manual or Inputs link). This removes circular logic.
+2. Fix M6 (replace 5 with =L55) and verify all month-begin cells follow previous-month-end pattern.
+3. Correct the mis‑referenced Oxx formulas in Year 2 so each O cell sums its same row (O20 = SUM(C20:N20), etc.).
+4. Replace % formulas with Oxx/$O$57 pattern and add IF($O$57=0,"",...) to prevent divide-by-zero.
+5. Replace SUM(x-y) with x-y for clarity.
+6. Wrap variance formulas to avoid #DIV/0 and verify actual-vs-budget column mapping.
+
+If you want, I can:
+- give a short list of exact cells to change (I can prepare a patch list),
+- produce corrected sample formulas for a block (e.g. rows 6 and 14–16 plus O/P columns),
+- or generate an Inputs sheet layout and show how to link starting cash and totals.
+
+Which follow-up would you like?

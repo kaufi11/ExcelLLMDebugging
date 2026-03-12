@@ -1,0 +1,56 @@
+I checked the Calculations sheet and found the problems that will produce wrong results or errors. Summary first, then quick fixes you can paste into the cells.
+
+Main problem (root cause)
+- Some IF formulas return the empty text string "" instead of numeric 0. That causes logical comparisons (e.g., C34>0 used inside OR) to produce errors or behave incorrectly. Several formulas also have inverted/misplaced cell checks that make them give the wrong numeric result.
+
+What to change (cell-by-cell). Replace the indicated formulas with these corrected formulas:
+
+1) C30 — PSD Netting
+- Problem: current formula returns "" in some branches and uses B31/B30 test order awkwardly.
+- Replace with:
+  =IF(B31<>"",0,IF(B30<>"",20,0))
+- Why: If a full PSD review is present (B31), netting should not add points (0). Otherwise, if netting is checked in B30 give 20, else 0. Always returns a number.
+
+2) C34 — General Permit
+- Problem: current formula returns "" when B35 is not blank and uses B35/B34 tests in wrong order; returning "" breaks numeric comparisons later.
+- Replace with:
+  =IF(B35<>"",0,IF(B34<>"",10,0))
+- Why: If Streamlined sites (B35) are present we do not count the general permit points (use 0). Otherwise if general permit box (B34) is marked give 10. Always numeric.
+
+3) C36 — TOTAL OTHER ACTIONS
+- Keep as:
+  =SUM(C34:C35)
+- Note: after fixing C34 to always return numeric, this sum will behave properly.
+
+4) C41 — Total Points
+- Keep as:
+  =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+- Note: this relied on C34/C35 being numeric; that is why C34 must not return "".
+
+5) C43 — Half fee for small business
+- Review/confirm intent. Current formula is:
+  =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))
+- Explanation: This reads as “If general permit (B34) applies, half-fee is N/A; otherwise if small business box (B38) is marked give C42/2 else N/A.” That is OK if the policy is: small-business half-fee not allowed for general permits. If that policy is NOT intended, change to:
+  =IF(B38<>"",C42/2,"N/A")
+- Why: make sure the formula checks the correct small-business cell (B38) and returns numeric where appropriate.
+
+6) F5 — Total Fee display
+- Current formula is:
+  =IF(C43="N/A",C42,C43)
+- This is OK only if C43 returns the literal text "N/A" when half-fee is not applicable. If you change C43 to always return numbers or blanks, adjust this formula accordingly (e.g., use ISNUMBER test). Example robust alternative:
+  =IF(AND(ISNUMBER(C43),C43<>""),C43,C42)
+
+7) Optional: C22 — 20 NMAC 2.X (number of regs)
+- Current formula: =IF(B22<>"",(3*B22),278)
+- Note: defaulting to 278 when B22 is blank looks suspicious. If you expect default 0 rather than 278, change to:
+  =IF(B22<>"",3*B22,0)
+- Why: avoid unexpected big default point value.
+
+Why these fixes matter (short)
+- Returning "" (text) where a number is expected breaks logical comparisons (e.g., C34>0) and can produce #VALUE or wrong OR results.
+- Using the correct input cell checks (B30 vs B31, B34 vs B35, B38 for small business) prevents mis-counting points.
+- Always return numbers (0 when not applicable) in point total cells so SUM and comparisons behave reliably.
+
+If you want, I can:
+- Mark all cells on the sheet that currently return text instead of numbers.
+- Provide an updated sheet with the corrected formulas applied.

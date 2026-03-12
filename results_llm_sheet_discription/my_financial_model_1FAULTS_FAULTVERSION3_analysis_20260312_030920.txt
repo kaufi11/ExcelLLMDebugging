@@ -1,0 +1,30 @@
+Summary — I found 4 real errors that will give you wrong revenue, wrong costs, and wrong depreciation/asset numbers. Quick fixes and short explanations below.
+
+1) Revenue total excludes Street Sales
+- Problem: E12 (and the same pattern across years) is =SUM(E10:E10) — that only sums Online Sales and ignores Street Sales (E11). Result: Total revenue is too low.
+- Fix: replace E12 with =SUM(E10:E11) and copy across to F12:P12.
+- Why: Total must include both revenue rows (online + street).
+
+2) Sugar price escalation uses the wrong growth cell
+- Problem: F8 (and onward) uses (1+$D$7) — that references the lemon-price growth cell D7 instead of the sugar growth cell D8. If you ever change D7 or D8 separately, sugar will inflate incorrectly.
+- Fix: change F8 to =E8*(1+$D$8) and copy across to G8:P8.
+- Why: always reference the correct input cell ($D$8) for sugar inflation.
+
+3) Balance Sheet: Original long‑term asset value links to a liability
+- Problem: Balance Sheet!D8 = D14 (which is the loan amount / liability). That makes your asset "original value" equal to the loan, so depreciation and asset values are wrong.
+- Fix (one of these, depending on model intent):
+  - If the long‑term asset comes from the Cashflow investment outflow (Cashflow!D9 = -100000), set Balance Sheet!D8 to =-Cashflow!D9 (this converts the negative cash outflow to a positive asset value). Or
+  - Create a dedicated input cell for "Asset Purchase (original value)" and point D8 to that input.
+- Why: asset original value must reference the correct asset-purchase cell, not a liability cell. Incorrect link corrupts Depreciation and Balance Sheet totals.
+
+4) Depreciation uses a fixed numerator ($D$6) instead of each period's beginning asset value
+- Problem: Depreciation!E7 (and the following year formulas) is IF(E6>0,$D$6/$D$7,0). $D$6 is a fixed cell (the D column beginning value) so every year the depreciation calculation uses the same original number instead of the period's beginning balance. Also, because D8 was linked wrong (see #3), $D$6 is already wrong.
+- Fix: change Depreciation!E7 to =IF(E6>0,E6/$D$7,0) and copy across (so each year's depreciation = that year's beginning value ÷ life). Or use =IF(E6>0,SLN(E6,$D$7),0) if you prefer the SLN function.
+- Why: depreciation should be based on the asset balance at the start of the period (or use a standard straight‑line on the purchase cost). Using a fixed $D$6 breaks the math when assets are added or the beginning balances differ by period.
+
+Extra cleanup suggestions (optional, but recommended)
+- Replace single-cell SUMs like =SUM(E10:E10) with explicit ranges or =E10 if only one cell is intended — but the main fix is to include E11 in the total.
+- Review Cashflow → Balance Sheet cash link: currently Balance Sheet accumulates net changes by summing Cashflow!D13 etc. That works if opening cash is zero; if you need a nonzero opening cash, add an Opening Cash input and start E6 with that instead of Cashflow!D13.
+- Check any hard-coded/odd values (e.g., simple income G7 = 266) — make sure those were intended and not copy/paste errors.
+
+If you want, I can produce the exact formulas to paste into each affected cell (I already gave the key replacements) and show the minimal set of changes to make the whole model consistent. Which would you prefer?

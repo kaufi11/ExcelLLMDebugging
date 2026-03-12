@@ -1,0 +1,49 @@
+Summary of workbook structure and contents
+
+Sheets
+- EER SITE (Sheet1)
+  - Title in A2: "L3 Government Services In. GSA AUTHORIZED PRICING -  L3 GSI SITE".
+  - Row 4 contains column headers:
+    - A: Labor Category Description
+    - B: 7/28/01–7/27/02 (base hourly/year rate)
+    - C: (Per Year) — used to show escalation (4% as 0.04)
+    - D: 7/28/02–7/27/03 (Year 2)
+    - E: 7/28/03–7/27/04 (Year 3)
+    - F: 7/28/04–7/27/05 (Year 4)
+    - G: 7/28/05–7/27/06 (Year 5)
+    - H: 7/28/06–7/27/07 (Year 6)
+  - Rows 6–68 list 63 labor categories (column A) with base rates in column B and escalation factor 0.04 in column C for most rows.
+  - Formula pattern (consistent across most rows):
+    - D = B * 1.04 (Year 2)
+    - E = D * 1.04 (Year 3)
+    - F = E * 1.04 (Year 4)
+    - G = F * 1.04 (Year 5)
+    - H = G * 1.04 (Year 6)
+  - Exceptions / notes:
+    - Several rows (those marked "added 8/02" in column B) have text in B and a numeric Year‑2 rate provided directly in D (instead of deriving D from B). For these, E–H are computed as D*1.04 compound.
+    - One apparent anomaly: D6 is listed as =2 (instead of the expected =B6*1.04). Most other rows follow the standard B*1.04 → cascading 1.04 compounding.
+
+- GOVT SITE (Sheet2)
+  - Title in A2: "EER SYSTEMS INC. GSA AUTHORIZED PRICING - GOVERNMENT SITE".
+  - Columns and header layout mirror EER SITE (A:H with the same date ranges). B3 shows "Year 5" and C3 "Escalation".
+  - Rows 6–68 list the same labor categories (some entries and numeric base rates differ from EER SITE).
+  - Formula pattern identical to EER SITE:
+    - D = B * 1.04 (for rows with numeric B)
+    - E–H = prior year * 1.04
+  - Same exception pattern: "added 8/02" rows have a Year‑2 numeric in D with B containing text; subsequent years calculated from D.
+
+- Sheet3
+  - Present but no data specified (appears empty / placeholder).
+
+Key values & patterns
+- Escalation rate: 4% per year (column C entries = 0.04).
+- Base rates: Column B contains the starting rates for Year 1 (different between EER SITE and GOVT SITE for many categories).
+- Compound escalation: Years 2–6 are computed by successive multiplication by 1.04.
+- Total labor rows: rows 6 through 68 (63 labor categories).
+
+Recommendations / quick checks
+- Verify D6 (Administrative/Graphics Specialist on EER SITE) — it is set to =2 and likely should be =B6*1.04.
+- Consider converting B cells with "added 8/02" text into blank numeric or keep D as the authoritative Year‑2 value (current design is workable but inconsistent).
+- If you want a single consistent formula approach, you can set D to =IF(ISNUMBER(B6),B6*(1+$C6),D6) for rows where D might be prefilled.
+
+If you want, I can produce a corrected formula set to standardize D–H across all rows or generate a short list of anomalies (rows where D is not =B*1.04 or B is non-numeric).

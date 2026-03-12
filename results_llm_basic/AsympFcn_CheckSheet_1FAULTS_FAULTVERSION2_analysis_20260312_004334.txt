@@ -1,0 +1,54 @@
+I checked both sheets and found a few clear formula/data errors. Below are the problems, the cause, and the minimal fixes (with short explanations).
+
+MasterMethod_Checks — errors & fixes
+1. Row with n = 0 (A11 = 0)
+   - Problem: D11 = B11/C11 is 0/0 → #DIV/0!. H11 = LOG(A11,2) → LOG(0,2) is invalid → #NUM!.
+   - Cause: n = 0 produces division by zero and invalid log.
+   - Fix: Remove the n=0 row or change A11 to 1 (start n at 1). This prevents division-by-zero and invalid logs.
+
+2. Typo at n = 8 (A19 / B19)
+   - Problem: B19 formula is =A19*2 (multiplies by 2) while all other B rows are =A#/2. This makes f(8) wrong.
+   - Cause: accidental * instead of / when entering the formula.
+   - Fix: Change B19 to =A19/2.
+
+SubstitutionMethod_Checks — errors & fixes
+1. Rows starting at n = 1 (A10 = 1)
+   - Problem: B10 uses LOG(LOG(1,2),2) → inner LOG(1,2)=0 then LOG(0,2) invalid; D10 = 5*1 + 1/LOG(1,2) → division by zero; many #DIV/0! or #NUM! results.
+   - Cause: formulas involve log(n) and log(log n); n must be >1 (and for some expressions >=2).
+   - Fix: Start n at 2 (change A10 to 2) or otherwise ensure n ≥ 2 before evaluating these formulas.
+
+2. Missing factor in C10
+   - Problem: C10 = $B$5*LOG(LOG(A10,2),2) (missing multiplication by n), while other C rows use $B$5*A#/LOG... or $B$5*A#*LOG(LOG(A#,2),2).
+   - Cause: a copy/paste or typing mistake.
+   - Fix: Change C10 to include the n factor. If asymptotic_fcn = n * log log n, use:
+     - C10 = $B$5 * A10 * LOG(LOG(A10,2),2)
+
+3. Wrong / inconsistent absolute references in D (many rows)
+   - Problem: Many D cells later in the sheet use formulas like =5*$D$11 + A19/LOG(A19,2) or =5*$D$12 + ... — they now reference other D cells instead of the intended constant 1 or 5. That produces wrong values.
+   - Cause: incorrect absolute references were introduced when dragging/copying formulas.
+   - Fix: Use a consistent formula for T(n) (looks like T(n)=5 + n / log2(n)). Set the correct formula in the first D cell and fill down. Example:
+     - D10 = 5 + A10 / LOG(A10, 2)
+     - Then fill D10 down; Excel will produce D11 = 5 + A11 / LOG(A11,2), etc.
+   - If you intended 5*1 instead of 5, use 5*1 (same as 5). Do not reference other D cells as constants.
+
+Other general suggestions
+- When copying formulas down, prefer relative references for the row index (A10) and absolute references only for constants (e.g., $B$4, $B$5). That avoids accidental references to other computed cells.
+- For columns that use LOG(LOG(n,2),2) be sure n >= 2 to avoid invalid intermediate logs.
+- After fixing formulas, re-check the TRUE/FALSE test columns (Big-O / Big-Omega) because a wrong f(n) or T(n) will flip those results.
+
+Exact quick changes to apply (copy-paste into Excel formula bar)
+- MasterMethod_Checks:
+  - Change A11 from 0 to 1 (or delete row).
+  - Change B19 to:
+    =A19/2
+
+- SubstitutionMethod_Checks:
+  - Change A10 to 2 (start n at 2).
+  - Change C10 to:
+    =$B$5 * A10 * LOG(LOG(A10,2),2)
+  - Change D10 to (and then fill down):
+    =5 + A10 / LOG(A10, 2)
+
+After these fixes re-fill the columns downward so each row uses the corrected formula pattern. That will clear the #DIV/0! and #NUM! errors and make the Big-Oh/Big-Omega checks meaningful.
+
+If you want, I can give you the exact corrected formulas for every affected cell or produce a corrected copy of the two sheets. Which would you prefer?

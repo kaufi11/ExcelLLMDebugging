@@ -1,0 +1,35 @@
+Short summary of the problems I found
+- Misaligned month headings vs formulas: the month labels are in columns B and D (B16 = August, D16 = September) but the core formulas for those months live in the next columns to the right (C and E). That causes many formulas to reference the "wrong" month cell (e.g. B21 uses C17 for sales). In short: labels and formulas are offset by one column.
+- Wrong function used in the Formulas sheet: C24 is =COUNT(B21:B24) — should be a SUM of the operating expense lines.
+- Several other totals/formulas that reference "prior" or "next" periods look inconsistent because of the column-offset problem (examples: C30/E30, C33/E33, F38/F42/F44). They may be correct once the column alignment is fixed.
+
+Why these are errors (short)
+- When labels and formulas are not aligned, a figure that should use the current-period sales/purchases will instead pick up a neighboring column and produce wrong numbers.
+- COUNT counts numeric entries, not their sum — so COUNT(B21:B24) returns how many numeric cells, not the total expense.
+
+How to fix (simple step-by-step)
+Option A — fix headers (recommended, minimal change)
+1. Move the month headings one column right so each heading sits above its formulas:
+   - Cut B16 and paste to C16 (so "August" sits over column C formulas).
+   - Cut D16 and paste to E16 (so "September" sits over column E formulas).
+2. After moving headers, review a few calculated lines (Sales revenue, Salaries, COGS) to confirm they now reference the expected month cells.
+
+Option B — fix formulas (if you prefer to keep headers where they are)
+1. Shift all formulas one column left so they sit under the existing headers. For example change:
+   - C17 (currently =ROUND(+B2*(1+B3),-3)) → move or copy that formula into B17.
+   - C31 → B31, C33 → B33, etc. (move each formula column C→B and E→D).
+2. Verify references that use "next period" or "prior period" still refer to the correct adjacent column.
+
+Fix the COUNT error (must do regardless)
+- Replace the bad formula in Formulas!C24:
+   - Old: =COUNT(B21:B24)
+   - New: =SUM(B21:B24)
+
+Quick checks after fixes
+- Salaries & commission (for a month) should be =ROUND($B$9 + $B$10 * [that month Sales], -3). After alignment check the formula points to the same-column Sales cell (not to the right or left).
+- Ending inventory should use the next period's Sales: EndingInv(current month) = ROUND($B$4 + $B$5 * Sales(next month), -3). After alignment verify "next month" is the column to the right (or the correct October cell if last month).
+- Re-check any F38, F42, F44 formulas — they looked like they add a "current" + "prior" value but referenced mixed columns. Make sure each “prior” reference points to the previous month column (e.g., prior purchases in September should reference the August purchases cell).
+
+If you want, I can
+- Give the exact list of formulas to paste into each cell after you tell me whether you prefer Option A or B, or
+- Produce a corrected copy of the sheet (list of corrected cell formulas) so you can paste them directly.

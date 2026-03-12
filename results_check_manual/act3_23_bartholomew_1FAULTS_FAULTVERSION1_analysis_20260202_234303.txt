@@ -1,0 +1,49 @@
+Summary — main problems
+- Week 4 cells (E7:E12) contain =AVERAGE(B#:D#). They should be the actual Week 4 hours (numbers). The average formula there is wrong for a week column.
+- Weekly totals row uses wrong ranges:
+  - B15 uses B7:B13 (should end at row 12).
+  - C15 uses C7:C13 (should end at row 12).
+  - D15 uses D7:D11 (missing row 12).
+  - G15 uses G7:G13 (should end at row 12).
+- Overtime column (G7:G12) is entered manually (mostly zeros). It should be calculated from the totals.
+- Gross Pay formulas (C20:C25) are wrong: (F + G) * Rate double‑counts overtime.
+- Because E cells are wrong, F totals (and anything that depends on them) are also wrong (example: F11 = 92 because E11 was an average).
+
+What to change (exact fixes)
+1) Fix Week 4 (E7:E12)
+   - Replace =AVERAGE(B7:D7) etc. with the actual Week 4 hours (enter the numeric hours for each employee). If you truly want an average, put that in a separate “Average” column — not in Week 4.
+
+2) Fix Weekly Totals (row 15)
+   - B15: =SUM(B7:B12)
+   - C15: =SUM(C7:C12)
+   - D15: =SUM(D7:D12)
+   - E15: =SUM(E7:E12) (already correct)
+   - F15: =SUM(F7:F12) (already correct)
+   - G15: =SUM(G7:G12)
+
+3) Calculate Overtime automatically (G7 and down)
+   - Put this in G7 and copy down to G12:
+     =MAX(0, F7 - 40)
+   - This makes G the number of hours over 40 (adjust 40 if your overtime threshold is different).
+
+4) Fix Gross Pay (C20:C25)
+   - Use time‑and‑a‑half (common) and account for overtime without double counting. Two equivalent formulas:
+     - Simple: =F7 * B20 + G7 * B20 * 0.5
+       (Pays all hours at regular rate, then adds 0.5×rate for overtime)
+     - Explicit: =(F7 - G7) * B20 + G7 * B20 * 1.5
+       (Regular hours at rate + overtime at 1.5×rate)
+   - Replace analogous formulas for rows 21–25.
+
+Why these fixes work (short)
+- Week 4 must be the actual hours; averaging weeks 1–3 in a Week 4 cell produces wrong totals and destroys payroll math.
+- Weekly totals must sum the exact employee rows (7:12). Wrong ranges include blank rows or miss employees.
+- Overtime should be derived from total hours (F) so it’s always consistent and not manual.
+- The current gross formula (F + G) * rate adds overtime hours twice. The corrected formula either adds only the overtime premium (0.5×rate per OT hour) to the base pay, or calculates regular and overtime pay separately — both give correct gross pay.
+
+Quick checklist to apply
+- Replace E7:E12 with real week‑4 numbers (or clear them).
+- Put =MAX(0,F7-40) into G7 and copy down.
+- Update B15,C15,D15,G15 to the corrected SUM ranges above.
+- Replace C20:C25 with one of the correct gross formulas.
+
+If you want, I can give the exact formulas for every cell (copyable) or a corrected sample sheet — tell me which you prefer.

@@ -1,0 +1,56 @@
+I reviewed both sheets and found several incorrect formulas and bad cell references. Below are the problems, why they’re wrong, and the simple fixes you should make.
+
+NAIC increase sheet — errors and fixes
+1) D6 (yrly grth) is wrong
+- Problem: D6 = (C6-390)/390 — “390” is irrelevant and produces nonsense.
+- Fix: Use the prior year’s value. If D6 should be year-over-year change in C (expenses), use:
+  D6 = (C6 - C5) / C5
+- Why: Yearly growth must compare the current and previous year, not a hardcoded number.
+
+2) E7 (2001 fee revenue) is backwards / circular
+- Problem: E7 = E8 - 2,258,280 references the next year (E8). That creates a backward dependency and can produce circular logic when other rows reference E7.
+- Fix: Enter the actual 2001 fee revenue (hard value) OR compute it from E8 using an explicit known growth rate. Example if you know 2002 grew x% from 2001:
+  E7 = E8 / (1 + growth_rate)
+  (or simply type the historical value for 2001)
+- Why: Rows should normally reference the previous year (past -> current). Referencing the next year makes formulas hard to audit and can create circular dependencies.
+
+3) E7–E9 and F8/F9 growth formulas: be consistent
+- Problem: F8 = (E8 - E7) / E7 is correct only if E7 is the real 2001 value. Right now E7 is calculated from E8, making F8 circular.
+- Fix: After fixing E7 as above, keep F8 = (E8 - E7) / E7 and F9 = (E9 - E8) / E8.
+
+4) Group/cap summary rows use wrong columns (E16:E18)
+- Problem: E16 = (0.46 * C7), E17 = (0.43 * C8), E18 = (0.46 * C9). These use column C (NAIC expenses) and incorrect percent for 2003.
+- Fix: E16..E18 should multiply the percent of total premiums by the total premium base (which is in column E, “total yrly Sng+Grp”). Correct formulas:
+  E16 = D16 * E7
+  E17 = D17 * E8
+  E18 = D18 * E9
+  (Make sure D18 = 0.35 for 2003, not 0.46)
+- Why: You want percent-of-total-premiums × total premiums (column E), not expenses (column C). Also 2003 used the wrong percent.
+
+5) G16..G18 (amount of fee paid) — check the base used
+- Current G16 = 0.22 * E7 is reasonable only if E7 is the total database fee revenue. Verify column E represents the database fee revenue. If so, leave:
+  G16 = F16 * E7
+  G17 = F17 * E8
+  G18 = F18 * E9
+- Why: The fee-paid amounts should be percent_of_fee_paid × total_fee_revenue (column E), not percent × premiums.
+
+Consumer Price Index sheet — errors and fixes
+6) R21 and S21 reference the wrong years
+- Problems:
+  - R21 = (Q21 - Q12) / Q12 compares 2001 annual (Q21) to 1992 (Q12). That’s wrong for year-to-year change.
+  - S21 = (M21 - M12) / M12 compares Dec 2001 to Dec 1992.
+- Fix: If you intend year-to-year percentage change, use the prior year (2000) as the base:
+  R21 = (Q21 - Q20) / Q20
+  S21 = (M21 - M20) / M20
+- Why: Annual and December percent-changes should compare to the immediately preceding year, not 9 years earlier.
+
+7) Check duplicate/incorrect column usage (Q vs O)
+- Note: Q12 = 140.3 duplicates O12; Q21 = 177.1 duplicates O21. If Q is meant to be the annual value, keep it but ensure Q formulas reference Q20, not Q12 or other unrelated rows.
+
+General recommendations
+- Replace backward references (next year) with previous-year references or fixed historic values.
+- Use consistent column bases: premiums-related calculations should reference the premiums column (E), fee calculations should reference fee revenue (E), and expense growth should reference C.
+- After fixes, re-calc and spot-check a few rows to ensure growth rates and totals make sense (e.g., 4% avg growth if that’s the assumption).
+- Make formulas relative (copy down) so they use prior-year rows (e.g., for row n: Growth = (ThisYear - PriorYear) / PriorYear).
+
+If you want, I can give the exact corrected formulas for each affected cell with the assumption of which column is the actual “total premiums” vs “total fee revenue” — tell me which column holds which base and I’ll list the corrected formulas ready to paste.

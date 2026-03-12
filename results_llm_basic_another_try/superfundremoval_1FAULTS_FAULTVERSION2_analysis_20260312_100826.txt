@@ -1,0 +1,47 @@
+Errors found:
+
+1. **Weighting Sum Checks in F12, F24, F36, and F56:**
+   - These cells check if the sum of weights equals 100%. However, weights are decimals (e.g., 0.2, 0.1428, 0.333), representing fractions, not percentages.
+   - The sum of weights is around 1 (or 100%), but the formulas compare to "100%" (which Excel treats as 1). This is inconsistent because some weights sum to 1, but the formula compares to 100% as text.
+   - For example, in F12: `=IF(SUM(F6:F10)<>100%,"ERROR","100%")` compares sum to 100% (which is 1), so this is correct if weights sum to 1. But weights in Section I sum to 1, so this is okay.
+   - However, in Section II (F16:F22), weights are decimals summing to ~1, but the formula is `=IF(SUM(F16:F22)<>100%,"ERROR","100%")`. This is correct if 100% = 1.
+   - So no error here if weights sum to 1.
+
+2. **Formula in G6:G10 and similar:**
+   - The formula is `=IF(C6="yes",(1*F6),IF(C6="no",(0*F6),""))`
+   - The answers in C6:C10 are "Yes" with capital Y, but formula checks for "yes" lowercase.
+   - Excel is case-insensitive in text comparison, so this is okay.
+   - However, the formula returns "" (blank) if answer is neither "yes" nor "no". This is acceptable.
+
+3. **Error in G21 formula:**
+   - G21 formula is: `=IF(C21="yes",(1/F21),IF(C21="no",(0/F21),""))`
+   - This is incorrect because it divides 1 by F21 instead of multiplying.
+   - All other weighted score formulas multiply 1 * Weighting or 0 * Weighting.
+   - Correct formula should be: `=IF(C21="yes",(1*F21),IF(C21="no",(0*F21),""))`
+   - Current formula will give incorrect weighted score and possibly a very large number.
+
+4. **Weighting sum in Section IV (F41, F45, F53, F54, F55):**
+   - Weights are 0.334 + 0.333 + 0.333 + 0 + 0 = 1.000
+   - Formula in F56: `=IF((F55+F54+F53+F45+F41)<>100%,"ERROR","100%")`
+   - Here, sum of decimals (1) is compared to 100% (which is 1), so this is correct.
+   - No error here.
+
+Summary of error:
+
+- The main error is in cell G21 formula where division is used instead of multiplication.
+
+**Solution:**
+
+- Change formula in G21 from:
+
+  `=IF(C21="yes",(1/F21),IF(C21="no",(0/F21),""))`
+
+  to
+
+  `=IF(C21="yes",(1*F21),IF(C21="no",(0*F21),""))`
+
+**Explanation:**
+
+- Weighted score should be calculated by multiplying the binary answer (1 for yes, 0 for no) by the weighting factor.
+- Dividing 1 by the weighting factor inflates the score incorrectly.
+- Fixing this ensures the weighted score reflects the correct contribution of the question to the section score.

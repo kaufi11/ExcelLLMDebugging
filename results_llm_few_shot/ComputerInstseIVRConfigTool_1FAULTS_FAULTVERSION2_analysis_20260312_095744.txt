@@ -1,0 +1,41 @@
+Found several formula errors. Short list with why and how to fix each (keep formulas consistent with the sheet pattern: C = Quantity, D = NPL price (unit), E = Dealer total, F = Client total):
+
+1) Cell F5
+- Error: Typo (hard-coded 887)
+- Fix: =PRODUCT(C5,D5)
+- Why: F should be quantity * unit price. 887 is a typo — use C5.
+
+2) Cells E78–E81 (E78, E79, E80, E81)
+- Error: Dealer formulas use 175 instead of the NPL price and/or omit the dealer factor
+- Fix (example for row 78): =PRODUCT(C78,D78,$G$2)
+- Why: Dealer total should be quantity * NPL price * dealer factor (G2). Apply same pattern to E79–E81.
+
+3) Cells E91, E92, E93, E94
+- Error: Dealer formulas use 1000 (or wrong constant) instead of using D# and the dealer factor
+- Fix (example for row 91): =PRODUCT(C91,D91,$G$2)
+- Why: Consistency: dealer total = C * D * G2. Fix E92–E94 similarly.
+
+4) Warranty rows (85 & 86): E85, F85, E86, F86 (and D85/D86 are suspicious but acceptable if intended)
+- Problems observed:
+  - E85 = PRODUCT(F85,0.9) uses 0.9 (wrong factor) and references F85 (client total) inconsistently.
+  - F85 = PRODUCT(F82,C85,0.09) is a client-total formula based on software total — OK if intended, but then dealer total must use G2 (0.75), not 0.9.
+- Fixes (choose the consistent pattern below):
+  - Keep client total as: F85 = PRODUCT(F82,C85,0.09)
+  - Dealer total: E85 = PRODUCT(F85,$G$2)
+  - Do likewise for row 86:
+    - F86 = PRODUCT(F82,C86,0.18)
+    - E86 = PRODUCT(F86,$G$2)
+- Why: If warranty cost is defined as a percent of software total, F85/F86 hold the client totals and dealer totals should be client total * G2 (not 0.9). Alternatively, you can make D85/D86 (unit NPL) = F82*0.09 and then set E85 = PRODUCT(C85,D85,$G$2) and F85 = PRODUCT(C85,D85). Use one consistent approach.
+
+5) Cell F109 / E109 — structure check (no formula change required if intended)
+- Note: E109 = SUM(E82,E85:E108) and F109 = SUM(F82,F85:F108) are acceptable if you intentionally add the precomputed software total (E82/F82) plus the subsequent ranges. Do not change unless you prefer a single-range SUM(E4:E108) which would double-count E82 because E82 is already a subtotal.
+
+Quick summary of the fixes to apply:
+- Replace hard-coded constants/typos with the consistent pattern:
+  - Dealer total = =C# * D# * $G$2  (use absolute $G$2)
+  - Client total = =C# * D#
+- For warranty rows, either:
+  - Use client total = F82 * C# * percent and dealer total = client total * $G$2 (preferred if warranty is % of software total),
+  - OR compute unit NPL (D#) = F82 * percent and then use the standard C*D*G2 and C*D formulas.
+
+If you want, I can produce the exact corrected formulas for every affected cell and show the updated sample values.

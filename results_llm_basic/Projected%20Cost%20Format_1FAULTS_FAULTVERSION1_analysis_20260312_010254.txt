@@ -1,0 +1,45 @@
+I inspected all three sheets and found a few clear formula errors and one structural problem that will cause #DIV/0! results. Short fixes and short explanations below.
+
+Errors and fixes
+
+1) Wrong cell used for Average Q20 base cost (Sheet: Seq Production Costs)
+- Problem: C11 currently =B21/C10. That uses the shotgun grand total (B21) instead of the Q20 grand total (C21).
+- Fix: replace C11 with: =IF($C$10>0,$C$21/$C$10,"")
+- Why: average cost per Q20 base should be C21 ÷ C10; the IF prevents #DIV/0! when C10 is blank/zero.
+
+2) Wrong function for Other Activities grand total (Sheet: Seq Production Costs)
+- Problem: G21 =COUNT(G19:G20) — COUNT returns the number of numeric cells (e.g. 2) not the monetary sum.
+- Fix: replace G21 with: =SUM(G19:G20)
+- Why: Grand Cost Totals must be the SUM of the direct + indirect costs for “Other Activities.”
+
+3) Total funds (B6) on Tech Dev and Bioinformatics sheets are 0 (and percent formulas divide by that)
+- Problem: Tech Dev B6 = 0 and Bioinformatics B6 = 0. Several formulas divide by B6 (e.g. B18, B31, B44) which causes #DIV/0! or incorrect %s.
+- Fix: set both B6 cells to the overall total requested for the grant year. If the overall total is computed on the Seq Production sheet (A23 B23), link them:
+  - Tech Dev B6 = 'Seq Production Costs'!$B$23
+  - Bioinformatics B6 = 'Seq Production Costs'!$B$23
+- Why: B6 is documented as “TOTAL COSTS” (total funds requested for the grant year). Linking ensures the % calculations (e.g. B17/B6) work and are consistent across sheets.
+
+4) Make percent/division formulas robust (suggested improvement)
+- Problem: Division formulas will show #DIV/0! if denominators are zero or blank.
+- Fix (recommended): wrap critical divisions with IF or IFERROR. Examples:
+  - C13 (Shotgun %): =IF($B$21>0,$B13/$B$21,"")
+  - E13 (Finished %): =IF($D$21>0,$D13/$D$21,"")
+  - B18 on Tech Dev: =IF($B$6>0,$B17/$B$6,"")
+- Why: prevents ugly errors and makes sheet clearer when inputs are incomplete.
+
+5) Optional consistency cleanup
+- Problem: C21, E21, H21 are hard-coded as 1.
+- Fix (optional): replace with formulas so the sheet self-documents:
+  - C21 =IF($B$21>0,$B$21/$B$21,1)
+  - E21 =IF($D$21>0,$D$21/$D$21,1)
+  - H21 =IF($G$21>0,$G$21/$G$21,1)
+- Why: keeps consistency and avoids hard-coded numbers.
+
+Quick checklist to apply in the workbook
+- Change C11 to =IF($C$10>0,$C$21/$C$10,"")
+- Change G21 to =SUM(G19:G20)
+- Link Tech Dev B6 to Seq Production B23: =’Seq Production Costs’!$B$23
+- Link Bioinformatics B6 to Seq Production B23: =’Seq Production Costs’!$B$23
+- Add IF checks to any division formulas that might divide by a potentially zero/blank cell.
+
+That will remove the incorrect COUNT and wrong-column reference, and will stop divide-by-zero errors. If you want, I can produce the exact cell-by-cell corrected formulas for every division cell in the workbook.

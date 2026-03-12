@@ -1,0 +1,37 @@
+Here are the clear errors I found, with a short explanation and the fix for each.
+
+1) Sheet "STEP 1 OF 2" — E33
+- Error: Omission (range misses one row)
+- Problem: E33 =SUM(E29:E30) excludes E31, so the "TOTAL" is too small.
+- Fix: =SUM(E29:E31)
+- Why: E31 is part of the group being totaled.
+
+2) Sheet "STEP 2 OF 2" — F10
+- Error: Wrong cell reference (copy/paste mistake)
+- Problem: F10 =H8/H6 uses the Giving total (H8) instead of the Saving total (H10).
+- Fix: =H10/H6
+- Why: F10 should compute Saving% = SavingAmount / Earnings.
+
+3) Sheet "STEP 2 OF 2" — H14
+- Error: Hard-coded value
+- Problem: H14 =4 is a fixed number used to compute tax % (F14 = H14/H6). That is not the tax amount.
+- Fix: point H14 to the actual tax amount from STEP 1 (for example): ='STEP 1 OF 2'!G9  (or the appropriate tax payments cell)
+- Why: Tax % must be calculated from an actual tax value, not a constant.
+
+4) Sheet "STEP 2 OF 2" — K6
+- Error: Likely wrong reference / semantic mismatch
+- Problem: K6 =M18/H6 divides M18 by earnings; label says "HOUSEHOLD / PERS.(10-15%)" which should compare housing total to earnings.
+- Fix (likely): =H32/H6
+- Why: H32 is the housing total on this sheet; that gives the intended housing % of earnings.
+
+5) Sheet "STEP 1 OF 2" — M43
+- Error: Wrong (or missing) total
+- Problem: M43 =M42 simply copies M42 (which appears blank); M43 is used downstream (M45 etc.) so this makes savings/plans wrong.
+- Fix (likely): =SUM(M41:M42)  (or =M41 if only one cell should be included)
+- Why: M43 should total the "plans" amounts, not copy a single blank cell.
+
+Notes / minor items
+- Several formulas use SUM( A + B ) (e.g. =SUM(G32+I32)). That works but is nonstandard and confusing — better to write =G32+I32.
+- After applying the fixes, recalc sheet totals (M35, M43, M45, M47, M43-derived fields) to confirm overall totals and percentages update correctly.
+
+If you want, I can give an exact list of replacements and update every dependent formula (I can produce a small patch list or updated formulas for all affected cells). Which would you prefer?

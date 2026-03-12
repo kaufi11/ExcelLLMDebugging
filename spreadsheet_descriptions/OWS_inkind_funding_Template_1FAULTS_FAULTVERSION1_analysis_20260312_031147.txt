@@ -1,0 +1,56 @@
+Summary — workbook contains two templates: "Cost sharing template" and "In-kind contribution template." Both use the same 3-block layout (Labor, Travel, Other/Hardware‑Software) with per‑line calculations and cascading running totals in column G.
+
+1) Sheet: Cost sharing template
+- Title: C1 "Cost Sharing Funds Request Form".
+- Layout: Columns A–F hold input and computed amounts; column G holds running totals.
+- Labor block (A3–F16)
+  - Headers in row 4: Function/Task, WBS Task, Assigned Personnel, Hourly Rate (D), Projected Labor Hours (E), Task Funding Request (F).
+  - Example rows:
+    - Row 5: Sr. Software Eng. — D5 = 50, E5 = 100, F5 = D5*E5 → 5,000.
+    - Row 6: Assoc. Software Eng. — D6 = 30, E6 = 150, F6 = D6*E6 → 4,500.
+  - Total Labor: A16, F16 = SUM(F5:F15). G16 = F16 (propagates to running total).
+- Travel block (A18–F29)
+  - Headers row 19: Function/Event, Duration, Aspects, Est. Trip Cost (D), # Travelers (E), Trip Funding Request (F).
+  - Examples:
+    - Row 20: OWS Kickoff — D20 = 3,000, E20 = 1, F20 = E20*D20 → 3,000.
+    - Row 21: OWS Demo — D21 = 3,000, E21 = 2, F21 = 6,000.
+  - Total Travel: A29, F29 = SUM(F20:F28).
+  - Running total: G29 = G16 + F29.
+- Other Expense block (A31–F41)
+  - Headers row 32 include Est. Cost (D) and Units (E).
+  - Examples:
+    - Row 33: Brand X Server CPU — D33 = 5,000, E33 = 1, F33 = E33*D33 → 5,000.
+    - Row 34: XYZ Database Software (seat licenses) — D34 = 3,000, E34 = 20, F34 = 60,000.
+  - Total Other Expenses: A41, F41 = SUM(F33:F40).
+  - Running total: G41 = G29 + F41.
+- Grand total: A43, F43 = G41 (copies running total to funding request grand total).
+
+2) Sheet: In-kind contribution template
+- Title: C1 "In-Kind Contribution Declaration Form".
+- Same three blocks and columns A–F; column G used for running totals.
+- Labor block mirrors the Cost sharing sheet:
+  - Example rows same as above; F5 = D5*E5 → 5,000; F6 = 4,500.
+  - Total Labor: A16, but F16 = COUNT(F5:F15) (note: this is a count, not a sum — likely intended to be SUM).
+  - G16 = F16.
+- Travel block mirrors cost sheet:
+  - F20 and F21 computed as E*D; F29 = SUM(F20:F28).
+  - G29 = G16 + F29.
+- Hardware/Software/Data block (A31–F41)
+  - Examples:
+    - Row 33: Brand X Server CPU — D33 = 5,000, E33 = 1, F33 = 5,000.
+    - Row 34: XYZ Database Software — D34 = 3,000, E34 = 20, F34 = 60,000.
+    - Row 35: Vector database over Florida — D35 = 100, E35 = 1, F35 = 100.
+  - Total Hardware/Software: F41 = SUM(F33:F40).
+  - G41 = G29 + F41.
+- Grand total: A43, F43 = G41.
+
+Key formulas and flow
+- Line item calculations: F = D * E on most rows.
+- Section totals: F16 = SUM(F5:F15), F29 = SUM(F20:F28), F41 = SUM(F33:F40).
+- Running totals: G16 = F16; G29 = G16 + F29; G41 = G29 + F41.
+- Grand total copies the final running total into F43: F43 = G41.
+- Note: In the In‑kind sheet F16 uses COUNT(F5:F15) (counts entries) rather than SUM — likely an inconsistency.
+
+Overall layout
+- Repeated three-block structure (Labor, Travel, Other/Hardware) per sheet.
+- Columns A–C descriptive, D and E numeric inputs, F computed funding/contribution amounts, G cumulative running totals leading to a single grand total.

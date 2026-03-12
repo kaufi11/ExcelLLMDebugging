@@ -1,0 +1,58 @@
+I inspected the workbook (Homework, Attendence, Projects, Midterm) and checked all formulas and key calculated values. Findings are grouped: definite formula errors, data / consistency issues, and suggested fixes.
+
+1) Definite formula error
+- Homework!V47 (cell V47)
+  - Current formula: =(SUM(D47:R47)-T47-U47)/2
+  - All other V-cells use: =(SUM(Dn:Rn)+Tn+Un)/2
+  - The minus signs in V47 appear to be a typo and produce V47 = 25 while the Course Grade in W47 is 64. This is almost certainly wrong. Fix to:
+    =(SUM(D47:R47)+T47+U47)/2
+
+2) Data / type inconsistencies (these affect interpretation)
+- Homework!W2 = "I"
+  - Column W is otherwise numeric (course grade). W2 is text "I" (probably "Incomplete"). That breaks consistency and any numeric aggregation or formulas expecting numbers.
+- Header / missing column label
+  - Column K has no header (K1 is blank) but many rows contain values in column K. This makes the SUM(D:R) ranges less clear to readers. Add a label in K1 or confirm intended purpose of K.
+- Date anomaly in header row
+  - Header Q1 = "2003-12-27T00:00:00" while other header dates are 2002. This may be intentional, but it's a potential data-entry inconsistency.
+
+3) Inconsistent grading entries (W column)
+- W (Course Grade) appears to be entered manually, not computed from V (Sum/2). There are many rows where W differs from a simple rounding of V (and a few cases where W looks capped at 100):
+  - Examples where W ≠ round(V): row 9 (V9=58.75 → round 59, W9=60), row 14 (V14=97.5 → round 98, W14=97), row 20 (V20=104.5 → W20=99), row 26 (V26=100.5 → W26=98), row 30 (V30=137.5 → W30=100), row 38 (V38=104.75 → W38=99), row 41 (V41=126.5 → W41=100), row 47 (V47=25 but W47=64 — caused by the V47 formula bug), row 49 (V49=100.5 → W49=98), etc.
+- Because W is manually entered (and sometimes text), you have inconsistent grade calculation and inconsistent rounding/capping rules. That makes aggregated results (W53) hard to justify.
+
+4) Formula pattern and potential conceptual issue
+- Homework!V2:V52 all use the same pattern: =(SUM(Dn:Rn)+Tn+Un)/2
+  - This is consistent except V47 as noted.
+  - Conceptually: SUM(D:R) includes columns D..R (Hw1..Midterm..LispMid etc). T and U are added after the SUM because T and U are outside D:R — the formula is consistent with that layout. Just be sure that all intended grade components are actually in the included columns (D..R, T, U). If some components were intended to be inside or outside that range, adjust accordingly.
+- If the intention is a weighted total or a cap at 100, that is not enforced by the V formulas; several V results exceed 100 (V20, V26, V30, V38, V41, V49, …). If course policy caps at 100 or uses rounding, apply a formula (see suggestions below).
+
+5) Bottom-line formula rows appear correct
+- Sum row (D53:W53) formulas use correct ranges (D2:D52 etc) and appear syntactically fine.
+- Average (D54:W54) and STDEV (D55:W55) formulas reference the same ranges — consistent.
+
+6) Recommended fixes / standardizations
+- Fix the clear typo:
+  - Homework!V47 → =(SUM(D47:R47)+T47+U47)/2
+- Standardize Course Grade (W) with a formula so it cannot diverge manually:
+  - If you want W to be rounded nearest integer and capped at 100:
+    - Wn = MIN(100, ROUND(Vn, 0))
+  - If you want truncation (round down): =MIN(100, INT(Vn))
+  - If you want to allow "I" (Incomplete), use helper column or data validation so text doesn't break sums. For example, if some rows legitimately have "I", use:
+    - =IF(Wn="I","I", MIN(100, ROUND(Vn,0)))  (or better: compute W from V and use a separate column for status)
+- Add a header label for column K (K1).
+- If some columns in D:R are supposed to be excluded from SUM, explicitly adjust the SUM range (or use explicit column list: =SUM(Dn,En,Fn,...) to avoid accidentally including unintended columns).
+- Consider protecting formula cells (V and W) to avoid manual overwrites.
+
+7) Summary of cells to inspect/fix (quick list)
+- V47 formula: change minus to plus (definite bug)
+- W2: text "I" — decide numeric or status flag
+- K1: add header label
+- Review manually-entered W values where they differ from a consistent rule (rows: 9, 14, 20, 26, 30, 38, 41, 47, 49, 50, 52, and others listed above)
+- Optionally enforce a consistent W formula like =MIN(100,ROUND(Vn,0)) across W2:W52 (except where you need "I" or manual override).
+
+If you want, I can:
+- produce corrected formulas for the whole W column (give exact formula to paste),
+- prepare a corrected copy of the workbook with V47 fixed and W computed from V (and K1 labeled),
+- or produce a list of row-by-row mismatches between V and W.
+
+Which of those would you like me to do next?

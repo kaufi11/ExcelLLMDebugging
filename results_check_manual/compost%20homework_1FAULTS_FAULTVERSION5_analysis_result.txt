@@ -1,0 +1,31 @@
+I inspected the formulas in both sheets. Summary of findings and recommended fixes:
+
+1) Clear formula error (wrong operator)
+- Sheet: Bulk compost
+- Cell: C19
+- Current formula: =A19+(B19*24)-1.48
+- Problem: B19 is hours; all other rows use B/24 (hours → fraction of day). C19 mistakenly multiplies by 24, producing a huge value (319.52).
+- Correct formula: =A19+(B19/24)-1.48
+- Effect: fixes C19 to be consistent with the other "start" values (reduces 319.52 to the expected ~14.05125).
+
+2) Minor inconsistencies / suggestions (not formula errors but worth checking)
+- Sheet headers:
+  - Bulk compost C1 = "Days from " (trailing space)
+  - Treatments C1 = "Days from" (no trailing space)
+  - Suggest making them identical if they are meant to match.
+- Baseline constants:
+  - Bulk compost uses "-1.48" in column C formulas.
+  - Treatments uses "-1.71" in column C formulas.
+  - This may be intentional (different baselines), but verify that those constants are correct and documented.
+- Formula copy pattern:
+  - Each C cell is of the form =Arow+(Brow/24)-const. If this is intended across many rows, consider storing the constant in a single cell (e.g., $Z$1) and using =A4+B4/24-$Z$1 to make maintenance easier and reduce copy-paste errors.
+
+3) Other checks performed
+- All other C-column formulas in both sheets reference their own row (A# and B#/24) and produce expected numeric results.
+- Hour values (column B) are within sensible ranges (<24) in the rows shown.
+- No other obvious mis-copies or row-reference mistakes were found.
+
+If you want, I can:
+- Produce a corrected copy of the workbook with C19 fixed.
+- Replace the hard-coded constants with a reference cell and update formulas accordingly.
+- Run a quick validation that flags any future instances where a B cell is multiplied instead of divided.

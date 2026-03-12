@@ -1,0 +1,30 @@
+Summary — I found two real errors and a few cosmetic issues.
+
+1) Wrong sign in “Public Cost” row (row 268)
+- Problem: Cells F268:BG268 use formulas like =SUM(F269-F270) (and similar columns). That subtracts RISE Savings from RISE Tuition instead of adding them.
+- Why it’s wrong: Total Public Cost = Total RISE Tuition (tuition dollars) + Total RISE Savings. Using "-" gives the wrong totals.
+- Fix: replace each =SUM(X269-X270) with either =X269+X270 or =SUM(X269:X270). Example for column F:
+  - Wrong: =SUM(F269-F270)
+  - Correct: =F269+F270  (or =SUM(F269:F270))
+- Do this for every column F through BG in row 268. After fixing, BI268 (=SUM(F268:BG268)) will give the correct overall public-cost grand total.
+
+2) Missing formula in BK261 (Number of Participants for the class at row 261)
+- Problem: BK261 contains the constant 12 instead of the formula used elsewhere (=SUM(F261:BG261)).
+- Why it’s wrong: BK261 is used by other formulas (BL261, BM261, etc.). A hard-coded number will break totals if the participant cells change.
+- Fix: change BK261 to the correct formula:
+  - BK261 =SUM(F261:BG261)
+  (or =SUM(F261:BG261) — same)
+
+3) Cosmetic / optional cleanups (not causing wrong values)
+- Many cells use SUM around single arithmetic expressions, e.g. =SUM(C3*BK3) or =SUM(F3*$E$3). These return correct results but are unnecessary and make the workbook harder to read.
+- Suggestion: replace with the direct formula (no SUM) for clarity:
+  - e.g. BL3 = C3*BK3  and F4 = F3*$E$3
+
+4) Small notes about Companies sheet
+- The Companies sheet uses formulas like =SUM(C3-D3) to compute savings; this returns C3-D3 (correct) but could be simplified to =C3-D3.
+
+How to apply the fixes quickly
+- Use Find/Replace on row 268: replace "- " with "+ " inside the formulas (or edit the first cell and fill across).
+- Edit BK261 and enter =SUM(F261:BG261), press Enter.
+
+If you want, I can give you the exact list of cells and the corrected formula text (ready to paste) or produce a short macro to fix all of these automatically. Which would you prefer?

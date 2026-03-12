@@ -1,0 +1,39 @@
+I reviewed the workbook formulas and found a few clear formula errors / inconsistencies and some recommended improvements. Summary first, then details and fixes.
+
+Summary of problems found
+- Q4 Homework!H5 — incorrect SUM range (omits column G for Evans).
+- Q4 Summary column F (Weighted Score) — every student row (F3 and F4:F12) incorrectly uses D# for both the Projects (0.4) and Homework (0.2) terms. It should use E# for the 0.2 term. This causes all weighted scores and the derived weighted percentages (column G) to be wrong.
+- These errors cascade into Year Summary because it pulls Q4 percentages from Q4 Summary.
+
+Detailed findings and recommended fixes
+
+1) Q4 Homework sheet — row for Evans
+- Cell: Q4 Homework!H5
+- Problem: Formula is =SUM(B5:F5) — it omits G5 (Personal Shield). All other totals in column H use SUM(B#:G#).
+- Correct formula: =SUM(B5:G5)
+- Current value: 202 (sum B5:F5). Corrected value after fix: 273 (sum B5:G5).
+- Impact: Q4 Summary!E6 currently references this cell ('Q4 Homework'!H5). That will change and should update Q4 Summary weighted score and percentage for Evans, and then propagate to Year Summary.
+
+2) Q4 Summary — Weighted Score formulas use D twice (Projects) instead of using E (Homework)
+- Cells affected: Q4 Summary!F3 and Q4 Summary!F4:F12
+- Problem: formulas are of the form =B#*0.3 + C#*0.1 + D#*0.4 + D#*0.2 — the last term should use E#, not D#. Result: Projects are double-counted and Homework is omitted.
+- Correct formula (per row): =B#*0.3 + C#*0.1 + D#*0.4 + E#*0.2
+  OR (better / more maintainable): =SUMPRODUCT($B$2:$E$2,B#:$E#) where row 2 holds the weights B2:E2. Example on row 4:
+    =SUMPRODUCT($B$2:$E$2,B4:E4)
+- Example corrections (before → after):
+  - Brantley (row 4): F4 currently 297.5 → corrected 295.1. G4 currently 99.1667 → corrected 98.3667.
+  - Evans (row 6): after fixing Q4 Homework!H5 as above, E6 becomes 273 → corrected F6 = 253.0 and G6 = 84.3333 (current F6 = 254.2, G6 = 84.7333).
+- Impact: Column G (=(F#/300)*100) will change because F changes. Any sheet referencing Q4 Summary G# (Year Summary column G) will change.
+
+3) Cascading effects to Year Summary
+- Cells: Year Summary!G2:G10 pull Q4 percentages from Q4 Summary!G4:G12 — those values will change once Q4 Summary F/G are corrected.
+- Year Summary!H2:H10 are =AVERAGE(D#:G#) — those final averages and final grades (column I) may change slightly after fixing Q4 Summary.
+
+Other notes / suggestions
+- The IF grading formula in Year Summary column I works but uses IF(H<101,"A") for the top branch. Functional but slightly unconventional (>=90 case is handled; using ELSE or final TRUE might be clearer).
+- To avoid repeating this kind of copy-paste error, use SUMPRODUCT with absolute weight references in Q4 Summary F column (e.g. =SUMPRODUCT($B$2:$E$2,B4:E4)). That keeps the weights centralized (B2:E2) and reduces the chance of referencing the wrong column.
+- After making the two fixes above (H5 and F# formulas), recalc the workbook to update Q4 Summary column G and Year Summary averages/grades.
+
+If you want, I can:
+- Provide exact corrected formulas for every affected cell (I can list them one per row).
+- Recalculate and give the corrected numeric values for all affected cells (Q4 Summary F/G and Year Summary G/H/I).

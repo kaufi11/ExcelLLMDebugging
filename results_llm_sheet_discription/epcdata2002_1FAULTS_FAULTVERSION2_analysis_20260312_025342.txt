@@ -1,0 +1,55 @@
+I checked the workbook and found three clear, easy-to-fix errors (plus one messy/inconsistent area that will give wrong totals unless cleaned). Below are the problems, why they are wrong, and simple fixes you can apply.
+
+1) GNVQ Foundation sheet — missing total for the "New" column
+- Problem: F35 uses =(E35-D35)/D35 (percent change) but E35 (the "New" total) was not calculated. That makes F35 return an error or a wrong result.
+- Fix: Put the missing sum formula in E35:
+  E35 = SUM(E7:E31)
+- Explanation: E35 must be the total of the new (E) subject rows so the percent-change formula (which uses E35 and D35) has valid input.
+
+2) GNVQ Intermediate sheet — COUNT used instead of SUM
+- Problem: B37 formula is COUNT(B7:B34). COUNT returns how many numeric cells exist, not their total. That cell should be the total number for column B.
+- Fix: Replace with:
+  B37 = SUM(B7:B34)
+- Explanation: SUM returns the sum of the values (what you intend); COUNT only returns a count of non-empty numeric entries.
+
+3) GCSE entries sheet — inconsistent handling of Science Double/Single/Combined causing incorrect totals
+- Problem summary:
+  - Some columns have Combined (row 52) provided, others compute Combined as =2*DoubleAward + SingleAward (row 52 formulas in F:I).
+  - The “check” / totals area uses different logic across columns (B82..I82, B83..I83, B84..I84) — e.g. some columns add B54 (double award) again, others subtract, etc. This inconsistent approach leads to wrong overall totals and makes the "% of total" and change calculations unreliable.
+- Correct approach and fix (pick one; I recommend option A below):
+  Option A — Single robust total formula (quickest, minimal change):
+   - Replace the column total formula with (for each column, e.g. column B):
+     TOTAL = SUM(B4:B78) - B54 - B56 + B52
+   - Reason: SUM(B4:B78) currently includes Double Award (B54) and Single Award (B56) as separate rows; you want Combined (B52) instead (where Combined = 2*Double + Single). So remove the separate double & single, and add the combined. This is a single-cell fix you copy across columns.
+   - Example for column F:
+     F84 = SUM(F4:F78) - F54 - F56 + F52
+  Option B — (preferred long-term) standardize Combined and then sum only the included subject rows:
+   - Ensure row 52 (Combined) is consistently calculated in every column:
+     e.g. B52 = B54*2 + B56
+   - Make your total SUM exclude the raw double and single rows (54 & 56). Either:
+     - Use SUM with explicit ranges that skip rows 54 & 56, or
+     - Use the formula in Option A which is simpler to apply.
+- Explanation: Science double-award counts as two GCSEs. To get correct overall totals, you must ensure the combined (double counted) value is used exactly once and the separate double/single rows are not added in addition. The current mixed add/subtract approach is inconsistent and causes errors.
+
+4) (Recommendation) Clean up the “check” area in GCSE sheet
+- Remove the ad-hoc helper rows (B82..B83..B84 with different formulas across columns) and replace with:
+  - A single reliable "subject total" cell per column using the Option A formula from above, copied across all year columns.
+- Explanation: Makes the totals transparent, consistent and easy to audit. After that the %‑of‑total formulas (=I4/$I$80 etc) will be correct.
+
+Quick list of formulas to enter/correct (copy across columns where appropriate)
+- GNVQ Foundation:
+  E35 = SUM(E7:E31)
+- GNVQ Intermediate:
+  B37 = SUM(B7:B34)
+- GCSE (for each column, replace the messy check with):
+  e.g. for column F:
+  F84 = SUM(F4:F78) - F54 - F56 + F52
+  (Then copy same pattern into B84, C84, … I84)
+- (Optional) Make Combined (row 52) consistent:
+  B52 = B54*2 + B56 (and copy across)
+
+If you want I can:
+- Give the exact formulas for every affected cell and columns (B through I) ready to paste,
+- Or produce a short VBA macro to apply the changes across the GCSE sheet automatically.
+
+Which would you prefer?

@@ -1,0 +1,79 @@
+I inspected both sheets (2003 and Sheet2) and checked every formula you provided. Below I list the formula errors, probable bugs and inconsistencies, with exact cell addresses and suggested fixes.
+
+Summary of the main problems
+- A few explicit formula errors/typos (one obvious corrupted formula).
+- Several inconsistent formulas between the two sheets (columns shifted, different references).
+- Inconsistent percent vs fraction usage and inconsistent denominators used for "Piper" % calculations.
+- #N/A propagation in charge-balance cells because OH- is NA.
+
+1) Explicit formula error (typo)
+- Sheet2!J5: formula is
+  =-0.51*(G5^245)*SQRT($B$2450)
+  This is clearly corrupted (exponent 245, reference $B$2450). Resulting J5 = 0 and it forces K5 = 10^J5 = 1 and L5 incorrect.
+  Suggested correction (consistent with the other rows):
+  =-0.51*(G5^2)*SQRT($B$20)
+  After that update K5 should be =10^J5 and L5 =F5*K5 (as in the other rows).
+
+2) Incorrect percent formula for K+ on sheet "2003"
+- 2003!I4 currently:
+  =SUM(H3:H4)/SUM(H3:H6)
+  This returns (H3+H4)/sum(H3:H6) instead of K+'s share.
+  Suggested correction:
+  =H4/SUM(H3:H6)
+  (Also consider multiplying by 100 if you want actual percent, see point 5.)
+
+3) Missing/incorrect percent for Na on "2003"
+- 2003!I3 is blank. For consistency, Na should have
+  =H3/SUM(H3:H6)
+  (or =H3/SUM(H3:H6)*100 if you want percent)
+
+4) Inconsistent anion % denominators (possible logical error)
+- 2003!I7 (Cl), I9 (HCO3-), I10 (SO4-2) use denominator H7+H9+H10 (i.e. they exclude NO3 (H8) and CO3 (H11)).
+  Example: 2003!I7 = H7/(H7+H9+H10)
+- However overall anion total C23 = SUM(H7:H13) includes all anions (H7..H13).
+  This is an inconsistency: the denom used for the Piper % calculations is not the same as the sum used for charge balance.
+  Action:
+  - Decide what the Piper triangle should include. Typical choices:
+    - Major-anion triangle: use Cl-, SO4-2, HCO3- + CO3-2 (NO3 sometimes omitted if small).
+    - Or use ALL anions: then denominator should be SUM(H7:H13).
+  - If you choose "all anions", change I7/I9/I10 to =H7/SUM(H7:H13) etc. If you intentionally exclude NO3 and CO3, document that choice.
+
+5) "%"-label vs values (units inconsistency)
+- Header I1 in 2003 is "%", but the I column values are fractional (0.8024 etc), not multiplied by 100.
+  - Either change the header to "fraction" (or "fraction of total") or multiply the formulas by 100 (e.g. =H5/SUM(H3:H6)*100).
+  - Note C22 (Charge Balance) explicitly multiplies by 100, so mixing fractional I-values with percent elsewhere is inconsistent.
+
+6) Column-shift / layout inconsistency between sheets
+- In 2003: column J = mi*zi^2, K = log gi, L = gi, M = activity.
+- In Sheet2: column I = mi*zi^2, J = log gi, K = gi, L = activity.
+  - Because of this the ionic strength cell B20 references different columns:
+    - 2003!B20 = 0.5*SUM(J3:J13) (uses J)
+    - Sheet2!B20 = 0.5*SUM(I3:I13) (uses I)
+  This is acceptable if deliberate, but it is a source of confusion and is error-prone (see Sheet2!J5 typo). I recommend using the same column layout in both sheets.
+
+7) #N/A propagation in charge-balance calculations
+- 2003!E23 = C23 + H15 where H15 is #N/A (OH- is set to =NA()) → E23 is #N/A
+- 2003!E22 uses E23 and E24 → returns #N/A because E23 is #N/A.
+  Suggested fixes (pick one):
+  - Replace =C23 + H15 with =C23 + IFERROR(H15,0) (or =C23 + IF(ISNA(H15),0,H15)) so missing OH counts as zero instead of NA.
+  - Alternatively keep OH NA but handle the NA in E22 similarly (wrap with IFERROR or exclude NA).
+
+8) Miscellaneous / housekeeping suggestions
+- Standardize the Debye-Hückel formula references:
+  Use one consistent formula (e.g. =-0.51*(Gx^2)*SQRT($B$20)) across both sheets and ensure B20 indeed contains ionic strength computed from mi*zi^2.
+- Check cells where G (abs(z)) is blank (e.g. SiO2 row). Current formulas produce 0 and gi =10^0 =1 which is okay but make sure that is intended.
+- Consider replacing the density correction factor (1000/999.7) with a named constant with documentation, to avoid magic numbers.
+- Cells with formulas that produce extremely small numbers (H14, L14 etc) are correct mathematically but may be easier to read if formatted in scientific notation uniformly.
+
+9) Checklist of cells to change immediately
+- Sheet2!J5 → fix to =-0.51*(G5^2)*SQRT($B$20)
+- 2003!I4 → change to =H4/SUM(H3:H6)
+- 2003!I3 → add =H3/SUM(H3:H6) (if intended)
+- Optionally convert I-column fractions to percentages by multiplying by 100 (or adjust header)
+- 2003!E23 (and possibly E22) → change to handle NA (e.g. =C23 + IFERROR(H15,0))
+
+If you want, I can:
+- Produce the exact corrected formulas for every affected cell and a short macro-like list to paste-in,
+- Or create a corrected copy of the workbook with the fixes applied (if you can upload or allow me to write it).
+
+Tell me which of the suggested behaviors you prefer for the anion/cation % calculations (include all ions vs only major ions; fraction vs percent) and I will give the exact corrected formulas and any additional clean-up.

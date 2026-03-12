@@ -1,0 +1,37 @@
+Summary of the problems (short)
+- Misplaced numbers (data misalignment): some numeric values sit in columns that are not grade columns (columns F, H and Z). That shifts data off the headers and makes the 100% calculations wrong.
+  - Examples: F18, H18, F19, H19, F20, H20 (Education rows); H10 (Business, row 10); H14 (Hospitality, row 14); Z22 (Engineering, row 22).
+- Formula typo: AC22 uses subtraction instead of addition:
+  - AC22 =SUM(100-(S22-U22-W22-Y22-AA22)) — wrong signs.
+- Text entries "n/appl" in some rows (rows 15–16) will be ignored by numeric sums but can cause confusion if you expect numeric output.
+
+Why these cause errors
+- The table expects the Lower-level grade % columns to be E (A), G (B), I (C), K (D), M (F/WF) and Other in O; Upper-level to be S (A), U (B), W (C), Y (D), AA (F/WF) and Other in AC.
+- Putting numbers in F, H or Z places them between those expected columns so the 100 - sum(...) formulas omit those stray numbers. That makes “Other” (O and AC) wrong and row totals not equal 100.
+- AC22’s minus signs subtract some percentages and give a wrong result (can be >100 or negative).
+
+Fixes (step‑by‑step, easy)
+1. Align the data
+   - Move or delete the stray numbers so every row’s lower‑level percentages are only in E, G, I, K, M and upper‑level only in S, U, W, Y, AA.
+   - Specifically: remove/relocate values in F18, H18, F19, H19, F20, H20, H10, H14 and Z22 into the correct columns (or clear them if they are duplicates).
+   - A quick way: if these stray columns are unintended, delete column F (if it's entirely stray), H and Z (or delete just the stray cells and shift the row cells left into the proper columns). Verify each college row lines up under E/G/I/K/M and S/U/W/Y/AA.
+
+2. Fix the bad formula
+   - Replace AC22 with the correct formula:
+     - =100-(S22+U22+W22+Y22+AA22)
+     - (You can also use =SUM(100-(S22+U22+W22+Y22+AA22)) if you like the SUM wrapper, but + is required not -.)
+
+3. Clean up text cells
+   - If "n/appl" should mean “no data,” either leave as text but be aware formulas ignore them, or replace with blank cells or NA() so it’s clear and won’t confuse calculations.
+
+4. Validate
+   - For each row check: E+G+I+K+M+O = 100 and S+U+W+Y+AA+AC = 100 (allowing small rounding differences).
+   - If you prefer, replace O and AC formulas with exactly: =ROUND(100-(E6+G6+I6+K6+M6),1) to force matching decimal precision (and similarly for upper level).
+
+Short recommended formula cleanups (optional)
+- Use 100-(...) instead of SUM(100-(...)) because it’s clearer.
+- Use ROUND(...,1) if you want one decimal precision consistent with the rest.
+
+If you want, I can:
+- Give exact cut-and-paste formulas to fix every bad AC/O cell.
+- Produce a small checklist / macro to find and move any cells sitting in non‑header columns.

@@ -1,0 +1,46 @@
+Summary: there are several consistent formula mistakes in Sheet 3. Main problem: the "Spent in total (H)" column is calculated incorrectly in many rows, some subtotals reference the wrong ranges, and the administrative / contingency / totals rows are missing required formulas.
+
+Errors and fixes (short & clear)
+
+1) Wrong total per-line (many rows H6, H7, H8, H10, H11, H21–H24, H28–H31, H35–H41, H44–H46, H52, etc.)
+- Fault: cells use Hx = Cx * Gx (or similar) or another incorrect expression.
+- Why wrong: H is labelled "Spent in total (in €)". That should be the sum of EU contribution (F) + other funds (G), not quantity * other-funds cell.
+- Fix (use this formula in every H row): =F6+G6  (replace 6 with the row number)
+- Short explanation: total spent = EU spent + other funds spent.
+
+Optional smart formula (handles cases where F/G are empty but #units and unit rate are provided):
+=IF( (N(F6)+N(G6))>0, F6+G6, IF(AND(C6<>"",D6<>""), C6*D6, 0) )
+
+2) Hard-coded / wrong constant
+- Fault: H12 = 4
+- Fix: replace with =F12+G12 (or use the smart formula above)
+- Why: a constant breaks calculations and subtotals.
+
+3) Subtotal ranges that include header/blank rows or wrong rows
+- Fault examples: H13 = SUM(H5:H12) and H53 = SUM(H51:H52)
+- Fixes:
+  - H13: =SUM(H6:H12)
+  - H18: (already OK) =SUM(H16:H17)
+  - H25, H32, H42, H47 are OK as given.
+  - H53: =SUM(H52) or simply =H52 (if only H52 belongs to "Other")
+- Why: use exact row ranges for the group to avoid including wrong cells and make formulas clearer.
+
+4) Administrative costs missing formula (row 56)
+- Fault: H56 has no formula.
+- Fix: H56 = H55 * 7%  (enter =H55*0.07)
+- Why: administrative costs are maximum 7% of subtotal direct costs (8.).
+
+5) Total eligible / contingency / grand total wiring
+- Faults: H57 references H56+H55 which is correct only if H56 is calculated; H58 (contingency) has no formula; H59 is H58+H57 which is fine if H58 exists.
+- Fixes:
+  - H57: =H55 + H56  (ensure H56 exists as above)
+  - H58: =H57 * 5%  (enter =H57*0.05)
+  - H59: =H57 + H58  (or keep =H58 + H57; same result)
+- Why: contingency is up to 5% of total eligible (row 10), so compute it then add to total.
+
+General recommendations
+- Put the same, simple formula pattern in column H: =F[row] + G[row] (or use the optional smart formula if you want auto-calculation from C*D when F/G are empty).
+- Check all subtotals use exact ranges for clarity (e.g., sum only the rows that belong to that section).
+- After fixing, verify totals: H55 should equal sum of the seven subtotals, H56 = 7% of H55, H57 = H55 + H56, H58 = 5% of H57, H59 = H57 + H58.
+
+If you want, I can produce the exact corrected formulas for every specific H cell (H6:H59) ready to paste into the sheet. Which do you prefer?

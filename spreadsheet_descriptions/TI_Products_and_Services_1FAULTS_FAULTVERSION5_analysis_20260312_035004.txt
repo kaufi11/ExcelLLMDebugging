@@ -1,0 +1,40 @@
+High-level summary
+- Workbook: 3 sheets. Sheet1 contains the full inventory; Sheet2 and Sheet3 are empty/placeholders.
+- Top-of-sheet metadata: C1 = "Draft # 9"; D1 contains =TODAY() (volatile current date); I1 contains filename "infrastructure-services1.xls".
+
+Layout and column mapping (Sheet1)
+- Repeating table structure across many service groups. Common columns:
+  - A: item-type marker (often "P" or "p")
+  - B: sequential index (all populated by formulas of the form =+Bprevious+1, chaining down the sheet)
+  - C: Department / Product / Project name
+  - D: Short Name / Group / Service type (e.g., Products, Services, Development, Group, Strategy)
+  - E: Help Desk (flags)
+  - F: Consulting
+  - G: Development
+  - H: Maintenance
+  - I: Customer / Leader/Contact (occasionally a person or stakeholder group)
+  - K: Dependencies (e.g., Kerberos, Directory, AFS, Solaris, Delphi, NetDB)
+  - L: Notes (planning status, dependencies, comments)
+
+Content structure and examples
+- Top section lists Technology Infrastructure Departments (C5–C10) and leaders/contacts (I5–I9) with email addresses in column K (K5–K9).
+- Many grouped blocks repeat the "Products / Services", "Projects", "Potential Projects" pattern for functional areas such as:
+  - Desktop & Server Tools (rows ~27–38)
+  - Registries & Directories (rows ~59–116+)
+  - eCommerce (rows ~112–125)
+  - Email (rows ~128–140)
+  - General Infrastructure, Courses, NetDB, Web, Development Support and Tools, Authentication/Access & Roles
+- Key named items: Kerberos, Directory Server, SUNet ID, NetDB, Marimba/Software Management System, Marimba pilot, IMAP/Sendmail, AFS, Course Registry, Panfora, WebAuth, Open LDAP upgrade, PeopleSoft, etc.
+- Example notes: L21 = "Planning stage, Prototype for Marimba"; several items have implementation timing/comments (e.g., L91, L132, L168, L180).
+
+Formulas and data issues to note
+- Column B uses cascaded formulas (=+Bprevious+1) to auto-number rows. Many formulas reference nearby rows correctly, but there are some anomalies:
+  - B22 = +B21+641 (large unexpected jump)
+  - Some B formulas reference non-sequential rows (e.g., B40 = +B53+1, B47 = +B54+1, B97 references B221, B107/B108 chain), which may break the intended sequential numbering or create forward references.
+  - Because many B cells reference other rows, inserts/deletes or moved rows can break numbering or create errors.
+- D1 uses =TODAY() (updates on open).
+- Several cells contain text-rich notes and dependency lists rather than normalized data (free-text in L and K).
+
+Overall assessment
+- Sheet1 is a comprehensive, free-form inventory/roadmap of infrastructure services, grouped by functional area with status/role flags in E–H, stakeholder/customer in I, dependencies in K, and notes in L.
+- Structure is consistent visually but relies heavily on in-sheet formula chaining for numbering and on free-text fields; there are a few formula anomalies that merit review (notably B22 and some forward references) to ensure numbering and references behave as expected.

@@ -1,0 +1,22 @@
+Summary of errors found
+- KauCC sheet, cell E20 (Image Collection row) has the wrong formula: =SUM(D20:D20). That sums only the PDF column and yields 0 instead of the correct row total (should be Full‑text + PDF).
+- Across the workbook the grand total in E29 is written as =SUM(C29:D29). That works (it adds the column totals) but is fragile and inconsistent: better practice is to sum the row totals in E (E10:E28) so the grand total always reflects the per‑row totals.
+
+Why these are problems
+- E20 currently ignores the Full‑text value in C20, so the per‑row total is wrong and looks inconsistent with the column totals.
+- Using =SUM(C29:D29) couples the grand total to the column subtotal cells rather than the row totals; if anyone changes how column subtotals are calculated the E grand total can become wrong or confusing.
+
+Fix (short steps)
+1. Fix the bad row formula (KauCC):
+   - Go to KauCC!E20 and replace =SUM(D20:D20) with =SUM(C20:D20) (or =C20+D20). Press Enter.
+   - The correct E20 value will be 112 (112 full‑text + 0 PDF).
+
+2. Make grand totals robust (recommended change on every sheet):
+   - Change E29 from =SUM(C29:D29) to =SUM(E10:E28).
+   - (Optional) Ensure E10:E28 all contain =C# + D# (or =SUM(C#:D#)), then fill down.
+
+Why this solution works
+- Changing E20 to =SUM(C20:D20) includes both Full‑text and PDF so the row total is correct.
+- Changing E29 to =SUM(E10:E28) ensures the grand total is the sum of the row totals in E, so if any row formulas change or are corrected the grand total updates correctly and is easier to audit.
+
+If you want, I can give the exact formulas to paste into E10:E28 and E29 and show how to fill them down on all sheets.

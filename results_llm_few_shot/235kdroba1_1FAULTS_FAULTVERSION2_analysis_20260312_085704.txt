@@ -1,0 +1,20 @@
+Summary of errors found
+1) Faulty cell: AC8
+   - Error type: Mechanical (typo: multiplication instead of division)
+   - Problem: AC8 =AB8*$AB$33 multiplies 46 by 75 (gives 3,450) instead of normalizing the score. That single bad value will massively skew column AC averages/medians and any downstream totals that use AC values.
+   - Fix: change formula to =AB8/$AB$33
+   - Why this fixes it: all other AC cells are fractions of the form Score / Max (e.g. ABn / $AB$33). Using division returns the normalized fraction (46/75 ≈ 0.6133) instead of an enormous product.
+
+2) Minor fragility (recommendation): AF33
+   - Current: AF33 =SUM(Z33:AD33)
+   - Why it’s risky: that range includes columns AA33 and AC33 (currently blank). It works now because blanks are zero, but it’s fragile and less clear.
+   - Suggested clearer formula: =Z33+AB33+AD33 or =SUM(Z33,AB33,AD33)
+   - Why: explicitly sums only the three test components you intend, avoiding accidental inclusion if AA/AC ever contain values.
+
+What to do
+- Correct AC8 to =AB8/$AB$33.
+- Replace AF33 with =SUM(Z33,AB33,AD33) (optional but recommended).
+- After fixing, recalc or refresh the sheet — check AC35 (average) and AC36 (median) and any summary sheets (Sheet3–Sheet6) because they will change once AC8 is corrected.
+
+Tip
+- Search the sheet for other occurrences of "*" where you expect "/" (especially in normalization columns like AA/AC/AE/AG) to catch any other similar typos.

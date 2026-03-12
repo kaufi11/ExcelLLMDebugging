@@ -1,0 +1,73 @@
+Overview
+- Workbook contains 6 program sheets plus summary rows: Municipal, Non Profit, County, Rehab, HOME, AHTF.
+- Common layout on each sheet: columns A–F:
+  - A: Applicant, B: Project, C: Code, D: Description, E: Request (numeric), F: Recommend (numeric/formula/text).
+- Many F cells are formulas pointing to the corresponding E (e.g., F2 = E2), some are fixed amounts, some blank, and a few contain text (e.g., AHTF F10 = "Pending Feasibility Study").
+
+Key sheets and formulas
+1) Municipal
+- Rows A1:F1 are headers. Data in rows 2–21.
+- Municipal total: D22 label "Municipal Total"; E22 = SUM(E2:E21); F22 = SUM(F2:F21).
+- Calculated totals:
+  - Request (E22) = 4,452,315.85
+  - Recommend (F22) = 1,952,645.00
+- Note: F5 (Hatboro Borough) uses formula =E6 (Hatfield) — likely an error (should be =E5).
+
+2) Non Profit
+- Rows A1:F1 headers; data rows 2–21; a separate ESG block at rows 27–28.
+- Totals: D22 "Total Non-Profit" with E22 = SUM(E2:E21), F22 = SUM(F2:F21).
+  - Request (E22) = 1,523,200.71
+  - Recommend (F22) = 1,057,623.00
+- ESG subsection:
+  - E27 = 369,500; F27 = 143,000
+  - E28 = SUM(E27) = 369,500; F28 = SUM(F27) = 143,000
+
+3) County (summary sheet)
+- Contains County program rows and summary links to other sheets.
+- E6 (County Total) = SUM(E3:E5) = 1,234,762.00 (same for F6).
+- Cross-sheet rollups:
+  - D9 / E9 = Municipal!E22 (Municipal total)
+  - D10 / E10 = 'Non Profit'!E22 (Non-profit total)
+  - D11 / E11 = Rehab!E8 (Rehab total)
+  - D12 / E12 = E6 (County total)
+  - D13 / E13 Total Requested = SUM(E9:E12) = 7,693,312.56
+
+4) Rehab
+- Rehab projects list; totals: D8 "Total Rehab Projects"
+  - E8 = SUM(E2:E7) = 483,034.00
+  - F8 = SUM(F2:F7) = 404,020.00
+
+5) HOME
+- HOME projects rows 2–7; administration row 10.
+- D8 E8 = SUM(E2:E7) = 907,235.00
+- E11 Total HOME = SUM(E8:E10) = 1,066,725.10 (same for F11)
+
+6) AHTF
+- AHTF project list rows 2–13, totals in row 14, a Continuum of Care match in row 16, additional project row 17.
+- E14 (TOTAL AHTF requested) = SUM(E2:E13) = 3,599,324.00
+- E16 Continuum match = formula =2432890*0.15 = 364,933.50 (hard-coded multiplier; source number is embedded)
+- E17 = 300,000
+- E18 Total AHTF = SUM(E14:E17) = 4,264,257.50
+- F14 = SUM(F3:F13) (note: excludes F2; F10 contains text so SUM ignores it) = 577,890.00
+- F18 = SUM(F14:F17) = 1,242,823.50
+- D19 E19 = HOME!E11 (Total HOME funding requested)
+- D20 E20 = SUM(E18:E19) = Total HOME + AHTF = 5,330,982.60
+
+Notable values / observations
+- Largest single requests:
+  - Redevelopment Authority (AHTF) E10 = 1,700,000
+  - Canus Corporation (AHTF) E2 = 1,000,000
+  - Upper Dublin Township (Municipal) E18 = 750,741.85
+  - West Conshohocken (Municipal) E20 = 544,539.50
+  - New Hanover Township (Municipal) E11 = 519,812.90
+- Several Recommend (F) cells are blank or set to flat caps (e.g., multiple municipals recommended at 190,000).
+- Formula/text issues to review:
+  - Municipal F5 references E6 (wrong cell).
+  - AHTF F14 uses SUM(F3:F13) — excludes F2 (Canus) so F14 does not include that recommendation.
+  - AHTF F10 contains non-numeric text ("Pending Feasibility Study") — SUM ignores text.
+  - AHTF E16 uses a hard-coded base (2,432,890) for a 15% match instead of referencing a cell total.
+
+If you want, I can:
+- Produce a corrected Recommend column where missing or erroneous formulas are fixed
+- Recompute and produce a compact totals sheet (CSV-style)
+- Highlight any other formula inconsistencies or create checks to detect these automatically.

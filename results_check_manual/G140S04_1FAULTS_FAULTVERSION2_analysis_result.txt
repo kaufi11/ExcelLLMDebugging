@@ -1,0 +1,43 @@
+I reviewed the formulas you included for each sheet and found one clear formula error plus a few inconsistencies/fragile spots you should probably tidy up. Summary and recommendations below.
+
+1) Clear formula error (wrong sign) — causes wildly large adjusted exam scores
+- Sheet: "900 Class"
+- Cell: L85
+- Current formula/value: L85 = L84 + L83 (value shown 39.4310344827586)
+- Problem: For normalization you appear to be using (Lx + offset) * 3.33333 in column M. The other class sheets compute offset = 22.5 − class_average (i.e. L84 − L83 or L80 − L79) so adding produces the wrong offset here. L85 should be L84 − L83, not L84 + L83.
+- Effect: M values in "900 Class" are ≈ 188–211 (example M5 = 181.436600...), much larger than the normalized values in the other sheets (~60–100). Example:
+  - Row with L5 = 17: current M5 = (17 + 39.431034) * 3.33333 ≈ 181.4366
+  - If L85 = L84 − L83 (5.5689655), correct M5 would be (17 + 5.5689655) * 3.333333 ≈ 75.23 (consistent with other sheets)
+- Recommended fix: change L85 formula in "900 Class" to
+  = L84 - L83
+  (or =L$84-L$83 with absolute refs as you prefer). After that the M column in that sheet will be in the same normalized range as the other class sheets.
+
+2) Inconsistent offset formula patterns across sheets (not necessarily wrong, but inconsistent)
+- "1030 Class" calculates the offset as L80 − L79 and stores it in L81, then uses L$81 in M formulas.
+- "Noon Class" calculates offset as L83 − L82 and stores in L84, then uses L$84 in M formulas.
+- "900 Class" (as noted) currently uses L84 + L83 (likely a mistake).
+- Recommendation: standardize the offset calculation to the same pattern in every class (preferably offset = target_mean − class_mean, e.g. 22.5 − average) and use consistent cell names/locations so it’s clearer/less error-prone.
+
+3) Minor inconsistency in multiplier precision
+- Multipliers used in M formulas vary: 3.33333, 3.333333, 3.3333333.
+- Effect: tiny rounding differences. Not critical, but for consistency and reproducibility pick one (e.g. 3.333333) and use it everywhere.
+
+4) Fragile/ambiguous summation references in Sheet1
+- Many W-row formulas on "Sheet1" sum N + P + R + T + U + V (e.g. W6 = N6+P6+R6+T6+U6+V6). In many rows some of those columns are blank and the sum still works (blank treated as zero).
+- Potential issues:
+  - It's easy to misplace a value into the wrong column (T vs U vs V) and have it still "work" because blanks behave as zeros — this can hide mapping errors.
+  - If you intend to sum a particular set of adjusted exam columns, consider using explicit named ranges or a contiguous SUM range to reduce the risk of missing/misplaced data.
+- No immediate wrong results shown in the JSON (the provided W values match the listed component cells), but this is a fragile pattern.
+
+5) Blank/text entries and COUNT/SUM ranges
+- You use SUM(L4:L40)+SUM(L44:L79) and COUNT(L4:L40)+COUNT(L44:L79) to compute totals and averages. Because some L cells contain text or " " blanks, COUNT ignores non-numeric cells (which looks intended).
+- Just be aware: if intended to include a cell that currently contains a stray space/text, COUNT will skip it — this can change averages if a numeric entry is accidentally stored as text.
+
+6) Miscellanea / housekeeping suggestions
+- Standardize the absolute reference used inside the per-sheet M formulas (e.g. always use L$[offsetrow]) so formula copying is predictable.
+- Consider replacing hard-coded constants (22.5, 3.333333) with named constants (e.g. TargetMean, ScaleFactor) to make the logic self-documenting.
+- If you want all class M-values to have mean ≈ 75, verify each sheet uses offset = TargetMean − class_mean (TargetMean appears to be 22.5 before scaling in your sheets).
+
+If you want, I can:
+- provide the exact corrected L85 formula and recalculate a sample of M values for the "900 Class" to show the expected changed results, or
+- produce a short script/step-by-step to standardize the formulas (offset, multiplier) across all class sheets.

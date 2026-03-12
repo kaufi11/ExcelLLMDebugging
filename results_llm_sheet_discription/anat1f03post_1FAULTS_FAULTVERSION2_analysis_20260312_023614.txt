@@ -1,0 +1,35 @@
+Found 4 concrete errors/risks. Short summary + exact fixes and why.
+
+1) Wrong average range (typo)
+- Error: F56 = AVERAGE(F37:F55) — this omits F36 from the section-8004 mean.
+- Fix: change F56 to =AVERAGE(F36:F55)
+- Why: includes all 20 student rows so the mean is correct.
+
+2) Missing score cell (blank)
+- Error: G55 is blank (row 55 shows D55, E55, F55, H55 but no G55). SUM(D55:G55) will treat it as 0 and underreport that student's total.
+- Fix: enter the correct Pract.4 score in G55 (or if the student missed it, explicitly enter 0 and add a comment).
+- Why: prevents an unintended zero from silently skewing that row's total and the class mean.
+
+3) Inconsistent/wrong grade comparison operators
+- Error: Block 1 grade formulas use >= thresholds (e.g. K6 uses >=89.9%), block 2 uses > thresholds (e.g. K36 uses >89.9%). K26 (mean grade) also uses >. This causes different results for boundary values (e.g. exactly 89.9%).
+- Fix: make all grade formulas identical and use >= for upper bounds. Example replace K36 (and copy down K36:K55) with:
+  =IF(J36>=89.9%,"A",IF(J36>=79.9%,"B",IF(J36>=69.9%,"C",IF(J36>=59.9%,"D","F"))))
+  Also update K26 and K56 to use >= as well.
+- Why: consistency removes ambiguity at grade cutoffs and aligns behaviour across both sections.
+
+4) Attendance not included in Class % (possible logic error)
+- Issue: Column I intentionally sums only Practicals D:G and J divides by 400, so Attendance/Participation (H, out of 50) is excluded from class % — maybe intended, maybe not.
+- Two options depending on intent:
+  a) If attendance should remain excluded (keep current): clarify header and label J as "Class % (practicals only)". No formula change.
+  b) If attendance should be included in final percent (recommended if total course points = 450): add a total-with-attendance column and use 450 as denominator. Example:
+     - Insert column L titled "Total (with A/P)" and set L6 = I6 + H6 (or =SUM(D6:G6,H6))
+     - Set J6 = L6 / 450
+     - Copy down J and update MEAN row J26 = I26_total_with_AP / 450 (or compute from L26)
+- Why: using the correct denominator ensures class % reflects all points students can earn.
+
+Extra tip (cleanup)
+- Consider using a single, copyable formula for grades (put thresholds in a small lookup table and use VLOOKUP/LOOKUP or IFS) — easier maintenance and removes nested IF errors.
+
+If you want, I can provide:
+- the exact updated formulas to paste for every affected cell (K36:K55, K26/K56, F56, L column formulas), or
+- a version that includes attendance in the class % and updates means automatically. Which do you prefer?

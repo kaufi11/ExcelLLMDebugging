@@ -1,0 +1,24 @@
+Summary of the problems
+- Column E (Week 4) contains AVERAGE formulas instead of the actual Week 4 hours for most employees. (E3:E8 should be week‑4 hours, not averages.) E5 is inconsistent (AVERAGE(B5:C5) instead of B5:D5).
+- Overtime formulas in G3:G8 have wrong row references (they point to E4, E5, E6, E7, E8, E10 instead of E3, E4, E5, E6, E7, E8). That gives wrong overtime totals and therefore wrong gross pay.
+
+Why that is wrong
+- Total hours (F) uses SUM(B:E). If E is an average rather than the real week‑4 hours, totals in F are wrong.
+- Overtime (G) should sum overtime from the four weeks of the same row. Wrong row references mean you are sometimes using other employees’ cells or even the weekly total (E10), producing incorrect overtime and pay.
+
+How to fix it (short, step‑by‑step)
+1) Put the correct Week 4 hours into E3:E8 (replace each AVERAGE formula with the actual numeric hours for that employee in week 4). If you don’t have week‑4 data and intended something else, decide whether E should be a blank or zero — but it must represent Week 4 hours, not the average.
+
+2) Correct the overtime formula and copy it down. Use this formula in G3 and fill down to G8:
+   =MAX(B3-40,0)+MAX(C3-40,0)+MAX(D3-40,0)+MAX(E3-40,0)
+
+   Or a single-row array/non-array alternative (more compact and robust):
+   =SUMPRODUCT((B3:E3>40)*(B3:E3-40))
+
+3) Verify totals: after fixing E and G, F (SUM(B:E)) and gross pay (C15:C20, i.e. (F+G)*rate) will recalculate correctly.
+
+Extra notes
+- If you actually intended Column E to be the average of weeks 1–3, change F (Total) to SUM(B3:D3)+E3 or rework the sheet design — but that design is confusing. Best practice: Columns B–E = four weekly hours (all numeric), F = total SUM(B:E), G = overtime as above.
+- Also fix the one inconsistent average: if you keep any AVERAGE formulas, ensure their ranges are consistent (E5 = AVERAGE(B5:D5) if you meant average of weeks 1–3).
+
+If you want, I can provide the exact corrected formulas for each cell and a version you can paste into your workbook. Which do you prefer?

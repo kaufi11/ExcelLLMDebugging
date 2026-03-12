@@ -1,0 +1,31 @@
+I inspected the formulas you listed. I found a few concrete errors that will give wrong year values and corrupt the present-value totals. Below are the errors, why they are wrong, and the simple fixes.
+
+1) Discount factor error (major — breaks all PVs after 2013)
+- Error: U19 is =T19*(1*1.12) (it multiplies by 1.12 instead of dividing).
+- Why wrong: DF row should reduce (divide) each year by 1.12; multiplying makes the discount factor too large and will inflate PVs from 2014 onward.
+- Fix: change U19 to =T19/1.12 (or =T19*(1/1.12)). Then fill/drag that cell to V19:AA19 to propagate. 
+- Better (robust) alternative: put the rate in one cell (e.g. F19 = 12%) and use G19 = 1, H19 = G19/(1+$F$19) then fill right — or use =1/(1+$F$19)^(COLUMN()-COLUMN($G$19)).
+
+2) Year-specific cells referencing the wrong column (AA17 and AA29)
+- Error: AA17 = 0.1*G5 + 0.1*G6 and AA29 = 0.02*G5 + 0.02*G6 (both are in column AA, year 2020, but use G5/G6 values which are year-2000 values).
+- Why wrong: a value placed in the 2020 column must use the 2020-year inputs (AA5, AA6 or the appropriate year-column sums). Using G5/G6 applies year-2000 amounts to 2020.
+- Fix: change AA17 to =0.1*(AA5+AA6) (or =0.1*SUM(AA5:AA6)) and AA29 to =0.02*(AA5+AA6) (or =0.02*SUM(AA5:AA6)). If scrap/cleanup should be 10%/2% of total project cost rather than only two rows, use SUM of the full construction rows in that same column (e.g. =0.02*SUM(AA5:AA6) or =0.02*SUM(AA5:AA6,...)).
+
+3) Wiring re‑do typo (year‑10 re-wiring)
+- Error: Q10 = 4275*7.5 (uses 4275 not 4297).
+- Why wrong: the stated wiring cost is Rs. 4297 per household. Using 4275 is a typo and will misstate year-2010 rewiring cost.
+- Fix: change Q10 to =4297*7.5 if you mean 25% of 30 households (0.25*30 = 7.5 houses). Or express explicitly =0.25*30*4297 to be clearer. (If the intention was a full rewiring of 30 houses, use =4297*30.)
+
+4) (Check) Scrap value and environmental cleanup logic
+- Issue: the document text says scrap = 2% of total project cost and cleanup = 10% of construction costs. Current formulas only use two cells (G5 & G6). That may be incomplete if project cost has other construction-related rows.
+- Recommendation: make the scrap/cleanup formulas use SUM of all construction-related cells in the same column (e.g. =0.02*SUM(AA5:AA6) or =0.02*SUM(AA5:AA6:AA...)) so they always reflect the true project total.
+
+Quick instructions to implement and validate
+1. Fix U19 as described, then recalc. This will change G20:AA20 and G32:AA32 PV totals and final NPV/BCR.
+2. Fix AA17 & AA29 to reference AA-column values (or SUM of that column) and Q10 to use 4297 (or explicit 0.25*30*4297).
+3. Recalculate sheet and verify:
+   - Row G20:AA20 (present value of costs) and G32:AA32 (present value of benefits) should update.
+   - Final totals C20, C32, C35, C36, NPV and B/C (C39, C38 or G39/G38) should reflect the corrected PVs.
+4. Optional: centralize constants (rate, unit costs) in an assumptions block and use absolute references to avoid future typos.
+
+If you want, I can give the exact corrected formulas for the affected cells (paste-ready) or create a single robust discount-factor formula you can copy across the sheet.

@@ -1,0 +1,42 @@
+I inspected the formulas and the surrounding data in "Table 22" and found several formula issues and data/layout inconsistencies. Below is a concise actionable list (cell addresses refer to the sheet you provided).
+
+1) Clear formula mistake (wrong row reference)
+- O20: formula is =SUM(100-(E20+G20+I20+K20+M21))
+  - Problem: it references M21 instead of M20 (typo). This will give an incorrect "Other" value if M21 ≠ M20.
+  - Fix: change to =100-(E20+G20+I20+K20+M20) (or keep SUM wrapper if you prefer).
+
+2) Extraneous / misaligned values (columns present only in some rows)
+- Rows 18–20 (Education, lower-level): extra values appear in columns F and H (F18, H18; F19, H19; F20, H20). They do not belong to the table header (which uses E, G, I, K, M for lower-level categories). The extra values are not referenced by the "Other" formulas (which sum E+G+I+K+M), so they create inconsistent row layouts and risk data-entry errors.
+- Rows 22–24 (Engineering): extra values appear in column Z (Z22, Z23, Z24) between Y and AA in the upper-level block. The AC formulas compute Other as 100-(S+U+W+Y+AA) and therefore ignore Z. If Z is intended to be a category it must be included in the formula; if not, Z should be removed/moved.
+  - Effects: these stray values are not included in the respective "Other" calculations and indicate inconsistent column usage across rows.
+  - Fix: either remove/relocate the stray F/H/Z values to the correct columns or update the relevant formulas to include those columns if they represent legitimate categories.
+
+3) Missing / blank columns referenced by formulas (inconsistent presence)
+- Row 28: O28 formula references K28 (=SUM(100-(E28+G28+I28+K28+M28))) but K28 is not provided in the data (blank). Excel treats blank as zero so the computed O28 matches what's shown, but the missing K28 is an inconsistency and may indicate a data-entry omission.
+  - Fix: confirm whether a D (K) percentage should exist for row 28 and enter it, or confirm that K is truly zero and optionally make its absence explicit.
+
+4) Inconsistent grand-total formulas across years
+- Q30 (2000 Lower-level total) = Q26+Q22+Q18+Q14+Q10+Q6 (formula present)
+- AF30 (2000 Upper-level total) = AF26+AF22+AF18+AF14+AF10+AF6 (formula present)
+- Q31 and AF31 (1999 totals) use formulas summing only the available rows (they omit Hospitality for 1999 because it's "n/appl") — this is likely intentional.
+- Q32 and AF32 (1998 totals) are values with no summation formulas while Q30/Q31/AF30/AF31 use formulas.
+  - Problem / inconsistency: some year totals are computed by formula and others are entered as static numbers. This is inconsistent and makes future updates error-prone.
+  - Suggestion: make Q32 and AF32 formulas consistent with Q30/Q31 (sum appropriate per-college rows for 1998, omitting "n/appl" rows as needed).
+
+5) Use of SUM(...) around a single arithmetic expression
+- Many "Other" cells use =SUM(100-(...)) instead of simply =(100-(...)). Functionally it works but is unnecessary and non-idiomatic.
+  - Not an error, but consider simplifying to =100-(...) for clarity.
+
+6) "n/appl" cells
+- Several cells (Hospitality 1999/1998 rows) contain "n/appl" text. That is fine if intended, but it will break any attempts to sum those rows unless they are explicitly omitted in aggregated formulas (which in some cases they are). Just be aware of this as a source of variability.
+
+Summary of specific cells needing attention (highest priority)
+- O20 — fix reference M21 → M20.
+- Rows 18–20: remove or correct extraneous F* and H* values (F18, H18, F19, H19, F20, H20).
+- Rows 22–24: investigate Z22, Z23, Z24; either include in AC formulas or remove/relocate them.
+- Row 28: confirm whether K28 is intentionally blank or missing.
+- Make Q32 and AF32 formulas (consistent with Q30/AF30) or document why they are static values.
+
+If you want I can:
+- Produce corrected formulas for the problematic cells (with exact formulas for Q32/AF32 and any AC formulas that should include Z),
+- Or produce a cleaned version of the sheet (fix O20 and remove/shift the stray columns) if you upload or permit edits.

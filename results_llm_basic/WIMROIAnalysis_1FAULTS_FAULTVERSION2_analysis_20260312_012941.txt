@@ -1,0 +1,34 @@
+Summary — I found 3 classes of problems. Short fixes + why they matter:
+
+1) Wrong hard-coded constant (likely a typo)
+- Problem: E86 contains the multiplier 0.583043333585248 (instead of the expected 0.16). This makes the "Min. Shipping Productivity" number wrong.
+- Why it matters: that single wrong constant skews the Putaway/Pick/Ship subtotal and the final totals.
+- Fix: replace E86 with the correct formula, for example:
+  =C86*C87*C88*0.16
+  (Better: reference the "min" savings input cell for Shipping, e.g. =C86*C87*C88*$C$89 if C89 holds the min savings rate.)
+- Explanation: you had a stray numeric value in the formula. Use the 0.16 min percent or reference the dedicated cell so it can't be accidentally replaced.
+
+2) Missing input values produce zero / incorrect outputs
+- Examples: C106 (Lift Truck driver's rate), C110 / C111 / C112 / C113 (maintenance/fuel/truck count/rate inputs), C130 (mean warehouse inventory value), and others are blank. E104, E110, etc. therefore calculate 0 or show incomplete results.
+- Why it matters: any blank input used in a product returns 0 or wrong totals, so subtotals and ROIs are understated/incorrect.
+- Fix: enter the correct numeric input values into the blank cells (e.g. put the Driver's rate into C106, maintenance/fuel/truck count into C110–C113, mean inventory into C130).
+- Explanation: formulas multiply these inputs. Empty cells = 0 in multiplication -> zero output.
+
+3) Inconsistent use of hard-coded percentage constants (maintenance headache & error-prone)
+- Problem: some formulas use literal numbers (0.16, 0.25, 0.44) while others reference "Range" cells (like C12, C57, C89). Some "Your Savings" cells (e.g. C57) do not match the label text and there are inconsistent defaults across sections.
+- Why it matters: makes maintenance and review error-prone (you already have one typed constant above). If you want to change "your savings" for a category you must edit many formulas unless they reference a single cell.
+- Fix (best practice):
+  - Create three named/anchored cells per category (Min%, Max%, Your%) or use the existing "Range" cells consistently.
+  - Replace hard-coded numbers inside formulas with absolute references to those cells (eg. replace *0.16 with *$C$12 or with a named range like *Min_Receiving).
+  - Example replacement for E54: =C54*C55*C56*$C$57 (if C57 is set to the min), or =C54*C55*C56*Min_Putaway if you name the cell.
+- Explanation: centralizing the percent values prevents typos and allows single-cell sensitivity changes. It also ensures consistency between displayed "Range" text and the numbers the sheet uses.
+
+Quick checklist you can run now
+1. Fix E86 → change the weird 0.583... to 0.16 or to the proper cell reference.
+2. Populate all missing input cells (C106, C110–C113, C130, etc.) with correct numbers.
+3. Replace hard-coded percent constants with references to the appropriate “Range”/“Your Savings” cells (or create named ranges) so all formulas use consistent values.
+4. Recalculate and confirm subtotals: E95, E149, E151, E255, C255 etc.
+
+If you want, I can:
+- Give the exact Replace formula strings for the most error-prone rows (E86, E54, E60, E66, etc.),
+- Or produce a short list of the exact blank input cells to fill. Which would you prefer?

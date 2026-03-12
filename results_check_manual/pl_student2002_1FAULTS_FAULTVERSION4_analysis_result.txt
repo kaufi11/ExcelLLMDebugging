@@ -1,0 +1,26 @@
+I scanned the workbook formulas. I found one clear formula error and a couple of potential inconsistencies you should be aware of:
+
+1) Wrong divisor in V19 (definite formula error)
+- Cell: V19
+- Current formula: =(SUM(D19:R19)+T19+U19)/696
+- Problem: All other rows use /2. The 696 is almost certainly a typo.
+- Effect: V19 evaluates to 0.278735632... but the correct score for that row should be 97 (see calculation below). This wrong V19 drives incorrect results in the V column totals/statistics (V53, V54, V55).
+- Fix: Change V19 to:
+  =(SUM(D19:R19)+T19+U19)/2
+- Quick check: SUM(D19:R19) = 118; + T19 (30) + U19 (46) = 194; 194/2 = 97 (matches W19 = 97).
+
+2) Aggregates affected by the error
+- Cells V53 (SUM of V2:V52), V54 (AVERAGE of V2:V52) and V55 (STDEV of V2:V52) will all change after fixing V19. The current V53 value (3527.52873563218) is low because V19 is tiny.
+
+3) Non-numeric entry in Course Grade column (possible inconsistency)
+- Cell: W2 contains the text "I" while most W cells are numeric (W is summed/averaged in W53/W54/W55).
+- Implication: SUM ignores text (so W53 is a sum of numeric grades), AVERAGE and STDEV ignore text as well; but presence of "I" reduces the count of numeric entries used in averages/stdevs. If "I" should be treated as a numeric grade (or as zero), convert it; otherwise keep as-is if it's intentionally an "Incomplete" marker.
+
+Other observations (not errors, just things to be aware of)
+- Some S cells contain text comments (e.g., "copied ..."); SUM(S) is not used so they're harmless.
+- Many rows have missing values in individual homework columns; the SUM(...) formulas handle blanks as zero.
+- Column V formulas are consistently of the form =(SUM(Dn:Rn)+Tn+Un)/2 except V19; that consistency supports that V19 is a typo.
+
+If you want, I can:
+- Provide the corrected V53/V54/V55 values after fixing V19.
+- Scan for any other outliers in computed vs. recorded grades (for example rows where W doesn't match rounded V).

@@ -1,0 +1,21 @@
+I found two clear formula problems. Short fixes and explanations below.
+
+1) Faulty cell: H15
+- Error type: Range omission (mechanical).
+- Problem: H15 =SUM(H8:H14) omits H7, so the FY02 Total column total is missing the row at H7.
+- Fix: Replace with =SUM(H7:H14)
+- Why: SUM should include the full row range for the subtotal; including H7 ensures all rows in the block are summed.
+
+2) Faulty cells: B10 and C10
+- Error type: Hard-coded constants / fragile formulas.
+- Problem: B10 =1672298-748584 and C10 =2824612-1091293 use literal numbers instead of referencing the source cell(s). That is brittle and easy to get wrong (and makes audit hard).
+- Fix (preferred): Put the subgroup total (the 1,672,298 and 2,824,612 values) into dedicated cells (e.g., X_B and X_C) or use the cell that already holds those totals, then use cell references:
+  - B10 = <cell_with_1672298> - B9
+  - C10 = <cell_with_2824612> - C9
+  (Replace <cell_with_...> with the actual cell address where the subtotal is stored.)
+- Alternate fix (if you don't have those subtotal cells): Enter the correct value directly into B10/C10 instead of computing with hard-coded constants.
+- Why: Using cell references keeps formulas transparent and updates automatically if source numbers change.
+
+Notes:
+- Review any other cells that use typed numeric subtractions like this — they are a common source of mistakes.
+- After making the fixes, recalc/verify B15:C15:H15 etc. to confirm column totals are correct.

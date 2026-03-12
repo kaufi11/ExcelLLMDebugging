@@ -1,0 +1,28 @@
+Summary — I found two types of mistakes. Fix both to get correct angles and values.
+
+1) ATAN2 argument order is reversed (many cells)
+- Where you calculate an angle from a real part R and imaginary part I, the angle must be atan2(I, R). Your sheet uses ATAN2(R, I) in many places.
+- Affected places (representative): J4..J54, N4..N54, J15/J16 etc, and the RhoV pair B32/B33 (and anywhere else using ATAN2(real,imag)).
+- Why it's wrong: angle = arctan(imag/real) with correct quadrant. Using ATAN2(real,imag) gives the wrong quadrant and wrong sign.
+- Fix pattern:
+  - Replace ATAN2(Gx,Hx)*180/PI() with ATAN2(Hx,Gx)*180/PI()
+  - Replace ATAN2(Kx,Lx)*180/PI() with ATAN2(Lx,Kx)*180/PI()
+  - For RhoV: replace ATAN2(B28,B29)-ATAN2(B30,B31) with ATAN2(B29,B28)-ATAN2(B31,B30)
+- Example corrections:
+  - J4: =ATAN2(H4, G4) * 180 / PI()
+  - N4: =ATAN2(L4, K4) * 180 / PI()
+  - B32: =SQRT((B28*B28 + B29*B29)/(B30*B30 + B31*B31)) * COS( ATAN2(B29,B28) - ATAN2(B31,B30) )
+  - B33: same idea with SIN(...)
+- Small note: keep multiplying by 180/PI() if you want degrees.
+
+2) Typo in K40 (one-cell mechanical error)
+- Current: K40 = $B$23 * F40
+- Should match the pattern used in K4..K39 and K41..: Kx = $B$23 * Ex
+- Fix: K40 = $B$23 * E40
+- Why it matters: K40 feeds M40 and N40 (magnitude and angle of IS) so the wrong component breaks downstream results.
+
+Quick checklist to apply across the sheet
+- Do a Find (ATAN2( and inspect each call — ensure the first argument is the imaginary part and the second is the real part.
+- Do a Find for instances where a column's formula differs from the pattern in other rows (e.g., K40) and correct to the consistent pattern.
+
+If you want, I can produce a list of every exact cell that needs the ATAN2 swap and give the corrected formula strings so you can paste them in.

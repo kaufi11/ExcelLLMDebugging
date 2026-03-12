@@ -1,0 +1,84 @@
+Summary of workbook structure and key content (concise)
+
+Overall layout / conventions (applies across annex sheets)
+- Most financial annexes use the same column pattern:
+  - Column H = Original FFR forecast (2002-03), Column I = Mid‑Year revised outturn, Column J = Variance (I–H), Column K = Variance % (usually IF(H=0,"N/A",(J/H)*100)), Column L = Reason (where material).
+- Many rows default to 0 and totals are computed with SUM() formulas. Row/line numbers in column B are auto-incremented with simple formulas (e.g., =B15+1).
+- Repeated cross-sheet link: several sheets pull the college name from Declaration - AnnexC!C3 (e.g., Commentary, annex e, annex f, annex g, Annex h, Annex h(1), Annex I).
+- Built-in reconciliation/validation checks exist (cells labelled "THESE CELLS MUST BE ZERO" / "These cells should be zero") comparing totals between sections and with the Balance Sheet/Cash Flow.
+
+Sheets (compact)
+
+1) Declaration - AnnexC
+- Purpose: cover sheet / metadata and signature/declaration.
+- Key cells: A1 title, A3/C3 College Name (C3 = "COLLEGE NAME" placeholder), address and contact fields (C5–C15 placeholders).
+- Declaration text in A19–A25; signature/date fields in row 26 (A26: "Signed", B26 text, D26 title "Principal and Accountable Officer", H26 and J26 for name/date).
+
+2) Commentary - Annex D
+- Purpose: free-text financial commentary.
+- A4 formula links C3 from Declaration: ='Declaration - AnnexC'!C3.
+- Prompts/instructions in cells A6–A11 (must be completed; note on material changes).
+
+3) annex e — Income and Expenditure Account (Consolidated)
+- Structure: income section then expenditure, surplus lines, historical cost adjustments, bursary/hardship sub-section.
+- Key formulas:
+  - Total Income H15 = SUM(H9:H14); I15 = SUM(I9:I14); J15 = I15-H15.
+  - Total Expenditure H23 = SUM(H18:H22); I23 analogous.
+  - Surplus H25 = H15-H23; I25 = I15-I23.
+  - Subsequent rows add gains/losses, tax, minority interest to produce final surplus (H31, H38 etc).
+  - Percent variances use IF(Hx=0,"N/A",(Jx/Hx)*100).
+- Many rows prefilled with 0s; B-column uses formulas to number lines.
+
+4) annex f — Consolidated Balance Sheet
+- Sections: Fixed assets, Current assets, Creditors (due within 1 year), Net current assets, Creditors after one year, Provisions, Deferred capital grants, Endowments, Reserves, Total Funds.
+- Key formulas:
+  - Total fixed assets H13 = SUM(H7:H12); Total current assets H22 = SUM(H18:H21).
+  - Total amounts falling due within one year H32 = SUM(H25:H31).
+  - Net current assets H34 = H22-H32.
+  - Total assets less current liabilities H36 = H13+H15+H34.
+  - Total amounts falling due after >1 year H43 = SUM(H39:H42).
+  - Total Net Assets H48 = H36-H43-H46.
+  - Total Deferred Grants H55 = SUM(H51:H54); Total Funds H68 = H55+H58+H66.
+  - K68 is set =K48 (variance % linkage).
+- Many balances default to 0.
+
+5) annex g — Operating Cash Flow (Consolidated)
+- Two blocks: ORIGINAL CASH FORECAST (columns H–S then T totals) and ACTUAL/REVISED FORECAST (columns H–S).
+- Monthly columns (H = August … S = July) plus T = Total.
+- Key formulas:
+  - Row totals per month computed with SUM across line items (e.g., T7 = SUM(H7:S7)).
+  - Net cash inflow row H17 = H10-H15+H16 (and for other months); T17 = SUM(H17:S17).
+  - Balance c/f H19 = SUM(H17:H18) etc; monthly rolling balance formulas link forward (I18 = H19, J18 = I19, etc).
+  - Financing reconciliation row H25 = H24-H19 etc; T26 = T19 - ('annex f'!H20 + 'annex f'!H21) (reconciliation with annex f).
+  - ACTUAL block duplicates similar structure and has analogous reconciliations; T49 = T42 - ('annex f'!I20 + 'annex f'!I21).
+- Validation: many "These cells should be zero" checks (H25:H25 etc) ensure balance.
+
+6) Annex h and Annex h(1) — Impact of specific grant (FE/54/02)
+- Annex h: template to summarise grant impact across I&E and Balance Sheet; fields for total award (I16) and line references to annex D/E with amounts (I21–I23, I31–I33 default 0).
+- Annex h(1): example completed showing values:
+  - Total funding I17 = 90,000 (units £'000).
+  - Example allocations: I21 (Funding Council grants) = 60,000; I23 (Exceptional restructuring costs) = 40,000; I25 (Other operating expenses) = 20,000; balance sheet examples: I31 Cash at bank = 30,000; I33 Deferred capital grants = 30,000.
+  - Note: these are example numbers in the template sheet.
+
+7) Annex I — Underlying operating surplus/deficit
+- Purpose: calculate underlying operating surplus by adding back one-off items to reported surplus.
+- Key links:
+  - H11 = 'annex e'!I25 (surplus after depreciation from annex e, revised outturn).
+  - H14 = 'annex e'!I19 (exceptional restructuring costs from annex e).
+  - H17/H20 placeholders for SSAP24 revaluation and other one‑off items.
+  - H27 = SUM(H10:H26) to produce underlying surplus/deficit.
+
+Key inter-sheet links and checks
+- Declaration - AnnexC!C3 (college name) is referenced on multiple annex sheets.
+- Annex e (I&E), annex f (balance sheet) and annex g (cash flow) are interlinked:
+  - annex g reconciliation formulas reference annex f (e.g., T26/T49 use annex f H20/I20 + H21/I21).
+  - annex i pulls surplus and exceptional costs from annex e.
+- Reconciliation cells labelled "THESE CELLS MUST BE ZERO" / "These cells should be zero" highlight where totals must balance; percentage variance formulas guard against division by zero with IF(H=0,"N/A",...).
+
+Notable numeric defaults / example values
+- Most numeric cells are initialized to 0.
+- Example sheet Annex h(1) provides concrete example values: total grant 90,000; breakdowns as listed above.
+
+If you want, I can:
+- Produce a one‑page map of the main formulas showing cell precedents/dependents for annex e/f/g, or
+- Check consistency/reconcile the example numbers in Annex h(1) against annex e/f/g.

@@ -1,0 +1,42 @@
+Summary — main problems
+- Week‑4 column (E7:E11) contains AVERAGE(B:D) instead of the actual Week 4 hours. That makes totals and overtime wrong.
+- Total Hours (F7:F11) are summing the wrong cells (they omit some weeks).
+- Overtime (G6:G11) formulas are inconsistent and mostly wrong:
+  - some use only B (Week 1),
+  - some sum only B,C,D and omit Week 4.
+- Tax on Adams (D20) is not a formula — it contains a stray character (ƒ) so Net Pay (E20) is wrong.
+- D17 is hard‑coded 28.96 instead of using a formula like the other rows (inconsistency).
+
+Correct formulas and quick fixes
+1) Fix Week 4 cells (if you have actual Week 4 hours)
+- Replace E7, E8, E9, E10, E11 with the actual Week 4 hour values (they must be input numbers). If you intended column E to be an average, change the column header — otherwise remove the AVERAGE formulas.
+
+2) Fix Total Hours (copy down rows 6–11)
+- F6: =SUM(B6:E6) — already correct
+- F7: =SUM(B7:E7)
+- F8: =SUM(B8:E8)
+- F9: =SUM(B9:E9)
+- F10:=SUM(B10:E10)
+- F11:=SUM(B11:E11)
+
+3) Make overtime calculation consistent (choose one method)
+- If overtime is based on total monthly hours (common): in G6 and copy down:
+  - G6: =MAX(F6-40,0)
+  - then copy G6 down through G11.
+- (Alternate: if overtime is calculated weekly, use =MAX(Bx-40,0)+MAX(Cx-40,0)+MAX(Dx-40,0)+MAX(Ex-40,0) for each row.)
+
+4) Fix tax formula for Adams (and consistency for Green)
+- D20: =C20*0.15
+- D17 (optional but recommended for consistency): change 28.96 to =C17*0.15
+
+5) After these fixes, update dependent cells:
+- E20 will then calculate correctly: =C20-D20
+- Totals (F13, C24, D24, E24 etc.) will now be correct once the rows above are fixed.
+
+Why these fixes
+- Week 4 being an average or missing makes totals and overtime wrong because F should sum all four weeks (B:E).
+- Overtime must reference all hours (either total monthly hours or per‑week overtime added). Using only B or omitting E undercounts overtime.
+- D20 contained a non‑numeric character, so Excel doesn’t compute tax there — that breaks Net Pay.
+- Using formulas for taxes keeps the sheet consistent and updates automatically when gross pay changes.
+
+If you want, I can provide the exact formulas as a block to paste or prepare an automated set of fixes (I can also convert overtime to weekly calculation if you prefer). Which overtime rule do you want: overtime on monthly total or per week?

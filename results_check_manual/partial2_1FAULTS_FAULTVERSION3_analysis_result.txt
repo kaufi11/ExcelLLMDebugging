@@ -1,0 +1,62 @@
+I inspected the formulas and values on sheet "gb_export". I found several formula errors and consistency issues (plus recommended fixes). Summary first, then details and suggested corrections.
+
+Summary of problems
+- E19 (cell E19) was overwritten with a constant ("=7") instead of using the standard formula =D19*$E$1. This produces an incorrect quiz contribution for that student.
+- The Homework average in column I uses a fixed divisor of 3 (formula = (F#+G#+H#)/3). Many rows have one or more homework cells blank, so blanks are treated as zero and the average is biased downward. Example: when only G and H are present and F is blank the result is 66.666..., but probably the intended behavior is to average the existing homework entries.
+- Column K appears inconsistent with the weight cell K1. Row 1 has K1 = 0.05 (i.e. 5% weight), but the K column stores a raw point value of 5 for full participation. The workbook adds that 5 directly into the final sum (N = ROUND(E+J+K+M,0)) rather than applying the 0.05 weight. In other words K1 is present but not used.
+- Several rows have missing values in the homework columns (F, G or H) while the formula still divides by 3, which produces inconsistent treatment across students.
+- Minor: some F/G/H values are missing in many rows (see "Rows with blank F" and "Rows with missing G or H" below). This is not an error by itself but creates inconsistent results because of the fixed /3 divisor.
+
+Details / examples
+1) E19 overwritten
+- D19 = 87.5, E1 = 0.1, expected E19 = 8.75 but E19 contains the constant 7 (formula shown as "=7"). This is inconsistent with other rows (they all use =D#*$E$1). Fix: restore E19 to =D19*$E$1.
+
+2) Homework average uses /3
+- Current formula pattern: I# = (F# + G# + H#) / 3
+- Problem: blank cells count as zero. Examples:
+  - Row 3: F3 is blank, G3=100, H3=100 → I3 = (0+100+100)/3 = 66.666... (likely undesired)
+  - Row 10: F10=100, G10=100, H10=100 → I10 = 100 (consistent)
+- Recommended formula: use AVERAGE to ignore blanks: I3 = AVERAGE(F3:H3). AVERAGE ignores empty cells; if all three are blank it returns #DIV/0!, so you can protect against that if needed:
+  - =IF(COUNT(F3:H3)=0,"",AVERAGE(F3:H3))
+  or to treat blanks as zero only if you want that specific behavior, keep the current formula. But likely AVERAGE is correct.
+
+3) Participation weighting inconsistency (K)
+- K1 = 0.05 (implies participation should be weighted at 5% of 100)
+- Column K contains values = 5 for all full participations (i.e. points not percent). Final formula N = ROUND(E+J+K+M,0) adds the 5 directly.
+- Two consistent approaches (pick one):
+  a) Store participation as percentage 0–100 in column K (e.g. 100) and compute participation contribution as =K#*$K$1 (giving 5). Then change final N to: =ROUND(E# + J# + (K#*$K$1) + M#,0)
+  b) Keep column K as the already-weighted points (5) and remove or ignore K1 to avoid confusion. In that case document that K contains weighted points and K1 should be cleared or removed.
+- Currently the workbook mixes the presence of K1 with direct-add K values — pick one of the two approaches above.
+
+4) Rows with missing F (homework) entries (these rows then have the /3 issue)
+Rows (by row number) where Homework1 (column F) is blank in the supplied extract: 3, 4, 7, 8, 9, 12, 14, 15, 22, 23, 26, 28, 29, 30, 31 (and possibly others beyond the provided rows). Because the average divides by 3, those blanks are counted as zeros.
+
+5) Rows with other missing homework cells (G or H)
+- Several rows have G or H blank; the same issue applies: fixed /3 counts blank as zero and biases average. Use AVERAGE to ignore blanks.
+
+6) Other formula patterns
+- D# formulas: all use =(B# + C#) / 2 — consistent.
+- E# (usually) uses =D#*$E$1 — consistent except E19.
+- J# uses =I#*$J$1 — consistent.
+- M# uses =L#*$M$1 — consistent.
+- N# uses =ROUND(E# + J# + K# + M#, 0) — consistent given the current data layout where K is stored as points; see point (3) for the inconsistency with K1.
+
+Suggested corrections (concrete)
+- Fix E19:
+  - Set E19 to: =D19*$E$1
+- Use average that ignores blanks in column I:
+  - Replace I# formulas with: =IF(COUNT(F# : H#)=0,"",AVERAGE(F# : H#))
+  - Example for row 3: I3 -> =IF(COUNT(F3:H3)=0,"",AVERAGE(F3:H3))
+- Decide how to treat participation K:
+  - Option A (preferred for clarity): put participation scores on 0–100 scale in column K (e.g. 100 for full participation) and change M or final formula accordingly:
+    - Participation contribution cell (new column or replace K): =K#*$K$1 (or use that directly in N#)
+    - Final: =ROUND(E# + J# + K#*$K$1 + M#, 0)
+  - Option B: keep K values as already-weighted points (5) and clear K1 (or remove the $K$1 weight cell) so sheet doesn't contain a misleading weight. Keep N as =ROUND(E# + J# + K# + M#, 0).
+- Optionally, protect formulas from accidental overwrites (E19 was overwritten). Consider sheet protection or data validation for formula cells.
+
+If you want, I can:
+- Produce a list of all rows where F/G/H are blank,
+- Produce a corrected version of the sheet (e.g. change all I formulas to AVERAGE and restore E19),
+- Or give the exact cell formulas to paste to correct the sheet.
+
+Which follow-up would you like?

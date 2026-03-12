@@ -1,0 +1,28 @@
+Summary — main error
+- Faulty cells: D30 and D34 (and the matching C34 / E34 if you want consistency across columns).
+- Problem: Net property & equipment (row 34) is being calculated from the wrong subtotal. D30 (the "Total property and equipment" used by D34) only sums D24:D29 (a small block) instead of the main property total (D162). So D34 (=D30+D32) understates property because it uses the wrong total. This makes the higher-level asset subtotal (D38) wrong/unreliable.
+
+Why it’s wrong (short)
+- There are two different property totals in the sheet:
+  - D30 = SUM(D24:D29) (small/incorrect range)
+  - D162 = SUM(D155:D161) (the real, full property total used later)
+- Net property should be: Total property and equipment + Accumulated depreciation. The accumulated depreciation total is in D170 (and D32 already equals D170). But D34 uses D30 (the wrong total) instead of D162.
+
+Fix (apply to each currency column as needed)
+1. Replace the D34 formula with:
+   =D162 + D170
+2. (Optional cleanup) Either:
+   - Change D30 to =D162 (so D30 becomes the same full total), or
+   - Change D30 to the correct range if you intended it to be the primary property subtotal, e.g. =SUM(D155:D161),
+   and then keep D34 = D30 + D170.
+3. For consistency, update C34 and E34 similarly:
+   =C162 + C170
+   =E162 + E170
+
+What this does (simple)
+- Uses the full property total (D162) and the full accumulated depreciation (D170) to compute net property. That yields the correct net fixed asset figure and fixes any mismatches in total assets that use D34 (for example D38).
+
+Quick check after fix
+- Recalculate/refresh and verify D38 (and D178 if used) now equals total liabilities & capital (D283). If a difference remains, run the same check (compare detailed totals vs. summary totals) to find any other inconsistent subtotal references.
+
+If you want, I can list all cells that currently reference D30 or D34 so you can update them consistently.

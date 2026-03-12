@@ -1,0 +1,67 @@
+Summary — main errors found
+1. FTEE sheet has incorrect/wrong cell references and many small manual “fixes” (+0.01, +0.02, -0.02, -0.000001). These both create wrong values and hide the real cause (rounding vs formula mistakes).
+2. The chart (FTEE Graph) is using the wrong column for percentages (it points to D10:D24 instead of the correct percent-of-total column).
+3. Revenues sheet has an odd adjustment: C12 = 147577404 - 1 (subtracting 1). That’s a manual hack and should be removed.
+4. Expenditures by Category contains manual adjustments (B12 = ROUND(...,4) - 0.0001). Again a hack instead of fixing rounding logic.
+5. A few explicit wrong formulas in FTEE rows: some formulas use D instead of C (example: H14 = +D14+F14 uses D14 where C14 should be used); D25 and D26 formulas are suspicious (C25/H25 and C26/H26 look wrong).
+
+What’s wrong (short explanation)
+- Manual tiny additions/subtractions were added to force totals to match. That masks formula/reference errors and produces incorrect individual or subtotal values.
+- Some formulas reference the wrong column (mixing percent columns with FTEE amounts), producing incorrect results.
+- Chart is plotting the wrong range, so the graph is based on incorrect numbers.
+
+How to fix (step‑by‑step, simple formulas)
+1) Remove manual tweaks and use correct base formulas on the FTEE sheet
+- Credit FTEE (column C): for each college row (e.g. row 12)
+  C12 = B12 / 24
+- Credit % of credit total (if you want that in D): 
+  D12 = C12 / $C$28
+- Non‑credit FTEE (column F): 
+  F12 = E12 / 600
+- Non‑credit % of non‑credit total (if you want that in G):
+  G12 = F12 / $F$28
+- Total FTEE (column H): 
+  H12 = C12 + F12
+  (Remove any +0.01 etc.)
+- Percent of total FTEE (column I): 
+  I12 = H12 / $H$28
+
+- Totals row should be exact sums (no manual adjustments):
+  B28 = SUM(B12:B27)
+  C28 = SUM(C12:C27)
+  E28 = SUM(E12:E27)
+  F28 = SUM(F12:F27)
+  H28 = SUM(H12:H27)
+  I28 = SUM(I12:I27)  (this should be 1.00 or very close; if you ROUND for display it may show 0.9999/1.0001 — that is fine; do not alter source numbers)
+
+2) Fix any incorrect per‑row references
+- Replace H14 = +D14+F14 with H14 = C14 + F14 (use the credit FTEE cell, not the percent).
+- Replace D25 and D26 (and any cells like those) with the correct formulas per step 1 above.
+
+3) Correct the chart source
+- Edit the FTEE chart series so it uses the Percent of total FTEE column (I10:I24) as the series values, not D10:D24.
+
+4) Revenues sheet: remove the “-1” hack
+- Change C12 from =147577404-1 to either =147577404 or the cell reference that contains the correct figure. Don’t subtract 1 to force totals.
+
+5) Expenditures by Category: remove ad‑hoc subtraction
+- Use consistent rounding for display only. For example:
+  B10 = ROUND(C10/$C$16,4)
+  B11 = ROUND(C11/$C$16,4)
+  ...
+  Then B16 = SUM(B10:B15)
+- If rounding causes the displayed percentages not to sum to 100.00, add a footnote (“May not total due to rounding”) instead of changing numbers.
+
+Why these fixes work (short)
+- Using the correct cell references ensures each calculated field comes from the right inputs (credit FTEE from credit hours, non‑credit FTEE from contact hours).
+- Removing manual tiny adjustments prevents hiding errors and preserves accurate underlying data; totals will match mathematically and any small rounding differences are properly documented.
+- Pointing the chart at the correct percent column ensures visuals reflect the actual computed shares.
+
+Quick checklist you can run now
+- Search the FTEE sheet for any +0.01, +0.02, -0.02, -0.000001, -0.0001 and remove them. Replace with clean formulas above.
+- Replace any Hx formulas that use Dx with Cx + Fx.
+- Update chart to use I10:I24.
+- Replace C12 on Revenues with the true value (remove -1).
+- Recompute totals and verify H28 = SUM(H12:H27). Then verify I12 = H12/$H$28 and that I28 ≈ 1.
+
+If you want, I can produce the exact corrected formulas for each affected cell (paste‑ready) or reconstruct the corrected summary table for you. Which would you prefer?

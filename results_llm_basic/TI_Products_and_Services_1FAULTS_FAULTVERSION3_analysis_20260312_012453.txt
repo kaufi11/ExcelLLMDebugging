@@ -1,0 +1,39 @@
+Summary of errors I found
+- Inconsistent / broken numbering in column B:
+  - B14 is hard-coded as =5 (should follow B13). That creates a jump in the sequence.
+  - Several B-cells reference cells that are below them (forward references) instead of the previous row (examples: B40 =+B53+1, B47 =+B54+1, B97 =+B221+1). Forward references are fragile and can create wrong numbers or circular references if any referenced cell ends up depending on the current cell.
+- Many formulas use the unnecessary leading plus (e.g. =+B12+1). This is not an error but is inconsistent and confusing.
+- Some numbering formulas point at header or blank cells (e.g. =+B27+1) which yields repeated 1s and duplicate IDs because blank is treated like 0.
+
+Why these are problems
+- Hard-coded or forward references break automatic sequential numbering and produce gaps, duplicates, or circular-reference errors when rows are moved/inserted.
+- Using inconsistent references makes the sheet hard to maintain and error-prone.
+
+Simple fixes (pick one)
+1) Quick, robust sequential numbering using row number
+   - Put this in the first data row (your B12): =ROW()-11
+   - Copy/fill that formula down the column.
+   - Explanation: ROW()-11 returns 1 at row 12, 2 at row 13, etc. It always produces a clean increasing sequence and is not affected by other B-cell references.
+
+2) Classic previous-row increment (works if you want numbering only where a row has content)
+   - In B12 enter 1.
+   - In B13 enter: =IF(TRIM(C13)="","",B12+1)
+   - Fill B13 down.
+   - Explanation: this makes B show a number only when column C (Department/Product) is filled and always increments from the prior number. Use TRIM to avoid false blanks with stray spaces.
+
+3) COUNTA approach (numbers only non-empty rows)
+   - In B12 (first data row) enter:
+     =IF(TRIM(C12)="","",COUNTA($C$12:C12))
+   - Copy down.
+   - Explanation: COUNTA counts filled rows in column C up to the current row, giving sequential IDs only for filled rows.
+
+Cleanup steps to apply after choosing a fix
+- Replace any problematic formulas (the hard-coded =5, forward references like =+B53+1, etc.) with one consistent formula above and fill down through the range.
+- Remove leading + in formulas for readability (change =+B12+1 to =B12+1 if you keep that pattern).
+- Check for and remove any circular reference warnings (Excel shows those if present). They will disappear after fixing forward references.
+
+Which to use
+- Use ROW()-11 if you want simple absolute numbering tied to sheet rows.
+- Use the IF+previous-row or COUNTA method if you want numbers only when a row has content.
+
+If you want, tell me which style you prefer and I’ll give the exact formulas adjusted for your sheet (with the correct offsets for row numbers).

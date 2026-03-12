@@ -1,0 +1,34 @@
+Short answer — two real errors and one layout inconsistency. Fixes and why below.
+
+1) Error: beginning inventory turned negative (wrong sign)
+- Problem: Formulas sheet C30 = -B7 (negative). Beginning inventory should be the B7 balance (positive).
+- Effect: available-for-sale, COGS, gross margin, taxes and net income get wrong (too small / negative COGS).
+- Fix: change C30 formula to =B7 (or =+B7).
+- Explanation: beginning inventory is an asset balance carried forward; it should be added, not subtracted, when computing cost of goods available for sale.
+
+2) Layout/column misalignment (causes mixed-up formulas)
+- Problem: Month labels are in B16 and D16 but the monthly values sit in C and E. Many formulas and totals are spread across adjacent columns (for example salaries for August is in B21 but references C17; the operating-expense total C24 sums B21:B24). This makes it hard to read and invites errors (and some formulas reference the wrong column).
+- Effect: Hard to audit; if someone moves a header or column the formulas will break or reference the wrong month.
+- Fix (recommended, pick one):
+  Option A — align headers with data (recommended):
+   - Move month labels into the same columns as the numbers: cut B16 → C16 and cut D16 → E16.
+   - Move all monthly figures to those same columns. For August put numbers/formulas in column C (not B). For example:
+     - C17 = ROUND(B2*(1+B3),-3) (already OK),
+     - C21 = ROUND($B$9 + $B$10 * C17, -3),
+     - C22 = $B$11, C23 = $B$12, C24 = SUM(C21:C23) (or SUM(C21:C24) if there are 4 lines).
+     - E21 = ROUND($B$9 + $B$10 * E17, -3), E24 = SUM(E21:E24), etc.
+   - Update any totals that currently sum B21:B24 to sum C21:C24 (or the correct column).
+  Option B — keep labels where they are and move all formulas left into B and D — less intuitive.
+- Explanation: Month label must be in the same column as that month’s values so formulas and sums are consistent and easy to follow.
+
+3) (Check) Ending inventory next-period reference — confirm intent
+- Current formulas: August ending C33 = ROUND($B$4 + $B$5 * E17, -3) (uses next period = September) and September ending E33 = ROUND($B$4 + $B$5 * B8, -3) (uses October sales B8). This is logically consistent if the intention is "ending inv = base inventory + % of next period sales."
+- Action: If that is the intended logic, leave as-is; if instead you wanted ending inventory as % of the same period's sales, change C33 to use C17, and E33 to use E17 (or E17 / B8 as appropriate).
+
+Other housekeeping
+- Sync both sheets ("Example" and "Formulas") so formulas match after you fix C30 and column layout.
+- Rounding: you use ROUND(...,-3) to thousands — acceptable but be aware it can change taxable income materially on small models.
+
+If you want, I can:
+- Provide the exact corrected formulas for each monthly cell (I can output a short mapping you can paste), or
+- Produce a cleaned single-sheet layout (move headers and formulas into matching columns) and show the corrected values. Which would you prefer?

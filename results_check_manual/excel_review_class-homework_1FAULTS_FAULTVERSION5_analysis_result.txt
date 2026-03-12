@@ -1,0 +1,30 @@
+I checked every formula in the workbook you provided and found one clear formula error plus a couple of inconsistencies / missing formulas that you will likely want to fix.
+
+1) Sheet "Q'back" — wrong denominator in Completion % for Bryant (row 5)
+- Problem cell: H5
+- Current formula: =D5/845*100
+- Why it's wrong: every other Completion % cell uses =D#/C#*100 (completions divided by attempts). H5 uses the constant 845 instead of the attempts value in C5 (384), so Bryant's Completion % (and consequently his Points in L5) are incorrect.
+- Correct formula: =D5/C5*100
+- Corrected values (approx):
+  - Completion % (H5) should be 187/384*100 ≈ 48.6979167 (not 22.1301775)
+  - Points (L5) recalculated using the corrected H5:
+    - K5 = F5/C5 = 2454/384 = 6.390625
+    - L5 = K5*8.4 + H5 + I5*3.3 - J5*2 ≈ 102.978125 (current L5 value 76.4103858 is wrong because it used the incorrect H5)
+- Recommendation: replace H5 with =D5/C5*100 (or copy the same formula pattern used in H6:H11). Then verify L5.
+
+2) Sheet "lookup" — missing formulas for Totals / Average / Letter Grade
+- The headers in F3, G3, H3 indicate you intend Total (/400), Average (/100) and Letter Grade, but those columns for the student rows (F4:F9, G4:G9, H4:H9) are empty (no formulas present).
+- Suggested formulas for row 4 (copy down for rows 4:9):
+  - F4 (Total /400): =SUM(B4:E4)
+  - G4 (Average / 100): =F4/4  (average of four course scores; if you want an average as percentage of 400, use =F4/400*100)
+  - H4 (Letter Grade): =VLOOKUP(G4,$F$12:$G$18,2,TRUE)
+    - Notes: VLOOKUP with approximate match (last argument TRUE) requires the first column of the lookup table ($F$12:$F$18) to be sorted in ascending order. Your table (45,50,55,60,65,70,75) is sorted ascending, so it's OK. Having two adjacent thresholds mapping to the same letter (45→F and 50→F) is redundant but harmless for approximate lookup.
+- If you prefer to base the letter grade on total points out of 400 instead of average out of 100, use the lookup against F column using F4 instead of G4 and adjust the thresholds accordingly.
+
+3) Minor notes / sanity checks
+- The Points formula pattern on Q'back (column L) is consistent across rows: =K#*8.4 + H# + I#*3.3 - J#*2. That is internally consistent; just be aware H and I and J contain percentage values (e.g., 50 = 50%), and the formula uses those percentage numbers directly. That appears to be your intended calculation since other rows follow the same approach.
+- The lookup grade table (F12:G18) contains two rows that map to "F" (45 and 50). That's redundant but not an error if using approximate VLOOKUP. If you use an exact match lookup (FALSE) this table would not work as intended.
+
+If you want, I can:
+- produce a short list of corrected formulas to paste into the workbook, or
+- produce a corrected copy (with H5 and the lookup formulas fixed) and give you a file to download.

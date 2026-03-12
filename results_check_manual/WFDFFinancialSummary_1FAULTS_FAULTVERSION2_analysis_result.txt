@@ -1,0 +1,52 @@
+I inspected the workbook formulas and found several formula inconsistencies and a few likely errors. Summary (by severity) with exact cell references and suggested fixes:
+
+1) Balance Sheet does not balance for 2002 (major)
+- Problem: Balance Sheet (sheet "Balance Sheet") Total Assets (H7 = 55,494.10) ≠ Total Liabilities & Equity (H15 = 55,257.06).
+- Amount: difference = 237.04.
+- Root cause (traceable): Financial summary (sheet "Financial summary") column K (2002) includes an Events amount of =8821.24+118.52 in K21, while the detailed "Stork - 2002 Expenditures" sheet has the events/congress totals treated as 8821.24 - 118.52. This inconsistent treatment of the 118.52 item is what produces the 237.04 discrepancy (2 × 118.52 = 237.04).
+- Visible symptoms:
+  - On "Financial summary": K27 (Total Expense 2002) = 30,968.42.
+  - On "Stork - 2002 Expenditures": C55 (Totals) = 30,731.38.
+  - Difference: 30,968.42 − 30,731.38 = 237.04.
+- Suggested fix: decide whether the 118.52 item should be included or excluded. Apply the same treatment in both places:
+  - either remove +118.52 from K21 (if it was not cashed), or
+  - include it in the Expenditures sheet totals.
+  - After that change the dependent totals (K27, K33, K35/K36, Balance Sheet H4/H5 etc) will align and Balance Sheet will balance.
+
+2) Checking total for Dec 31, 2001 (likely typo)
+- Problem: Balance Sheet G4 = 12,323.99 but "Financial summary" I35 (Checking Account for 2001) = 12,823.99.
+- Amount: 500.00 difference.
+- Likely a data-entry / transposition error in the Balance Sheet (G4 should be 12,823.99 to match the Financial Summary).
+- Suggested fix: correct Balance Sheet G4 to refer to the Financial summary cell (I35) or set G4 = 'Financial summary'!I35.
+
+3) Ending cash vs allocation (2002) mismatch on Financial summary
+- Problem: On "Financial summary" the ending cash (K33 = 55,257.0594052045) does not equal the sum of Checking + Money Market (K35 + K36 = 14,326.7 + 41,167.4 = 55,494.1).
+- Amount: difference = −237.04059479553 (same 237.04 above).
+- Cause: same inconsistent treatment of the 118.52 item described in (1). Also some checking/money market cells are hard-coded values rather than linked to K33, which makes reconciliation fragile.
+- Suggested fix: decide the correct expenditures treatment then either:
+  - set K35 and K36 to be calculated from K33 (split logic), or
+  - ensure the allocation entries in the expenditures detail feed those K35/K36 cells consistently; avoid hard-coded values.
+
+4) Minor rounding/precision differences (minor)
+- Cells C33/E33/G33/I33/K33/M33 hold high-precision values while the checking/money market entries (e.g., E35) are rounded to 2 decimals. This causes tiny differences in the "Difference" row:
+  - E39, G39, I39 show about −0.000594795... etc.
+- Suggested fix: use consistent rounding (e.g., round ending balances and account allocations to 2 decimals, or format/display only 2 decimals) or use consistent linked formulas so the visible sums match exactly.
+
+5) Inconsistent use of formulas vs hard-coded numbers (risk of errors)
+- Examples:
+  - I19 contains formula text "=8238.33" instead of a numeric constant; better to store as a number (or link to a source cell).
+  - K21 uses the hard-coded expression "=8821.24+118.52" rather than summing the underlying transaction rows. Hard-coding like this increases risk of mismatch if transaction detail changes.
+  - Several Checking/Money Market cells (E35, G35, I35, etc.) are values, not formulas linking to the Ending Cash (C33/E33/...) or to the detailed bank allocation totals on the expenditures sheet.
+- Suggested fix: prefer formulas that reference the detailed source cells (SUM ranges) rather than hard-coded literal numbers. Tie summary cells to the detail so changes propagate.
+
+6) Odd/unused rounding in Balance Sheet formulas (minor)
+- Balance Sheet uses ROUND(...,5) (e.g., E7 = ROUND(E2+E6,5)). Rounding to 5 decimals is unusual for financial statements (typically 2 decimals). This is not an error by itself but inconsistent with other rounding practice.
+- Suggested fix: if intent is two-decimal currency, use ROUND(...,2) or keep precision consistent across sheets.
+
+Other notes
+- The chain used to carry forward beginning balances (E4 = C33, G4 = E33, etc.) is acceptable and intentional. Not an error by itself, but because some cells later are not linked consistently (hard-coded values) it produces reconciliation problems.
+- The observable net effect in the workbook: the Dec 31, 2002 Balance Sheet and the Financial Summary totals are off by 237.04, and Dec 31, 2001 checking on Balance Sheet is off by 500. These are the two actionable numeric corrections to restore internal consistency.
+
+If you want, I can:
+- prepare a short list of exact formula edits (cell-by-cell) to apply to fix the issues (e.g., change K21, change Balance Sheet G4 to reference 'Financial summary'!I35, link K35/K36 to K33 or vice versa),
+- or produce a corrected copy of the workbook with the fixes applied (I can describe the exact changes I'll make first). Which would you prefer?

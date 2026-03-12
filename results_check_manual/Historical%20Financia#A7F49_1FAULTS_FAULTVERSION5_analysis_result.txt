@@ -1,0 +1,60 @@
+I reviewed the formulas in both sheets and found one definite formula error and several inconsistencies (cells that are hard-coded values where a formula would be expected, and a few missing/incorrect formulas that break consistency between columns). Below are the items to fix and recommendations.
+
+1) Definite formula error (incorrect operator)
+- Sheet "Seven-Year Financial Summary"
+  - H14 (Hardware Gross Profit % for FY1999)
+    - Current formula: =+H13*H5
+    - Problem: multiplies gross profit by revenue, producing an enormous, incorrect value (7,865,858,790).
+    - Correction: should be division, i.e. =H13/H5 (or =+H13/H5 to match the file's style).
+
+2) Missing / inconsistent formulas (hard-coded values where pattern suggests a formula)
+- Sheet "Seven-Year Financial Summary"
+  - Row 19 (Total Gross Profit)
+    - D19 has formula (=D13+D15+D17) but E19, F19, G19, H19, I19 are hard-coded numbers. For consistency they should be formula-based, e.g.:
+      - E19 = E13+E15+E17
+      - F19 = F13+F15+F17
+      - etc.
+  - Row 31 (Income From Operations)
+    - None of the columns use the consistent formula IncomeFromOps = TotalGrossProfit - TotalOperatingExpenses; D31..J31 are entered values. For consistency and to avoid manual error, use:
+      - D31 = D19 - D28
+      - E31 = E19 - E28
+      - etc.
+  - (Related) Row 21 (Gross Profit %) uses D19/D8 etc — if D19 is changed to formulas, these will update correctly. At present some denominators rely on manually-entered numerators.
+
+- Sheet "Nine-Quarter Financial Summary"
+  - Row 29 (Income From Operations)
+    - Only C29 has a formula (=C19-C26). D29..M29 are hard-coded. They should follow the same pattern:
+      - D29 = D19 - D26
+      - E29 = E19 - E26
+      - etc.
+  - Row 31 (Income From Operations %)
+    - Most columns are formulas (=col29/col8), but H31 is hard-coded (0.075). Make H31 = H29 / H8 for consistency.
+  - Row 19 (Total Gross Profit)
+    - These are formulas in this sheet (good). Keep consistent pattern across the workbook.
+
+3) Other consistency / style notes (not formula errors but potential risks)
+- Many cells use hard-coded values instead of formulas in columns where the same row has formulas in other columns (examples above). This increases risk of stale/incorrect numbers if a source cell changes. I recommend auditing the following rows/sheets and converting to formulas uniformly:
+  - Seven-Year: rows 19, 31, and other calculated rows currently partially hard-coded (Total Gross Profit, Income From Operations, possibly Net Income if it should be derived).
+  - Nine-Quarter: Income From Operations row (only C29 has formula), Income From Operations % (H31), and any other calculated rows where only some columns are formulas.
+- Some percent-change and “points” columns (column C in Seven-Year) intentionally contain textual labels like "-4.2 Points" or "-" — those are fine for reporting but not usable in numeric calculations. Keep them as text only where intended.
+- Many formulas use a leading + (e.g. =+D13/D5). That is harmless but unusual; you can keep it if you want consistency with the existing workbook.
+- Be sure formulas handle potential divide-by-zero conditions (if any revenue cells might be zero).
+
+4) Suggested quick fixes (exact formulas)
+- Seven-Year:
+  - H14 -> =H13/H5
+  - E19 -> =E13+E15+E17
+  - F19 -> =F13+F15+F17
+  - G19 -> =G13+G15+G17
+  - H19 -> =H13+H15+H17 (replace hard-coded)
+  - I19 -> =I13+I15+I17
+  - E31 -> =E19-E28 (and likewise for F31, G31, H31, I31, J31)
+- Nine-Quarter:
+  - D29 -> =D19-D26 (and likewise for E29..M29)
+  - H31 -> =H29/H8
+
+If you want, I can:
+- Provide a complete list of every cell in the two sheets that currently contains a literal value but should probably be formula-driven (I would enumerate all addresses),
+- Or generate a script/snippet (VBA or spreadsheet actions) to replace the hard-coded cells with the corrected formulas.
+
+Which of those would you like next?

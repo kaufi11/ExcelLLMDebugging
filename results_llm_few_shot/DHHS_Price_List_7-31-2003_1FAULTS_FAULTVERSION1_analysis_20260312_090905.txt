@@ -1,0 +1,35 @@
+Summary of the definite errors I found
+1) Row 21 (cells G21 … J21)
+- Fault: G21 is =629*0.5 (uses the constant 629) while E21 = 20000. That makes G21 (and therefore H21, I21, J21) wrong.
+- Fix: change G21 to reference E21: =E21*0.5 ; keep H21 =G21*15% ; I21 =G21*7% ; J21 =H21+I21
+
+Why: G21 should be calculated from the price in E21. Using 629 was a typo/static value so downstream cells are incorrect.
+
+Other problems (consistency / maintainability)
+- Many F-, G- (and occasionally H,I,J) cells are stored as hard-coded results (e.g. F66 = 1100, F75 = 7.7, F84 = 22, G85 = …) instead of formulas. Those will not update if the base price in column E changes and invite copy/paste errors like the one above.
+- Some rows use different multipliers for the same license type inconsistently (example: some Processor rows use 0.5, another uses 0.3). If those differences are not intentional they are errors.
+
+Suggested, simple fixes (short & copy/paste-ready)
+1) Correct the obvious typo:
+- G21: =E21*0.5
+- H21: =G21*15%
+- I21: =G21*7%
+- J21: =H21+I21
+
+2) Standardize columns so values always derive from E (recommended for all rows):
+- Fx (support list %): =Ex*22%
+- Gx (fee or licensing multiplier): use a logical test depending on license Type (col D). Example generic rule: processors use 0.5, everything else 0.2:
+  =Ex * IF(ISNUMBER(SEARCH("Processor",Dx)),0.5,0.2)
+  (Put this in G8 and fill down. Adjust the IF logic if you have more rules — e.g. UPU, Named User, “Universal Power Unit”, etc.)
+- Hx: =Gx*15%
+- Ix: =Gx*7%
+- Jx: =Hx+Ix
+
+Why these formulas
+- They reference the single source of truth (E column). If E changes, F–J update automatically.
+- The IF/SEARCH approach avoids hard-coded constants and reduces human typing errors (like 629).
+- Keeping H and I as percentages of G ensures J always equals the correct sum.
+
+If you want, I can:
+- Provide a ready-to-paste formula for G that covers more license-type conditions (Processor vs Named User vs UPU vs Application User), or
+- Produce a short list of all rows currently hard-coded (so you can replace them).

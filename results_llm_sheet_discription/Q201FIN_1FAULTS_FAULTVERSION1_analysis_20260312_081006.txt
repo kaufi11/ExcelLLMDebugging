@@ -1,0 +1,22 @@
+Short answer — two real problems, plus one check:
+
+1) Error: H9 uses COUNT(H7:H8) instead of SUM(H7:H8).
+   - Effect: H9 returns 2 (the count) not total revenues (~62,484). This error cascades into H20 (income from operations), H27 (income before taxes), H33 (net income), H36/H39 (EPS) and any other dependent cells.
+   - Fix: Replace H9 with =SUM(H7:H8).
+   - Result (after fix): H9 = 62,484; H20 = 62,484 - 61,334 = 1,150; H27 = 2,114; H33 = 1,329; H36 (diluted EPS) ≈ 1,329 / 29,774 = 0.0447; H39 (basic EPS) ≈ 1,329 / 27,925 = 0.0476.
+
+2) Problem: J17 contains a hard-coded expression "12615-5000" (textual arithmetic) rather than referencing cells.
+   - Effect: The value will not update if the component cells change; it's inconsistent with other periods (F17 = 2,615; H17 = 0; L17 = 0) and harms auditability.
+   - Fix: Replace the hard-coded arithmetic with cell references to the items you mean to combine. Example patterns:
+     - If the components are in Jx and J23 (write-off), use =Jx + J23 (use + if J23 is negative) or =Jx - ABS(J23) if you want to subtract the absolute write-off.
+     - Or put the resulting amount into one cell and reference that single cell: =J17_cell.
+   - Explanation: Using cell references ensures amounts recalc correctly and makes provenance transparent.
+
+3) Minor check: Balance sheet G13 is SUM(G7:G12) but G12 wasn't listed in your extract.
+   - Action: Verify row G12 exists and is intentional. If there is no G12 item, change G13 to =SUM(G7:G11) to avoid summing an unintended blank/placeholder row.
+
+Extra recommendations (quick):
+- After fixing H9 and J17, recalc the sheet and re-check dependent cells (H20, H27, H33, EPS rows).
+- Use Trace Dependents/Precedents or Excel’s Error Checking to find other accidental COUNT/SUM swaps or hard-coded arithmetic.
+
+If you want, I can provide the exact corrected formulas for every affected cell or produce an updated P&L with corrected numbers. Which would you like?

@@ -1,0 +1,39 @@
+I checked the workbook and found the main formula errors that will give wrong cost/revenue and wrong overtime costs. Short, clear list below with fixes and brief explanations.
+
+1) Wrong hard‑coded value for layoffs on "pricing" sheet
+- Where: pricing!C15 is the number 1 (should be a formula).
+- Why it’s wrong: that cell should calculate layoff cost (= # laid off * layoff cost/worker). Hard‑coding gives incorrect total costs.
+- Fix: replace the 1 with:
+  =C5 * Sheet1!$B$20
+- Explanation: C5 on the pricing sheet is # laid off for period 1; Sheet1!$B$20 is layoff cost/worker. Multiply to get layoff cost.
+
+2) Overtime cost references wrong on Sheet2 (several rows)
+- Where: Sheet2 cells E16, E17, E18, E19, E20 (and some E? show references like Sheet1!B24, B25, B26, B27, B28).
+- Why it’s wrong: they point to wrong (or non‑existent) cells on Sheet1 (B24 = subcontract cost, B25‑B28 don’t hold overtime). So overtime cost is computed with wrong numbers.
+- Fix: change each to reference overtime cost/hour on Sheet1 ($B$23). Use absolute reference for safety. Example:
+  E16 -> =E6 * Sheet1!$B$23
+  E17 -> =E7 * Sheet1!$B$23
+  E18 -> =E8 * Sheet1!$B$23
+  E19 -> =E9 * Sheet1!$B$23
+  E20 -> =E10 * Sheet1!$B$23
+- Explanation: E# is overtime hours in that period; multiply by overtime cost/hour on Sheet1 (B23) to get the overtime cost.
+
+3) Total Revenue formula wrong on Sheet3
+- Where: Sheet3 C24 currently =SUM(J5:J10)*31
+- Why it’s wrong: it multiplies total demand by 31 (nonsensical) instead of summing (demand × unit price) for each period.
+- Fix: if the price column K is on the same sheet use:
+  =SUMPRODUCT(J5:J10, K5:K10)
+  If prices are on the pricing sheet, use:
+  =SUMPRODUCT(Sheet3!J5:J10, pricing!K5:K10)
+- Explanation: SUMPRODUCT(demand, price) computes revenue correctly across periods.
+
+4) (Optional) Make some references absolute and consistent
+- Recommendation: use absolute references for fixed parameters on Sheet1 (e.g., Sheet1!$B$23, Sheet1!$B$19, Sheet1!$B$22, Sheet1!$B$24, etc.) so copying formulas won’t break them.
+- Why: reduces risk of accidental misreferences when formulas are copied/filled.
+
+How to verify after fixes
+- Recalculate totals: Total Cost and Profit should change after correcting layoffs/overtime and revenue.
+- Check individual components: verify Hiring, Layoff, Overtime, Inventory and Material rows now use the correct per‑unit/ per‑hour costs from Sheet1.
+- Cross‑sheet consistency: ensure every sheet that computes overtime cost uses Sheet1!$B$23.
+
+If you want, I can give you the exact formulas for every affected cell (I can paste them ready to copy/paste). Would you like that?

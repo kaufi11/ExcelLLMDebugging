@@ -1,0 +1,15 @@
+Findings (short)
+- Cell H12 (Business machines total, column H) has the wrong formula: it uses =COUNT(H9:H11) instead of =SUM(H9:H11). COUNT returns 3 (the number of numeric cells) not their sum.
+- Because H12 is wrong, every downstream value in column H that depends on Business machines total / Total net sales is wrong: H15 (Total of net sales), H17 (Net Sales), H19 (Gross profit), H22 (Operating profit), H29 (Income before income taxes), H33/H35 (Income before cumulative effect / Net income) and all the % lines in column H (H20, H23, H30, H36) are wrong. It will also make comparisons with Sheet2 (consolidated / segment totals) inconsistent.
+
+Solution (what to do)
+1. Fix the formula in H12. Replace it with:
+   =SUM(H9:H11)
+   Or copy the correct formula from any other column (e.g. G12) and paste to H12.
+2. Recalculate (Excel usually recalculates automatically). Verify H15, H17, H19, H22, H29, H33, H35 and the % rows in column H update correctly.
+3. Optionally search the workbook for stray COUNT( ranges ) where SUM( was intended (Home → Find: "COUNT(") and correct similarly.
+
+Why this fixes it (simple)
+- COUNT counts how many numeric cells are in a range (gives 3 here). SUM adds the cell values. Changing to SUM restores the intended total and corrects every formula that depends on that total.
+
+If you want, I can give the exact corrected value for H12 and the affected cells after fixing.

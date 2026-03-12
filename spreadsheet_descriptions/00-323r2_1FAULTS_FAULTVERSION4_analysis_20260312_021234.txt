@@ -1,0 +1,59 @@
+Overview
+- Workbook has 3 sheets. Sheet1 contains the full timing budget; Sheet2 and Sheet3 are present but no data provided.
+- Units are nanoseconds (ns) throughout.
+
+Structure / layout (Sheet1)
+- Column headers
+  - A: Item (descriptive categories and parameters)
+  - B: Fast-80 values (nominal inputs)
+  - C: Fast-160 values (nominal inputs used as the main reference in many formulas)
+  - D: Comments/notes
+  - J / K / L: Setup / Setup / Hold breakdown columns (derived per-edge or per-half‑cycle values)
+  - P / Q / N / R: Derived device timing results and intermediate calculations (receive/transmit setup/hold, net times, etc.)
+- Main logical blocks down column A:
+  1. Nominals (REQ/ACK period, data transfer period, ideal setup/hold)
+  2. Non-compensatable error terms (tolerance, asymmetry, noise, crosstalk, skew, ISI, etc.)
+  3. Compensatable skew terms (chip skew, cable skew, trace skew, ISI of data/REQ)
+  4. Compensation (ISI and skew compensation lines)
+  5. Totals, post-compensation error, and final minimum valid windows (data valid, min setup/hold)
+
+Key input cells (examples)
+- A4/B4/C4: REQ(ACK) period — B4 = 25 ns (Fast-80), C4 = 12.5 ns (Fast-160)
+- A5/B5/C5: Data transfer period — B5 = 12.5 ns, C5 = 6.25 ns
+- A6/B6/C6: Ideal setup/hold — B6 = 6.25 ns, C6 = 3.125 ns
+- Many error-source inputs in B9:B31 and C9:C36 (tolerances, asymmetries, noise, jitter, skew, ISI, etc.)
+
+Typical formula patterns
+- J/K/L columns often take C-column values and split or copy them:
+  - e.g., J9/K9/L9 = $C9/2 (half-cycle adjustment), or J27 = $C27 (copy)
+- Summation totals:
+  - Non-compensatable totals: B25 = SUM(B9:B24), C25 = SUM(C9:C24), J25/K25/L25 similar
+  - Compensatable totals: B35 = SUM(B27:B34), C35 = SUM(C27:C34), J35/K35/L35 similar
+  - Compensation totals: C38 = SUM(C36:C37), J38/K38/L38 similarly
+  - Total error inputs: B39 = B25+B35, C39 = C25+C35, J39/K39/L39 similar
+- Post-compensation error: B40 = B39 - B38, C40 = C39 - C38, etc.
+- Final windows:
+  - Minimum data valid window: B41 = B5 - B40, C41 = C5 - C40
+  - Minimum setup/hold in J/K/L: J41 = J6 - J40, K41, L41 are similar with ±3.125 adjustments.
+
+Notable derived formulas / cells
+- P12 (Trnsmt Asrtn prd) = C5 - C9 - C12 - C15 - C21 (transmit assertion period derived from data period minus several error terms)
+- P13 / P14 compute transmit hold/setup times using L6/K6 minus multiple L-terms and half of L30
+- P15 / P16 / P17 / P18 compute receive hold/setup and net times; P17 is a long expression combining P15, adjustments and many J cells (crosstalk/compensation interactions)
+- P10 = P12 - C16 - C17 (Receive Assertion period)
+- Several Q-column formulas mirror P-column results but include ±3.125 offsets (likely representing phase/edge shifts)
+- Cells use absolute references ($) extensively (e.g., $C9/2, $P$13) to anchor values across formulas.
+
+Key constants / typical input magnitudes (Fast-160 / column C examples)
+- REQ(ACK) period C4 = 12.5 ns; data transfer period C5 = 6.25 ns
+- Many small error terms: tolerances 0.06 ns (C9), driver asymmetry 0.5 ns (C11), ISI values varying (C31 = 4 ns), cable skew C29 = 2.5 ns, compensation/skew C36 = 2 ns, C37 = 4.4 ns.
+- Totals are computed from these inputs to produce post-compensation errors and minimum valid windows.
+
+Notes / assumptions present in sheet
+- H2: "Assumes all terms can be divided by two except skew" — explains the frequent /2 in J/K/L.
+- D-column contains many clarifying notes (double counting, which terms affect data bus vs REQ(ACK), etc.).
+- A final note block (A42:A46) documents assumptions about halving tolerances, ISI symmetry, and how SPI-3 budgets may lump or ignore certain terms.
+
+Conclusion
+- Sheet1 is a detailed timing error budget that takes nominal periods, enumerates non-compensatable and compensatable error sources, computes per-edge (half-cycle) contributions in J/K/L, applies compensation factors, and outputs transmit/receive setup/hold and minimum data-valid windows (in P/Q/N/R areas).
+- Sheet2 and Sheet3 appear empty/not supplied.

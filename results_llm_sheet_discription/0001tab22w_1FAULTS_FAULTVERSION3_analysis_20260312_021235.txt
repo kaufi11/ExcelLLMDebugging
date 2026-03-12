@@ -1,0 +1,30 @@
+Summary — I found three types of problems. Short fixes and clear formulas below.
+
+1) Typo in one “Other” formula (wrong cell reference)
+- Problem: O20 = SUM(100-(E20+G20+I20+K20+M21)) — it references M21 instead of M20, so the "Other" percent for Education 1998 lower level is wrong.
+- Fix: Change to reference M20. Preferred formula:
+  =IF(COUNT(E20,G20,I20,K20,M20)=5,100-SUM(E20,G20,I20,K20,M20),"")
+- Why: 100 minus the sum of the five grade %s gives the residual "Other". The IF/COUNT prevents errors if any entries are missing or non‑numeric.
+
+2) Misaligned / stray values in adjacent columns (data shifted)
+- Problem: Some rows have extra numeric entries in intermediate columns (e.g., F18, H18, Z22, maybe H10/H14 etc.). Those stray values shift or duplicate data so the intended percentages are not sitting in the columns the formulas use (E,G,I,K,M for lower; S,U,W,Y,AA for upper). That makes the calculated "Other" and any summaries wrong.
+- Fix: Move or delete the stray cells so each row only has values in the defined columns. For example:
+  - Clear F18 and H18 if the Education values belong in E18,G18,I18,K18,M18.
+  - Clear Z22 if Engineering upper‑level values belong in S22,U22,W22,Y22,AA22.
+- How to find them quickly: sort or use Go To Special (Home → Find & Select → Go To Special → Constants) to highlight unexpected values, or add a helper row with =COUNTA(E18:AA18) to see extra entries.
+
+3) Text like "n/appl" in percent cells will break numeric calculations
+- Problem: Arithmetic like 100-(E+G+...) will give errors or wrong results if one of the referenced cells contains text ("n/appl").
+- Fix options:
+  - Replace "n/appl" with blank cells (recommended) and use guarded formulas; or
+  - Use a guarded formula so "Other" shows blank or "n/appl" when inputs are non‑numeric. Example:
+    =IF(COUNT(E15,G15,I15,K15,M15)=5,100-SUM(E15,G15,I15,K15,M15),"n/appl")
+- Why: COUNT(...) ensures you only compute when all five numeric percentages are present.
+
+Additional small cleanup / best practices
+- Replace formulas like SUM(100-(E6+G6+...)) with the clearer:
+  =100-SUM(E6,G6,I6,K6,M6)
+  and optionally wrap with IF/IFERROR as shown above.
+- After fixes, verify totals: check that each row's E+G+I+K+M+O = 100 (or blank where n/appl), and that the TOTAL UNIVERSITY counts formulas point to the intended college rows.
+
+If you want, I can produce the exact corrected formulas for every affected cell (O20 plus a corrected pattern for O- and AC- columns) or give a short macro to find misaligned nonblank cells. Which would you prefer?

@@ -1,0 +1,47 @@
+I reviewed the workbook and found several clear, recurring errors. Short summary first, then each error with the fix and a one-line explanation.
+
+1) Balance Sheet total assets (D100) missing Restricted Securities (D64)
+- Problem: D100 = D50 + D59 + D98 + D79 (it does NOT include D64). Other columns (F/G/H/J) DO include their column64 in the total.
+- Fix (example formula): replace D100 with
+  =D50 + D59 + D98 + D79 + D64
+  (or better: =SUM(D50,D59,D98,D79,D64))
+- Why: D64 (restricted securities) is part of current/other assets and must be included so Total Assets balances with Liabilities & Equity.
+
+2) Inconsistent / off-by-one SUM ranges between columns (causes mismatched totals)
+- Examples:
+  - D59 = SUM(D54:D58) but F59 = SUM(F53:F58) (F59 includes row 53 while D59 does not).
+  - D21 = SUM(D12:D20) but F21 = SUM(F11:F20) (start row differs).
+- Fix: make the ranges identical across columns. For the PPE subtotal use (for all columns)
+  =SUM(<column>54:<column>58)
+  and for the other subtotal use the same fixed start/end rows in every column.
+- Why: shifted ranges mean some columns include wrong lines (or omit lines), producing inconsistent subtotals and totals.
+
+3) Total Assets vs Total Liabilities & Equity not reconciling because of the above
+- Problem: Because totals omit or include different rows across columns, D204 (=D203-D100) will not be zero.
+- Fix: after fixing the range inconsistencies and D100 (see #1 and #2), recalc D203 and D100 — D204 should become zero.
+- Why: totals must include the same underlying rows; inconsistent ranges break the accounting identity.
+
+4) EPS / Shares unit inconsistency (thousands vs actual shares)
+- Problem: the header says "Weighted Average Shares Outstanding (in thousands)" but elsewhere large numbers appear (e.g. 484435521) and EPS formulas divide by inconsistent denominators (K69 = K61/K66 etc.). That leads to EPS scaled incorrectly.
+- Fix: pick one convention and apply it everywhere:
+  - If shares are in thousands, convert to actual shares in EPS formula: =K61 / (K66 * 1000)
+  - Or convert the stored share counts to thousands and then use =K61 / K66
+- Why: mixing thousands and full-share counts changes EPS by a factor of 1,000.
+
+5) Manual ad-hoc fixes and hard-coded tweaks in formulas (dangerous)
+- Examples: H51 = +K69 + 0.01 (a +0.01 manual tweak); many lines use arithmetic like =499+48 instead of a SUM() over the real component cells.
+- Fix: remove manual ad‑hoc tweaks. Replace hard-coded arithmetic with SUM referencing the source cells or rows:
+  - e.g. replace =499+48 with =SUM(K23SourceRow1,K23SourceRow2) or =SUM(range_of_components)
+  - replace H51 = +K69+0.01 by linking directly to the correct computed EPS (or correct the underlying inputs).
+- Why: manual additions and hard-coded numbers are fragile and hide the real cause of discrepancies.
+
+Practical next steps (quick checklist)
+- Run a small audit where you compare formulas across columns for the same subtotal rows (copy the left-most column’s formula and paste/adjust to other columns or use a macro to compare ranges).
+- Correct all off-by-one SUM ranges (start and end rows must match across columns).
+- Fix D100 to include D64, then check D204 — it should be zero.
+- Standardize the shares unit and update EPS formulas accordingly.
+- Replace arithmetic expressions with SUM(cell ranges) referencing the actual component rows.
+
+If you want, I can:
+- Give the exact corrected formulas for every mismatched subtotal you care about (point me to which columns you want standardized), or
+- Produce a short macro to scan for SUM ranges that start/end on different rows across columns and list the mismatches.

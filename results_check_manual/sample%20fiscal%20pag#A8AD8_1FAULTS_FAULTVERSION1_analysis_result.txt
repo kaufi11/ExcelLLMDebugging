@@ -1,0 +1,44 @@
+I inspected the formulas in the workbook (Summary + funds 1003, 1043, 1166, 1198, 1856). Overall the sheet structure and the 3-D SUM patterns are consistent, but I found one clear formula error and a few suspicious/inconsistent formula usages that are likely bugs or worth checking.
+
+1) Clear formula error (likely producing wrong totals)
+- Cell: 1198!H25
+  - Formula: =COUNT(H9:H24)
+  - Why it's wrong: H25 is labelled "Total Revenues" and every other fund sheet uses SUM for the equivalent cell (e.g. 1198!D25 = SUM(D9:D24), 1198!E25 = SUM(E9:E24)). COUNT returns the number of numeric entries, not the sum of values, so H25 contains a count (value = 16) rather than the revenue total.
+  - Effects: That incorrect 16 flows into downstream calculations:
+    - 1198!H6 (carry forward) formula uses H25, so carry forward is affected.
+    - Summary sheet reads 1198!H25 (Summary H12), which corrupts Summary totals (H14 H24 H26 etc).
+  - Fix: Replace with =SUM(H9:H24).
+
+2) Other suspicious / inconsistent formulas (not necessarily errors but worth review)
+- Pattern: Several fund sheets compute earlier-year "Carry Forward" cells by referencing the next column (a backward chain), e.g. 1003!D6 = +E6 + D72 - D25 - D35 and 1003!E6 = +F6 + E72 - E25 - E35, etc.
+  - This pattern is repeated on 1003, 1043, 1166, 1198, 1856.
+  - Why review: This is an unusual backward-propagation pattern (D6 depends on E6, which depends on F6, which depends on G6). It is valid if intentional (rolling carry-forward computed from later-year balances), but it is easy to introduce circular references if a future column ever references back to an earlier column. Confirm this is intended logic.
+
+- Inconsistent function usage vs peers:
+  - 1198!H25 (COUNT) — already flagged as error.
+  - Aside from that, most totals use SUM; a few cells use COUNT only once (the one noted). No other COUNT uses found.
+
+- Redundant unary plus signs:
+  - Many cells use formulas starting with =+ (e.g. =+D24+D14+D6). This is harmless (Excel ignores leading +) but inconsistent style. Not an error, just cosmetic.
+
+3) Propagation impact to Summary sheet
+- Because Summary pulls each fund's totals (e.g. Summary H14 = SUM(H9:H13) where H12 is 1198!H25), the COUNT error in 1198!H25 propagates into Summary totals (Projected, Budget columns) and into the summary Carry Forward/Ending Balance chain. Fixing 1198!H25 to SUM will likely correct multiple Summary totals.
+
+4) Minor observations (no direct errors found)
+- Some cells show tiny floating-point artifacts (e.g. 2.03000000119209) — standard binary floating rounding; not an error.
+- Large negative numbers in "Repairs, Maintenance & Supplies" appear intentionally entered in several sheets and are reflected consistently in totals.
+- 3-D SUM usage in Summary (e.g. =SUM('1003':'1856'!D6:D6)) is consistent and appears intended.
+
+Summary and recommended actions
+1. Correct the bug:
+   - Change 1198!H25 from =COUNT(H9:H24) to =SUM(H9:H24).
+
+2. Review intent:
+   - Verify the backward calculation pattern used for Carry Forward (D6 referencing E6, etc.) is intended and does not create latent circular reference risk if future edits change formulas.
+
+3. (Optional) Clean up:
+   - Remove redundant =+ prefixes for formula consistency (cosmetic).
+
+If you want I can:
+- Show a short list of all cells that reference 1198!H25 (to show where the error propagates).
+- Run a recalculation in the file with the H25 fix and report changes to Summary totals (if you provide permission to modify or allow me to evaluate).

@@ -1,0 +1,27 @@
+Findings
+- Error: On the Exams sheet only one student (row 19, Mittelstadt) has the wrong Total formula. G19 =SUM(E19:F19) omits Exam 1 (D19), so that student's exam total is too low.
+- No other formula errors shown on the other sheets; the Total Points Possible row (Summary row 30) is correct (H30 =SUM(D30:G30)).
+
+Why it matters
+- That single wrong SUM causes the student's exam total (and any overall grade that pulls Exams!G19 into Summary) to be incorrect.
+
+How to fix (quick)
+1. Replace G19 with the correct formula:
+   G19 = SUM(D19:F19)
+   (or in Excel: select G19, type =SUM(D19:F19), press Enter.)
+2. To ensure consistency for all rows, fill the correct formula down column G: select G6 (a correct cell), drag the fill handle down through G28, or select G6:G28 and press Ctrl+D.
+
+Better practices to avoid this
+- Convert each score range to an Excel Table and use structured references so totals auto-fill for every row.
+- Or create the formula once and use Fill Down (or copy/paste) instead of typing row-by-row.
+- In the Summary sheet, pull each student’s totals by ID (so order mismatches won’t break things). Example formulas for row 6 (use if Summary rows align with IDs):
+   D6 = Homework!H6
+   E6 = Projects!G6
+   F6 = Quizzes!J6
+   G6 = Exams!G6
+   H6 = SUM(D6:G6)
+   I6 = H6 / $H$30   (use absolute reference $H$30 for Total Points Possible)
+  If the roster order may differ, use VLOOKUP or INDEX/MATCH, for example:
+   D6 = VLOOKUP($A6, Homework!$A$6:$H$28, 8, FALSE)
+
+That’s all — fix G19 to =SUM(D19:F19) and consider filling formulas or using Tables/VLOOKUP to prevent similar mistakes.

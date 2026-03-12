@@ -1,0 +1,42 @@
+I inspected all formulas in the workbook you provided and found a small number of formula errors and a few inconsistencies / risky practices that could produce incorrect totals if values change. Below are the items I recommend you review and (where applicable) correct.
+
+1) Municipal!F5 — incorrect cell reference (formula error)
+- Current formula: =E6
+- Why it's wrong: F5 should recommend the Hatboro request (row 5), but is pulling the Hatfield request (E6).
+- Suggested fix: =E5
+- Effect: fixes Municipal!F22 (Municipal total) and any downstream sums that include F5.
+
+2) AHTF!F14 vs. AHTF!E14 — inconsistent sum ranges (logical inconsistency)
+- E14 (TOTAL AHTF FUNDING REQUESTED) =SUM(E2:E13) — includes E2.
+- F14 (recommended total) =SUM(F3:F13) — excludes F2 (Canus Corporation) from the sum.
+- Why it's problematic: if F2 ever contains a recommended number, it will not be included in the total. The E- and F- totals should use parallel ranges.
+- Suggested fix (if F2 might contain a numeric recommendation): change F14 to =SUM(F2:F13)
+- If exclusion of F2 is intentional because F2 has no recommend value, consider adding a comment to document that choice.
+
+3) AHTF!E16 and AHTF!F16 — hard-coded constant used in formula (fragile)
+- Current formula: =2432890*0.15
+- Why it's risky: the factor (2432890) is hard-coded; if that base number is updated elsewhere you will need to update this cell manually. Hard-coded constants are error-prone and obscure the source of the number.
+- Suggested fix: replace with a cell reference to the source cell that contains 2,432,890 (or compute the source via a SUM of the relevant cells). Example: =<cell_with_2432890>*0.15 or =SUM(<range>)*0.15
+- Also verify that 15% is the intended multiplier.
+
+4) Non Profit!E28 and Non Profit!F28 — use of SUM on a single cell (not an error but unnecessary)
+- Current formula: =SUM(E27) and =SUM(F27)
+- Why note it: SUM of a single cell returns the same value. It's not an error, but you may prefer the simpler form =E27 and =F27 (clearer).
+
+5) AHTF!F10 contains non-numeric text used in a sheet where numeric sums occur
+- F10 value: "Pending Feasibility Study" (text)
+- Why it's a problem: a text value in a cell that is inside the F-range used by SUM will be ignored by SUM (no error), which can be surprising. If F10 should be numeric later, it will automatically be excluded until changed to a number.
+- Suggested action: if a numeric recommend is intended, replace the text with the numeric value (or 0 while pending). Otherwise add a note explaining why it's text.
+
+6) General / stylistic consistency recommendations
+- Many "Recommend" cells are populated manually while others are =E# formulas. This is OK, but is a maintenance risk. Where the recommended amount equals the request, using =E# keeps things consistent and avoids copy/paste mistakes (e.g., the F5 error above was likely a copy/paste mistake).
+- Consider standardizing: when Recommend = Request, set Recommend =E# everywhere; when Recommend differs, enter the manual value.
+
+7) Downstream checks to run after fixes
+- After correcting Municipal!F5 to =E5, re-calc Municipal!F22 and then recalc County!E9 (Municipal total) and County!E13 (Total Requested) to verify grand totals update as expected.
+- After changing AHTF!F14 to include F2 (if you choose to), re-check AHTF!F18 and County totals that reference AHTF / HOME totals.
+
+If you want, I can:
+- Provide the exact cell formulas to paste for each corrected cell,
+- Produce a short VBA or Python script (openpyxl) to automatically correct the issues noted (useful if you have many similar workbooks), or
+- Re-check after you make the fixes to confirm all totals reconcile.

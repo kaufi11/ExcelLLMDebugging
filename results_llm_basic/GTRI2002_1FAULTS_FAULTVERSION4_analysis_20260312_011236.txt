@@ -1,0 +1,18 @@
+I checked the workbook. I found two clear, actionable errors and one recommended sanity-check.
+
+1) Wrong operator in 2002 Report — C18
+- Problem: Cell C18 contains "FORMULA =G18*1000000" while every other row uses G/1,000,000 to convert pounds to millions. Multiplying makes C18 huge and breaks downstream totals/analysis.
+- Fix: Change C18 to =G18/1000000
+- Why: G18 is in pounds; converting to millions requires division by 1,000,000. The current *1,000,000 is a typo.
+
+2) Stray data in 2003 Report — row 20 columns G and H
+- Problem: On the "2003 Report" sheet row 20 you have values in G20 (8.449074) and H20 (0.6381540899397388) while that sheet otherwise doesn’t use those columns for any year rows. Those values appear out-of-place and will cause misalignment and confusion (and may be from another sheet).
+- Fix: Clear G20 and H20 (Select G20:H20 → Delete), or move those numbers to the correct sheet/cells if they belong elsewhere.
+- Why: Those two cells are not used in the 2003 table and will interfere with any range-based operations or copying/pasting. Removing them keeps the table consistent.
+
+3) Quick sanity checks (recommended)
+- Search for other accidental "*1000000" formulas. In Excel: Home → Find → look for "*1000000" (or search for "/1000000" to confirm consistency). If you find other multiplications, correct them to divide.
+- Recalculate/verify totals after fixes (press F9). Check that per-year totals = component sums (e.g., Total Releases = Air + Land + Water + Offsite).
+- If you have formulas that sum whole columns/ranges, ensure orphaned values (like the G20/H20 case) aren’t being picked up by those ranges.
+
+If you want I can give the exact corrected formulas (copiable) or scan the whole workbook for other *1000000 typos and report them.

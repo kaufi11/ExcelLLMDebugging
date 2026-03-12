@@ -1,0 +1,33 @@
+Summary — main errors (FRF sheet)
+1) Many cells in column I are not real formulas but literal text like
+   "FORMULA =SUM(H5-J5)". Example cells: I5, I6, I7, I8, I9, I10, I11, I12, I13, I14, I15, I16, I17, I18, I19, I21, I22, I23, I27, I28.  
+   Effect: Excel shows text and does not calculate the intended difference (depth/height off bottom).
+
+2) Wrong cell reference in I20: it's "FORMULA =SUM(H20-85)". That subtracts the hard-coded number 85 instead of J20 (should use the gauge value in J20).
+
+Why these are errors
+- Prepending "FORMULA " or storing formulas as text prevents Excel from evaluating them.  
+- Using a literal constant (85) instead of the intended cell gives incorrect results and is not maintainable.
+
+Quick fixes (short)
+A) Replace text with real formulas:
+   - In I5 enter: =H5-J5
+   - Copy/fill that formula down for the other rows that need it (I6, I7, …).
+B) Fix I20 specifically:
+   - In I20 enter: =H20-J20
+
+Optional improvements (recommended)
+- Use =IF( OR(H5="N/A",J5="N/A"), "N/A", H5-J5 ) if some rows have N/A and you want N/A returned instead of an error.
+- Remove the word "FORMULA " from cells if it was added intentionally; ensure cells are not formatted as Text. If they are Text, set format to General, re-enter formulas (or use Find/Replace).
+
+How to do the bulk repair quickly
+1. Select column I range with the text formulas.  
+2. Format cells as General (Home → Number → General).  
+3. In I5 type =H5-J5 and press Enter.  
+4. Drag the fill handle down to copy to all needed rows (or double-click fill handle).  
+5. Correct I20 to =H20-J20.
+
+Why this fixes it
+- =H#-J# is a real Excel formula that subtracts the gauge depth (J) from the measured depth (H), producing the numeric "height off bottom". Replacing text with formulas lets Excel compute and keep results updated when source cells change.
+
+If you want, I can give the exact range to fill or a single Find/Replace string to convert the existing "FORMULA =SUM(H5-J5)" text into working formulas. Which would you prefer?

@@ -1,0 +1,31 @@
+Summary — I found two clear formula errors (manual values overwrote formulas) that will make the per-class and grand totals wrong. Fixes + why:
+
+1) Wrong cell: AV142 (Total row for the class in row 141)
+- Problem: AV142 contains the literal value 6 instead of the expected cost multiplication formula. Every other company column in that "Total" row uses CompanyCount * $E$141 (e.g. F142 = F141*$E$141). Because AV142 is a constant, the per-class RISE cost (BO142), the column totals and the grand totals that include column AV are incorrect.
+- Fix: replace the 6 with the proper formula. Either:
+  - In AV142 enter: =AV141*$E$141
+  - Or (to fix the whole row) put =F141*$E$141 into F142 and drag/fill across to BG142.
+- Why this fixes it: it restores the consistent rule "company participants × RISE cost per participant" so BO142, column AV totals and downstream aggregates recalc correctly.
+
+2) Wrong cell: BK261 (participants total for the class in row 261)
+- Problem: BK261 currently contains the constant 12 (a hard-coded participant total) rather than the formula that sums participants across company columns (BK normally =SUM(F#:BG#)). Any totals that sum BK (total participants, BL totals, grand participant count BK268 etc.) will be wrong if BK261 was overwritten.
+- Fix: replace BK261 with the correct formula:
+  - In BK261 enter: =SUM(F261:BG261)
+- Why this fixes it: BK is used to compute BL (student-days) and global participant counts. Restoring the sum ensures BL261, BK grand totals and any calculations that depend on BK are correct.
+
+Quick verification steps (after making fixes)
+- Recalculate workbook (press F9) or ensure Calculation is Automatic.
+- Check these cells update:
+  - BO142 (per-class RISE total) should change if AV142 was wrong.
+  - BO261 and BL261 (student-days) / BK268 (total participants) should update if BK261 was fixed.
+- Use Excel to find other similar manual overwrites:
+  - Use Find (Go To Special → Constants) inside the ranges F:BG and BK columns to spot constants where formulas are expected.
+  - Or add a helper row and use =ISFORMULA(cell) to confirm expected formula presence (TRUE = good, FALSE = suspect).
+
+Notes about non-critical items
+- Many cells use SUM(...) around single expressions (e.g. =SUM(F3*$E$3)). That is harmless (works correctly) though unnecessary — no need to change unless you want cleaner formulas.
+- There are many very large manual SUM lists for grand totals. They are fragile but not incorrect by themselves — the main issue is any single overwritten cell in the data blocks will propagate wrong numbers into those large sums.
+
+If you want I can:
+- Provide the exact corrected values that should appear in AV142, BK261, and the impacted BO/BK/BL grand totals after the fixes, or
+- Give a short macro (or steps) to scan the class blocks and find any more cells where a formula was replaced with a constant.

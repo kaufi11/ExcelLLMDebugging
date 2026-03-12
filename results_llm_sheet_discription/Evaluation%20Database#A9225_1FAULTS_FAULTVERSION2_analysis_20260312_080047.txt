@@ -1,0 +1,21 @@
+Findings (short)
+- Error: Cell I19 uses =COUNT(I7:I17) but should sum the numeric responses. COUNT returns 9 (number of cells with numbers) instead of the total 470.
+- Consequence: The "TOTAL" row underreports column I, so any percentages, grand totals or analyses that use G19:K19 are wrong.
+
+Fix (what to change)
+1. Replace I19 with:
+   =SUM(I7:I17)
+   Result: I19 will become 470.
+
+Optional cross-checks / improvements
+- Add a grand-total check in L19 to verify row totals match column totals:
+   =SUM(L7:L17)
+  Or compute the sum of column totals:
+   =SUM(G19:K19)
+  Both should equal 1289 (after fixing I19). This verifies consistency.
+
+Why this fixes it (simple)
+- COUNT counts how many numeric cells are in a range (returns 9). SUM adds the numeric values (returns 470). Using SUM gives the actual total number of "3 = Good" responses, which is what the TOTAL row is intended to show.
+
+Quick tip
+- Scan the sheet for any other accidental COUNTs used where SUM is expected (especially in totals rows) and replace them similarly.

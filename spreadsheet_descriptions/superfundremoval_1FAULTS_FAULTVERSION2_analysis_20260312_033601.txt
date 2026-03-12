@@ -1,0 +1,54 @@
+Sheet name: "PART Qs & Section Scoring" — single assessment worksheet for OMB PART of the program "Superfund Removal".
+
+High-level layout
+- Header (A1–A4): PART title, program type ("Direct Federal Programs"), program name ("Superfund Removal"), and Section I title.
+- Column structure:
+  - A: question number / section labels / totals
+  - B: full question text or sublabels (and some Targets/Actuals)
+  - C: Answer (Yes / No / N/A / Small Extent / Large Extent or short text)
+  - D: Explanation (narrative justification)
+  - E: Evidence / Data (references)
+  - F: Weighting (decimal fractions summing to 1.00 per section)
+  - G: Weighted Score (calculated contribution toward section total)
+- The sheet is organized into four PART sections:
+  1. Section I — Program Purpose & Design (rows ~6–11)
+  2. Section II — Strategic Planning (rows ~16–23)
+  3. Section III — Program Management (rows ~28–34)
+  4. Section IV — Program Results (rows ~41–56)
+- Each section includes per-question weightings (F) and a section total check in column F plus a weighted-score total in column G:
+  - Section totals: G12 (I), G24 (II), G36 (III), G56 (IV)
+
+Key formulas and calculation logic
+- Standard yes/no weighted-score formula (used throughout I–III):
+  =IF(Cx="yes",(1*Fx),IF(Cx="no",(0*Fx),""))
+  -> returns Fx when "yes", 0 when "no", blank otherwise.
+- Section I/II/III weighting checks:
+  =IF(SUM(Fstart:Fend)<>100%,"ERROR","100%")
+  -> validates that the weightings in the section sum to 100% (weights entered as decimals summing to 1).
+- Section total weighted-score:
+  =SUM(Grange)
+  -> sums weighted contributions for the section.
+- Section IV (results) weighted-score uses a nested IF to handle ordinal answers (Yes / No / Small Extent / Large Extent):
+  =IF(Cx="yes",(1*Fx),IF(Cx="no",(0*Fx),IF(Cx="small extent",(0.33*Fx),IF(Cx="large extent",(0.67*Fx),""))))
+- Section IV total weighting check is implemented as:
+  =IF((F55+F54+F53+F45+F41)<>100%,"ERROR","100%")
+  -> uses explicit cell additions rather than a range.
+- Section IV total weighted-score sums specific G cells:
+  =G55+G54+G53+G45+G41
+
+Key values / examples
+- Program: Superfund Removal.
+- Section I (five questions): each weight = 0.2; G12 sums G6:G10.
+- Section II (seven questions): weights ~0.1428–0.143; G24 sums G16:G22.
+- Section III (seven questions): similar ~0.1428–0.143; G36 sums G28:G34.
+- Section IV (five scored items): F41 ≈ 0.334, F45 ≈ 0.333, F53 ≈ 0.333; F54 and F55 set to 0 (not scored).
+- Example answer mapping: a "Yes" yields full weight contribution (Fx); "No" yields 0; "Small extent" yields 0.33*Fx; "Large extent" yields 0.67*Fx.
+
+Notable issues / inconsistencies to check
+- G21 formula as provided appears incorrect: =IF(C21="yes",(1/F21),IF(C21="no",(0/F21),"")) — this divides by the weight instead of multiplying and should be corrected to (1*F21).
+- Section IV weighting check uses explicit cell additions (F55+F54+...) rather than a contiguous range; this is functionally fine but less maintainable.
+- Some C-column cells (e.g., C42) contain narrative text rather than a standard answer category; those won't calculate in weighted-score formulas (but often the corresponding question row is elsewhere).
+- Several weights are expressed as repeating decimals (0.1428) — rounding may cause the section sum check to be sensitive; the check uses exact equality to 100% text, so rounding must be consistent (weights should sum to exactly 1 in the sheet).
+
+Overall purpose
+- The sheet captures PART questions, qualitative explanations and evidence, assigns per-question weights, computes weighted contributions based on categorical answers, validates that section weightings sum to 100%, and aggregates section scores for program performance assessment.

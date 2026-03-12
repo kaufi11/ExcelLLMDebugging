@@ -1,0 +1,39 @@
+I reviewed the workbook and found a few clear, high‑impact formula errors that will distort per‑wafer profit, cash flows and IRRs. Below are the errors, why they matter, and the exact fixes to make (short and direct).
+
+1) DRAM cost side — wrong price used in var profit (cell D21)
+- Problem: D21 currently uses D31 (price AFTER adding a fab) instead of the baseline price D13. The other years (E21:H21) correctly use E13:F13:G13:H13, so only column D is wrong.
+- Wrong formula (what you have): =D31*D9*D10 - D16 - (D9)*D17
+- Correct formula: =D13*D9*D10 - D16 - (D9)*D17
+- Why it matters: Using the post‑addition price will miscompute variable profit/wafer for 2001 and will cascade into undiscounted profit, cash flows (D23, D28, C39..), and IRR. Fixing this will align column D with the other years and with the baseline scenario.
+
+2) DRAM cost side — bad divisor in cap cost/start/5 years for H22
+- Problem: H22 is =+$D$18/961 which is almost certainly a typo (961 instead of 5).
+- Wrong formula: =$D$18/961
+- Correct formula: =$D$18/5
+- Why it matters: This makes cap cost for 2006 tiny compared with other years, inflating profit/wafer and cash flows in column H and causing wrong IRR results.
+
+3) General consistency / pattern issue (recommendation)
+- What I saw: Some rows use a consistent formula pattern across columns but one column deviates (like D21). These are easy to miss and produce inconsistent year‑by‑year outputs.
+- Fix: Scan rows where formulas are repeated across columns and ensure each column references the same relative input cell (or use absolute references consistently). Example: copy the correct formula from E21 into D21 or use a single formula in D21:H21 and copy across.
+
+4) Prevent future errors — make these structural changes
+- Replace repeated hard‑coded cross‑sheet cell addresses with named ranges (e.g., Baseline_Price, VarCost_perWafer, CapCost_perStart). Named ranges make it obvious if a formula accidentally points to the wrong cell.
+- When copying formulas across years, use Excel’s “Fill Right” (or copy/paste) and then check a few random columns — don’t edit a single cell manually unless needed.
+- Add a quick QA sheet with checks, e.g.:
+  - Verify that var_profit_wafer (row) uses baseline price for baseline columns (D13:E13...), not post‑build price.
+  - Check cap cost/start/5yrs equals D18/5 for all years.
+  - Sum-of-years checks: total cash flow by year should not spike for one year unless intentional.
+
+Quick steps to fix now
+1. In DRAM cost side sheet, change D21 to:
+   =D13*D9*D10 - D16 - (D9)*D17
+2. In DRAM cost side sheet, change H22 to:
+   =$D$18/5
+3. Recalculate workbook (F9) and re-run the IRR cells (B41 etc.) to see corrected outputs.
+4. Do a quick sanity check: compare D21:H21 — they should be comparable (same formula pattern) and not have a single outlier.
+
+If you want I can:
+- List any other cells that deviate from a repeated formula pattern (I can scan systematically), or
+- Show the before/after IRR and cash‑flow impact from these fixes.
+
+Which would you prefer?

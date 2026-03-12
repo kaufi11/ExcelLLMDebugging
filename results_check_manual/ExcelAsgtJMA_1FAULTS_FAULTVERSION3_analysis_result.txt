@@ -1,0 +1,31 @@
+I inspected the formulas in Sheet1 and found a few inconsistencies/likely errors. Summary and recommended fixes below.
+
+1) Incorrect/wrong range used for student totals (C9:C24)
+- Current: most student totals use formulas like =SUM(D9:CC9), =SUM(D10:CC10), …, =SUM(D24:CC24).
+- Problem: the right endpoint CC is almost certainly a typo — scores only occupy D:I. Summing to CC can mask accidental values far to the right and is inconsistent with the header total (C6 uses =SUM(D6:I6)).
+- Fix: change these to =SUM(D9:I9) and similarly for each student row (e.g. C10 =SUM(D10:I10), …, C24 =SUM(D24:I24)).
+
+2) Wrong function in C19
+- Current: C19 =COUNT(D19:CC19) and value is 6.
+- Problem: COUNT returns the number of numeric cells, not the sum of the points. All other student total cells are sums. This yields an incorrect "Points" value for that student (it matches the number of graded items rather than their total points).
+- Fix: replace with =SUM(D19:I19) (and correct the range endpoint as above).
+
+3) Inconsistent / unnecessary use of SUM around single expression in Grade % column (B9:B24)
+- Current: B9 =SUM(C9/$C$6), B10 =SUM(C10/$C$6), … (all B cells use SUM around a single division).
+- Problem: SUM around a single scalar expression is unnecessary (works but is untidy and could confuse maintenance).
+- Fix (suggested): use =C9/$C$6 (and copy down). Keep the absolute reference $C$6.
+
+4) Minor consistency / formatting suggestions
+- B-column values are decimals (e.g. 0.85). If you want percent appearance set the cell format to Percentage.
+- C6 uses =SUM(D6:I6) (correct). Make student total formulas consistent with that pattern.
+
+Exact recommended formulas:
+- C9: =SUM(D9:I9)
+- C10: =SUM(D10:I10)
+- …
+- C19: =SUM(D19:I19)  (replace COUNT)
+- …
+- C24: =SUM(D24:I24)
+- B9 (and copy down): =C9/$C$6
+
+If you want I can produce the corrected formulas for every student row or create a list you can paste into Excel.

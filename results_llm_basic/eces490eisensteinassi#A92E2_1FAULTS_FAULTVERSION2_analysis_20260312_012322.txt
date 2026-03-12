@@ -1,0 +1,19 @@
+Found one clear error — plus a couple small notes.
+
+1) Error
+- Cell F19 contains the number 2 (literal) instead of the correct formula =-LOG(E19,2).
+- Effect: G19 = E19*2 is wrong, so the sum in G46 (entropy for the E‑distribution) is wrong (too low by ≈0.65217 bits). The rest of column F (F20:F44) uses the correct formula.
+
+2) Why it's wrong
+- Information content = -log2(p). Putting 2 in F19 gives an incorrect info value for that symbol (should be ≈3.200 instead of 2), so that symbol’s contribution to entropy (G19) is wrong.
+
+3) Fix (quick)
+- Replace the contents of F19 with: =-LOG(E19,2)
+- Or copy F20 and Fill Up/Down to F19 so all F19:F44 use =-LOG(E#,2).
+
+4) Verify / improved approach (recommended)
+- After fixing, recalc and check G46.
+- To avoid per-row errors use one formula for entropy: =-SUMPRODUCT(E19:E44, LOG(E19:E44, 2)) (this directly returns H(A) for the E column).
+- You can do the same for the A column: =-SUMPRODUCT(A19:A44, LOG(A19:A44, 2)).
+
+That’s it — fix F19, then G46 will be correct.

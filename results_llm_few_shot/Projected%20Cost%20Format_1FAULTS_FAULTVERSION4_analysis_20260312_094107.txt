@@ -1,0 +1,40 @@
+Summary of the problems I found and simple fixes (short and clear):
+
+1) Cell G21 (Sheet: Seq Production Costs)
+- Error: Wrong function (COUNT) used on dollar cells.
+- Why it’s wrong: COUNT returns how many numeric cells are filled (1 or 2), not the sum of costs.
+- Fix formula: =SUM(G19:G20)
+
+2) Cell B23 (Sheet: Seq Production Costs)
+- Symptom: Final total may be wrong because G21 was a count, not a dollar sum.
+- Fix: After fixing G21 above this will be correct. To be explicit/robust use:
+  =SUM(B21,D21,G21)
+
+3) Division-by-zero risk on average / percent formulas (many places)
+- Examples: B11 (=B21/B10), D11 (=D21/D10), C13 (=B13/$B$21) and similar percentage cells, AND B18 on Tech Dev (B17/B6), B18 on Bioinformatics (B17/$B$6), B31, B44, etc.
+- Why it’s a problem: If the denominator cell is zero or blank the formula errors (#DIV/0!).
+- Fix (preferred): Ensure the denominator cells are filled with the correct totals. Example:
+  - On Tech Dev sheet B6 must contain the grant’s total funds requested (not 0). If the “total grant” is the Seq Production total (Sheet1 B23), link it:
+    In Tech Dev B6 put: ='Seq Production Costs'!B23
+  - On Bioinformatics sheet do the same: set B6 = 'Seq Production Costs'!B23 (or the correct master total).
+- Alternative fail-safe formula (optional): wrap with IF to avoid errors:
+  =IF(B10=0,"",B21/B10)  or  =IFERROR(B21/B10,"")
+
+4) Hard-coded “1” totals (C21, E21, H21)
+- Issue: cells C21/E21/H21 are set to 1 (probably intended to show 100%). This is not an error, but not robust.
+- Recommended change (optional): compute them so they always reflect the data:
+  C21: =IF($B$21=0,"", $B$21/$B$21)  (or format =1 as Percentage 100%)
+
+5) Miscellaneous / placeholders
+- G11 shows "1 2 3 4 5" — likely placeholder text for listing activities. Ensure G13:G18 and G19:G20 are numeric costs, not text.
+- Ensure any cells used as denominators (B10, C10, D10, $B$21, $D$21, $G$21, B6) contain numbers before relying on their derived formulas.
+
+Quick checklist to fix now:
+1. Change G21 to =SUM(G19:G20)
+2. Put the correct grand total into Tech Dev B6 and Bioinformatics B6 (or link to Seq Production Costs B23).
+   Example: In Tech Dev B6 enter: ='Seq Production Costs'!B23
+3. Replace fragile averages with IF or IFERROR wrappers where you want blank/zero instead of #DIV/0!.
+   Example: B11 -> =IF(B10=0,"",B21/B10)
+4. Verify inputs (B10, C10, D10, B13:B18, etc.) are numeric.
+
+If you want, I can give the exact cell-by-cell revised formulas and place them in the sheet for you. Which sheet should I update first?

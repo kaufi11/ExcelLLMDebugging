@@ -1,0 +1,36 @@
+Summary — main errors found and fixes (short):
+
+1) Missing score (data entry)
+- Faulty: G55 is blank but I55 = SUM(D55:G55) and K55 uses that total.
+- Error: Omission — Pract.4 score missing → I55, J55, K55 wrong.
+- Fix: Enter the correct Pract.4 score in G55. If unknown, mark as 0 explicitly or flag the row.
+
+2) Wrong aggregate function in summary
+- Faulty: F56 = SUM(F36:F55)
+- Error: Mechanical/Inconsistency — F56 should be the mean like the other column summaries.
+- Fix: Change to =AVERAGE(F36:F55)
+- Why: All other column summaries (D26, E26, G26, H26, I26 / D56, E56, G56, H56, I56) use AVERAGE so F56 must match to report the mean.
+
+3) Hard-coded denominators for percent calculations
+- Faulty examples: J6 = I6/400, J7 = I7/400, J36 = I36/400, etc.
+- Error: Maintainability/fragile formula — using literal 400 instead of the header cell (I3 or I33). If the max total changes, you must edit many cells.
+- Fix: Use the header cell with an absolute reference. For table 1 replace with =I6/$I$3 and copy down. For table 2 use =I36/$I$33 and copy down.
+- Why: Makes formulas update automatically if maximums (I3, I33) change and allows safe copying.
+
+4) Inconsistent grade cutoff operators and slight inconsistency of thresholds
+- Faulty: Individual rows use IF(J#>=89.9%,...), summary rows use IF(J26>89.9%,...) (and second table uses > instead of >=).
+- Error: Logical inconsistency — students exactly at 89.9% treated differently in different places.
+- Fix: Standardize the logic. Example (recommended): =IF(J6>=89.9%, "A", IF(J6>=79.9%, "B", IF(J6>=69.9%, "C", IF(J6>=59.9%, "D","F"))))
+- Why: Use >= consistently so borderline scores get the intended higher grade.
+
+Optional improvement (clarify weighting)
+- Observation: Column I is "Total (w/o A/P)" and column H is attendance (out of 50). If Class % should include attendance, J formulas must use (I+H)/(I3+H3) or I6+H6 divided by 450. If the intent is to exclude attendance, keep current approach but rename J header to "Practical % (w/o A/P)".  
+- Example include attendance: = (I6+H6)/($I$3+$H$3) or = (I6+H6)/450
+
+Quick list of exact fixes to apply now:
+- Enter missing value in G55 (or 0).
+- Replace F56 with =AVERAGE(F36:F55)
+- Replace J6..J25 formula with =I6/$I$3 and copy down; replace J36..J55 with =I36/$I$33 and copy down.
+- Make all K formulas use >= consistently (copy corrected IF formula to all K cells and summary K26/K56).
+
+If you want, I can give the exact copy-paste formulas for each range or produce corrected formulas for the whole sheet.

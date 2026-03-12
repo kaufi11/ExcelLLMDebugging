@@ -1,0 +1,22 @@
+Findings (short)
+- Primary error: on sheet "2002 Report", cell C18 uses the wrong operation. It is listed as FORMULA = G18 * 1000000 but should be dividing by 1,000,000 like the other rows. That single star/multiply makes C18 huge and corrupts any totals/ratios that include that cell (E18, R18, and any summary cells that reference R18 or L18 etc).
+- Likely secondary problem: occasional stray numbers in unused columns (example: G20/H20 values on "2003 Report") — harmless unless they were intended to be in other columns.
+
+Why it matters (brief)
+- All conversion cells follow the pattern: millions = raw_pounds / 1,000,000. Multiplying G18 by 1,000,000 produces a number 1e12 times too large, which will break totals, percentage differences and charts that include that year.
+
+Fix (step‑by‑step)
+1. On sheet "2002 Report" select C18.
+2. Replace the formula =G18*1000000 with =G18/1000000.
+3. Press Enter and confirm C18 now reads ~2.127307 (since G18 = 2,127,307 → 2.127307 million).
+4. Recalculate (press F9) and verify dependent cells (E18, R18, any summary rows) now show reasonable values.
+
+Quick verification
+- After fix: B18 = F18/1,000,000 = 1.360228, C18 = 2.127307, D18 = 0.239542 → E18 (air & land) ≈ 2.366849 and R18 (total mil lbs) ≈ 3.727077.
+
+Prevention / extra checks (one‑minute)
+- Use Find (Ctrl+F) to search for "*1000000" in the workbook — any hits in conversion columns likely are typos and should be "/1000000".
+- Audit column formulas in conversion blocks (B,C,D on 1999/2002 sheets) to ensure all use /1,000,000 consistently.
+- If the stray numbers in 2003 Report (G20/H20) are not needed, delete them to avoid confusion.
+
+If you want, I can list every cell in the workbook that uses "*1000000" or produce a short macro to find/fix all such accidental multiplications.

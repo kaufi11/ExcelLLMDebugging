@@ -1,0 +1,37 @@
+I checked both sheets and found a few real problems and a couple of risky/unclear formula choices. Short, clear summary and fixes below.
+
+1) Mezzanine model — WRONG CELL REFERENCE (critical)
+- Problem: Cell H12 (Basic Rent per sq ft/year) contains = $C13 / $C$5. It should use C12 (Basic Rent) not C13 (Rates). Because of this H29 (basic charge) and all downstream H‑totals are wrong (you lose the basic rent contribution).
+- Fix: Change H12 to:
+  = $C$12 / $C$5
+- Why: H12 must divide the Basic Rent value (C12) by total area (C5). Using C13 (next row) returns 0 and undercounts your per‑sq‑ft costs and totals.
+
+2) Mezzanine model — NPV formula is overcomplicated / inconsistent (recommendation)
+- Problem: B85 uses a long list of IF(...) arguments (one IF per year) and even has an inconsistent reference ($F$80) in the last IF. This is fragile and hard to audit.
+- Better (simpler & correct) replacement (PV of an identical annual operating profit F80 for C65 years, then subtract initial investment):
+  = F$80 * (1 - (1 + $C$69)^- $C$65) / $C$69 - $F$76
+- Why: That is the standard present‑value of an annuity formula for identical yearly cashflows. It is shorter, avoids many IFs and is easier to check.
+
+3) Mezzanine model — CHECK the TOTAL CHARGE multiplier (possible logic error)
+- Problem: Cell C37 is =SUM(C12:C35) * 0.9. Multiplying by 0.9 reduces the sum by 10% — this may be intentional (a discount or allowance) but it's not labelled so it looks like a mistake.
+- Action: Confirm intent. If you meant "total of those lines" use:
+  = SUM(C12:C35)
+  If you intentionally want a 10% reduction, add a comment or a labelled cell (e.g., Discount %) and reference that cell so the logic is explicit.
+
+4) Rules of thumb sheet — clarity / small improvement (not a functional error)
+- Observation: B30 = B19 * B15 / B4 is correct (it equals B19 * B14) but is harder to read.
+- Suggested clearer formula:
+  = B19 * B14
+- Why: It expresses "markup % * cost per sq ft" directly and is easier to audit.
+
+5) General: inconsistent absolute references and copy risks
+- Observation: Several formulas mix absolute ($) usage inconsistently (e.g., H29 uses +SUM(H12:H27) which is fine, but some copied formulas elsewhere may shift unexpectedly if rows/columns are moved).
+- Action: When you copy formulas across blocks, use consistent absolute references (like $C$5, $C$8) where needed and add short comments in key cells to explain unusual multipliers/assumptions.
+
+Summary of what to change now (minimal):
+- Change H12 from = $C13 / $C$5  to  = $C$12 / $C$5
+- Replace B85 with:
+  = F$80 * (1 - (1 + $C$69)^- $C$65) / $C$69 - $F$76
+- Verify C37 multiplier 0.9 is intended; if not, remove it.
+
+If you want, I can give exact cell edit steps or produce corrected formulas across the file and a short test checklist so you can verify results. Which would you prefer?

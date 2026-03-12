@@ -1,0 +1,61 @@
+I inspected the formulas in the "hmwk4" sheet and found several clear formula errors and a number of inconsistent/likely-incorrect formula patterns. Below I list the problems I found, show why they are incorrect, and (where appropriate) give the corrected formula you should use.
+
+1) S2 ("Latitude") — wrong conversion (seconds vs degrees)
+- Current formula: =F2+G2*60+H2*3600
+- Problem: that produces total arc-seconds (170,481) not degrees. The rest of the workbook (e.g. the HA/altitude formulas) use $S$2 multiplied by $U$1 (pi/180) expecting degrees, not seconds.
+- Correct formula: =F2+G2/60+H2/3600
+- Impact: this is a major error — it affects every calculation that uses $S$2 (e.g. the V (airmass) formulas).
+
+2) Many V (airmass) formulas multiply the seconds/minutes term by 3600 instead of dividing
+- Examples of incorrect formulas (representative):
+  - V55 uses (ABS(F55)+G55/60+H55*3600)
+  - V65 uses (ABS(F65)+G65/60+H65*3600)
+  - V75, V85, V95, V105, V115, V125, V135, V145, V155, V165 (and likely additional rows in those 10-row blocks) show the same pattern.
+- Problem: H is the arcsecond component and should be divided by 3600, not multiplied. Multiplying by 3600 produces a huge angle and makes the trigonometric functions meaningless.
+- Correct pattern: (ABS(Fn)+Gn/60+Hn/3600)
+- Note: fix all Vnn formulas that currently have Hn*3600 → Hn/3600.
+
+3) Wrong denominator in AA (std-dev-of-sky) formulas — mis-typed cell used
+- Pattern / problem: In many "AA" cells (the per-block sky STDEV adjustment) the formula ends with /Nxx/Nyy where the second term is a cell in column N (a row near the end of the block) instead of dividing by the corresponding O column cell (the per-measurement gain/other factor).
+- Examples:
+  - AA15: =STDEV(P15:P24)/N15/N24  → second "/N24" is wrong (should be /O15)
+  - AA25: =STDEV(P25:P34)/N25/N34  → should be /N25/O25
+  - AA35: =STDEV(P35:P44)/N35/N44  → should be /N35/O35
+  - AA45, AA55, AA65, AA75, AA85, AA95, AA105, AA115, AA125, AA135, AA145, AA155, AA165 — same pattern
+- Correct pattern: =STDEV(Pn:Pn+9)/Nn/On (i.e. divide STDEV by the same denominators used for the corresponding average in Z and the X-block formulas)
+- Note: AA5 was correct (AA5 = STDEV(P5:P14)/N5/O5). The error starts in the block beginning at row 15 and repeats every block.
+
+4) Misaligned references in AN / AO / AP (columns copying results)
+- Examples:
+  - AN6 =AH15 (should almost certainly be =AH6)
+  - AO6 =AI15 (should be =AI6)
+  - AP6 =AJ15 (should be =AJ6)
+  - AN7 =AH25 (should be =AH7), AO7 =AI25 (→ AI7), AP7 =AJ25 (→ AJ7)
+  - AN8 =AH35 (→ AH8), AO8 =AI35 (→ AI8), AP8 =AJ35 (→ AJ8)
+  - AN9 =AH45 (→ AH9), AO9 =AI45 (→ AI9), AP9 =AJ45 (→ AJ9)
+- Problem: these AN/AO/AP cells should mirror the same-row AH/AI/AJ values, but instead point to other blocks (15,25,35,45...). That produces incorrect copied values downstream.
+- Fix: change each ANn/AOn/APn to =AHn/=AIn/=AJn respectively for the affected rows (and check whether this misreference repeats elsewhere).
+
+5) Inconsistent sign usage in some V formulas (possible logic inconsistency)
+- Observation: across the V column formulas some places use SIN(-1*$U$1*(...)) and elsewhere SIN($U$1*(...)) (sometimes the -1 appears in front of only the SIN but not the COS term), e.g. V5 vs V25 vs V35 differ.
+- Impact: this could be intentional depending on the sign conventions for declination (F is sometimes negative), but given the other clear errors above, verify that the sign conventions are consistent across all rows. If F (declination degrees) can be negative, absolute value usage and an explicit sign convention should be consistently applied.
+- Action: verify the intended formula for airmass/zenith distance and make all rows consistent.
+
+6) Minor / cosmetic inconsistencies (not necessarily errors)
+- Some formulas include redundant multipliers such as 1* (harmless), e.g. COS(1*$U$1*(...)) — not an error, but inconsistent style.
+- Many Tn formulas use the same pattern and appear correct (Tn = $S$1 + 1.0027379093*Sn - $S$3).
+- Check that the cells that use block-averages (Xn, Zn, etc.) all use the same denominators (K/L and N/O) — I found X, Y, Z, AD, AE patterns generally correct except the AA column problems noted above.
+
+Summary of required corrections (action list)
+- Fix S2 to compute latitude in degrees: =F2+G2/60+H2/3600
+- Replace all occurrences of Hn*3600 in the V column formulas with Hn/3600. (I found repeated occurrences every 10-row block — e.g. V55, V65, V75, V85, V95, V105, V115, V125, V135, V145, V155, V165 — check others.)
+- Fix AA15, AA25, AA35, AA45, AA55, AA65, AA75, AA85, AA95, AA105, AA115, AA125, AA135, AA145, AA155, AA165 formulas: change the erroneous second divisor (Nxx/Nyy) to Nxx/ Oxx (i.e. the O column of the same block start row).
+  - Example: AA15 should be =STDEV(P15:P24)/N15/O15
+- Fix misaligned AN/AO/AP references in rows 6–9 (and check for the pattern elsewhere). Change ANn =AHn, AOn =AIn, APn =AJn for the affected rows.
+- Review sign usage in V formulas to ensure consistent application of the declination sign/latitude sign convention.
+
+If you’d like, I can:
+- produce a small script/text that lists exact cells with the H*3600 error and exact suggested corrected formulas,
+- or generate a corrected copy of the workbook (I can produce a patch) if you grant permission to modify and re-save.
+
+Tell me which you prefer and I’ll proceed.

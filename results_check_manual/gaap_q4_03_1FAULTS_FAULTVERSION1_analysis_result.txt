@@ -1,0 +1,49 @@
+I inspected the formulas and values in each sheet you supplied and found a few formula errors and inconsistencies. Below I list each issue (sheet, cell), explain the problem, and give a suggested fix.
+
+Summary of issues
+- Incorrect sign in one percent-change formula (likely a mistake).
+- Several #DIV/0! results where the denominator is blank/zero (expected mathematically, but should probably be handled).
+- One cell uses an unusual hard-coded arithmetic formula where other sheets use plain values (inconsistent).
+- Some minor inconsistencies in formula style and header text (not calculation errors but worth harmonizing).
+
+Detailed findings and recommended fixes
+
+1) Sheet: "Q2 2003"
+- Cell H9
+  - Formula: =-((D9-F9)/F9)*100
+  - Value: -7.89473684210526
+  - Problem: The formula has a leading negative sign, which inverts the sign compared with the other sheets that use =+((D9-F9)/F9)*100. With D9=41 and F9=38, the expected percent change ((41-38)/38)*100 = +7.8947. The cell shows -7.8947 due to the extra negative.
+  - Suggested fix: Remove the leading negative: =((D9-F9)/F9)*100 (or =+((D9-F9)/F9)*100 to match the existing style).
+
+2) Sheet: "Q1 2003"
+- Cells H9, H12, H14
+  - H9 formula: =+((D9-F9)/F9)*100 -> result = #DIV/0!
+  - H12 formula: =+((D12-F12)/F12)*100 -> result = #DIV/0!
+  - H14 formula: =+((D14-F14)/F14)*100 -> result = #DIV/0!
+  - Problem: These produce #DIV/0! because the denominator cells (F9, F12, F14) are blank or zero (F14 is 0). This is mathematically correct but typically you should handle divide-by-zero conditions in presentation formulas.
+  - Suggested fixes:
+    - Wrap with an IF to avoid #DIV/0!, e.g. =IF(F9=0,"",((D9-F9)/F9)*100) or =IFERROR(((D9-F9)/F9)*100,"").
+    - Use the same approach for H12 and H14 so the sheet displays blank or some explanatory text instead of #DIV/0!.
+
+3) Sheet: "Q3 2003-4 Qtr"
+- Cell L11
+  - Formula: =-80+40 (value shown -40)
+  - Problem: This cell uses in-sheet arithmetic rather than a direct value or a reference. This is not an error per se (it correctly evaluates to -40), but it is inconsistent with other sheets where the value is entered explicitly. If the intent was to compute from other cells, it should reference them; if the intent was to be a fixed value, entering -40 directly is clearer.
+  - Suggested fix: Replace with either -40 (literal) or a reference to the proper source cells (if -80 and +40 come from locations that can change). For clarity/consistency, use the same approach used in other sheets.
+
+4) Minor style/inconsistency notes (not calculation errors but worth considering)
+- Many percent-change formulas use the pattern =+((D#-F#)/F#)*100. The leading + is redundant but harmless. One cell (Q2 H9) used a leading minus, which caused an incorrect sign. For consistency, standardize to =((D#-F#)/F#)*100 or =IF(F#=0,"",((D#-F#)/F#)*100).
+- Blank entries in the F columns (prior-year values) produce zero denominators. If those blanks are intentional (no prior-year data), display logic should handle that to avoid #DIV/0!.
+- Header text inconsistency: In sheet "Q1 2003", cell J6 reads "Six Months Ended June 30," while this is the Q1 (March 31) sheet. This looks like a header copy issue (not a formula), but you may want to verify whether the header text is correct for that sheet.
+
+Quick checklist to fix:
+- Fix sign in Q2!H9 (remove the minus).
+- Wrap percent-change formulas in IF(F=0,"",...) or IFERROR(...) where F may be blank/zero (e.g. Q1 H9/H12/H14).
+- Replace or clarify the arithmetic in Q3 2003-4!L11 (use literal -40 or a proper reference).
+- Optional: standardize percent-change formulas across sheets (remove leading +, handle division-by-zero).
+- Optional: verify header text in Q1 sheet (J6) for correctness.
+
+If you want, I can:
+- Produce corrected formulas for each problematic cell (ready to paste).
+- Create IF-protected versions (e.g., IF(Fx=0,"N/A",((Dx-Fx)/Fx)*100)).
+- Scan for any additional inconsistencies if you provide permission to open and modify the workbook.

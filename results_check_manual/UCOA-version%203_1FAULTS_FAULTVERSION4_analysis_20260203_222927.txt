@@ -1,0 +1,52 @@
+Summary of the problem
+- The main error is that many cells in column H (the “account-range” column such as "1000-1099", "1200-1299", etc.) are incorrect — they don't match the account number in column A. This looks like a copy/paste or row-shift mistake so the ranges are offset by 100 or 200 in many places.
+- Result: account-range lookups and grouping are wrong (bad for reports, mapping, validation).
+
+Concrete examples (showing wrong → correct)
+- Sheet Page 1
+  - A22 = 1110, H22 shows 1200-1299 → should be 1100-1199
+  - A23 = 1115, H23 shows 1200-1299 → should be 1100-1199
+  - A29 = 1240, H29 shows 1300-1399 → should be 1200-1299
+  - A33 = 1310, H33 shows 1200-1299 → should be 1300-1399
+  - A41 = 1460, H41 shows 1200-1299 → should be 1400-1499
+- Sheet Page 2
+  - A91 = 2020, H91 shows 2200-2399 → should be 2000-2099
+  - A102 = 2350, H102 shows 2500-2599 → should be 2300-2399
+  - A104 = 2410, H104 shows 2500-2599 → should be 2400-2499
+  - A109 = 2560, H109 shows 2400-2499 → should be 2500-2599
+
+Why this is happening
+- The ranges in column H were likely created by copying blocks and are offset from the rows with the actual account numbers (column A). Some H cells are hard-coded (or pasted) instead of being derived from the account number, so they no longer match when rows were added/edited.
+
+How to fix (two options)
+
+1) Quick manual fix
+- For a short list, edit each wrong H cell and replace with the correct hundred-range that matches the A cell (e.g., for A22 = 1110 set H22 = "1100-1199").
+
+2) Best / automatic fix (recommended)
+- Replace the hard-coded values in column H with a formula that derives the hundred-range from the account number in column A. This avoids future mismatches.
+- If column A contains a plain numeric account (e.g., 1010, 1115, 2410), use this formula in H (adjust row numbers as needed) and fill down:
+
+  =IFERROR(TEXT(FLOOR(A22,100),"0") & "-" & TEXT(FLOOR(A22,100)+99,"0"),"")
+
+  (Put this in H22 and fill down.)
+- If column A sometimes contains text like "4010-***" use this safer formula (handles numeric or "####-***"):
+
+  =IFERROR(
+     TEXT(FLOOR(VALUE(LEFT(A22,4)),100),"0000") & "-" & TEXT(FLOOR(VALUE(LEFT(A22,4)),100)+99,"0000"),
+     ""
+  )
+
+  - Paste into H22 and fill down. This extracts the left 4 digits, coerces to a number, computes the hundred block, and prints as "####-####".
+
+Steps to implement the automatic fix
+1. Insert the safer formula into the first H cell of the block (e.g., H16 or H22) replacing any hard-coded value.
+2. Fill (drag) the formula down through the entire H column area used.
+3. Scan a few rows to verify ranges now match the A column.
+4. If desired, copy column H and Paste Special → Values to convert formulas back to static text.
+
+Other checks
+- After correcting H, scan for other copy/paste anomalies (e.g., any B column mapping that looks unintentionally shifted). Fix those the same way (either manually or with derived formulas).
+- If any A cells are non-standard (notes, merged cells, blank), review the H output for those rows manually.
+
+If you want, tell me the sheet name and range you want me to correct and I’ll give you the exact formula tailored to that range and the exact steps (or the short VBA to auto-fix the whole column).

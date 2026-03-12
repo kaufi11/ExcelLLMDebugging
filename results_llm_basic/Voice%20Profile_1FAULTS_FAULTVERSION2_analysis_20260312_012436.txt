@@ -1,0 +1,78 @@
+I reviewed both worksheets and found several formula errors and inconsistencies. Below are the problems (short), why they’re wrong, and the corrected formulas (easy to paste into the workbook). Fix the listed cells and then scan column I (FINANCIAL DATA & ANALYSIS) and column H (Example) for similar patterns — many errors are the same type.
+
+Summary of the problems
+- Wrong constant or single-cell reference used instead of summing the three data columns (C, E, G).
+- Wrong cell reference (typo: C2 used instead of C20).
+- Incorrect aggregation or weighting when computing averages (denominator or numerator missing one of the data sources).
+- A cell contains a stray constant (5) instead of the expected sum.
+
+Specific corrections
+
+Example sheet
+1) H14
+- Problem: H14 contains =5 but should be total cost for Local Calls across the columns.
+- Fix: replace with
+  =B14+D14+F14
+- Why: column H totals should sum the three source columns (B, D, F in Example layout).
+
+2) H68 (Inbound 1300 average call length)
+- Problem: H68 =D68 (only takes D column) — should be weighted average of durations using the number of calls as weights.
+- Fix:
+  =IF((B66+D66)<>0,((B68*B66)+(D68*D66))/(B66+D66),"")
+- Why: average duration must be weighted by number of calls (B66 and D66). If you also have a third source column for 1300 calls add that in (see FINANCIAL pattern below).
+
+FINANCIAL DATA & ANALYSIS sheet (column I)
+Many I-column formulas attempt to compute totals or weighted averages from three data columns (C, E, G) but only use two or use wrong references. Below are the main ones to correct.
+
+3) I10 (NUMBER OF HANDSETS)
+- Problem: is =G10 only.
+- Fix:
+  =C10+E10+G10
+- Why: Total should sum all three data columns.
+
+4) I11 (PLANNED NO. OF HANDSETS)
+- Problem: =G11 only.
+- Fix:
+  =C11+E11+G11
+
+5) I16 (AVE. DURATION OF CALLS for Local calls)
+- Problem: only uses C14 and E14 and misses G14.
+- Fix:
+  =IF((C14+E14+G14)<>0,((C14*C16)+(E14*E16)+(G14*G16))/(C14+E14+G14),"")
+- Why: weighted average of durations uses number-of-calls (row 14) as weights and must include all data sources.
+
+6) I22 (AVE. DURATION OF LONG DISTANCE CALLS)
+- Problem: typo and missing third column; currently checks C2+E20 and ignores G.
+- Fix:
+  =IF((C20+E20+G20)<>0,((C20*C22)+(E20*E22)+(G20*G22))/(C20+E20+G20),"")
+- Why: weighted average using number-of-calls in row 20 across all sources.
+
+7) I34 (AVE. DURATION OF CALLS for Long distance to mobiles)
+- Problem: only uses C32 and E32; misses G32.
+- Fix:
+  =IF((C32+E32+G32)<>0,((C32*C34)+(E32*E34)+(G32*G34))/(C32+E32+G32),"")
+- Why: include all three sources.
+
+8) I61 (AVE. CALL LENGTH for 1800 inbound)
+- Problem: only uses C59 & E59; misses G59 and multiplies wrong cells in current form.
+- Fix:
+  =IF((C59+E59+G59)<>0,((C59*C61)+(E59*E61)+(G59*G61))/(C59+E59+G59),"")
+- Why: weighted average of durations using call counts in row 59.
+
+9) I67 (AVE. CALL LENGTH for 1300 inbound)
+- Problem: =E67 only.
+- Fix:
+  =IF((C65+E65+G65)<>0,((C65*C67)+(E65*E67)+(G65*G67))/(C65+E65+G65),"")
+- Why: include all sources and weight by call counts in row 65.
+
+General guidance
+- Pattern to follow for totals: wherever column I is a TOTAL, use Cx+Ex+Gx (replace x with the row).
+- Pattern for weighted averages (duration or cost per call): numerator = sum(each source’s count * that source’s average), denominator = sum(each source’s counts). Include all three sources: C, E and G.
+- Search for formulas that reference only two columns (C and E) or that use odd references like C2; fix them by adding G and correcting the reference.
+- After making these fixes, verify cells that feed other formulas (e.g., H14 used in H16). Wrong source totals cascade into wrong averages.
+
+If you want, I can:
+- Provide a list of all cells that should be reviewed (I can generate a search for formulas missing +G or containing C2).
+- Produce the corrected formulas for every I-column cell in the FINANCIAL sheet (I did the key ones above; there may be more of the same pattern).
+
+Would you like me to generate a full “find/replace” list of all cells in column I and column H that need the C/E/G fix?

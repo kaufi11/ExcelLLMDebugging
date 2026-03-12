@@ -1,0 +1,47 @@
+I inspected the formulas in the provided "Reporting" sheet and found the following errors / inconsistencies and potential risks. Short summary first, then details and recommended fixes.
+
+Summary of problems found
+- C19 uses COUNT(C20:C34) (probably wrong) — should be SUM(C20:C34).
+- Many N-column totals use explicit B+C+...+M additions instead of SUM ranges (inconsistent and fragile).
+- Some formulas reference cells that are empty/missing in that row (not an error per se, but a sign of inconsistent input that can hide mistakes).
+- Inconsistent formula patterns across similar rows (some subtotals use SUM(range), others use explicit additions) — increases chance of copy/paste / maintenance errors.
+
+Details and recommended fixes
+
+1) Wrong function in Studio I (C19)
+- Cell: C19
+- Current formula: =COUNT(C20:C34)
+- Current displayed value: 15
+- Problem: COUNT returns the number of numeric cells, not the sum of their values. Given the sheet structure (weekly hours), the intent appears to be summing hours like the other category header cells (B19, D19, etc.). COUNT is inconsistent with the other column header formulas and will produce the wrong result when source values change.
+- Fix: Replace with =SUM(C20:C34).
+
+2) Inconsistent/fragile formulas in N column (many rows)
+- Cells: N4, N5, N6, N8, N9, N10, N12, N13, N14, N16, N17, N18, N20, N21, N22, N23, N24, N25, N26, N27, N28, N29, N30, N31, N32, N34, etc.
+- Current pattern: explicit additions =B# + C# + D# + ... + M# (12 separate references)
+- Problem: This is functionally fine when columns are stable, but it is inconsistent with other subtotals which use SUM(range) or SUM(column ranges). Explicitly listing each column is more error-prone (e.g., if a column is inserted, or a reference is mistyped, or one of the referenced cells was intended but missing).
+- Recommendation: Use a range-based SUM: =SUM(B#:M#). This is shorter, consistent with other formulas, and robust against column insertions.
+
+3) Cells referencing missing/blank columns in their N totals
+- Example: N12 formula includes D12 though D12 is not present/empty; N8 includes L8 and M8 though those cells are empty.
+- Observation: Not an error by itself — empty cells evaluate as zero — but it indicates uneven data entry across columns. If a value was intended in a missing column or accidentally placed in a wrong column, the total will silently be wrong.
+- Recommendation: Review rows where several intermediate columns are blank to confirm blanks are intentional. Using =SUM(B#:M#) (see #2) makes it easier to spot unexpected zero contributions.
+
+4) Mixed subtotal approaches for category headers
+- Example: Category header cells (B3, B7, B11, B15, B19, etc.) mostly use SUM(Bx:By) which is good, but C19 used COUNT (see #1), and N-summaries are explicit addends while the row subtotals use SUM ranges.
+- Problem: Inconsistent approach increases the chance of oversight when adding/removing rows or columns.
+- Recommendation: Standardize formula style: use SUM(row-range) for weekly row totals and SUM(column-range) for column subtotals consistently across the sheet.
+
+5) Grand totals (row 35) — check that intended scope is correct
+- Cells: B35..N35 are currently computed as sums of the five category header rows (Management, Models, Requirements, Elective, Studio I).
+- Note: This is fine if those five are the intended top-level categories and all other items are children of them (e.g., Studio I contains many sub-rows). If you intended the grand total to include any additional top-level categories outside those five, update the formula accordingly.
+- Recommendation: If you want a true grand total of the sheet area B3:M34, consider using =SUM(B3:M34) (or =SUM(B35:M35) after standardizing column totals) to avoid missing any categories.
+
+Other housekeeping / checks
+- Ensure Excel calculation mode is set to Automatic; I noticed at least one cell (C19) where the displayed value (15) is inconsistent with the formula type (COUNT) which suggests formulas may have been edited manually or values were entered overriding formulas at some point. Confirm no other cells have been manually overridden.
+- Consider using SUMPRODUCT or table structures if you later need to weight or filter categories.
+- Run a quick validation: for each row compare the N total to SUM(B#:M#) to spot any inconsistencies caused by typos or wrong formulas.
+
+If you want, I can:
+- Provide a list of exact cells that use explicit B+C+... patterns so you can swap them for SUM(B#:M#).
+- Suggest corrected formulas for any cells you want fixed (I can output the exact replacement formulas).
+- Check for other mismatches (value vs formula) if you want me to scan for cells where the displayed value would not match the formula result.

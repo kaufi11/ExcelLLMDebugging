@@ -1,0 +1,33 @@
+I reviewed the Calculations sheet. I found three real issues (one definite formula bug, two robustness/logic problems) and propose simple fixes plus short explanations.
+
+1) Wrong hard-coded NSPS points (C23)
+- Current: =2
+- Problem: C23 should calculate points per number of NSPS regs (like C22 and C24 do) instead of a single constant.
+- Fix: replace with =IF(B23<>"",2*B23,0)
+- Why: If the user enters a count in B23 the sheet will now multiply by 2 points per NSPS reg.
+
+2) Formulas returning "" (text) in numeric cells — break comparisons/SUM (C30 and C34)
+- Current C30: =IF(B31="",(IF(B30<>"",20,0)),"")
+- Current C34: =IF(B35="",(IF(B34<>"",10,0)),"")
+- Problem: returning "" (text) in cells that should contain numeric points can cause OR(...>0) tests and SUMs to behave unpredictably or be misleading.
+- Fixes (return numeric 0 instead of ""):
+  - C30 → =IF(B31<>"",0,IF(B30<>"",20,0))
+  - C34 → =IF(B35<>"",0,IF(B34<>"",10,0))
+- Why: Now these cells always return numbers (0 when not applicable), so SUM(C9:C31) and OR(C34>0, C35>0) will behave properly.
+
+3) Small-business half-fee formula (C43) uses wrong test first
+- Current: =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))
+- Problem: The logic first checks B34 (General Permit) which may incorrectly cause "N/A" even when the small business box (B38) is marked. This both looks confusing and can hide the proper half-fee.
+- Fix (simple and explicit): =IF(B38<>"",C42/2,"N/A")
+- Why: This directly returns the half-fee only when the small-business box is checked; otherwise shows N/A. (If policy requires excluding General Permit applicants from small-business discount, add that rule explicitly: =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A")).)
+
+Optional small improvement
+- Make C41 explicit & robust: currently =IF(OR(C34>0,C35>0),C36,SUM(C9:C31)). After fixing C34 to return numeric 0, this is fine. If you prefer a single sum expression that never depends on blank text you could use: =IF(OR(C34>0,C35>0),C36,SUM(C9:C31)) (no change needed once C34/C30 return numbers).
+
+Summary of corrected formulas to paste:
+- C23: =IF(B23<>"",2*B23,0)
+- C30: =IF(B31<>"",0,IF(B30<>"",20,0))
+- C34: =IF(B35<>"",0,IF(B34<>"",10,0))
+- C43: =IF(B38<>"",C42/2,"N/A")  (or use the alternate with B34 check if that exclusion is intended)
+
+Apply those and re-check totals — SUM and conditional checks should then behave correctly.

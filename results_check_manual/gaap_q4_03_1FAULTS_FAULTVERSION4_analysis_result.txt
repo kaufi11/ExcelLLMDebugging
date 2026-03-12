@@ -1,0 +1,39 @@
+I reviewed the formulas and values in each sheet you provided. Summary of found formula errors / inconsistencies and recommended fixes:
+
+1) Q4 2003 — incorrect function in Free cash flows (three months)
+- Cell: D14
+- Current formula: =COUNT(D9:D12)
+- Problem: COUNT returns the number of numeric cells (3) rather than the sum of the line items; this makes the "Free cash flows" amount and the "Change" percent (H14) incorrect.
+- Fix: change to =SUM(D9:D12). After that H14 will recalculate correctly.
+
+2) Division-by-zero errors where prior-year (denominator) values are missing
+- Sheet: Q1 2003
+- Cells: H9, H12, H14
+- Current formulas: =+((D9-F9)/F9)*100, =+((D12-F12)/F12)*100, =+((D14-F14)/F14)*100
+- Problem: F9, F12, F9:F12 are blank/zero so the percent-change formulas return #DIV/0!.
+- Recommendations:
+  - If missing prior-year data is expected, wrap the percent-change formulas to avoid #DIV/0!, e.g. =IF(F9=0,"",((D9-F9)/F9)*100) or =IFERROR(((D9-F9)/F9)*100,"") depending on desired display.
+  - Alternatively show N/A or explanatory text instead of #DIV/0!.
+
+3) Inconsistent formula usage (cosmetic / maintainability)
+- Sheet: Q3 2003-4 Qtr
+- Cell: L11 contains formula =-80+40 (results -40)
+- Issue: using inline arithmetic instead of a direct literal or explicit source cell is inconsistent with other sheets and harder to audit.
+- Recommendation: Replace with the final value (e.g. -40) or reference the proper source cell. (Not an error in outcome, just inconsistent style.)
+
+4) Header / label inconsistency (not a formula error but worth noting)
+- Sheet: Q1 2003
+- Cell: J6 text reads "Six Months Ended June 30," while this sheet is March 31 (Q1). Other quarter sheets use cumulative-period labels consistent with the quarter (e.g., Q2 uses "Six Months Ended June 30", Q3 "Nine Months", Q4 "Twelve Months").
+- Recommendation: Verify intended cumulative label for Q1 — likely should be "Three Months Ended March 31" (or otherwise correct to intended period).
+
+5) Percent-change behavior with negative denominators (warning)
+- Across sheets many percent-change formulas use =((D-F)/F)*100 where F can be negative (e.g., capital expenditures F12 = -32 → H12 shows 212.5% in Q4 2003). This is mathematically correct but can be counterintuitive because dividing by a negative base flips sign.
+- Recommendation: If you want a different presentation (e.g., percent-point change, absolute percent change, or descriptive text), adjust the formula/label accordingly.
+
+Quick checklist of fixes I recommend applying immediately
+- Change Q4 2003!D14 to =SUM(D9:D12)
+- Wrap percent-change formulas in IF or IFERROR where F could be 0 or blank to prevent #DIV/0!
+- Optionally standardize any arithmetic-in-cell (e.g., L11 on Q3 2003-4 Qtr) to explicit values or cell references
+- Verify/correct Q1 2003 header J6 to the intended period label
+
+If you want, I can produce exact corrected formulas for each affected cell and show the recalculated values (or generate a patch file / list you can apply).

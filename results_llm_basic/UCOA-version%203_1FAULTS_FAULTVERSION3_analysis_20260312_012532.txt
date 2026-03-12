@@ -1,0 +1,33 @@
+Summary of errors I found
+1) Typo in the A-122 sequential numbering (column A): cell A7 contains =A6-1 (subtracting) instead of =A6+1. That breaks the whole sequence (you get 1,2,1,2,3… instead of 1,2,3,4…).
+
+2) Many cells are shown as the literal text "FORMULA =..." rather than as working formulas. If those cells really contain the text "FORMULA =A$9" etc, Excel is not evaluating them — they need to be converted back to real formulas.
+
+Quick fixes (easy steps)
+
+A) Fix the wrong increment (A7)
+- Edit A7 and replace =A6-1 with =A6+1
+- Or (better) set the correct formula at the top (e.g. A6 = A5+1) and drag/fill that formula down the column so every row increments by 1.
+
+Why: =A6-1 subtracts 1 and produces a wrong value; =A6+1 creates the intended sequential list.
+
+B) Convert "FORMULA =" text into real formulas (if applicable)
+- Make a backup of the workbook.
+- Use Find & Replace:
+  - Find what: FORMULA = 
+  - Replace with: =
+  - Scope: This worksheet (or Entire Workbook if the pattern appears on many sheets)
+  - Click Replace All.
+- Result: cells that contained "FORMULA =A$9" will become "=A$9" and Excel will evaluate them as formulas.
+
+Alternative to Replace: select the affected cells, run a quick VBA snippet or use Text to Columns or F2+Enter per cell — but Find & Replace is the fastest.
+
+Why: The literal prefix "FORMULA " prevents Excel from seeing the leading "="; removing it converts the string to an actual formula.
+
+How to verify
+- After fixing A7 and converting formulas, check A5..A35 to confirm the sequence is 1,2,3,4,...
+- Check a few previously-text formulas (e.g. A83, B83, etc.) to confirm they now show calculated results rather than text starting with "FORMULA".
+
+If you want, I can:
+- Give the exact Replace All command to run on the whole workbook
+- Generate a short VBA macro to fix both issues and re-evaluate formulas automatically.

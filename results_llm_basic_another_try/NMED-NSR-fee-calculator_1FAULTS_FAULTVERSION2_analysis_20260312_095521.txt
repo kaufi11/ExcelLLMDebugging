@@ -1,0 +1,46 @@
+Errors found:
+
+1. **Cell F5 formula**: `=IF(C43="N/A",C42,C43)`  
+   - Error: This formula references C43, which contains a formula that returns "N/A" or a number. The logic is to pick C42 if C43 is "N/A", else C43. This is okay, but the formula is in the header row (E5) labeled "Total Fee," which is inconsistent placement and may confuse users.
+
+2. **Cell C31 formula**: `=IF(B31<>"",75,0)`  
+   - Error: B31 is empty or not defined in the description, so this formula may always return 0.
+
+3. **Cell C30 formula**: `=IF(B31="",(IF(B30<>"",20,0)),"")`  
+   - Error: B30 and B31 are not clearly defined or may be empty, causing inconsistent results or blank cells.
+
+4. **Cell C34 formula**: `=IF(B35="",(IF(B34<>"",10,0)),"")`  
+   - Error: B34 is not defined or empty, so this may return blank or 0 incorrectly.
+
+5. **Cell C43 formula**: `=IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))`  
+   - Error: This formula gives "N/A" if B34 is not empty, else halves the fee if B38 is not empty, else "N/A". The logic seems reversed: small business is indicated by "x" in B38, but if B34 (Streamlined sites) is filled, it returns "N/A" which may be incorrect.
+
+6. **Inconsistent use of "x" or numbers in B columns**: Some formulas check if B cells are not empty (`<>""`), but user instructions say to enter "x" or number. This can cause errors if user inputs a number where formula expects "x".
+
+---
+
+**Solution:**
+
+- **For F5**: Move the formula to the correct cell (E43 or where total fee is calculated) to avoid confusion.
+
+- **For C30 and C31**: Define B30 and B31 clearly or adjust formulas to handle empty cells properly, e.g., use `IF(AND(B30<>"",B31=""),20,0)` for C30.
+
+- **For C34 and C35**: Ensure B34 and B35 inputs are clear. Adjust C34 formula to `=IF(B35="",IF(B34<>"",10,0),0)` to avoid blanks.
+
+- **For C43 (Half fee for small business)**: Change formula to check B38 first (small business indicator), then B34 (streamlined sites), e.g.:  
+  `=IF(B38<>"",C42/2,"N/A")`  
+  This way, if small business is marked, fee is halved; else "N/A".
+
+- **General**: Standardize input instructions to use either "x" or numbers consistently and adjust formulas accordingly, e.g., use `=IF(OR(B9="x",ISNUMBER(B9)),...)` to handle both.
+
+---
+
+**Explanation:**
+
+- Moving formulas to correct cells prevents confusion and ensures calculations appear where expected.
+
+- Clarifying input cells and adjusting formulas to handle empty or unexpected inputs avoids errors or blank results.
+
+- Correcting the half-fee formula ensures small businesses get the discount properly.
+
+- Standardizing inputs and formula checks prevents mismatches between user input and formula logic.

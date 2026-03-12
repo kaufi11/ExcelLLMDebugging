@@ -1,0 +1,31 @@
+Summary — main errors found
+1) Wrong operator in G21 (Section II, Question 6)
+   - Current formula: =IF(C21="yes",(1/F21),IF(C21="no",(0*F21),""))
+   - Problem: It divides 1 by the weight (1/F21) instead of multiplying by the weight, producing a huge incorrect weighted score.
+   - Fix: Use multiplication (or just return the weight when answer is Yes).
+     - Correct formula suggestion: =IF(LOWER(TRIM(C21))="yes",F21,IF(LOWER(TRIM(C21))="no",0,""))
+   - Why: When "Yes" the weighted score should be weight*1 (i.e. the weight), not 1 divided by the weight.
+
+2) Total Section Score checks can falsely show "ERROR" because of floating‑point rounding and they return text instead of a numeric percent
+   - Current pattern (example F12): =IF(SUM(F6:F10)<>100%,"ERROR","100%")
+   - Problems:
+     - SUM of decimals like 0.1428 etc may not equal 1 exactly due to binary rounding, so <>100% can trigger even when weights visually sum to 100%.
+     - The formula returns a text "100%" instead of a numeric 1.0 (less flexible for further calculations).
+   - Fix: Use ROUND (or an ABS tolerance) and return numeric 1 formatted as Percentage.
+     - Correct formula suggestion: =IF(ROUND(SUM(F6:F10),4)<>1,"ERROR",1)  (Format cell as Percentage)
+     - Or with tolerance: =IF(ABS(SUM(F6:F10)-1)>0.00001,"ERROR",1)
+   - Why: Rounding avoids tiny binary precision differences; returning numeric 1 lets other formulas compute with the percent.
+
+3) (Optional / preventive) Handling of "N/A" answers and weighting
+   - Current behavior: Answer = "N/A" yields blank weighted cell (""), but the weight stays in the SUM(F...) checks, which can cause inconsistent totals if you intended to exclude N/A items.
+   - Recommendation: Decide whether N/A items should remove their weight from the section denominator. If yes, compute a normalized total like:
+     - Normalized section score (example for section rows 6:10): =SUM(G6:G10) / SUMIF(C6:C10,"<>N/A",F6:F10)
+     - This gives the percent of available weight achieved after excluding N/A weights.
+   - Why: Keeps totals meaningful if some questions are legitimately N/A.
+
+Quick checklist to apply
+- Replace G21 with the corrected formula above.
+- Replace each Total Section Score (F12, F24, F36, F56) with the ROUND (or ABS) version and format as Percentage.
+- If you use N/A, decide how to handle weights and optionally add the normalized-score formula for the section.
+
+If you want, I can give the exact corrected formulas for each of the four Total Section Score cells and the adjusted normalized score formulas for each section.

@@ -1,0 +1,71 @@
+I inspected the workbook formulas and found several real errors and a few inconsistent/fragile formula designs. Below I list the problems I found, explain the impact, and give corrected formulas or recommendations.
+
+1) Systematic wrong AVERAGE references (Sheet3)
+- Problem: Cells P4:P18 use the wrong L-column row in the AVERAGE formula — they reference L40, L41, … L54 instead of L4, L5, … L18. Example:
+  - P4: =AVERAGE(D4,F4,H4,J4,L40)  (should be L4)
+  - P5: =AVERAGE(D5,F5,H5,J5,L41)  (should be L5)
+  - ... continuing the pattern through P18 which points at L54.
+- Impact: Each P-row averages only 4 test-percentage columns (D,F,H,J) because the L reference points to empty cells, so the test-average (Sheet3 P) is incorrect (and typically larger than it should be).
+- Fix: Change each Pn to use its corresponding Ln. Example corrected formulas:
+  - P4: =AVERAGE(D4,F4,H4,J4,L4)
+  - P5: =AVERAGE(D5,F5,H5,J5,L5)
+  - ...
+  - P18: =AVERAGE(D18,F18,H18,J18,L18)
+
+2) Erroneous formula in Sheet3 F14
+- Problem: F14 contains =331/$F$24 (331 is not a cell on that row and is incorrect).
+- Impact: F14 evaluates to ~3.009, which is >1 and breaks the test-percentage logic; this inflates N14 (MAX) and P14 (AVERAGE).
+- Likely intended formula: divide the Test 2 points in E14 by the curve scale in F24.
+- Fix: Replace F14 with:
+  - F14: =E14/$F$24
+
+3) Many P-row averages (Sheet3) depend on the F14 error
+- Because of the F14 error and the wrong L references, N14, P14 and the summary lines that use them (High/Low/Class Avg) are incorrect. Fixing points (1) and (2) will correct these downstream values.
+
+4) Off-by-one and wrong summary formulas (Sheet1)
+- C20 (Low Grade) uses =MIN(C4:C18)
+  - Problem: the main student data in column C runs C3:C17. The range C4:C18 is offset by one.
+  - Fix: =MIN(C3:C17)
+- C21 (Class Average) is labeled “Class Average” but formula is =MAX(C5:C19)
+  - Problem: it returns a maximum, not an average, and the range is offset.
+  - Fix: =AVERAGE(C3:C17)
+
+(Other summary formulas in Sheet1 appear okay — D21/I21 etc are using AVERAGE(D3:D17) etc.)
+
+5) Inconsistent units in final grade calculation (Sheet1 I3:I17)
+- Observation: The final grade formula uses mixed scales:
+  - Homework (column C) is a 0–100 number and is multiplied by 0.125 (12.5%).
+  - Tests/Midterm/Final/Participation (columns D,E,F,G) are stored as fractions 0–1 (Sheet3 averages) and are multiplied by 25 or 12.5 (not by 0.25/0.125).
+- This is not a numeric error (the math can be made to work), but it is inconsistent and fragile/ confusing.
+- Recommendation: pick one consistent convention:
+  - Option A: keep all scores as 0–100 and use weights as fractions (e.g. 0.25 for 25%), so I3 would be =(C3*0.125)+(D3*25)+… becomes either
+    - convert D,E,F,G to 0–100 first: = (C3*0.125)+(D3*25)+(E3*25)+(F3*25)+(G3*12.5) is OK only because D..G are 0–1 * 25; but clearer is:
+    - Better: keep D..G as 0–1 and use weights 0.25/0.125 consistently: = (C3/100*0.125*100?) — simpler: convert everything to percentages (0–100) then apply decimal weights.
+  - I recommend converting columns D:E:F:G to percentages 0–100 (multiply current fractional values by 100) or change the I formulas to consistently use decimals (e.g. multiply homework by 0.125 and test fraction by 0.25). Example consistent formula (if D..G are fractions 0–1 and you want final grade as 0–100):
+    - = (C3*0.125) + (D3*25) + (E3*25) + (F3*25) + (G3*12.5) — this is what you have; it works but is confusing because homework is directly 0–100 while others are fractions multiplied by 25. If you prefer decimals:
+    - = (C3*0.125) + (D3*0.25*100) + (E3*0.25*100) + ... (not recommended). Main point: standardize to avoid confusion.
+
+6) Grade translation table alignment (Sheet1 K5:L17)
+- Observation: In the grade-lookup table the L5 cell contains "F" but K5 is blank (the numeric threshold for the lowest grade appears missing).
+- Risk: VLOOKUP with approximate match (TRUE) expects the first column to be sorted numeric thresholds. A blank in K5 is typically treated as 0 which may work, but it’s fragile and unclear.
+- Recommendation: put an explicit lower bound (e.g. K5 = 0) for the F threshold so the lookup table is explicit and robust.
+
+7) Minor items / suggestions
+- Many labels contain typos (e.g. Sheet3 A1 "Studnets", Sheet2 A21 "Higest Grade") — not formula errors but worth fixing for clarity.
+- Using TRUE() in VLOOKUP's last argument is fine (TRUE() returns TRUE) but you can also use TRUE (no parentheses). Not an error, only stylistic.
+- After you fix the Sheet3 P formulas and F14 error, re-check any derived summary cells (Sheet3 top/bottom summary and Sheet1 columns that pull from Sheet3) because they cascade.
+
+Summary of immediate fixes to implement
+- Sheet3:
+  - Change P4..P18 to =AVERAGE(Dn,Fn,Hn,Jn,Ln) for n=4..18 (remove L40..L54 references).
+  - Change F14 to =E14/$F$24.
+- Sheet1:
+  - Change C20 to =MIN(C3:C17).
+  - Change C21 to =AVERAGE(C3:C17).
+  - Add explicit numeric lower bound in K5 (e.g. 0) for the grade-translation table.
+- Consider standardizing the score units used in the final grade formula (either make all components 0–100 or all 0–1 and use consistent weights), to avoid confusion.
+
+If you want, I can:
+- produce the exact corrected formulas for every affected cell (I listed the pattern), or
+- produce a patch list you can apply (cell-by-cell),
+- or give a corrected copy of the workbook (if you can upload it).

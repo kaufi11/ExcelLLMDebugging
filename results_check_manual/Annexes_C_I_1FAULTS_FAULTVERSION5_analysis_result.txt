@@ -1,0 +1,46 @@
+I reviewed the formulas in every sheet you provided and checked cross-sheet references, summations and consistency of repeated formula patterns (especially the common pattern for "variance %" cells). Below are the issues and inconsistencies I found, with a short explanation and recommended correction where appropriate.
+
+Major formula issues (recommended fixes)
+- Sheet: annex f
+  - Cell: K68
+    - Current formula: =K48
+    - Issue: K68 is the "Variance as % of original forecast" for Total Funds (H68/I68/J68) but instead of calculating (J68/H68)*100 (with the usual IF(H68=0,... guard) it simply copies K48 (the % for Total Net Assets). This is inconsistent with every other row's percentage pattern and will show an incorrect/misplaced percentage.
+    - Recommended fix: Replace with the standard pattern used elsewhere, e.g.
+      =IF(H68=0,"N/A",(J68/H68)*100)
+
+Other noteworthy inconsistencies and suspicious formulas (not necessarily errors but worth checking)
+- Sheet: annex e
+  - Cell: B28
+    - Current formula/value: =7 (explicit)
+    - Issue: This assigns the line-number 7 to the "Gain on sale of assets" row. Earlier in the sheet B15 also has value 7. This duplicates the line number within the same sheet (two different rows labelled 7). This is a numbering/label inconsistency (affects readability and cross-referencing if anyone expects unique line numbers).
+    - Recommendation: Verify intended numbering scheme for that section — probably should continue sequence (e.g. 14/...) or be set to the correct line number consistent with surrounding rows.
+
+- Sheet: Annex I
+  - Cell: H27
+    - Current formula: =SUM(H10:H26)
+    - Issue: H27 is intended to be "Underlying operating surplus/deficit" summing the add-backs shown above. The range H10:H26 will include blank/unrelated cells (H10,H12,H13 etc) and may miss or include unintended cells. The add-back lines actually shown are H11, H14 and possibly other specific cells; it is safer/clearer to sum the explicit add-back cells instead of an unbounded block.
+    - Recommendation: Replace with explicit sum of only the intended rows, e.g.
+      =SUM(H11,H14, H??)  (list each row that should be included) — or adjust the range to exactly cover the intended add-back rows.
+
+Other items to review (minor/informational)
+- Sheet: annex f
+  - Cell: H58 / I58
+    - Current formulas: H58 = H15, I58 = I15
+    - Note: These copy the "Endowment Asset Investments" amounts into an "Endowments" row elsewhere in the sheet. This is plausible (if endowments are intended to equal the Endowment Asset Investments line), but it is worth confirming this was intentional (not a misplaced cross-reference).
+- Sheet: annex g
+  - Cells: T26 and T49
+    - Formulas: T26 = T19-('annex f'!H20+'annex f'!H21); T49 = T42-('annex f'!I20+'annex f'!I21)
+    - Note: These reconcile the cash figure to annex f (investments + cash). This approach is OK provided the intent is to reconcile only investments + cash (i.e. exclude stocks). Confirm that the pairs H20/H21 (and I20/I21) on annex f are indeed the correct cells to reconcile against and that stocks (H18) are intentionally excluded.
+- Sheet: annex e and annex f (general)
+  - Many "% variance" cells use the pattern =IF(Hx=0,"N/A",(Jx/Hx)*100). That is consistent, but because they return the text "N/A" when Hx = 0 you should be aware downstream cells expecting numeric values could be affected by text. This is consistent in the workbook but good to confirm that returning text is the intended behavior.
+- Sheet: annex e / annex f (row numbering columns B)
+  - Several rows use formulas like =B15+1 etc to auto-number. There are some repetitions/duplicates of numbering across section breaks (e.g. B28=7). This is mainly a cosmetic/labeling issue but can be confusing if someone tries to cross-reference by those numbers.
+
+Summary
+- The only clear formula error (i.e. wrong formula that will produce an incorrect percentage result) is annex f K68 (=K48). That should be changed to the consistent percentage formula for that row.
+- Other findings are either labeling/numbering inconsistencies (duplicate line numbers) or usages that are plausible but worth confirming (explicit SUM ranges that could include unintended cells, copied references that may or may not be intentional).
+
+If you want, I can:
+- produce corrected formulas for the specific cells (e.g. a proposed replacement for annex f K68),
+- search for any other cells where a percentage formula deviates from the standard pattern and list them,
+- or produce a version of the workbook with the fixes applied (if you can provide write access or want a patch list).

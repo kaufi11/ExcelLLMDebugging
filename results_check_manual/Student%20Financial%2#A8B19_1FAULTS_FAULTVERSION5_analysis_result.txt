@@ -1,0 +1,25 @@
+I inspected the formulas on the workbook (sheet: "Tution and Fees" — other sheets contain no formulas to validate). I found two clear formula errors / inconsistencies and one consistency issue (hard-coded value where a formula is used in other columns). Details and corrections below.
+
+1) Cell H12 (Comprehensive tuition/room/board/fees Out-of-State)
+- Problem: formula is =SUM(H6,I8,H7) — it accidentally references I8 instead of H8. This produces 12,000 but the correct out-of-state sum for 2001-2002 should include H8 (room & board for that column).
+- Expected correct calculation: H6 + H7 + H8 = 7273 + 1097 + 3864 = 12,234
+- Fix: replace with =SUM(H6:H8) or =H6+H7+H8
+
+2) Cell G36 (Same as In-State — Out-of-State required fees)
+- Problem: G36 currently contains the hard value 584 (looks like the tuition value in G19); it is not a SUM like the other columns and thus is incorrect for "Same as In-State" (it should equal the sum of required fees in column G).
+- Expected correct calculation: SUM of G21:G29
+- Compute (from provided G21..G29): 78.5 + 35 + 155 + 160 + 57.5 + 122.5 + 10 + 0.5 = 619
+- Fix: replace with =SUM(G21:G29)
+
+3) Inconsistent use of formulas vs hard-coded totals (suggestion)
+- Examples:
+  - F11 (Comprehensive tuition/room/board/fees In-State) is a hard-coded value 7228 rather than a formula; G11, H11 and I11 are formulas (e.g., G11 =G5+G8+G7). F11 currently matches the correct sum, but for consistency and maintainability you should convert it to a formula:
+    - Fix: set F11 =F5+F8+F7 (or =SUM(F5:F8,F7) but simpler =F5+F7+F8)
+- Rationale: using formulas consistently prevents stale/incorrect totals if component cells change.
+
+Summary of recommended edits (copy-paste ready)
+- H12 -> =SUM(H6:H8)  (or =H6+H7+H8)
+- G36 -> =SUM(G21:G29)
+- F11 -> =F5+F7+F8  (optional, for consistency)
+
+If you want, I can scan for numeric mismatches after you make those fixes and recompute expected totals, or produce a short list of all cells where totals are constants while adjacent columns use formulas.

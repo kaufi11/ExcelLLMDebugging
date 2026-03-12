@@ -1,0 +1,32 @@
+Summary of errors (short) and fixes:
+
+1) Overtime formulas reference the wrong Week‑4 cell (off by one) — and one has a typo (366).
+- Problem: G3 uses E4, G4 uses E5, G5 uses E6, G6 uses E7, G7 uses E8, G8 uses 366-40. That means overtime hours are calculated from the next row (or a number) instead of the employee’s own Week‑4 hours.
+- Fix: Change each G cell so it references that same row’s B:E cells. Example (for row 3):
+  =MAX(B3-40,0)+MAX(C3-40,0)+MAX(D3-40,0)+MAX(E3-40,0)
+  Then fill/copy down for rows 4:8. (Or use a single compact formula in G3 and fill down:
+  =SUMPRODUCT((B3:E3>40)*(B3:E3-40))
+  )
+
+2) Week 4 (column E) uses AVERAGE(B:D) — likely wrong data source.
+- Problem: E3:E8 formulas are =AVERAGE(Bx:Dx). If Week 4 should be the actual hours worked in week 4, it should be a number entered manually (not the average of weeks 1–3). Using the average hides the true week‑4 hours and causes wrong totals and overtime.
+- Fix: Replace E3:E8 with the actual Week‑4 hours. If you intended a projection, rename E2 to “Projected week 4” to avoid confusion.
+
+3) Gross pay formulas overpay overtime (wrong math).
+- Problem: Current gross pay uses (F + G) * Rate. F already includes total hours (including overtime). Adding G again then multiplying by the base rate effectively pays overtime hours twice at straight time (so overtime ends up paid at 2× rather than the usual 1.5×).
+- Fix: Pay straight time for all hours and add only the overtime premium. If overtime is 1.5× pay, use either:
+  - Gross = (F - G)*Rate + G*Rate*1.5  (explicit)
+  - Equivalent shorter: =F*Rate + G*Rate*0.5  (pay straight time for all hours + 0.5× for overtime)
+  - Or: =(F + 0.5*G) * Rate
+  Example for Green (row 15 referencing row 3 totals):
+  =F3*B15 + G3*B15*0.5
+  or
+  =(F3 - G3)*B15 + G3*B15*1.5
+
+Quick checklist of exact corrections to enter:
+- Replace G3 with: =MAX(B3-40,0)+MAX(C3-40,0)+MAX(D3-40,0)+MAX(E3-40,0) and copy down to G4:G8. (Or use the SUMPRODUCT version.)
+- Fix E3:E8 if those should be actual week‑4 values (enter numbers) or change the header to indicate they are averages if that was intentional.
+- Replace C15:C20 formulas with the corrected gross-pay formula. Example for Green:
+  =F3*B15 + G3*B15*0.5
+
+If you want, I can produce the exact formulas for every cell (G3:G8 and C15:C20) ready to paste — tell me if you want the compact SUMPRODUCT version or the MAX(...) expanded version.

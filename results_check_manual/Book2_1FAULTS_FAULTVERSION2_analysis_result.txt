@@ -1,0 +1,31 @@
+I examined all formulas you included for sheet "total (2)". Findings and recommended fixes below.
+
+1) Incorrect formula / obvious error
+- Cell M10: formula is "=L10*10" which is almost certainly wrong. All other rows use "=Lx/10" to compute the per-row average; M10 should be "=L10/10". Current value (925) is an outlier and will skew any column aggregates (see 2).
+
+Fix: change M10 to
+=L10/10
+
+2) Consequence: wrong column average in M47
+- Cell M47 is =AVERAGE(M3:M45). Because M10 is 925 (wrong), M47 shows ~29.37 instead of the expected ~8.07. Once M10 is fixed the M47 value will match L47/10 (≈80.7093/10 = 8.07093).
+
+3) Potential/intentional inconsistency to consider (not strictly an error but worth checking)
+- All rows use Lx = SUM(Bx:Kx) and Mx = Lx/10 (except the M10 error). If some students have missing homework values (blank cells within B:K), SUM treats blanks as zero and dividing by 10 implicitly assumes there are always 10 assignments and missing entries count as 0. That may be intended, but if you want the average only over submitted assignments you should use COUNT to divide by the number of nonblank cells instead.
+
+Example alternatives:
+- If missing entries should count as zero: keep Mx = Lx/10.
+- If you want the mean of non-empty scores:
+  Mx = IF(COUNT(Bx:Kx)>0, Lx/COUNT(Bx:Kx), "")
+
+4) Other observations
+- Many rows have blank cells in B:K but Lx formulas use SUM(Bx:Kx) — that's valid (blanks treated as zero).
+- Several rows are missing specific homework columns (e.g., B25, B27, etc.); SUM still works, but review whether blanks are intended zeros or genuinely missing data.
+
+Summary of actionable fixes
+- Correct M10 to =L10/10.
+- After fixing M10, confirm M47 (AVERAGE(M3:M45)) is now correct (≈8.07093).
+- Decide whether missing homework entries should be treated as zeros; if not, replace Mx formulas with division by COUNT(Bx:Kx) (or use AVERAGE(Bx:Kx) directly).
+
+If you want, I can:
+- Provide a single formula to copy down column M that handles blanks as you prefer.
+- Recompute the expected corrected M47 value and optionally show which rows have missing homework cells.

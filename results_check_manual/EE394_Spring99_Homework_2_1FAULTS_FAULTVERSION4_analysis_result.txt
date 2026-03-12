@@ -1,0 +1,46 @@
+I inspected the workbook formulas on Sheet1 and found a small number of consistent formula mistakes and one clear typo. Summary first, then details and suggested corrections.
+
+Summary of problems
+- Widespread ATAN2 argument reversal: many angle formulas use ATAN2(real, imag) instead of ATAN2(imag, real). This affects the VS angles (column J), IS angles (column N) and a few other angle calculations (e.g. the RhoV formulas in B32/B33). This will produce incorrect angle results (shifted/rotated by 90° or sign-changed).
+- A single typo in E21: the multiplier 1922 is used instead of 1000 (inconsistent with other COS/SIN cells that convert km→m). That makes E21 inconsistent with F21 and the rest.
+- A few places use ATAN2 with cell arguments reversed in user-defined complex-angle calculations (e.g. B32, B33) — the same ATAN2 issue but in non-tabular formulas.
+
+Details, examples and corrections
+
+1) ATAN2 argument order (major, repeated issue)
+- Problem: Excel's ATAN2(y, x) expects (y,x) = (imaginary, real). In many cells the formula is ATAN2(RealCell, ImagCell), which is backwards.
+- Affected cell patterns (not exhaustive — the pattern repeats across many rows):
+  - Column J (VS angle): examples J4, J5, J6, … use =ATAN2(G#, H#)*180/PI() where G = Real(VS) and H = Imag(VS). Correct use is ATAN2(H#, G#).
+  - Column N (IS angle): examples N4, N5, N6, … use =ATAN2(K#, L#)*180/PI() where K = Real(IS) and L = Imag(IS). Correct use is ATAN2(L#, K#).
+  - Rho / reflection-angle calculations: B32 uses ATAN2(B28,B29) and ATAN2(B30,B31). If B28 = Real(A) and B29 = Imag(A), the correct angle is ATAN2(B29,B28). Same for B30/B31.
+- Effect: Angles will be incorrect. For a complex number z = x + j y (x=real, y=imag), angle(z) must be computed as ATAN2(y, x). The current workbook computes ATAN2(x, y) which swaps x/y and yields wrong angles in degrees.
+- Example fixes:
+  - J4 currently: =ATAN2(G4, H4)*180/PI()
+    -> Corrected: =ATAN2(H4, G4)*180/PI()
+  - N4 currently: =ATAN2(K4, L4)*180/PI()
+    -> Corrected: =ATAN2(L4, K4)*180/PI()
+  - B32 currently: =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*COS(ATAN2(B28,B29)-ATAN2(B30,B31))
+    -> Corrected: =SQRT((B28*B28+B29*B29)/(B30*B30+B31*B31))*COS(ATAN2(B29,B28)-ATAN2(B31,B30))
+
+2) Typo in E21 (inconsistent multiplier)
+- Problem: E21 contains =COS($B$15*D21*1922) while the pattern everywhere else is *1000 (convert km→m). F21 uses *1000.
+- Effect: E21 is inconsistent with the rest of the row (E21 and F21 must use the same argument to COS and SIN). E21 should be using *1000.
+- Fix:
+  - E21 currently: =COS($B$15*D21*1922)
+    -> Corrected: =COS($B$15*D21*1000)
+
+3) Other observations (not necessarily errors, but worth verifying)
+- Many formulas convert units using *1000 and /1000 in numerator/denominators (e.g. G# formulas). These appear consistent but check if intended units are kV/kA etc — the pattern is consistent.
+- B12/B13/B14/B15/B16 formulas use explicit constants (8.854*(1e-12), 2*(1e-7), etc.). They look consistent for epsilon0 and mu0; no arithmetic errors noticed there.
+- B22 uses -ACOS(B8)*180/PI() which is reasonable to represent a lagging power factor angle (negative).
+
+Suggested automated fixes
+- Replace all occurrences of ATAN2(G#, H#) used to compute an angle of the complex number (G = real, H = imag) with ATAN2(H#, G#).
+- Replace all occurrences of ATAN2(K#, L#) with ATAN2(L#, K#) (for IS angles where K=real, L=imag).
+- In formulas that compute the angle of a complex number given real = Xcol and imag = Ycol, ensure ATAN2 is called as ATAN2(Ycol, Xcol).
+- Correct E21 to use 1000 instead of 1922.
+
+If you want, I can:
+- produce a list of exact cell addresses where ATAN2 needs swapping (I can generate a complete list for every J and N cell and the B32/B33 cells),
+- apply the corrected formulas and return a copy of the corrected workbook, or
+- show a few before/after numerical comparisons for sample rows so you can see the impact on the angles.

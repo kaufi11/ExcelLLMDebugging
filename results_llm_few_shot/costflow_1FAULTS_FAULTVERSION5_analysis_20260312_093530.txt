@@ -1,0 +1,48 @@
+Summary — main problem
+- Many formulas in the Valuing Ending Inventory sheet use the wrong cells (they point to totals or other rows) or are missing. That breaks the unit-cost calculations and cascades wrong results (you get wrong averages, COGS and ending inventory). Several cells show "?" because formulas were never placed.
+
+Concrete faults + fixes (short & actionable)
+
+1) Weighted Average (Periodic) table — row-level references are wrong
+- Faulty cells: I8, J8, K8 and I9, J9, K9 (they point to C10/E10/C14/E14 etc).
+- Fix (enter these formulas):
+  - I8 = C8
+  - K8 = E8
+  - J8 = IF(I8=0,0,K8/I8)
+  - I9 = C9
+  - K9 = E9
+  - J9 = IF(I9=0,0,K9/I9)
+- Why: each row must use its own Units and Extended cost. Totals will then sum correctly.
+
+2) Weighted Average totals & ending inventory cost (missing / wrong)
+- Faulty cells: J10, K10, I11, K11, K12
+- Fix:
+  - I10 = SUM(I8:I9)
+  - K10 = SUM(K8:K9)
+  - J10 = IF(I10=0,0,K10/I10)  (period average unit cost)
+  - I11 = -( I10 + SUM(C17:C18) )    (sheet labels use negative for “- Ending Inventory”; if you prefer a positive value use = I10 + SUM(C17:C18) and omit the negative sign in label)
+  - K11 = J10 * I11   (cost of ending inventory, will be negative if I11 is negative)
+  - K12 = SUM(K10:K11)   (COGS = GAFS cost + (-ending inventory cost))
+- Why: Average unit cost must be total cost / total units, ending inventory units must be derived from GAFS minus sold units, and ending inventory cost = avg unit cost * ending units. COGS = GAFS cost - ending cost (or sum as shown).
+
+3) Other sections (Moving Average perpetual, FIFO/LIFO periodic & perpetual)
+- Symptom: many rows reference summary cells instead of their own row (e.g., K8 = E10 instead of E8); many cells show "?" or reference the wrong row (examples exist in FIFO/LIFO blocks).
+- Fix (general rule): For every purchase/sale row:
+  - Row Units = the row’s C cell (e.g., C37, C38, ...)
+  - Row Unit Cost = the row’s D cell
+  - Row Extended = Units * UnitCost (e.g., =C37*D37)
+  - Running totals = SUM of the row-level Units or Extended
+  - Ending inventory cost = appropriate unit cost * ending units (for FIFO/LIFO pick the correct layers)
+- Why: consistent row-level formulas are required for correct layer tracking and totals.
+
+4) Cells with literal "?" or wrong text references
+- Fix: Replace every "?" with the correct formula per the pattern above. Also check any formula that references header text cells (e.g., references to D6, D7, C14 where those are labels or counts) and point them to numeric cells instead.
+
+Extra notes / tips
+- Use IFERROR or IF(...=0,0,...) around divisions to avoid #DIV/0.
+- Use consistent signs: decide whether “- Ending Inventory” cells store negative numbers or positive numbers and adjust downstream formulas accordingly.
+- After fixing the row-level formulas in one method (weighted average), copy the pattern to the other method blocks and adapt the layer logic (FIFO/LIFO/perpetual differences).
+
+If you want, I can:
+- Provide an exact corrected list of formulas for every cell in the Valuing Ending Inventory sheet (I can output a row-by-row patch), or
+- Fix the workbook if you upload it (or paste the exact block you want corrected). Which do you prefer?

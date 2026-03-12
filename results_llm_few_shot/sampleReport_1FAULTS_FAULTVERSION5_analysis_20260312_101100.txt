@@ -1,0 +1,37 @@
+I reviewed the workbook and found several clear formula/range errors and one label error. Below are the problems, why they’re wrong, and the simple fixes.
+
+1) Sheet: OP_EXP — Cell L46
+- Error type: Off-by-one range (mechanical)
+- Problem: J46 =SUM(J33:J43) but L46 =SUM(L33:L44). L46 includes row 44 while J46 does not, so the 2001 and 2002 totals are not consistent.
+- Fix: Change L46 to =SUM(L33:L43)
+- Why: Both year columns must sum the same source rows (33:43) so totals match.
+
+2) Sheet: Bal Sht — Cells J36 and L36 (TOTAL ASSETS)
+- Error type: Wrong range / logical
+- Problem: J36 =SUM(J23:J35) and L36 =SUM(L23:L35). That sums a subset of lines and omits the NET INVESTMENT IN REAL ESTATE (row for G17) / mis-aligns blocks.
+- Fix (preferred/simple): Change to =J17+J34  (or =SUM(J12:J16,J21:J33) if you want to sum all asset detail rows explicitly)
+- Why: TOTAL ASSETS should add Net Investment in Real Estate (G17) plus Total Other Assets (G34). Current formula skips the investment section and uses the wrong rows.
+
+3) Sheet: Income — Cell L14 (TOTAL RENTAL INCOME, 2001)
+- Error type: Hard-coded value / logical
+- Problem: L14 =L10+951 — it adds the fixed number 951 instead of the commercial net rent (L13).
+- Fix: Change to =L10+L13
+- Why: Totals must add the corresponding Net Commercial Rent, not a literal constant.
+
+4) Sheet: Cash Flows — Cell L45
+- Error type: Off-by-one range (mechanical)
+- Problem: J45 =SUM(J37:J42) but L45 =SUM(L37:L44). L45 includes extra rows (37–44) while J45 sums 37–42.
+- Fix: Change L45 to =SUM(L37:L42)
+- Why: Both years must sum the same investing activity rows.
+
+5) Sheet: Stkhold.Equity — Header (years)
+- Error type: Label/text error
+- Problem: Header reads “YEARS ENDED DECEMBER 31, 2001 AND 2001” (duplicate year).
+- Fix: Change to “YEARS ENDED DECEMBER 31, 2002 AND 2001”
+- Why: Correct year labels avoid confusion and match the rest of the workbook.
+
+Optional checks (things to watch for)
+- On Bal Sht, J52 =SUM(J51:J51) is redundant (just returns J51). That may be intentional, but verify that the Partners’ Equity total uses the correct source rows.
+- On Stkhold.Equity, the IF checks comparing different blocks (O17 and O21 formulas) are sensitive to which ranges they reference; if you see unexpected “off” results, re-check the ranges being compared for consistency.
+
+If you want, I can produce the exact corrected formulas in place for every affected cell and scan for any other mismatches (e.g., blanks included in sums or stray constants).

@@ -1,0 +1,31 @@
+High-level summary
+- Workbook contains multiple class-section sheets (examples: "M Noon", "M 1 p.m.", "M 2 p.m.", "W 1 p.m.", "W 2 p.m.", "F Noon", "F 1 p.m."). All sheets share the same layout/template and many header cells are linked to 'M Noon' (common labels/dates).
+
+Layout / headers (common to each sheet)
+- Row 3: Assessment titles (e.g., Windows Quiz, Web, Word Quiz, Word, PowerPoint, Excel Quiz, Excel Tutorial, Excel, etc.).
+- Row 4: Sub-descriptors (e.g., "Letter", "on Sam", "Assignment", "Quiz on Sam", "Hands on Test").
+- Row 5: Date ranges for each assessment column.
+- Columns: A = student ID (some are literal negative numbers, some are formulas like =356-78-4365), B:N = individual assessment scores by assessment/date, O = POINTS (student total), P = GRADE.
+
+Key formulas (per-student and summary)
+- Student totals: column O for each student uses =SUM(Bx:Nx) (summation of assessment columns).
+- Letter grade: column P uses nested IFs comparing the student's total to the total-possible threshold in row 38, e.g. =IF(Ox>O$38*0.9,"A",IF(Ox>O$38*0.8,"B",IF(Ox>O$38*0.7,"C",IF(Ox>O$38*0.6,"D","F"))))
+  - Note: most sheets reference O$38 in the same sheet; some cells reference other sheets (e.g., P12 in "M Noon" compares to 'F Noon'!O$38; some other sheets reference 'M Noon'!O$38).
+- Row 38: column maxima (per-assessment "maximum" points), with O38 = SUM(B38:N38) — this provides the total possible points (common value seen: O38 = 204).
+- Row 39: averages per column, e.g. B39 = AVERAGE(B6:B37) or variant ranges depending on sheet (range endpoints differ by sheet).
+- Row 40: per-column MAX formulas (MAX over student rows).
+- Row 41: per-column COUNT formulas (COUNT of entries in student rows). Note: some cells in row 41 are literal numbers instead of formulas in some sheets.
+
+Data characteristics / notable points
+- Student rows start at row 6 and continue (varies per sheet), with many numeric scores (integers and decimals). Column J (Excel Quiz) often shows decimal values (weighted or scaled).
+- Several ID cells in column A contain formulas that calculate negative integers (e.g., =356-78-4365) producing negative results; many literal IDs are negative numbers — unusual but consistent in the file.
+- Many header/date/label cells are linked to the "M Noon" sheet so changes there propagate across sheets.
+- Some inconsistencies exist: different sheets use slightly different averaging/count ranges (e.g., B6:B37 vs B6:B23), and some grade formulas reference other sheets' O38 (cross-sheet thresholds).
+
+Overall purpose
+- Each sheet is a class roster: per-student scores across a fixed set of assessments, automatic total calculation in O, and letter grade assignment in P against the row-38 total possible points. Summary statistics (average, max, count) are provided in rows 39–41 for quick class-level review.
+
+If you want, I can:
+- Compute/confirm O38 (total possible points) for a specific sheet,
+- Flag and fix cross-sheet grade-threshold references,
+- Normalize summary ranges (so row39/40/41 use consistent student ranges).

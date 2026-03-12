@@ -1,0 +1,27 @@
+Found 3 clear errors. Short fixes and why they matter:
+
+1) van Genuchten term parenthesis error (predicted theta wrong)
+- Problem: your D12:D16 formula uses 1 + alpha * (|h|^n) instead of 1 + (alpha * |h|)^n. Because of operator precedence the alpha multiplication is outside the power.
+- Fix (use ABS to be safe): put this in D12 and copy down:
+  = $B$3 + ($B$4 - $B$3) / ((1 + ($B$5 * ABS(B12))^$B$6)^(1 - 1/$B$6))
+- Why: the correct VG model is theta = theta_r + (theta_s - theta_r) / [1 + (alpha*|h|)^n]^(1-1/n). The extra parentheses ensure alpha multiplies |h| before raising to n.
+
+2) Typo in one squared-error cell (E14)
+- Problem: E14 is =(C14-411)^2 (411 is a typo).
+- Fix: change E14 to:
+  =(C14 - D14)^2
+- Why: the SSE must be (observed - predicted)^2 for each row.
+
+3) SSE sum range incorrect (E19)
+- Problem: E19 = SUM(E14:E18) — wrong rows (and includes the bad E14).
+- Fix: change E19 to:
+  =SUM(E12:E16)
+  (or sum the actual rows with data if your data span is different)
+- Also verify B7 (SSE) points to E19 (=E19) — that’s fine once E19 is corrected.
+- Why: SSE must sum all individual squared errors you computed.
+
+Optional tidy-ups (recommended)
+- Use ABS(B12) instead of -B12 in LN too: =LN(ABS(B12)) to avoid accidental positive/negative errors.
+- Confirm Solver is minimizing B7 (SSE) and that Solver variable cells are B3:B6 (or whichever parameters you fit).
+
+Apply these 3 fixes and the predicted thetas and SSE will be computed correctly.

@@ -1,0 +1,58 @@
+I reviewed the workbook structure and formulas you gave. I found a few clear logic/formula errors that will produce wrong results (break‑even, fixed costs, month chaining) plus some inconsistent practices that can cause confusion or runtime errors. Below are the problems, why they are wrong, and the simple fixes you can apply.
+
+1) Wrong “Total Fixed Costs” (B63)
+- Problem: B63 = +O54 - O23
+  - O54 = total cash paid out for the year (includes subtotal operating expenses + loan principal + capital purchases + owner's withdrawals, etc.)
+  - O23 = total variable expenses for the year
+  - O54 - O23 therefore includes non‑operating items (loan principal, capital purchases, withdrawals), not just fixed operating costs → B63 is overstated/wrong.
+- Fix: set B63 to the subtotal fixed expenses cell
+  - Replace formula with: =O47
+  - Or (equivalently): =SUM(O24:O46)
+- Why: O47 is the subtotal of fixed expenses only. Use that for “Total Fixed Costs.”
+
+2) Break‑even formula uses wrong numerator (F64)
+- Problem: F64 = +(O54 - O23) / B64 uses the same wrong numerator as B63 (includes non‑fixed items).
+- Fix: divide fixed costs (O47) by contribution margin:
+  - Replace formula with: =O47 / B64
+- Why: Break‑even sales = Fixed Costs / Contribution Margin. Use fixed operating costs only (O47).
+
+3) Hard‑coded / broken month chain: Year 1 M6 = 5
+- Problem: M6 (beginning cash for month 11) is hard-coded (=5). All months should chain from the prior month’s end (row 55).
+- Fix: replace M6 with the previous month‑end cell reference:
+  - Put: =L55
+  - (Or =SUM(L55) if you prefer to keep the inconsistent SUM style, but simple =L55 is better)
+- Why: Beginning cash for each month must equal the prior month’s “cash position end of month” (row 55) to keep the cash flows consistent.
+
+4) Many O / P totals or monthly formulas appear misaligned (Year 2 and some rows)
+- Symptom: In places you listed formulas that belong to row X but the Oxx formula is sitting on a different row (e.g., a label on row 20 but O22 contains the sum). That will make row totals, % of sales and subtotals reference wrong totals.
+- Fix: for each detail row x, confirm column O contains =SUM(Cx:Nx) and column P contains =Oxx / O$57 (or =Oxx / $O$57). If any O formula is on the wrong row, cut and paste it to the correct row O[x].
+- Why: Row alignment must be exact so sums, subtotals and percent‑of‑sales point at the same line‑item.
+
+5) Standardize percent-of-sales denominator and remove accidental self-references
+- Problem: Some P-col formulas use O$57 (good) but others use O57 or even O57/O57 (which evaluates to 1) or unanchored references that break when copied.
+- Fix: use an absolute reference to the year total sales: =Oxx / $O$57 (or =Oxx / O$57 if you want row to be relative)
+  - Example: P17 should be =O17 / $O$57
+- Why: Anchoring the denominator avoids wrong percentages if formulas are copied or moved.
+
+6) Unnecessary SUM wrappers and possible DIV/0 in variance formulas
+- Problem A (cosmetic): lots of formulas use SUM() around a single cell or around arithmetic (e.g., =SUM(B15-B54), =SUM(B55)). These work but are confusing.
+  - Fix: Replace with plain arithmetic or direct references (e.g., =B15 - B54, =B55).
+- Problem B (runtime): variance formulas use (New - Old)/Old without handling Old = 0 → #DIV/0.
+  - Fix: wrap with IF or IFERROR. Example:
+    - =IF(C8=0,NA(),(D8-C8)/C8)
+    - or =IF(C8=0,0,(D8-C8)/C8) depending on how you want to handle zero base.
+- Why: cleaner formulas and avoid divide‑by‑zero errors.
+
+Quick checklist of exact changes to make (minimal edits)
+1. Change B63 from =+O54-O23  to  =O47
+2. Change F64 from =+(O54-O23)/B64  to  =O47 / B64
+3. Change Year1 M6 from =5  to  =L55
+4. Scan Year2 (and Year1) column O rows and move any Oxx formulas so they are in the same row as the label; each detail row x must have O[x] = SUM(Cx:Nx) and P[x] = O[x] / $O$57
+5. Replace SUM(B15-B54) style with =B15-B54 where present (optional but recommended for clarity).
+6. Wrap variance % formulas with IF to avoid divide‑by‑zero: e.g. =IF(C8=0,NA(),(D8-C8)/C8)
+
+If you want I can:
+- produce a short list of exact cells that look misaligned in Year 2 (I saw signs of row-shifts) and tell you how to move them, or
+- give you the exact IF/IFERROR replacements for a selected variance sheet.
+
+Would you like me to scan and list all rows where Oxx is not in the same numbered row as the label (I can produce a direct cell-by-cell correction list)?

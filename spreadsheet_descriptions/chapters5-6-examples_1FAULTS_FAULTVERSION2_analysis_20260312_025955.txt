@@ -1,0 +1,66 @@
+Summary of workbook structure and key contents (concise)
+
+Overall
+- Workbook models aggregate planning across 6 months with multiple plan scenarios. Core inputs (demand and cost parameters) are on Sheet1; three planning scenarios are on sheets named pricing, Sheet2 and Sheet3. Sheets 4–16 are present but empty.
+
+Sheet1 — Aggregate Planning (inputs)
+- Demand forecast (A5:B11): Jan–Jun demands = {1600, 3000, 3200, 3800, 2200, 2200}.
+- Cost / parameters (A15:B24):
+  - Materials cost/unit = 10
+  - Inventory holding cost/unit/month = 2
+  - Marginal stockout cost/unit/month = 5
+  - Hiring & training cost/worker = 300
+  - Layoff cost/worker = 500
+  - Labor hours required/unit = 4
+  - Regular time cost/hour = 4
+  - Overtime cost/hour = 6
+  - Subcontract marginal cost/unit = 30
+- These constants are referenced throughout the other sheets for cost calculations.
+
+Sheet "pricing" — Plan scenario with decision variables and cost sheet
+- Top table (A2:K10) lists decision variables per period:
+  - Columns: # Hired (B), # Laid off (C), Workforce (D), Overtime (E), Inventory (F), Stockout (G), Subcontract (H), Production (I), Demand (J), Price (K).
+  - Initial state row 0: workforce D4=80, inventory F4=1000.
+  - Period rows 1–6 show numeric decisions (e.g., D5..D10 ≈ 64.5833 workforce; I5..I10 ≈ 2583.33 production).
+- Constraint columns (M:P) are formulas enforcing feasibility:
+  - M_t = D_t - D_{t-1} - H_t + L_t  (workforce-change constraint)
+  - N_t = 40*D_t + (E_t/4) - I_t    (production capacity: 40 regular hours*workers + overtime/4 minus production)
+  - O_t = F_{t-1} - G_{t-1} + I_t + H_t - J_t - F_t + G_t  (inventory balance)
+  - P_t = -E_t + 10*D_t             (overtime hours <= 10 hours per worker)
+- Aggregate Plan Costs (A14:I20): per-period cost lines referencing Sheet1 parameters:
+  - Hiring cost = B19 (300) * #Hired
+  - Layoff cost = B20 (500) * #Laid off
+  - Regular-time cost = D_t * B22 * 8 * 20  (workforce * regular cost/hour * 8 hours/day * 20 workdays)
+  - Overtime cost = E_t * B23
+  - Inventory cost = F_t * B17
+  - Stockout cost = G_t * B18
+  - Subcontract cost = H_t * B24
+  - Material cost = I_t * B16
+- Totals:
+  - Total Cost C22 = SUM(B15:I20)
+  - Total Revenue C24 = SUMPRODUCT(J5:J10, K5:K10)  (demand * price)
+  - Profit C25 = C24 - C22
+
+Sheet2 — Alternative plan (similar layout)
+- Decision table (A3:J10) with a different workforce/profile (D rows = 62 constant) and different production/overtime/inventory results (e.g., I5..I10 = 2480 or 2635).
+- Aggregate Plan Costs (A14:H20) use same parameter references on Sheet1.
+- Total Cost C22 = SUM(B15:H20). (No explicit revenue or profit on this sheet.)
+
+Sheet3 — Another alternative plan (similar layout + constraints)
+- Decision table (A3:J10) with different workforce profile (D values ≈ 51.25–67.5) and use of subcontracting/stockout in period 4 (H8=600, G8=500).
+- Constraint columns M:P use same formulas as "pricing".
+- Aggregate Plan Costs (A14:I20) similar to other sheets; materials cost included.
+- Totals:
+  - Total Cost C22 = SUM(B15:I20)
+  - Total Revenue C24 = SUM(J5:J10)*31  (note: this multiplies summed demand by 31 — appears inconsistent with other sheets’ revenue formula and may be an error)
+
+Empty sheets
+- Sheet4 through Sheet16 exist but contain no data.
+
+Notable points / potential issues to check
+- Revenue formulas differ across sheets: "pricing" uses SUMPRODUCT(demand,price) while Sheet3 multiplies total demand by 31 — likely a mistake.
+- Workforce-change constraint formula (M column) appears written as D_t - D_{t-1} - H_t + L_t (used as a constraint cell) rather than the more typical D_t = D_{t-1} + H_t - L_t; verify sign convention.
+- Regular-time cost uses 40*workforce per period (calculated as workforce * 8 * 20), consistent across sheets.
+- Initial conditions: workforce = 80, starting inventory = 1000 (Sheet1 row 0).
+
+If you want, I can: validate formulas and flag inconsistent references, fix the revenue formula on Sheet3, or produce a side-by-side cost/revenue comparison of the three plans.

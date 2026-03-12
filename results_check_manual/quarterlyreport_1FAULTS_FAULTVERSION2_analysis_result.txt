@@ -1,0 +1,79 @@
+I reviewed the formulas in all three sheets (Detail, Summary, RCM Report) and found a number of incorrect references and suspicious/circular formulas. Below I list the problems I found, explain why they are errors or likely mistakes, and give suggested corrections.
+
+Major formula errors / incorrect ranges
+
+1) Summary sheet — Financial Aid row (row 9) — wrong source ranges in columns F:N
+- Problem cells: Summary!F9, G9, H9, I9, J9, K9, L9, M9, N9
+- Current pattern (example): F9 =SUM(Detail!F9:F11)
+- Why it's wrong: Financial aid is on the Detail sheet at rows 13–14 (Detail!D13:D14 and subtotal at Detail!D15). The formulas in Summary are summing Detail rows 9:11 (tuition area) instead of financial aid rows 13:14.
+- Suggested fix: Use the same approach as column D. For example:
+  - Summary!F9 should be =-Detail!F15 (or =-SUM(Detail!F13:F14))
+  - Summary!G9 =-Detail!G15, etc. (or =-SUM(Detail!G13:G14))
+  - This will make the Summary use the correct Detail financial-aid values and preserve the sign convention used in D9.
+
+2) Summary sheet — Subtotal net tuition row (row 10) — wrong source ranges in columns F:N
+- Problem cells: Summary!F10, G10, H10, I10, J10, K10, L10, M10, N10
+- Current pattern (example): F10 =SUM(Detail!F10:F17)
+- Why it's wrong: Subtotal net tuition should sum the tuition and financial aid items (Detail rows ~8–15 depending on your layout), or simply sum Summary!F8:F9. The current formulas sum Detail rows 10:17 which include other revenue lines and thus are wrong.
+- Suggested fix: Make F10 a sum of the two Summary lines above:
+  - Summary!F10 =SUM(F8:F9)
+  - Or reference the correct Detail rows for tuition plus financial aid, e.g. =SUM(Detail!F8:F10)+SUM(Detail!F13:F14) (but using the local Summary cells is simpler and less error-prone).
+
+3) Summary sheet — cascading wrong references affecting Total Revenue and other totals
+- Because rows 9 and 10 in columns F:N are referencing incorrect ranges, downstream totals (Summary!F19, F21, etc.) that include those cells are also incorrect. Fixing #1 and #2 will correct these totals.
+
+Suspicious / incorrect cross-column references and circular patterns
+
+4) Detail sheet — Beginning fund balance formulas look wrong/circular
+- Problem cells: Detail!E64, F64, K64, N64
+- Current formulas:
+  - E64 =D65
+  - F64 =D65
+  - K64 =D65
+  - N64 =K65
+- Why suspicious: Beginning fund balance cells should normally be static inputs (the beginning balance for that column/period) or reference a prior-period closing balance. Using the current/projected fund balance (D65) as the beginning balance for other columns looks like an accidental copy/paste or circular link. This creates a dependency where beginning balances are set equal to a projected result for the same sheet rather than to an independent starting value.
+- Suggested fix: Replace E64/F64/K64/N64 with the correct static beginning balances for those columns (if the intent is to use the same 500,000 starting balance, set them to that). If the beginning balance should reference another cell, ensure it references the prior-period ending balance (not the current projected D65), and avoid circular references.
+
+5) Summary sheet — Beginning fund balance formulas mirror the same issue
+- Problem cells: Summary!E37, F37, K37, N37
+- Current formulas:
+  - E37 =D38, F37 =D38, K37 =D38, N37 =K38
+- Why suspicious: Same issue as #4. Beginning balances should not be set to the current/projected balance in the same sheet. This looks like copy/paste errors.
+
+Other incorrect or odd formulas in RCM Report
+
+6) RCM Report — University Fund allocation / odd constant
+- Problem cell: RCM Report!F14
+- Current formula/value: =2
+- Why it's wrong: F14 should be a value pulled from Detail (e.g., Detail!F20 or zero) or left blank. A hard-coded 2 in that column (Auxiliary?) is inconsistent with the rest of the layout (Detail!E20 is 1,100,000 and Detail!D20 is 1,100,000). This 2 causes RCM totals that include +2 where they shouldn't.
+- Suggested fix: Replace "=2" with either 0 or the correct reference (e.g., =Detail!F20 if that is the intended source) or remove entirely.
+
+7) RCM Report — Beginning fund balance totals inconsistent
+- Problem cells: RCM Report!J39 (total beginning fund balance) and related column beginning balances
+- Observation: J39 is 500006, but the individual column beginning balances (D39=500000, E39=151000, G39=75611, H39=81354, etc.) do not add to 500,006. The total row does not match the sum of the column values, indicating inconsistent inputs or a mis-sum. Likely caused by the hard-coded 2 at RCM!F14 or other mismatches.
+- Suggested fix: Recompute J39 as =SUM(D39:I39) (if not already) and ensure each column's beginning balance is correct and consistent with Detail.
+
+Minor / stylistic issues (not necessarily errors but worth cleaning)
+
+8) Many cells use SUM around a single subtraction (unnecessary but not an error)
+- Examples: Detail!D63 =SUM(D25-D61), Summary!D36 =SUM(D19-D34), RCM!D38 =SUM(D21-D36), etc.
+- These work (Excel evaluates the subtraction then SUM of the single number) but are confusing. Recommend using direct arithmetic (e.g., =D25-D61) for clarity.
+
+9) Some subtotal ranges include blank rows (not an error)
+- Examples: Detail!D35 =SUM(D29:D34) — D34 is blank (EE). This is harmless but you may want to tighten ranges to the precise populated rows to reduce risk when rows are moved/inserted.
+
+Summary of the highest-priority fixes I recommend (in order)
+
+1. Fix Summary!F9:N9 to point to the Detail financial aid subtotal (e.g., Summary!F9 = -Detail!F15) or to SUM(Detail!F13:F14).
+2. Fix Summary!F10:N10 to be =SUM(F8:F9) (or equivalent correct references) rather than Detail!F10:F17.
+3. Inspect and correct all formulas in Summary that depend on the corrected F9:F10 values (Total Revenue, subtotals).
+4. Remove or correct the hard-coded =2 in RCM Report!F14 (use the proper Detail reference or 0).
+5. Replace the suspicious beginning-balance cross-references on Detail and Summary with correct beginning balances (do not point beginning-balance cells to same-sheet projected totals).
+6. Replace unnecessary SUM(...) wrappers around simple subtractions for clarity.
+
+If you want, I can:
+- produce an annotated list of every affected cell (current formula → suggested formula),
+- give a corrected copy of the workbook with the fixes applied,
+- or generate a short script (e.g., VBA or instructions) to apply the systematic fixes (for Summary row 9 & 10 and the RCM F14 change).
+
+Which of those would you like me to do next?

@@ -1,0 +1,27 @@
+Summary of faults
+- A22 has the wrong operator: it uses =A21-1 instead of +1. This creates a duplicate/smaller number and shifts the sequence.
+- Row 27 is missing, but A28 references A26. That skip makes all numbers from A28 downward off by one.
+- A40 is a hard-coded 35 (not a formula), so it doesn't follow the sequence.
+
+What these cause
+- Duplicate/incorrect IDs (e.g., 16 appears twice) and the numbering after row 26 is offset.
+
+Quick fixes (recommended)
+1. Fix A22:
+   - Change A22 to =A21+1
+
+2. Restore contiguous numbering:
+   - Insert the missing row 27 (or if you intentionally omitted it, still ensure formulas are contiguous). Put in A27: =A26+1.
+   - Then set A28 to =A27+1 and drag-fill that formula down through A40.
+
+3. Fix A40:
+   - Replace the literal 35 with =A39+1 (or let the fill step above fix it).
+
+Short alternative (fast):
+- Put 1 in A3. In A4 enter =A3+1 and drag-fill down to the last row. This ensures a correct sequential series without manual edits.
+
+More robust option (prevents breaks when rows inserted/deleted):
+- In A3 put 1 and in A4 use =IF(B4="","",A3+1) or use =ROW()-2 (if numbering always starts at row 3). Then fill down.
+
+Why this works
+- The sequence must always add 1 to the previous row. The current errors subtract, skip, or hard-code a value. Changing the formulas to consistently use +1 (and filling them down) restores correct sequential numbering and prevents duplicates.

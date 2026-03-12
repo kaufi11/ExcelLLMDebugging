@@ -1,0 +1,22 @@
+I checked SecA, SecB and SecC. Found three problems (one is sheet-specific, two affect all sheets). Short fixes and short explanations below.
+
+1) SecA — wrong hard-coded value in J47
+- Problem: J47 contains the number 6 instead of the expected formula =SUM(R47:AE47). That makes the student’s Assignment Points (and therefore Total Points I47) wrong.
+- Fix: Replace J47 with =SUM(R47:AE47). Then copy that formula down/up or re-fill from a neighboring correct row so J47 matches the other rows.
+- Why: J-columns are the per-student assignment totals; J47 must sum the assignment columns (R:AE) just like the other rows.
+
+2) All sheets — J10 uses AF instead of AE (inconsistent range)
+- Problem: J10 is =SUM(R10:AF10) but all assignment columns stop at AE. AF is not in use; this is inconsistent and could hide a future column-shift error.
+- Fix: Change J10 to =SUM(R10:AE10) (do this in SecA, SecB and SecC).
+- Why: Use the exact column range that contains assignment totals (R:AE). Keeps header calculations consistent with per-student formulas.
+
+3) All sheets — I10 (maximum/total header) omits extra-credit columns P and Q
+- Problem: I10 is =SUM(J10:M10). The per-student Total (I14:Ixx) includes P and Q (extra credit) in their SUM, so the header total should too.
+- Fix: Change I10 to =SUM(J10:M10,P10:Q10) (or if you want the capped display, =MIN(500,SUM(J10:M10,P10:Q10))).
+- Why: J10 is assignment total, K–M are tests/final, and P–Q are extra-credit maxima — the header should sum the same columns that student totals use.
+
+Quick tips to apply fixes fast:
+- For the J47 fix: enter the correct formula in J47, then use Fill Down / copy-paste from a correct J cell to apply consistent formulas to the whole J column.
+- For J10/I10: change on each sheet (SecA/B/C). You can copy one corrected header row across the other sheets.
+
+If you want, I can give the exact pasteable formulas for each cell and the fastest sequence of keystrokes to fix all sheets.

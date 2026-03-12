@@ -1,0 +1,56 @@
+I reviewed the sheet and found several formula / sign inconsistencies that can cause wrong subtotals or make the balance-sheet appearance unreliable. I list the problems, why they matter, and the simple fixes.
+
+1) Incorrect SUM ranges (off-by-one)
+- Problem: many "total" formulas include one row too high or low (e.g. D18 = SUM(D8:D17) while current asset lines are in D9:D16; D30 = SUM(D24:D29) while PPE lines are D25:D28). These include header/blank rows or omit/duplicate rows.
+- Why it matters: totals can include blanks or wrong rows and hide missing items or double-count.
+- Fix: use the exact data ranges. Example corrections:
+  - D18: =SUM(D9:D16) (not D8:D17)
+  - D30: =SUM(D25:D28) (not D24:D29)
+  - Do the same for E18 / E30 and any similar SUMs (check nearby totals and correct ranges).
+
+2) Inconsistent sign convention for accumulated depreciation
+- Problem: accumulated depreciation rows (D165:D169) are stored as negative numbers, then D170 = SUM(D165:D169) is negative. D34 (Net PPE) is D30 + D32 (D32 = D170). That works now because D32 is negative, but it is fragile: if some depreciation values are entered as positive, the net will be wrong.
+- Why it matters: sign inconsistencies produce wrong net book values.
+- Fix (recommended): make accumulated depreciation positive (absolute) and compute net PPE as Total PPE minus Accumulated Depreciation explicitly. For example:
+  - Change D170 to =SUM(ABS(D165):ABS(D169)) or enter D165:D169 as positive amounts, then
+  - D34: =D30 - D170
+  - If you keep depreciation as negative, at least document it and use D34: =D30 + D170 (but standard practice is to store depreciation positive and subtract it).
+
+3) Duplicate/overlapping totals (two “Total assets”)
+- Problem: there are multiple "TOTAL ASSETS" calculations (D38 and D178); they are computed differently (one uses grouped subtotals, one sums detailed account totals). If one is used in the balancing check and the other is displayed, you can get mismatches.
+- Why it matters: the sheet's checks can pass while the displayed total is wrong (or vice versa).
+- Fix: pick one master total and have all checks reference that single cell. Example: make D178 = D38 (or replace D38 with D178), and use that one cell everywhere in checks:
+  - D178: =D38
+  - Or better: ensure D38 and D178 are both calculated from the same detailed account totals (not different methods).
+
+4) Net assets / unrestricted formula is confusing and likely wrong
+- Problem: D52 (Unrestricted) = -D273 + D275 + D277 while D54 (Permanently restricted) = D273. Using -D273 inside Unrestricted plus D273 as Permanently Restricted will algebraically cancel D273, which is odd and makes the formula hard to audit.
+- Why it matters: this makes it difficult to trace where balances come from and increases risk of double-counting or omission.
+- Fix: rewrite net asset components explicitly and simply:
+  - Permanently restricted: D54 = D273 (keep)
+  - Appropriated: D275 = SUM(...) (keep)
+  - Unappropriated (or unrestricted): D52 = D275 + D277 (or if D277 already included appropriation logic, set D52 = D277 alone). In short, remove the "-D273" trick and compute each component from its true source so D57 = SUM(D52:D56) is transparent.
+
+5) Make balancing check explicit and robust
+- Problem: the balance-check cells use different totals (H289 uses D178; H290 uses -D283). If D178 and D283 come from different aggregation methods you may get non-zero differences.
+- Fix:
+  - Make a single master "Total Assets" cell (e.g. D178) and a single master "Total Liabilities & Net Assets" (D283) and use them for every check.
+  - Add an explicit check cell: =D178 - D283 and format it to highlight non-zero (red). That makes errors obvious.
+
+6) Minor: typos / labels
+- Examples: "Due rom officers and employeess" (A12) — fix text only. Labels don't change formulas but improve readability.
+
+Summary of recommended actions (step-by-step)
+1. Correct the obvious SUM ranges (start/end rows) across the sheet (D18, D30 and any similar totals).
+2. Decide a sign convention for accumulated depreciation:
+   - Best: store depreciation as positive and compute Net PPE = Total PPE - Accumulated Depreciation.
+   - If you keep depreciation negative, be consistent and document it, and use formulas that match that convention.
+3. Consolidate “Total Assets” to a single cell and make all checks reference that one cell; do the same for "Total Liabilities & Net Assets".
+4. Rewrite the Unrestricted / Net Assets formulas so each component is clearly and directly calculated (remove the -D273 trick).
+5. Add a single balancing cell =Total Assets - Total Liabilities&NetAssets and format to flag non-zero.
+
+If you want, I can:
+- give the exact corrected formulas for every affected cell (I can list them all),
+- or produce a small patch list (exact cell-by-cell fixes) and highlight which rows to change.
+
+Which do you prefer?

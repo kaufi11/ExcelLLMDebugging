@@ -1,0 +1,50 @@
+Summary — main problems I found
+1) Many cells contain the literal text "FORMULA =A$9" (or "FORMULA =E$10" etc.) instead of an actual Excel formula (=A$9).  
+   - Example: A83 shows "FORMULA =A$9" rather than =A$9. This appears in many header-copy cells on Pages 2–6 and elsewhere.
+
+2) A few "total" cells contain plain text like "sum" instead of a SUM formula.  
+   - Example: I262 is "sum" (label) rather than =SUM(...).
+
+3) Possible self‑referencing SUMs / circular totals (typical pattern seen elsewhere in your workbook).  
+   - Example pattern from your prior examples (and this workbook style): =SUM(C1:C4) that includes the total cell itself — causes wrong totals or circular reference.
+
+4) Some code/value mismatches (likely manual data-entry errors).  
+   - Example: Row 23: A23 = 1115 but B23 = 1190. If column B is supposed to mirror column A (many rows do), that looks wrong.
+
+What causes these problems (short)
+- Somebody prefixed formulas with the word "FORMULA " (or the cell was entered as text) so Excel treats them as text not formulas.  
+- Totals were typed as words instead of entered as functions.  
+- Ranges selected for SUM include the total cell (easy slip when selecting with the mouse).  
+- Manual copy/paste or typos created inconsistent codes.
+
+How to fix — step-by-step (short and easy)
+1) Convert the "FORMULA =..." text into real formulas (bulk fix)
+   - Press Ctrl+H (Find & Replace).  
+   - Find what: FORMULA =  
+   - Replace with: =  
+   - Click Replace All.  
+   This will turn "FORMULA =A$9" into "=A$9" so Excel evaluates it.
+   - If cells remain as text because the column is Text-formatted, change format to General, select the affected cells, press F2 then Enter (or use Text to Columns with Delimited→Finish) to force re-evaluation.
+
+2) Replace plain "sum" labels with an actual SUM formula
+   - Example: replace the text in I262 with a real sum for the revenue rows. If your revenue rows run from row 161 to 260 in column I, use:
+     =SUM(I161:I260)
+   - Adjust the start/end rows to the actual revenue range if different.
+
+3) Fix any self-referencing SUMs (remove the total cell from the summed range)
+   - If you see something like =SUM(C1:C4) in the total cell located at C4, change it to exclude the total, e.g.:
+     =SUM(C1:C3)
+   - Use Formula Auditing (Formulas → Trace Precedents/Dependents) or Press Ctrl+` to scan formulas quickly.
+
+4) Correct obvious data-entry mismatches
+   - If column B should match column A, set B23 =A23 (or copy column A to B where appropriate). Example formula to set B = A for many rows:
+     In B16 (or top of B range) enter =A16 and fill down (or copy/paste values if you want static values).
+
+Quick checks after repairs
+- Turn on Error Checking (Formulas → Error Checking) to catch text-that-looks-like-formula and circular references.  
+- Use Find (Ctrl+F) to search for the string "FORMULA " to confirm none remain.  
+- Recalculate (F9) and confirm totals change to numeric results.
+
+If you want, I can:
+- Prepare exact Replace ranges and the specific SUM ranges for I262 (and any other total rows) if you confirm which rows should be included in each total.
+- Scan the sheet for circular references and list exact cells to correct.

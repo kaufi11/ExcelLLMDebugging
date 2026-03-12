@@ -1,0 +1,41 @@
+I checked the workbook and found a small set of real formula errors that will produce wrong totals, wrong reconciliations and an incorrect % variance. Below are the faulty cells, a short explanation and the exact repair formula to put in.
+
+1) Sheet: annex f — Cell K68
+- Error type: Wrong reference / incorrect % formula
+- Problem: K68 = K48 (it points to the percent for "Total Net Assets" instead of calculating % for "Total Funds").
+- Fix: replace with a proper % variance formula:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Why: K68 should show J68 as a percentage of H68 (variance ÷ original), not reuse K48.
+
+2) Sheet: annex g — Cell T26
+- Error type: Wrong reference in reconciliation
+- Problem: T26 = T19 - ('annex f'!H20 + 'annex f'!H21). That omits Stocks (H18) and Debtors (H19) from "cash as in balance sheet".
+- Fix: point to the balance-sheet total for cash & short-term investments:
+  =T19 - 'annex f'!H22
+- Why: 'annex f'!H22 = SUM(H18:H21) (Stocks + Debtors + Investments + Cash). Reconciliation must use that total.
+
+3) Sheet: annex g — Cell T49
+- Error type: Same as #2 (wrong reference for the I‑column)
+- Problem: T49 = T42 - ('annex f'!I20 + 'annex f'!I21) — omits I18 and I19.
+- Fix:
+  =T42 - 'annex f'!I22
+
+4) Sheet: annex g — Several monthly-total cells use the last month instead of summing months
+- Error type: Range/aggregation error (only referencing July instead of months H:S)
+- Examples found: T22 = S22, T23 = S23, T24 uses those, T45 = S45, T46 = S46, T47 = SUM(T45:T46) (propagates the error). (There may be other T‑column cells with the same issue.)
+- Fix (apply the pattern to each affected row):
+  - Replace T22 with =SUM(H22:S22)
+  - Replace T23 with =SUM(H23:S23)
+  - Replace T24 with =SUM(H24:S24) OR =SUM(T22:T23) (whichever matches the sheet layout)
+  - Replace T45 with =SUM(H45:S45)
+  - Replace T46 with =SUM(H46:S46)
+  - Replace T47 with =SUM(T45:T46) (after fixing T45/T46)
+- Why: T‑column should be the total across months (columns H:S). Using S## (one month) makes the "Total" equal only to July and breaks reconciliations like "These cells should be zero".
+
+Quick checklist to fix similar issues
+- Search for any T### cells that are =S### or =H### etc. All such totals should normally be =SUM(H#:S#).
+- For reconciliation cells that compare a cash total with the balance sheet, always reference the balance-sheet cash total cell (annex f H22 / I22 / etc) rather than adding only parts of it.
+
+If you want, I can:
+- Provide a one-page list of every T‑cell in annex g that currently uses a single-month reference so you can fix them in one pass.
+- Produce the exact formulas to paste for each wrong cell.

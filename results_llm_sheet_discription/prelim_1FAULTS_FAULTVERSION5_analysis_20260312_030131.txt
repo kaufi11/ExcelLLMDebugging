@@ -1,0 +1,39 @@
+Summary of errors
+- Column A (event numbers) is supposed to be sequential (A12 = 1, then A13 = A12+1, etc.) but two anomalies break the sequence:
+  - A36 contains =A35+676 (should be +1). This produces 697 and makes every following A cell huge (A37 = 698, A38 = 699, etc.).
+  - A41 was typed manually as 26, so it doesn’t follow the auto-increment chain and conflicts with surrounding numbers.
+
+Why this is a problem
+- Event numbering is inconsistent and misleading.
+- Any formulas, lookups or references that expect a simple increasing event ID will return wrong values.
+- Manual edits make the sequence fragile when you insert/delete rows.
+
+Quick fixes (pick one)
+
+1) Minimal single-cell fixes
+- Change A36 from =A35+676 to =A35+1
+- Change A41 from 26 to =A39+1
+- Then fill down if needed (select A36:A41 and press Ctrl+D or drag the fill handle).
+
+2) Robust fix (recommended)
+- Put a reliable formula in A12 and copy it down so new rows stay correct:
+  - In A12 enter: 1
+  - In A13 enter: =IF(C13="","",A12+1)
+  - Copy A13 down through the rest of column A (drag fill handle).
+  - This keeps numbering blank for rows without a Start time (column C) and automatically increments by 1 for each event row.
+
+Alternative (simple row-based formula)
+- If you prefer numbering by row, use (starting in A12):
+  - =IF(C12="","",ROW()-11)
+  - Copy down. This gives 1 at row12, 2 at row13, etc., but still hides numbers when column C is blank.
+
+Extra check
+- After fixing, scan column A to ensure numbers proceed 1,2,3,... with no big jumps or manual values.
+- If any other sheet uses these event numbers in formulas or LOOKUPs, verify those links still work.
+
+Why these solutions work
+- =Previous+1 enforces sequential numbering.
+- The IF(Cx="","", ...) prevents numbering blank rows and avoids showing numbers where there is no event.
+- ROW()-11 is a stable way to base numbering on sheet row position (useful if you never delete header rows).
+
+If you want, I can give the exact steps to paste the formula down the whole column or provide a version that tolerates inserted rows.

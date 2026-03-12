@@ -1,0 +1,37 @@
+I inspected the formulas on Sheet1 and found one clear mistake plus some inconsistent / risky formula usage. Summary and recommended fixes below.
+
+1) Incorrect function (actual error)
+- Cell C19: formula is =COUNT(D19:CC19)
+  - Problem: COUNT returns the number of numeric cells (6), not the sum of the points. That makes C19 = 6 and B19 = 6/100 = 0.06, while the student’s points should be 3+8+7+20+20+30 = 88.
+  - Fix: change C19 to =SUM(D19:I19) (or =SUM(D19:CC19) if you really want a wide range, but D19:I19 is correct and explicit).
+  - After fix B19 should be =C19/$C$6 (or keep the current =SUM(C19/$C$6) if you prefer), which yields 0.88.
+
+2) Wide/inconsistent ranges (risky, should be corrected)
+- Cells C9:C18 and C20:C24 use formulas like =SUM(D9:CC9), =SUM(D10:CC10), etc.
+  - Problem: these sum from column D all the way to column CC (very large range). Because columns beyond I are blank, the numeric result matches the intended D:I sum today, but this is poor practice and can hide data, cause maintenance/performance issues, or accidentally include future data. It is inconsistent with C6 which sums D6:I6.
+  - Fix: replace each =SUM(Dn:CCn) with =SUM(Dn:In) for n = 9..18 and 20..24.
+
+3) Unnecessary use of SUM around a simple division (style/inconsistency)
+- Cells B9:B24 use formulas like =SUM(C9/$C$6).
+  - Problem: SUM around a single arithmetic expression is unnecessary. It works, but it’s inconsistent and possibly confusing.
+  - Fix (optional): use =C9/$C$6 (and similarly for other rows). Functionally this yields the same results except for the C19 issue above.
+
+4) Confirmed correct formulas
+- C6 =SUM(D6:I6) is correct (gives total points 100).
+- Other student row sums (after correcting ranges) match the visible D:I values except C19 which must be corrected as noted.
+
+Suggested concrete changes to implement
+- C9 -> =SUM(D9:I9)
+- C10 -> =SUM(D10:I10)
+- ...
+- C18 -> =SUM(D18:I18)
+- C19 -> =SUM(D19:I19)  <-- required fix (was COUNT)
+- C20 -> =SUM(D20:I20)
+- ...
+- C24 -> =SUM(D24:I24)
+- (Optional) B9 -> =C9/$C$6 ; B10 -> =C10/$C$6 ; ... B24 -> =C24/$C$6
+
+Effect of fixes
+- After these changes only C19/B19 will change numerically: C19 becomes 88 and B19 becomes 0.88. All other numeric results remain the same but the formulas will be clearer, correct, and consistent.
+
+If you want, I can produce the exact list of replacement formulas for every affected cell or generate a small macro / paste-ready list to apply these fixes automatically.

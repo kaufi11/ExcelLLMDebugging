@@ -1,0 +1,32 @@
+I checked the workbook formulas. Two problems stand out — one in "Early or Late" that breaks the early-saver balance chain, and several in "Vanguard" that are not real formulas but literal text. Details and suggested fixes below.
+
+1) Sheet "Early or Late" — broken chain at row 27
+- Problem: Cell B27 contains the literal formula/value "=460" (i.e. a hard-coded 460) instead of continuing the chain from the prior end balance. Up through row 26 the early-saver Beginning Balance cells follow Bn = En-1 (B5 = E4, B6 = E5, ...). B27 breaks that by not referencing E26 and therefore the subsequent rows (B28, B29, …) follow a tiny sequence instead of continuing the correct large balance growth.
+- Effect: All early-saver balances from row 27 downward are wrong (far too small) because they depend on B27. This is why the early-saver End Balances after row 26 are unrealistically small.
+- Fix: Set B27 = E26 (formula: =E26). After that B28 should be =E27, B29 =E28, etc. (Many of those are already set to =Eprev; only B27 is the incorrect literal.)
+
+Notes on related cells:
+- Many D formulas on the early side reference C cells (e.g. D19 = (B19+C19)*0.06). After row 18 the deposits (C19:C48) appear intentionally blank (no more contributions). Blank cells are treated as zero in arithmetic, so those D formulas are OK — just be aware that the blank C cells are intentional (and the Cash Outlay sum C4:C48 = 15,000 confirms only the first 15 deposits exist).
+
+2) Sheet "Vanguard" — text strings instead of actual formulas
+- Problem: Cells D15:D21 contain text (strings that look like formulas or manual arithmetic) rather than real cell-reference formulas. Examples:
+  - D15 value is the string "= Ending Balance - Beginning Balance"
+  - D16 value is the string "= $23,833.35 - $10,000"
+  - D17 value is "= $13,833.35"
+  - D18 value is the string "= (Ending Balance - Beginning Balance) / Beginning Balance"
+  - D19/D20/D21 are also strings/numeric strings
+- Effect: These cells do not compute from the sheet values. They will not update if the data in the table changes (e.g., if Ending Balance or Beginning Balance changes).
+- Fix: Replace the text with actual formulas referencing the worksheet cells. For the data shown (Beginning Balance in B4 = 10,000 and Ending Balance in F13 = 23,833.3497411956), use:
+  - D16: =F13 - B4            (capital gain/loss)
+  - D19: =(F13 - B4) / B4    (holding period return)
+  - Format D19 as a percentage if desired.
+  - (You can put labels in A15/A18 and put the formulas in the adjacent cells.)
+- If you prefer to compute using intermediate cells (e.g., D16 store capital gain then D19 refer to D16), use D19 = D16 / B4.
+
+Other minor observations (not necessarily errors):
+- B4 on the "Early or Late" sheet is blank (treated as 0). If the initial beginning balance is intended to be explicit zero, you may want to enter 0 in B4 to make it clear.
+- Some formulas reference blank C cells (e.g., D19 uses C19 which is blank). Blank is treated as zero — if you want explicit clarity, put 0 in those C cells or document that contributions ended after year 15.
+
+If you want, I can:
+- produce the exact list of cells to change and the exact corrected formulas to paste (e.g., give the single-cell edit for B27 and the 3–4 corrected formulas in Vanguard), or
+- make the corrections and return an updated workbook (if you can accept file output).

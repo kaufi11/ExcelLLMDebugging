@@ -1,0 +1,20 @@
+Problem found
+- Cell Sheet "1" H12 has the wrong formula. It is =SUM(H10:H11) (it omits H9). Every other column uses =SUM(<product1>:<product3>) i.e. SUM(H9:H11).
+
+Why this is bad (impact)
+- Business machines total (H12) is missing the Office imaging value (H9 = 247,326). That error propagates down the column and makes all downstream figures for that quarter incorrect (Total net sales H15, Net sales H17, Gross profit H19, Operating profit H22, Income before taxes H29, Net income H35, and all % rows).
+- Example (column H, 2001 Q2):
+  - Current (wrong): H12 = 322,548 → H15 = 511,951 → Gross profit H19 = 102,093 → Net income H35 = -190,590
+  - Correct (if H12 = SUM(H9:H11)): H12 = 569,874 → H15 = 759,277 → Gross profit H19 = 349,419 → Net income H35 = 56,736
+
+Fix (simple)
+- Change the formula in H12 to:
+  =SUM(H9:H11)
+- Or copy the correct formula from a neighbouring correct cell (e.g. G12 or I12) and paste into H12, then recalc.
+
+How to check/prevent similar errors
+- Turn on Show Formulas (Ctrl+`) or use Formula Auditing → Trace Precedents to visually confirm inputs.
+- Use Excel Error Checking (“Inconsistent formula in region”) to catch a formula that deviates from the pattern.
+- After fixing H12, verify H15, H17, H19, H22, H29 and H35 update to expected values.
+
+If you want, I can generate a small checklist or show exactly which downstream cells change and by how much for column H.

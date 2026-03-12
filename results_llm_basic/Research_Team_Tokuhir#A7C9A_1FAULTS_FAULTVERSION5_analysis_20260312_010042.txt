@@ -1,0 +1,25 @@
+Summary of the problem
+- Column A is intended to be a sequential ID (1, 2, 3, ...), created by formulas like =A3+1 copied down.
+- Two mistakes break the sequence:
+  1. A34 is =A33+604 which makes A34 = 632 and all following numbers huge.
+  2. A40 is a manual entry "35" (not a formula), so it does not follow the sequence after the A34 error.
+
+Quick fix (minimal changes)
+1. Correct A34: change the formula in A34 to =A33+1
+2. Fix A40: change A40 to =A39+1 (or delete the "35" and drag the corrected formula from A39/A34 down through A40)
+
+Why this fixes it
+- A34 had an accidental +604; replacing it with +1 restores the incremental pattern so later rows compute correctly.
+- A40 was typed in; converting it to a formula makes it follow the sequence and updates automatically.
+
+Better, robust solution (recommended)
+- Replace the fragile "previous cell + 1" pattern with a formula that numbers only rows that have data (so blank rows and section headers are ignored). Put this in A3 and copy down:
+  =IF($B3="","",COUNTA($B$3:$B3))
+  Explanation: This gives 1 for the first nonblank name in B, 2 for the second, etc. It will not create numbers for blank rows or headers and is resilient to row inserts/deletes.
+
+Optional: if you prefer simple auto-number by row (including blank rows), use:
+  =IF($B3="","",ROW()-ROW($A$3)+1)
+but that will reflect row positions (not recommended if there are deliberate blank rows).
+
+Anything else to check
+- After fixing A34/A40 or applying the robust formula, scan column A to ensure there are no other manual entries or stray formulas (look for numbers that are not formulas).

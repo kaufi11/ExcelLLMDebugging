@@ -1,0 +1,46 @@
+Summary of workbook structure and contents (concise)
+
+Overall
+- Workbook contains historical Toxic Release Inventory (TRI) tables for Silicon Valley (years ~1987–2000), with media breakdown (Air, Land, Water), offsite releases/disposal, and transfers offsite (Recycled, Energy Recovery, Other Treatment, Incineration). Most numeric data are in millions of pounds; several sheets store raw pound counts and convert by dividing by 1,000,000 (FORMULA = value/1000000).
+
+Sheet: "2003 Report"
+- Main table runs by year (A7:A20 = 1987–2000). Columns:
+  - B = Air, C = Land, D = Water, E = Offsite Release or Disposal, F = Total Releases (appears to be sum of B:E).
+  - J repeats year, K = Recycled, L = Energy Recovery, M = Other Treatment, N = Incineration, O = total (sum K:N).
+- Key values: example 1987 total releases F7 = 13.239865 (mil lbs); 1999 transfers total O19 = 26.282264 (mil lbs).
+- Notes: row 20 contains extra values in G20/H20 (8.449074 and 0.63815409) that are outside the main layout — possible stray numbers.
+
+Sheet: "2002 Report"
+- Header/metadata (A1–A7). Primary layout: yearly rows (A11:A38 roughly 1987–1999+) with raw pounds in F/G/H (POTW/air/land) and computed millions in B/C/D via formulas (B11 = F11/1,000,000, etc.).
+- Common formulas: A-row increments use A12 = A11+1; totals Exx = SUM(Cxx:Dxx); Rxx = SUM(Bxx:Cxx:Dxx) in some rows; R24 = (R11-R23)/R11 (a percent change).
+- Additional tables map Offsite disposition (Disposed, Recycled, Incinerated) with many NA placeholders and later rows filled with numeric F/G/H (raw pounds).
+- Zip-code breakdown (A43 onward) by year across many ZIP columns (B:K), with L = TOTAL POUNDS (SUM(B:K)/1,000,000), M = SVEP (SUM of specific columns), N = difference (L–M) and O = share (N/L). R55 = N55*1,000,000 for raw difference.
+- Key formulas are consistent conversion (/1,000,000), SUM(B:K)/1,000,000 and year increments.
+
+Sheet: "data"
+- Compact per-year summary for recycled/incinerated amounts.
+- Columns: A = year, B = incinerated (raw pounds), C = recycled (formula C = E - B), E = total recycled+incinerated (raw pounds).
+- Years 1991–1999 present; e.g., 1999 E12 = 17,529,363 (total recycled+incinerated), B12 incinerated = 4,002,596, C12 recycled = 13,526,767.
+
+Sheet: "notes"
+- Duplicate/backup of incinerated/recycled values for 1997–1999. Simple two-column storage (B incinerated, C recycled).
+
+Sheet: "1999 Report"
+- Similar structure to "2002 Report": year rows with raw pounds in F/G/H and conversions B/C/D = F/G/H /1,000,000, plus Disposed vs Recycled/Incinerated table with many NA then filled rows for late years (F29:F35 raw disposed, G29:G35 raw recycled/incinerated).
+- Metadata at top (A1–A5).
+
+Key formulas and patterns to note
+- Year increments: A(n+1) = A(n) + 1 to fill year sequences.
+- Pounds → millions: cell_in_millions = raw_pounds / 1,000,000 (used extensively Bxx = Fxx/1000000 etc.).
+- Totals: SUM ranges (SUM of media columns, SUM of transfers K:N), differences (L–M), and ratios (N/L).
+- Many NA placeholders in earlier rows for disposed/recycled/incinerated (intentional gaps).
+- Some cells contain raw pounds (F/G/H style) and corresponding converted columns; cross-sheet duplication of the same data exists (1999/2002/2003 sheets repeat similar series).
+
+Potential anomalies (for review)
+- Stray numeric values in 2003 Report G20/H20 not aligned with main columns.
+- Several duplicated tables across sheets — ensure the intended canonical source is used.
+- NA cells and inconsistent filling patterns across years (some years full detail, others missing).
+
+If you want, I can:
+- Produce a cleaned single-year-by-year consolidated table (millions of pounds) across media and transfer categories.
+- Flag and reconcile discrepancies (e.g., stray cells, duplicated data) and convert all raw pounds to consistent units.

@@ -1,0 +1,31 @@
+Thanks — I checked the workbook and found the concrete spreadsheet mistakes plus some modelling issues that will lead to wrong answers or confusion. Short, clear list of problems, the fixes, and brief explanations:
+
+1) Wrong hard‑coded value in Q1 (breaks the DCF/NPV)
+- Problem: Cell E19 contains the number 6 instead of the discounted cash‑flow formula (every other row in that block divides the CF by (1+rate)^period). That makes the NPV profile/answers for that row wrong.
+- Fix: Replace the 6 with the correct formula (copy the pattern used elsewhere). For example, in E19 use:
+  = $E$2 / (1 + $J19) ^ $E$1
+  (or simply copy the formula from E4 into row19 and let the row references adjust so each column uses J19 as the rate for row 19).
+- Why: A manually entered value breaks your calculations and gives a spurious NPV/discounted CF for that discount rate.
+
+2) Inconsistent / incorrect discount‑rate references across scenarios (Q2 and other blocks)
+- Problem: Different blocks use different cells for the discount rate or cost of equity (e.g. sometimes formulas divide by (1+$C$19)^period, sometimes by (1+$C$20)^period, sometimes by $C$4 or $C$40). This is confusing and can produce wrong PVs if you intended a single rate.
+- Fix: Put each required rate in one dedicated cell and reference that cell everywhere (best: give meaningful names → Formulas > Define Name: e.g. WACC, r_e, DiscountRate). Then use:
+  = CashFlow / (1 + DiscountRate) ^ Period
+  This makes it easy to change rates and ensures consistency.
+- Why: Mixed references cause silent mistakes when you change one rate or when you copy formulas between sections.
+
+3) IRR ambiguity / multiple solutions (Q1 c–d discussion)
+- Problem: Cash flows change sign more than once (conventional example: -85, +120, +100, -140). That can produce multiple IRRs or make IRR meaningless for decision rules. Excel’s IRR returns one root depending on the guess; that can be misleading.
+- Fix / Recommendation:
+  - Use the NPV rule (plot NPV vs discount rate — you already do this) or use MIRR(…) which produces a unique rate by assuming a reinvestment rate.
+  - If you need all real IRRs, solve the polynomial (numerical root finding with multiple starting guesses) or inspect the NPV profile to identify all sign changes.
+- Why: When cash flows are non‑conventional, IRR is not a reliable single decision metric.
+
+4) Minor/formatting things to tighten up
+- Inconsistent absolute/relative locking ($ signs): be careful about $J4 vs $J19 etc when copying horizontally/vertically. Use named rate cells to avoid $ sign bugs.
+- Rounding artifacts: you see values like 0.0399999999999999 — that’s floating point display. Use rounding/formatting for display only (no change needed for calculations).
+
+If you want, I can:
+- Give the exact corrected formulas for the faulty cells and a step‑by‑step to apply them (I can show the copy/paste sequence).
+- Create named ranges for the discount rates and rewrite the PV formulas consistently for you.
+Which would you prefer?

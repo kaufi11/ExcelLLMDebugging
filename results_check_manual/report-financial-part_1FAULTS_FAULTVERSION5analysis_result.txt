@@ -1,0 +1,87 @@
+I examined the formulas you provided for the "3. Budget" sheet (and checked the "4. Sources of Funding" sheet contents). I found several clear formula errors/inconsistencies and some missing formulas. Summary and concrete corrections below.
+
+Major issues (high priority)
+1. Spent-in-total formulas are incorrect and inconsistent
+- Many H cells (the "Spent in total (in €)" column) use =C#*G# (multiply # of units by "Spent (other funds)" column). That is not consistent with the header and expected meaning of column H.
+- The column header shows F = "Spent (EU contribution in €)" and G = "Spent (other funds in €)". The logical formula for "Spent in total" is:
+  H# = F# + G#
+  (Alternatively, if the sheet is intended to compute from units & unit rate, H# should be =C#*D#, but mixing C*G is wrong.)
+
+Cells affected (all should be changed to =F#+G# unless you want units*unit-rate behavior):
+H6, H7, H8, H10, H11, H12, H16, H17, H21, H22, H23, H24, H28, H29, H30, H31, H35, H36, H37, H38, H39, H40, H41, H44, H45, H46, H52
+
+Notes:
+- H12 currently contains the hard-coded value "=4". If that 4 represents spent amounts, replace with =F12+G12 so totals aggregate correctly.
+- If some rows are intended to be computed from units and unit rate, decide which method you want and apply consistently: either H# = C#*D# (units × unit rate) or H# = F# + G# (sum of actual spent amounts).
+
+2. Subtotal ranges include non-existent / wrong start cells
+- H13 (Subtotal Human Resources) is currently =SUM(H5:H12). H5 is not one of the item lines; the correct range should start with the first actual item cell:
+  Correct: H13 = SUM(H6:H12)
+- H53 (Subtotal Other) is currently =SUM(H51:H52). H51 does not exist in the provided list. You probably want:
+  Correct: H53 = SUM(H52)  (or =H52)
+  
+These off-by-one / wrong-start references should be fixed so subtotals reliably include all intended item rows and no phantom rows.
+
+3. Missing formulas for administrative costs and contingency reserve
+- H56 (Administrative costs, "maximum 7% of 8.") is blank / has no formula. Based on the label you should populate:
+  Suggested: H56 = H55 * 0.07
+  (If you want to enforce a maximum compare to a manual value, you can use MIN or conditional logic; but the label implies 7% of H55.)
+- H58 (Contingency reserve, "maximum 5% of 10.") is also blank. Suggested formula:
+  Suggested: H58 = H57 * 0.05
+
+- H57 (Total eligible costs) uses =H56+H55 — that is structurally correct, but because H56 is blank currently H57 will be incorrect once H56 is filled in; ensure H56 is set as above.
+- H59 already uses =H58+H57 — fine once H58 and H57 are set correctly.
+
+Other observations / suggestions
+- H55 currently is =H53+H47+H42+H32+H25+H18+H13 — that is logically correct (summing the category subtotals). Once the per-item H# cells and H53 and H13 are corrected, H55 will calculate correctly.
+- There are multiple hard-coded zeros in H cells (value 0 and a formula like =C#*G# returning 0). After you change the H# formulas to =F#+G#, many of these will stay 0 until F/G data is entered.
+- Decide on a consistent rule for computing "Spent in total": either sum of spent columns (F+G) OR units × unit rate (C×D). Current sheet mixes a wrong C×G pattern; pick the correct approach and apply it to all item lines. If both are relevant, you could compute H# = IF( OR( ISBLANK(F#), ISBLANK(G#) ), C#*D#, F#+G# ) — but that introduces complexity and potential ambiguity.
+
+Concrete list of recommended formula fixes
+- For each item row where H currently =C#*G#, replace with:
+  H6  = F6 + G6
+  H7  = F7 + G7
+  H8  = F8 + G8
+  H10 = F10 + G10
+  H11 = F11 + G11
+  H12 = F12 + G12   (replace the hard-coded =4)
+  H16 = F16 + G16
+  H17 = F17 + G17
+  H21 = F21 + G21
+  H22 = F22 + G22
+  H23 = F23 + G23
+  H24 = F24 + G24
+  H28 = F28 + G28
+  H29 = F29 + G29
+  H30 = F30 + G30
+  H31 = F31 + G31
+  H35 = F35 + G35
+  H36 = F36 + G36
+  H37 = F37 + G37
+  H38 = F38 + G38
+  H39 = F39 + G39
+  H40 = F40 + G40
+  H41 = F41 + G41
+  H44 = F44 + G44
+  H45 = F45 + G45
+  H46 = F46 + G46
+  H52 = F52 + G52
+
+- Subtotals:
+  H13 = SUM(H6:H12)
+  H18 = SUM(H16:H17)   (already correct)
+  H25 = SUM(H21:H24)   (already correct)
+  H32 = SUM(H28:H31)   (already correct)
+  H42 = SUM(H35:H41)   (already correct)
+  H47 = SUM(H44:H46)   (already correct)
+  H53 = SUM(H52)       (or =H52)
+
+- Administrative / totals:
+  H56 = H55 * 0.07     (administrative costs — set according to policy)
+  H57 = H56 + H55      (already present)
+  H58 = H57 * 0.05     (contingency)
+  H59 = H58 + H57      (already present)
+
+If you prefer units × unit-rate for certain rows (C × D) instead of F + G, tell me which rows and I will list exact formulas to use. Also let me know if administrative cost or contingency should be limited to a particular ceiling (e.g., capped by contract), then we can use MIN to enforce the cap.
+
+Do you want me to produce a corrected formula-only patch (list of cell addresses and new formulas) that you can paste into the workbook, or would you like me to apply a particular rule (F+G vs C×D) globally?

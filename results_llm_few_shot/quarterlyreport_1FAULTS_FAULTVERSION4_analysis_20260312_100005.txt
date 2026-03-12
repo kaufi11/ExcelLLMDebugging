@@ -1,0 +1,54 @@
+I checked Detail, Summary and RCM Report sheets. There are several cut‑&‑paste / wrong‑reference errors. Short list of the real problems, why they’re wrong, and the fix formulas.
+
+1) Summary sheet — Financial Aid (row 9), columns F:N
+- Problem: F9…N9 use ranges like SUM(Detail!F9:F11) (or similar) — those ranges point at Tuition rows, not the Financial Aid subtotal on Detail. This was a copy/paste/range-shift error.
+- Why wrong: you’re pulling tuition numbers instead of Financial Aid (Detail rows 13–15), so Financial Aid is incorrect.
+- Fix: set each column to the negative of the Detail financial aid subtotal. Example formulas:
+  - F9 = -Detail!F15
+  - G9 = -Detail!G15
+  - H9 = -Detail!H15
+  - I9 = -Detail!I15
+  - J9 = -Detail!J15
+  - K9 = -Detail!K15
+  - L9 = -Detail!L15
+  - M9 = -Detail!M15
+  - N9 = -Detail!N15
+
+2) Summary sheet — Subtotal net tuition (row 10), columns F:N
+- Problem: F10…N10 reference odd ranges like SUM(Detail!F10:F17) (or SUM(Detail!?10:?17)) instead of the two summary lines (Net Tuition & Financial Aid) for that column.
+- Why wrong: summing unrelated Detail rows pulls extra rows and double‑counts.
+- Fix: make Subtotal = Net Tuition row + Financial Aid row in Summary, i.e.:
+  - F10 = SUM(F8:F9)
+  - G10 = SUM(G8:G9)
+  - H10 = SUM(H8:H9)
+  - I10 = SUM(I8:I9)
+  - J10 = SUM(J8:J9)
+  - K10 = SUM(K8:K9)
+  - L10 = SUM(L8:L9)
+  - M10 = SUM(M8:M9)
+  - N10 = SUM(N8:N9)
+(Or if you want directly from Detail: F10 = Detail!F11 + (-Detail!F15).)
+
+3) Summary sheet — University Fund allocation (row 14), cell J14
+- Problem: J14 contains the number 6 (typo) instead of linking to the Detail.
+- Why wrong: that single value will break totals/rollups in the “Additional” column.
+- Fix: set J14 to the corresponding Detail cell:
+  - J14 = Detail!J20
+
+4) (Optional/Cleanup) Several “SUM(a-b)” usages
+- Example: Detail D63 = SUM(D25-D61) and Summary D36 = SUM(D19-D34). These evaluate correctly but are poor style and confusing.
+- Fix (cleaner): use direct subtraction without SUM:
+  - D63 = D25 - D61
+  - D36 = D19 - D34
+This prevents confusion and accidental extra arguments.
+
+5) (Check) Beginning / Carry‑forward balances
+- I noticed some beginning balance cells are linked to other sheet cells in different patterns (e.g. Detail E64 = D65, Summary E37 = D38). Confirm the desired carry‑forward logic: beginning balance for column N should come from previous column’s ending balance. If not intentional, adjust the references so each beginning balance equals the previous column’s Current/Projected balance.
+
+Quick summary of the fixes to apply now
+- Replace Summary F9:N9 with =-Detail!<col>15 (as above).
+- Replace Summary F10:N10 with =SUM(<col>8:<col>9) (as above).
+- Change Summary J14 to =Detail!J20.
+- Optionally replace SUM(D25-D61) style formulas with direct subtraction.
+
+If you want, I can produce the exact formula for every affected cell (paste‑ready) or produce a short VBA macro to correct all the misaligned ranges. Which would you prefer?

@@ -1,0 +1,46 @@
+I reviewed every formula and numeric value supplied for the sheet and compared results, references and placement. No formula returns an incorrect numeric result (i.e., formulas evaluate to the values shown). However I found several inconsistencies, potential errors, and stylistic issues you should review and (optionally) correct.
+
+Summary of issues (by cell)
+
+1) Duplicate value / formula one column off
+- G7 = 7125 (constant), H7 = 7125 with formula =47500*0.15.
+  - Problem: the same amount appears in two adjacent columns; the formula is in H7 while the label "Cash Div Pay" is in G6, so the formula appears to be one column to the right of the labeled column. This is likely a layout/placement error (formula should be in G7). Also columns are used inconsistently elsewhere (see point 2).
+  - Suggestion: move the formula from H7 into the intended amount column (G7) or remove the duplicate constant in G7.
+
+2) Hard-coded constants instead of cell references (fragile)
+- H7 uses literal 47500 and 0.15 in =47500*0.15. The 47,500 value appears only in text (A39) and is not stored as a numeric cell.
+  - Problem: if the number of outstanding shares or dividend rate changes, this formula won't update automatically.
+  - Suggestion: put the outstanding shares (47,500) and the dividend rate (0.15 or 15%) in dedicated cells and reference them (e.g., =OutstandingSharesCell*DividendRateCell), and ensure the formula is in the correct column (see #1).
+- Several other formulas use explicit numeric literals rather than referencing the source cell(s): e.g. F42 =100000-20000-7125, E43 =30000-22500, etc.
+  - Suggestion: where practical, replace hard-coded numbers with references to the cells that hold those amounts so changes propagate.
+
+3) Cells holding numbers that appear derivable but have no formula (inconsistent use of formulas)
+These cells contain values that are the result of other values in the sheet but are entered as constants (no formula). That is not an error per se, but it is inconsistent and error-prone:
+- E53 (6000) — equals D51 (11000) - E52 (5000); but E53 has no formula.
+- E60 (39000) — equals D59 (39000) but is entered as a constant.
+- D64 (1960) and E65 (1960) are filled as constants even though E63 = SUM(D61:D62) is computed (E63 → D64/E65 could be formulas).
+- L10 (5000), L11 (4000) are constants that feed L12 =SUM(L7:L11) — they may be fine, but note they are not formulas while similar cells are formulas elsewhere.
+- B8 (7125) is a constant while related H7 uses formula.
+  - Suggestion: convert these to formulas (where appropriate) to make the workbook consistent and less error-prone.
+
+4) Inconsistent layout / alternating label/value columns
+- The sheet uses a nonuniform layout: in some areas labels are in A/B and values in B/D/E (alternating columns) and elsewhere values and formulas are placed one column off. That causes the H7/G7 duplication and makes it easy to accidentally place formulas in the wrong column.
+  - Suggestion: standardize the label/value layout and move formulas to the appropriate columns.
+
+5) Stylistic / minor issues
+- Several formulas use the leading plus sign form, e.g. E73 "=+E49+E52+E57" and E74 "=+E50+E53+E58". This is accepted by Excel but inconsistent style — not an error.
+- Some sums use SUM ranges that include blank rows/columns (e.g., SUM(B7:B9) although B9 is empty). That's okay but note it depends on blanks being zero.
+
+6) Minor potential correctness flag
+- G7/H7 refer to the 47,500 outstanding shares (in A39 text). That outstanding figure is not stored numerically anywhere (F39 stores 59,000 issued). If downstream calculations require issued vs outstanding, keep both values in numeric cells and reference them explicitly so formulas do not rely on numbers hidden in text.
+
+Concrete recommended fixes (priority order)
+1. Move the dividend formula into the correct amount column (probably G7) and remove the duplicate constant cell.
+2. Store "shares outstanding" and "dividend rate" in dedicated numeric cells and edit formulas (H7/G7) to reference them rather than using literals.
+3. Convert the constants that are arithmetic results into formulas (E53, E60, D64/E65, etc.) where applicable.
+4. Standardize the label/value column pattern across the sheet to avoid off-by-one placement issues.
+5. Optionally change "=+..." formulas to "=E49+E52+E57" for consistency/readability.
+
+If you want, I can:
+- produce an exact list of every cell that contains a constant but looks derivable, or
+- provide a corrected version of the sheet (with moved formulas and replaced literals by references) if you give me permission to modify cells.

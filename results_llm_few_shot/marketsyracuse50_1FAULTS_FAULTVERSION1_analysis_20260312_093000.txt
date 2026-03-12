@@ -1,0 +1,18 @@
+Faulty cell(s)
+- F24
+
+What’s wrong (simple)
+- F24 has =1/$E24 (division). It should copy the deposit amount like the other banks (multiply by 1 or just reference E24). Because F36 (total weighted deposits) sums F10:F33, that wrong value makes F36, all market shares (G10:G33) and the HHI (H10:H33 and H36) incorrect.
+
+Fix(es)
+1. Correct the single-cell typo:
+   - Change F24 to = $E24  (or =1 * $E24).
+
+2. (Optional but recommended) Make the weighted deposit formula automatic based on Type (so you don't need different constants manually). Put this in F10 and copy down:
+   - =IF($C10="Thrift",0.5*$E10,$E10)
+
+3. (Optional formatting) If you prefer G to show true % formatting, use:
+   - G10: = $F10 / $F$36 and format as % (instead of multiplying by 100).
+
+Why this fixes it (short)
+- The / in F24 produced a tiny number instead of the deposit amount, so the total weighted deposit (F36) was too small and every market share (G) and squared-share (H) derived from it were wrong. Correcting F24 (or using the IF rule) restores the correct totals and market-share calculations.

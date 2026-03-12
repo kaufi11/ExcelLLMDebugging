@@ -1,0 +1,21 @@
+Findings — key error + clean-up recommendations
+
+1) Faulty cell: O95
+- Error type: Wrong cell reference / calculation error
+- Explanation: O95 is =SUM(E95-M95). There is no value in E95 (the allocation is in D95), so the underspend is calculated from the wrong cell and returns an incorrect result.
+- Fix: change to =D95-M95
+- Why: you want "allocation minus actual/forecast" (D95 − M95). Using E95 is a typo; SUM(...) around a single subtraction is unnecessary.
+
+2) Style / potential risk issues (not currently producing wrong numbers but error-prone)
+- Many cells use SUM with arithmetic inside, e.g. =SUM(D12-M12) or =SUM(C12+C26+...). These evaluate correctly, but:
+  - They are harder to read and make copy/paste errors more likely.
+  - They can mask typos like the one in O95.
+- Recommendation: replace these with explicit, clear formulas:
+  - For a simple difference: use =D12-M12 (not SUM).
+  - To add a list of separate subtotals use SUM with commas or a range: =SUM(C12,C26,C31,...) or better, if the subtotals are contiguous, use =SUM(range).
+- Why: clearer formulas reduce mistakes and simplify auditing.
+
+3) Quick check suggestion
+- Scan totals for any formula that might include its own cell (e.g. =SUM(A1:A5) placed in A5). I did not find a self-reference, but it’s a common source of circular/overcounting errors—good to confirm when tidying formulas.
+
+If you want, I can generate a corrected version of the workbook formulas (replace the specific bad reference O95 and rewrite the “SUM(...)” style formulas to clearer forms). Which approach do you prefer?

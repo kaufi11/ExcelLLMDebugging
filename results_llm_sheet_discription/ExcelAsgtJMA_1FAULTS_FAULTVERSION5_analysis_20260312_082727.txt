@@ -1,0 +1,32 @@
+Findings — errors
+1. Student total formulas use the wrong range: C9, C10, etc. are =SUM(D9:CC9) (and similar). Column CC is far past the actual scores (D:I).
+   - Effect: If there are any values beyond column I, they would be included; otherwise it usually returns the same sum but is wrong practice and can hide future errors.
+
+2. One student row uses COUNT instead of SUM: C19 =COUNT(D19:CC19).
+   - Effect: COUNT returns the number of numeric cells (6), not the sum of points. B19 (grade %) becomes 6/100 = 6% instead of 88/100 = 88%.
+
+3. Percentage formulas wrap the division in SUM: B9 =SUM(C9/$C$6).
+   - Effect: Harmless (SUM of a single value returns the same), but confusing / unnecessary.
+
+Corrections (simple steps)
+1. Fix student totals:
+   - Change the formula in C9 to: =SUM(D9:I9)
+   - Then drag or copy C9 down through C24 to update all student totals.
+
+2. Fix the specific COUNT error:
+   - If you fix step 1 by copying down, C19 will become =SUM(D19:I19). If you prefer to fix just C19, set C19 =SUM(D19:I19).
+
+3. Clean up percentage formulas:
+   - Change B9 to: =C9/$C$6
+   - Then copy B9 down through B24.
+   - Format column B as Percentage (e.g., 2 decimal places) for readability.
+
+Why these fixes work (short)
+- SUM(D9:I9) correctly adds only the six assignment columns for each student.
+- COUNT counts cells, not values — SUM is the correct function to add points.
+- Removing the unnecessary SUM around the division makes the intent clear; formatting as Percentage shows the grade as 0–100%.
+
+Optional improvement
+- Lock the denominator as you already have ($C$6) — good. Consider using ROUND(C9/$C$6,3) if you want consistent decimal places before formatting.
+
+If you want, I can provide the exact formulas to paste into each cell or a quick macro to fix all rows at once.

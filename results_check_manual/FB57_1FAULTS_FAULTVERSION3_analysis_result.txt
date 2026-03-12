@@ -1,0 +1,54 @@
+I reviewed the workbook formulas on the sheets you supplied and found a number of formula errors, probable typos, and inconsistencies you should check. I grouped issues by type and gave precise cell locations and suggested fixes.
+
+1) Clear formula typo — immediate fix recommended
+- Sheet "CWS per-recipient", cell C14
+  - Formula: =('College Work-Study'!C16*1880)/'College Work-Study'!T16
+  - Problem: multiplier 1880 is inconsistent with every other per-recipient formula which uses *1000 (funding values are in thousands, so code multiplies by 1000 to get dollars). This will inflate the per‑recipient value by factor 1.88.
+  - Suggestion: change to =('College Work-Study'!C16*1000)/'College Work-Study'!T16 (or otherwise confirm the correct conversion factor).
+
+2) #DIV/0! results caused by missing recipient counts (expected but should be handled)
+- Many cells in the per-recipient sheets (CWS per-recipient, Perkins per-recipient, SEOG per-recipient) show #DIV/0! for earlier years. Examples:
+  - "CWS per-recipient": row A25..A62, columns B..O frequently show #DIV/0! (formulas divide by 'College Work-Study'!S27..S62 which are blank/zero).
+  - "Perkins per-recipient": many B..O cells #DIV/0! (divide by 'Perkins Loans'!S27..S62).
+  - "SEOG per-recipient": similar #DIV/0! where recipients are missing.
+- Cause: denominator (recipients cells in the source sheets) is blank or zero.
+- Suggestion:
+  - If blank recipients are expected, wrap the division in an error-safe test: e.g. =IFERROR(('Sheet'!Funding*1000)/'Sheet'!Recipients, "") or =IF('Sheet'!Recipients>0, ('Sheet'!Funding*1000)/'Sheet'!Recipients, NA()) so you avoid #DIV/0! or display a clearer message.
+
+3) Mixed unit handling / inconsistent application of /1000
+- Some funding formulas convert a raw dollar number by dividing by 1000 inside the cell (e.g. "College Work-Study" E5 uses =635073450/1000-13962.235-...), while other rows already hold a value in thousands (e.g. I5 uses =759845.146-14372.137). This inconsistent handling of units is fragile and easy to break if source data format changes.
+  - Sheets/Cells (examples):
+    - "College Work-Study" E5: =635073450/1000-13962.235-346.394-386.213-47.105
+    - "College Work-Study" I5: =759845.146-14372.137
+    - "Perkins Loans" E5: =805190858/1000-5655.703-0-0-6.8 (explicit /1000)
+- Suggestion:
+  - Decide on one canonical unit for the funding columns (thousands or raw dollars) and make all source formulas consistent. If you store "Funding" in thousands, remove internal /1000 conversions; if you store raw dollars, always divide by 1000 when displaying thousands. Add a comment in the sheet documenting the unit convention.
+
+4) Odd/hard‑to‑read formula fragments (harmless but noisy)
+- Several formulas include unnecessary “-0” or subtractions by zero (e.g. "College Work-Study" L5: =757276.055-13676.556-437.342-354.399-0). Harmless mathematically but they look like copied formulas with placeholders; consider cleaning for readability.
+- Some rounding formulas embed a /1000 expression with large integers, e.g. =ROUND(11901029/1000,0). Functionally ok but inconsistent style; again use a consistent convention.
+
+5) Interpolation / midpoint formulas — verify intent
+- Many cells compute midpoints using ((N-L)/2)+L (e.g. M5 and many M-row entries). For a few places earlier in sheet the midpoint expression is between different columns (e.g. "Delaware" C12 uses =((D12-B12)/2)+B12). These appear intentional (mid‑years) but check that the midpoint columns are the correct ones for the periods you want to interpolate.
+- Suggestion: verify all midpoint formulas reference the intended columns.
+
+6) Some formulas that look inconsistent in structure
+- A couple of formulas mix decimal-thousand formats vs large integer formats (see point 3). Example calling out to review:
+  - "College Work-Study" I5 uses =759845.146-14372.137 (look at data source to ensure that 759845.146 is really in thousands, not a raw-dollar number that should have been /1000).
+- Suggestion: confirm original data sources for those years.
+
+7) Aggregation ranges and SUM formulas — check coverage
+- Totals like B6 = SUM(B10:B25) look fine for SREB states. Other totals use SUM(P10:P62) or SUM(R10:R62) — confirm the range endpoints include all intended state rows (some state rows are 10:25 for SREB, 10:62 for full list). I didn’t find an obvious off-by-1, but because the sheet interleaves blank rows and two blocks (SREB vs rest), confirm the ranges are what you expect.
+
+8) Suggested general improvements
+- Use IFERROR or IF(denominator>0, ... , "") on per-recipient formulas to avoid visible #DIV/0! in reports.
+- Standardize units (thousands vs dollars) and remove ad-hoc /1000 in individual formulas — keep a single conversion step close to the data import.
+- Add short comments or a legend in the sheet clarifying whether funding numbers are "thousands" and whether per-recipient formulas multiply by 1000 intentionally.
+- Do a quick sweep for other numeric typos: I flagged the blatant 1880 multiplier (C14 on "CWS per-recipient") as the only clear numeric typo; other inconsistencies are more about units/missing data and need validation against the original data source.
+
+If you want I can:
+- produce a list of all cells currently showing #DIV/0! so you can decide how to handle them;
+- generate corrected formulas for the per-recipient sheets (wrap IFERROR or IF tests), and optionally patch the Louisiana C14 typo;
+- scan the funding columns for mixed use of /1000 and produce a report of rows that use /1000 vs rows that use already‑divided numbers to help standardize units.
+
+Which follow-up would you like?

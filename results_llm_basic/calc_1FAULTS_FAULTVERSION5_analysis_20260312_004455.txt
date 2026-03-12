@@ -1,0 +1,43 @@
+I reviewed the three sheets and found the problems and simple fixes. Short, clear fixes below.
+
+1) Sample Company — incorrect Waste/Scrap cell
+- Problem: C23 contains a hard-coded value (=3) instead of the intended formula, so the Total Savings (C37) is wrong.
+- Fix: Replace C23 with the correct formula:
+  =C9 * B24 * C11
+- Why: This computes Waste/Scrap consistently like the other lines (value × percent × duty).
+
+2) Text Only sheet — key inputs are hard-coded instead of linked
+- Problem: C5, C6, C7, C8 are plain values (1, 0.1, 0.075, 0.12) instead of referencing the live inputs on "Your Company". That means the print sheet won't reflect user changes.
+- Fix: change these to links:
+  C5 = 'Your Company'!C14
+  C6 = 'Your Company'!C15
+  C7 = 'Your Company'!C16
+  C8 = 'Your Company'!C17
+- Why: keeps the print-only sheet synchronized with the live input sheet.
+
+3) Division-by-zero / robustness risk on Your Company Cash Flow
+- Problem: C22 formula =C13/C14*C15*C17 will error if Inventory Turnovers (C14) = 0.
+- Fix: make it safe:
+  =IF(C14=0, 0, C13/C14*C15*C17)
+  (or use IFERROR: =IFERROR(C13/C14*C15*C17, 0))
+- Why: avoids #DIV/0! and gives a sensible 0 if turnovers are zero.
+
+4) Input-format risk for percentage cells (prevent user errors)
+- Problem: If users enter percents as whole numbers (e.g., 5 instead of 0.05 or 5%), results will be 100× too large.
+- Fixes (pick one or both):
+  - Apply Percentage number format to B25, B28, B31, B34, B37 and to the Sample sheet percentage cells.
+  - Add Data Validation: Allow Decimal between 0 and 1 (or Percentage between 0% and 100%).
+- Why: ensures correct calculation scale.
+
+Optional cleanups (not required but recommended)
+- In Text Only sheet, instead of pulling a single cell for Inverted Duty and Total, you can recalc there from linked inputs for full independence:
+  C30 = 'Your Company'!C39 (ok as-is) or reconstruct formula using the linked percentages.
+- Fix spelling "Obselete" → "Obsolete" for clarity.
+
+Summary checklist to apply now
+- Update Sample!C23 → =C9*B24*C11
+- Update TextOnly!C5:C8 to reference 'Your Company' as shown above
+- Update Your Company!C22 to IF(C14=0,0,...) (or IFERROR)
+- Format and/or add data validation to percentage input cells
+
+Tell me if you want me to produce the exact formulas for any other cells or a version that includes IFERROR everywhere.

@@ -1,0 +1,46 @@
+I reviewed both worksheets and found a few clear formula errors that will cause wrong totals and % allocations. I’ll list each error, why it’s wrong, and the exact fix.
+
+1) MAIN / root cause — total earnings summed from the wrong column
+- Error: On Sheet "STEP 1 OF 2" cell E22 contains =SUM(E11:E20)
+- Problem: the actual dollar amounts for jobs appear to be in column D, not column E. Summing E11:E20 returns zero or garbage and breaks every formula that uses that total.
+- Fix: Change E22 to =SUM(D11:D20)
+- Then update any cells that reference the incorrect total (see next item).
+
+2) Dependent cell on STEP 2 uses the wrong reference for total earnings
+- Error: On Sheet "STEP 2 OF 2" cell H6 is ='STEP 1 OF 2'!E22
+- Problem: H6 becomes wrong because E22 was summing the wrong column.
+- Fix: Change H6 to ='STEP 1 OF 2'!D22 (or to ='STEP 1 OF 2'!E22 only after you corrected E22 to sum D11:D20 — better to point H6 at the actual total cell that shows the dollar total, i.e. D22 if you keep totals in column D).
+
+3) SAVING % formula references the wrong cell (copy/paste error)
+- Error: On "STEP 2 OF 2" cell F10 =H8/H6
+- Problem: F10 is supposed to compute saving% = H10 / H6, but it points to H8 (giving) so saving percent will equal giving percent.
+- Fix: Change F10 to =H10/H6
+
+4) GIVING total misses one row
+- Error: On "STEP 1 OF 2" cell E33 =SUM(E29:E30)
+- Problem: That sums only rows 29–30 but your giving area has three lines (29:31). Row 31 is omitted.
+- Fix: Change E33 to =SUM(E29:E31)
+
+5) Use of SUM with a plus sign (poor form)
+- Examples: I33 =SUM(G32+I32) and M33 =SUM(K32+M32)
+- Problem: SUM(G32+I32) works but is misleading. It evaluates G32+I32 then SUM of that single value — better to use a clearer form.
+- Fix (recommended): Replace with =G32+I32 or =SUM(G32,I32). Do the same for M33: =K32+M32 or =SUM(K32,M32)
+
+6) Minor / optional cleanup suggestions
+- Check any other formulas that reference 'STEP 1 OF 2'!E22 and update them to point to the corrected total cell (D22 or the cell you decide is the canonical total).
+- Where formulas use SUM(range) for a single cell (e.g., E43 =SUM(E42)), you can replace with =E42 for clarity, though functionally it’s fine.
+
+Summary of the exact changes to make now
+- On STEP 1 OF 2:
+  - E22 -> =SUM(D11:D20)
+  - E33 -> =SUM(E29:E31)
+  - Replace I33: =G32+I32 (or =SUM(G32,I32))
+  - Replace M33: =K32+M32 (or =SUM(K32,M32))
+- On STEP 2 OF 2:
+  - H6 -> ='STEP 1 OF 2'!D22 (or point to wherever your correct earnings total ends up)
+  - F10 -> =H10/H6
+
+After these fixes:
+- The earnings total will be correct, H6 will be the correct base for 100%, percentages will compute properly, and saving/giving split will be fixed.
+
+If you want, paste the current formulas in D22/E22/H6/F10 and I’ll give the exact corrected text to paste into each cell.

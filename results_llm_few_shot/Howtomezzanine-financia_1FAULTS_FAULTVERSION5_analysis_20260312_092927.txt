@@ -1,0 +1,32 @@
+I reviewed the Mezzanine financial model and the Rules sheet. I found a few clear formula errors that will give wrong results or inconsistent totals. Below are the faulty cells, the problem, a simple corrected formula for each, and a one-line explanation.
+
+1) Fault: L14
+- Problem: L14 = $J14/265 (typo)
+- Fix: L14 = J14/12
+- Why: L-column is "desk/month" so it must divide the annual per-desk amount (J14) by 12 months, not 265.
+
+2) Fault: C37
+- Problem: C37 = SUM(C12:C35)*0.9 (incorrect multiplier / inconsistent with other columns)
+- Fix: C37 = C29 + SUM(C31:C35)  (or simply =SUM(C12:C35) if you want the plain total of rows 12–35)
+- Why: Other columns calculate TOTAL CHARGE as the sum of the base rows (12–27) plus rows 31–35. The *0.9 multiplier is incorrect here and produces a wrong base total.
+
+3) Fault: F37
+- Problem: F37 = C37 + SUMPRODUCT(C12:C35,F12:F35) (mixes up an already-wrong C37 and double-counts)
+- Fix: F37 = SUM(C12:C35) + SUMPRODUCT(C12:C35, F12:F35)
+- Why: If you want "total including markups", add the base total (SUM of amounts) plus the SUMPRODUCT of amounts × their markup %. The existing formula starts from the wrong C37 and double-counts/misallocates.
+
+4) Fault: B85 (NPV formula)
+- Problem: Long hard-coded IF list includes an 11th period and is fragile: the last IF uses IF($C$65<11,0,$F$80) and the whole approach is hard to maintain.
+- Fix (practical): Build a short helper range of yearly cashflows and use NPV on that range. Example:
+  - Put annual operating profit (F80) repeated down in, say, cells P1:P10 for the maximum years, then
+  - B85 = NPV($C$69, P1:INDEX(P1:P10, $C$65)) - $F$76
+- Why: The current manual IF chain is error-prone and includes an extra period; using a helper range or dynamic INDEX makes the NPV calculation accurate and easy to maintain.
+
+Other notes / quick checks
+- There are many absolute references ($ signs) which are fine, but keep consistent anchoring if you copy formulas.
+- After fixing C37/F37 you must also check and refresh all dependent cells (F78, B78, F79, B82, B90, B92, B95, etc.) because they reference those totals and will change.
+- Small cosmetic: remove redundant leading plus signs (+) in formulas (they don't break anything but are unnecessary).
+
+If you want, I can:
+- Provide an updated list of exact cell formulas ready to paste in, or
+- Create the helper cashflow range and show the precise final NPV formula to paste into B85. Which would you prefer?

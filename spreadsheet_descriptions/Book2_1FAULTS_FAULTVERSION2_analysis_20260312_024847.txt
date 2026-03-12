@@ -1,0 +1,22 @@
+Spreadsheet: sheet "total (2)"
+
+Layout and contents (concise)
+- Header: B1 = "Homework". Row 2 labels the homework columns: B2 through K2 = 2,3,...,11. L2 = "total", M2 = "average".
+- Column A: student identifiers (A3:A45 contain ID numbers for each student).
+- Columns B:K: individual homework scores (one column per assignment). Many cells are blank/missing in some student rows.
+- Column L (per-student Total): L3:L45 each contain =SUM(Bx:Kx) — sums all 10 homework columns (treats blanks as zero).
+- Column M (per-student Average): M3:M45 mostly contain =Lx/10 (average assuming 10 assignments). Exception: M10 = L10*10 (likely a typo/error).
+- Aggregate row: A47 = "average". B47:K47, L47, M47 contain column-wise AVERAGE formulas over rows 3:45 (e.g., B47 = AVERAGE(B3:B45), etc.), computing mean per assignment, mean total, mean of per-student averages.
+
+Key observations / issues
+- Missing scores: Several rows have blanks in some homework columns (e.g., E4 and J4 blank; B25 blank; many others). SUM in L treats blanks as zero; dividing by 10 in M therefore underestimates averages for students with missing entries.
+- Formula error: M10 uses L10*10 instead of L10/10.
+- Inconsistent averaging logic: per-student averages are computed as total/10 regardless of missing cells. If intended to average only existing scores, use Lx/COUNT(Bx:Kx) or AVERAGE(Bx:Kx).
+- Aggregate AVERAGE formulas (row 47) average the totals/averages across rows 3:45 — they will include zeros where scores are missing (affecting the assignment means).
+
+Suggested small fixes (optional)
+- Fix M10 to =L10/10.
+- Use per-row =IF(COUNT(Bx:Kx)=0,"",Lx/COUNT(Bx:Kx)) or =AVERAGE(Bx:Kx) to compute student averages that ignore missing scores.
+- Consider replacing Lx =SUM(Bx:Kx) with Lx =SUM(Bx:Kx) but keep in mind how you want blanks treated when computing averages.
+
+If you want, I can: (a) list the rows that have missing scores, (b) produce corrected formulas for M3:M45, or (c) compute sample totals/averages. Which would you like?

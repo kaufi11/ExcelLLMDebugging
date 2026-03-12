@@ -1,0 +1,50 @@
+I checked the workbook formulas you included and found one clear formula bug plus several inconsistent/reference issues you should review. Summary (by sheet) with exact cells, why they are wrong or fragile, and recommended fixes:
+
+1) Sheet "Q1" (main DCF / IRR table)
+- Error (definite typo)
+  - Cell F5 formula = "$F$2/(83+$J5)^$F$83"
+  - Why: "83" and "$F$83" are almost certainly accidental; they do not match the pattern used in the other columns (should be dividing by (1+rate) raised to the period). This is a broken reference/typo.
+  - Fix: Replace with the consistent formula used in the row, e.g.
+    = $F$2 / (1 + $J5) ^ $F$1
+    (or, if you use row-headers for periods in row 1, ensure $F$1 contains the correct period number).
+  - Impact: currently this cell may evaluate oddly or coincidentally match the expected number; it is not reliable.
+
+- Fragile / inconsistent references (review)
+  - D4 formula uses =$D$2/(1+$J4)^$D$1 while E4/F4/G4 use $E$1, $F$1, $G$1 respectively. That is OK if D1 actually contains the period for column D (likely 0). If D1 is blank or not the intended period, the discounting will be wrong. Make sure row‑1 contains the correct period numbers for every cashflow column (D1..G1). Consider making the period row explicit for column C as well if needed.
+  - Many discount formulas in column C (and elsewhere) use exponent references like ^C6 where the C column's period cell (C6) is blank. Excel treats blank as 0 in such a power, so it effectively discounts by (1+rate)^0 = 1 (time 0). That works but is fragile and not explicit; I recommend placing explicit period numbers in every period column (C6..G6) or change formulas to use constants (e.g., ^0 for time 0) to avoid ambiguity.
+
+- IRR notes
+  - Cell E48 (=IRR(D2:G2)) and other IRR uses are fine. The workbook correctly documents that multiple IRRs or no IRR can occur when signs of cashflows change more than once; IRR with a particular guess can return #N/A — that is expected behavior, not a formula error.
+
+2) Sheet "Q1 a-b, graph"
+- Formulas look consistent and correct (NPV formulas). One minor inconsistency: some rows refer to A17 even when A17 may be blank; again Excel uses blank->0 for rate which yields a result but it’s better to ensure the rate column is filled for every row to avoid ambiguity.
+
+3) Sheet "Q1 c-d, additional info"
+- IRR(B2:E2,22%) returning #N/A is expected (no root with that guess). No formula error.
+
+4) Sheet "Q2" (no-debt, debt, depreciation scenarios)
+- Minor fragility / inconsistent references:
+  - Several discounting formulas use exponent references like ^C6 (C6 blank) or ^C22 / ^C65 where the period numbers are in D22..G22 etc. It works here because blank behaves as 0 or the referenced period cells exist for other columns, but it's fragile and non‑uniform. I recommend using a consistent period-row across all columns (include C6 with 0, C22 with 0, C42 with 0, C65 with 0, etc.), or reference the exact period cell for each column explicitly (e.g., D11 uses D6, E11 uses E6 — which is done in many places).
+  - Reused named/absolute references across blocks: many formulas in different blocks reference $C$17, $C$18 (loan and interest). That is OK provided those cells are intended to be the single definitions. If you intended separate loans/inputs per block, separate the input cells or use named ranges to prevent accidental cross-block coupling.
+
+- Specific good/bad checks:
+  - C39 = C49 / C38 (produces -100) — correct.
+  - C50 = C49 + C48 + C43 — this sums some blank cells in column C (works out to -200) but is fragile; consider making the component cells explicit.
+
+5) Sheet "Q3", "Q4", "Q5"
+- I could not find outright formula errors. Numeric formulas and ratios appear consistent. Example: Q3 C34 = AVERAGE(C28:E28) and subsequent PVGO math look coherent.
+
+Recommendations (actionable)
+- Fix the obvious typo:
+  - Q1!F5: change = $F$2/(83+$J5)^$F$83  ->  = $F$2 / (1 + $J5) ^ $F$1
+- Make period row explicit and consistent:
+  - Fill row 1 (or row used for period exponents) for every column used (C..G). Use those cells consistently in the discount power portions of formulas (e.g., use $D$1 in D-column formulas, $E$1 in E-column formulas, etc.).
+- Replace implicit blank-as-zero behavior with explicit 0 for time-0 exponents (e.g., where you now use ^C6 and C6 is blank, explicitly set C6=0). This will remove ambiguity and make the workbook more robust.
+- Consider naming key inputs (Loan, Interest rate, Tax rate, Discount rate, PeriodRow) and using named references rather than ad hoc absolute references. That reduces accidental cross-block coupling.
+- Scan for any other accidental pasted numbers (like that 83) — a quick Find for "83+" or "$F$83" will reveal similar mistakes if present.
+
+If you want, I can:
+- Open the workbook and replace the erroneous formula in Q1!F5 and then scan again for other accidental numeric literals (like the "83") and propose replacements.
+- Normalize the period row and update all discounting formulas to reference the correct period cells uniformly.
+
+Which would you like me to do?

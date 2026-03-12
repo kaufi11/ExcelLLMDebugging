@@ -1,0 +1,35 @@
+Summary of errors (short):
+1. Several "% Change" formulas divide by prior-year value (column F or L) that is zero → will cause #DIV/0 or incorrect display (Q1: F9=0 and F12=0).  
+2. Inconsistent sign: Q2 2003 H9 uses =-((D9-F9)/F9)*100 (extra leading minus) → wrong sign.  
+3. Hard-coded / inconsistent cells:
+   - Q3 2003-4 Qtr L11 contains =-80+40 instead of a simple numeric/reference (should be -40 or a proper reference).  
+   - Many H11 cells are hard-coded 0 even though D11/F11 change — inconsistent with other rows.  
+4. Percent-change formulas do not gracefully handle negative prior-year amounts (e.g., securitization is negative) — this can produce confusing signs.
+
+What to change (safe, consistent fixes):
+1. Replace raw percent-change formulas with a divide-by-zero-safe formula that also handles sign consistently. Example (use this pattern for H9, H12, H14, and the equivalent L-column percent cells):
+   =IF(F9=0,"", (D9-F9)/ABS(F9)*100)
+   - Explanation: returns blank when prior-year = 0 (avoids #DIV/0). Using ABS(F9) makes percentage based on the magnitude of the prior-year amount so changes versus negative prior amounts are clearer.
+   - Format the cell as Percentage (1 decimal or as desired).
+
+2. Fix the Q2 H9 sign error:
+   - Replace =-((D9-F9)/F9)*100 with the safe formula above, e.g. =IF(F9=0,"",(D9-F9)/ABS(F9)*100).
+
+3. Replace the literal arithmetic in Q3 2003-4 L11:
+   - If the intended prior-year number is -40, enter -40 (or reference the correct source cell). Do not leave =-80+40 — either value or a reference is clearer:
+     e.g. L11 = -40
+   - If that cell was meant to calculate from other worksheet cells, replace with proper references.
+
+4. Remove inconsistent hard-coded zeros in H11:
+   - Replace H11 = 0 with the same safe percent-change formula so the sheet is consistent:
+     =IF(F11=0,"",(D11-F11)/ABS(F11)*100)
+
+5. Apply the same safe formula pattern to every "% Change" cell that currently uses =+((D-F)/F)*100 (including H14 and any L-column % change cells). Also handle YTD percent-change formulas the same way (use the YTD prior-year cell as the denominator).
+
+Why these fixes:
+- The IF(...=0,"",...) prevents divide-by-zero errors and shows blank (or you can choose "N/M" or 0%) when no meaningful percent change exists.  
+- Using ABS on the denominator makes percent changes meaningful when the prior value is negative (otherwise you can get sign flips that are hard to read).  
+- Fixing the extra minus sign and the literal arithmetic cell eliminates incorrect signs and unexpected formula behavior.  
+- Making H11 dynamic instead of hard-coded keeps the sheet consistent and maintainable.
+
+If you want, I can provide the exact cell-by-cell replacement formulas for every affected cell in each sheet (I can list them all). Which do you prefer — a full list of updated formulas, or shall I patch only the critical cells (Q1 divide-by-zero and Q2 sign and the L11 literal)?

@@ -1,0 +1,32 @@
+Kurz und knapp — ich habe die wichtigsten Fehler gefunden und sage, wie du sie behebst.
+
+Fehler 1 — harte Zahl statt Zellbezug
+- Fundstelle: O11 =E11+970 (festes 970)
+- Problem: wenn J11 sich ändert, wird O11 nicht aktualisiert; Inkonsistenz mit der übrigen Struktur (O = E + J).
+- Lösung (Formel): =E11+J11
+- Erklärung: O11 soll das Q1‑LPG (E11) plus Q2‑LPG (J11) sein. Verwende den Zellbezug statt einer harten Zahl.
+
+Fehler 2 — fehlende Q4‑Werte in Spalte AG → falsche AK (LPG kumuliert) und Summen
+- Symptome: in mehreren Zeilen ist AG leer (z.B. AG6, AG7, AG9 …). AKn lautet =AGn+Yn und liefert dadurch unvollständige/fehlende Werte; Summen wie AK15 =SUMME(AK6:AK14) sind deshalb falsch.
+- Sofort‑Lösung 1 (Datenfehler beheben): Trage die fehlenden Q4‑LPG‑Werte in die entsprechenden AG‑Zellen ein.
+- Wenn du die Zellen nicht sofort füllen kannst, mache die Formeln robust gegen leere Zellen:
+  - Beispiel (für AK6, dann runterkopieren): =WENN(ISTLEER(AG6);Y6;AG6+Y6)
+  - Kürzer mit Fehlerbehandlung: =WENNFEHLER(AG6+Y6;Y6)
+- Erklärung: so wird ein fehlender AG‑Wert als 0 behandelt (AK = Y), und kumulierte Summen bleiben korrekt berechenbar, bis die echten AG‑Daten vorliegen.
+
+Fehler 3 — mögliche Text-/Fehlerwerte in AG verursachen Fehler in AK
+- Symptome: wenn AG statt leer Text (z. B. “-” oder “n.a.”) enthält, erzeugt AG+Y einen Fehler.
+- Robustere Formel (für AKn): =WENN(ISTZAHL(AG6);AG6+Y6;Y6)
+- Erklärung: nur addiere AG, wenn tatsächlich eine Zahl da ist.
+
+Hilfsprüfung — fehlende AG‑Zellen schnell finden
+- Formel, die die Anzahl leerer Zellen in AG6:AG132 (Beispielbereich) zählt:
+  - =ANZAHLLEEREZELLEN(AG6:AG132)
+- Erklärung: so siehst du schnell, wie viele Q4‑LPG‑Werte fehlen.
+
+Kurz zusammengefasst (Formeln in Excel‑Deutsch):
+- Korrigiere O11: =E11+J11
+- Robustere AK (Beispiel Zelle 6): =WENNFEHLER(AG6+Y6;Y6)  oder =WENN(ISTLEER(AG6);Y6;AG6+Y6)
+- Fehlende Zellen zählen: =ANZAHLLEEREZELLEN(AG6:AG132)
+
+Wenn du willst, kann ich alle betroffenen Zeilen (z. B. gesamte Construction‑Gruppe oder das ganze Blatt) automatisch durchgehen und die fehlerhaften Formeln vorschlagen bzw. eine Liste der leeren AG‑Zellen erstellen.

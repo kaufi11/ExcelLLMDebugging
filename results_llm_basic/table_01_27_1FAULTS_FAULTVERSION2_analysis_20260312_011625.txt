@@ -1,0 +1,25 @@
+I found the main errors and a few consistency problems. Short, clear fixes below.
+
+1) Wrong cell reference in D6 (Urban deficient, 1992)
+- Error: D6 contains =607+D8
+- Why wrong: it should add the two urban-deficient components for 1992 (D7 and D8). Using 607 is a stray constant and makes D6 (and any totals that use it) incorrect.
+- Fix: replace with =D7+D8 (or =SUM(D7:D8))
+
+2) Inconsistent/odd formulas for the "All deficient bridges" column totals (L12 and M12)
+- Current: L12 = SUM(L13:L14) and M12 = SUM(M13:M14)
+- Why problematic: everywhere else the pattern is All-deficient = Urban-deficient + Rural-deficient (B12 = B6+B9 etc). L13 and L14 are themselves derived values (L13 = L10+L7, L14 = L11+L8), so SUM(L13:L14) produces the same numeric result — but the formula is inconsistent with other columns and harder to audit.
+- Fix (recommended for clarity & consistency): set L12 = L6+L9 (or =SUM(L6:L9) but preferably =SUM(L6,L9)) and M12 = M6+M9 (or =SUM(M6,M9)).
+
+3) Hard-coded totals instead of formulas (potential risk)
+- Example: cells like B13, C13, B14, etc. contain values rather than formulas (e.g., B13 should be =B7+B10).
+- Why fix: hard-coded totals can get out of sync if source rows change.
+- Fix (recommended): replace these totals with formulas so every column is computed the same way. Example:
+  - B13 = B7+B10 (or =SUM(B7,B10))
+  - B14 = B8+B11
+  - Fill these formulas across the row for all years.
+
+Additional suggestions
+- Use SUM ranges for clarity: e.g., =SUM(B7:B8) for urban-deficient total, =SUM(B10:B11) for rural-deficient total, =SUM(B6,B9) or =B6+B9 for all-deficient.
+- After fixing D6, re-check dependent totals (D12, D3 if applicable) to confirm they update correctly.
+
+If you want, I can provide the exact corrected formulas for every affected cell and a short macro or fill instructions to apply them across the whole table.

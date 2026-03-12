@@ -1,0 +1,73 @@
+High-level summary
+- Workbook contains 6 main sheets: Municipal, Non Profit, County, Rehab, HOME, AHTF. Each sheet uses the same column layout: A Applicant, B Project, C Code, D Description, E Request (numeric requested funding), F Recommend (recommended funding or formula).
+- Each program sheet totals requested and recommended amounts (SUM formulas) and the County sheet aggregates cross-sheet totals and an overall "Total Requested".
+
+Per-sheet notes (concise)
+- Municipal
+  - Rows 2–21: municipal project requests. E22 = SUM(E2:E21) and F22 = SUM(F2:F21).
+  - Many F cells use either direct formulas (e.g., F2 = E2) or hard-coded recommended amounts (several rows show 190000). Several F cells are blank.
+  - Notable potential error: F5 (Hatboro Borough recommend) has formula =E6 (references Hatfield request) — likely incorrect.
+  - Biggest municipal requests: Upper Dublin E18 = 750,741.85; New Hanover E11 = 519,812.9; West Conshohocken E20 = 544,539.5.
+
+- Non Profit
+  - Rows 2–21: nonprofit project requests. E22 = SUM(E2:E21) and F22 = SUM(F2:F21).
+  - Additional ESG subsection at rows 26–28: Salvation Army of Norristown (E27 = 369,500; F27 = 143,000) and totals E28/F28 = SUM(E27)/SUM(F27).
+  - Many nonprofits have F equal to E (funded as requested) while several have F = 0 or reduced amounts.
+  - Large nonprofit requests: Salvation Army - Pottstown E19 = 278,636; Montgomery County Norristown Public Library E11 = 115,000.
+
+- County
+  - Rows include County program lines and aggregation rows.
+  - E6 (County Total) = SUM(E3:E5); F6 = SUM(F3:F5).
+  - Cross-sheet links: D9/E9 Total Municipal Applications E9 = Municipal!E22; D10/E10 Total Non-Profit Applications E10 = 'Non Profit'!E22; D11/E11 Total Non-Profit Rehabilitation Applications E11 = Rehab!E8; D12/E12 Total County Applications E12 = E6; D13/E13 Total Requested E13 = SUM(E9:E12).
+
+- Rehab
+  - Rehab project list (E2:E7). E8 = SUM(E2:E7); F8 = SUM(F2:F7).
+  - Rehab is a source for County D11 (see above).
+
+- HOME
+  - HOME projects (E2:E7). E8 = SUM(E2:E7); F8 = SUM(F2:F7).
+  - County HOME totals: E11 = SUM(E8:E10) (includes County administration E10) and F11 = SUM(F8:F10).
+  - D11 on AHTF sheet references HOME!E11 for "Total HOME Funding Requested".
+
+- AHTF
+  - AHTF project list (E2:E13). E14 = SUM(E2:E13) (total AHTF requested).
+  - F14 = SUM(F3:F13) — note this excludes F2, which is inconsistent with E14’s range.
+  - Continuum of Care match (A16): E16 and F16 set as =2432890*0.15 (15% of a hard-coded base 2,432,890) rather than referencing a cell.
+  - E18 = SUM(E14:E17); F18 = SUM(F14:F17).
+  - Aggregation: D19/E19 = HOME!E11; D20/E20 = SUM(E18:E19) (Total HOME/AHTF).
+
+Key formulas & cross-sheet links
+- Per-sheet totals: typical pattern E_total = SUM(Erows), F_total = SUM(Frows).
+- County sheet aggregates municipal, nonprofit, rehab and county totals via direct references:
+  - County!E9 = Municipal!E22
+  - County!E10 = 'Non Profit'!E22
+  - County!E11 = Rehab!E8
+  - County!E12 = County!E6
+  - County!E13 = SUM(E9:E12)
+- HOME/AHTF cross-links:
+  - AHTF!E19 = HOME!E11
+  - AHTF!E20 = SUM(E18:E19)
+
+Data quality / formula issues to check (recommended)
+- Municipal F5 references E6 (likely wrong); review formulas copying errors.
+- AHTF F14 sums F3:F13 but E14 sums E2:E13 — ranges are inconsistent (F2 excluded).
+- Some Recommend cells are blank or contain text (e.g., AHTF F10 = "Pending Feasibility Study") — breaks numeric summing or requires special handling.
+- Continuum of Care match uses a hard-coded multiplier against a literal number (2432890*0.15) instead of referencing the source value; consider linking to the source cell.
+- Several F columns use formulas like =E# (auto-recommend = requested) while others are hard-coded; verify intended policy.
+
+Notable high-value requests (top examples)
+- AHTF Redevelopment Authority — May Street Crossing: E10 = 1,700,000
+- AHTF Canus Corporation — New Construction: E2 = 1,000,000
+- Municipal Upper Dublin Township: E18 = 750,741.85
+- AHTF Ubiquity Social Services: E12 = 218,934
+- Municipal New Hanover Township: E11 = 519,812.9
+- County program Administration: County!E4 = 600,000; Housing Rehab County!E3 = 500,862
+
+Overall layout/flow
+- Standardized applicant/project rows per program area; columns A–F consistent.
+- Totals at bottom of each sheet; County and AHTF sheets perform cross-sheet aggregation to produce system-wide tallies.
+- Workbook is structured for multi-program budgeting with recommended funding tracked alongside requests.
+
+If you want, I can:
+- Compute current sheet totals (sum numeric E and F values) and produce a small summary table of totals and discrepancies.
+- Produce a list of formula errors/inconsistencies with exact cell references to fix.

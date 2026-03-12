@@ -1,0 +1,56 @@
+Summary of the errors I found (short & clear)
+1. Missing/misaligned product cells (data-entry error)
+   - Many province rows have a missing product cell (for example row 6: E6 is absent but C6, D6 and F6 are present). In the Q4 block some rows have AG blank while AK uses AG (e.g. AK6 = AG6 + Y6). This means totals and cumulative totals silently drop that product (treated as zero) → under‑reporting.
+2. A wrong literal in a formula (typo)
+   - O32 is written as =526+J32. That is wrong: it should add the LPG Q1 cell (E32) to the Q2 LPG (J32). The literal 526 breaks the cumulative chain and produces a wrong value.
+3. Inconsistent use of constants instead of cell references (fragile formulas)
+   - Some rows use formulas like =44762024+2009667 instead of summing the appropriate cells. This is fragile (won’t update if source cells change) and can cause errors when formulas are copied or audited.
+4. Long manual sums for final annual totals (risk of omission)
+   - AI133 etc are sums written as AI15+AI25+... rather than a simple SUM(range). This risks missing a category row if rows are added/removed.
+
+Why these matter
+- Missing or mis‑placed cell values cause Q totals and cumulative totals to be wrong.
+- Literal numbers in formulas or wrong references propagate incorrect numbers into category totals and the Grand Total.
+- Fragile formulas make the workbook error-prone and hard to maintain.
+
+How to fix (step‑by‑step, simple)
+1. Fix the typo in row 32
+   - Change O32 from =526+J32 to =E32+J32.
+   - Why: O32 is cumulative LPG (Q1+Q2) and must add the Q1 LPG cell E32, not a hard-coded number.
+2. Correct missing / misaligned product cells
+   - Inspect rows where product columns are blank (mainly columns D, E, and the AE–AH block for Q4: AE = Diesel Q4, AF = Paraffin Q4, AG = LPG Q4, AH = Petrol Q4).
+   - Enter the correct missing values. If the true value is zero, enter 0 explicitly (better than leaving blank).
+   - Why: blank cells are treated as zero and will make cumulative totals inaccurate if data were omitted by mistake.
+3. Fix formulas that reference AG when AG is empty because data was shifted
+   - Confirm column mapping for the Q4 block is consistent (AE = Diesel, AF = Paraffin, AG = LPG, AH = Petrol). If values are shifted right/left for some rows, move them into the correct column.
+   - Where you cannot move data, change AKx formulas to use N() or IFERROR to avoid #VALUE, but best is to realign the data.
+   - Example correct pattern for Q4 cumulative product columns:
+     - AIx (Diesel cum after Q4) = W x + AE x  (or =AE x + W x)
+     - AJx (Paraffin cum after Q4) = X x + AF x
+     - AKx (LPG cum after Q4) = Y x + AG x
+     - ALx (Petrol cum after Q4) = Z x + AH x
+4. Replace hard-coded additions with cell references / SUMs
+   - Replace formulas like =44762024+2009667 with = cell1 + cell2 (or better: =SUM(range-of-cells)).
+   - Why: so formulas update automatically when values change.
+5. Simplify the Grand Total formulas
+   - Replace AI133 = AI15+AI25+... with AI133 = SUM(AI15:AI132) (adjust range to include only category totals).
+   - Do the same for AJ133/AK133/AL133.
+   - Why: safer and easier to maintain; avoids accidentally missing a subtotal.
+6. Audit for other literal-number formulas and ODD formulas
+   - Use Find (Ctrl+F) to search for "+[digit]" patterns or search for =*+* to find formulas that include numeric constants.
+   - Correct any you find to point to the proper cells.
+
+Optional safety improvements
+- Wrap cumulative additions with N() or IFERROR to force blanks to zero while validating data, e.g. =W6 + N(AE6) — but this only hides missing input; better to fill the real data.
+- Add conditional formatting to highlight blanks in product columns C:F, H:K, R:U, AE:AH, etc., so missing inputs are visible.
+
+What I would correct first (priority)
+1. Fix O32 (=E32+J32).
+2. Find and fill all blank product cells (columns E and AG appear commonly blank here).
+3. Change Grand Total sums to SUM(range).
+
+If you want, I can:
+- Produce a short list of all cells that appear to have incorrect formulas (I can scan and list every literal-number-in-formula and any formula that references non-existing/misplaced columns).
+- Provide the exact corrected formulas for a sample block (e.g. rows 6–15) so you can copy/paste.
+
+Which of those would you like next?

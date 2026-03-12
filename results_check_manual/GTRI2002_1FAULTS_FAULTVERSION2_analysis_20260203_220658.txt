@@ -1,0 +1,39 @@
+Summary (short): I found stray/misplaced values and a layout problem that will break sums and make the sheet unreliable. Fixing is quick.
+
+Problems found
+1) Stray values in the middle of the sheet (likely accidental)
+   - G20 = 8.449074 and H20 = 0.6381540899397388 sit inside the Releases table but do not belong to the table headers shown. They are out-of-place and will corrupt any SUMs that include a broad range (for example SUM(B20:O20) would include them).
+
+2) Table is split / non‑contiguous
+   - The Releases columns (B:E, total in F) and the Transfers columns (K:N, total in O) are separated by empty/unused columns (G:H) and a duplicate Year column (J). This layout invites wrong formulas (people often SUM across the whole row) and makes copying/structuring error-prone.
+
+3) Floating-point noise
+   - Numbers like 12.215321999999999 are just floating-point display artifacts. Not wrong mathematically, but messy visually.
+
+Quick fixes (exact steps)
+1) Remove the stray cells
+   - Select G20 and H20 and press Delete (or Cut and paste to the correct place if those numbers belong somewhere else).
+   - Verify no formulas depend on those cells (use Trace Dependents or Find references).
+
+2) Make ranges explicit (and correct formulas)
+   - For Total Releases (column F) make the formula explicit: Frow =SUM(Brow:Erow). Example F7: =SUM(B7:E7).
+   - For Transfers total (column O) explicitly: Orow =SUM(Krow:Nrow). Example O7: =SUM(K7:N7).
+   - If you want a combined figure (releases + transfers): use =F7+O7 (or =SUM(B7:E7,K7:N7)).
+
+3) Fix the layout to prevent future mistakes (recommended)
+   - Option A (best for reporting): move the Transfers block left so the whole table is contiguous (for example put K:N immediately after E). Remove the duplicate Year column (J) once you’ve moved data so each row has only one Year cell.
+   - Option B (less disruptive): keep layout but use named ranges (e.g., ReleasesRange, TransfersRange) or explicit column references in formulas so no SUM accidentally picks up stray columns.
+
+4) Clean up number display
+   - Apply a number format with fewer decimals (Format Cells → Number → 2 or 3 decimals) or wrap sums in ROUND: =ROUND(SUM(B7:E7),3).
+
+Why this fixes it (brief)
+- Deleting G20:H20 removes the accidental data that could be summed by mistake.
+- Using explicit SUM ranges prevents accidental inclusion of stray columns and ensures totals are always correct even if layout changes.
+- Making the table contiguous or using named ranges removes human error when copying or writing formulas.
+- Rounding/formatting cleans appearance and avoids confusing long floating-point decimals.
+
+If you want, I can:
+- Provide the exact corrected formulas for every row,
+- Give step‑by‑step instructions to move the Transfers columns so the entire table is contiguous,
+- Or produce a short VBA script to search for and clear stray numeric values outside the defined table areas. Which would you prefer?

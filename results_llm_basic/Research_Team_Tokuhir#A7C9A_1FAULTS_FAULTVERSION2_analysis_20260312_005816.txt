@@ -1,0 +1,24 @@
+Summary (what’s wrong)
+- A17 is wrong: it contains =679+1 so it shows 680 instead of continuing the list (should be 13). This breaks the whole sequence after that row.
+- A40 is a manual value (35) instead of a formula, so it may not follow the sequence.
+- There are a few places where formulas skip a row (e.g. A28 uses =A26+1 because A27 is blank). That is fragile: it can look OK now but will break if you insert/delete rows.
+
+Quick fixes (fastest)
+1. Fix A17: change its formula to =A16+1
+2. Fix A40: change it to =A39+1
+3. Refill column A consistently: put 1 in A3, put =A3+1 in A4 and drag/fill that formula down through the last row.
+
+Why this fixes it
+- A17 was hard-coded to 680 (679+1). Repointing it to the previous cell (A16) restores the sequential increment.
+- Making A40 a formula restores automatic continuation instead of a manual override.
+- Filling down from a single correct formula ensures every row increments from its immediate predecessor and avoids gaps or incorrect references.
+
+Safer alternative (more robust)
+- Use a row-based formula so numbering survives inserted header rows:
+  - In A3 use =ROW()-2 and copy down. (On row 3 this yields 1; copies keep correct sequence.)
+- Or, to skip empty rows automatically, use:
+  - In A3: =IF($B3="","",MAX($A$2:A2)+1) and copy down. This only numbers rows that have data in column B.
+
+Which to choose
+- Simple sheet, no frequent insertions: fill down (=Aprev+1) is fine.
+- If you insert header/blank rows often, use ROW()-2 or the IF/MAX pattern for robustness.

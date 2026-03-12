@@ -1,0 +1,39 @@
+I reviewed both sheets and found a few clear errors and one layout inconsistency that causes wrong totals. Summary first, then quick fixes and why.
+
+Main problems
+1) Wrong function in C24 on the "Formulas" sheet
+   - Error: C24 = COUNT(B21:B24)
+   - Why wrong: COUNT returns the number of numeric cells (a small integer), not the sum of the operating-expense lines. This makes operating income, tax and net income incorrect.
+   - Fix: change to SUM of the correct month column (see 2).
+
+2) Inconsistent column alignment (months vs. values)
+   - Symptom: Sales are in C17 and E17, but many operating-expense rows are in B21/D21 while totals are placed in C24/E24. Some formulas sum B?:B? or D?:D? instead of C?:C? and E?:E?.
+   - Why wrong: Values and totals need to be in the same month column. Right now some monthly items are one column left of where totals expect them, so SUM ranges are wrong (or use COUNT by mistake).
+   - Fix (choose one of two consistent solutions below):
+     Option A — Move expense cells into the same month columns as sales
+       - Move B21 → C21, B22 → C22, B23 → C23, B24 → C24 (August expenses).
+       - Move D21 → E21, D22 → E22, D23 → E23, D24 → E24 (September expenses).
+       - Then use C24 = SUM(C21:C24) and E24 = SUM(E21:E24).
+     Option B — Keep expenses where they are but adjust formulas to use those columns
+       - If you prefer expenses in B and D, then change C24 to =SUM(B21:B24) and E24 to =SUM(D21:D24). (Also move the operating-income formula references accordingly: C25 should subtract the same-column total.)
+   - I recommend Option A (put all month data in the same month columns: C for Aug, E for Sep) for clarity and to match sales in C17/E17.
+
+Other smaller/related fixes
+3) Replace accidental count/sum mistakes everywhere
+   - Ensure no other totals use COUNT where they should SUM (scan for COUNT on ranges that should total amounts).
+4) Make column references consistent for operating income and downstream rows
+   - After fixing columns, confirm C25 = C19 - C24 and E25 = E19 - E24; C26/E26 use those operating incomes for tax; C27/E27 net income follow.
+
+Why these fixes fix the problem
+- SUM vs COUNT: COUNT returns how many numeric cells exist (e.g., 3) rather than adding amounts. Replacing COUNT with SUM restores proper expense totals.
+- Consistent columns: every month must have its related inputs and totals in the same column; otherwise formulas reference the wrong numbers and all dependent calculations (COGS, gross margin, operating income, tax, net income) are wrong.
+
+Quick checklist you can apply now
+1. On the "Formulas" sheet change C24 from =COUNT(B21:B24) to =SUM(C21:C24) (after you move expense rows into column C), or =SUM(B21:B24) if you keep expenses in B.
+2. Make the same correction on the "Example" sheet if present (ensure C24 and E24 use SUM and the correct ranges).
+3. Move salaries/commission/rent/depreciation/insurance rows so they sit in the same month columns as sales (C for Aug, E for Sep), or adjust the SUM ranges to match wherever you keep them.
+4. Recalculate and verify C25/E25 (operating income), C26/E26 (tax), and C27/E27 (net income) change to sensible values.
+
+If you want, I can:
+- Give the exact formula strings to paste for each corrected cell (C17:E27 and C30:E34),
+- Or show step-by-step how to move the expense cells so the sheet is clean and consistent. Which do you prefer?

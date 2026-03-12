@@ -1,0 +1,49 @@
+Summary — main problems
+- Several cells on Ap1, Ap2 and Ap3 point to the wrong Rate! cells (off-by-one/shift errors). That makes the scoring pull the wrong rating values.
+- One cell (Ap3 L20) uses the wrong logical operator (<> instead of =) so its IF will not behave as intended.
+
+Faulty cells and fixes (short)
+
+Ap1
+- B19 — wrong formula. Change
+  from: =Rate!G16
+  to: =Rate!G14
+  Why: the Proficiency block should show Rate!G11..G15; B19 was pointing to the wrong description.
+- L32 — wrong E reference. Change
+  from: =IF(K32=2,Rate!E17*0.25,IF(K32=3,Rate!E17*0.5,IF(K32=4,Rate!E17*0.75,IF(K32=5,Rate!E17*1,0))))
+  to:   =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+  Why: B32 pulls Rate!G19, so L32 must use Rate!E19.
+- L33 — wrong E reference. Change E18 → E20 (example)
+  to:   =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+  Why: B33 is Rate!G20 so use Rate!E20.
+
+Ap2
+- B19 — change
+  from: =Rate!G16
+  to: =Rate!G14
+- L32 — change E17 → E19 (same pattern as Ap1)
+- L33 — change E18 → E20
+
+Ap3
+- B19 — change
+  from: =Rate!G16
+  to: =Rate!G14
+- L20 — logical operator bug. Change
+  from: =IF(K20<>2,Rate!E15*0.33,IF(K20<>3,Rate!E15*0.66,IF(K20<>4,Rate!E15*1,0)))
+  to:   =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+  Why: <> makes the test almost always true; you want = to test the selected key.
+- L32 — change E17 → E19
+- L33 — change E18 → E20
+
+Why these fixes work
+- The Ap sheets display two blocks: Proficiency (should map Rate!G11..G15 to Rate!E11..E15) and Experience (should map Rate!G16..G20 to Rate!E16..E20). Some rows were pointing to the wrong Rate!G (B19) or the L formulas referenced the wrong E row (L32/L33). Correcting the references aligns each description with its correct rating cell so the IF multipliers compute the intended scores.
+- Fixing the IF operator in Ap3 L20 makes the formula test equality properly.
+
+Suggestion to prevent this class of error
+- Use INDEX/MATCH (or VLOOKUP with appropriate layout) so the L formulas find the Rate!E value by matching the text in column B instead of hard-coding E11/E12/etc. Example (replace an IF chain that multiplies by a factor):
+  =IF(K16=2, INDEX(Rate!$E:$E, MATCH(B16, Rate!$G:$G, 0)) * 0.33,
+     IF(K16=3, INDEX(Rate!$E:$E, MATCH(B16, Rate!$G:$G, 0)) * 0.66,
+     IF(K16=4, INDEX(Rate!$E:$E, MATCH(B16, Rate!$G:$G, 0)) * 1, 0)))
+- That way you only rely on the description to find the correct E value; moving rows on Rate won't break the Ap sheets.
+
+If you want, I can provide the exact corrected formulas for every L cell (L16:L33) on each Ap sheet or convert the L formulas to INDEX/MATCH for all rows. Which would you prefer?

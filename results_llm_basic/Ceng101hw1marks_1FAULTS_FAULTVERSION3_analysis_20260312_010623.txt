@@ -1,0 +1,53 @@
+Summary of the main problems I found (short & actionable), and how to fix each:
+
+1) Inconsistent / wrong ranges in the summary rows (MAX, MIN, AVERAGE, STDEV)
+- Problem: Some MAX formulas start at row 33 (B69, C69, D69) while the MIN/AVERAGE/STDEV for the same columns use rows 2:68. This makes the reported MAX values ignore the first 31 rows and gives inconsistent summary statistics.
+- Fix: Use the same data range for each statistic. For example replace:
+  - B69: =MAX(B33:B68) → =MAX(B2:B68)
+  - C69: =MAX(C33:C68) → =MAX(C2:C68)
+  - D69: =MAX(D33:D68) → =MAX(D2:D68)
+  - N69: =MAX(N17:N68) → =MAX(N2:N68)
+  - Q69: =MAX(Q17:Q68) → =MAX(Q2:Q68)
+  - Similarly change MIN formulas that currently include summary cells (e.g. N70 =MIN(N17:N69)) to exclude summary rows: N70 → =MIN(N2:N68), Q70 → =MIN(Q2:Q68), etc.
+- Why: Summary statistics must all use the exact same input range (and must exclude the summary rows themselves) to be meaningful.
+
+2) Summary formulas include the summary cells (possible distortion / confusion)
+- Problem: Some MIN/MAX reference ranges include summary cells (e.g. N70 uses N17:N69 which includes N69, the MAX cell).
+- Fix: Make sure ranges point only to the raw data rows (rows 2:68 in your sheet). Do not include the summary rows (69–72) inside those ranges.
+- Why: Including summary cells can distort results and cause confusion (and could create circular references if formulas depended on each other).
+
+3) Some “FORMULA = …” entries are text, not real formulas
+- Problem: Several N-cells and others are shown as literal text like "FORMULA =20+4". If those are actually text in the cell Excel will not calculate them.
+- Fix: Enter real formulas or numbers. Example: instead of the text "FORMULA =20+4" enter =20+4 (or simply 24) in the cell.
+- Why: Excel only evaluates formulas that begin with =.
+
+4) Ambiguous operator precedence in some formulas (use parentheses)
+- Problem: Formulas like =17+5/2 evaluate as 17 + (5/2) = 19.5 in Excel. If you intended (17+5)/2 (e.g. average of two numbers) you must parenthesize.
+- Fix: Use parentheses to make intention explicit. Examples:
+  - If you meant 17 + (5/2): keep =17+5/2 (but better: =17 + 5/2)
+  - If you meant (17 + 5) / 2: use =(17+5)/2
+- Why: Operator precedence (multiplication/division before addition/subtraction) can give unexpected results.
+
+5) Likely data entry typos / suspicious IDs and operations
+- Problem: A16 = 98,227,577 and A68 = 99,650,185 (extremely large compared to other student IDs) — probably typed extra digits.
+- Fix: Verify those Student IDs and correct them to the intended values.
+- Also check odd arithmetic formulas like N19 =16-4 (gives 12) while most other N cells add two numbers. If that minus was a typo, change to =16+4.
+- Why: Data-entry errors will skew any aggregate or analysis.
+
+6) Missing / inconsistent columns across rows
+- Problem: Some rows are missing values in columns J, K, M etc. That may be intentional but will affect averages if you expect non-blank values.
+- Fix: Decide how to treat missing values (leave blank, enter zero, or use a sentinel). When calculating averages, use AVERAGE which ignores blanks, or use AVERAGEIF if you need custom handling.
+
+How to implement quickly (practical steps)
+1. In B69, C69, D69, N69, Q69 (and any other summary MAX cells), edit each formula to use the full data range: =MAX(B2:B68), =MAX(C2:C68), =MAX(D2:D68), =MAX(N2:N68), =MAX(Q2:Q68).
+2. Edit MIN formulas to use the same ranges (e.g. =MIN(B2:B68), =MIN(C2:C68), =MIN(D2:D68), =MIN(N2:N68), =MIN(Q2:Q68)).
+3. Check every cell that reads like text "FORMULA =..." and convert to actual formula (start with =) or a number.
+4. Audit arithmetic formulas that mix + and / and add parentheses where necessary.
+5. Scan for outlier Student IDs (A16, A68) and fix if they are typed incorrectly.
+6. After changes, use Formulas → Error Checking and Trace Precedents to verify no circular references remain.
+
+If you want, I can:
+- Provide an exact list of every summary cell and the corrected formula lines (I already gave the most important ones), or
+- Point out the specific N-column cells that look like typos (e.g. N19) if you want me to list them.
+
+Which of the two follow-ups would you like?

@@ -1,0 +1,69 @@
+Summary of workbook (concise)
+
+Sheets
+- van Genuchten fit theta-h — parameter-fitting sheet for the theta(h) (retention) curve.
+- Data set — experimental data, instructions, and time-series head/theta at multiple depths plus placeholders for flux/gradient/K computations.
+
+van Genuchten fit theta-h (layout & key cells)
+- A1–A2: header/title.
+- Parameters (A2:A6, B3:B6):
+  - theta r (residual): B3 = 0.009957388864981173
+  - theta s (saturated): B4 = 0.45020068560206356
+  - alpha: B5 = 0.00014665857868120281
+  - n: B6 = 3.12346573314838
+- Objective / SSE:
+  - B7 labeled SSE, formula =E19 (pulls sum of squared errors).
+  - D19 label "Sum Sq Er"; E19 formula =SUM(E14:E18) (see notes on a likely range error below).
+- Observed / predicted table (starts row 10):
+  - Columns: Position (A), Pressure (B), Observed Theta (C), Predicted Theta vG (D), Error (E), Ln P (F).
+  - Predicted theta formula (examples):
+    D12..D16 = $B$3 + ($B$4-$B$3) / ( (1 + $B$5 * (-B12)^$B$6)^(1 - 1/$B$6) )
+    — i.e., standard van Genuchten retention using suction = -pressure (pressure values are negative).
+  - Error entries:
+    - E13..E16 use =(C#-D#)^2 (squared residual).
+    - E12 uses =(463-D12)^2 — appears incorrect (probably should be (C12-D12)^2).
+  - F column calculates Ln P: e.g. F12 = LN(-B12) (natural log of suction).
+
+Notes / potential issues on this sheet
+- SSE aggregation: E19 = SUM(E14:E18) but data errors are in E12:E16 — likely intended SUM(E12:E16) or SUM(E12:E16). B7 therefore may not reflect all residuals.
+- E12 uses a hard-coded 463 rather than observed C12 — likely a typo.
+- Predicted theta formula uses (-B#) so it assumes pressure is negative (consistent with F column using LN(-B#)).
+- Solver use: B3:B6 are the fitting parameters to be adjusted (suggested) to minimize B7 (SSE). Ensure E-range and error formulas are corrected before solving.
+
+Data set (layout & contents)
+- A1–A6: metadata, assignment instructions and steps (how to use data and fit van Genuchten / conductivity).
+- Columns and depths:
+  - Depths at 0.5, 1.0, 1.5, 2.5 and 3.5 m are arranged in parallel blocks:
+    - 0.5 m: head in B24:B42, theta in C24:C42
+    - 1.0 m: head in E24:E42, theta in F24:F42
+    - 1.5 m: head in K24:K42, theta in L24:L42
+    - 2.5 m: head in Q24:Q42, theta in R24:R42
+    - 3.5 m: head in T24:T42, theta in U24:U42
+  - Time column at A24:A42 (hours; 0 to 2400+).
+  - Head values are negative (e.g., B25 = -0.01 to B42 = -1.364), theta decreases with more negative head.
+- Flux / conductivity placeholders (headers row ~21–22):
+  - Columns reserved for computing flux, gradient and K at chosen elevations:
+    - 0.75 m: Flux @ H22, Gradient I22, K J22 (H..J columns)
+    - 1.25 m: Flux @ N22, Gradient O22, K P22 (also W21/W22 mention 1.25 m — duplicate/typo)
+    - 2.5/3.5 m: Q/T blocks and W/X/Y similarly for other elevations (layout is present but formulas not provided).
+- Numeric data: time series rows 25–42 filled for heads and thetas at each depth.
+
+Notes / potential issues on this sheet
+- W21 is labeled 1.25 m though N21 already is 1.25 m — duplicate/typo in headings; check intended elevation labels (likely one should be 3.0 m).
+- Flux/gradient/K columns are set up (headers present) but no explicit flux or Darcy formulas are shown in the extract — these need to be implemented:
+  - Flux can be computed from temporal changes in integrated water content above horizon (per assignment).
+  - Darcy: K = flux / gradient (after computing hydraulic head gradient between measurement depths).
+- Data is ready for:
+  - plotting pressure vs. theta (all depths on one plot),
+  - computing fluxes at midpoints (e.g., 0.75, 1.25, 3.0 m),
+  - computing apparent K and fitting Ksat (use van Genuchten theta parameters for shape; fit Ksat to conductivity data).
+
+Recommended fixes before fitting
+1. Correct E12 to = (C12-D12)^2 (replace 463 with C12).
+2. Correct E19 to sum the actual error rows, e.g. =SUM(E12:E16) (or correct range depending on full data).
+3. Verify depth labels (duplicate 1.25 m) and intended column targets for 3.0 m.
+4. Confirm predicted formula references absolute/relative addressing (they use $B$3:$B$6 correctly) and that pressures are negative as expected.
+
+If you want, I can:
+- Provide the corrected formulas to paste in the cells.
+- Outline the Solver setup (objective cell, variable cells, constraints) to fit B3:B6 or to fit Ksat.

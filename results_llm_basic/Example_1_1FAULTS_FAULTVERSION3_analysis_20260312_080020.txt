@@ -1,0 +1,37 @@
+I found two real mistakes that are causing wrong Q4 and year scores. Short fixes and why they work below.
+
+Errors
+1) Q4 Homework H5 (Evans) is wrong
+- Problem: H5 contains the value/formula "1" instead of summing that student’s assignment columns.
+- Effect: Q4 Summary E6 (Evans’ Q4 total) receives 1, so Evans’ weighted Q4 score, Q4 percentage and final year average are all too low.
+
+2) Q4 Summary F3 (Points Possible weighted total) uses the wrong quiz weight
+- Problem: F3 is =B3*0.3 + C3*0 + D3*0.4 + E3*0.2 — the C3 term uses 0 instead of 0.1.
+- Effect: The points-possible weighted total shows 270 instead of 300. This is a calculation/consistency error (it won’t change student rows unless you rely on that cell).
+
+Quick fixes (exact formulas to put in)
+1) Fix Evans total (Q4 Homework sheet, cell H5):
+- Replace the cell contents with:
+  =SUM(B5:G5)
+- Why: sums the student’s scores across all assignments (consistent with other student rows).
+
+2) Fix Points Possible weighted total (Q4 Summary sheet, cell F3):
+- Replace with either:
+  =SUMPRODUCT(B3:E3,$B$2:$E$2)
+  OR
+  =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+- Why: uses the correct quiz weight (0.1) and avoids the hard-coded mistake.
+
+Make the workbook more robust (recommended)
+- Replace all rows F4:F12 (each student’s weighted score) with a SUMPRODUCT formula that references the weights row absolutely, then copy down:
+  In F4 enter:
+  =SUMPRODUCT(B4:E4,$B$2:$E$2)
+  then copy F4 down through F12.
+- Why: using SUMPRODUCT with absolute references ($B$2:$E$2) prevents typos (like the C3*0) and makes it easy to update weights in one place.
+
+Check results after fixes
+- After H5 =SUM(B5:G5), Evans’ Q4 total becomes 273 (81+21+25+25+50+71). Q4 Summary E6 will update to 273.
+- After replacing F3, the points-possible weighted total becomes 300 (expected).
+- After converting F4:F12 to SUMPRODUCT, all students’ weighted scores will recalculate correctly and Year Summary values (Q4 and final averages) will update automatically.
+
+If you want, I can give the exact cell-by-cell corrected formulas for every affected cell and the resulting numeric values.

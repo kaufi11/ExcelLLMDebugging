@@ -1,0 +1,42 @@
+I reviewed the formulas on Sheet1 and found a few formula/format inconsistencies and some cells that look like manual values instead of formulas. Summary of the issues and suggested fixes:
+
+1) Incorrect SUM range in U47
+- Cell: U47
+- Current formula: =(SUM(M47:P47)+SUM(R47:S47))*10/7
+- Problem: Every other U cell uses SUM(Rx:Tx) for the second sum. U47 omits column T (SUM(R47:S47) instead of SUM(R47:T47)), so U47 is computed from a different set of input cells.
+- Suggestion: Use the consistent pattern: =(SUM(M47:P47)+SUM(R47:T47))*10/7
+
+2) Contribution (Q) cells formatted as time (display looks like "04:48:00")
+- Cells: Q57, Q58, Q59, Q60, Q61 (these use formula =1/C57 etc.)
+- Current formula(s): =1/C57 (Q57), =1/C58 (Q58), etc.
+- Problem: The formulas are correct mathematically (1 divided by the group size), but those cells are formatted as Time so the decimal fraction (0.2) is displayed as 0.2 day → "04:48:00". This is inconsistent with other Q cells which display as decimals (eg 0.2).
+- Suggestion: Change the Number Format of Q57:Q61 to Number (or Percentage). They should display 0.2 (or 20%) instead of a time string.
+
+3) X50 and X51 are constants (no formula) while other X cells use the IF/TRUNC pattern
+- Cells: X50 and X51
+- Current: X50 = 3 (value), formula: null; X51 = 3 (value), formula: null
+- Problem: Column X is otherwise calculated with the formula pattern =IF(W#="passed",TRUNC(V#*3/10,2),""). X50/X51 appear to be entered as constants rather than calculated, causing inconsistency and possible future mismatch if source values change.
+- Suggestion: Replace the constants with the consistent formula (for row 50): =IF(W50="passed",TRUNC(V50*3/10,2),"") and similarly for row 51.
+
+4) Zero / blank results where input columns are empty
+- Cells: several rows (notably rows 29–33, 30–33, 32–33 etc.) show U=0 and V=0 (or blanks) because the contributing cells M:P and/or R:T and/or Q are blank.
+- Observation: The formulas are present (U uses the SUM-based formula, V uses =U*Q*C), but missing input data results in zero outputs. This may be intentional (these rows may be placeholders) — just flagging that formulas are working but inputs are missing.
+- Suggestion: If these rows are meant to be inactive, that’s fine. If they should participate in calculations, populate the M:P / R:T / Q cells or hide the rows to avoid confusion.
+
+5) Mixed uses of explicit fractions vs. division by Cn for Q
+- Cells: many Q cells use constants or expressions like =1/5, =1/6, =1/3; others use =1/Cn (eg Q57..Q61).
+- Observation: using =1/Cn is fine and more flexible (automatically adapts if C changes). But combined with the formatting issue above, the result is displayed as a time. No formula error, just pointing out mixed approach; consider standardizing (either explicit fraction or =1/Cn) and consistent cell formatting across column Q.
+
+6) Miscellaneous: TRUNC usage and IF patterns
+- Cells: X column formulas use TRUNC(V*3/10,2) inside the IF. This is syntactically valid and consistent across rows where present.
+- Observation: Some X cells (as noted) are manual values. Also some W cells return "" (empty string) which may display as blank; that is consistent with the IF used.
+
+Actionable checklist you can apply quickly:
+- Fix U47 to use SUM(R47:T47).
+- Change Number Format for Q57:Q61 (and any other Q cells showing time) to Number/Percentage.
+- Replace X50 and X51 constants with the IF/TRUNC formula used in the rest of column X (if they should be calculated).
+- Optionally standardize Q column formulas (either use =1/Cn for all groups or explicit fractions) and apply a uniform number format.
+
+If you want, I can:
+- produce a short list of exact cells (with current and corrected formulas) ready to paste into Excel,
+- or produce a small macro to apply the fixes (correct U47, set formatting on Q57:Q61, and restore formulas in X50/X51). Which would you prefer?

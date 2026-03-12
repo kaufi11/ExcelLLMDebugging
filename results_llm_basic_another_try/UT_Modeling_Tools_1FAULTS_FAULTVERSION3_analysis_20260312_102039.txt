@@ -1,0 +1,60 @@
+Errors found and solutions:
+
+1. **Inconsistent cell references for overhead rate in "DRAM cost side" sheet:**
+   - Cells like D16 use absolute reference `$C$15` for overhead SG&A rate, which is in C15.
+   - However, some formulas in the same sheet use `$C$15` but the overhead rate is in A15 or C15 inconsistently.
+   - **Solution:** Ensure overhead rate is consistently referenced from the correct cell (C15). Check all formulas referencing overhead rate and fix if they point to wrong cells.
+
+2. **In "DRAM cost side" sheet, cell H22 formula is different:**
+   - H22 formula: `=+$D$18/380` (dividing by 380 instead of 5 like others)
+   - **Error:** Likely a typo; should be `/5` to match other columns.
+   - **Solution:** Change H22 formula to `=+$D$18/5`
+
+3. **In "DRAM cost side" sheet, cell D21 formula uses D31 which is price after fab add, but other columns use E13, F13, etc.:**
+   - D21 formula: `=+D31*D9*D10-D16-(D9)*D17`
+   - E21 formula: `=+E13*E9*E10-E16-(E9)*E17`
+   - **Error:** D21 inconsistent with others.
+   - **Solution:** Change D21 formula to `=+D13*D9*D10-D16-(D9)*D17` to match pattern.
+
+4. **In "DRAM cost side" sheet, cell D26 formula uses `$D$18/(5*(1+$C$15))` but H26 uses `/5*(1+$C$15)` correctly?**
+   - Check consistency for all columns.
+   - H26 formula is `=+$D$18/(5*(1+$C$15))` which is correct.
+   - No error here.
+
+5. **In "DRAM cost side" sheet, cell I22 and I23 formulas:**
+   - I22 is empty or missing.
+   - I23 formula sums D23:H23, but I22 is empty.
+   - **Solution:** Confirm if I22 should have a formula consistent with other columns or be empty intentionally.
+
+6. **In "DRAM cost side" sheet, cell D31 formula references fisher!D49 and D50, but in "fisher" sheet, these cells might not have expected values or formulas.**
+   - Verify that fisher!D49 and D50 exist and have correct values.
+   - If missing or wrong, formulas will error.
+   - **Solution:** Check "fisher" sheet cells D49 and D50 for correctness.
+
+7. **In "LEM cost side" sheet, some formulas reference cells with no data (e.g., D6, E6, etc. are 0) but formulas multiply by these zeros.**
+   - This may cause zero outputs.
+   - **Solution:** Confirm if zeros are intentional or missing data.
+
+8. **In "Capacity&Price Calculation" sheet, some formulas reference 'LEM Demand Calibration'!C$10 but in "LEM Demand Calibration" sheet, C10 is a formula summing weighted units.**
+   - If C10 is zero or incorrect, formulas will error.
+   - **Solution:** Verify "LEM Demand Calibration" sheet's C10 and related cells for correct data.
+
+9. **In "fisher" sheet, cell H5 is 0, which is used in division in formulas like H11 (avg yielded die/wafer).**
+   - Division by zero can cause errors.
+   - **Solution:** Check if zero in H5 is correct or should be non-zero.
+
+Summary of key fixes:
+
+- Fix H22 formula in "DRAM cost side" from `/380` to `/5`.
+- Fix D21 formula in "DRAM cost side" to use D13 instead of D31.
+- Verify all overhead rate references point to correct cell `$C$15`.
+- Check "fisher" sheet cells (D49, D50, H5) for valid data to avoid division errors.
+- Confirm zeros in "LEM cost side" are intentional or update data.
+
+Explanation:
+
+- Consistent referencing ensures formulas calculate correctly.
+- The typo in H22 causes incorrect cap cost/start/5 years for that column.
+- Using D31 instead of D13 in D21 causes inconsistent profit calculation.
+- Division by zero or missing data in referenced sheets causes errors or #DIV/0!.
+- Correcting these will ensure accurate cost, capacity, and ROI calculations.

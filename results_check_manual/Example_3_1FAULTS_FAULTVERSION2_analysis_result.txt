@@ -1,0 +1,32 @@
+I reviewed the formulas in all three sheets and found two clear formula bugs/inconsistencies that will affect many results (Q4 weighted scores, Q4 percents and the Year Summary averages/grades).
+
+Summary of problems (cells + why) and suggested fixes
+
+1) Q4 Homework — row 5 total excludes one column
+- Problem: Cell H5 =SUM(B5:F5) (omits column G). All other student totals in H3,H4,H6:H11 use SUM(B#:G#).
+- Effect: Evans' Q4 total (H5) is missing the Personal Shield score (G5 = 71). That value is used by Q4 Summary (E6 references 'Q4 Homework'!H5), so the Q4 Summary and Year Summary for Evans are based on the wrong number.
+- Fix: Replace H5 with:
+  =SUM(B5:G5)
+
+2) Q4 Summary — weighted score formulas use the Projects column twice and ignore Homework
+- Problem: Cells F3:F12 all use the Projects column (column D) for both the 0.4 and the 0.2 terms. E.g. F3 is:
+  =B3*0.3+C3*0.1+D3*0.4+D3*0.2
+  (the last term should be E3*0.2). This same mistake is repeated in F4..F12.
+- Effect: The "Weighted Score" (column F) and thus the "Weighted Ave" percents (column G) are incorrect for every student in the Q4 Summary. Those G values are pulled into the Year Summary (G2:G10), so the Year Summary final averages/grades are also wrong.
+- Fix: Update F3:F12 to use the Homework column (E) for the 0.2 weight. For example, correct F3 to:
+  =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2
+  Then copy this corrected formula down F4:F12.
+
+Better (more maintainable) alternative for F3 and down:
+- Put the weights in row 2 (already present B2:E2) and use absolute refs:
+  =B3*$B$2 + C3*$C$2 + D3*$D$2 + E3*$E$2
+  This avoids hard-coding the weights and makes updates easier.
+
+Notes / ripple effects
+- After fixing H5 and the F3:F12 formulas, recalculate column G in Q4 Summary (=(F#/300)*100) — these will change.
+- Those corrected G values flow into Year Summary (G2:G10), so H2:H10 AVERAGE(...) and the final letter grades in column I may change.
+- Other formulas I checked appear consistent (e.g., H2 in Q4 Homework =SUM(B2:G2); F2 in Q4 Summary =SUM(B2:E2); Year Summary grade IF formula is logically correct though a bit verbose). The Class Average formulas in Year Summary (D11:G11) are fine.
+
+If you want, I can:
+- Provide the corrected numeric results for the affected rows after applying these fixes, or
+- Provide a small patch (list of exact updated formulas for each affected cell) you can paste in.

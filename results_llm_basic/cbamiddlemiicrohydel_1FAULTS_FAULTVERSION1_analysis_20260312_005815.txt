@@ -1,0 +1,53 @@
+I checked the workbook and found the main formula/data errors that will produce wrong totals, PVs, B/C ratio and NPV. Short list of problems, why they matter, and the exact fixes.
+
+1) Wrong discount-factor cell (big impact on all PVs)
+- Error: X19 contains =W19*(438/438.4382) instead of the normal 1/1.12 factor. This breaks the chain of discount factors and so every Present Value in columns X–AA is wrong.
+- Why it matters: PV of costs and benefits for years X, Y, Z etc will be incorrect → B/C and NPV wrong.
+- Fix: Replace X19 with the same pattern used elsewhere:
+  X19 = W19*(1/1.12)  (or simply =W19/1.12)
+  Then let Y19 = X19/1.12, Z19 = Y19/1.12, AA19 = Z19/1.12 (or copy the same iterative formula pattern).
+- Short explanation: discount factor should be multiplied by 1/1.12 each year; the odd 438/438.4382 was a typo.
+
+2) Wiring re‑work / re‑wiring cost in year of sensitivity (wrong unit price and/or wrong multiplier)
+- Error: Q10 = 4275 * 7.5 (you have 4275 not 4297). Also the sensitivity note is ambiguous: it says 25% houses need re-wiring in year 10 — that implies 25% of 30 = 7.5 houses; elsewhere a line says “Rs (4297*30)” which is inconsistent.
+- Why it matters: wiring cost in the sensitivity year (2010) will be incorrect (understates/overstates by the unit price error or wrong house count).
+- Fix (choose correct interpretation):
+  - If the intent = 25% of households rewired in year 10: Q10 = 4297 * 7.5
+  - If the intent = rewire all 30 houses: Q10 = 4297 * 30
+  - Also correct the unit price to 4297 (not 4275) unless 4275 is a deliberate different price — verify source.
+- Short explanation: consistent unit price and correct house count are needed to reflect the intended sensitivity cost.
+
+3) Inconsistent / ambiguous inflation conversion for community contribution
+- Problem: A44 text says “Community contribution was Rs. 21,780 in 1993. Equivalent to Rs. 21,780 in year 2000 prices.” That wording contradicts G6 where formula =21780/0.4825 (which inflates 1993 to 2000). Either the note is wrong or the formula is wrong.
+- Why it matters: if you double-count (or fail to inflate) the 1993 contribution the construction cost and later PVs will be wrong.
+- Fix: Decide which is correct and make them consistent:
+  - If 21,780 is the 1993 value and must be converted to 2000 prices like AKRSP value, use G6 = 21780 / 0.4825 (same method as G5).
+  - If 21,780 is already in 2000 prices, set G6 = 21780 (no division).
+- Short explanation: pick one approach and apply same deflator consistently.
+
+4) Scrap / environmental cleanup formulas – use grouping (clarity + correctness)
+- Errors (minor but tidy): AA17 = 0.1*G5 + 0.1*G6 and AA29 = 0.02*G5 + 0.02*G6. These are algebraically fine but hard to read and could miss other construction components (if construction is sum of more rows).
+- Better fix: use grouped form and (if intended) include the full construction cost:
+  - AA17 = 0.1 * (G5 + G6)    or, better, if both construction lines are the whole construction cost: =0.1 * SUM(G5:G6)
+  - AA29 = 0.02 * (G5 + G6)   or =0.02 * SUM(G5:G6)
+- Short explanation: parentheses / SUM make the intent obvious and avoid omission if you later add more construction rows.
+
+5) General consistency / copy‑down checks (recommendation)
+- Problem: Several rows are filled by copied formulas; a few cells (X19, Q10, that 4275) are inconsistent typos. These kinds of mistakes commonly come from manual edits when copying.
+- Fix: audit by:
+  - Scrolling the DF row (row19 and row31) and ensure every column uses /1.12 or the iterative reference (no stray constants).
+  - Use absolute references where appropriate (e.g., if using a single deflator cell) or fill-down pattern consistently.
+  - Use SUM(...) with ranges rather than repeated + terms, to make later changes safer.
+- Short explanation: consistent formula patterns prevent one-off typos.
+
+Quick checklist of exact cells to change now
+- X19: change to =W19/1.12  (or =W19*(1/1.12))
+- Q10: correct to either =4297*7.5 or =4297*30 depending on the intended scenario
+- G6: confirm and set either =21780/0.4825 (if 21,780 is a 1993 value) or =21780 (if already in 2000 prices)
+- AA17: change to =0.1*(G5+G6)  (or =0.1*SUM(G5:G6))
+- AA29: change to =0.02*(G5+G6) (or =0.02*SUM(G5:G6))
+- Scan row19 and row31 for any other odd constants (like 438/438.4382) and correct to /1.12.
+
+If you want, I can:
+- produce corrected formulas for every affected PV and B/C (if you confirm whether G6 should be converted and whether Q10 is 7.5 or 30 houses), or
+- give a short macro or Find/Replace list to fix the wrong DF pattern everywhere.

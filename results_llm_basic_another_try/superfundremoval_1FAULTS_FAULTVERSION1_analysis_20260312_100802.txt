@@ -1,0 +1,41 @@
+Errors found:
+
+1. **Total Section Score Weighting Checks (F12, F24, F36, F56):**  
+   - The formulas check if the sum of weights equals 100%, but weights are decimals (e.g., 0.2, 0.1428, 0.333), not percentages. The sum will be 1.0, not 100%.  
+   - This causes the formula to always return "ERROR" because SUM(F6:F10) ≠ 100 (it equals 1.0).
+
+2. **Inconsistent Case in IF Formulas for Answers (e.g., G6):**  
+   - The IF formulas check for lowercase "yes" but answers in column C are capitalized "Yes".  
+   - This causes the formula to return "" (blank) instead of the weighted score.
+
+3. **In Section IV, Weighted Score Formulas (e.g., G41, G45, G53):**  
+   - The IF formulas check for lowercase "yes", "no", "small extent", "large extent" but answers in column C are capitalized (e.g., "No", "Yes", "Small Extent").  
+   - This causes the weighted score to be blank or incorrect.
+
+---
+
+**Solutions:**
+
+1. **Fix Weighting Sum Checks:**  
+   - Change the checks from 100% to 1 (since weights sum to 1.0).  
+   - Example: In F12, replace `=IF(SUM(F6:F10)<>100%,"ERROR","100%")` with `=IF(ROUND(SUM(F6:F10),4)<>1,"ERROR","100%")`  
+   - Use ROUND to avoid floating point precision issues.
+
+2. **Make IF Formulas Case-Insensitive:**  
+   - Use `LOWER()` function on the answer cell to convert text to lowercase before comparison.  
+   - Example: Change `=IF(C6="yes",(1*F6),IF(C6="no",(0*F6),""))` to `=IF(LOWER(C6)="yes",1*F6,IF(LOWER(C6)="no",0*F6,""))`  
+   - Apply this fix to all similar IF formulas in column G.
+
+3. **Fix Section IV Weighted Score IF Formulas:**  
+   - Use LOWER() on the answer cell for comparisons.  
+   - Example: Change `=IF(C41="yes",(1*F41),IF(C41="no",(0*F41),IF(C41="small extent",(0.33*F41),IF(C41="large extent",(0.67*F41),""))))`  
+   to  
+   `=IF(LOWER(C41)="yes",1*F41,IF(LOWER(C41)="no",0*F41,IF(LOWER(C41)="small extent",0.33*F41,IF(LOWER(C41)="large extent",0.67*F41,""))))`
+
+---
+
+**Explanation:**
+
+- The weighting sums are decimals (like 1.0) not percentages (100%), so the formula must check against 1, not 100%.  
+- Excel text comparisons are case-sensitive, so "Yes" ≠ "yes". Using LOWER() standardizes the text to lowercase, ensuring the IF condition matches regardless of case.  
+- This ensures weighted scores calculate correctly and total weighting checks do not falsely show errors.

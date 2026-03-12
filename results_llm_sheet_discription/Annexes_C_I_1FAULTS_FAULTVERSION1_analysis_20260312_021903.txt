@@ -1,0 +1,20 @@
+I checked the workbook structure and found two clear formula errors that will give wrong % variances and break the cash / balance‑sheet reconciliation. Short fixes and why they matter are below.
+
+1) Error — wrong % formula for Total Funds (annex f, cell K68)
+- Problem: K68 is set to =K48 (it just copies the Percent Variance for Total Net Assets). That is incorrect: K68 should show the % variance for Total Funds (row 68), not reuse the percent from a different line.
+- Fix: replace K68 with a percent formula based on row 68, for example:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Why: this gives the true variance % for Total Funds (J68 / H68). Leaving it =K48 misreports the % and can hide material variances.
+
+2) Error — incorrect Total (T) closing balance in ORIGINAL cash forecast (annex g, cell T19)
+- Problem: T19 is currently =H18 (it copies the opening balance of August). That is wrong for the Total/“T” column — it should represent the final (July) carry‑forward or the last monthly closing balance, not the August opening.
+- Fix: change T19 to return the July closing balance (S19) — e.g.:
+  T19 = S19
+  (Alternatively, if you prefer a true total across months for flows, use =SUM(H19:S19), but convention here is that “T” shows the end‑period closing balance so =S19 is appropriate.)
+- Why: T19 is used in the reconciliation cell T26 (and the “These cells should be zero” checks). If T19 is wrong, those reconciliation checks will show spurious differences and the cashflow vs balance sheet reconciliation will fail.
+
+Quick post‑fix checks
+- After changing K68, verify K68 shows the expected % or "N/A" when H68 = 0.
+- After fixing T19, check T25/T26 and T26 should go to zero (if annex f values are consistent) — and the reconciliation T26 (T19 - ('annex f'!H20+'annex f'!H21)) should match / be zero when balances align.
+
+If you want, I can give the exact steps (menu clicks) to edit those cells, or scan for any other inconsistent uses of the Total (T) column vs last‑month (S) values.

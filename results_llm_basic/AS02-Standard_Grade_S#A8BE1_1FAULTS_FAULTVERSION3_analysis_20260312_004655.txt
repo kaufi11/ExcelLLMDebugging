@@ -1,0 +1,32 @@
+I checked the workbook and found three clear, concrete errors that will produce wrong totals/percentages. Summary, why each is wrong, and the fix (short steps).
+
+1) SG1 — Subtotal for 2002 is a COUNT, not a SUM
+- Problem: F53 contains =COUNT(F7:F51). COUNT returns the number of numeric cells (i.e. how many subjects), not the sum of entries for 2002. That makes the Totals (F63) and any percent-change calculations that depend on it wrong.
+- Fix: change F53 to =SUM(F7:F51).
+- Why: you want the total number of entries in 2002, not how many rows have a number. SUM adds values; COUNT counts cells.
+
+2) SG1 — “PERCENT CHANGE” column contains literal text instead of formulas
+- Problem: many cells in column G (e.g. G7, G8, … G45) are showing the text "FORMULA =(F7-E7)/E7" instead of evaluating that expression. Excel is treating those cells as text (or they were pasted as text), so none of the % change values are calculated.
+- Fix: enter the real formula in the first row then fill down. For example in G7 enter:
+  =IF(E7=0,NA(),(F7-E7)/E7)
+  then copy/fill that down G7:G51 (or as far as needed).
+- Why: the IF avoids division-by-zero if E7 is zero; removing the literal text and using a proper formula makes Excel compute the percent change.
+
+3) SG1 — Non‑numeric “-” in numeric cells (causes SUM/AVERAGE errors)
+- Problem: cell F44 (Office and Information Studies) contains "-" (a text dash), not a numeric 0 or a number. That prevents SUMs (and COUNT/SUM results) from reflecting the intended value and can break dependent formulas.
+- Fix: replace "-" with 0 (if there truly are zero entries) or with the correct numeric value. Use Find & Replace (Find = "-" replace with 0) only for the intended cells, or manually correct the cell.
+- Why: Excel ignores text in SUM ranges; putting 0 (numeric) or the real number ensures totals and percentages are correct.
+
+Quick consequence and verification steps
+- After doing (1) and (2) and fixing (3), the rows G53 and G63 ((F53-E53)/E53 and (F63-E63)/E63) will recalculate correctly because their inputs are corrected.
+- Recalculate the workbook (press Ctrl+Alt+F9) and check:
+  - F53 should now equal SUM(F7:F51).
+  - F63 should equal SUM(F53:F61) and make sense.
+  - Column G (percent change) should show numeric percentages instead of text.
+
+Optional cleanups (recommended)
+- Format column G as Percentage with 1 decimal to make results readable.
+- Search the workbook for other cells containing the literal string "FORMULA " (or leading apostrophe) — these are likely more pasted-as-text formulas and need replacing with real formulas.
+- Check any other cells where "-" is used in numeric columns and replace/confirm intended values.
+
+If you want, I can give the exact copy‑down ranges and a short macro to fix all "FORMULA =" text occurrences and replace COUNT with SUM automatically. Which would you prefer?

@@ -1,0 +1,26 @@
+Summary — two problems found:
+
+1) Typo in L5
+- Fault: L5 uses (881+F5+G5)*12.5/1700 instead of (D5+F5+G5)*12.5/1700. "881" is a stray constant.
+- Why it’s wrong: that hard-coded 881 inflates the score for that row.
+- Fix (exact formula for L5):
+  =(B5/100) + (2*C5+2*E5+H5)*12.5/1000 + (D5+F5+G5)*12.5/1700 + (I5+J5)*70/4000
+
+2) Missing / inconsistent input values (data-entry omissions)
+- Observation: many rows have blank cells for some assessments (E, F, G, H etc.). The L formula still uses those cells; blanks act like zero which may be unintended.
+- Why it matters: blanks can hide missing scores (you may think it's 0 but it might be "not entered"), and blanks + any manual edits in L can create inconsistent results.
+- Quick detection: add a flag column to find rows with missing inputs. Example formula (put in M2 and copy down):
+  =IF(COUNTA(B2:J2)<9,"MISSING DATA","OK")
+  (Adjust the number 9 to how many assessment columns you expect to be filled.)
+- Recommendation: correct any missing scores or enter 0 explicitly if the student truly received zero.
+
+General clean-up steps (easy and safe)
+1. Fix L5 as above.
+2. Put the correct L formula in L2:
+   =(B2/100) + (2*C2+2*E2+H2)*12.5/1000 + (D2+F2+G2)*12.5/1700 + (I2+J2)*70/4000
+3. Copy L2 down the L column (fill-down) so every row uses exactly the same formula (prevents further typos).
+4. Use the missing-data flag (step 2) to spot rows that need real input.
+
+If you want, I can:
+- Give a single corrected L formula to paste into L2 for fill-down,
+- Or scan and list the specific rows that have missing cells. Which would you prefer?

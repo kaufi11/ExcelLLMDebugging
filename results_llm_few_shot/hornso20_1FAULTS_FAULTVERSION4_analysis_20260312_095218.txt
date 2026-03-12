@@ -1,0 +1,33 @@
+I checked the sheets and found the main errors. Short fixes and plain explanations below.
+
+1) Sheet E20-9 (two versions)
+- Fault: C11 in the second copy omits Office Rent.
+  - Wrong (second copy): C11 = SUM(C5:C6)/C2
+  - Fix: C11 = SUM(C4:C6)/C2
+  - Why: Indirect-hourly rate must include all indirect costs (Office rent + Support salaries + Utilities). Omitting C4 understates indirect cost and understates the job cost/bid.
+
+2) Sheet P20-1B (both copies)
+- Symptom: Many formulas mix columns for Work‑in‑Process (col C), Finished Goods (col E) and Cost of Goods Sold (col G). That moves sold costs into inventories and vice‑versa.
+- Specific bad formulas (examples)
+  - F14 = +E4 + G6  — wrong: it adds a COGS total (G6) into Finished Goods.
+    - Fix: F14 should sum the Finished Goods cost column, for example: F14 = SUM(E4:E11) (use the actual finished‑goods rows for your file).
+    - Why: Finished Goods total must come only from the Finished Goods column (E), not from the COGS column (G).
+  - F18 = +G9 + G10 + G11  — wrong: adding COGS cells into Finished Goods.
+    - Fix: F18 = SUM(E9:E11) (or the appropriate E-range for those jobs).
+  - G27 = +F26 — likely wrong sign/placement when recording sale of job 5 (you should remove the job from Finished Goods and put it into COGS).
+    - Fix (example): Finished Goods decrease: E27 = -F26 (or remove F26 from the Finished Goods SUM); COGS increase: G26 = F26.
+    - Why: Selling a job moves cost out of Finished Goods and into Cost of Goods Sold. Do not copy the number from COGS back into Finished Goods.
+- General fix: Replace ad‑hoc cell references that cross inventory/COGS columns with SUMs that refer to the correct column ranges (C for WIP, E for Finished Goods, G for COGS). That will keep the three ledgers consistent.
+
+3) Sheet P20-3B (both copies)
+- Fault: I10 uses the total labor sum instead of the job’s labor.
+  - Wrong: I10 = +F14 * H10
+  - Fix: I10 = F10 * H10
+  - Why: Overhead applied to Job 449 must be job‑level labor (F10), not the total of all jobs (F14). Using F14 allocates total labor to this single job and overstates its overhead.
+- After fix: I14 = I10 + F14 + D14 will correctly produce total job cost (overhead I10 + direct labor F14? — verify F14 meaning) once each component references the correct job or total as intended.
+- Quick check: D14 = SUM(D10:D12) and F14 = SUM(F10:F12) are correct aggregations — ensure the ranges match actual data rows (no stray blanks included).
+
+A few final notes (short):
+- Many errors come from copying formulas across columns without changing column letters. When copying ledger formulas, always confirm the column (WIP vs Finished vs COGS) being referenced.
+- Quick practical rule: inventory totals = SUM of that inventory column; COGS total = SUM of COGS column; overhead/job allocations = job’s labor * rate (not totals).
+If you want, I can update the exact cells with corrected formulas for every affected cell in each sheet (I can list them row-by-row). Which sheet should I fix first?

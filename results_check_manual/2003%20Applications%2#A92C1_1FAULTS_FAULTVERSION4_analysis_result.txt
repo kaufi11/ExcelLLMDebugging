@@ -1,0 +1,42 @@
+I inspected the workbook formulas and found a few formula errors and some inconsistencies you should review. Summary first, then details and recommended fixes.
+
+Key error (likely unintended)
+- Municipal!F5
+  - Current formula: =E6
+  - Problem: F5 should almost certainly refer to the request in the same row (E5). As written it pulls Hatfield's request (E6), giving the wrong recommended amount for Hatboro.
+  - Effect: This wrong value feeds Municipal!F22 (the Municipal recommended total), so the Municipal recommended total is incorrect.
+  - Suggested fix: change Municipal!F5 to =E5
+  - Impact if fixed: Municipal!F22 increases by 121,970 (from 1,952,645 to 2,074,615) because F5 will change from 26,000 to 147,970.
+
+Other issues / inconsistencies to review
+1) AHTF!F14 vs AHTF!E14 (range inconsistency)
+   - E14: =SUM(E2:E13) (TOTAL AHTF FUNDING REQUESTED)
+   - F14: =SUM(F3:F13)
+   - Problem: The E formula sums E2:E13 but the F formula starts at F3, omitting F2. That is inconsistent (though it may be intentional if F2 has no recommended amount). If you intend the Recommend total to sum the same row-range, F14 should be =SUM(F2:F13).
+   - Suggested action: If F2 intentionally has no numeric recommend, leaving F14 as-is will not change its value; otherwise change F14 to =SUM(F2:F13) for parallelism and clarity.
+
+2) Use of SUM() on a single cell (cosmetic/inconsistency)
+   - Non Profit!E28 =SUM(E27) and Non Profit!F28 =SUM(F27)
+   - County!E28/E? (similar pattern)
+   - These work correctly but are stylistically inconsistent — a plain =E27 (or =F27) is simpler. No functional error, just an inconsistency.
+
+3) Text in numeric columns
+   - AHTF!F10 contains text "Pending Feasibility Study". SUM ignores text, so totals that sum recommended amounts (F-column) are fine, but presence of text in a Recommend column can be confusing. Consider using a separate notes column or ensure the cell is excluded from numeric totals intentionally.
+
+4) Hard-coded constants in formulas
+   - AHTF!E16 and AHTF!F16: =2432890*0.15
+   - This works, but uses a hard-coded base (2432890). If that base should come from a cell (for traceability/maintenance), consider referencing the source cell instead of embedding the number.
+
+5) Several Recommend cells are manually entered rather than formula-driven
+   - On the Municipal, Rehab, AHTF and other sheets many F cells are left blank or contain manual numbers while others are set to =E(row). This may be intentional (only some requests are recommended) but is a potential source of accidental mismatch/copy-paste errors (example: the F5 error above). Review whether you want recommend column to be formulaic (=E#) for rows that are fully recommended.
+
+Quick checklist of cells to change / review
+- Change Municipal!F5 from =E6 to =E5 (fix immediate error).
+- Consider changing AHTF!F14 from =SUM(F3:F13) to =SUM(F2:F13) for consistency (if F2 should be included).
+- Optionally replace =SUM(singleCell) formulas (e.g., Non Profit!E28) with direct references (=E27) for clarity.
+- Review AHTF!F10 (text in numeric column) and any other non-numeric values in Recommend columns.
+- Consider replacing hard-coded numbers (AHTF!E16/F16) with cell references if those base values can change.
+
+If you want, I can:
+- Apply these fixes and show the updated totals (I already calculated Municipal!F22 corrected value: 2,074,615).
+- Produce a list of all Recommend-column cells that are formulas vs manual values so you can inspect which recommendations are explicit vs derived.

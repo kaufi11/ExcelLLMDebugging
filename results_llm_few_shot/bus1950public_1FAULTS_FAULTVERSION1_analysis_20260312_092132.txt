@@ -1,0 +1,54 @@
+Summary — main errors I found
+1) Inconsistent summary ranges (AVERAGE, MAX, COUNT, etc.)
+   - Different sheets use different row ranges (e.g. B6:B37, B6:B23, B6:B30, B6:B29, B7:B30, B8:B34, …).
+   - Effect: class statistics change depending on sheet/which rows are included — results are inconsistent and wrong when you add/remove students.
+
+2) Grade IF formulas reference the wrong "max points" cell (cross-sheet references)
+   - Most grade formulas use O$38 as the maximum, but some formulas point to other sheets (examples: 'F Noon'!O$38, 'M Noon'!O$38).
+   - Effect: some students are graded against another section's max points, producing wrong letters.
+
+3) Non‑dynamic ranges / fragile formulas
+   - All stats and many formulas use hard‑coded row ranges. When rows are inserted/removed the ranges stop matching the actual data.
+   - Effect: missed or extra rows in calculations; manual maintenance required.
+
+4) Occasional misplaced or blank cells in scoring columns
+   - Some student rows have missing values in columns that should be numeric (or numbers placed in wrong columns). SUM(B#:N#) will still work but values shift and totals become unreliable.
+   - Effect: wrong totals for those students.
+
+5) Formatting oddities (minor but confusing)
+   - Dates like F5 show full datetime (2004-02-11 00:00:00) while neighbouring cells are plain date strings — inconsistent display.
+
+Concrete fixes (short & easy)
+
+A) Standardize and make ranges dynamic — convert the student area to an Excel Table
+   - Select the student rows & columns (headers included) → Insert → Table.
+   - Replace formulas like =AVERAGE(B6:B37) with structured formulas like =AVERAGE(TableName[ColumnHeader]).
+   - Why: Tables auto‑expand/contract when you add or remove students so AVERAGE, MAX, COUNT, SUM always use current data.
+
+B) Fix the grade formula to reference the sheet’s own max (or a named cell)
+   - Replace inconsistent cross‑sheet references with a sheet‑local absolute reference (or better: a named cell).
+   - Example (put this in P6 and fill down on that sheet):
+     =IF(O6 > $O$38*0.9, "A",
+        IF(O6 > $O$38*0.8, "B",
+        IF(O6 > $O$38*0.7, "C",
+        IF(O6 > $O$38*0.6, "D","F"))))
+   - Or create a named cell MaxPoints on each sheet and use:
+     =IF(O6 > MaxPoints*0.9, "A", ... )
+   - Why: ensures each student is compared to the correct maximum for that section.
+
+C) Make totals explicit and check each student row for misaligned/missing scores
+   - Verify O# formulas are =SUM(B#:N#) for every student. If columns moved, update sums or use Table so sums reference columns by name.
+   - Scan rows with very large negative or odd A‑column values — those arithmetic formulas (e.g. =356-78-4365) look suspicious. If A is supposed to be ID, replace formula with the correct ID text.
+
+D) Use consistent formatting for dates and numeric cells
+   - Select date cells (column F header row) → Format Cells → Date (pick one). This makes comparisons and displays consistent.
+
+Quick next steps you can do right now
+1. Convert student block to a Table (Insert → Table).
+2. Replace all P# grade formulas with the standardized formula above (or use a named MaxPoints).
+3. Replace the summary formulas (B39, C39, O39, B40, etc.) by AVERAGE/MAX over the Table columns or by dynamic INDEX ranges.
+4. Spot‑check suspect rows (A that contain arithmetic results like -XXXX) and correct them to actual IDs or remove unintended formulas.
+
+If you want, I can:
+- Give exact corrected formulas for one sheet (paste a sample sheet name + a couple of row numbers), or
+- Produce the named‑range / INDEX dynamic formulas if you prefer not to use a Table.

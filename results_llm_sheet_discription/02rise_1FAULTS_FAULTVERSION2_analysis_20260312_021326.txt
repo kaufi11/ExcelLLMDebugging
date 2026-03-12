@@ -1,0 +1,38 @@
+Summary — I found three real problems and one risk/error-prone pattern. Short fixes below.
+
+1) Wrong sign in each class “Total Savings” (per-company) row
+- Problem: e.g. cell F5 (class #1 “Total Savings”) is =SUM(F4-$D3*F3). That computes RISE tuition − public cost for that company (negative of the intended savings). As a result the per-company savings rows (and the class-level sum BO5) come out negative.
+- Why it’s wrong: Savings should be (public cost per person × company headcount) − (RISE tuition paid by that company). The current formula subtracts in the opposite order.
+- Fix: change the formula to =D3*F3 - F4 (or = $D3*F3 - F4). Do this for every per-company savings cell in each class block (the pattern F5, G5, … then next class block F8, G8, … etc).
+- Example: replace =SUM(F4-$D3*F3) with =$D3*F3 - F4.
+
+2) One BK (participants-per-class) cell is hard-coded (should be formula)
+- Problem: BK261 contains the number 12 (value) instead of the usual formula =SUM(F261:BG261). That breaks any totals that rely on BK261 (student-days, cost calculations).
+- Fix: replace the 12 with the formula =SUM(F261:BG261). Check for any other BK cells that are values rather than =SUM(Fn:BGn).
+
+3) Manual long BO-sums and risk of omitted rows
+- Problem: many grand totals (BO268, BO269, BO270, BO268/BO269/BO270 etc) are written as a long list of individually enumerated BOxx cells (BO4+BO7+BO10+ …). Manually enumerating is error-prone (easy to miss a BO row).
+- Fix (recommended): use contiguous-range SUMs where possible — e.g. BO268 (year total) should be =SUM(BO4:BO265) (or the exact contiguous block covering all class "BO" totals). Similarly replace other long explicit lists with SUM over the BO range. This reduces maintenance mistakes.
+
+4) Minor (cosmetic) items — optional improvements
+- Many single-expression formulas are wrapped with SUM(), e.g. =SUM(C3*BK3) or =SUM(C3-D3). These work but are confusing. Replace with plain arithmetic (C3*BK3, C3-D3) for clarity.
+- Use consistent absolute referencing for the RISE cost cell in the class total rows (you already use $E$n in most places; keep that pattern).
+
+What to do (practical steps)
+1. In the template class “Total Savings” row pattern, change every per-company savings formula from:
+   =SUM(<company_total_row> - $D<row>*<company_count_cell>)
+   to:
+   =$D<row>*<company_count_cell> - <company_total_row>
+   (Do this across all classes — easiest by editing one and filling down if rows are consistently organized.)
+
+2. For BK261 (and any BK cells that are numbers), enter:
+   =SUM(F261:BG261)
+
+3. Replace any massive manual BO lists with a range sum, e.g.:
+   =SUM(BO4:BO265)
+
+4. (Optional) Clean SUM() wrappers around single arithmetic to plain arithmetic for readability.
+
+If you want, I can:
+- Give a list of every cell address that uses the incorrect savings order so you can change them in bulk, or
+- Produce the corrected formula patterns for a few example class blocks so you can copy/paste. Which would you prefer?

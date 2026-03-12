@@ -1,0 +1,48 @@
+I reviewed the three sheets and found a few formula problems that will produce wrong numbers (or #DIV/0! errors). Below are the errors, why they are wrong, and simple fixes you can apply.
+
+1) Seq Production Costs — wrong reference in cost-per-Q20-base
+- Problem cell: C11
+- Current formula: =B21/C10
+- Why it’s wrong: C11 should divide the Q20 grand total (C21) by the Q20 one-year total (C10). Using B21 (shotgun grand total) gives the wrong numerator.
+- Fix / correct formula: =C21/C10
+- Optional safer version (avoids #DIV/0! if C10 is blank): =IF($C$10=0,"",C21/C10)
+
+2) Seq Production Costs — other-activities grand total uses COUNT instead of SUM
+- Problem cell: G21
+- Current formula: =COUNT(G19:G20)
+- Why it’s wrong: COUNT returns the number of numeric cells (usually 2), not the sum of the dollar amounts. That makes G21 incorrect and will break the overall yearly total (B23).
+- Fix / correct formula: =SUM(G19:G20)
+
+3) Seq Production Costs — total year formula depends on the wrong G21
+- Problem cell: B23
+- Current formula: =B21+D21+G21
+- Note: This formula is fine, but because G21 was wrong (see #2), B23 was wrong as well. After fixing G21 no change needed. If you prefer a SUM form: =SUM(B21,D21,G21)
+
+4) Tech Dev Costs — division by zero (percent of total)
+- Problem cell: B18 (and any other % cells that use B6)
+- Current formula: =B17/B6
+- Why it’s wrong: B6 (TOTAL COSTS) is 0 in the sheet, so this produces #DIV/0!. Either B6 must hold the real total or the formula must handle zero.
+- Fix options:
+  - Supply the correct total in B6 (if B6 is supposed to be the sum of sections).
+  - Or use a safe formula to avoid errors: =IF($B$6=0,"",B17/$B$6)
+
+5) Bioinformatics Costs — multiple division-by-zero issues
+- Problem cells: B18, B31, B44 (each uses B6 in denominator)
+- Current formulas: =B17/$B$6, =B30/$B$6, =B43/$B$6
+- Why it’s wrong: B6 is 0, so these give #DIV/0!. Same fix as Tech Dev.
+- Fix / safer formulas:
+  - =IF($B$6=0,"",B17/$B$6)
+  - =IF($B$6=0,"",B30/$B$6)
+  - =IF($B$6=0,"",B43/$B$6)
+- Or populate B6 with the correct total funds requested.
+
+Extra note about cells showing "1"
+- In Seq Production, C21 / E21 / H21 are shown as "1". That might be intended as a 100% placeholder, but make sure these aren’t hardcoded if you expect them to be calculated. Grand totals should be numeric sums (B21, D21, G21) not arbitrary 1’s.
+
+Quick checklist to fix now
+- Change C11 → =C21/C10 (or IF wrapper)
+- Change G21 → =SUM(G19:G20)
+- Populate B6 in Tech Dev and Bioinformatics with the correct total OR change the % formulas to IF(...,"",...) forms shown above
+- Recalculate and verify B23 and any dependent totals afterward
+
+If you want, I can give you an exact list of replacements you can paste into the sheet or produce small IFERROR-wrapped formulas for all risky divisions.

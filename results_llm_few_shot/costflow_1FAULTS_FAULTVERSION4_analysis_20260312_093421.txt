@@ -1,0 +1,62 @@
+I reviewed the workbook and found a set of recurring formula mistakes (wrong references, self‑inclusion, missing formulas, sign mistakes). Below are the key errors, short explanations, and simple fixes you can apply. Follow the same pattern elsewhere in the sheet (many errors are repeated across the different inventory-method sections).
+
+1) Problem: Beginning inventory / purchase rows point at totals instead of their own row
+- Faulty cells: Valuing Ending Inventory sheet — I8, K8, I9, K9
+- What’s wrong: I8 =+C10 and K8 =+E10 (and similar for row 9) pull totals (C10/E10) instead of the row-level values (C8/E8 and C9/E9). This inflates/duplicates totals.
+- Fix:
+  - I8 = C8
+  - K8 = E8
+  - I9 = C9
+  - K9 = E9
+- Why: I8/I9 should be the units in each beginning/purchase row; K8/K9 should be the extended cost for that row. Use the row values, not the totals cell.
+
+2) Problem: Goods available totals only summing one cell
+- Faulty cell: I10
+- What’s wrong: I10 =SUM(I9:I9) only includes the second row.
+- Fix: I10 =SUM(I8:I9)
+- Why: Goods available units = sum of beginning units and purchase units (I8 + I9).
+
+3) Problem: Average unit cost dividing wrong/using wrong total
+- Faulty cell: J10 (and other average cells using wrong inputs)
+- Likely wrong because K10 and I10 were wrong
+- Fix sequence:
+  - K10 =SUM(K8:K9)
+  - J10 = K10 / I10
+- Why: Average unit cost = total cost of goods available (K10) divided by total units available (I10).
+
+4) Problem: Ending inventory units computed with wrong sign / extra subtraction
+- Faulty cell: I11
+- What’s wrong: I11 = -I10 - SUM(C17:C18) uses an extra negative and gives incorrect sign.
+- Fix: I11 = I10 + SUM(C17:C18)
+- Why: Sales rows (C17,C18) are recorded as negative units. Adding them to goods available reduces units sold. If sales were recorded positive, you would subtract; because they are negative, adding removes units.
+
+5) Problem: Missing / unknown extended cost for ending inventory
+- Faulty cell: K11 (marked “?”)
+- Fix: K11 = I11 * J10
+- Why: Extended cost of ending inventory = ending units * unit cost (use the weighted average unit cost in J10).
+
+6) Problem: Cost of goods sold / cost totals not linked properly
+- Faulty cell: K12 (marked “?”) and other COGS cells
+- Fix: K12 = K10 - K11  (or K12 = SUM(K8:K9) + K? - K11 depending on layout)
+- Why: COGS (periodic) = Cost of goods available (K10) minus Ending inventory cost (K11). Make sure sign convention consistent.
+
+7) Problem: Repeated pattern errors throughout (SUM ranges, references to totals instead of row values)
+- Examples: Many formulas use =+I$8 or =+K$8 incorrectly in rows that should reference the current row (use relative references like I8, K8), or use SUM(I9:I9) instead of SUM(I8:I9), or reference E10 where E8 is needed.
+- Fix: For each block (periodic / perpetual, FIFO / LIFO / weighted average), check these patterns:
+  - Row-level cells should reference their own row (e.g., units C#, cost D#, extended E# = C#*D#).
+  - Totals should SUM the row-level cells for that block.
+  - Average unit cost = total cost / total units.
+  - Ending inventory cost = ending units * unit cost.
+  - COGS (periodic) = GAFS total cost - Ending inventory cost.
+
+How to proceed quickly
+- Start at the top of the “Valuing Ending Inventory” section and fix the row formulas for C8:E9 (E = C*D). Then fix I8, K8, I9, K9 to use those row values.
+- Recompute I10, K10 and J10 after the row fixes.
+- Fix I11 to I10 + SUM(sales rows), then K11 = I11 * J10.
+- Copy the corrected patterns to the other sections (Weighted Average periodic, FIFO/LIFO periodic, perpetual sections). The same three-step pattern applies: row-level -> totals -> average -> ending inventory -> COGS.
+
+If you want, I can:
+- Provide an exact corrected list of formulas for a specific block (e.g., Weighted Average — Periodic) or
+- Produce a corrected copy of the Valuing Ending Inventory sheet (list each corrected cell formula).
+
+Which would you prefer?

@@ -1,0 +1,36 @@
+High-level overview
+- Workbook has 3 sheets: Sheet1 (data), Sheet2 and Sheet3 (no content shown).
+- Sheet1 layout: row 1 contains headers; rows 2–68 hold individual student records; rows 69–72 contain summary statistics (MAX, MIN, AVERAGE, STDEV) for several columns.
+
+Columns (Sheet1)
+- A: Stdt ID (unique identifier per row). Note a few very large numbers (e.g., A16 = 98227577, A68 = 99650185).
+- B: HW1 (/30) — numeric scores.
+- C: HW2 (/40) — numeric scores.
+- D: Exam1 — numeric scores.
+- E: exam2 bonus — small numeric/decimal bonus values.
+- F, H, I, J, K, (and some other headers) appear to be lecture/date or attendance markers (F1 = 14/4/2003; H1 = 22/4/2003; I1 = 28/4/2003). Many of these columns contain 0/1 values or blanks.
+- G: HW3 (/30) — numeric scores.
+- L, M: lecture-related columns (lec3a, lec3b) — numeric.
+- N: HW4 (/25) — many rows contain formulas (simple arithmetic expressions like =20+4, =14+4, =18+5, =17+5/2, =12/2+3, =8-4, etc.) rather than references to other cells.
+- O: lec Q 5 (/10) — numeric, often 10 or lower.
+- P: rep 2 (/10) — numeric, decimals present (e.g., 7.5, 8.5).
+- Q: Final exam — numeric; some rows use formulas adding constants (e.g., =41+5, =64+5, =58+2+3, =78+2+5).
+
+Formulas and patterns
+- Student-row formulas are almost exclusively simple arithmetic constants (e.g., N2 = 20+4). They do not generally reference other cells.
+- Summary rows (69–72) use built-in aggregate functions for selected columns:
+  - Row 69: MAX formulas — B69 = MAX(B33:B68), C69 = MAX(C33:C68), D69 = MAX(D33:D68), G69 = MAX(G2:G68), N69 = MAX(N17:N68), Q69 = MAX(Q17:Q68).
+  - Row 70: MIN formulas — B70 = MIN(B2:B68), C70 = MIN(C2:C68), D70 = MIN(D2:D68), G70 = MIN(G2:G68), N70 = MIN(N17:N69), Q70 = MIN(Q17:Q69).
+  - Row 71: AVERAGE formulas — B71 = AVERAGE(B2:B68), C71 = AVERAGE(C2:C68), D71 = AVERAGE(D2:D68), G71 = AVERAGE(G2:G68), N71 = AVERAGE(N2:N68), Q71 = AVERAGE(Q2:Q68).
+  - Row 72: STDEV formulas — B72 = STDEV(B2:B68), C72 = STDEV(C2:C68), D72 = STDEV(D2:D68), G72 = STDEV(G2:G68), N72 = STDEV(N2:N68), Q72 = STDEV(Q2:Q68).
+
+Notable issues / inconsistencies to check
+- Summary ranges are inconsistent:
+  - B69/C69/D69 use B33:B68, C33:C68, D33:D68 (starting at row 33) while the averages/mins/stdevs use rows 2:68. This likely is unintended.
+  - N70 = MIN(N17:N69) and Q70 = MIN(Q17:Q69) include the summary MAX cells (N69 and Q69) in their ranges; that will distort the MIN results. Probably intended ranges are N17:N68 and Q17:Q68.
+- Many N- and Q-column student entries are written as arithmetic formulas rather than final numbers; they evaluate to constants but are less transparent than direct values.
+- Several columns are sparsely populated or have many zeros/blanks (lecture attendance columns), which may affect summary stats.
+- Some cells contain division (e.g., N10 = 17+5/2, N22 = 12/2+3) or subtraction (N47 = 8-4) — ensure operator precedence is intended.
+
+Overall
+- Sheet1 is a student grade/attendance table with per-assignment columns, several lecture/attendance columns, and a final exam column. Most student formulas are simple arithmetic constants. Summary rows compute MAX, MIN, AVERAGE, and STDEV for selected columns but contain inconsistent ranges (possible off-by-row and inclusion of summary cells). Sheet2 and Sheet3 are present but no data was provided for them.

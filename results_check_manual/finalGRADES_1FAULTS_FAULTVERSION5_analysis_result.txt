@@ -1,0 +1,75 @@
+I inspected the formulas in all three sheets and found one clear formula error plus a number of inconsistent uses of divisors and some places where sum formulas reference missing input cells (likely data-entry omissions). Summary first, then details and suggested fixes.
+
+Summary (most important)
+- Definite formula bug: Writing Assng.!I19 uses =G19/874 — this is almost certainly a typo. All other percent cells in that column use =G#/H# (H19 = 500). I19 should be =G19/H19 (or =G19/500).
+- Multiple rows where SUM formulas include blank/missing input cells (likely data-entry omissions) causing totals to be based on fewer components than intended.
+- Inconsistent averaging/divisor practice in Homework!L (some rows divide by 7, some by 8) — this is error-prone. Use a dynamic count (COUNTA) or AVERAGE to remove manual inconsistencies.
+- In Quizes & Exams the summary-row averages (D47:K47) use different denominators (some /41, some /40). If these were intended to reflect different counts of valid entries, use COUNT/COUNTA to be explicit; otherwise this is inconsistent.
+
+Details and suggested corrections
+
+1) Definite formula typo
+- Writing Assng. sheet
+  - Cell I19: formula is =G19/874 and value 0.535469107551487. This is inconsistent with the rest of column I where the percent is computed as =G#/H# (H# is 500). If H19 = 500, the correct formula is:
+    - I19 -> =G19/H19
+    - Using =G19/H19 would give 468/500 = 0.936, which is probably the intended percent.
+  - Action: change I19 to =G19/H19 (or =G19/500 if you prefer hard-code).
+
+2) Sum formulas referencing missing inputs (possible data omissions)
+- Writing Assng. sheet: many rows use G# = D# + E# + F#.
+  - Row 14 (Tramp): D14 is blank. G14 formula =D14+E14+F14 is valid but D14 missing — resulting G14 = E14+F14 (143+285 = 428). If D14 should have a value, fill it.
+  - Row 26 (Dewey): D26 is blank. G26 = 436 equals E26+F26; if D26 should have an attendance/outline score, add it.
+  - Row 32 (Bullwinkle): D32 is blank. G32 (379) = E32+F32; check for missing D32.
+  - Row 45 (Popeye): E45 and F45 appear blank; G45 formula is =D45+E45+F45 and resolves to 33 (D45 only). Confirm whether E45/F45 should contain scores.
+  - There may be other rows with similar blanks. Recommendation: search column D/E/F for unusual blanks where G# ≠ expected total, and fill missing scores or document intentional blanks.
+
+3) Homework sheet — inconsistent averaging divisors in L column
+- Column L contains formulas like =N#/7 or =N#/8. This is not uniform: some students are divided by 7, some by 8. Top of sheet has K2 "Optional *", so I assume column K is optional and should not always be counted.
+  - Examples:
+    - L6 = N6/7
+    - L10 = N10/8
+    - L24 = N24/8
+    - L30 = N30/8
+    - L37 = N37/8
+    - L39 = N39/8
+    - L40 = N40/8
+    - Many other rows use /7.
+  - Problem: the divisor is hard-coded and varies row-by-row — this is error-prone and easy to get wrong if the optional column changes or data-entry differs.
+  - Suggested fix:
+    - Use an automatic count of the number of non-empty score cells instead of manual /7 or /8. For example (for row 6) something like:
+      - =N6/COUNTA(D6:K6)  (if D:K contains only the score cells and blanks are truly blanks)
+      - or better: use AVERAGE across the actual score cells, e.g. =AVERAGE(D6:K6) or if zeros should be excluded use =SUM(D6:K6)/COUNTIF(D6:K6,">""").
+    - If column K is optional and only included under certain conditions, use logic (e.g., IF) to include column K only when appropriate.
+
+4) Quizes & Exams — summary-row divisor inconsistency
+- Row 47 (averages)
+  - D47 = SUM(D6:D46)/41
+  - E47 = SUM(E6:E46)/41
+  - F47 = SUM(F6:F46)/41
+  - G47 = SUM(G6:G46)/41
+  - H47 = SUM(H6:H46)/40
+  - I47 = SUM(I6:I46)/40
+  - J47 = SUM(J6:J46)/40
+  - K47 = SUM(K6:K46)/40
+- Observations:
+  - Some columns are averaged dividing by 41, others by 40. If this is intentional (because one column has one missing value) that's OK — but it's opaque and brittle. If it was unintentional, it introduces a wrong average.
+  - Suggestion: replace the hard-coded denominator with an expression that counts non-empty / valid entries:
+    - =SUM(D6:D46)/COUNT(D6:D46)  (or COUNTA if stores text for missing)
+    - or =AVERAGE(D6:D46)
+  - This makes the summary robust to missing data.
+
+5) Other housekeeping / minor points
+- In Homework column N the formula is N# = D# + E# + F# + G# + H# + I# + J# + K# even when some cells are intentionally optional/missing. That's acceptable if blanks are intended to be zero, but combined with ad-hoc divisors in L makes behavior unclear. Use explicit average of actual count of included tests.
+- In Writing Assng. the header rows have labels repeated (G3 "TOTAL" & G4 "POINTS") — not an error but could be confusing.
+- In Quizes & Exams column K formulas are consistent weighted average computations; I did not find arithmetic mistakes there beyond the divisor guidance above.
+
+Action checklist you can apply
+- Fix Writing!I19 to =G19/H19.
+- Audit Writing D/E/F columns for rows where G sums a blank: rows 14, 26, 32, 45 (and any others you find). Either enter the missing scores or mark them intentionally blank and document.
+- Replace hard-coded divisors in Homework!L (and Quizes summary row D47:K47) with dynamic formulas using COUNT/COUNTA or use AVERAGE to avoid manual mistakes.
+- If column K in Homework is optional, implement the optional-inclusion rule explicitly (for example using IF or MAX to include K only when beneficial).
+- Optionally: scan the workbook for other unusual literals (like 874) — that was the only clear stray constant I found used as a divisor.
+
+If you want, I can:
+- Give exact replacement formulas (COUNTA/AVERAGE/IF) for the Homework L column and Quizes summary row.
+- Produce a list of every row with blank D/E/F in the Writing sheet so you can decide whether those are intentional omissions.

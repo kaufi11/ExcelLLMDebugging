@@ -1,0 +1,46 @@
+Nice summary — I found the concrete errors and give quick fixes + a short recommendation to avoid future mistakes.
+
+1) Wrong averages in Sheet3 (bad cell references)
+- Problem: Student test-average formulas (col P) reference wrong cells like L40, L41 … L54 instead of the student’s own percent cell (L4, L5 … L18). This makes P# return wrong/blank results.
+- Fix: change each P-row to average its own percent columns. Example changes:
+  - P4: =AVERAGE(D4,F4,H4,J4,L4)
+  - P5: =AVERAGE(D5,F5,H5,J5,L5)
+  - … continue for P6 through P18 using the same pattern (replace the trailing L40..L54 with L6..L18 respectively).
+
+2) Typo / wrong numerator in Sheet3 F14
+- Problem: F14 =331/$F$24 is a typo (331 is not a cell reference).
+- Fix: F14 should divide the Test 2 points (E14) by the scale:
+  - F14: =E14/$F$24
+
+3) Sheet1 summary rows use wrong ranges/functions
+- Problems:
+  - Low Grade (C20) uses MIN(C4:C18) — off by one.
+  - Class Average (C21) uses MAX(C5:C19) — wrong function and wrong range.
+- Fix: make the three homework summary formulas consistent with the student rows C3:C17:
+  - C19 (High Grade): =MAX(C3:C17)  (already correct)
+  - C20 (Low Grade): =MIN(C3:C17)
+  - C21 (Class Average): =AVERAGE(C3:C17)
+
+4) Mixed scales (design fragility) — explanation & recommended standardization
+- Issue: Homework averages on Sheet2 are 0–100 but tests/midterm/final/participation are stored as decimals (0–1). The Sheet1 final-grade formula multiplies accordingly (homework ×0.125; tests ×25 etc), so it works now, but the mixed convention is easy to break (and caused the earlier P# errors to be hard to spot).
+- Recommendation (pick one):
+  Option A — keep current system but fix bugs above.
+  Option B — standardize everything to 0–100 (easier to read). If you convert test % columns on Sheet3 to 0–100, change D# formulas to:
+    - D4: =C4/$D$24*100  (and similarly F#, H#, J#, L# multiply by 100)
+    - Then on Sheet1 use percentage-weighted formula with decimals (weights sum to 1):
+      - I3: =(C3*0.125) + (D3*0.25) + (E3*0.25) + (F3*0.25) + (G3*0.125)
+    (Here all components are 0–100 and weights are fractions.)
+  Option C — convert homework to 0–1 on Sheet2 (P# /100) and keep Sheet1 formula as-is but simpler to maintain.
+
+5) VLOOKUP note (Sheet1 J#)
+- The VLOOKUPs look OK provided your threshold table (K5:K17) is sorted ascending — it is in your sheet. Using TRUE() is fine. No change needed unless you change scale — then update thresholds accordingly.
+
+6) Minor: header typos (“Sudents”, “Studnets”) — cosmetic only.
+
+Action steps I recommend you do now (quick checklist)
+- Fix Sheet3: replace every P4:P18 with =AVERAGE(Dn,Fn,Hn,Jn,Ln).
+- Fix F14 to =E14/$F$24.
+- Fix Sheet1 C20 and C21 to the corrected ranges/functions above.
+- Decide which scale standardization option you prefer (B is my preference) and implement consistently.
+
+If you want, tell me which option (A, B or C) you prefer and I’ll give the exact set of formula edits to paste into the sheet.

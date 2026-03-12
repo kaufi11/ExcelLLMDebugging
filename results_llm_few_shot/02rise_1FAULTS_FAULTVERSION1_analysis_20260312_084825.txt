@@ -1,0 +1,28 @@
+Summary of the main error
+- The per-company "Total" cells for each class (the row that sums each company's cost for that class — e.g. F4, G4 … through BG4, and the equivalent "Total" rows for every class block: F7..BG7, F10..BG10, etc.) use the RISE cost (column E) instead of the Public Cost (column D).  
+  - Example: F4 is =SUM(F3*$E$3). That multiplies company participants by the RISE cost (E3) instead of the public cost (D3). As a result the per-company totals and many class totals/summaries are wrong.
+
+Why it's wrong (short)
+- Public cost to each organization should be participants × PUBLIC COST (column D). Using column E computes RISE's internal tuition, not the public cost charged to the participant organization.
+
+Exact repair (simple & copyable)
+1. Replace the per-company total formulas with multiplication using column D (public cost). Use a fixed column reference for D so you can fill across:
+   - In F4 put: =F3*$D3
+   - Then fill that formula across to G4:BG4, and fill down for each class "Total" row.
+   - For the other class blocks do the same (e.g. in row 7 use =F6*$D6 in F7; in row 10 use =F9*$D9 in F10; etc.)
+
+2. (Optional cleanup) Remove SUM() wrappers around single arithmetic expressions (e.g. change =SUM(F3*$E$3) to =F3*$D3). SUM(...) around a single arithmetic expression works but is confusing.
+
+Other small fixes / recommendations
+- In the Companies sheet the E-column formulas are written like =SUM(C3-D3). Change to =C3-D3 for clarity (not mandatory for correctness).
+- Consider using consistent absolute/relative references if you maintain the sheet by copying formulas:
+  - Use $D3 (lock column) when filling across: =F3*$D3
+  - Row references should remain relative so that when you fill down they change to the correct row (e.g. =F6*$D6 for the next class).
+
+How to check after fix
+- After changing per-company totals to use column D, BO4 (class-level totals) and the summary lines (BM4, BN4, BO268, F268:BG268 etc.) should reconcile:
+  - BM# (D#*BK#) = total public cost for the class
+  - BO# (sum of per-company totals across F#..BG#) = should equal BM#
+  - BN# (BM# - BO#) then gives expected savings (if that is the intended calculation)
+
+If you want, I can produce a short list of all rows that need the formula swapped (every "Total" row: 4,7,10,13,... down the sheet) or give a Find/Replace string to fix them in bulk. Which would you prefer?

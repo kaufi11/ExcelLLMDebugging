@@ -1,0 +1,29 @@
+Summary of the errors
+1. Big jump in event numbering: A24 contains =A22+829 which produces huge event IDs (840+) and breaks the sequence for all later events. This is almost certainly a typo.
+2. Manual override breaks sequence later: A41 is set to the literal 26 instead of continuing the formula chain (so numbering is inconsistent).
+3. Minor: some events (e.g., A15 “Break‑A – Eliminated”) have identical start and end times and no Length in G; many rows have missing G values. This causes inconsistent duration data.
+
+How to fix (simple, exact changes)
+1. Fix the typo in A24:
+   - Replace =A22+829 with =A22+1
+   - Result: event IDs after row 24 will continue sequentially from A22 (no huge jump).
+
+2. Make A41 follow the chain (don’t hardcode):
+   - Replace the manual 26 with a formula continuing the pattern, e.g. =A39+1 (or if the immediately previous used A40, use that: =A40+1).
+   - Result: event numbering becomes consistent and updates automatically.
+
+3. (Recommended) Compute Lengths automatically:
+   - In G12 (and fill down) use a formula that converts time difference to minutes:
+     =IF(AND(C12<>"",D12<>""),(D12-C12)*24*60,"")
+   - Format column G as Number (no decimals).
+   - Result: durations populate automatically and will reflect any time edits.
+
+4. (Optional cleanup) Removed / cancelled events:
+   - For "Eliminated" rows like A15 either delete the row or clear the START/END cells so they don’t confuse duration calculations. If you want to keep the row, ensure its TYPE notes “Cancelled” and G is blank.
+
+Why this works (short explanation)
+- The sequence of event IDs is built by adding 1 to the previous ID. The +829 was a typo that made the chain jump; correcting it returns IDs to a simple +1 progression and keeps formulas consistent.
+- Replacing hardcoded numbers with formulas avoids manual mistakes and ensures updates cascade automatically.
+- The length formula converts time serials to minutes by multiplying the Excel day fraction (D−C) by 24*60.
+
+If you want, I can give the exact fill-down ranges to update all A cells to a robust formula (for example: in A13 use =IF(B13="","",A12+1) and fill down) and produce corrected formulas for the whole sheet.

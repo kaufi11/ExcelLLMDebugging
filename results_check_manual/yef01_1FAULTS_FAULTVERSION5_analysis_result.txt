@@ -1,0 +1,86 @@
+I inspected the formulas you supplied and found several inconsistencies, suspicious entries and likely errors. I list them by sheet with cell addresses, explain why each is a problem (or at least suspicious), and give a recommended fix.
+
+Summary (high level)
+- Most sheets contain small manual “fudge” adjustments (±0.01, ±0.000001, ±0.000002, −0.0001, etc.) added to individual cells or totals to force percents/totals to sum to 1. These are inconsistent and make the workbook hard to audit.
+- One clear formula error produces a wrong total in the FTEE table (ILCC row).
+- Several SUM formulas include an extra row in their ranges (harmless if that row is blank/zero, but inconsistent).
+- A few cells use odd arithmetic (e.g., subtraction of 1 from a literal) instead of direct numbers.
+
+Detailed findings and recommended fixes
+
+1) Sheet: FTEE Calculation — critical error
+- H14 (ILCC-03): formula =+D14+F14
+  - Problem: D14 is a percentage (0.061693), not the credit FTEE (C14). H14 therefore computes ~230.331693 instead of the intended C14+F14 (≈2,785.56). This is very likely a typo and produces incorrect totals and percentages that depend on H14.
+  - Severity: High — affects totals and % of total (I14 and the grand total H28/I28).
+  - Fix: Change H14 to =C14+F14 (and if you consistently add 0.01 elsewhere for rounding, make that explicit and consistent, e.g. =C14+F14+0.01).
+
+2) Sheet: FTEE Calculation — inconsistent small adjustments / manual fudges
+- Examples:
+  - C28 = =SUM(C12:C27)+0.02
+  - F28 = =SUM(F12:F27)+0.03
+  - H28 = =SUM(H12:H27)-0.02
+  - I28 = =SUM(I12:I27)+0.000002
+  - Many H rows: some rows add +0.01 (H12, H13, H15, H22, H26), some do not (H17, H18, ...), and H14 uses the wrong cell (see #1).
+  - Some individual percentage cells are adjusted (I20 = ... -0.000001; I21 = ... -0.000001).
+  - Problem: These micro-adjustments are inconsistent and make tracking true values difficult. They can mask real calculation issues and are error-prone.
+  - Severity: Medium — not necessarily wrong numerically, but undesirable and fragile.
+  - Fix: Remove the ad-hoc additions/subtractions. Use consistent rounding strategy (e.g., use ROUND for display only, or use a single column with unrounded values and a separate rounded display). If small offsets are required to force exactly 1.0, explain and apply consistently (preferably don’t alter base calculations).
+
+3) Sheet: FTEE Calculation — suspicious formulas referencing different units
+- D14, D25, D26 and a few other D cells use formulas like =+C25/H25 or =+C26/H26. That formula is correct if D is supposed to be "credit FTEE as % of college total FTEE", but verify that this is the intended metric as D is labelled differently in places. (This is not an error per se, just verify intent.)
+  - Recommendation: Confirm column definitions; ensure all rows compute the same metric with the same formula pattern.
+
+4) Sheet: FTEE Calculation — inconsistent H-row formulas
+- Many H rows use =C+F, but some add +0.01 and others not. Make this consistent (see #2).
+- Example inconsistent formulas:
+  - H12 = =+C12+F12+0.01
+  - H13 = =+C13+F13+0.01
+  - H14 = (wrong) =+D14+F14
+  - H15 = =+C15+F15+0.01
+  - H17 = =+C17+F17 (no +0.01)
+  - H26 = =+C26+F26+0.01
+  - Fix: Standardize H formula to =Cxx+Fxx (or =Cxx+Fxx+0.01 if you decide to apply the 0.01 consistently), and correct H14 as above.
+
+5) Sheet: FTEE Calculation — sum ranges include rows that may not exist or be blank
+- B28 = =SUM(B12:B27) but your data ends at B26 in the rows provided — same pattern for C28 etc using C12:C27. If rows B27/C27 are empty, the sum is OK, but the ranges are inconsistent with data (they probably intended B12:B26).
+  - Recommendation: Make SUM ranges exactly match your data rows (B12:B26, C12:C26, etc.) to avoid accidental inclusion of future rows or blanks.
+
+6) Sheet: “Revenues by Source” — odd literal formula, and SUM range includes extra row
+- C12 = =147577404-1
+  - Problem: Using subtraction of 1 to derive a value is odd and confusing. The result is correct (147,577,403) but the formula is nontransparent.
+  - Fix: Replace with the literal number =147577403 or a reference to the source cell if appropriate.
+- B16 = =SUM(B10:B15) and C16 = =SUM(C10:C15)
+  - Problem: Your data rows are B10 through B14 (5 revenue sources). Summing to B15/C15 (a row that appears not to exist in the extract) is inconsistent. If B15 is blank zero this is harmless; still tidy to set range to B10:B14 and C10:C14.
+  - Fix: Use SUM(B10:B14) and SUM(C10:C14) if there are exactly five items.
+
+7) Sheet: “Expenditures by Function” — SUM ranges include extra blank row(s)
+- B20 = =SUM(B10:B19), C20 = =SUM(C10:C19)
+  - As above, data is present in rows 10–18; referencing row 19 is odd. Use exact ranges SUM(B10:B18) and SUM(C10:C18) unless there is a reason to include B19/C19.
+
+8) Sheet: “Expenditures by Category” — manual tweak to a percentage
+- B12 = =ROUND((C12/$C$16),4)-0.0001
+  - Problem: subtracting 0.0001 after rounding is a manual adjustment to influence the total. This is inconsistent with other rows where ROUND alone is used. It alters the rounded percentage in a nontransparent way.
+  - Severity: Low–Medium: not a computational error but a maintainability/accuracy problem.
+  - Fix: Remove the -0.0001 and, if required, handle rounding at presentation layer or adjust all rows consistently.
+
+9) Sheet: “General State Financial Aid”
+- B23 is entered as =12027969 instead of a plain number. This is odd but not functionally wrong.
+  - Fix: Replace with the literal number or a proper reference.
+
+10) Miscellaneous: many tiny adjustments to force totals to equal 1
+- Across multiple sheets (FTEE and others) I28, C28, F28, etc. include tiny tweaks (+0.02, −0.02, +0.000002, etc.). This reduces auditability.
+  - Recommendation: Use base unadjusted sums and show rounded display values in another column or use a formula to show the residual (1 - SUM(...)) so small rounding differences are transparent.
+
+Concrete recommended actions (priority)
+1. Fix the H14 formula in the FTEE Calculation sheet immediately: change =D14+F14 to =C14+F14 (or =C14+F14+0.01 if you decide to apply the +0.01 consistently).
+2. Remove ad-hoc micro-adjustments (±0.01, ±0.02, ±0.000001, −0.0001, etc.) and replace with a consistent rounding/display approach (e.g., keep full-precision calculations in helper columns; use ROUND only for displayed values).
+3. Tighten SUM ranges so they exactly cover the intended data (no off-by-one row references).
+4. Replace odd constructs (C12 =147577404-1, B23 =12027969) with direct numbers or references for clarity.
+5. Recalculate totals after correcting H14 and removing manual adjustments and validate that all % columns sum to 1 (allowing for small rounding residuals and explicitly display the residual if needed).
+
+If you want, I can:
+- Provide an explicit corrected formula list for the FTEE sheet (show exactly what to put in each H row and the total row),
+- Recalculate expected corrected totals and percentages (showing before/after),
+- Scan the rest of the workbook for similar wrong-cell references if you provide the rest of the sheets.
+
+Which would you prefer?

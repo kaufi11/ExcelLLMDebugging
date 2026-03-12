@@ -1,0 +1,38 @@
+I reviewed the formulas and values on the "HW" sheet. Summary of problems, why they are wrong, and exact fixes:
+
+1) Wrong formula/typo that breaks the amortization schedule (causes negative ending balance)
+- Problem: B47 is =1 (a hard-coded 1). It should be the interest on the balance in D46.
+- Effect: C47 (principal portion) and D47 (ending balance) become incorrect; final balance turns into -581.808... instead of 0.
+- Fix (for this example, annual payments at 6%): change B47 to =0.06*D46
+- Better general fix (reference a rate cell): change B47 to = $B$6 * D46 (if B6 contains the annual rate 0.06). If you keep the example rate in another cell, point to that cell.
+
+2) Inconsistent / hard-coded interest rate usage
+- Problem: many formulas use the literal 0.06 (e.g. B27 uses =G22 where G22 = 0.06*100000; B35 uses =0.06*D33, etc.). Meanwhile the sheet’s top inputs (B5 = 196555 and B6 = 0.0572) are different values and are not used by the example amortization. Also A25 uses -PMT(6%,15,100000,0) with a literal 6%.
+- Effect: the amortization table is disconnected from the input cells; changing B6 or B5 will not update the example.
+- Fix: pick one authoritative cell for the annual rate (e.g. $B$6) and use it everywhere. Example replacements:
+  - A25 -> =-PMT($B$6,15,100000,0)  (if payments are annual and B6 = 0.06)
+  - interest cells (B27, B33, B35, ...) -> = $B$6 * Dprevious
+  - payment cell (A25) should be referenced by principal formulas as you have done ($A$25), but the rate used should be referenced, not hard-coded.
+
+3) Payment frequency / term inconsistency (documentation vs formulas)
+- Problem: the sheet header (B4) says "30 years with MONTHLY payments", but the example amortization is a 15-year schedule with annual payments at 6%. The PMT call uses 15 periods and 6% as the period rate (annual), and interest is computed as 0.06*balance (annual interest). The inputs at top of sheet (B5 = 196555, B6 = 0.0572) do not match the example numbers (100000, 6%).
+- Effect: confusion and potential incorrect formulas if the user intends to model the mortgage shown in the header. If you want monthly payments you must convert the annual rate and increase nper accordingly.
+- Fixes:
+  - If you want the current table to be a 15-year annual-pay mortgage, change the header and make the rate and principal refer to the example cells (or vice versa).
+  - If you want a 30-year monthly mortgage using cells B5/B6 as inputs, use:
+    - Payment (e.g. in A25) -> =-PMT($B$6/12,30*12,$B$5,0)
+    - Interest each month -> =($B$6/12)*PreviousBalance
+    - Principal each month -> =Payment - Interest
+  - Consistently reference the principal and rate input cells instead of hard-coded numbers.
+
+4) Sign convention / PMT usage (note)
+- You used -PMT(...) to make the payment positive. That is fine, but be consistent. If you put payment in A25 as a positive value, the principal portion formulas should be written to subtract interest from that positive payment (which you already do: principal = $A$25 - interest).
+
+5) Final balance / rounding
+- Once the B47 interest formula is corrected (and the rate references standardized), the final D47 should be 0 (within rounding). If you want exact zero, consider rounding payment or the last principal payment to clear rounding residue.
+
+Concrete minimal correction to fix the immediate error:
+- Replace cell B47: from =1 to =0.06*D46
+- Optionally replace that 0.06 by a reference to your rate cell (e.g. = $B$6 * D46) after ensuring B6 contains 0.06 for this example.
+
+If you want, tell me which scenario you intend (15-year annual at 6%, or 30-year monthly using B5/B6), and I will give the exact corrected formulas for the whole amortization table (including the first-row formulas and a clean set of absolute references).

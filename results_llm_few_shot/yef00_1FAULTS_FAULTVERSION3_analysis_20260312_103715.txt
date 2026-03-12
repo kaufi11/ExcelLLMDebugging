@@ -1,0 +1,33 @@
+Summary — main errors found
+1) Unintentional “+1” added to some values, which skews totals and percentages.
+   - Faulty cells: General State Financial Aid C11 (=141577402+1), General State Financial Aid B21 (=3684419+1), FTEE sheet E27 (=SUM(E11:E26)+1).
+   - Fix: remove the “+1”.
+     - C11 → =141577402
+     - B21 → =3684419
+     - E27 → =SUM(E11:E26)
+   - Why: The extra +1 adds one dollar (or one FTEE) where it does not belong. This shifts totals and all derived percentage rows by a small but incorrect amount.
+
+2) Hard-coded constant used instead of a cell reference (causes wrong FTEE calculation for one college).
+   - Faulty cell: FTEE sheet F14 currently =829/600
+   - Fix: use the cell that holds the dollar/credit value. Change to:
+     - F14 → =E14/600
+   - Why: The formula should compute FTEE from the cell E14 value (366,167). Using 829 hard-coded gives the wrong FTEE and breaks consistency if values change.
+
+3) Suspicious in-cell addition of two large numbers (possible data-entry/formula mistake).
+   - Faulty cell: Revenues by Source C9 currently =9432730+111410104
+   - Suggestion/fix:
+     - If this is intended (two separate amounts to be summed), make it explicit with SUM or split into two source rows: =SUM(9432730,111410104) or put the two numbers in separate rows and sum the column.
+     - If it’s a typo, replace with the correct single value (e.g., 120842834 if the two numbers are correct and you want the sum).
+   - Why: Painting numbers directly in one formula is hard to audit and easy to mistype; use separate cells or SUM for clarity.
+
+Other minor checks (no immediate broken formulas but worth verifying)
+- Some SUM ranges include empty rows (e.g., SUM(B9:B14) when data is B9:B13). Not an error but tidy ranges reduce confusion.
+- Many formulas use a leading “+” (e.g., =+C9/$C$15). That’s harmless but unnecessary — you can remove the + for readability.
+
+What to do now (step-by-step)
+1. Replace the three “+1” formulas (C11, B21, E27) as shown.
+2. Change F14 to =E14/600.
+3. Review C9: confirm whether it should be two summed numbers or a single value; correct and, if needed, split into its own rows.
+4. Recalculate and verify totals and percentage columns (C15, B15, C19, B19, C15 in other sheets, H27, I27 etc.) — they should now match expected totals/100%.
+
+If you want, I can provide an exact corrected list of formulas for the whole workbook or produce a cleaned version of the affected ranges.

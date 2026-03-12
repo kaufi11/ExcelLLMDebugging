@@ -1,0 +1,48 @@
+I looked through Sheet1 and found a few consistent mistakes. Short summary, root cause, and exact fixes below.
+
+Problems
+1) Column E (Week 4) is wrong
+   - E3:E8 contain =AVERAGE(Bx:Dx). Header says "week 4" so these should be the week‑4 hours (numbers), not averages. Because of that F (totals), E10 (weekly total), and overtime are all wrong.
+
+2) Overtime formulas (column G) use the wrong row references
+   - Example: G3 ends with MAX(E4-40,0) — that should be E3. Many G formulas are off by one (and G8 even references E10). This makes overtime values incorrect.
+
+3) Gross pay formulas double‑count overtime and some reference the wrong rows
+   - They use (F + G) * rate. Since G is overtime hours already included in F (total hours), (F+G) counts overtime twice.
+   - Some C formulas use wrong F/G rows (e.g. C16 uses F5+G4).
+
+Quick fixes (exact formulas to put into the sheet)
+
+A) Fix Week 4 values
+- Replace E3:E8 so they contain the actual Week 4 hours (enter numbers). If you do intend a 4th week value, type it in (do not use AVERAGE). 
+- If you truly wanted an average column, change the header E2 to "Average" and then do not include E in the totals, or change F to use SUM(B:D) accordingly. (But header currently says Week 4 so likely you should enter the real week‑4 hours.)
+
+B) Correct overtime formulas (G3:G8)
+- Put this in G3 and copy down to G8:
+  =MAX(B3-40,0)+MAX(C3-40,0)+MAX(D3-40,0)+MAX(E3-40,0)
+  (Make sure the last reference is E3 in the same row. Copy down so each row references its own Bx:Ex.)
+
+C) Correct gross pay formulas (C15:C20)
+- Assuming overtime is paid at 1.5× (common rule): gross pay = total_hours*rate + overtime_hours*rate*0.5
+- Use this in C15 and copy down (adjusting row numbers automatically):
+  =(F3+0.5*G3)*B15
+  Correct formulas per row:
+  C15: =(F3+0.5*G3)*B15
+  C16: =(F4+0.5*G4)*B16
+  C17: =(F5+0.5*G5)*B17
+  C18: =(F6+0.5*G6)*B18
+  C19: =(F7+0.5*G7)*B19
+  C20: =(F8+0.5*G8)*B20
+
+D) Verify totals
+- After fixing E and G, F3:F8 should be =SUM(Bx:Ex) (these are already set that way — they will become correct once E is fixed).
+- E10 =SUM(E3:E8) and F10 =SUM(F3:F8) will then be correct.
+
+Why this fixes it (brief)
+- Week‑4 must be real hours to compute accurate weekly totals.
+- Overtime must be calculated using the four week values from the same row (no off‑by‑one references).
+- Gross pay formula uses total hours once and adds only the overtime premium (0.5× rate for overtime) so overtime is not paid twice.
+
+If you want, I can:
+- Give a one‑click set of corrected formulas to paste into the sheet,
+- Or adjust formulas if your overtime policy is different (e.g., 2× pay or weekly aggregated overtime).

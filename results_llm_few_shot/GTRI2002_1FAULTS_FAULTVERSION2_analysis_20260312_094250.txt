@@ -1,0 +1,24 @@
+I checked the workbook. I found two clear formula errors and one consistency issue you should fix. Short fixes and explanations below.
+
+1) Faulty cell: 2002 Report!C11
+- Problem: C11 contains the hard-coded formula 450/1000000 instead of referencing the Air value in G11. All other rows use Gn/1000000.
+- Why it’s wrong: 450/1,000,000 = 0.00045 is not the correct conversion of the air pounds in G11 (9709396 → 9.709396). This produces a massively wrong value and breaks any totals that include C11 (for example R11 and R24).
+- Fix: Replace with
+  =G11/1000000
+- Check: R11 (total mil lbs) and R24 ((R11-R23)/R11) should change accordingly. Copy the correct pattern (Fn/1e6, Gn/1e6, Hn/1e6) down the column if needed.
+
+2) Faulty cells: some rows on sheet "data" (inconsistent formulas)
+- Problem: On sheet "data" rows 4–9 column C use formula =E#-B#, but rows 10–12 (and maybe others) show fixed numbers (e.g. C10 = 10533389) instead of formulas.
+- Why it’s wrong: mixing hard values and formulas can hide errors and breaks automatic updates if E or B change.
+- Fix: Put the consistent formula in those rows, e.g. for row 10:
+  =E10 - B10
+  then copy down for the other rows.
+- Check: C# should equal E# minus B#; if not, investigate why the source values differ.
+
+Optional/quick audit suggestion
+- Scan for other hard-coded numerators like "450/1000000" elsewhere (look for any cell containing “/1000000” but not referencing the expected column). Also verify any stray numbers in columns that are normally formulas (e.g. the stray G20/H20 values on the 2003 Report look out-of-place).
+
+Why these fixes solve it
+- Replacing hard-coded constants with cell references ensures the million‑pound conversions are correct and keeps totals and derived percentages consistent and dynamically updated.
+
+If you want, I can give the exact list of cells that should be changed/copied (I can search for similar wrong patterns across the file).

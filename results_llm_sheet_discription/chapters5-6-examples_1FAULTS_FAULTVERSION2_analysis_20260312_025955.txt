@@ -1,0 +1,48 @@
+I checked the workbook and found several incorrect formulas that will make cost/revenue totals wrong. Below are the errors, why they are wrong, and the fixes (short and actionable).
+
+1) pricing sheet — Layoff cost (cell C15) is wrong
+- Error: C15 is hard-coded as 3 instead of calculating layoff cost.
+- Why it’s wrong: Layoff cost should be (# laid off) * (layoff cost/worker from Sheet1). Hard-code understates cost.
+- Fix: Replace C15 with
+  =C5 * Sheet1!$B$20
+- Effect: layoff costs will calculate correctly and Total Cost (C22) will increase to the correct value.
+
+2) Sheet2 — Overtime cost formulas (column E rows 16–20) reference wrong cells
+- Error: E16..E20 reference Sheet1!B24, B25, B26, B27, B28 (or other wrong cells) instead of Sheet1!$B$23.
+- Why it’s wrong: B24 is subcontract cost (and B25+ non-existent cells) — overtime cost should use the overtime rate in Sheet1!$B$23.
+- Fix: For each period row on Sheet2 replace the E cell with:
+  =E(row) * Sheet1!$B$23
+  e.g. E16 -> =E6 * Sheet1!$B$23, E17 -> =E7 * Sheet1!$B$23, etc.
+- Effect: overtime cost column will reflect the correct hourly overtime rate.
+
+3) Sheet3 — Hiring cost formulas reference Sheet2 instead of Sheet3 (B15:B20)
+- Error: B15:B20 use Sheet2!B5..B10 instead of the local sheet’s hires (Sheet3!B5..B10).
+- Why it’s wrong: hiring cost is being computed from another sheet’s hires, so Sheet3 cost totals are incorrect.
+- Fix: Replace each B row formula with:
+  =Sheet1!$B$19 * B(row)
+  e.g. B15 -> =Sheet1!$B$19 * B5, B16 -> =Sheet1!$B$19 * B6, etc.
+- Effect: hiring costs will match the hires shown on Sheet3 and total cost becomes correct.
+
+4) Sheet3 — Revenue formula is inconsistent/incorrect (cell C24)
+- Error: C24 = SUM(J5:J10) * 31 (multiplying total demand by 31); other sheets use SUMPRODUCT(demand, price).
+- Why it’s wrong: 31 is unexplained and inconsistent; revenue should be sum of (demand × unit price).
+- Fix (pick one, depending on your model):
+  - If Sheet3 has a price column K like "pricing" sheet: use the same approach:
+    =SUMPRODUCT(J5:J10, K5:K10)
+  - If price is a single constant (e.g. 40 per unit), use:
+    =SUM(J5:J10) * 40
+  - Or, better, put the unit price in a cell and reference it (easier to change).
+- Effect: revenue (and profit if computed) will reflect the correct unit price.
+
+Quick checklist to apply (cells to edit)
+- pricing: C15 -> =C5 * Sheet1!$B$20
+- Sheet2: E16..E20 -> =E6 * Sheet1!$B$23, =E7 * Sheet1!$B$23, etc.
+- Sheet3: B15..B20 -> =Sheet1!$B$19 * B5, =Sheet1!$B$19 * B6, etc.
+- Sheet3: C24 -> replace SUM(...)*31 with SUMPRODUCT(J5:J10,K5:K10) or SUM(J5:J10)*<unit_price>
+
+Notes / suggestions
+- Use consistent absolute references to Sheet1 parameters (Sheet1!$B$23 etc.) to avoid accidental shift when copying formulas.
+- After fixes, recalc totals and compare the three plans to confirm expected results.
+- If hires/layoffs must be integer, consider rounding or integer constraints in solver.
+
+If you want, I can generate the exact corrected formulas for every affected cell (copy/paste) or produce a short macro to fix them automatically. Which would you prefer?

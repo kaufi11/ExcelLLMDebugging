@@ -1,0 +1,46 @@
+Errors found:
+
+1. In Sheet1 column I (Final Grade: Number), the formula mixes weights inconsistently:
+   - Homework (C3) is multiplied by 0.125 (correct for 12.5%)
+   - Tests (D3) is multiplied by 25 (incorrect, should be 0.25 or 25%)
+   - Midterm (E3), Final (F3), Participation (G3) are also multiplied by 25 or 12.5, which is inconsistent.
+
+2. In Sheet3, for the average calculation in column P (e.g., P4), the last cell reference is wrong:
+   - Example: P4 formula ends with L40 instead of L4.
+   - Similar errors in P5, P6, etc. referencing wrong rows (e.g., L41, L42).
+
+3. In Sheet3 cell F14, the formula is "510/$F$24" which is a typo; should be "101/$F$24" to match the score in E14.
+
+4. In Sheet1, the VLOOKUP formula for letter grades uses range $K$5:$L$17 but the lookup values in column K are numbers like 0, 59.5, 63, etc., while the final grades in column I are much larger (around 60-100). This mismatch will cause incorrect letter grades.
+
+Solutions:
+
+1. Fix the Final Grade formula in Sheet1 column I:
+   - All components should be multiplied by their weight as decimals (e.g., 0.125 for 12.5%, 0.25 for 25%).
+   - Correct formula: =(C3*0.125)+(D3*0.25)+(E3*0.25)+(F3*0.25)+(G3*0.125)
+
+   Explanation: Multiplying by 25 or 12.5 is wrong because grades are decimals (0-1), so weights must be decimals too.
+
+2. Fix the average formulas in Sheet3 column P:
+   - Change references from L40, L41, etc. to L4, L5, etc. to match the current row.
+   - Example: P4 formula should be =AVERAGE(D4,F4,H4,J4,L4)
+
+   Explanation: The last cell reference must be in the same row to correctly average that student's test percentages.
+
+3. Correct the typo in Sheet3 F14:
+   - Change "510/$F$24" to "101/$F$24"
+
+   Explanation: The test score is 101, not 510.
+
+4. Fix the VLOOKUP range and lookup values in Sheet1 column J:
+   - Adjust the grade translation table in columns K and L to match the scale of final grades in column I (e.g., 0 to 100).
+   - Or adjust the lookup values in column K to match the scale of final grades.
+   - Also, remove the parentheses from TRUE() in VLOOKUP, use TRUE instead.
+
+   Explanation: VLOOKUP needs the lookup values to be on the same scale as the lookup key; otherwise, it returns wrong results.
+
+Summary:
+- Use consistent decimal weights in final grade calculation.
+- Fix incorrect cell references in averages.
+- Correct typos in formulas.
+- Align VLOOKUP lookup values with final grade scale and fix TRUE() usage.

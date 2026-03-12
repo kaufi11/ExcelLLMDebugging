@@ -1,0 +1,34 @@
+Summary — the main error
+- Cell C92 ("Other operating costs") uses =SUM(C93:C97) and therefore omits C98 (Travelling expenses R639,779).  
+- Result: total expenditure (C100) is understated by R639,779, surplus (C102) and accumulated funds (C29 / C330) are overstated, and the balance sheet does not balance (Assets ≠ Equity + Liabilities).
+
+Why this breaks the file (short)
+- Omitting C98 makes Expenditure too small → Surplus too large → Accumulated funds and Capital & Reserves too large → Total Equity & Liabilities > Total Assets. That single range error propagates through many totals and the cashflow reconciliation.
+
+Fix (exact steps)
+1. Change C92 from:
+   =SUM(C93:C97)
+   to:
+   =SUM(C93:C98)
+   (also verify E92 is =SUM(E93:E98) — it already is.)
+
+2. After step 1 Excel will automatically recalc dependent totals: C100, C102, C327, C330, C29, C28 and C42. No manual arithmetic required.
+
+3. Reconcile the cash-from-operations cell: make C122 equal the calculated operations result (C511) to avoid inconsistent duplicates. Set
+   C122 = C511
+   (or check which is intended and link the other to it).
+
+What the correction does (numbers after correction)
+- C92 increases by R639,779 (adds Travelling R639,779).  
+- C100 (Total expenditure) becomes R8,590,540.  
+- Surplus C102 reduces from an overstated R675,124 to R35,345 (C74 − C100).  
+- Closing accumulated funds C330 becomes R874,837 (was inflated).  
+- Capital & reserves C28 becomes R1,822,009.  
+- Total Equity & Liabilities (C42) now equals Total Assets (C23 = R2,651,815) — balance sheet balances.
+
+Other recommendations (quick)
+- Scan for other off-by-one SUM ranges (e.g. anywhere SUM(Cxx:Cyy) excluding a following row).  
+- Replace hard-coded totals with formulas where appropriate to avoid mismatches.  
+- Link duplicated reconciling items (e.g. C122 and C511) so only one source of truth exists.
+
+If you want I can: (a) provide the exact corrected formulas for other affected cells, or (b) produce a short VBA or checklist to find similar SUM-range errors across the workbook. Which would you prefer?

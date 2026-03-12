@@ -1,0 +1,35 @@
+Summary — I found 2 clear formula errors that will make year totals and summaries wrong. I explain each, the effect, and the fix.
+
+1) In-Kind Contributions sheet — row for "Personnel costs (Contributions Displacing Operating Costs)" (row 23)
+- Error(s):
+  - R23 = Q23 (should be R23 = O23). Column Q is blank/unused; the row fails to pick up the last month of Year 1.
+  - AF23 = AE23 (should be AF23 = AC23). AE is the unused column between AD (year 2 total) and AF (month 25); the formula therefore doesn't pick up month 24.
+  - Because AF23 is wrong, the whole chain AF23 → AG23 → ... → AR23 propagates wrong values (or blanks).
+- Effect:
+  - Year totals (P23, AD23, AR23) and the "Total Contributions Displacing Operating Costs" (row 47) under‑report or are blank for Year 2/3; Financial Summary that pulls those totals will be incorrect.
+- Fix:
+  - Change R23 to =O23.
+  - Change AF23 to =AC23.
+  - Verify S23 = R23, T23 = S23 ... and AG23 = AF23 etc. (once R23 and AF23 are corrected the rest of the propagation chain will work).
+- Quick way to find and fix similar mistakes: search the workbook for formulas referencing Q* or AE* where you expect the pattern to be "R = O" and "AF = AC".
+
+2) Personnel sheet — Technician 1 (row 12)
+- Error:
+  - E12 is "FORMULA =2" instead of following the standard propagation (=D12). (It appears other month cells are set to copy forward with =previous_month; E12 breaks that pattern.)
+- Effect:
+  - Personnel totals (Personnel!D20 etc.), overhead and Total Personnel Costs (Personnel!D20 → Cash Flows D56) will be wrong if that 2 is unintentional — it will bump personnel cost totals for month 2 and thus cash flows & reserves.
+- Fix:
+  - If the 2 was a mistaken formula, change E12 to =D12 to copy month 1 into month 2 as intended.
+  - If the 2 is an intentional input, then leave it but document it (or replace with a hard value in D12 if you want it as month‑1 value and keep propagation afterwards).
+
+How to verify you fixed everything
+- After changes, check:
+  - In-Kind P20, AD20, AR20 and P47, AD47, AR47 (year totals) update as expected.
+  - Financial Summary lines pulling those (C9/C10 etc.) show the corrected numbers.
+  - Personnel totals (Personnel!D20 etc.) and Cash Flows row 56 reflect expected totals.
+- Use Find to locate any other formulas that reference Q or AE (two unused columns) — those are likely off‑by‑one copy/paste errors.
+
+Prevention tip
+- Use a single propagation pattern (e.g., every month cell = previous month) or use structured formulas (INDEX with month offsets or named ranges) so copy/paste won't produce column‑offset mistakes. Also keep the unused columns (Q, AE) visible/labelled or remove them to avoid accidental references.
+
+If you want I can produce the exact corrected formulas (copy/paste) for the affected cells or search the whole workbook for other Q/AE references and list them.

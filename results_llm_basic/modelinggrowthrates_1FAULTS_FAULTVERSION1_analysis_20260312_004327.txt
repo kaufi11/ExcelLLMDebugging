@@ -1,0 +1,15 @@
+Findings (short)
+- Error: Cell C12 on the Data sheet contains a hard-coded 56 in the formula ("56*$C$6") instead of using the error value from column A (A12). All other C-cells use A-row correctly.
+- Effect: C12 becomes ≈172.986 instead of the intended ≈118.718. That single large (level) outlier strongly distorts regressions run on Q (levels) and ANOVA / residuals for the Linear model. The ln(Q) regression is much less affected because the log compresses the outlier.
+
+Fix (one step)
+- Replace the formula in C12 with:
+  =$C$4*(1+$C$5)^B12 + A12*$C$6
+- Recalculate (Excel will update). Then re-run or refresh your regression outputs.
+
+Why this fixes it (simple)
+- Using A12 restores the actual additive error for observation 12 (≈1.733) instead of the accidental +56. That removes the artificial outlier in Q; the OLS results on levels (Linear/Quadratic sheets) will change and give more accurate coefficients, standard errors and residuals consistent with the rest of the dataset.
+
+Extra suggestions (brief)
+- Scan column C formulas for any other hard-coded numbers (use Find on "*" or search for "56*").
+- Consider whether the model should be additive error (Q = A(1+r)^t + ε) or multiplicative error (Q = A(1+r)^t * (1+ε)). If errors are multiplicative, do regression on ln(Q) (which you already did correctly).

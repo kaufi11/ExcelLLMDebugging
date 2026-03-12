@@ -1,0 +1,57 @@
+Summary — I checked the workbook and found several clear formula errors (wrong references, wrong arithmetic/units, and an accidental constant). Below are the faults, short explanations, and the fixes.
+
+1) Production units / hours conversion (all sheets: column N formulas)
+- Fault: N5..N10 use =40*D5 + (E5/4) - I5 (and similar for other rows). 40*D is hours (40 hours/worker), but the formula treats it as units. You must divide total hours by labor-hours-per-unit (Sheet1!$B$21 = 4) to get units.
+- Why it matters: workforce/production constraints evaluate as correct only by coincidence; changing parameters will break the model. Workforce/production numbers are wrong.
+- Fix (use the B21 cell so it stays flexible):
+  Replace =40*D5+(E5/4)-I5
+  With =(40*D5 + E5) / Sheet1!$B$21 - I5
+  (equivalently =40*D5/Sheet1!$B$21 + E5/Sheet1!$B$21 - I5 or =10*D5 + E5/4 - I5 if B21=4)
+- Apply this correction to every N-row (N5..N10) on all sheets where the production constraint appears.
+
+2) Wrong overtime-cost references in Sheet2 (Aggregate Plan Costs, column E rows 16–20)
+- Fault: E16..E20 reference Sheet1!B24, B25, B26, B27, B28 (B25-B28 don't exist) instead of the overtime cost cell.
+- Why it matters: overtime cost gets calculated using the wrong cost (or #N/A), so Total Cost is wrong.
+- Fix: change E16..E20 to reference the overtime cost cell Sheet1!$B$23. Example:
+  Replace E16 =+E6*Sheet1!B24
+  With E16 =E6 * Sheet1!$B$23
+- Do the same for E17..E20.
+
+3) Total Cost on Sheet2 excludes material costs
+- Fault: Sheet2 C22 =+SUM(B15:H20) — column I (Material) is not included.
+- Why it matters: Total Cost is understated (materials omitted).
+- Fix: C22 = SUM(B15:I20)
+
+4) Wrong sheet referenced for hiring costs in Sheet3 (Aggregate Plan Costs, column B rows 15–20)
+- Fault: Sheet3 B15..B20 use hires from Sheet2 (e.g. =Sheet1!$B$19*Sheet2!B5) instead of the current sheet. That means Sheet3's costs depend on Sheet2 decisions.
+- Why it matters: costs are calculated for the wrong plan (wrong hires).
+- Fix: change those formulas to use Sheet3's hires. Example:
+  Replace =Sheet1!$B$19*Sheet2!B5
+  With =Sheet1!$B$19 * Sheet3!B5
+- Fix B15..B20 similarly.
+
+5) Wrong constant in Pricing sheet: layoff cost row 1
+- Fault: On sheet "pricing", C15 = 1 (a stray constant).
+- Why it matters: layoff cost for period 1 is forced to 1 instead of C5 * layoff_cost_per_worker.
+- Fix: C15 = C5 * Sheet1!$B$20 (same pattern as the other rows)
+
+6) Wrong Total Revenue formula on Sheet3
+- Fault: Sheet3 C24 = SUM(J5:J10) * 31 (nonsensical multiplication by 31).
+- Why it matters: revenue is hugely incorrect.
+- Fix: make it consistent with the other sheets. If revenue = demand * price per period, use:
+  C24 = SUMPRODUCT(J5:J10, K5:K10)
+  (If you intend revenue = actual production sold * price, replace J with I (production) in SUMPRODUCT.)
+
+Quick checklist to implement (copy/paste-friendly):
+- Update production constraints N5:N10 on every sheet:
+  =(40*D5 + E5) / Sheet1!$B$21 - I5
+- In Sheet2:
+  - Change E16:E20 to =E6 * Sheet1!$B$23 (and E7..E10 analogous)
+  - Change C22 to =SUM(B15:I20)
+- In Sheet3:
+  - Change B15:B20 to reference Sheet3 hires (Sheet3!B5, B6,...)
+  - Change C24 to =SUMPRODUCT(J5:J10, K5:K10) (or use I if you want production-based revenue)
+- In "pricing" sheet:
+  - Change C15 from 1 to =C5 * Sheet1!$B$20
+
+If you want, I can produce the exact corrected formulas for every affected cell (all rows) so you can paste them directly into the workbook. Which sheet should I output full corrected formulas for first?

@@ -1,0 +1,21 @@
+Faulty cell
+- F29
+
+Error type
+- Typo / mechanical (wrong multiplier)
+
+What’s wrong (short)
+- F29 is =891*$E29 but should be =1*$E29 (or simply =E29). That single "891" inflates the weighted deposits total (F36), so every market share (G10:G33) and the HHI (H36) are wrong.
+
+Fix (quick)
+- Change F29 to =E29
+
+Better / safer fix (prevents similar errors)
+- Replace the whole F column formula with a rule that uses the Institution Type in column C, for example in F10 and copy down:
+  =IF($C10="Thrift",0.5*$E10,$E10)
+
+Why this fixes it (short)
+- F holds the weighted deposits (thrift = half of E, bank = full). Fixing F29 restores the correct weighted total (F36). That makes G = F/F36*100 produce correct percentage shares (G36 ≈ 100) and H (=G^2) produce the correct HHI.
+
+How to verify
+- After fix: F36 = SUM(F10:F33) will drop to the correct value; SUM(G10:G33) should be ~100 (allowing rounding); H36 will show the corrected HHI.

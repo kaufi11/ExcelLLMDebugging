@@ -1,0 +1,22 @@
+I checked the workbook. I found two real formula errors that will give wrong results. Short fixes and why:
+
+1) Sheet: annex f — cell K68 (Variance % for "Total Funds")
+- Problem: K68 currently contains =K48 (it just copies the % variance for Total Net Assets).
+- Why wrong: The % variance for Total Funds must be calculated from Total Funds (H68 and J68), not copied from another row.
+- Fix: Replace K68 with the standard %-variance formula:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Explanation: This follows the same pattern used elsewhere in the workbook (check adjacent % columns) and gives the percentage change of the revised total funds vs original.
+
+2) Sheet: Annex I — cell H27 (Underlying operating surplus/deficit)
+- Problem: H27 currently =SUM(H10:H26). That sums a broad range of rows and therefore can include the wrong cells or miss the intended items.
+- Why wrong: The underlying operating surplus is supposed to be the reported surplus after depreciation (H11) plus the specific add-backs (exceptional restructuring H14, SSAP24 revaluation H17, and other one‑off items H20). Summing H10:H26 is incorrect and brittle.
+- Fix: Replace H27 with an explicit sum of the intended items, e.g.:
+  =SUM(H11,H14,H17,H20)
+  (or =H11+H14+H17+H20)
+- Explanation: This ensures you only add the surplus and the explicit add-backs, matching the labels on the sheet and avoiding accidental inclusion of other rows.
+
+Optional additional check (no broken formulas found, but watch this)
+- Several % columns use IF(Hx=0,"N/A",(...)) which prevents divide-by-zero — that pattern is correct and consistent.
+- If you copy/paste rows or move sections, re-check any copied % cells (they sometimes point to the wrong row after copying).
+
+If you want, I can generate a short list of the three exact cells to edit (sheet + address + replacement formula) ready for you to paste. Which would you prefer?

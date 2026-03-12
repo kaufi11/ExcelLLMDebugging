@@ -1,0 +1,30 @@
+Fehler gefunden — kurz und bündig (auf Sheet SG1 und Folgezeilen):
+
+1) Falsche Funktion in SG1!F53
+- Problem: In Zelle F53 steht =COUNT(F7:F51) (engl. COUNT). Das zählt nur Zellen mit Zahlen und liefert KEINE Summe der Einträge 2002. Folge: Gesamtsummen in F63 und Prozent‑Änderungen in G53/G63 sind falsch.
+- Lösung (Deutsch/Excel‑Formel): F53 =SUMME(F7:F51)
+- Erklärung: SUMME addiert alle Werte in F7:F51 (richtiges Total). COUNT/ANZAHL zählt nur Anzahl numerischer Zellen, nicht ihren Betrag.
+
+2) Folgefehler in SG1 (korrigierbar nach 1.)
+- Sobald F53 =SUMME(...) gesetzt ist, werden auch F63 =SUMME(F53:F61) und G53 = (F53-E53)/E53 sowie G63 = (F63-E63)/E63 korrekt berechnet. Prüfe F63/G63 noch einmal nach dem Ändern.
+
+3) Text statt Zahl in einigen Zellen (z.B. SG1!F44 = "-" )
+- Problem: In F44 steht "-" (Text). Formeln wie (F44-E44)/E44 würden Fehler liefern oder falsche Ergebnisse, wenn sie ausgeführt würden.
+- Lösung 1 (Datenbereinigung): Ersetze "-" durch leer (nichts) oder 0, falls gemeint.
+- Lösung 2 (robuste Formel für Spalte G): G7 … G51 durch folgende Formel ersetzen, um Division durch Null / Text zu vermeiden:
+  =WENN(UND(ISTZAHL(E7);ISTZAHL(F7);E7<>0);(F7-E7)/E7;"")
+
+  (Deutsch-Format: WENN / ISTZAHL; Trennzeichen = Semikolon)
+
+- Erklärung: Die WENN‑Abfrage prüft, ob E7 und F7 Zahlen sind und E7 ≠ 0; nur dann wird die prozentuale Änderung berechnet, sonst bleibt die Zelle leer.
+
+4) Empfehlung allgemein
+- Ersetze fehlerhafte COUNT/ANZAHL, wo Summen erwartet werden, durch SUMME/SUMME.
+- Vereinheitliche fehlende Werte (z. B. "-" → leer) oder nutze die oben genannte WENN‑Prüfung, damit aggregierte Formeln (SUMME, Prozentberechnungen) zuverlässig sind.
+
+Zusammenfassung der wichtigsten Korrekturformeln (Deutsch‑Excel):
+- SG1!F53 =SUMME(F7:F51)
+- SG1!F63 =SUMME(F53:F61)  (falls nicht schon so)
+- Beispiel robuste G‑Formel (in G7 kopieren nach unten): =WENN(UND(ISTZAHL(E7);ISTZAHL(F7);E7<>0);(F7-E7)/E7;"")
+
+Wenn du willst, kann ich die betroffenen Zellen markieren oder alle G‑Formeln automatisch in deutschem Format für das ganze Blatt erzeugen.

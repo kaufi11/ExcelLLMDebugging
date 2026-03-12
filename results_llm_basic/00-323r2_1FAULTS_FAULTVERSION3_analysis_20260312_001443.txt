@@ -1,0 +1,37 @@
+I reviewed the sheet and found the key errors and some consistency issues that will produce wrong numbers downstream. Short summary, cause, fix and why it matters:
+
+1) Typo in K13 (critical)
+- Error: K13 contains = $C13/951 (division by 951). That is almost certainly a typo.
+- Fix: Change K13 to = $C13/2
+- Why it matters: K13 is the K-column half of Data Receiver asymmetry. Many later formulas (P21, P22, P25, etc.) reference K13. With the wrong tiny value you will undercount a timing error and get incorrect setup/hold margins across the sheet.
+
+2) Inconsistent use of full vs half-cycle values (logical/modeling issue)
+- Symptom: The sheet note (H2) says “Assumes all terms can be divided by two except skew.” But many P/Q/N formulas use raw C-column values rather than the pre-halved J/K/L values. Example: P12 = C5-C9-C12-C15-C21 subtracts full C9, C12, C15, C21 instead of using their half-cycle equivalents (J9/K9/L9 as appropriate).
+- Fix:
+  - Decide and document a single convention: either do all arithmetic in the “full value” column (C) or do it in the “half-cycle” columns (J/K/L). Because J/K/L are labeled Setup/Hold and many formulas already reference them, I recommend:
+    - For setup-related calculations use the J (or K where intended) half-cycle cells (e.g., J9, J11, J15, J16, J19, J20, J21, J22, J23, etc.).
+    - For hold-related calculations use L half-cycle cells.
+    - Replace occurrences of Cxx in P/Q/N formulas with the correct Jxx/Kxx/Lxx cells.
+  - Example correction: P12 (Transmit assertion period) should likely be = C5 - J9 - J12 - J15 - J21 (or use the appropriate J/K per your scheme) rather than = C5 - C9 - C12 - C15 - C21.
+- Why it matters: Mixing full and half values causes double-counting or under-counting of error terms and produces incorrect timing margins.
+
+3) Dollar-sign / absolute-reference inconsistencies (risk of copy errors)
+- Symptom: Some formulas use inconsistent $ anchors (e.g. $L9 vs L6 vs $K16) which can produce wrong values if formulas are copied or moved.
+- Fix: Standardize absolute references where you intend fixed addresses (e.g., use $C$13 or $J$13 consistently for cells referenced from many places). Make the range anchoring consistent for blocks of formulas that are copied between columns.
+
+4) Minor issues to check
+- Decimal separators: the sheet mixes commas and periods (e.g., “12,5 ns” and “12.5”). Ensure Excel’s regional settings are consistent, otherwise numbers might be text.
+- Confirm intended use of columns J vs K: both labeled “Setup” — ensure formulas reference the correct one for the device/condition they represent.
+- Add validation cells: add a small check section that recomputes totals two different ways (e.g., compare C25 + C35 to C39) so any mismatches are obvious.
+
+How to verify after fixes
+1. Fix K13 to =$C13/2.
+2. Pick a couple of P/Q cells that were using C-values and swap them to J/K/L halves as per the decided convention, e.g. change P12 and P13 accordingly.
+3. Recalculate workbook.
+4. Add a quick check: C39 ?= C25 + C35 and J39 ?= J25 + J35 and K39 ?= K25 + K35. If those equalities fail, you still have inconsistent referencing.
+
+If you want, I can:
+- Produce a list of exact cells that should be changed from Cxx to Jxx / Kxx / Lxx based on your intended use (setup vs hold).
+- Generate corrected formulas for P12, P13, P21, P22 and a short corrected audit sheet showing the before/after numbers.
+
+Which would you like me to do next?

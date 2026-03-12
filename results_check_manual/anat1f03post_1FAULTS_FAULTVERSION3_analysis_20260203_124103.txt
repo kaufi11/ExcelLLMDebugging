@@ -1,0 +1,62 @@
+Fehleranalyse (kurz & klar)
+
+1) Fehlender Wert in Zeile 55 (Spalte G)
+- Problem: G55 ist leer, I55 =SUMME(D55:G55) addiert daher nur D55:F55 (G55 wird als 0 behandelt). Folgt falsche Gesamtsumme und Mittelwerte.
+- Lösung: fehlenden Pract.4‑Wert in G55 eintragen oder, falls wirklich kein Wert, Zelle dokumentieren (z.B. 0) und prüfen.
+
+2) Falscher Bereich im Mittelwert für Spalte F (Zeile 56)
+- Problem: F56 =AVERAGE(F36:F54) lässt Zeile 55 außen vor (inkonsistente Anzahl Zeilen).
+- Lösung (korrigierte Formel):
+  =MITTELWERT(F36:F55)
+
+3) Klasse‑% berechnung schließt Teilnahme/Partizipation (Spalte H) aus
+- Problem: J6..J55 rechnen J = I#/400 (I = Summe der Praktika = "w/o A/P") — dadurch wird H (Att./Partcip.) nicht berücksichtigt, obwohl H im Blatt vorhanden ist (insbesondere wenn Gesamtnote H mitgezählt werden soll).
+- Lösung: Class% soll alle Punkte (Praktika + Teilnahme) durch die möglichen Gesamtpunkte teilen. Für Block 1 (Kopfzeile in Zeile 3) z.B.:
+  = (I6+H6) / (I$3+H$3)
+  (kopierbar nach unten). Alternativ explizit /450:
+  = (I6+H6)/450
+
+4) Inkonsequente/fehlerhafte Noten‑Vergleichsoperatoren (>= vs >) und unklare Grenzwerte
+- Problem: Erste Tabelle verwendet WENN(J>=89.9%;...) andere Stellen WENN(J>89.9%;...) → bei Grenzwerten entstehen unterschiedliche Noten. 89.9% ist außerdem verwirrend.
+- Lösung: Einheitliche, saubere Schwellenwerte verwenden (z.B. 90%, 80%, 70%, 60%) und >=. Musterformel (für Zeile 6):
+  =WENN(J6>=90%; "A"; WENN(J6>=80%; "B"; WENN(J6>=70%; "C"; WENN(J6>=60%; "D"; "F"))))
+  Diese Formel auf alle K‑Zellen anwenden (K6:K55 und K26/K56 für die Mittelwerte).
+
+5) Mittelwert der Gesamtsummen / Class%‑Mittelwerte
+- Problem: J26 (Mittel) war =I26/I3 → berücksichtigt wieder nicht H26.
+- Lösung: Für den Mittelwert (inkl. Teilnahme) verwenden:
+  J26: =(I26+H26)/(I$3+H$3)
+  entsprechend für Block 2:
+  J56: =(I56+H56)/(I$33+H$33)
+
+Zusammenfassung der wichtigsten korrigierten Formeln (Deutsch/Excel‑Format)
+
+- Fehlenen Wert in G55: G55 manuell ausfüllen (z.B. 0 oder tatsächliche Punktzahl).
+
+- I55 (falls G55 gefüllt): bleibt
+  =SUMME(D55:G55)
+
+- J (Class%), Zeile 6 (kopierbar nach unten für Block 1):
+  =(I6+H6)/(I$3+H$3)
+
+- K (Note), Zeile 6 (kopierbar nach unten):
+  =WENN(J6>=90%; "A"; WENN(J6>=80%; "B"; WENN(J6>=70%; "C"; WENN(J6>=60%; "D"; "F"))))
+
+- F56 (Mittelwert Spalte F):
+  =MITTELWERT(F36:F55)
+
+- J26 (Mittelwert Class% Block 1):
+  =(I26+H26)/(I$3+H$3)
+
+- K26 (Note für Mittelwert), analog:
+  =WENN(J26>=90%; "A"; WENN(J26>=80%; "B"; WENN(J26>=70%; "C"; WENN(J26>=60%; "D"; "F"))))
+
+- J56 (Mittelwert Class% Block 2):
+  =(I56+H56)/(I$33+H$33)
+
+- K36..K55 (Block 2 Noten), Beispiel K36:
+  =WENN(J36>=90%; "A"; WENN(J36>=80%; "B"; WENN(J36>=70%; "C"; WENN(J36>=60%; "D"; "F"))))
+
+Hinweis: Wenn die Klassennote bewusst die Teilnahme nicht einbeziehen soll, belassen Sie die Division durch 400 (I#/400). Dann aber unbedingt die Dokumentation/Überschrift anpassen (z.B. "Class % (ohne Att./Partcip.)"), und die Notenformeln für alle Bereiche einheitlich (>=) machen.
+
+Wenn du möchtest, korrigiere ich die konkreten Zellen in der Datei (oder gebe dir eine Liste aller Zellen/Zeilen mit anzupassenden Formeln).

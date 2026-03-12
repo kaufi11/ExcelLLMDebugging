@@ -1,0 +1,51 @@
+I reviewed the workbook and found several real/formula bugs plus some inconsistent/fragile formulas. Short list of the important issues and how to fix them:
+
+1) Typo causing wrong subtraction in Year 1 (clear error)
+- Location: Year 1 sheet, K55
+- Wrong formula: =SUM(K15-90)
+- Problem: “-90” is a typo. That produces an incorrect result (and is almost certainly not what you intended).
+- Fix: =K15-K54  (or =SUM(K15,-K54) if you insist on SUM, but K15-K54 is correct and clearer)
+- Why: Cash position end-of-month should be beginning minus paid out (K15 - K54).
+
+2) Mis‑aligned sum in Year 2 (wrong row referenced)
+- Location: Year 2 sheet, row for “d. Payroll Expenses (Direct Labor)” — the O column cell shown as O22
+- Wrong formula: O22 =SUM(C22:N22) (placed under the row for item 20)
+- Problem: The formula references row 22 when it should be summing row 20 (misplaced row reference).
+- Fix: Put the formula in the correct cell for row 20: O20 =SUM(C20:N20)
+- Why: Each O-column should sum the same row’s monthly values (C:N) — not a different row.
+
+3) Percent-of-sales denominator not locked (fragile / wrong when copied)
+- Location: Year 2 (and some other sheets) P-column percent formulas (example: P23)
+- Wrong formula example: P23 =+O23/O57
+- Problem: O57 (denominator) is not anchored; when those formulas are copied up/down the denominator will shift incorrectly.
+- Fix: Use an absolute row reference for the total sales cell: P23 =O23/$O$57  (or =O23/O$57 if you only need to lock the row)
+- Why: Percent of sales must divide by the same total-sales cell; use $ to fix the reference.
+
+4) Wrong copy/typo that yields 100% for totals (likely unintended)
+- Location: Some sheets have P57 =+O57/O57 (Year 2 and maybe others)
+- Problem: O57/O57 = 1 (100%). If that is intended for the total row it's fine, but often the P-column is supposed to show each item’s share of total sales; make sure this was intentional.
+- Fix: If you want O57’s share of a grand total in another cell, use that grand total as denominator and anchor it: =O57/$O$57 (or point to the actual total cell).
+
+5) Numerous uses of SUM() around single cells or simple arithmetic (style / potential confusion)
+- Examples: many cells use =SUM(B15-B54) or =SUM(B55) rather than =B15-B54 or =B55.
+- Problem: Not usually wrong (Excel evaluates it), but it is confusing and increases chance of accidental circular ranges or copy errors.
+- Fix (recommended): Replace with simple arithmetic / direct references: e.g. B55 =B15-B54, C6 =B55
+- Why: Cleaner formulas are easier to audit and less error-prone.
+
+6) Risk of #DIV/0! in variance formulas
+- Location: Variance sheets (e.g. E8 =+(D8-C8)/C8)
+- Problem: If C8 = 0, you get a DIV/0 error.
+- Fix (robust): =IFERROR((D8-C8)/C8, "") or =IF(C8=0, "", (D8-C8)/C8)
+- Why: Prevents ugly errors when base value is zero or blank.
+
+Checklist to fix quickly
+- Fix the K55 typo immediately (that is clearly wrong).
+- Scan Year 2 O-column rows — ensure each Oxx =SUM(Cxx:Nxx) for the same row number (not shifted rows).
+- Change all P%-of-sales formulas so denominator is anchored (O$57 or $O$57 as required).
+- Replace SUM(single-cell or simple-expression) with direct reference or arithmetic for clarity.
+- Add IF or IFERROR guards to variance% formulas to avoid #DIV/0!.
+
+If you want, I can:
+- Produce an exact list of cells with non-anchored denominators (P-column cells),
+- Produce corrected formulas for every mistaken Oxx in Year 2,
+- Or produce a cleaned / corrected workbook (I can output a script or step-by-step edits). Which would you like?

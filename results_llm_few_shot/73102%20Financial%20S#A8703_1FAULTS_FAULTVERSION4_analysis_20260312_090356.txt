@@ -1,0 +1,44 @@
+Summary of the problem
+- The sheet has inconsistent/duplicated property & equipment subtotals which causes the Assets total to be built two different ways and can make Assets ≠ Liabilities+Capital.
+  - There are two gross PPE subtotals: D30 (SUM of D24:D29) and D162 (SUM of D155:D161). They both reference the same detail accounts.
+  - Total Assets (D178) is built by adding the gross PPE (D162) and accumulated depreciation (D170) separately, while elsewhere Net PPE (D34) is calculated from D30 and D32. Mixing these two aggregation methods produces inconsistencies / risk of double counting.
+
+Faulty cells (most important)
+1) D34 (Net property and equipment) — inconsistent source
+   - Current formula: =D30 + D32
+   - D30 is a subtotal that references the detailed lines and D32 = D170 (accumulated depreciation). This works, but it mixes one subtotal (D30) with another subtotal (D170) while there is a direct gross subtotal D162 available. It is fragile/inconsistent.
+
+2) D178 (TOTAL ASSETS) — inconsistent aggregation
+   - Current formula: =D83+D96+D114+D132+D139+D144+D152+D162+D170+D175
+   - This adds gross PPE (D162) and accumulated depreciation (D170) directly, while elsewhere the sheet already has a Net PPE cell (D34). Because there are duplicate gross subtotals (D30 vs D162) and multiple ways of rolling up PPE, totals can disagree.
+
+What to do (simple fixes)
+Pick one consistent path and use it everywhere. Two equivalent good options — choose one:
+
+Option A (use Net PPE cell everywhere)
+- Make TOTAL ASSETS (D178, E178, C178) use the net PPE value (D34) instead of adding gross + accumulated depreciation.
+  - Replace D178 formula with:
+    =D83 + D96 + D114 + D132 + D139 + D144 + D152 + D34 + D36
+  - (Do the same for C178 and E178 with their columns.)
+- Rationale: you already compute Net PPE (D34). Use that single net number in the main Assets total so you don't duplicate/ double-count.
+
+Option B (use detail gross + accumulated consistently)
+- Change Net PPE (D34) to be calculated from the same gross subtotal that D178 uses:
+  - Replace D34 with =D162 + D170
+- Keep D178 as-is (summing gross + accumulated) so both the net cell and the assets total come from the same detailed subtotals.
+- Rationale: keep all PPE calculations derived from the same detail rows (D155:D161 and D165:D169) to avoid mismatch.
+
+Recommendation
+- I recommend Option A (use Net PPE everywhere) because it is simpler: alter D178 to use D34. That is the minimal, low-risk change.
+
+Short example of the minimal fix (Option A):
+- Change D178 to:
+  =D83 + D96 + D114 + D132 + D139 + D144 + D152 + D34 + D36
+- Make the same change in C178 and E178 replacing D-values with their column equivalents.
+
+Why this fixes it
+- Using a single net PPE cell prevents counting the same asset detail twice (once via a gross subtotal and again via another subtotal). All asset components are summed once and Assets will correctly match Liabilities + Capital when all other subtotals are consistent.
+
+If you want, I can:
+- Provide the exact cell-by-cell replacements for C178/D178/E178 and also check for any other duplicated subtotal uses in the sheet.
+- Or implement Option B instead.

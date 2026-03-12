@@ -1,0 +1,59 @@
+I looked through the Example and FINANCIAL DATA & ANALYSIS sheets. The main problems are incorrect/wrong cell references and inconsistent aggregation of three data columns (C, E, G). Below are the specific errors, the fix for each, and a short plain-English explanation.
+
+Summary of key problems
+- Some total cells (column I) reference only one source column (G) instead of summing all source columns (C+E+G).
+- Several “average” (weighted) formulas combine only two columns (C and E) or use the wrong cell (typo like C2) instead of combining all three (C, E and G).
+- A few cells simply reference the wrong single cell (e.g. I67 = E67) instead of computing a proper weighted average.
+
+Fixed formulas (paste into the cells named)
+1) Number of handsets and planned handsets
+- Cell I10 (NUMBER OF HANDSETS)
+  =C10+E10+G10
+- Cell I11 (PLANNED NO. OF HANDSETS)
+  =C11+E11+G11
+Why: totals must add all three data columns, not just G.
+
+2) Local calls — average duration (row for LOCAL CALLS totals)
+- Cell I16
+  =IF((C14+E14+G14)<>0, ((C14*C16)+(E14*E16)+(G14*G16))/(C14+E14+G14), "")
+Why: weighted average of durations must weight each column’s duration by its number of calls (use all three columns).
+
+3) Long distance (not to mobiles) — average duration (I22)
+- Cell I22 (fix the C2 typo and include G)
+  =IF((C20+E20+G20)<>0, ((C20*C22)+(E20*E22)+(G20*G22))/(C20+E20+G20), "")
+Why: the formula had C2 (typo) and only used two columns; it must combine all sources.
+
+4) Long distance to mobiles — average duration (I34)
+- Cell I34
+  =IF((C32+E32+G32)<>0, ((C32*C34)+(E32*E34)+(G32*G34))/(C32+E32+G32), "")
+Why: include G column for weighted average.
+
+5) Inbound 1800 — average call length (I61)
+- Cell I61
+  =IF((C59+E59+G59)<>0, ((C61*C59)+(E61*E59)+(G61*G59))/(C59+E59+G59), "")
+Why: include all three sources in the weighted average.
+
+6) Mobile phones — average duration (I52)
+- Cell I52
+  =IF((C51+E51+G51)<>0, ((C52*C51)+(E52*E51)+(G52*G51))/(C51+E51+G51), "")
+Why: compute weighted average of durations using counts of calls across all sources.
+
+7) Inbound 1300 — average call length (I67)
+- Cell I67
+  =IF((C65+E65+G65)<>0, ((C67*C65)+(E67*E65)+(G67*G65))/(C65+E65+G65), "")
+Why: currently set to E67; should be weighted average across C/E/G.
+
+General advice / how to apply broadly
+- Wherever you see a weighted average currently using only C and E (or a single column), replace it with the pattern:
+  =IF((Cnn+Enn+Gnn)<>0, ((Cnn*Cmm)+(Enn*Emm)+(Gnn*Gmm))/(Cnn+Enn+Gnn), "")
+  where nn is the “count” row and mm is the “value” row.
+- Wherever a total in column I references only one column (e.g. =G10) change it to =Cxx+Exx+Gxx.
+- Fix obvious typos like C2 that should be C20.
+
+Quick check after changes
+- Verify that totals (I7, I19, I31, I44, I49, I58, I64, etc.) equal the sum of their C/E/G counterparts.
+- Check weighted averages with a simple example (enter small test numbers) to confirm results make sense.
+
+If you want, I can:
+- Produce a short list of every I-row that currently needs the “3-column” change (I can scan and list them).
+- Provide an Excel-safe copy-paste block with all corrected formulas ready to paste.

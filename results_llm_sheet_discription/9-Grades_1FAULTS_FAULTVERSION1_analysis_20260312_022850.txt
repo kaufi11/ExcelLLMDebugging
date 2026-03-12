@@ -1,0 +1,30 @@
+Summary of errors found on sheet "University Total by Sem."
+
+1) Inconsistent SUM ranges in the Total row (row 31).
+- Some columns sum B9:B29 (correct), but others use B9:B30 or B10:B30 or are hard‑coded.
+- Specific mistakes: D31, E31, F31, G31, H31, I31, J31, K31, L31, N31 use ...9:30; O31 uses O10:O30 (skips row 9); M31 is just "1" (hard‑coded) instead of a SUM.
+
+Why this is a problem
+- Because different columns include/exclude different grade rows (and one is hard coded), the column totals are wrong or inconsistent. O31 currently omits the A row (O9), and M31 is fixed rather than calculated. This breaks any downstream calculations that rely on those totals.
+
+Fix (simple, safe)
+- Make every Total (row 31) formula consistent: change B31:O31 to SUM of the same grade rows. For this sheet the grade rows run A → X in rows 9–29, so use:
+  - B31 = SUM(B9:B29)
+  - C31 = SUM(C9:C29)
+  - ...
+  - O31 = SUM(O9:O29)
+- Replace M31 (currently =1) with =SUM(M9:M29).
+
+How to apply quickly
+- Select B31, copy it, then paste (or fill) across from C31 to O31. Then edit the first and last references if your spreadsheet auto‑adjusts; or enter the formula in each cell: =SUM(<column>9:<column>29).
+- Confirm O31 uses O9:O29 (not O10:O30).
+
+Extra recommendations
+- Because numbers are displayed rounded (note in A34), totals may not show exactly 1.000 after rounding — that’s expected. If you need exact 1.000, sum the raw (unrounded) values, or use higher precision in the SUM (or ROUND the SUM explicitly).
+- If rows/grade list can change length, consider using a named range for the grade block or convert the area to an Excel Table and use structured references so totals automatically adjust.
+
+What to check after fixing
+- Each column total in row 31 should be ≈ 1.0 (allow small difference from rounding).
+- Any sheets (like Sheet1 or Average GPA) that use these totals should update correctly.
+
+If you want, I can give the exact formulas ready to paste for B31:O31 or show how to convert to a Table / dynamic SUM.

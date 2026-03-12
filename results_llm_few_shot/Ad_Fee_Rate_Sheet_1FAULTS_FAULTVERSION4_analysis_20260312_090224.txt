@@ -1,0 +1,30 @@
+Summary — main problem
+- Many formulas show #REF! — that means the formulas point to cells that were deleted or moved. Those broken references stop dollar-allocation formulas from calculating.
+
+Why it happened
+- Someone deleted or moved the cell that held the “base” dollar amount used by many percentage multiplications. The formulas didn’t update and now contain #REF!.
+
+How to fix (quick, safe fix)
+1. Decide the intended base cell for all percentage × amount calculations. From this sheet the logical base is the Total Basic Services / Contract Amount (cell E62 — it already appears elsewhere). Use that as the single source.
+2. Replace every occurrence of #REF! in formulas that compute dollar amounts from percentages with $E$62 (absolute reference), so those formulas become percentage * $E$62.
+3. After replacing, recalculate and confirm sums.
+
+Concrete examples (apply these patterns)
+- Replace O39 =#REF!*0.0547 with O39 = $E$62*0.0547
+- Replace P39 =#REF!*0.0109 with P39 = $E$62*0.0109
+- Replace Q39 =#REF!*0.0065 with Q39 = $E$62*0.0065
+- Replace R39 =#REF!*0.0065 with R39 = $E$62*0.0065
+- Replace K40 (and N40, O40) from =#REF!*0.713 etc. to = $E$62*0.713 (and = $E$62*0.2297, = $E$62*0.0573)
+- Replace S44 =#REF! with =SUM(K44:R44) or with the correct $E$62-based calculation if S44 was intended to be a percent * total.
+- Replace P45 = (O45/100)*#REF! with = (O45/100)*$E$62 (and similarly P50, P51, P53, any other formulas using #REF!).
+
+Other recommendations
+- Create one named cell for the total (e.g., name E62 "TotalBasic"). Then formulas read nicer: =(O45/100)*TotalBasic.
+- Avoid hard-coded bases scattered across the sheet (e.g., 69500 used in some formulas). Instead reference the single base cell so totals always match.
+- After you update references, check:
+  - E31 (E16+E29) equals E62 (sum of E36:E57) — they should match as your note requests.
+  - All SUM ranges include the intended rows (watch accidental self-inclusion or wrong ranges).
+
+If you want, I can:
+- Give an exact list of every cell containing #REF! and the exact replacement formula, or
+- Provide the edited formulas if you tell me whether the base should be E62 or E31.

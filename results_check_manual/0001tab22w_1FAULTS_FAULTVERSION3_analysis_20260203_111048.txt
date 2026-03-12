@@ -1,0 +1,39 @@
+Summary — what’s wrong
+- Many percentage values are shifted into the wrong columns (extra numbers appear in F, H, Z, etc.). Because the sheet expects lower‑level percentages in E,G,I,K,M and upper‑level in S,U,W,Y,AA, these misplaced numbers make the "Other" and total calculations incorrect and drop values from the upper/lower totals.
+  - Examples: H10 and H14 contain 0 (they should not hold data); F18 and H18 contain numbers causing the Education row to be misaligned; Z22 (4.5) sits in Z instead of AA so the AC22 calculation ignores it.
+- One direct cell reference error: O20’s formula uses M21 instead of M20 (typo).
+- Formula style and robustness:
+  - All the "Other" formulas use SUM(100-(...)) which is odd (works but confusing). Better to use =100 - SUM(...)
+  - The formulas will misbehave if a source cell contains text like "n/appl" (text prevents numeric SUM).
+
+What to do (quick fixes)
+1. Fix misaligned data
+   - For any row that has numbers in columns F, H, Z or other columns that should be blank, move those values one column left so the lower‑level percentages occupy E, G, I, K, M and the upper‑level percentages occupy S, U, W, Y, AA.
+   - Practical way: Filter or find numeric entries in columns F, H, Z; select each cell, Cut and Paste into the cell one column to the left. Repeat until column pattern matches the header pattern.
+   - After you move the numbers, verify each row’s five lower and five upper percentages line up with their headers.
+
+2. Correct the typed reference
+   - Change O20 from =SUM(100-(E20+G20+I20+K20+M21)) to use M20:
+     e.g. =100 - SUM(E20,G20,I20,K20,M20)
+
+3. Replace odd formulas with clearer ones
+   - Replace formulas like =SUM(100-(E6+G6+I6+K6+M6)) with:
+     =100 - SUM(E6,G6,I6,K6,M6)
+   - For the upper level Other:
+     =100 - SUM(S6,U6,W6,Y6,AA6)
+
+4. Handle "n/appl" rows
+   - If a row uses "n/appl" text, use a guarded formula so it doesn’t error:
+     =IF(OR(E15="n/appl",G15="n/appl"),"n/appl",100 - SUM(E15,G15,I15,K15,M15))
+   - Or clear the text cells and use blank / NA numeric code consistently.
+
+5. Final checks
+   - After fixing alignment and formulas, check that each row’s lower-level percentages sum to ~100 (use ROUND if needed).
+   - If you want 1 decimal place consistency, wrap with ROUND(...,1): =ROUND(100 - SUM(E6,G6,I6,K6,M6),1)
+
+Why this fixes it (short)
+- Moving stray numbers into the correct columns ensures the formulas are summing the intended five categories. Fixing O20 corrects a bad reference. Using =100 - SUM(...) is clearer and avoids accidental SUM behavior. Guarding against "n/appl" prevents text from breaking numeric arithmetic.
+
+If you want I can:
+- Give a short macro to automatically detect and shift stray cells left,
+- Or produce exact corrected formulas for every listed cell (I can output them row-by-row). Which would you prefer?

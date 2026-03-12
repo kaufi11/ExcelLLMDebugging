@@ -1,0 +1,38 @@
+Found several real bugs (typos and bad links). Short explanations and exact fixes below.
+
+1) Volume growth typo (big error)
+- Where: Income!G3
+- Problem: formula reads =F3*(45+$D$3) — "45" is a typo (should be 1).
+- Fix: change to =F3*(1+$D$3)
+- Why: volume should grow by (1 + growth rate). Using 45 multiplies volumes by ~45x.
+
+2) Sugar price referencing wrong inflation cell
+- Where: Income!F8 (and G8:H8:…:P8)
+- Problem: those formulas use $D$7 (lemon price inflation) instead of the sugar-inflation cell $D$8.
+- Fix (example for F8): change =E8*(1+$D$7) to =E8*(1+$D$8). Update G8..P8 analogously.
+- Why: sugar price should escalate by the sugar inflation input (D8), not the lemon inflation input (D7).
+
+3) Long‑term asset original value points to a liability
+- Where: Balance Sheet!D8
+- Problem: D8 = D14 (points to the Lear Jet loan cell). That makes the asset "original value" equal to the liability value → wrong asset base, wrong depreciation.
+- Likely intended: asset value should come from the cash investment (Cashflow purchases), not the loan cell.
+- Fix: set Balance Sheet!D8 to the asset purchase amount by referencing Cashflow. If Cashflow!D9 = -100000 (purchase outflow), use:
+  - =-Cashflow!D9
+  This yields a positive 100000 asset value. Then E8 = D8, F8 = E8 etc will propagate.
+- Why: Cashflow shows purchases as negative cash. Balance sheet needs the positive asset value.
+
+4) Depreciation uses fixed original value (wrong base)
+- Where: Depreciation!E7 (and F7..P7)
+- Problem: formulas use $D$6/$D$7 (always dividing the D6 cell by life). That applies the original D6 amount every year rather than each year’s beginning asset value.
+- Fix: change each depreciation cell to use that period’s beginning value. Example:
+  - Depreciation!E7 → =IF(E6>0,E6/$D$7,0)
+  - Depreciation!F7 → =IF(F6>0,F6/$D$7,0)
+  - And so on for G7..P7.
+- Why: annual depreciation should be based on the asset value at the beginning of that period (E6, F6, …), not always the single $D$6 cell.
+
+Optional/cleanup suggestions (small, but will reduce confusion)
+- Replace SUM(E10:E10)-style formulas (row12) with direct references (E10) — not necessary but clearer.
+- Check Depreciation!row11 cumulative formulas for consistency (some cells are missing the running-sum pattern).
+- Verify that using monthly inflation =0.08/12 in three different cells (D4, D7, D8) is intentional; if inflation is the same for all prices, consider one inflation input and reference it everywhere.
+
+If you want, I can give the exact list of formulas to paste in each cell (G3, F8..P8, D8, E7..P7) so you can replace them quickly. Which format do you prefer (plain text list or Excel-ready CSV)?

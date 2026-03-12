@@ -1,0 +1,32 @@
+I inspected the formulas in all three sheets (SecA, SecB, SecC). No formulas return #DIV/0 or other Excel error values in the provided snapshot, but I found a few inconsistencies and one likely typo that you should review.
+
+Summary of issues and suggested fixes
+
+1) Likely typo in J10 on all sheets
+- Cells: SecA!J10, SecB!J10, SecC!J10
+- Formula: =SUM(R10:AF10)
+- Problem: All other assignment-total rows sum R:AE (e.g. J14 uses =SUM(R14:AE14)). Column AF is one column beyond AE and there is no AF header shown. The range R10:AF10 still returns the correct total (because AF10 is empty/0), but using AF here looks like a typo / inconsistent range endpoint.
+- Suggestion: Change to =SUM(R10:AE10) (or, if you really have columns through AF, ensure headers/values exist). Standardize all Jn formulas to the same R:AE range.
+
+2) Inconsistent formula / hard-coded value in SecA row 47
+- Cell: SecA!J47
+- Formula: =6 (hard-coded via formula)
+- Neighboring rows: other Jn (e.g. J14..J46, J48..) use =SUM(Rn:AE n)
+- Problem: J47 in SecA is the only J cell that is set to a literal 6 instead of summing R47:AE47. That makes that row inconsistent with other rows and with SecB/SecC (which use SUM for J47).
+- Suggestion: If the intent is to have assignment points be the sum of R:AE for that student, change SecA!J47 to =SUM(R47:AE47). If 6 is deliberate, document why that one cell is hard-coded.
+
+3) Inconsistent use of the fixed 500 cap
+- Cells: many I14:I50 formulas: =MIN(500,SUM(Jn:Mn,Pn:Qn))
+- Cell: I10 formula: =SUM(J10:M10) (gives 500 in the header row)
+- Observation: the cap 500 is hard-coded in the MIN() calls. That matches header row total (I10). If you ever change the total-points distribution in row 10, you’ll have to remember to update the 500 in the MIN formulas.
+- Suggestion (optional improvement): replace the hard-coded 500 with a reference to the header total (e.g. =MIN($I$10,SUM(...))) so the cap follows the declared course total automatically.
+
+4) Minor / structural notes
+- B5 on each sheet uses =NOW() and has slightly different timestamps. That’s fine; they update independently.
+- SecC includes I50/J50 rows while SecA and SecB stop at row 49. If the sheets are intended to have identical row sets, check whether rows are missing/extra in SecA/SecB.
+- No circular references detected in the provided formulas.
+
+If you’d like, I can:
+- Provide an updated formula list for replacing the inconsistent formulas (e.g. exact replacements for J10 and SecA!J47),
+- Generate a short VBA routine or sequence of Find/Replace actions to standardize the J-column formulas across all sheets,
+- Or re-check after you make changes.

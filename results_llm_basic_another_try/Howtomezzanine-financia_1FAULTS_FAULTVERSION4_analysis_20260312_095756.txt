@@ -1,0 +1,40 @@
+Errors found:
+
+1. In the "Rules of thumb" sheet:
+   - Cell B30 formula: `=+B19*B15/B4` is labeled "Annual operating profit for CAN" per sq ft, but B15 is "Total cost per desk," and B4 is "Space allowed per desk." Dividing cost per desk by space per desk to get per sq ft profit is incorrect. Profit should be based on revenue minus costs, not markup times cost per desk divided by space per desk.
+   
+2. In the "Mezzanine financial model" sheet:
+   - Row 15 (Security) has no value in C15 but formulas in H15, I15, J15, K15, L15, M15 reference C15. This will cause zero or errors if C15 is blank.
+   - Rows 17 (Meeting Rooms), 23 (Utilities excl usage), 33 (Photocopying costs), 34 (IT Support), 35 (Other) have zero or missing values in C column but formulas referencing them.
+   - In cell C37: `=SUM(C12:C35)*0.9` reduces total by 10% without explanation; this may be intentional but should be verified.
+   - In NPV formula (F85): uses multiple IFs for each year, but the logic is complex and may cause errors if lease length (C65) is less than 1 or more than 10. Also, the NPV function expects a range, not individual values.
+   - Cells H53, H54, H55, J53, J54, J55 have formulas referencing C53, C54, C55, but these cells are not defined or missing values.
+
+Solutions:
+
+1. For B30 in "Rules of thumb":
+   - Correct formula to calculate annual operating profit per sq ft:
+     Use `=B19*B14` where B19 is markup and B14 is total cost per sq ft.
+   - Explanation: Profit per sq ft = markup % * total cost per sq ft.
+
+2. For missing or zero cost values in "Mezzanine financial model":
+   - Enter zero explicitly in empty cost cells (e.g., C15, C17, C23, C33, C34, C35) to avoid errors.
+   - Explanation: Formulas referencing blank cells may return errors or zero; explicit zero ensures correct calculations.
+
+3. For NPV formula in F85:
+   - Simplify by using an array or range for cash flows instead of multiple IFs.
+   - Example: `=NPV($C$69, OFFSET(F$80,0,0,$C$65,1)) - F$76`
+   - Explanation: NPV function expects a range of cash flows; using OFFSET or a defined range is cleaner and less error-prone.
+
+4. For undefined cells C53, C54, C55:
+   - Define these cells or remove formulas referencing them.
+   - Explanation: Referencing undefined cells causes errors.
+
+Summary:
+
+- Fix B30 formula to `=B19*B14` for correct profit per sq ft.
+- Fill blank cost cells with zero in Mezzanine model.
+- Simplify NPV formula to reference a range of cash flows.
+- Define or remove references to undefined cells C53:C55.
+
+These fixes will ensure accurate and error-free calculations.

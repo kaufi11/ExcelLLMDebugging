@@ -1,0 +1,30 @@
+I reviewed the workbook and found the main, actionable problems. Short fixes and plain explanations below.
+
+1) Sheet "Balance of Business" — C11 (hardcoded value)
+- Fault: C11 = 450/B$15 (450 is hardcoded instead of using the B11 cell).
+- Why it's wrong: If B11 changes the % won't update. It breaks the consistent pattern used in the other rows.
+- Fix: Replace with =B11/B$15
+- Explanation: Use the cell reference so the percent is always B11 divided by the column total in B$15 (same pattern as other rows).
+
+2) Sheet "Formulas" — inconsistent "Total Transactions" usage
+- Fault: You have three different cells labelled "Total Transactions": C6 = 5,500; C9 = 3,200; C11 = 55. Different formulas refer to different ones (D5 uses C6, D8 uses C9, D11 uses C11).
+- Why it's wrong: Those are different metrics or units; formulas that intend to use the same metric must reference the same cell. This will give inconsistent or meaningless results.
+- Fix: Decide which cell holds the true "Total Transactions" (example: use C6 = total transactions for the period). Then:
+  - D5 (Average Transaction) keep =C5/C6 (Sales ÷ Transactions).
+  - D8 (Items per Ticket) change to =C8/C6 (Items ÷ same Transactions).
+  - D11 (Conversion Rate) should use the same transactions metric vs traffic; e.g. =C6/C12 if conversion = (total transactions) ÷ (traffic).
+- Explanation: Using one canonical cell for "total transactions" prevents mismatched calculations and makes the sheet auditable.
+
+3) Sheet "CashFlow" — carry-forward / referencing previous month
+- Potential issue: C40 (and other month-start formulas) use =C39+C38. If C39 (Line D cash on hand) is empty or not populated with the prior month's ending balance, the cash-available numbers will be wrong.
+- Fix / recommendation: Ensure C39 is populated (e.g., set C39 = previous month end-of-month value, or enter the actual opening cash). If you want automation across columns, set next month’s D39 = C41 (previous month end) so balances carry forward.
+- Explanation: Cash-flow formulas are correct structurally (A + B = C), but they require consistent inputs for opening balances. If you want auto carry-forward, explicitly link the previous month’s end cell to the next month’s opening cell.
+
+Minor / cosmetic notes (no immediate breakage)
+- Several formulas use a leading plus (e.g., =+C40). This is harmless but unnecessary; you can use =C40.
+- Some cells are placeholders (values of 1); verify real data gets entered so percent-to-total calculations (B15 etc.) are meaningful.
+- Check rounding/precision in maintained-margin numbers (minor decimal differences are normal).
+
+If you want, I can:
+- Provide an edited list of exact replacement formulas for every cell that should change.
+- Create one consistent cell to hold "Total Transactions" and update dependent formulas for you.

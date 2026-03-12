@@ -1,0 +1,64 @@
+I inspected the workbook data you provided and found several formula problems, range mistakes, unit/format inconsistencies and suspicious values. I list them by sheet (cell addresses are as given in your JSON). For each I describe the issue and give a recommended fix.
+
+Student-teacher (sheet)
+- Inconsistent use of formulas vs manual totals:
+  - K37 =SUM(K26:K36) and L37 =SUM(L26:L36) are formulas, but the other "TOTAL" cells on this sheet (e.g. B37, C37, E37, F37, H37, I37, E18,F18, H18,I18) are hard-coded values rather than formulas. Recommendation: replace manual totals with SUM formulas (and keep formatting consistent) so totals update automatically.
+- Missing sums / incomplete columns:
+  - Some TOTAL rows are missing SUM formulas (see above). Decide whether totals should be computed and add SUM ranges accordingly.
+
+Public Grads
+- Totals include text-masked / missing values:
+  - Row A16 formulas (=SUM(B5:B15) … =SUM(J5:J15)) will ignore text entries like "**". That is how Excel behaves, but be aware these totals silently exclude missing data. If you intended to treat "**" as zeros, that's fine; if you intended to flag or estimate missing values, adjust accordingly.
+
+Drop-out
+- No formulas present. Data appears numeric; no formula errors detected here.
+
+Teachers adv degrees
+- Inconsistent percent units between tables:
+  - Top table (rows A6:A16, columns B, D, F, H, J, L) uses percent values as percentages (e.g. 50.9), while the lower table (rows A21:A31, columns B, D, F, H, J) uses fractional values (e.g. B21 = 0.4690338563). The cells in the lower table are fractions (≈0.47) whereas the upper table shows 47.0, so the same "Percent" label is used for differently scaled numbers. Recommendation: choose one representation (either percent 0–100 or fraction 0–1) and convert/format consistently (set cell Number Format to Percentage if you want percent display).
+- Non-integer "Total No." values (likely incorrect):
+  - Several "Total No." cells contain non-integer decimals where counts should be whole numbers, e.g.:
+    - A13 (ATLANTA) G13 = 1995.8, I13 = 1789.9, K13 = 1891.2, M13 = 1901.6
+    - A6–A16 other rows are integers, so these decimals are inconsistent.
+  - These decimal totals indicate that a percent * total formula (or some division) produced fractional results or that values were imported incorrectly. Recommendation: totals that represent counts should be integers; check the source formulas (or round to integer if appropriate) and confirm whether the percentages were applied to the correct denominators.
+- Mixed formatting and likely unit mismatch: verify how Percent and Total No. were calculated and standardize.
+
+State test (Reading & Math)
+- Inconsistent scales across years:
+  - Many cells in the same row switch from ~200 values (scaled scores) to much smaller two-digit values (e.g. Reading: B7 = 216.45, C7 = 210.4 then D7 = 57, E7 = 53, F7 = 52, …). Same pattern repeated across many rows and in Math. This indicates mixing of two different scales/metrics (e.g. raw scaled scores vs percent correct or percentile).
+  - Example anomalies: Reading: B7=216.45, C7=210.4, D7=57 (sudden drop). Math: similar patterns. Recommendation: confirm what metric each column/year uses and normalize or label columns clearly (e.g. "Scaled score", "Percent", "Percentile") and convert so columns are comparable.
+- Suspicious textual / uncertain values:
+  - A13 (ROCKDALE) H13 = "60?" — contains a question mark; treat as text and not numeric. Confirm and correct to numeric value.
+
+SAT sheet
+- Multiple likely data-entry/truncation errors (outliers far from neighborhood values):
+  - Several cells in the D (1992–93) column and other years are implausible compared to adjacent year values (typical SAT values ≈ 800–1100). Examples:
+    - A10 (GWINNETT) D10 = 99  (likely a 3-digit value was truncated; expected ~900)
+    - A11 (ROCKDALE) D11 = 100  (likely ~1000)
+    - A5 (CLAYTON) B5/C5 = "**" (missing) — OK if intended
+    - Several other D-column or early-year entries are 2-digit numbers while typical values are 3-digit. Recommendation: verify these entries against source data; if they are missing leading digits (e.g. losing a leading "9" or "1"), restore correct values.
+- Note: cells with "**" are text placeholders and will be ignored by numeric calculations.
+
+University (Degrees)
+- Sum formula range errors in "Two Year Colleges" total row (A15):
+  - B15 is correct: =SUM(B12:B14) (sums only the two-year rows).
+  - But C15 through K15 use the ranges SUM(C5:C14), SUM(D5:D14), … SUM(K5:K14). Those ranges include both the Four-Year and Two-Year rows (C5:C14 includes the four-year rows C5:C8 and the two-year rows C12:C14), so the "Two Year Colleges" total cells are actually summing four-year and two-year numbers together — producing much larger, incorrect totals. Examples:
+    - C15 = =SUM(C5:C14) (should be =SUM(C12:C14))
+    - D15 = =SUM(D5:D14) (should be =SUM(D12:D14))
+    - ...and similarly E15, F15, G15, H15, I15, J15, K15.
+  - Recommendation: change the formulas on row 15 for columns C–K to SUM only the two-year rows (C12:C14, D12:D14, etc.). The B15 formula is correct; make the others consistent.
+
+Other general issues / recommendations
+- Text placeholders ("**", "60?") are present in many cells. These are text and will be ignored by numeric formulas. If they indicate missing data, consider using NA() or leaving blank and documenting how totals should handle missing values.
+- Replace hard-coded totals with SUM formulas consistently to avoid manual-update errors.
+- Standardize formats and units across years for the same metric:
+  - Percent values should be either stored as fractions (0.47) and formatted as Percentage or stored as 47 and formatted as Number. Mixing both will mislead readers and cause calculation mistakes.
+  - Score metrics (scaled score vs percent correct) must be clearly labeled and kept consistent by column.
+- Check the rows with decimal counts (e.g. totals with .8, .9) — these suggest an arithmetic step applied where integer counts are expected. Either round/truncate or re-evaluate the source formula.
+
+If you want, I can:
+- Provide a corrected list of exact formula replacements (e.g. specific formulas to set for each incorrect cell),
+- Recalculate and show corrected totals for the university two-year totals (and any others) based on the intended ranges,
+- Attempt to identify likely correct values for the truncated SAT / state test entries if you can provide the source or a rule (e.g., leading '9' missing).
+
+Which of those (or any other) actions would you like me to take next?

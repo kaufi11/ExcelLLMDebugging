@@ -1,0 +1,38 @@
+I reviewed the workbook and found the main formula problems and a few places you should verify input cells. Short, clear fixes below.
+
+1) Hard-coded number in Balance of Business (wrong percentage)
+- Where: Sheet "Balance of Business", cell C10
+- Problem: C10 contains =189/B$15 (the 189 is hard-coded instead of using the B10 cell). If B10 changes the % will not update.
+- Fix: Replace with =B10/B$15
+- Why: The % to total should divide the department’s Sales ($) in B10 by the Sales total in B15. Using the cell reference keeps the sheet dynamic.
+
+2) Missing/empty cost % for “Yours” in Maintained Margin Worksheet
+- Where: Sheet "Maintained Margin Worksheet", cell D11 shows =D9*D10
+- Problem: D11 will be wrong (zero or error) if D10 (Cost of goods %) is empty. The example cost % is in C10, but D10 must contain your own cost %.
+- Fix: Enter your cost % (as a decimal, e.g. 0.551) in D10. Then D11 will calculate correctly as =D9*D10.
+- Why: Cost of goods $ must be computed using the inventory amount (D9) multiplied by your cost % (D10). If D10 is blank the result is incorrect.
+
+3) Percent total rows missing/verify 100% totals (recommended)
+- Where: "Balance of Business" percent columns C/E/G/I/K rows 5:14
+- Problem: I don’t see formulas for the percent totals on row 15. You should show the column percent totals to verify they sum to 100%.
+- Fix: In row 15 add formulas like:
+  - C15 =SUM(C5:C14)
+  - E15 =SUM(E5:E14)
+  - G15 =SUM(G5:G14)
+  - I15 =SUM(I5:I14)
+  - K15 =SUM(K5:K14)
+- Why: These should equal 1 (100%) and help catch any mis-references or hard-coded values (like the 189).
+
+4) (Optional) Make the totals reference robust if you copy formulas across
+- Where: percent formulas in Balance of Business (C5, E5, etc.)
+- Note: Your existing pattern uses e.g. C5 =B5/B$15 and E5 =D5/D$15 (row locked, column relative) — this is OK if intentional. If you want formulas that can be copied horizontally without changing the total column, use absolute references:
+  - Example: C5 =B5/$B$15  (locks column B total)
+- Why: Choose pattern intentionally: relative column (current) or absolute ($B$15) depending on how you copy formulas.
+
+Quick checklist for you to run:
+- Replace C10 with =B10/B$15.
+- Enter your cost % in D10 on Maintained Margin Worksheet.
+- Add SUM formulas for percent totals on row 15 and confirm they equal 1 (format as %).
+- Scan for any other hard-coded numbers (like the 189) and replace with cell references.
+
+If you want, I can produce the exact updated formulas for every percent cell (or fix them directly if you paste the workbook or a sheet).

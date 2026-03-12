@@ -1,0 +1,52 @@
+Thanks — I reviewed the workbook description and found several clear errors/bugs and what to change. Short, clear list below with why and the fix.
+
+1) D6 (Expense yearly growth)
+- Error: D6 contains =(C6-728)/728 — uses the constant 728 instead of prior-year expense.
+- Why it’s wrong: growth should compare C6 to C5 (previous year), not to 728.
+- Fix: change to =(C6-C5)/C5
+
+2) E7 (fee revenue for 2001) — forward reference
+- Error: E7 = E8 - 2258280 (it references the next row). That’s a forward reference / brittle.
+- Why it’s wrong: historical values should not be derived from future rows; this is confusing and may break if E8 changes.
+- Fix / options:
+  - If you have the actual 2001 fee revenue, enter that value directly in E7.
+  - If you want to derive 2001 from 2002 using your assumed growth rate (A3: 4%), use =E8/1.04
+  - If you want it from an explicit growth cell, use =E8/(1+<growth_cell>)
+- Explanation: using prior-year or an explicit growth divisor removes the forward reference and is logically correct.
+
+3) E16, E17, E18 (dollar amount of premiums for groups that hit the cap)
+- Errors:
+  - E16 =(0.46*C7) and E17 =(0.43*C8) and E18 =(0.46*C9) — these multiply a percent by a cell that is not the total premium base (and E18 uses the wrong percent constant, 0.46 instead of 0.35).
+  - They appear to multiply percent × group count or percent × expense, which is meaningless.
+- Why it’s wrong: the header for E-column is “$Amt (% of total prem)”. That means you must multiply the percent (D16..D18) by the total premium dollar amount for that year — not by a count or by an expense cell.
+- Fix: Replace those formulas to multiply D16..D18 by the correct total-premiums cell for each year. Example patterns:
+  - If total premiums for 2001 are in cell X7, then E16 = D16 * $X$7
+  - If total premiums for 2002 are in X8, then E17 = D17 * $X$8
+  - If total premiums for 2003 are in X9, then E18 = D18 * $X$9
+- If you don’t have a total-premiums column, create one and populate it, then reference it in E16:E18.
+- Also correct E18 to use D18 (0.35) rather than hard-coded 0.46.
+
+4) E18 specific typo
+- Error: E18 is set to =(0.46*C9) but D18 = 0.35.
+- Fix: use D18 in formula (and the correct premium base): =D18 * <TotalPremiumsCellFor2003>
+
+5) G16..G18 (amount of database fee paid by capped groups) — verify base
+- Observation: G16 = 0.22 * E7 (and G17 = 0.2*E8 etc.) — this is fine only if E7/E8/E9 are the total database-fee revenue. Once you fix E7 (see #2) and confirm E7:E9 are total fees, these are OK.
+
+6) CPI sheet — row-reference off-by-one (likely)
+- Errors: R21 = (Q21 - Q12)/Q12 and S21 = (M21 - M12)/M12
+- Why it’s wrong: these compare 2001 to 1992 (row12). If you intended to compare 2001 to 1991 (row11) change the references.
+- Fix: if intended to compare to 1991, use:
+  - R21 = (Q21 - Q11)/Q11
+  - S21 = (M21 - M11)/M11
+- If you did intend 1992, leave as-is — just verify the intention.
+
+General recommendations
+- Replace hard-coded constants (728, 0.46 hard-coded in E18) with cell references so updates propagate.
+- Avoid forward references — compute backward (e.g., divide by 1+growth) or input historical values.
+- Add a clearly labeled “Total Premiums” column/cells to remove ambiguity — then use that as the basis for E16:E18.
+- After making changes, recalculate and spot-check a couple of rows to ensure %s line up with narrative (31 groups / 46% / 22% etc).
+
+If you want, I can:
+- Give the exact replacement formulas assuming total premiums are in column B (e.g., E16 = D16*B7), or
+- Provide a cleaned example sheet with the fixes applied — tell me where total premiums are stored or whether to assume column B.

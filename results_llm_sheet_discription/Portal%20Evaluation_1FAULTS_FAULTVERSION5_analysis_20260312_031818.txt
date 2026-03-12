@@ -1,0 +1,54 @@
+Short answer — main errors found
+1. Typo in I21: formula is =H21*116 but should be =H21*C21.  
+2. Several weighted-score (WS) cells in columns I, L, O, R are hard-coded numbers instead of formulas (inconsistent). That makes totals wrong if any score or weight changes.  
+3. Summary table (A45 onward) doesn’t clearly pull all four vendor totals from the totals row (I44, L44, O44, R44) — appears incomplete/incorrect.
+
+Why these are problems
+- The I21 typo multiplies by 116 (wrong constant) so Oracle’s WS and Oracle total are incorrect.  
+- Hard-coded WS values break the automatic calculation model: changing a score or weight will not update the WS or totals.  
+- If the summary cells don’t reference I44/L44/O44/R44, the reported overall scores can be out-of-sync with the detailed sheet.
+
+How to fix it (easy steps)
+Manual fix (quick)
+1. Fix the typo: in cell I21 change formula to:
+   =H21*C21
+2. For each vendor block, in row 8 enter the correct formula and then fill down to row 43:
+   - Oracle WS (column I): in I8 enter =H8*C8 and fill down to I43.
+   - uPortal WS (column L): in L8 enter =K8*C8 and fill down to L43.
+   - CleverPath WS (column O): in O8 enter =N8*C8 and fill down to O43.
+   - SharePoint WS (column R): in R8 enter =Q8*C8 and fill down to R43.
+3. Ensure totals row formulas are correct:
+   - I44 = SUM(I8:I43)
+   - L44 = SUM(L8:L43)
+   - O44 = SUM(O8:O43)
+   - R44 = SUM(R8:R43)
+4. Update the summary table to reference those totals (example):
+   - Oracle total cell = I44
+   - uPortal total cell = L44
+   - CleverPath total cell = O44
+   - SharePoint total cell = R44
+
+Automatic fix (one-click VBA)
+Paste this small macro and run it (fixes all WS formulas and totals):
+
+Sub FixWeightedScores()
+  Dim r As Long
+  For r = 8 To 43
+    Cells(r, "I").Formula = "=H" & r & "*C" & r
+    Cells(r, "L").Formula = "=K" & r & "*C" & r
+    Cells(r, "O").Formula = "=N" & r & "*C" & r
+    Cells(r, "R").Formula = "=Q" & r & "*C" & r
+  Next r
+  Range("I44").Formula = "=SUM(I8:I43)"
+  Range("L44").Formula = "=SUM(L8:L43)"
+  Range("O44").Formula = "=SUM(O8:O43)"
+  Range("R44").Formula = "=SUM(R8:R43)"
+End Sub
+
+Extra checks (recommended)
+- After fixing, press Ctrl+` to inspect formulas or use a helper column: =IF(I8=H8*C8,"OK","WRONG") to confirm all rows.  
+- Make sure score cells (H,K,N,Q) are numeric, not text. If you see totals still off, recalc (F9) and check for any leftover hard-coded values.
+
+If you want, I can
+- Provide an exact list of cells that are currently hard-coded (audit), or  
+- Create the corrected workbook formulas for you to paste.

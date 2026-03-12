@@ -1,0 +1,28 @@
+I found the main errors in the workbook. Short, clear list with fixes and short explanations:
+
+1) Discount factor — wrong formula in X19
+- Problem: X19 = W19*(438/438.4382) — this breaks the DF chain for year 2017 (all later discount factors downstream become wrong).
+- Fix: Replace X19 with =W19*(1/1.12) (so the DF chain stays consistent: each year = previous*(1/1.12)).
+- Why: DF must be (1/1.12) each year; that odd 438/438.4382 is a wrong/garbled value.
+
+2) Average wiring cost in Individ. Hh. sheet — wrong AVERAGE range (excludes one household)
+- Problem: AE13 = AVERAGE(AE3:AE10) — this omits AE11 (household row 11). AE13 should average all households (rows 3:11).
+- Fix: AE13 = AVERAGE(AE3:AE11)
+- Why: excluding one household biases the average wiring cost used downstream (village wiring total, benefit/cost calculations).
+
+3) Re-wiring sensitivity / wiring cost in year 2010 (Q10) uses wrong number
+- Problem: Q10 = 4275*7.5 — uses 4275 (not 4297) and the factor 7.5 is unclear. Assumption f says “25% of houses need re-wiring at cost Rs (4297*30) in year 10”.
+- Fix (recommended): Q10 = 4297*30*0.25  OR Q10 = 4297*7.5  (these are equivalent)
+- Why: Use 4297 (assumed per-house wiring cost) and apply 25% of 30 households = 7.5 households. Current formula uses wrong unit (4275) and is ambiguous.
+
+4) Clean up formulas for scrap/environmental % (recommended clarity, not strictly incorrect)
+- Problem: AA17 = 0.1*G5+0.1*G6 and AA29 = 0.02*G5+0.02*G6 are correct mathematically but harder to read and error-prone if structure changes.
+- Fix (clearer): AA17 = 0.1*(G5+G6)  and AA29 = 0.02*(G5+G6)
+- Why: Makes intent explicit (10% / 2% of total construction cost) and prevents precedence or copy/paste mistakes.
+
+Additional note to check after corrections
+- After fixing X19, recompute row 20 and row 32 PV sums (C20 and C32) and then B/C (C38) and NPV (C39) to get the corrected economic indicators — the wrong DF in X19 will have changed PVs and the ratios.
+
+If you want I can:
+- Produce the exact corrected formulas ready to paste, or
+- Recompute PV totals, B/C and NPV after applying these fixes and give the corrected numeric results. Which would you like?

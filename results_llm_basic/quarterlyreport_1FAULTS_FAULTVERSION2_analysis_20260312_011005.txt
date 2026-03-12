@@ -1,0 +1,55 @@
+I reviewed the three sheets and found several errors (wrong signs/ranges, wrong links/hard-coded values, and incorrect beginning‑balance links). Short summary with fixes and why they work:
+
+1) Summary sheet — Financial Aid sign and wrong ranges (causes net tuition to be wrong)
+- Problem: D9 = -Detail!D15 (and F9 etc use wrong ranges like =SUM(Detail!F9:F11)). Detail!D15 already contains the SUM of negative financial aid (e.g. -4,036,669). Using a minus sign (or summing the wrong rows) makes Summary add aid instead of subtracting it, so Subtotal Net Tuition (Summary row 10) is incorrect.
+- Fix (apply to every column): set the Summary financial aid cell to the Detail subtotal cell without changing the sign. Example:
+  - Change D9 from =-Detail!D15 to =Detail!D15
+  - Change F9 from =SUM(Detail!F9:F11) to =Detail!F15
+  - Do the same for G9,H9,I9,... =Detail!G15, Detail!H15, etc.
+- Also fix Subtotal Net Tuition formulas to sum the Summary tuition row and Summary financial aid row (not arbitrary Detail ranges). Example:
+  - D10 should be =SUM(D8:D9)
+  - F10 should be =SUM(F8:F9)
+  - Apply the same pattern across columns.
+- Why: Detail already stores gross tuition (Detail!D11) and financial aid (Detail!D15 negative). Summary should pull those two values and add them (gross + negative aid = net).
+
+2) Detail sheet — Beginning fund balance references appear mis‑wired
+- Problem: Some beginning balances reference the wrong prior-year cell (creates wrong or stale beginning balances). Examples:
+  - E64 = D65 (OK — FY02 beginning = FY01 current)
+  - F64 = D65 (WRONG — Current (F) should pick up E65, not D65)
+  - K64 = D65 (WRONG — K should reference previous column's current/proj)
+  - N64 = K65 (probably should reference M65)
+- Fix (general rule): each column’s Beginning Fund Balance should equal the Current/Projected balance from the immediate previous fiscal column. Examples:
+  - E64 = D65 (keep)
+  - F64 = E65 (change)
+  - K64 = J65 (change if J is the previous column for K)
+  - N64 = M65 (change)
+- Why: beginning balance for a column is the ending/current balance of the prior column. Fixing this avoids carrying the wrong starting balances forward.
+
+3) RCM Report — Hard-coded values and an obvious stray constant
+- Problem examples:
+  - F14 = 2 (nonsensical constant) — should be linked to Detail
+  - Many cells in column E, and other cells, contain hard-coded numbers (E11, E19, E20, E28, etc.) rather than linking to Detail. This makes the RCM totals inconsistent with Detail and Summary.
+- Fix:
+  - Replace F14 = 2 with =Detail!F20 (or the correct Detail cell for University Fund allocation).
+  - Replace all hard-coded numbers with formulas referencing the appropriate Detail cells (e.g., RCM D11 = Detail!D17, RCM E19 = SUM(E10:E20) or better: pull each line from Detail like the other columns).
+- Why: RCM is intended to roll up Detail. Hard-coded numbers break reconciliation.
+
+4) Minor/formatting oddities (not critical but tidy up)
+- Using SUM() around a single subtraction (e.g., =SUM(D25-D61)) works but is unnecessary. You can replace with =D25-D61 for clarity.
+- Check that allocations calculated as actuals from budgets (e.g., D58 = E58*0.93) are intentional: if actuals should be input values, don’t derive them from budget cells.
+
+Action plan (what to change now — copy/paste formulas)
+- Summary:
+  - Row 9 (Financial Aid): for each column col replace formula with =Detail!<col>15
+  - Row 10 (Subtotal net tuition): for each column col set =SUM(<col>8:<col>9)
+- Detail:
+  - Fix beginning balances to previous column’s current/proj. Example: change F64 to =E65, K64 to =J65, N64 to =M65 (adjust if your column mapping is different).
+- RCM:
+  - Replace F14 with =Detail!F20
+  - Replace any hard-coded numbers with the matching Detail! cell reference (search for numbers that should be linked).
+
+If you’d like, I can:
+- Provide a small table of exact formula replacements for every affected cell (I can list one-by-one),
+- Or produce a VBA macro that fixes all these links automatically.
+
+Which do you prefer?

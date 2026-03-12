@@ -1,0 +1,25 @@
+Summary — I found two functional errors that can give wrong/unstable results:
+
+1) Sample Company — Waste/Scrap cell is hard-coded
+- Where: Sheet "Sample Company", cell C23 (Waste/Scrap/Engineering Changes).
+- Problem: C23 contains the hard-coded value 3 instead of the proper formula. That makes the sample total incorrect and is inconsistent with how other categories are calculated.
+- Fix: Replace the hard-coded 3 with the same pattern used elsewhere:
+  Formula: =C9 * B24 * C11
+- Why: That computes waste = Annual Imports * waste% * duty rate, consistent with other categories and units.
+
+2) Text Only sheet uses hard-coded input defaults instead of linking
+- Where: Sheet "Text Only Version", cells C5, C6, C7, C8 (Inventory Turnovers, Avg duty parts, Avg duty finished product, Interest Rate).
+- Problem: These cells are fixed (1, 0.1, 0.075, 0.12) instead of referencing the live input values on "Your Company". If the user changes inputs on "Your Company", the Text Only print sheet will not reflect them.
+- Fix: Make those cells point to the corresponding cells on "Your Company".
+  Replace:
+  - C5 with = 'Your Company'!C14
+  - C6 with = 'Your Company'!C15
+  - C7 with = 'Your Company'!C16
+  - C8 with = 'Your Company'!C17
+- Why: This ensures the print-friendly sheet always mirrors the live inputs and the calculated results on the Text Only sheet remain correct.
+
+Optional / minor
+- Spell-check: "Obselete" should be "Obsolete" (cosmetic).
+- Verification: After fixes, test by changing a value on "Your Company" (e.g., C13 or C15) and confirm the Text Only sheet updates and the Sample Company shows the expected computed value for waste.
+
+If you want, I can provide the exact steps to edit these cells or produce the corrected workbook formulas for you.

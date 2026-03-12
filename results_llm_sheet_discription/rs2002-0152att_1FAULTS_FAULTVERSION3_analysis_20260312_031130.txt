@@ -1,0 +1,31 @@
+Summary of the error(s)
+1. The running cumulative column (I) is inconsistent — some I formulas add Requested Funds (column G) instead of Awarded/Aproved Funds (column H). That overstates the committed funding when awards are partial (H < G).  
+   - Example: Sheet "Watershed Protection" I7 = G7 and I8 = I7 + G8 (should use H7 and H8).
+2. There is at least one cell with a hard-coded/incorrect constant in the cumulative formula.  
+   - Example: Sheet "Coastal NPS-Reg 1,2,3" I43 = 953 + H43 — the literal 953 is wrong. I43 should be H43 (or I(previous)+H43 if continuing a running sum).
+3. Because of (1) and (2), the cumulative totals can be wrong and the funding-limit checks/notes may be incorrect.
+
+Why this is wrong (short)
+- The cumulative total must reflect actual Awarded/Aproved Funds (column H). Requested (G) may be higher than awarded and will incorrectly inflate the running sum. A stray constant (953) breaks the running calculation entirely.
+
+How to fix it (simple steps)
+1. Decide: cumulative should sum Awarded Funds (H). (That is the correct choice.)
+2. Set the first data row in each sheet’s column I to the Awarded value:
+   - Example for usual sheets: in I7 enter =H7.
+3. For the row below and fill down, use the running-sum that adds the Awarded amount:
+   - In I8 enter =I7 + H8, then fill/copy that formula down the column to the last data row.
+4. Replace any formulas in column I that reference G (or contain constants like 953) so they reference H instead. Quick ways:
+   - Use Find in column I for “+G” and change to “+H”, or
+   - Select the whole I column data range, type the correct I8 formula once and Fill Down, or
+   - Use Excel’s formula auditing (Trace Precedents) to spot non-H references and fix them.
+5. Recalculate and verify the final cumulative number against the header funding limit.
+
+Example corrections you should make now
+- Sheet "Watershed Protection": change I7 from =G7 to =H7; change I8 from =I7+G8 to =I7+H8; fill down.
+- Sheet "Coastal NPS-Reg 1,2,3": change I43 from =953+H43 to =H43 (if starting a new cumulative) or =I42+H43 if this block continues a running sum; then fill down subsequent rows as =I43+H44, etc.
+
+Quick check after fixing
+- All I formulas should either be =H(firstRow) (first funded row) or =I(previousRow)+H(currentRow).  
+- Use Find: search column I for any “G” or unexpected numbers/constants; none should remain.
+
+If you want, I can produce a list of all exact I-cells in the workbook that currently reference G or contain constants (like 953) so you can correct them directly. Which would you prefer?

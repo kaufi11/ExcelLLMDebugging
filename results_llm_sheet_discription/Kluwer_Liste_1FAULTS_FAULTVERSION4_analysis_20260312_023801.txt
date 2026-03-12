@@ -1,0 +1,41 @@
+Summary — the two problems you need to fix
+1) Row 2, column I (I2) contains an openpyxl ArrayFormula object instead of a numeric value or a normal Excel formula. That cell will not behave like a number (breaks exports, sums, comparisons, etc.).  
+2) Row 41, column J (J41) uses the wrong operation: J41 = H41 / 1.5 instead of J41 = H41 * 1.5. That produces a wrong institutional e‑book price for that record.
+
+Why these matter (brief)
+- I2 being an object prevents correct numeric processing for the whole column and can break automated workflows.  
+- J41 being a division gives a lower value where every other J is 150% of H; it’s an obvious outlier and will create incorrect totals or reports.
+
+Quick fixes (in Excel)
+1) Fix I2:
+   - Select I2. If it contains a visible weird object or formula that Excel cannot evaluate, clear the cell (Delete) and enter the correct formula:
+     =H2*0.7
+   - Press Enter and then fill that formula down the column (drag the fill handle or double‑click the fill handle) for I2:I464 so e‑book retail is always 70% of Book Price and updates automatically.
+2) Fix J41:
+   - Select J41, edit the formula and change the “/” to “*” so it reads:
+     =H41*1.5
+   - Press Enter.
+3) (Optional) Convert entire column J to formulas (if some rows are stored as values):
+   - In J2 enter =H2*1.5, press Enter and fill down J2:J464.
+
+Checks to find other issues
+- To find other J mismatches: add helper column K2:
+  =IF(ROUND(J2 - H2*1.5, 2)<>0, "Mismatch","OK")
+  Fill down and filter for "Mismatch".
+- To find nonnumeric H values or zeros:
+  - For nonnumeric: =NOT(ISNUMBER(H2))
+  - For zero prices: =H2=0
+
+If you use openpyxl / programmatic fix
+- The I2 ArrayFormula object probably came from a prior programmatic write. Reassign the cell value/formula in code, for example:
+  - worksheet["I2"].value = "=H2*0.7"
+  - then for rows 2..464 set worksheet[f"I{r}"].value = f"=H{r}*0.7" and worksheet[f"J{r}"].value = f"=H{r}*1.5"
+- After changing formulas, save the workbook and (if needed) open it in Excel to let Excel recalculate.
+
+Extra recommendation (short)
+- Make Column I formula-based (=Hn*0.7) rather than storing values. That prevents drift when H changes.  
+- Run the mismatch check (helper column) once after fixes to be sure there are no other formula anomalies.
+
+If you want, I can produce:
+- A list of all rows where J ≠ H*1.5, and rows where H is nonnumeric or zero.
+- A short openpyxl script snippet to fix I and J across all rows.

@@ -1,0 +1,67 @@
+Summary of the problems I found (short, with exact fixes)
+
+1) Wrong hard-coded value in Year 1 — month 11 beginning cash
+- Error: Year 1 cell M6 is =5 (hard-coded).
+- Why wrong: every month’s beginning cash should equal the previous month’s end cash (column L55 → column M6). A hard-coded 5 breaks the cash flow chain.
+- Fix: change M6 to =L55  (or =SUM(L55) if you want to keep the existing SUM style).
+
+2) Misplaced / wrong-row SUM in Year 2 (typo)
+- Error: on Year 2 the Payroll Expenses (Direct Labor) O20 is shown as =SUM(C22:N22) (wrong row).
+- Why wrong: O20 must sum row 20, not row 22. This misplaces totals and % of sales down the sheet.
+- Fix: change O20 to =SUM(C20:N20). Also scan O17:O53 and correct any other rows where SUM uses the wrong row number (e.g. SUM(C21:N21) should be on row 21, etc.)
+
+3) Beginning-of-month cash links are inconsistent / some link to the wrong sheet/cell
+- Examples: On variance/detail sheets many beginning-cash formulas are things like =SUM(B55) or =SUM(C55) (local sheet) instead of linking to Year 1 or Year 2 values.
+- Why wrong: these are not pulling the actual beginning cash values from the source Year sheet; they may be referencing blank/incorrect cells and produce wrong variances.
+- Fix pattern: Beginning cash for a month should be the previous month’s “CASH POSITION END OF MONTH” (the corresponding *previous* column 55 cell on the source sheet). Use explicit sheet references. Examples:
+  - For Year 2, first month beginning cash (B6) = 'Year 1'!N55 (your existing correct formula).
+  - For a variance sheet that shows month 1 actuals in column C, set C6 = 'Year 1'!C6 (or if you want the beginning of month value, link to the actual Year1 beginning-cash cell for that column).
+  - General instruction: replace local SUM(B55)/SUM(C55) formulas on Var sheets with exact links to the Year sheet cell for beginning cash of that month (for month X: = 'Year 1'!<column for month X>6 or = 'Year 2'!<...>6 depending which year).
+
+4) SUM() used incorrectly around single arithmetic expressions
+- Examples: B15 =SUM(B6+B14), B55 =SUM(B15-B54), and many others like =SUM(B55) instead of just =B55 or =SUM(B6,B14).
+- Why suspicious: Excel will evaluate =SUM(B6+B14) (it works) but it’s non-standard and hides intent. Worse, =SUM(B15-B54) is ambiguous and can hide mistakes or create circular-looking formulas.
+- Fix (best practice): use direct arithmetic or SUM with separate arguments.
+  - Replace =SUM(B6+B14) with =B6+B14 (or =SUM(B6,B14))
+  - Replace =SUM(B15-B54) with =B15-B54
+  - Replace =SUM(B55) with =B55
+
+5) Percentage-of-sales denominator should be fixed / consistent absolute reference
+- Issue: the % of sales formulas use denominators like O$57 or O57 inconsistently (some sheets have P57 = +O57/O$57 which is tautologically 1).
+- Why: inconsistent use of absolute reference may break when copying formulas. Also P57 (total sales/total sales) should return 100% (1) but the rest of the P column should consistently divide row Oxx by fixed total sales cell.
+- Fix: pick one absolute reference for the total sales cell, for example $O$57, and use it everywhere:
+  - Percent formula pattern: P17 = O17 / $O$57
+  - For the total row (P57): =O57 / $O$57 (this will return 1). Confirm you really want the total’s percent = 100%.
+
+6) Many variance sheets reference wrong cells or local cells instead of Year 1
+- Symptom: In the Var sheets some Actual columns are linked correctly (e.g. C8 ='Year 1'!C8) but other rows (beginning cash, subtotals) use local SUM(B55) or SUM(C55) instead of = 'Year 1'!C6 or = 'Year 1'!C55 as appropriate.
+- Fix: audit each Actual column in the Var sheets and ensure each cell that should show Year 1 values uses an explicit 'Year 1'! reference to the matching cell. Example rules:
+  - If column C on Var corresponds to Year1 column C, then:
+    - Var!C6 = 'Year 1'!C6
+    - Var!C8 = 'Year 1'!C8 (you already have)
+    - Var!C14 = 'Year 1'!C14 etc.
+  - Repeat for each quarter/month sheet mapping to the appropriate Year1 column.
+
+7) Misc / recommended full-audit
+- There are a number of similar mis-typed row numbers and inconsistent references across many rows and sheets (looks like copy/paste shifting). I recommend:
+  - Search for SUM(C22:N22) (and similar) and confirm the row index matches the row it sits on.
+  - Search for any =SUM(B55) (or plain SUM single-cell) on Var sheets and replace with explicit 'Year 1'! or 'Year 2'! links depending on the intended source.
+  - Make $O$57 the absolute denominator used for all percent-of-sales formulas.
+
+How to fix quickly (step-by-step)
+1. Fix the obvious typos:
+   - Year1 M6 → change =5 to =L55
+   - Year2 O20 → change =SUM(C22:N22) to =SUM(C20:N20)
+2. Standardize arithmetic:
+   - Replace formulas like =SUM(B6+B14) with =B6+B14 and =SUM(B15-B54) with =B15-B54
+3. Correct links on Variance sheets:
+   - For each variance (Actual) column, replace any local SUM(B55)/SUM(C55) with the matching Year sheet cell (e.g. Var C6 = 'Year 1'!C6, Var F6 = 'Year 1'!D6, etc.)
+4. Make % formulas consistent:
+   - Replace denominators with $O$57 (absolute) so Pxx = Oxx / $O$57 (and P57 = O57 / $O$57 → 1).
+5. Run a row-by-row check for O17:O53 in each Year sheet to ensure each O cell is =SUM(C..:N..) for its own row (no mis-row references).
+
+If you want, I can:
+- produce a small list of the exact cell addresses that are wrong (I already flagged the main ones: Year1 M6, Year2 O20 and multiple SUM(B55) on variance sheets), or
+- give you a VBA script or Find/Replace steps to automatically correct the common mistakes (change =SUM(*+* ) patterns, change SUM(X55) to proper sheet link, etc.)
+
+Which would you prefer: a) a short list of every single cell I should change, or b) an automated fix script (VBA) to standardize the workbook?

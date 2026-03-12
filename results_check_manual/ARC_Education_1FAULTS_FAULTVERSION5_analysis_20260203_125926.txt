@@ -1,0 +1,59 @@
+Kurz und klar: Ich habe die wichtigsten Fehler in der Datei gefunden, erkläre kurz warum sie falsch sind und gebe konkrete Lösungen in deutscher Excel-Formelsyntax.
+
+1) Sheet "university" — Falsche Summen für Two‑Year Colleges (Zeile 15)
+- Fehler: Die Summen referenzieren versehentlich Zeilen 5:14 statt nur die Two‑Year‑Zeilen 12:14.
+- Folge: falsche Totale.
+- Lösung (ersetze die vorhandenen Formeln in B15:K15 durch):
+  B15 =SUMME(B12:B14)
+  C15 =SUMME(C12:C14)
+  D15 =SUMME(D12:D14)
+  E15 =SUMME(E12:E14)
+  F15 =SUMME(F12:F14)
+  G15 =SUMME(G12:G14)
+  H15 =SUMME(H12:H14)
+  I15 =SUMME(I12:I14)
+  J15 =SUMME(J12:J14)
+  K15 =SUMME(K12:K14)
+- Erklärung: so werden nur die 2‑Jahres‑Reihen summiert (Korrekter Bereich).
+
+2) Sheet "Student‑teacher" (Block 1997‑1998) — falscher Summenbereich in F56
+- Fehler: F56 =SUMME(F45:F54) → fehlt Zeile 55.
+- Folge: Lehrer‑Total (F56) ist zu klein.
+- Lösung:
+  F56 =SUMME(F45:F55)
+- Erklärung: Bereich auf die gesamte Liste (Zeile 45–55) erweitern.
+
+3) Sheet "Teachers adv degrees" — Prozentwerte als Dezimalbruch und Bruchteile bei Personenanzahlen
+- Fehler A: In den neueren Jahren (ab Zeile 21) stehen Prozentwerte als Dezimalzahlen (z. B. 0,469…) statt als Prozent (46,9%).  
+  - Ursache: entweder Divisionsergebnis nicht als Prozent formatiert oder falsche Eingabeskala.
+  - Lösung (Format-Lösung, bevorzugt): Zellen B21:B31 (und ähnliche Prozentspalten) als Prozent formatieren (Zellen formatieren → Prozent).  
+    Oder per Formel (bei Umrechnung von Dezimal auf Prozent): =RUNDEN(B21*100;1)  (gibt 46,9)
+    Beispiel (in Zelle B21 neu): =RUNDEN(<alteZelle>*100;1)
+- Fehler B: "Total No." Felder haben Dezimalstellen (z. B. 1995,8) — Personen müssen ganzzahlig sein.
+  - Lösung: Rundung auf ganze Zahlen:
+    Beispiel (ersetzt berechnete Formel): =RUNDEN(<BerechneteFormel>;0)
+    Wenn z. B. C13 = Prozent * Gesamtlehrer war, dann: =RUNDEN(B13/100*GesamtLehrer;0)
+- Erklärung: Prozentwerte gehören entweder als Prozentsatz formatiert oder müssen mit *100 dargestellt werden; Personenanzahlen müssen auf 0 Nachkommastellen gerundet werden.
+
+4) Allgemeiner Daten‑/Eingabefehler (mehrere Sheets: SAT, State test, etc.)
+- Beobachtung: Einige Werte wirken offensichtlich falsch (z. B. SAT: D10 = 99 oder D11 = 100 — wahrscheinlich fehlt Hunderterstelle; State test: Wechsel von ~216 zu 57 in späteren Jahren).
+- Ursache: Datenfehler / falsche Einheiten / Kopierfehler.
+- Lösung:
+  - Prüfen gegen Originalquelle und korrigieren die betroffenen Zellen manuell.
+  - Zur schnellen Fehlerkennung: Markieren Verdächtiges mit einer Prüf‑Formel; z. B. SAT‑Zellen prüfen ob <200 (unplausibel):
+    Beispiel für Prüfung (zelle D10): =WENN(D10<200;"Prüfen";"OK")
+- Erklärung: numerische Plausibilitätsprüfung erkennt fehlende Hunderterstellen oder falsche Skalen.
+
+5) Rundungsregel für berechnete Werte (Empfehlung)
+- Wenn Prozent × Gesamt zu nicht‑ganzen Zahlen führt, verwenden Sie immer Rundung:
+  - Formelbeispiel (Integer Anzahl auf Basis Prozent in B6 und Gesamt in X6): =RUNDEN(B6/100 * X6; 0)
+
+Zusammenfassung / Vorgehensweise zur Behebung
+- 1) Ersetze die fehlerhaften Summen (s. Punkt 1 + 2).
+- 2) Formatiere Prozent‑Spalten korrekt als Prozent ODER wandle Dezimalbrüche mit =B21*100 bzw. =RUNDEN(B21*100;1) um.
+- 3) Runde Personenanzahlen mit =RUNDEN(...;0).
+- 4) Suche und prüfe Auffälligkeiten (kleine SAT‑Werte / sprunghafte Wechsel in State test) mit =WENN(Zelle<Schwelle;"Prüfen";"OK") und korrigiere aus Originaldaten.
+
+Wenn du willst, kann ich:
+- die genauen Zellen in deiner Datei anpassen (nenne mir, ob ich die Formeln direkt ersetzen soll), oder
+- eine Liste aller Zellen erzeugen, die plausibilitätsbedingt geprüft werden sollten (z. B. alle SAT‑Werte <200, alle Prozentwerte <1).

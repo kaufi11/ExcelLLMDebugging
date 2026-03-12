@@ -1,0 +1,37 @@
+I checked Table 22 and found two types of problems: one clear formula-error and several data-alignment (misplaced cell) issues that will cause wrong results or confusing output. Short fixes and why below.
+
+1) Wrong cell reference (definite formula error)
+- Problem: AC26 (Upper-level "Other" for Health & Public Affairs, 2000) formula is =SUM(100-(S26+U27+W26+Y26+AA26)). It incorrectly uses U27 instead of U26.
+- Effect: AC26 shows the wrong percentage (uses the B% from the 1999 row), so the upper-level percentages for that row will not sum to 100 and the "Other" value is wrong.
+- Fix: Change the formula to =100-(S26+U26+W26+Y26+AA26) (or =SUM(100-(S26+U26+W26+Y26+AA26)) if you prefer the original style).
+- Why: the five upper-level percentage cells for that row are S26,U26,W26,Y26,AA26 — you must reference the same-row B% cell (U26), not U27.
+
+2) Misplaced / stray values (data alignment errors)
+- Problem: Several rows contain numbers in columns that should be blank between the defined percentage columns (for example H10, H14, F18, H18, H19, H20, Z22, Z23, Z24, etc.). The header row defines lower-level percentages in E, G, I, K, M and upper-level in S, U, W, Y, AA. Any values in intervening columns (F, H, Z, etc.) are stray/misplaced.
+- Effect: These stray values make the sheet look misaligned and can cause:
+  - Wrong manual reading (you may read the wrong column).
+  - Errors if someone later builds formulas that assume no values in those columns.
+  - Potential calculation errors if those stray cells are accidentally referenced.
+- Fixes (pick the appropriate one):
+  a) If those numbers belong to the percentage series, move them into the correct column for that row (Cut the cell, Paste into E/G/I/K/M or S/U/W/Y/AA as appropriate).
+  b) If they are accidental entries, clear them (Delete or Clear Contents).
+  c) Use Excel's Go To Special → Constants to find non-empty cells in columns that should be blank and correct them.
+- Why: The table structure expects percentages exactly in specific columns. Keeping those intervening columns empty preserves alignment and prevents mistakes.
+
+3) Minor suggestion (not an error but cleaner)
+- Current formulas use SUM around a single arithmetic expression, e.g. =SUM(100-(E6+G6+I6+K6+M6)). This works but is unnecessary. For clarity use =100-(E6+G6+I6+K6+M6). It’s easier to read and reduces possible confusion.
+
+4) Totals sanity check
+- Some total formulas (Q30/AF30 etc.) look correct for years where every college has data. For years where Hospitality is "n/appl" you may see the college omitted from the sum — that is OK if intentional. After fixing stray cells and the AC26 formula, re-check totals for each year to confirm lower + upper percentages sum properly across colleges.
+
+Quick action steps to fix now
+1. Edit AC26 to =100-(S26+U26+W26+Y26+AA26).
+2. Inspect columns F, H, Z (and any other non-header columns between percentage columns) and either:
+   - Move any misplaced numbers to the correct E/G/I/K/M or S/U/W/Y/AA cell in the same row, or
+   - Clear them if they are accidental.
+3. Recalculate/verify that each row’s lower-level and upper-level percentage groups each sum to 100 (or show "n/appl" where appropriate) and that the Total rows add correctly.
+
+If you want I can:
+- Provide the exact list of stray cells I found, or
+- Give you a short macro to correct/fix the misplaced cells (if values should be shifted left), or
+- Show before/after examples for one row. Which would you prefer?

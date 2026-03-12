@@ -1,0 +1,26 @@
+I inspected the workbook formulas on Sheet1 and the summary sheets. I found one clear formula error (and its knock‑on effects). Summary:
+
+1) Incorrect formula (typo) — row 14
+- Cell O14 currently: =L14-M14-N14
+  - This is inconsistent with every other row in column O, which use O = L + M + N (sum of the three "Apply" components).
+  - As a result O14 = -8.9 (wrong). It should be O14 = L14 + M14 + N14 = 9.5 + 8.7 + 9.7 = 27.9.
+- Consequence:
+  - P14 (which is =O14/$O$33) is negative (-0.2967) because O14 is negative. After correction P14 becomes 27.9/30 = 0.93.
+  - The incorrect negative value in O14/P14 distorts column averages/medians that include row 14 (for example O35, P35, O36 may be affected).
+  - Downstream aggregations/summary values that use averages/medians of these columns will be slightly off.
+
+Recommended fix:
+- Change O14 to: =L14+M14+N14
+- Verify P14 then becomes =O14/$O$33 and is positive (~0.93).
+- Recalculate sheet (Excel will do this automatically) and recheck averages/medians on row 35/36 and any summary sheets.
+
+2) Other observations (no errors found, but worth noting)
+- All other O cells use =Lx+Mx+Nx pattern.
+- Percentage/rate cells consistently divide by fixed totals in row 33 (e.g. $E$33, $J$33, $O$33, $X$33, $Z$33, $AB$33, $AD$33, $AF$33, $AI$33) — that is consistent.
+- AF33 is SUM(Z33:AD33) — that is OK (it includes Z,AA,AB,AC,AD).
+- Many values in the table are entered hard-coded (e.g. the base scores B3:D32, T:W columns) rather than computed; that is not an error, just a note if you expect everything to be formula-driven.
+- If you rely on any of the averages/medians on Sheet2–Sheet5, those will need to be rechecked after the O14 fix (they may be slightly off currently because of the O14 typo).
+
+If you want, I can:
+- List every formula in the sheet and highlight any other anomalies,
+- Recompute the affected summary values (averages/medians) assuming O14 is fixed and show the corrected numbers.

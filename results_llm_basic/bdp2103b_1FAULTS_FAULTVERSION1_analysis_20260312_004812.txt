@@ -1,0 +1,25 @@
+Summary of the error
+- Cell O19 (Catering) uses =COUNT(D19-M19). COUNT returns the number of numeric items in its arguments (so COUNT(0) = 1) — it does NOT return the difference. That makes O19 show 1 instead of the correct underspend (which should be 0).
+
+Other observations (not fatal but confusing)
+- Many O-column cells use =SUM(D12-M12) (or similar). SUM(D-M) works (SUM of one numeric result returns that result) but it's unnecessary and inconsistent. Simpler and clearer is =D12-M12.
+- A content note: the comment in A113 mentions donations of £20,936.30 not included on the sheet. If that income should be in the projection it needs to be added to the Donations row (C78/D78) or a separate line.
+
+Fix and why it works
+1. Correct O19:
+   - Replace =COUNT(D19-M19) with =D19-M19
+   - Result: Excel will compute the numeric difference (underspend) instead of counting the numeric value.
+
+2. (Optional, for clarity) Standardize all underspend cells (column O) to simple subtraction:
+   - For example in O12 use =D12-M12 (instead of =SUM(D12-M12)); copy O12 down the column to apply to other rows.
+   - Why: =D12-M12 is explicit, easy to read, and avoids accidental use of COUNT or other wrong functions.
+
+3. (If needed) Include the missing donations amount:
+   - If the A113 £20,936.30 should be part of the projections, add it to row Donations (C78/D78) or create a new line and update totals. Example: set D78 = -20944.30 (if -8 currently included plus -20,936.30) or adjust as required by your accounting rules.
+
+Quick steps to fix in Excel
+- Select O19, edit formula to: =D19-M19, press Enter.
+- Check column O for any other COUNT() or non-subtraction formulas and replace with =D#-M# as appropriate.
+- Optionally, replace any =SUM(D#-M#) with =D#-M# for clarity.
+
+If you want, I can give a small macro or show how to find all COUNT(...) occurrences in the workbook.

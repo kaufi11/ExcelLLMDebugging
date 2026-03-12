@@ -1,0 +1,16 @@
+Summary of errors
+1) Faulty cell: G19
+   - Error: Formula uses =E19/F19 (division).
+   - Why it's wrong: Entropy contribution should be p * I(p) where I(p) = -log2(p). Dividing p by I(p) gives a meaningless value.
+   - Fix: Change G19 to =E19*F19
+
+2) Consistency check / recommendation
+   - Many G rows are entropy contributions (G20:G44) and already use =E*F. After fixing G19, recalc the total at G46 (it uses =SUM(G19:G44)).
+   - Use consistent formulas and fill down (drag or copy) so you don't introduce a single bad row.
+   - Optional: Replace explicit sums like C13 =C7+C8+... with =SUM(C7:C11) for clarity and to avoid omissions.
+
+Extra note (verify intention)
+   - Columns A and E contain different probability distributions (A uses 2/31 for 5 symbols and 1/31 for 21 symbols; E uses 5/46 and 1/46). If you intended uniform 1/26 for the 26-symbol alphabet, those probabilities are wrong — change them to 1/26.
+
+Why the fix works
+- Entropy per symbol = p * (-log2 p). Multiplying p by the info content yields the contribution to total entropy; replacing division with multiplication gives the correct per-symbol contribution and correct total when summed.

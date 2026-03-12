@@ -1,0 +1,25 @@
+Short answer: one clear error plus one potential data-format problem.
+
+1) Clear error found
+- Cell Bulk compost!C19 has a different formula: =A19+(B19/24)-2.00188636389994
+- All the other C cells on that sheet use -1.48 (and the Treatments sheet uses -1.71). That single cell is almost certainly a bad paste/typo and will give a wrong "start" value for Day 15.
+
+Fix:
+- Change C19 to the consistent formula: =A19 + (B19/24) - 1.48
+- Or better, put the offset (1.48) in one cell (e.g. $Z$1) and use: =A19 + (B19/24) - $Z$1 — then copy down. This prevents single-cell drift.
+
+Why: the -2.001886... number shifts that row by ~0.52 days compared with the rest, producing an incorrect datetime for that sample.
+
+2) Potential/likely problem (data-entry ambiguity)
+- Column B mixes decimal numbers like 11.5, 11.17, 15.33. If those are meant to be decimal hours (11.5 = 11.5 hours = 11:30) then B/24 is fine. But if they are HH.MM (11.17 meaning 11:17) then dividing by 24 is wrong (0.17 of an hour ≠ 17 minutes).
+- Example: 11.17 interpreted as decimal hours → 11:10.2 (0.17*60 = 10.2 minutes) not 11:17.
+
+Fix / recommended best practice:
+- Store times as true Excel times (format hh:mm) or split hours/minutes. If your column B is in HH.MM text/number, convert with:
+  =A2 + (INT(B2) + MOD(B2,1)*100/60)/24 - $Z$1
+  (INT(B2) gets hours; MOD(B2,1)*100 gives minutes when B is HH.MM).
+- If B is decimal hours, keep using B/24.
+
+Extra tip: to find other inconsistent formulas quickly, select column C and use Home → Find & Select → Go To Special → Formulas, or use a helper column =FORMULATEXT(C4) and scan for differences.
+
+If you want, tell me whether B is decimal hours or HH.MM and I’ll give the exact corrected formulas to paste.

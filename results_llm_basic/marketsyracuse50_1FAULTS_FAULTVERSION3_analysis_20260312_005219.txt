@@ -1,0 +1,30 @@
+Summary of errors
+- Cell G12 is wrong: it uses =$F12/$F$36/100 instead of =$F12/$F$36*100. That makes KEYCORP’s market share 100× too small.
+- The Market Share column (G) formulas are inconsistent: most rows use *100 (producing a percent number like 20), but G12 uses /100 (producing a tiny decimal). This breaks the G36 total and the HHI calculation.
+- The HHI (column H) formula =$Gn^2 will give the wrong scale unless you decide consistently whether G is a percent (0–100) or a decimal (0–1). Right now the mix likely produces wrong HHI.
+
+Simple fix (recommended, consistent and clear)
+1. Make market share a decimal (0–1) and format column G as Percentage:
+   - In G10 enter: =F10/$F$36
+   - Copy/fill G10 down through G33.
+   - Format column G as Percentage (e.g., 2 decimal places). Now G36 = SUM(G10:G33) should show 100.00%.
+
+2. Compute HHI on the standard 0–10,000 scale:
+   - In H10 enter: =G10^2*10000
+   - Copy/fill H10 down through H33.
+   - H36 = SUM(H10:H33) will be the HHI (e.g., 1800 or whatever the market’s HHI is).
+
+Why this works
+- Using F/Total produces a decimal share (0.20) that Excel displays as 20% when formatted. Squaring that decimal (0.20^2 = 0.04) and multiplying by 10,000 converts it to the common HHI scale (0.04*10000 = 400).
+- The current mix of *100 vs /100 and inconsistent formatting causes some rows to be 100× off, so totals and HHI are wrong.
+
+Quick alternative (if you prefer percent numbers in G)
+- Make G show percent as a number 0–100:
+  - G10: =F10/$F$36*100 (copy down)
+  - H10: =G10^2 (copy down)
+  - In this approach keep column G formatted as General/Number (not Percentage). H36 will then be the HHI on 0–10,000 scale.
+
+Which to choose
+- I recommend the first method (G as decimal formatted as % and H = G^2*10000). It’s less error-prone and matches common Excel conventions.
+
+If you want, I can give the exact corrected formulas for every problematic cell or produce the corrected workbook logic.

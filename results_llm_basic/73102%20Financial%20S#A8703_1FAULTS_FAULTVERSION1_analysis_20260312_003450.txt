@@ -1,0 +1,25 @@
+Summary of the problem
+- The detailed totals in column D balance: D178 (Total Assets) = D283 (Total Liabilities & Capital) = 3,853,714.52.
+- But the two summary numbers in column H (H285 and H286) are 3,855,164.52 (hard-coded) and do not match the real totals in column D. They are off by 1,450.00. That makes the printed summary look wrong even though the detailed sheet is balanced.
+
+Why this is an error
+- H285 and H286 contain fixed values (instead of referencing the computed totals). When the detail numbers change, those fixed numbers do not update, producing an apparent mismatch.
+- The workbook already has correct checks using D178 and D283 (H289 = D178, H290 = -D283, H291 sums them), so the actual balance is OK — the malfunction is in the summary cells H285/H286.
+
+Fix (short)
+1. Replace the hard-coded values in H285 and H286 with direct references:
+   - H285: =D178
+   - H286: =D283
+2. Optionally change H287 to reference those or D178/D283 consistently; better to compute difference from the live totals:
+   - H287: =D178 - D283 (or =H285 - H286 if H285/H286 are linked to D178/D283)
+
+Why this fixes it (short)
+- Linking H285/H286 to D178/D283 makes the summary always reflect the actual calculated totals. No more stale/hard-coded numbers, so the sheet remains correct as source values change.
+
+Other minor suggestions (optional)
+- Clean up SUM ranges to avoid including blank label rows for clarity (e.g., Total current assets: use =SUM(D9:D17) instead of =SUM(D8:D17)). These do not change results but improve readability and reduce risk of accidental inclusion of unintended cells.
+- Consider using consistent sign conventions (e.g., store accumulated depreciation as a positive number and subtract it in the net formula) so formulas like Net PPE read D30 - D32; current approach works because depreciation is negative, but explicit subtraction is clearer.
+
+If you want, I can:
+- Provide the exact cell edits to make (I can produce a small step-by-step list you can paste into Excel),
+- Or scan for any other cells that are manually entered (hard-coded) and should be formulas.

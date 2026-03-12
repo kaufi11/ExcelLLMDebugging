@@ -1,0 +1,37 @@
+I reviewed Sheet4 and the linked summary sheets. I found a couple of clear errors (cells that were accidentally overwritten with constants instead of the formulas the sheet expects). I also found a few places where formulas are written awkwardly (not wrong, just confusing). Fixes and short explanations below.
+
+1) Hard‑coded BK261 (should be formula)
+- Where: Sheet4, cell BK261 (row for "Creating High Performance Project Teams").
+- Problem: BK261 contains the value 12 instead of the usual formula that counts participants for that class. All other BK rows use BKn = SUM(Fn:BGn). Hard‑coding breaks row and grand totals if you change participant entries.
+- Fix: Replace the 12 with the formula:
+  =SUM(F261:BG261)
+- Why: BK is "Number of Participants Per Class" and must total the per‑company participant counts in columns F:BG for that row. Using the SUM keeps it dynamic.
+
+2) Hard‑coded T121 (should be a formula)
+- Where: Sheet4, cell T121 (the "Total" row under the class at row 120).
+- Problem: T121 contains the literal 5 rather than the pattern formula used in other "Total" rows (e.g. Tn = SUM(Trow*$E$row) or similar). This gives an incorrect contribution into the per‑company totals.
+- Fix: Replace the 5 with the correct formula for that class total cell. If the pattern is "Total column = participants in that company * RISE cost", use:
+  =T120*$E$120
+  (or to be consistent with the sheet’s style)
+  =SUM(T120*$E$120)
+- Why: All "Total" cells in that block should compute per‑company cost for that class using the number-of-participants in column T for the class row times the class RISE cost (E column). A literal 5 will not update when participants change.
+
+3) Other notes (not immediate errors but cleanup suggestions)
+- Many formulas use SUM around a single multiplication/subtraction (e.g. =SUM(C3*BK3) or =SUM(BM4-BO4)). Those are not incorrect (they evaluate correctly) but make the sheet harder to audit. Prefer direct expressions:
+  - change =SUM(C3*BK3) to =C3*BK3
+  - change =SUM(BM4-BO4) to =BM4-BO4
+- If you want stricter clarity, make BLn = Cn * BKn (Total student days), BMn = Dn * BKn (Total public cost), F4:BG4 = Fn * $E$n (per‑company RISE cost), BOn = SUM(Fn:BGn) (total RISE cost). BNn then = BMn - BOn (savings).
+
+4) How to find any other overwritten cells quickly
+- Use Excel’s Go To Special -> Constants and check the sheet for numbers in places that should be formulas (especially in BK, Total rows, and the per‑company totals rows). Or:
+  - On the sheet, run: Home -> Find & Select -> Go To Special -> Formulas to view expected formulas; then check for unexpected constants.
+- Alternatively, use Formula Auditing -> Show Formulas to scan for cells that lack formulas where neighbors have the same pattern.
+
+5) Summary of action steps
+- Replace BK261 with =SUM(F261:BG261).
+- Replace T121 with =T120*$E$120 (or =SUM(T120*$E$120) to match sheet style).
+- Run a quick audit (Go To Special) to find any other places where formulas were overwritten with constants, and restore the pattern formula used in the row blocks.
+
+If you want, I can:
+- Give a short list of rows where totals are suspicious (I can parse further), or
+- Produce the corrected formulas for a few example rows so you can copy them down. Which would you prefer?

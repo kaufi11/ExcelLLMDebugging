@@ -1,0 +1,42 @@
+Thanks — I reviewed the three sheets and found the key errors and fixes. I’ll keep this short and actionable.
+
+Main problems
+1) Summary sheet: Financial aid sign is inverted and many Current/Projected (F–N) formulas reference wrong ranges
+   - Example: Detail D15 (subtotal financial aid) = -4,036,669. Summary D9 uses =-Detail!D15 → becomes +4,036,669 (wrong). Summary D10 (subtotal net tuition) then sums the gross tuition + this positive number → net tuition is overstated.
+   - Also many F‑column formulas in Summary are using ranges like SUM(Detail!F9:F11) or SUM(Detail!F10:F17) instead of pointing to the financial aid subtotals (Detail!F15) or the net tuition subtotal (Detail!F16). That causes mis‑aggregation for F–N columns.
+
+2) RCM sheet: some cells are hard‑coded or incorrectly referenced (will diverge from Detail)
+   - Example: RCM F14 = 2 (hard coded) — looks wrong; should almost certainly be linking to Detail!F20 (University Fund allocation).
+   - Example: RCM E19 = 44656 and E20 = 52151 (hard coded designated amounts) instead of linking to Detail!E23 and Detail!E24 if those were intended to be the single source of truth.
+
+Secondary notes (less severe)
+- Use of SUM(D25-D61) or SUM(D19-D34) is harmless but confusing (SUM around an arithmetic expression). Prefer plain D25-D61 for clarity.
+- Beginning/ending balance chaining (E64 = D65) is correct if the intent is “next year beginning = prior year ending.” Don’t change this unless your fiscal-year mapping is different.
+
+How to fix (step‑by‑step, short)
+1) Fix Summary financial aid sign and wrong ranges:
+   - Replace Summary D9 with =Detail!D15 (NOT =-Detail!D15).
+   - Replace Summary E9 with =Detail!E15, F9 with =Detail!F15, … through N9 = Detail!N15.
+   - Replace Summary D8 with =Detail!D11 (or keep =SUM(Detail!D8:D10)), and copy the same pattern across E–N for the tuition subtotal.
+   - Then set subtotal net tuition row to pull the Detail net directly: D10 = Detail!D16, E10 = Detail!E16, F10 = Detail!F16, … N10 = Detail!N16.
+   - This keeps sign/aggregation identical to Detail and removes the broken SUM ranges.
+
+2) Fix RCM hardcodes/mislinks:
+   - Replace F14 (=2) with =Detail!F20 (or whatever Detail cell is authoritative for University Fund allocation).
+   - Replace any hard-coded designated values that should come from Detail (E19, E20, E28, etc.) with the corresponding Detail references (e.g., E19 = Detail!E23, E20 = Detail!E24, E28 = Detail!E53, …).
+   - Audit all RCM cells that currently contain hard-coded numbers and change them to =Detail!<same-row> so RCM remains a roll-up only.
+
+3) Clean up formulas for clarity (optional but recommended)
+   - Replace SUM(D25-D61) with simple D25-D61.
+   - For subtotals, prefer direct links to the Detail subtotal rows (Detail!D16, Detail!D61, etc.) rather than re-summing many cells — reduces risk of a mismatched range.
+
+Why these fixes work
+- The Summary is meant to be a condensed roll-up of Detail. Using the exact Detail subtotal cells ensures the sign and ranges are identical (no double-negation or accidental extra rows).
+- Changing hard-coded numbers in RCM to links keeps a single source of truth (Detail). That prevents divergence when Detail is updated.
+- Removing the extra minus sign fixes sign inversion (financial aid lines are already negative in Detail).
+
+If you want, I can:
+- Give a short list of exact cells to change (copy/paste-ready formulas) for Summary and RCM, or
+- Produce a one-click mapping file (pairs of old formula → new formula) you can paste into Excel.
+
+Which would you prefer?

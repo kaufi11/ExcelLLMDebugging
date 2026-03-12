@@ -1,0 +1,21 @@
+Findings (short)
+- Error: G19 is wrong. It uses =E19/F19 (division) instead of =E19*F19 (multiplication). That makes the H(A) in G46 (SUM(G19:G44)) incorrect.
+- Potential consistency risk: column G has one inconsistent formula — this usually happens when a cell wasn't filled down. This invites similar mistakes.
+
+Why it matters
+- Entropy term for each symbol is p * (-log2 p). Using p / (-log2 p) is mathematically wrong and under‑/over‑states the contribution of that symbol, so the total entropy for the E‑distribution is wrong.
+
+Fixes (do one or both)
+1) Quick single-cell fix:
+   - Edit G19 to: =E19*F19
+   - Press Enter, then recalc (or fill down if needed).
+2) Safer (recommended) formula to avoid cell-by-cell multiplication errors:
+   - Replace G46 (or use a new cell) with: =SUMPRODUCT(E19:E44, F19:F44)
+   - Or compute the whole entropy directly without separate I(A) column: =SUMPRODUCT(E19:E44, -LOG(E19:E44, 2))
+
+Extras / checks
+- Verify both probability columns sum to 1: =SUM(A19:A44) and =SUM(E19:E44).
+- Your Max H formula is correct (26*(1/26)*-LOG(1/26,2) simplifies to -LOG(1/26,2) = LOG2(26)). You can simplify it to =-LOG(1/26,2) if you like.
+- To avoid future mistakes, fill formulas down (select top cell and drag/fill) or use SUMPRODUCT so you don't have repeated manual multiplications.
+
+If you want, I can give the exact corrected numeric entropy values after you confirm recalculation is allowed.

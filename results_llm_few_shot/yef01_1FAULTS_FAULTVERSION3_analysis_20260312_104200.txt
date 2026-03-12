@@ -1,0 +1,46 @@
+Summary: I found several formula mistakes and a number of small, inconsistent manual tweaks (tiny +/− adjustments) that make totals and percentages incorrect or misleading. Fix the explicit errors below and remove the ad‑hoc adjustments — use proper sums/rounding instead.
+
+1) Revenues sheet — C12 subtracts 1 by mistake
+- Problem: C12 =147577404-1 (subtracts 1 from the true amount).
+- Why it’s wrong: it makes totals off by 1 dollar.
+- Fix: remove the "-1". Example repair: =147577404 (or replace with the correct component sum).
+- Explanation: use the true value or the actual component sum so C16 totals correctly.
+
+2) Expenditures by Category — manual small adjustment in B12
+- Problem: B12 =ROUND((C12/$C$16),4)-0.0001 (artificially subtracts 0.0001).
+- Why it’s wrong: it skews the percentage and causes totals to be inconsistent.
+- Fix: =ROUND(C12/$C$16,4)
+- Explanation: rounding is fine; don’t subtract a hardcoded tiny amount to force totals — let rounding and a note about rounding explain small mismatches.
+
+3) FTEE Calculation — negative noncredit FTEE and many tiny manual tweaks
+- Problem A (obvious bug): F14 =-E14/600 (negative sign makes noncredit FTEE negative).
+- Fix A: =E14/600
+- Why: contact/noncredit hours should produce a positive FTEE.
+
+- Problem B (inconsistent +0.01 adjustments in per‑college totals): some rows use Hn =C n + F n + 0.01 while others do not.
+- Why: adding arbitrary 0.01 to some rows shifts totals and percentages unevenly.
+- Fix B: make every H row exactly the total FTEE: =C12+F12 (and for each row replace with =Crow+Frow).
+- Explanation: don’t add manual constants. If you need display rounding, use ROUND() on the displayed cell or format the cell, but keep source data exact.
+
+- Problem C (adjusted totals): C28 =SUM(C12:C27)+0.02, F28 =SUM(F12:F27)+0.03, H28 =SUM(H12:H27)-0.02, I28 =SUM(I12:I27)+0.000002, and I20/I21 use -0.000001.
+- Why: tiny hacks to force totals to match make results incorrect and confusing.
+- Fix C: remove all tiny additions/subtractions. Use:
+  - C28: =SUM(C12:C27)
+  - F28: =SUM(F12:F27)
+  - H28: =SUM(H12:H27)
+  - I28: =SUM(I12:I27)
+  - Remove -0.000001 adjustments in I20/I21.
+- Explanation: totals should be true sums; if percentages don’t sum to exactly 1.000000 because of rounding, document it (you already have a note indicating rounding may cause differences).
+
+4) Totals ranges that likely include blank/missing rows
+- Problem: Several SUM ranges include rows that aren’t used (e.g. Revenues B16 =SUM(B10:B15) while your data goes B10:B14). This doesn’t break formulas, but can hide missing items.
+- Fix: adjust ranges to the exact rows used. Example:
+  - If revenue rows are 10–14, use =SUM(B10:B14) and =SUM(C10:C14).
+- Explanation: correct ranges prevent accidental omissions or inclusion of unintended cells later.
+
+General recommendations (one-line each)
+- Remove all manual micro‑adjustments (+0.01, -0.000001, etc.). They mask real data problems and make auditing impossible.
+- Where you need percentages to a specific precision, use ROUND(cell, n) for display, or create a separate formatted column for presentation.
+- If a value is built from components, prefer SUM(component_range) rather than hardcoding a large number (easier to audit).
+
+If you want, I can produce an edited list of exact replacement formulas for every affected cell (copy‑paste ready) or create a cleaned version of the workbook with the fixes applied. Which would you prefer?

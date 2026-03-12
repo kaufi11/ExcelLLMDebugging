@@ -1,0 +1,41 @@
+Errors found:
+
+1. **F5 formula error**: `=PRODUCT(887,D5)` should be `=PRODUCT(C5,D5)` to match the pattern (Quantity * NPL Price). Using 887 instead of cell C5 is inconsistent and likely incorrect.
+
+2. **F73, F74, F75 formulas**: They use range notation with colon instead of comma in PRODUCT function: `=PRODUCT(C73:D73)` should be `=PRODUCT(C73,D73)`. PRODUCT does not accept ranges like that.
+
+3. **D85, D86 formulas**: They use `=PRODUCT(F82,0.09)` and `=PRODUCT(F82,0.18)` which is fine, but then E85 and E86 reference themselves in formulas like `=PRODUCT(F85,0.9)` and `=PRODUCT(F86,0.9)`, causing circular references.
+
+4. **E85 and E86 circular references**: E85 uses `=PRODUCT(F85,0.9)` and F85 uses `=PRODUCT(F82,C85,0.09)`. Since F85 depends on F82 and C85, but E85 depends on F85, this creates a circular reference.
+
+5. **D57 and D60 cells contain "CALL" text instead of numbers**: This will cause errors in PRODUCT formulas that reference these cells.
+
+6. **E78 to E81 formulas**: Use `=PRODUCT(C78,175)` instead of `=PRODUCT(C78,D78)`. This is inconsistent with other rows and may cause confusion or errors if 175 is not correct.
+
+7. **E91, E92, E93, E94 formulas**: Use `=PRODUCT(C91,1000)` instead of `=PRODUCT(C91,D91)`. This is inconsistent with other rows.
+
+Solutions:
+
+1. **Fix F5 formula**: Change `=PRODUCT(887,D5)` to `=PRODUCT(C5,D5)` to correctly calculate Dealer Price as Quantity * NPL Price.
+
+2. **Fix F73, F74, F75 formulas**: Change `=PRODUCT(C73:D73)` to `=PRODUCT(C73,D73)` (same for rows 74 and 75).
+
+3. **Fix circular references in E85 and E86**: 
+   - E85 and E86 should not reference themselves. Instead, calculate E85 as `=D85*0.9` (90% of D85) and E86 as `=D86*0.9`.
+   - Or if you want E85 = 90% of D85, just use `=D85*0.9`.
+   - Similarly for F85 and F86, ensure no circular reference by using `=F82*C85` and `=F82*C86` or similar logic.
+
+4. **Replace "CALL" text in D57 and D60 with numeric values or zero**: If price unknown, use 0 or a numeric placeholder to avoid formula errors.
+
+5. **Fix E78 to E81 formulas**: Change `=PRODUCT(C78,175)` to `=PRODUCT(C78,D78)` for consistency.
+
+6. **Fix E91 to E94 formulas**: Change `=PRODUCT(C91,1000)` to `=PRODUCT(C91,D91)` for consistency.
+
+Summary:
+
+- Use consistent formulas: Quantity * NPL Price * 0.75 (for Dealer Price) or Quantity * NPL Price (for Client Price).
+- Avoid hardcoded numbers in formulas where cell references should be used.
+- Remove circular references by not referencing the same cell in its own formula.
+- Replace text in numeric cells with numbers to avoid errors.
+
+This will ensure correct calculations and prevent errors.

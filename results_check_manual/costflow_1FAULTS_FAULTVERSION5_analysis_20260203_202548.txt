@@ -1,0 +1,75 @@
+I reviewed the workbook (Sheets: Errors, Valuing Ending Inventory, NetIncome and Cash Flow). I found several real/formula errors (mostly on the "Valuing Ending Inventory" sheet) that cause wrong unit counts, wrong averages, and wrong COGS/ending inventory results. Below are the faults, why they matter, and simple fixes you can apply.
+
+Summary of the main problems (short & direct)
+1. Wrong function used to total purchased units (COUNT instead of SUM).  
+   - Cell: C14 = COUNT(C12:C13) — returns 2, not the sum of units purchased.
+   - Fix: C14 → =SUM(C12:C13)
+   - Why: average costs and "Goods available" unit totals are computed from C14; COUNT breaks every average/COGS calculation.
+
+2. Many per-row “Units / Extended / Average” columns reference totals or other rows instead of the row’s own data. (causes incorrect unit totals and average unit costs)
+   - Examples:
+     - I8 = +C10 (should be the units on row 8)
+     - K8 = +E10 (should be the extended cost on row 8)
+     - I9 = +C14 (should be the units on row 9)
+     - K9 = +E14 (should be the extended cost on row 9)
+   - Fix pattern: For each purchase/beginning row, reference that row’s unit and extended cost:
+     - I8 → =C8 ; K8 → =E8
+     - I9 → =C9 ; K9 → =E9
+   - Why: averages and totals must be built from the rows’ actual units and extended costs, not from unrelated totals.
+
+3. Ending inventory units formula has wrong signs / wrong arithmetic.
+   - Cell: I11 = -I10 - SUM(C17:C18) (this is incorrect)
+   - Fix: I11 → = I10 + SUM(C17:C18)
+     - Explanation: I10 = goods available units (positive). C17/C18 are sales recorded as negative in your sheet, so adding SUM(C17:C18) reduces units correctly. If you used sales as positive numbers, the formula would be = I10 - SUM(sales).
+   - Why: incorrect sign produces wrong ending inventory units, which then causes COGS and inventory dollar amounts to be wrong.
+
+4. Extended cost / average cost rows missing or using wrong references.
+   - Example: E11 (Ending Inventory extended) not computed or K11 shows “?”; many K## cells are set to totals rather than row extended.
+   - Fix pattern:
+     - Where you need extended cost for a row: E(row) → = Units(row) * UnitCost(row)
+     - For weighted-average periodic: UnitCost (J10) → = K10 / I10 (total extended / total units)
+     - Ending Extended (E11) → = I11 * J10
+     - Ending cost on K11 (if you use negative for subtraction) → = -E11 (or consistent sign convention)
+   - Why: extended cost must be computed from the correct unit and unit-cost values.
+
+5. Propagating misreferences across FIFO/LIFO/perpetual sections
+   - I saw the same pattern repeated: rows referencing totals or other rows instead of their own C/D/E entries (for FIFO/LIFO/perpetual). This propagates wrong results through COGS and ending inventory subtotals.
+   - Fix: audit the FIFO/LIFO blocks line-by-line and change references so each row uses its own unit/cost/extended cells (C#, D#, E#) and the rolling remaining units use the correct prior-row remaining units.
+
+6. Minor: Text values referenced by formula cells (on "Errors" sheet)
+   - Example: D25 = +D6 where D6 is text "Understating" — not harmful but unnecessary. If you intended to copy labels, use direct text or no formula.
+
+Concrete minimal corrections to implement first (apply exactly)
+1. Change C14 to:
+   =SUM(C12:C13)
+
+2. Change the row-level unit/extended references:
+   - I8 → =C8
+   - K8 → =E8
+   - I9 → =C9
+   - K9 → =E9
+   (Then I10 = SUM(I8:I9) and K10 = SUM(K8:K9) will be correct.)
+
+3. Fix ending-unit formula:
+   - I11 → = I10 + SUM(C17:C18)
+   (If your sales are positive numbers, use I11 = I10 - SUM(sales).)
+
+4. Compute ending extended (periodic weighted average example):
+   - J10 (unit cost) → = K10 / I10
+   - E11 (ending extended) → = I11 * J10
+   - K11 → = -E11 (if you want K11 negative to subtract in totals), otherwise keep positive and adjust later totals consistently.
+
+5. After the above, recalc COGS cells to ensure they sum correct ranges:
+   - B/C/etc where you do SUM(GAFS : -Ending) should now produce correct dollar COGS.
+
+Why these fixes solve the problem (quick)
+- COUNT vs SUM: COUNT returns number of entries, not the number of units. Weighted average requires total units.
+- Row-level references: averages and FIFO/LIFO rolling amounts must use the row’s units and extended cost; using totals or other rows corrupts rolling calculations.
+- Signs: using wrong sign flips inventory vs. COGS, making pretax & tax calculations incorrect.
+- Once each row references its correct unit/cost/extended values and totals are SUMs of those rows, all averages, COGS and ending inventory values will be consistent and Net Income/Cash Flow worksheets will be correct.
+
+If you want, I can:
+- Provide the exact corrected formulas for each incorrectly-referenced cell in the FIFO/LIFO/perpetual sections (I can list them row-by-row), or
+- Produce a cleaned sample of the Valuing Ending Inventory sheet showing the corrected formulas.
+
+Which would you prefer?

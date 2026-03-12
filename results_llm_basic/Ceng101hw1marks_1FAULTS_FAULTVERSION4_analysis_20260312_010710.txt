@@ -1,0 +1,54 @@
+Summary of the problems I found (short & exact) and how to fix them.
+
+1) Summary formulas use inconsistent / wrong ranges
+- Errors:
+  - B69 =MAX(B33:B68) — it skips rows B2:B32. (Similarly C69 =MAX(C33:C68) and D69 =MAX(D33:D68).)
+  - N69 =MAX(N17:N68) and Q69 =MAX(Q17:Q68) — they start at row 17 instead of row 2 (inconsistent with other summary rows).
+  - N70 =MIN(N17:N69) and Q70 =MIN(Q17:Q69) include the summary cells (N69/Q69), creating an incorrect range and possible circular or misleading results.
+- Why it’s wrong: summary stats should operate over the same student data block (rows 2:68). Skipping rows or including summary results produces wrong min/max values.
+- Fix (exact formulas to use):
+  - B69: =MAX(B2:B68)
+  - C69: =MAX(C2:C68)
+  - D69: =MAX(D2:D68)
+  - N69: =MAX(N2:N68)
+  - Q69: =MAX(Q2:Q68)
+  - N70: =MIN(N2:N68)
+  - Q70: =MIN(Q2:Q68)
+  - (Make analogous changes for any other summary cells that reference incorrect ranges.)
+- Short explanation: use the full student-data ranges (rows with actual data) and never include summary rows in min/max/averages.
+
+2) Some “FORMULA = …” entries look like text or contain typos
+- Errors:
+  - Cells listed as “FORMULA =20+4” etc. may actually be text (not evaluated) if they were entered as literal text or prefixed with an apostrophe. If they are text, they will not calculate.
+  - N19 =466+4 looks like a typo (466 vs expected value near other students' 16 or similar).
+- Fix:
+  - If the cell displays the text FORMULA =20+4, re-enter it as a real formula: remove the "FORMULA =" prefix and enter =20+4 (or simply enter the numeric result 24). Or use Find & Replace to remove "FORMULA =" and leading apostrophes, then convert to real formulas.
+  - Correct the obvious typo: change N19 from =466+4 to the intended value (e.g. =16+4) or enter the correct number directly.
+- Short explanation: ensure each cell that should calculate contains a true Excel formula (starts with =) and correct numbers.
+
+3) Operator precedence / ambiguous arithmetic (likely incorrect calculations)
+- Errors:
+  - Some cells use expressions like =17+5/2 or =17+5/2 in N10, N15, N28, etc. Excel evaluates division before addition, so =17+5/2 becomes 17 + (5/2) = 19.5, not (17+5)/2 = 11.
+- Fix:
+  - If you intend to add 17 and 5 then divide by 2, use parentheses: =(17+5)/2.
+  - If you intend 17 + (5/2), leave as is but be explicit for clarity: =17 + 5/2.
+- Short explanation: use parentheses to force the intended calculation order.
+
+4) Some summary formulas reference different start rows (inconsistent)
+- Error: B71 uses =AVERAGE(B2:B68) but B69 used B33:B68; some other summary formulas have different start rows (causes inconsistent stats).
+- Fix: make all summary formulas use consistent ranges (B2:B68, C2:C68, D2:D68, G2:G68, N2:N68, Q2:Q68).
+- Short explanation: consistency avoids confusion and incorrect stats.
+
+Quick checklist to implement fixes
+1. Replace incorrect MAX/MIN formulas with the corrected ranges shown above.
+2. Inspect any cell that shows text like "FORMULA =…" — edit it to be a real formula beginning with = or replace with the correct numeric value.
+3. Fix typos (e.g. N19 =466+4 → change to intended number).
+4. Add parentheses where you mean to change normal operator precedence, e.g. =(17+5)/2.
+5. Recalculate (F9 or File → Options → Formulas → Enable iterative calculation off) and confirm MIN/MAX/AVERAGE results look sensible.
+
+If you want, I can:
+- Give a list of every cell that currently contains a text "FORMULA =" so you can mass-fix them, or
+- Provide the corrected formulas for all summary cells (I already gave the key ones), or
+- Produce an Excel-compatible Find & Replace recipe to convert "FORMULA =20+4" text to =20+4.
+
+Which of those would you like next?

@@ -1,0 +1,32 @@
+I checked Sheet1 and found the definite formula error plus a few issues that will produce wrong or zero results unless fixed. Short, clear fixes below.
+
+1) Clear formula typo (must fix)
+- Problem: cell G86 contains a literal "61" instead of the shipper hourly rate cell. G86 is currently:
+  =C86*C87*61*0.25
+  That massively inflates the Max Savings for Shipping and cascades into the PUTAWAY/PICK/SHIP subtotal, totals, payback, ROI, etc.
+- Fix: change G86 to use the rate cell C88:
+  =C86*C87*C88*0.25
+- Why: E86 uses C86*C87*C88*0.16 (correct). The G86 line should mirror that but with 0.25 (upper %) — using 61 was a typo.
+
+2) Missing / blank input cells (will produce zero or incorrect totals)
+- Many input cells referenced by formulas are blank (examples: C15, C110, C111, C112, C113, C130, C135, C137, C94, C17, C107, etc.). When those are blank the E/G/K calculations return zero and totals underestimate savings.
+- Fix: Populate the required inputs (number of purchases, maintenance/fuel costs, # lift trucks, chosen % values, mean inventory, profit/turn values, etc.). You can find blanks quickly:
+  - Home → Find → enter "=C15" (or search for "C11", etc.) OR
+  - Use a helper column: =IF(ISBLANK(C15),"MISSING","OK") or conditional formatting to flag blanks.
+
+3) Inconsistent / confusing % inputs (possible source of wrong “Your Savings” values)
+- Examples:
+  - Putaway section: E54 uses *0.16, G54 uses *0.25, but the user % cell C57 is 0.25 (upper bound). That’s OK if intentional, but inconsistent defaults can confuse users.
+  - Shipping section: C89 is 0.16 while many other "range" cells store the high end (0.25). Make sure each "Your Savings" K cell points to the intended C% cell.
+- Fix: decide one convention and standardize:
+  - Keep E = built-in low %, G = built-in high %, and Cxx = user-selectable % (blank or a sensible default). Adjust any C% defaults so K = C*... returns the expected result.
+
+4) Suggested sanity checks (quick)
+- Search for numbers embedded in formulas (e.g., "61", other integers) — these often indicate typos. Use Find (Ctrl+F) to search for " *61*" or search for "*" followed by numeric literals.
+- Recalculate totals after fixes and test with simple inputs (e.g., set all rates = 10 and small counts) to verify subtotals add up sensibly.
+- Protect formula cells after validation to avoid accidental numeric literals being typed into formulas.
+
+If you want, I can:
+- Provide the exact list of all blank input cells to fill, or
+- Produce a corrected version of the workbook (fix G86 and flag blanks), or
+- Run through the totals with your preferred inputs and show the corrected payback/ROI numbers.

@@ -1,0 +1,49 @@
+I reviewed the two sheets and found the clear/important problems plus simple fixes. Short list with concrete corrections and explanations:
+
+1) Many IF formulas return 0 for both branches (likely a copy/paste error)
+- Example: Data Analysis!DD3 = IF(J$2="x", 0, 0) (same for DE3, DF3, DI3, DJ3, DO3, DW3, DZ3, EF3, etc.)
+- Problem: These IFs always return 0 so those course‑weights won’t contribute even when the course is selected.
+- Fix: Change the second/first argument(s) to the intended weight. e.g. if the cell was meant to be 0.5 when selected:
+  =IF(J$2="x", 0.5, 0)
+- Why: IF(trueValue,falseValue) must supply the correct non‑zero number for the “true” branch if you want contribution when the course is selected.
+
+2) Long manual SUM/IF chains are error‑prone and hard to maintain
+- Example: CM5 uses SUM(IF(AU5>=4,AU5,0)+IF(AV5>=4,AV5,0)+ ... ) — dozens of IF(…) added together.
+- Problem: Very easy to mistype, hard to audit, larger risk of missing a column or having inconsistent references.
+- Fix (clean, equivalent formula): use SUMIF or SUMPRODUCT over the block:
+  =SUMIF(AU5:CI5, ">=4", AU5:CI5)
+  or
+  =SUMPRODUCT((AU5:CI5>=4)*AU5:CI5)
+- Why: These are shorter, less error-prone and automatically cover every cell in the range.
+
+3) Inconsistent anchoring of key flags (risk when formulas are copied)
+- Examples: some formulas use I$48, others use 'input-output'!$I$48 or I48 — inconsistent.
+- Problem: When copying formulas or refilling rows, relative references can shift and produce wrong results.
+- Fix: Use absolute references for global flags that shouldn’t move, e.g.
+  =IF($I$48="Y", CL5, CM5)
+  and when referring across sheets use the fully qualified absolute reference:
+  =IF('input-output'!$I$48="Y", 'Data Analysis'!CL5, 'Data Analysis'!CM5)
+- Why: Absolute refs ($I$48) prevent accidental shifts when formulas are copied.
+
+4) Unnecessary / nonstandard use of SUM around an arithmetic expression
+- Example: input-output!I52 = SUM(I5+I9+I10+...) (and J52 = SUM(J5+...))
+- Problem: SUM(expression) works (Excel evaluates the expression first) but it’s confusing and fragile. If you intend to sum separate arguments use SUM(I5,I9,I10,...) or simple addition =I5+I9+I10+...
+- Fix: Replace with:
+  =SUM(I5, I9, I10, I21, I31, I38, I42, I43, I44, I46, I45)
+- Why: Explicit SUM with comma-separated arguments or a contiguous range is clear and standard.
+
+5) Hard-coded zeros in weighting rows (possible unintended)
+- Many CX3..EI3 and CX4..EI4 formulas set weights for courses when selected. A few columns are set to 0 for both branches (see point #1). Verify every IF(...) weight against the intended weighting table and correct those that should be non-zero.
+- Fix: Replace occurrences like =IF(J$2="x",0,0) with the correct weight when selected (e.g. 0.25, 0.5, etc.).
+
+Suggested action plan (quick, practical)
+1. Search for IF(...,0,0) across sheet and correct the “true” argument to the intended weight.
+2. Replace the long SUM(IF(…)+IF(…)+…) blocks (CM5, CM6, CM7, etc.) with SUMIF or SUMPRODUCT over the AU:CI block.
+   - Example: CM5 -> =SUMIF(AU5:CI5, ">=4", AU5:CI5)
+3. Make workbook‑level flags absolute (use 'input-output'!$I$48 consistently).
+4. Replace SUM(I5+I9+...) with SUM(I5, I9, I10, ...) or a contiguous SUM range if possible.
+5. After the fixes, do a spot‑check of totals (B46, I52, J52, P22) to ensure they match expected values.
+
+If you want, I can:
+- Provide the precise corrected formulas for the specific cells you want (tell me which rows to fix first), or
+- Produce a short list of every cell that contains IF(...,0,0) so you can review them.

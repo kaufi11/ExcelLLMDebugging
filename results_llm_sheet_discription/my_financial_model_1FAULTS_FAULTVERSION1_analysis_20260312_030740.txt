@@ -1,0 +1,46 @@
+Summary — I found the key errors that make revenues, COGS and the balance sheet wrong. Below are the problems, why they matter, and simple fixes (exact formulas to enter). Keep changes local (replace formulas in the cell named) and then fill/right‑fill across the row.
+
+1) Revenue total (Row 12) only counts Online sales — Street sales are omitted
+- Problem: E12..P12 are =SUM(E10:E10) etc — that sums only the online line. Total revenue must include both Online (row 10) and Street (row 11).
+- Why it matters: Gross profit, net profit and all downstream cash/retained earnings are too low (missing street revenue).
+- Fix: replace each total cell with a sum of both revenue lines. Example:
+  - In E12 put =SUM(E10:E11) (or =E10+E11) and fill right through P12.
+
+2) Sugar price inflation references the wrong input cell (Row 8)
+- Problem: F8..P8 use $D$7 (lemon price inflation) instead of $D$8 (sugar inflation). That makes sugar prices track lemon inflation.
+- Why it matters: COGS (sugar cost) is calculated from these prices, so COGS will be incorrect.
+- Fix: change the formula in F8 to:
+  - F8 = E8*(1+$D$8)
+  - then fill right through P8.
+
+3) Balance Sheet: Long‑term asset "Original Value" (D8) points to a liability cell
+- Problem: Balance Sheet D8 = D14 (which is a liability cell). That ties asset original value to a liability number (likely wrong), and then Depreciation uses that wrong value.
+- Why it matters: Depreciation, balance sheet asset value and accumulated depreciation will be wrong.
+- Fix: point D8 to the actual asset purchase amount (where the investment purchase is recorded). Based on this workbook the cash outflow for investments is Cashflow!D9 (which is negative). Use the absolute value or negate it:
+  - Replace D8 with =ABS(Cashflow!D9)  (or =-Cashflow!D9)
+  - Then recalc Depreciation (Depreciation!D6 uses Balance Sheet D8).
+
+4) Balance Sheet liabilities year 2 (F14) is hard‑coded (and similar propagation may be broken)
+- Problem: F14 contains "=6" instead of the intended carry‑forward formula (should be previous year + cashflow financing changes).
+- Why it matters: Liabilities won't roll forward correctly and Assets ≠ Liabilities+Equity check will fail.
+- Fix: change F14 to match the pattern used in other years:
+  - F14 = E14 + Cashflow!F9
+  - then fill right through P14 (so each year adds that year's cashflow financing movement).
+
+5) Depreciation cumulative row (row 11) / some cumulative formulas break mid‑row
+- Problem: Depreciation row 11 is cumulative until K11, then switches to single‑cell references (M11=M7 etc). That breaks accumulated depreciation continuity.
+- Why it matters: Accumulated depreciation on the balance sheet will be wrong after the break point.
+- Fix: make the cumulative pattern consistent. Example:
+  - E11 = E7
+  - F11 = E11 + F7
+  - G11 = F11 + G7
+  - then fill right through P11.
+
+Other cleanup / recommendations (short)
+- Replace awkward SUM(E10:E10) style with direct sums where appropriate — e.g., SUM(E10:E11).
+- Advertising row (row 25) uses chained references (I25 = F25, J25 = G25, etc). That currently yields the same numbers but is fragile. Better: set F25 = $E$25 and fill right, or set each cell =E25 to make the intent clear.
+- After making the fixes above, recalc and verify Assets = Liabilities + Equity (Balance Sheet row E22 equals E11). If not equal, trace the difference (usually a leftover hard‑coded value or wrong reference).
+
+If you want, I can:
+- give a short list of exactly which cells to click and replace (one-by-one),
+- or produce corrected formulas for every affected cell so you can paste them in — tell me which you prefer.

@@ -1,0 +1,31 @@
+Findings (short)
+1) Error: Sheet "1198" cell H25 uses COUNT(H9:H24) instead of SUM(H9:H24).
+   - Impact: The "Total Revenues" for 1198 (Projected column) is a small integer (count of non-empty cells) instead of the dollar total. That incorrect number flows into all 3‑D sums on the Summary (e.g. Summary H25, H6, H26, H37, H63, etc.), making many totals wrong.
+
+2) Risky design (not a direct formula bug right now): lots of 3‑D formulas use '1003:1856'! ranges.
+   - Impact: Those SUMs include every worksheet between the two named sheets in workbook tab order. If a sheet is inserted/moved outside that exact block or workbook order changes, the totals will silently change.
+
+Fixes (what to do)
+1) Correct the immediate error:
+   - On sheet 1198 change H25 to:
+     =SUM(H9:H24)
+   - (Also scan other fund sheets for any other accidental COUNTs and replace with SUM if appropriate.)
+
+2) Make the cross-sheet summing robust:
+   - Option A (simple): Ensure all fund sheets are placed consecutively in tab order and keep the first/last sheet names (1003 and 1856) as the boundaries. Then 3‑D SUM('1003:1856'!D6) will continue to work.
+   - Option B (safer): Create two marker sheets called, for example, "StartFunds" and "EndFunds". Put all fund sheets between them and change your 3‑D sums to SUM('StartFunds:EndFunds'!D6). That prevents accidental inclusion/exclusion if you add other sheets.
+   - Option C (explicit list): If you prefer no 3‑D ranges, build a list of sheet names and use SUMPRODUCT/INDIRECT (more complex) to sum only the listed sheets.
+
+Why these fixes work (one-sentence each)
+- Replacing COUNT with SUM makes H25 return the arithmetic sum of revenues (dollars) rather than the number of cells — that fixes the wrong projected revenue number and all downstream totals.
+- Using marker sheets or a controlled sheet block ensures 3‑D SUMs include exactly the sheets you expect; if sheet order changes the markers keep the range stable.
+
+Quick checklist you can run now
+- Change 1198!H25 to =SUM(H9:H24).
+- On the Summary sheet re-evaluate H25 and related totals — they should update to the correct values.
+- Search workbook for other COUNT( range ) usages in Total/Grand‑total rows to catch any similar slips.
+- Optionally implement marker sheets if you plan to add/move sheets later.
+
+If you want, I can:
+- Give the exact list of cells in Summary that will change when 1198!H25 is fixed, or
+- Produce the "marker sheet" step-by-step instructions. Which would you like?

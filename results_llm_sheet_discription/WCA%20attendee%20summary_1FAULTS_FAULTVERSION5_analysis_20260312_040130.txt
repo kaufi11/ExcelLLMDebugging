@@ -1,0 +1,30 @@
+Summary — two problems found and how to fix them:
+
+1) Wrong formula in Summary Info totals (cell B20)
+- Error: B20 currently =COUNT(B12:B19). COUNT returns the number of numeric cells (8 directorates), not the sum of the “would like to attend” counts. That is why B20 shows 8 instead of 66.
+- Fix: replace with =SUM(B12:B19)
+- Why: SUM adds the values (66), COUNT just counts how many cells contain numbers (8).
+
+If some B12:B19 cells are text-looking numbers (e.g. "4 " or stored as text) and SUM still gives wrong result, convert them to numbers (select the range, Data → Text to Columns → Finish, or Paste Special → Multiply by 1) or use:
+=SUMPRODUCT(--(B12:B19))
+which forces numeric conversion before summing.
+
+2) Inconsistent use of the label “invited” (terminology / ambiguous numbers)
+- Problem: the sheet uses “invited” both for “invitations sent” = 193 (C12:C19 sum / F30) and for “invited to attend / selected” = 61 (note in J16). That creates confusion (193 vs 61).
+- Fix (recommended):
+  - Rename C11 (and F22) to “Invitations sent” to reflect the 193 total.
+  - Add a new column or a new summary cell labeled “Selected / Invited to attend” and populate it with the actual selected participants (61). You can compute 61 from the Participant List with either:
+    - =MAX(B3:B63)  (if column B in Participant List is a running count)
+    - or =COUNTA(K3:K63) (count nonblank PI names)
+  - Add a “Waiting list” cell and compute its count from the waiting-list block, e.g.
+    - =COUNTA(K70:K74)  (should return 5)
+- Why: makes the document unambiguous and prevents readers from thinking the 193 or 61 are the same measure.
+
+Quick checklist to implement
+- Change B20 to =SUM(B12:B19).
+- Update header C11 → “Invitations sent”.
+- Insert a cell labeled “Selected to attend” and set it to =MAX(B3:B63) or =COUNTA(K3:K63).
+- Insert a “Waiting list” cell and set it to =COUNTA(K70:K74).
+- Convert any numeric-text cells in the count ranges to real numbers if SUM/COUNTA behave unexpectedly.
+
+That will correct the numeric total (66) and remove the invited/selected ambiguity (193 vs 61).

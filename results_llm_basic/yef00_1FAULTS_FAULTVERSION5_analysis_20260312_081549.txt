@@ -1,0 +1,47 @@
+I reviewed the workbook and found several clear formula/data errors that will make totals and percentages wrong. Below I list the problems (by sheet), give the simple fix for each, and explain why the fix is needed. Short and plain.
+
+Revenues by Source (Sheet: Revenues by Source)
+- Problem: C9 contains an inline addition (FORMULA =9432730+111410104) and C11 contains an extra +1 (FORMULA =141577402+1).
+- Fix: Replace both with the correct single values or cell references (for example, if the two numbers in C9 are supposed to come from other cells use =Cell1+Cell2). Remove the “+1” from C11 so it is just the true amount.
+- Why: Hard-coded additions and the “+1” artificially change the underlying dollar amounts, which makes the C15 total (SUM(C9:C14)) and all % of total cells (B9:B14 using $C$15) incorrect.
+
+General State Financial Aid (Sheet: General State Financial Aid)
+- Problem: B21 is set to FORMULA =3684419+1 (adds an extra 1 to that college’s aid). E21 isn’t listed as error, but check any other “+1”.
+- Fix: Change B21 to the actual value 3684419 (or to the correct source cell). Remove any stray “+1” occurrences.
+- Why: The extra +1 inflates the Total (B25 =SUM(B9:B23)) and makes the percent columns (C9:C23 using $B$25, and D totals) slightly wrong.
+
+FTEE Calculation (Sheet: FTEE Calculation)
+- Problems:
+  1. Many Non-Credit FTEE cells (column F) are formulas like =E11/600 — but F12 is set to a literal 4 (FORMULA =4) instead of =E12/600.
+  2. E27 (total non-credit hours) is FORMULA =SUM(E11:E26)+1 (adds an extra 1).
+  3. E11 (and similar) sometimes have raw hours while F should always be =E#/600 (consistency issue).
+- Fixes:
+  1. Replace F12 with =E12/600. Check every F11:F26 and make each F-row =Erow/600.
+  2. Change E27 to =SUM(E11:E26) (remove +1).
+  3. Ensure H-row (total FTEE) is H# = C# + F# and the % of total uses I# = H# / $H$27 (your sheet already uses this pattern; just ensure F is correct).
+- Why: A single literal value in column F or an extra +1 in totals corrupts the college totals (H#), the grand total (H27), and therefore every percent in column I and D/G that use those totals.
+
+Other general issues to check (quick checklist)
+- Search the workbook for “+1” and any hard-coded numbers used where a cell reference or a proper formula should be (these silently skew totals).
+- Make sure all percentage formulas divide by the correct grand total (use absolute references like $C$15, $C$19, $C$15 etc.). The pattern in your sheets is correct if the referenced totals are the aggregation of the same component column.
+- Replace expressions like =9432730+111410104 with either:
+  - the correct single total (if that is the final number), or
+  - references to the original component cells (e.g., =C2+C3) so changes upstream update totals properly.
+
+Example corrected formulas
+- Revenues by Source:
+  - C9: =<cellWithFirstTuitionAmount> + <cellWithSecondTuitionAmount> (or the single total number)
+  - C11: =141577402 (remove +1)
+- General State Financial Aid:
+  - B21: =3684419 (remove +1)
+- FTEE Calculation:
+  - F12: =E12/600
+  - E27: =SUM(E11:E26)
+  - H11..H25: =C11+F11 etc. (ensure consistency)
+  - I11..I25: =H11/$H$27  (make $H$27 absolute)
+
+If you want, I can:
+- produce a list of every cell containing “+1” or a hard-coded value that looks wrong, or
+- give a corrected copy of the workbook’s formulas (paste a selection) if you paste the suspect rows/cells.
+
+Which would you prefer?

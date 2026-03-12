@@ -1,0 +1,36 @@
+Summary of the problem
+- Many cells that should hold daily counts or column totals instead contain incorrect SUM formulas that point to one wrong cell (often the cell to the left) or to a fixed cell. This creates a left-shifted cascade (and at least one literal typo), so the column totals are wrong.
+
+Concrete errors found
+1. Row 9 (and many other day rows): E9 = SUM(E42) — wrong reference (no daily data there).  
+   F9 = SUM(E9), G9 = SUM(F9), H9 = SUM(G9), ... M9 = SUM(L9) — each column is summing the previous column's single cell instead of real daily input. This pattern repeats for rows 9:39.
+2. Typo: G19 = SUM(5) — nonsense; should be a cell reference or removed.
+3. Totals row (row 40):
+   - C40 = SUM(C9:C39) — correct.
+   - D40 = SUM(D9:D39) and E40 = SUM(E9:E39) are correct.
+   - F40 = SUM(E40), G40 = SUM(F40), H40 = SUM(G40), ... M40 = SUM(L40) — these are shifted and just summing a single cell instead of summing their own column ranges.
+
+How to fix (short & simple)
+1. Daily input cells (rows 9:39), columns D:M:
+   - Remove the incorrect SUM formulas in E9:M39 (and similar in other rows). These cells should contain the actual daily counts (manual entry) or formulas that pull the daily counts from the correct source.
+   - If you want the per-day Total (#) in column C, set C9:C39 to sum that day’s service columns:
+     - C9 formula (and copy down to C39): =SUM(D9:M9)
+
+2. Column totals (row 40):
+   - Replace the wrong formulas with proper column sums:
+     - D40: =SUM(D9:D39)
+     - E40: =SUM(E9:E39)
+     - F40: =SUM(F9:F39)
+     - G40: =SUM(G9:G39)
+     - … continue through …
+     - M40: =SUM(M9:M39)
+
+3. Fix the typo:
+   - Replace G19 = SUM(5) with the correct daily value or a proper reference (e.g., if you meant G19 = F19 then use =F19, or if G19 is an input, clear the formula and enter the value).
+
+Why this fixes it (brief)
+- The bad formulas were summing single, wrong cells (and cascading), so column totals ended up wrong. Using SUM over the correct column ranges (row 9 to 39) gives true column totals. Making each day’s Total (column C) = SUM(D:M for that row) ensures the per-day totals feed correctly into the overall totals.
+
+If you want, I can:
+- Give the exact formulas for every column (D→M) to paste into row 40, and for C9:C39 to copy down, or
+- Produce a corrected small sample of the sheet showing before/after formulas.

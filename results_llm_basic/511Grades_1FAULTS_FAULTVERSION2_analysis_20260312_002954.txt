@@ -1,0 +1,26 @@
+I checked Sheet1. I found two kinds of real errors (one formula typo, and several overwritten grade cells) and one fragile design issue that will easily cause silent mistakes later. Fixes and short explanations below.
+
+1) Wrong operator in O14 (typo)
+- Problem: O14 currently has =N14*$N$3 (multiplication). All other O rows use Nn/$N$3 (student total ÷ maximum). Multiplying inflates O14 and breaks that student's downstream percent/weighted score.
+- Fix: Change O14 to =N14/$N$3
+- Why: O column is the homework percent = student HW total ÷ maximum HW total (stored in row 3). Multiplying is the wrong operation.
+
+2) Overwritten grade cells (manual text replacing formulas)
+- Problem: Some Letter grade cells in BD are constants (e.g. BD9 = "B-", BD14 = "B-") instead of the IF formula used elsewhere. Any overwritten BD cell will not update when BC changes.
+- Fix: Restore the BD formula for those rows. Example formula (used throughout): =IF(BCn>=0.915,"A",IF(BCn>=0.895,"A-",IF(BCn>=0.875,"B+",IF(BCn>0.815,"B",IF(BCn>=0.795,"B-",IF(BCn>=0.775,"C+",IF(BCn>0.715,"C",IF(BCn>=0.695,"C-","D")))))))) — replace BCn with the row (e.g., BC9).
+- How to apply quickly: copy a correct BD cell (for example BD4) and paste/formula-fill it down over the rows that currently hold text.
+
+3) Fragile design / recommended hardening (prevent future accidental errors)
+- Observation: Many formulas rely on the row-3 “maximums” (N$3, AN$3, AS$3, etc.). That works but is fragile — if row 3 gets edited or moved the whole sheet breaks.
+- Recommendations:
+  - Move the “max points” row into a clearly labeled header (e.g., a separate protected row called “MAX”), or
+  - Define named ranges (e.g., Max_HW = $N$3, Max_Quizzes = $AN$3, Max_Exam = $AS$3) and change formulas to use those names (e.g., =N4/Max_HW). This prevents accidental edits and makes formulas readable.
+  - Protect the MAX row (Review → Protect Sheet) after you confirm it is correct.
+
+4) Minor / harmless items to note
+- BC formulas include a trailing "/ 1" and some extra spaces. That does nothing and is harmless, but you can simplify by removing "/ 1" for clarity.
+- Spot-check: after fixing O14 and restoring BD formulas, recalc the sheet and inspect any other BD cells that are constants; also grep for any other O cells that are not Nn/$N$3 (O14 was the single one I found).
+
+If you want, I can give:
+- A short VBA macro to find and repair all BD cells that are constants and replace them with the formula, and/or
+- The exact named ranges and updated formulas to paste in so the sheet is robust. Which would you prefer?

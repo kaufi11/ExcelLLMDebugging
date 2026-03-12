@@ -1,0 +1,29 @@
+Summary — main error
+- Faulty cell: F25 (Beacon Federal).
+- Error: F25 uses the wrong multiplier (1.21674489270828*$E25). Beacon is a "Thrift" and should be counted at 50% of deposits (0.5), like the other thrifts. That inflated F25, so F36, every market share (G), and the HHI (H) are wrong.
+
+Quick fix (one cell)
+- Change F25 to:
+  =0.5*$E25
+
+Better, consistent solution (recommended)
+- Replace the F formulas for all institutions with a single rule so thrifts and banks are handled automatically. Put this in F10 and copy down to F33:
+  =IF($C10="Thrift",$E10*0.5,$E10)
+  (This prevents accidental manual multipliers in future.)
+
+Market share & HHI (clean formulas)
+- Market share (G10 and down): use a decimal and format as %:
+  =F10/$F$36
+- HHI component (H10 and down): compute HHI directly (HHI uses squared percent shares). Use:
+  =(F10/$F$36)^2*10000
+  and sum H10:H33 in H36.
+
+Why this works (short)
+- F should reflect deposit ownership rules: banks = 100% of E, thrifts = 50% of E. The bad multiplier changed that for Beacon.
+- G as F10/F36 gives correct market share; formatting as percent avoids multiplying by 100 inside formulas.
+- HHI is sum of squared percentage shares. (Using the formula above yields the conventional HHI value, e.g., 10,000 = monopoly.)
+
+What to check after repair
+- G36 should sum to 100% (or 1.00 if decimals).
+- H36 will change to the corrected HHI.
+- Scan column F for any other hard-coded multipliers and replace with the IF formula to avoid repeats.

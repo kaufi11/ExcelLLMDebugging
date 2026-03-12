@@ -1,0 +1,42 @@
+I reviewed the workbook and found three clear problems. Short explanations and precise fixes follow.
+
+1) E20-9 vs E20-9 (2) — inconsistent indirect‑cost base (likely an error)
+- Problem: E20-9 uses C11 = SUM(C4:C6)/C2 (includes utilities). E20-9 (2) uses C11 = SUM(C4:C5)/C2 (omits utilities). The two sheets give different bids because one omitted C6 (Utilities).
+- Why it’s wrong: Either utilities are an indirect cost and must be included in the indirect cost pool, or they must be excluded consistently. The sheets are inconsistent.
+- Fix: Decide whether utilities belong in indirect costs. If yes (most likely), change the formula in E20-9 (2) cell C11 to:
+  =SUM(C4:C6)/C2
+  This will make both sheets consistent and restore the correct indirect hourly rate / bid.
+- Explanation: Including C6 correctly spreads all overhead (rent + support salaries + utilities) over direct labor hours.
+
+2) P20-1B and P20-1B (2) — many posting formulas are in the wrong columns (shifted right)
+- Problem: Several journal/ledger transfer formulas are entered into the wrong columns (they are shifted two columns to the right). Example:
+  - F14 contains =E4+G6 but the Finished Goods cost column is E (not F). F14 is the "Job" column of the COGS area, not the FG cost column.
+  - G15 contains =F14 but the credit to Work in Process should be in the WIP cost column (C), not G.
+  - Same shift appears for the completion of jobs 4–6 (F18 → should be E18; G19 → should be C19).
+- Why it’s wrong: Debits/credits are being recorded in the wrong ledger columns, so balances/cross‑references are incorrect and the ledger will not reconcile.
+- Fix (move the formulas two columns left so they go into the correct cost columns):
+  - Change F14 → E14 with formula: =E4 + G6
+  - Change G15 → C15 with formula: =E14
+  - Change F18 → E18 with formula: =G9 + G10 + G11
+  - Change G19 → C19 with formula: =E18
+  - Review the other transfer lines (sales / COGS lines) and ensure debits are in the appropriate cost column for that account:
+    - WIP cost column = C
+    - Finished Goods cost column = E
+    - COGS cost column = G
+- Explanation: Each account area uses two columns: Job (B/D/F) and Cost (C/E/G). Post debit amounts into the Cost column of the account being debited and post credits into the Cost column of the account being credited.
+
+3) P20-3B and P20-3B (2) — overhead applied incorrectly by row placement
+- Problem: I10 = F14 * H10 places the entire applied overhead for the whole job into cell I10 (row 10) and references the total labor (F14). That works arithmetically, but is non‑standard and confusing — also it prevents a row‑by‑row breakdown and makes I14 depend on a single I10 cell.
+- Better approach / Fix:
+  - Apply overhead per labor line: change I10 to =F10 * $H$10, I12 to =F12 * $H$10 (and I11 if there is labor on row 11), then change I14 to =SUM(I10:I12) (or =SUM(I10:I12)+if needed).
+  - Then set total job cost (I14) = D14 + F14 + SUM(I10:I12)
+- Explanation: This allocates overhead proportionally to each direct-labor amount and avoids hiding the whole overhead in one cell. It makes the worksheet clearer and easier to audit.
+
+Extras / housekeeping
+- There are duplicate sheets (E20-9 (2), P20-1B (2), P20-3B (2)). Keep only one version of each (or clearly label which variant is correct) to avoid confusion.
+- Check for other shifted formulas — the pattern (formulas shifted two columns right) suggests other entries may be misplaced; scan the sheet for any formulas located in columns F or G that should be in C or E.
+
+If you want, I can:
+- Give the exact corrected formulas ready to paste into each cell, or
+- Produce a small edit script (step‑by‑step) to fix the P20-1B sheet (I can list all cell changes).
+Which would you prefer?

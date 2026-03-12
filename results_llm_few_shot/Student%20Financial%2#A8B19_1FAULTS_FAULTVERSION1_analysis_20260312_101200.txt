@@ -1,0 +1,28 @@
+I reviewed the Tuition and Fees sheet and found a few clear formula / hard‑entry errors that make totals wrong and inconsistent across columns. Below are the faults, short explanations, and the fixes you should apply.
+
+1) Cell F8 (Room and Board On‑Campus)
+- Problem: Hard‑coded value 4892 while other columns use formulas (G8 = G9+G10 etc). F8 is inconsistent with F9+F10 (2466+1806 = 4272).
+- Fix: replace 4892 with the formula =F9+F10
+- Why: makes F8 consistent and automatic; removes the incorrect manual entry.
+
+2) Cell F11 (Comprehensive In‑State total)
+- Problem: F11 is a hard number (7228) instead of a formula. Because F8 was hard‑coded, F11 was also entered manually.
+- Fix: replace 7228 with =F5+F8+F7
+- Why: ties the comprehensive total to tuition (F5), room & board (F8) and fees (F7) so it updates automatically when components change.
+
+3) Cell H12 (Comprehensive Out‑of‑State, 2001‑2002 column)
+- Problem: formula is =SUM(H6,877,H7) — contains the literal 877 (typo) instead of using H8.
+- Fix: change to =H6+H8+H7 or =SUM(H6,H8,H7)
+- Why: uses the actual Room & Board cell H8 rather than an incorrect constant, producing the correct total.
+
+4) Cell G36 (Required fees, Out‑of‑State column)
+- Problem: hard‑coded 584 while the row is labeled "Same as In‑State" and other columns use SUM formulas. The correct column SUM(G21:G29) = 619 (based on the listed values).
+- Fix: replace 584 with =SUM(G21:G29)  (or =D36 if you really mean “same as In‑State” and want to reference D36)
+- Why: restores correct fees total and keeps it consistent with the fee breakdown; prevents downstream totals (G37, etc.) from being wrong.
+
+Cascading effects to check after fixes
+- After fixing F8 and F11, update F12 and any totals that depend on those cells (F12 is already a formula =F6+F7+F8 but will recalc correctly once F8 is fixed).
+- After fixing G36 and H12, check G37/H37 (Total Out‑of‑State Resident) and any other totals that sum those rows.
+- To find similar problems: use Excel’s Trace Precedents / Dependents or View → Show Formulas, and search for hard‑coded numbers in rows that should be calculated.
+
+If you want, I can give you a short script of all cells to convert to formulas (so you can paste them in), or point out any other suspicious hard‑coded totals.

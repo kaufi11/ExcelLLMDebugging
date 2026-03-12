@@ -1,0 +1,34 @@
+Summary of errors
+- Column-range typo in every Points cell (C9:C24): formulas use Dn:CCn (e.g. =SUM(D9:CC9)) instead of the intended Dn:In (D through I). This is a typo (CC vs I).
+- One row (C19) uses COUNT(D19:CC19) instead of SUM(...), so it returns a count of numeric cells rather than the points total.
+- Grade % formulas (B9:B24) use =SUM(Cn/$C$6). SUM(...) around a single value is unnecessary (though not harmful). The result should be formatted as a percentage.
+
+Why these are wrong
+- D:CC is a very wide range; it usually includes blank cells and is inefficient and error-prone. If extra numbers exist outside I, they would be incorrectly included. COUNT returns the number of numeric cells, not the sum of their values, so C19 is wrong (it will return 6, not the total points).
+- Wrapping the division in SUM is unnecessary and confusing.
+
+Correct formulas and quick fix steps
+1. Points column (C9:C24): replace each formula with:
+   =SUM(D9:I9)
+   then fill/copy down for rows 9:24 (so C10 =SUM(D10:I10), etc.).
+
+2. King (row 19) specifically: change COUNT to SUM as above (this will be fixed by step 1 if you copy the formula down).
+
+3. Grade % column (B9:B24): replace each with:
+   =C9/$C$6
+   then copy down. After that, format B9:B24 as Percentage (Format Cells → Percentage) to show percent values.
+
+Alternate fast method
+- Select C9:C24, type =SUM(D9:I9) and press Ctrl+Enter to fill all selected rows with relative formulas.
+- Select B9:B24, type =C9/$C$6 and press Ctrl+Enter, then format as Percentage.
+
+Why this fixes it
+- Using D:I limits the range to only the six score columns (D through I), giving the true points total.
+- SUM aggregates the numeric values; COUNT would only count how many numeric entries exist.
+- Using Cn/$C$6 gives the fraction of the total points; formatting as % shows it as a percent.
+
+Optional cleanup
+- Remove the unnecessary SUM wrapper from any B formulas (done above).
+- Ensure C6 is =SUM(D6:I6) (it already is) and that $C$6 is absolute so copying works.
+
+If you want, I can provide the corrected formulas for every row or the expected percentage results.

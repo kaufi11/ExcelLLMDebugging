@@ -1,0 +1,59 @@
+I reviewed the workbook data you pasted. I found several systematic errors that will produce wrong totals, wrong grades and weird negative ID numbers. Below are the problems, short explanations and simple fixes you can apply right away.
+
+1) ID column (column A) showing negative numbers instead of the IDs
+- Problem: many entries in column A are written like 356-78-4365 (with hyphens) but Excel interprets that as a numeric expression (356 - 78 - 4365) and calculates a negative number.
+- Why it’s wrong: IDs with hyphens must be text, not expressions.
+- Fix: convert the column to Text and re-enter IDs as text. Easiest:
+  - Select column A → Format Cells → Text → OK, then retype each ID (or edit each and put a leading apostrophe before the ID: '356-78-4365).  
+  - Or use a formula if you still have the original string in another cell: =TEXT("356-78-4365","@") or ="356-78-4365".
+- Result: IDs will display correctly and will not be used accidentally in calculations.
+
+2) Grade IF formulas reference different O38 cells (inconsistent cross-sheet references)
+- Problem: most grade formulas are like =IF(O6>O$38*0.9,... ) (good — uses the sheet’s own O38). But some rows/sheets reference other sheets (e.g. 'F Noon'!O$38 or 'M Noon'!O$38) or even mix sheets in single formulas.
+- Why it’s wrong: grades should be compared to a consistent “total possible” value. If different sheets point to different O38 cells, the grade boundaries differ and produce inconsistent/incorrect grades.
+- Fix:
+  - Decide one source for the “Total possible points” (for example O38 on each sheet or a single summary sheet cell). Then make every grade formula use the same absolute reference, e.g. either same-sheet absolute:
+    =IF(O6>=O$38*0.9,"A",IF(O6>=O$38*0.8,"B",IF(O6>=O$38*0.7,"C",IF(O6>=O$38*0.6,"D","F"))))
+    or (better) create a named range (e.g. MaxPoints) on the master sheet and use:
+    =IF($O6>=MaxPoints*0.9,"A",...).
+  - Also use >= instead of > if you want the boundary score (exact 90%, 80% etc) to be included in the higher grade.
+- Result: all sheets will use the same thresholds and grades will be consistent.
+
+3) SUMs and totals may be wrong because some score cells are stored as text or missing
+- Problem: you use SUM(Bx:Nx) for row totals, but there are many cells that appear non-numeric (text like "3 & 4", stray characters, or blank cells that should be zero). SUM silently ignores text and that can hide data-entry errors.
+- Why it’s wrong: numeric cells stored as text are not included in SUM; totals/averages become wrong.
+- Fix checklist:
+  - Use Excel’s Error Checking (green triangles) or test a sample with =ISNUMBER(B6) to find text-but-number cells.
+  - Convert text numbers to numbers: select the range → Text to Columns → Finish; or copy a blank cell, Paste Special → Multiply by 1; or use VALUE() to coerce strings.
+  - Remove stray characters (e.g., remove ampersands or text in score cells). Keep text like "1&2 on Sam" only in header rows, not in data rows.
+  - Optionally make the total formula robust: =SUMPRODUCT(--(B6:N6)) will coerce number-strings to numbers for summation, but it’s better to correct the data.
+- Result: row totals O6 etc will reflect the true numeric sum.
+
+4) Summary formulas (AVERAGE, COUNT, MAX) use inconsistent row ranges across sheets
+- Problem: different sheets use different averaging ranges (some use B6:B37, others B6:B30, etc.). That gives inconsistent class stats.
+- Why it’s wrong: summary rows should cover exactly the same data rows across sheets.
+- Fix:
+  - Decide the data row range (for example students in rows 6:36). Update every sheet’s summary formulas to use the same fixed range e.g. =AVERAGE(B6:B36) or use a dynamic named range.
+  - If some sheets have more/fewer students, use a consistent method (named range via OFFSET/INDEX or tables) so the averages auto-adjust.
+- Result: averages, counts and max values are computed consistently.
+
+5) Mixed / missing formulas in some O columns and P grade cells
+- Problem: some rows/sheets have missing SUM formulas in O (or missing P formulas or referencing the wrong sheet). Also some O# formulas are present on some rows but absent on others.
+- Fix:
+  - Ensure every student row has O# =SUM(B#:N#) (or the corrected numeric range you use).
+  - Fill the P# formula for grades consistently (copy down the corrected IF formula from item #2).
+- Result: totals and grades will be present and consistent for every row.
+
+Quick implementation plan (recommended order)
+1. Fix IDs: format A as Text and re-enter IDs (or bulk add leading apostrophe).
+2. Clean numeric data: find non-numeric score cells and convert to numbers.
+3. Standardize totals: ensure every row has O# =SUM(B#:N#) and recalc.
+4. Standardize grade formula: pick a single MaxPoints (e.g. O38) and replace all P# formulas with the consistent IF formula using absolute references or a named range.
+5. Standardize summary ranges: make AVERAGE/COUNT/MAX formulas use the same row range (or convert the student block to an Excel Table and use structured references).
+
+If you want, I can:
+- Provide the exact IF formula to paste into P6 and copy down.
+- Provide an Excel Text-to-Columns / Paste Special sequence to convert text numbers to numeric quickly.
+- Provide a small VBA macro to convert all hyphenated IDs into text (add leading apostrophe) and to replace inconsistent grade references with a uniform one.
+
+Tell me which of these fixes you want me to give the exact formula/steps for and I’ll produce them.

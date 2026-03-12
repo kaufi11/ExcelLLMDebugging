@@ -1,0 +1,20 @@
+Findings (short)
+- Main error: Cell C19 uses =COUNT(D19:CC19) instead of summing the student's points. COUNT returns how many numeric cells (6), not the sum of points (88), so King’s score and percent are wrong.
+- Secondary/likely errors: every student points formula uses D#:CC# (e.g. =SUM(D9:CC9)). That works but is wrong range — it should be D#:I# (only the six assignment columns). CC is far to the right and can accidentally include other data.
+- Minor: Grade% formulas use =SUM(C9/$C$6). The SUM wrapper is unnecessary (but not harmful). Better to use =C9/$C$6 and format as Percentage.
+
+Quick fixes (one-line)
+1. In C19 replace =COUNT(D19:CC19) with =SUM(D19:I19).
+2. For all student Point cells (C9:C24) change =SUM(D#:CC#) to =SUM(D#:I#).
+3. For all Grade% cells (B9:B24) change =SUM(C#:/$C$6) to =C#/$C$6 and format the cells as Percentage (or use =C#/$C$6*100 for a numeric percent).
+
+Why these fixes work (simple)
+- SUM adds the actual points; COUNT only counts how many numeric cells exist.
+- D:I is the correct columns with the students’ points (D through I). Using CC extends the range unnecessarily and can pick up stray data.
+- =C#/$C$6 directly computes the fraction of total points. Formatting as Percent shows it as e.g. 88%.
+
+Example (for King, row 19)
+- Correct points: =SUM(D19:I19) → 88
+- Correct percent: =C19/$C$6 formatted as % → 88%
+
+If you want, I can give the exact formulas you can paste into each cell and a quick AutoFill sequence to fix all rows.

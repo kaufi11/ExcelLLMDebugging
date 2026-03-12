@@ -1,0 +1,47 @@
+Sheet name: "Silver Axe"
+
+Purpose: a single-character sheet for a Villains & Vigilantes 2nd Edition NPC/PC (Julia Cochran / Silver Axe) with attribute values, powers, lookup tables for modifiers, and derived-stat formulas.
+
+Layout & main sections
+- Top header (A1–A4): Game title, Identity (B2: Julia Cochran), Side (H2: Evil), Level/age/experience.
+- Character summary (A3–A7, A8–A12): Name (Silver Axe), gender, weight breakpoints, listed powers and notes (magic handaxe, heightened stats, detect magic, flavor text).
+- Primary stats (A15–A18, B15–B18, G16–G17): Strength B16=30, Agility B17=34, Endurance G16=12, Intelligence G17=11, Charisma B18=15. Weight B15=170.
+- Powers/abilities text and notes in A6–A11 and longer biography in A34–A43.
+- Large lookup tables span columns Q:AW (rows ~2–15): many attribute-to-modifier tables used by formulas (Weight-to-Agility, Agility Modifiers, HP mods, damage mods, detection thresholds, attribute values, etc.).
+
+Key lookup tables
+- R2:AG3 — weight thresholds and corresponding Agility Mod row (used by HLOOKUP for Agility Mod).
+- R5:AW15 — a multi-row attribute table (Attr. Value, Str HP Mod, End HP Mod, End Heal Rate, Int HP Mod, Int Dmg Mod, Det Hidden, Det Danger, Agl HP Mod, Agl Dmg Mod, Agl Acc Mod, …). This table is referenced repeatedly via HLOOKUP to pull appropriate modifiers for given attribute values.
+- R2:AG4 and similar ranges supply base HTH damage mappings.
+
+Important formulas (cells called out)
+- Basic Hits (E15) = ROUNDUP(B15/50,0) — determines basic hit units from Weight.
+- Agility Mod (H15) = HLOOKUP(B15, R2:AG3, 2, TRUE) — picks agility modifier based on weight.
+- React. Mod (G18) = HLOOKUP(B18, R17:AN18, 2, TRUE) — reaction modifier from Charisma table.
+- Hit Mod breakdown (B19–E19) = HLOOKUP of Strength, Endurance, Intelligence, Agility against R5:AW15 with different row indices; F19 = PRODUCT(B19:E19) multiplies those factors; Hit Points (H19) = (F19 * E15) + 0.49 — HP derived from product of modifiers × Basic Hits (plus 0.49).
+- Dmg. Mod. (B20) = SUM of two HLOOKUPs (Int and Agility damage modifiers pulled from R5:AW15).
+- Healing Rate (G20) = E15 * HLOOKUP(G16, R5:AW15, 4, TRUE) — base healing scaled by Endurance.
+- Accuracy (B21) = HLOOKUP(B17, R5:AW15, 11, TRUE) — agility-based accuracy.
+- Power (G21) = SUM(B16:B17, G16:G17) — summed primary stats (Str + Agil + End + Int).
+- Carrying Capacity (C22) = ((B16/10)^3 + (G16/10)) * (B15/2) — capacity uses Strength, Endurance and Weight.
+- Base HTH Damage (H22) = HLOOKUP(C22, R2:AG4, 3, TRUE) — looks up hand-to-hand damage based on carrying capacity (or computed C22).
+- Movement, detection and other derived fields use HLOOKUPs to extract values from the attribute tables (Det. Hidden E25, Det. Danger G25, Det. Hidden row A25 references HLOOKUP on G17).
+- Inventing/skills: Inventing Points (C26) = (G17/10) * H4; Inventing (B27) = G17 * 3.
+
+Key values / notable character data
+- Identity: Julia Cochran = Silver Axe; Side: Evil.
+- Stats: Str 30, Agility 34, Endurance 12, Int 11, Charisma 15.
+- Level 2, Age 25, Experience 0.
+- Weight: 170 (Basic Hits computed from this).
+- Powers: Magic weapon (Silver Handaxe: +2 to hit, HTH +d12), Heightened Attack +4 (with axe), Detect Magic 100', Heightened Strength B +19, Heightened Endurance A +6, Heightened Agility A +16.
+- Flavor text and background biography included (A34–A43).
+- Copyright note in A46.
+
+Notes / potential pitfalls
+- Many HLOOKUPs reference wide horizontal tables (R5:AW15, R2:AG4, etc.). The HLOOKUP row_index numbers correspond to rows inside those table ranges (so make sure the table ranges align exactly to intended rows).
+- Some computed values (e.g., C22 used to lookup base HTH damage) depend on floating calculations—rounding behavior in the lookups may depend on the last argument TRUE (approximate match).
+- Several cells are presented as "FORMULA =" text in your dump; those are actual formulas in the sheet (not literal text) per your listing.
+
+If you want, I can:
+- Map each HLOOKUP to the exact table row (e.g., B19 uses row_index X of R5:AW15) for auditing, or
+- Show key derived numeric outputs (calculated Hit Points, Basic Hits, Carrying Capacity, Base HTH damage) using the current stat values.

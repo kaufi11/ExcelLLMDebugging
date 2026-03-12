@@ -1,0 +1,32 @@
+Summary of problems found
+- Row 25 (cell G25) contains a hard-coded multiplier: =E25*525. That should use the subscriber count in F25 (=E25*F25). This gives a wrong value for that row and makes the grand total (G407) incorrect.
+- Several G cells will return 0 if the corresponding F cell is blank (for example row 154). That may be intended (zero subscribers) or may be a missing-data problem — either way it should be checked.
+- The totals F407 and G407 are correct in structure (they sum the data ranges) but they will reflect the above errors/missing values.
+
+Why these are errors (short)
+- Hard-coded numbers in formulas (like 525) break the row-by-row pattern and produce wrong totals when you expect E*F for every row.
+- Blank subscriber cells (F) produce zero totals silently. If a subscriber count is missing you should flag it instead of silently multiplying by zero.
+
+How to fix (simple steps)
+1. Fix the wrong formula in G25:
+   - Replace =E25*525 with =E25*F25.
+2. Make sure every G row uses the same pattern:
+   - Put =E2*F2 in G2 (or G1 if your data starts there) and fill/copy that formula down through G404 so every row is consistent.
+3. Find remaining hard-coded values in column G (quick check):
+   - Home → Find (Ctrl+F) → Options → look in Workbook for “*=E*” or use Formulas → Show Formulas to visually scan.
+   - Or use Go To Special → Constants and look at column G to spot any numeric constants that should be formulas.
+4. Deal with missing subscriber counts (F):
+   - If a blank F means zero subscribers, leave it but be aware totals will be smaller.
+   - If blank F is an error, fill the correct subscriber count.
+   - Optionally change G formula to show a warning for missing F, for example:
+     =IF(F2="","MISSING",E2*F2)
+     (this flags rows where F is blank instead of silently returning 0).
+
+Why this solution works (short)
+- Using =E#*F# keeps every row calculated from the correct source cells so totals (SUM(G2:G404)) are accurate.
+- Replacing hard-coded numbers avoids future inconsistencies if subscriber counts change.
+- Flagging blanks prevents unnoticed data omissions.
+
+If you want, I can:
+- Produce the exact Excel formula to paste into G2 and fill down.
+- Provide the Go To Special steps or a small macro to find & fix all hard-coded multipliers automatically. Which would you prefer?

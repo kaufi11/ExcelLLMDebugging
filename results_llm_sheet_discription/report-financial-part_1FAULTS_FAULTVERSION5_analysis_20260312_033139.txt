@@ -1,0 +1,72 @@
+Summary of errors (short):
+1. Most "Spent in total" cells (column H) use C*G (e.g. =C6*G6). That is wrong: "Spent in total" should be the sum of the two spent columns, F (EU contribution) + G (other funds).
+2. H12 is a hard-coded value (=4) instead of a formula.
+3. Some subtotal ranges are wrong/unsafe:
+   - H13 uses SUM(H5:H12) but the item rows are H6:H12 — include header/blank (risk).
+   - H53 uses SUM(H51:H52) but there is only H52 for section 7 in your excerpt — wrong range.
+4. Missing or unspecified formulas for administrative costs and contingency (H56, H58).
+5. Sheet 4: "Spent percentage of total %" (column J) has no formula shown.
+
+How to fix (concrete, copy/paste formulas and short rationale):
+
+1) Fix each line "Spent in total" (column H)
+- Replace formulas like =C6*G6 with:
+  =F6 + G6
+Rationale: column H must equal the total spent, i.e. EU contribution (F) plus other funds (G). Do this for all detail rows (H6, H7, H8, H10, H11, H12, H16, H17, H21..H24, H28..H31, H35..H41, H44..H46, H52 etc.).
+
+2) Replace hard-coded H12
+- Set H12 to:
+  =F12 + G12
+
+3) Correct subtotals to cover exactly the item rows
+- Human Resources subtotal (row 13):
+  =SUM(H6:H12)
+- Travel subtotal (row 18) — if correct already keep it:
+  =SUM(H16:H17)
+- Subtotal Other (row 53) — adjust to actual item rows for section 7. If only row 52 is an item:
+  =SUM(H52:H52)  (or simply =H52)
+- For all other subtotals ensure they sum the exact item rows, e.g.:
+  H25 = SUM(H21:H24)
+  H32 = SUM(H28:H31)
+  H42 = SUM(H35:H41)
+  H47 = SUM(H44:H46)
+
+Rationale: wrong ranges include headers/blank rows or miss items — cause incorrect totals.
+
+4) Fix aggregate totals and add admin/contingency formulas
+- H55 (Subtotal direct project costs (1.-7.)):
+  =H13+H18+H25+H32+H42+H47+H53
+  (Your current H55 is the same — keep after subtotals fixed.)
+- H56 (Administrative costs — max 7% of H55):
+  =H55 * 0.07
+  (If administrative costs are entered manually, add data validation or a check: =IF(H56>H55*0.07,"ERROR: >7%","OK"))
+- H57 (Total eligible project costs):
+  =H55 + H56
+- H58 (Contingency reserve — max 5% of H57):
+  =H57 * 0.05
+- H59 (Total costs):
+  =H57 + H58
+
+Rationale: use percent formulas consistently; contingencies and admin are percentages of prior totals.
+
+5) Fix Sheet 4 "Spent percentage of total %" (column J)
+- If you want percent of contract amount spent:
+  In J#:
+  =IF(I#=0,"", H# / I# )
+  Format as percentage.
+- If you want percent of overall budget, divide by overall total (specify which denominator). Most common: spent / contract amount.
+
+6) Clean-up & recommendations
+- Convert the budget area into an Excel Table and fill formulas down to avoid broken ranges.
+- Replace hard-coded numbers with formulas so totals update automatically.
+- Add simple error checks: e.g. cell that flags if H ≠ F+G or if Admin > 7% or Contingency > 5%.
+- Ensure number formatting is currency/percentage where appropriate.
+
+Example quick checklist to apply now:
+- Find/Replace formula pattern: search for "=C*G" or similar and replace with "=F+G" for column H rows.
+- Edit H12 → =F12+G12.
+- Edit H13 → =SUM(H6:H12).
+- Edit H53 → =SUM(H52:H52) or =H52 (or extend to real item rows).
+- Add H56 =H55*0.07, H58 =H57*0.05, ensure H57 and H59 reference them.
+
+If you want, I can produce the exact list of cells to change (with the current row numbers) and a one-click pasteable set of formulas. Which would you prefer?

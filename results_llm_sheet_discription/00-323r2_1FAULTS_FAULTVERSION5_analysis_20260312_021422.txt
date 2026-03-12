@@ -1,0 +1,24 @@
+I checked the Sheet1 formulas and found two real formula mistakes that will give wrong timing results. Short summary, fix and why:
+
+1) Wrong sign in J39 (typo)
+- Error: J39 is entered as =-J25-J35 (negative sum). All other total columns use +J25+J35.  
+- Why it matters: J39 is the total error input for the J (per-edge) column. Making it negative flips the sign of the whole J-column totals (J40, J41, etc.), so J-based post‑compensation and minimum-setup numbers are wrong.
+- Fix: Change J39 to =J25+J35. (Then J40 = J39-J38 and J41 = J6-J40 will give the correct positive totals/margins.)
+- Quick check: after fix J39 should equal the sum of J9:J24 plus J27:J34 and J40/J41 will change accordingly.
+
+2) Wrong base cell used for Net setup (P18 / Q18)
+- Error: P18 and Q18 (Net setup time rows) both use P$15 (receive hold time) as their starting term. They should use the receive setup time (P$16 / Q$16). The formulas shown are identical to the Net hold formulas (P17/P18 should be different).
+- Why it matters: Using the hold result as the base for the setup calculation gives an incorrect net-setup number (it mixes hold and setup chains). This miscomputes the “net setup time” for the device method columns.
+- Fix: Edit the formulas:
+  - P18: replace P$15 with P$16 so it begins with the receive-setup term. Example corrected formula: =+P$16-3.125+$J$36+$J$37-J16-J19-...-(J30/2) (mirror the structure of P17 but start from P$16).
+  - Q18: replace Q$15 with Q$16 similarly.
+- Quick check: After fix P18/Q18 should be different from P17/Q17 and should reflect net setup (not net hold).
+
+Extra recommendations (minor / consistency)
+- Make absolute references consistent (use $ for column and row where you intend lock) to avoid accidental errors if you copy formulas.
+- Scan other Totals for accidental leading minus signs (the J39 error is a common copy/paste typo).
+- Recalculate entire sheet after changes and compare pre/post values for J40/J41 and P/Q 17–18 to confirm expected numeric changes.
+
+If you want, I can:
+- Give the exact corrected text for P18 and Q18 (I’ll need the full original P17 formula text to produce the mirror-corrected formula), or
+- Recalculate the key outputs (post‑compensation and minimum windows) and send the before/after numbers.

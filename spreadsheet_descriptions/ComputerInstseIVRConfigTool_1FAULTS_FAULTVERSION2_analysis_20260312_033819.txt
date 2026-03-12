@@ -1,0 +1,35 @@
+Sheet: Configuration Editor (single sheet)
+
+Layout and main fields
+- Columns: A = CII Code, B = Description, C = Quantity, D = NPL Price, E = Dealer Price, F = Client Price, G = misc/constants.
+- G2 contains a constant 0.75 (used as a dealer multiplier/discount).
+- Rows are grouped by product/category headings (e.g., e‑IVR Bundles, Messaging, Additional RTU Ports, e‑IVR Fusion Family, Call Center Apps, Vertical Apps, Switch Integration, Custom Programming, Installation/Training, Dealer Hardware).
+- All product rows follow the pattern: A (product code), B (text description), C (quantity, currently 0 for every item), D (unit NPL price or text like "CALL"/"TBD"), E and F (computed price totals).
+
+Typical formulas
+- Dealer Price (E column): mostly =PRODUCT(Cx,Dx,G2) → Quantity * NPL Price * 0.75.
+- Client Price (F column): mostly =PRODUCT(Cx,Dx) → Quantity * NPL Price.
+- Software subtotal: E82 = SUM(E4:E81) and F82 = SUM(F4:F81).
+- Warranty/extended lines: D85 = PRODUCT(F82,0.09) and D86 = PRODUCT(F82,0.18) (warranty percent calculations based on F82).
+- Grand totals: E109 = SUM(E82,E85:E108) and F109 = SUM(F82,F85:F108).
+
+Key values
+- Discount/coeff: G2 = 0.75 (applied to dealer prices).
+- Many unit prices in D column (e.g., D4 16995, D5 6450, etc.). Some D cells are text ("CALL") or "TBD".
+- All quantities (C column) are currently zero, so computed totals will be zero unless quantities are entered.
+
+Notable anomalies / potential errors to review
+- A few formulas use incorrect syntax: e.g., F73 = PRODUCT(C73:D73) and similar for F74/F75; PRODUCT accepts separate arguments, should be PRODUCT(C73,D73) or simply =C73*D73.
+- Some inconsistent/hardcoded values:
+  - F5 uses =PRODUCT(887,D5) (887 appears hardcoded in place of a quantity cell).
+  - E78/E79/E80/E81 use PRODUCT(Cx,175) while D78–D81 show 195 — inconsistency between unit price references.
+- Warranty lines seem inconsistent/circular:
+  - D85 and D86 are derived from F82 (ok), but E85 = PRODUCT(F85,0.9) references F85 (circular if F85 also depends on F82) and F85 = PRODUCT(F82,C85,0.09) mixes F82 and C85; these should be reviewed and simplified (expected patterns: A*B or percentage of subtotal * quantity).
+- Several D cells contain "CALL" or "TBD" (e.g., D57, D60; many G cells show "TBD") — manual pricing required for those items.
+- Many G cells in hardware rows are "TBD" (informational only).
+
+Summary / suggestions
+- Structure is consistent: product rows with qty/price → dealer/client totals; subtotals and grand totals at the bottom.
+- Fix formula syntax errors (PRODUCT with colon), remove/replace hardcoded values (887), and correct inconsistent price references (175 vs 195).
+- Resolve warranty formula circular references and clarify intended calculations (warranty % applied to client total vs dealer total and how quantity should factor).
+- Enter nonzero quantities to produce meaningful totals and replace "CALL"/"TBD" with numeric prices where needed.

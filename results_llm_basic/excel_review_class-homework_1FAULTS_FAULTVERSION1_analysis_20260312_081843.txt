@@ -1,0 +1,49 @@
+Summary: I found one real formula error on the Q'back sheet and a few consistency/structuring problems across the workbook. Below are the problems, short explanations and the exact fixes.
+
+Q'back sheet
+1) Wrong formula (typo)
+- Problem: Cell I5 is =G5/C5/100. That divides by 100 instead of multiplying, so Bryant’s TD% is ~0.0286 instead of 2.86%. This also makes L5 (Points) incorrectly low (I5 is multiplied by 3.3 in L5).
+- Fix: change I5 to
+  =G5/C5*100
+  (Or make all % formulas use decimal form — see consistency note below.)
+- Effect: I5 will show the correct touchdown percentage and L5 will update accordingly.
+
+2) Consistency / best practice (optional but recommended)
+- Problem: Some % formulas use *100 and some might be formatted as Percentage. Mixing *100 with Percentage formatting can display doubled results or confuse readers.
+- Recommendation (pick one approach and apply to all rows):
+  Option A — store percentages as percentages (decimal) and format the cell as Percentage:
+    H5: =D5/C5    (format cell as Percentage)
+    I5: =G5/C5    (format as Percentage)
+    J5: =E5/C5    (format as Percentage)
+    K5: =F5/C5
+    L5: =K5*8.4 + (H5*100) + (I5*100*3.3) - (J5*100*2)
+    (If you switch H/I/J to decimals you must multiply by 100 inside L because L expects the 0–100 scale.)
+  Option B — keep the current 0–100 numeric percent values (no % format) and use:
+    H5: =D5/C5*100
+    I5: =G5/C5*100
+    J5: =E5/C5*100
+    K5: =F5/C5
+    L5: =K5*8.4 + H5 + I5*3.3 - J5*2
+- Important: Whichever option you choose, apply it to all rows (5:11) so calculations are comparable.
+
+lookup sheet
+3) Missing student total/average/grade formulas
+- Problems: Columns F (Total /400), G (Average /100) and H (Letter Grade) are not filled. There’s a lookup table in F12:G18 but it isn’t used.
+- Fix: put these formulas in row 4 and copy down:
+  F4: =SUM(B4:E4)           (copy down)
+  G4: =F4/4                 (gives average out of 100; copy down)
+  H4: =VLOOKUP(G4,$F$12:$G$18,2,TRUE)   (copy down)
+- Notes: VLOOKUP with TRUE assumes the table in F12:F18 contains lower-bound thresholds sorted ascending (it is sorted). Add a 0 → F threshold (F11 or F12 = 0, G12 = "F") if you want to cover scores <45.
+
+drug bust sheet
+4) Metadata in data columns
+- Problem: Column E contains metadata (file name, data source, notes) in the same area as the data rows. This can break charts or data range operations.
+- Fix: Move metadata to a clearly separated area (above the dataset or a different column/worksheet) or convert the data area into a clean table with only numeric columns A–C used for analysis.
+
+Quick checklist to fix immediately
+- Change I5 to =G5/C5*100.
+- Make all H/I/J formulas consistent across rows (either all *100 or none) and adjust L formulas accordingly.
+- Add totals/averages/grade formulas to the lookup sheet (F4, G4, H4) and copy down.
+- Move metadata on drug bust to a separate place.
+
+If you want, I can give you the exact copy-ready formulas for every affected cell (rows 5–11 on Q'back and rows 4–9 on lookup) and tell you how to reformat the percent cells so everything displays correctly. Which option do you prefer (A or B for percent handling)?

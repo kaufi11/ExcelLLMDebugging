@@ -1,0 +1,64 @@
+Sheet name and purpose
+- "CNH Capital Homework #2" — formulates a lockbox location/assignment cost-minimization model. Top tables contain input data and intermediate calculations; lower area contains the binary decision variables, assignment matrix, constraints and the objective function.
+
+Top: Inputs — annual lockbox operating costs (cols B = Pennsylvania, C = California)
+- Fixed cost: B5 = 20,000; C5 = 30,000
+- Check processing cost per check: B6 = 0.20; C6 = 0.30
+- Clearing & processing float (days): B7 = 1.5; C7 = 1
+
+Mail float (average days between region origination and lockbox)
+- East coast: B11 = 2.3 (to PA), C11 = 3 (to CA)
+- West coast: B12 = 3, C12 = 2.2
+- Midwest: B13 = 3.5, C13 = 3.2
+
+Check origination data (headers at B16/C16)
+- East coast: B17 = 20,000,000 (average daily? per sheet header), C17 = 2,500,000 (yearly checks)
+- West coast: B18 = 30,000,000; C18 = 3,500,000
+- Midwest: B19 = 24,000,000; C19 = 4,500,000
+
+Other input
+- Cost of capital (required return): C21 = 0.085
+
+Middle: Calculated intermediate values
+- Total days float (per origin region to each lockbox):
+  - Pennsylvania: B27 = B$7 + B11 (clearing float + mail float)
+  - California: C27 = C$7 + C11
+  - West coast totals: B28 = B$7 + B12 ; C28 = C$7 + C12
+  - Midwest: B29 = B$7 + B13 ; C29 is hardcoded = 5
+- Opportunity cost of float (per origin→lockbox):
+  - East coast: B33 = $C$21 * $B17 * B27 ; C33 = $C$21 * $B17 * C27
+  - West coast: B34 = $C$21 * $B18 * B28 ; C34 = $C$21 * $B18 * C28
+  - Midwest: B35 = $C$21 * $B19 * B29 ; C35 = $C$21 * $B19 * C29
+  (cost of capital × checks × total float days)
+- Check processing charge (per origin→lockbox):
+  - East coast: B39 = $C17 * B$6 ; C39 = $C17 * C$6
+  - West coast: B40 = $C18 * B$6 ; C40 = $C18 * C$6
+  - Midwest: B41 = $C19 * B$6 ; C41 = $C19 * C$6
+- Combined per-origin assignment cost:
+  - B45/B46/B47 = opportunity cost + processing charge for each region to Pennsylvania
+  - C45/C46/C47 = same for California
+
+Bottom: Optimization model (decision variables, constraints, objective)
+- Open lockbox j (B53 = Pennsylvania open flag; C53 = California open flag). Current values: B53 = 1, C53 = 1.
+- Objective function (displayed in E52 / stored in H52):
+  - H52 = SUMPRODUCT(B5:C5, B53:C53) + SUMPRODUCT(B45:C47, B57:C59)
+  - Interpreted as: sum of fixed costs for opened lockboxes + sum of assignment costs (opportunity + processing) for each region assigned to each lockbox.
+- Assignment matrix (rows = origin regions; cols = lockboxes):
+  - B57:C59 holds 0/1 assignment indicators; row sums (D57:D59) computed by SUM(Bx:Cx). RHS per row (E57:E59) = 1 (each region assigned to exactly one lockbox).
+  - Column capacities / aggregate sums:
+    - Column sums: B60 = SUM(B57:B59) ; C60 = SUM(C57:C59)
+    - RHS per column: B61 = 3 * B53 ; C61 = 3 * C53 (each open lockbox can take up to 3 regions)
+    - These formulas enforce capacity as a function of whether a lockbox is open.
+
+Key formulas and relationships to check
+- Objective composition: fixed open costs + assignment costs (SUMPRODUCT combining fixed-cost vector with open flags and the assignment cost matrix with assignment variables).
+- Opportunity cost formulas multiply cost of capital by checks and total float days (ensure the intended check counts reference is correct: the model uses the B17–B19 and C17–C19 cells as shown).
+- Capacity constraint RHS is dynamic: 3 * (open flag) implemented in B61/C61.
+
+Overall layout
+- Inputs and parameters at top; calculated per-origin/per-lockbox costs in the middle; decision variables, assignments, constraints and objective at the bottom. Formulas use absolute references ($) for key parameters (cost of capital, processing rates) and SUMPRODUCT to compute the objective.
+
+If you want, I can:
+- Verify numerical values produced by the formulas,
+- Point out any inconsistent cell references (e.g., use of C17 in processing-charge formulas) and propose corrections, or
+- Convert this into a compact cost matrix and suggest a solver setup.

@@ -1,0 +1,55 @@
+I inspected the formulas you provided for all sheets. Overall the workbook is coherent and most formulas are consistent (SUMs, month-to-month carry‑forwards, % change IF(Hx=0,"N/A",...) patterns, cross‑sheet lookups, reconciliation cells). I found a small number of likely mistakes / inconsistencies that you should review and (if appropriate) correct.
+
+Summary of issues found (sheet, cell, problem, suggested correction)
+
+1) Sheet: annex e — row numbering in column B (labels)
+- Cells affected: B23, and the dependent sequence thereafter (B25, B28, B29, B31, B34, B36, B38, B43, B46, B48, B50, B51, B52, B56…)
+- What I see: Up to B22 the row-number chain is built incrementally (e.g. B18 = B15+1, B19 = B18+1, B21 = B20+1, B22 = B21+1). Then B23 is set to "=7" which resets the sequence to 7 instead of continuing (it should logically be B22+1 or next sequential index). Downstream cells (B25 etc.) use formulas such as "=B23+1" and therefore produce incorrect sequence numbers.
+- Why it matters: This is a labelling/numbering inconsistency (likely a copy/paste error). It does not necessarily break numeric calculations, but it will produce wrong line numbers which can confuse readers and lead to errors if any formulas depend on those label cells.
+- Suggested fix: Replace B23's formula/value with the correct continuation, e.g. =B22+1 (or the correct explicit number for the sequence). Then verify subsequent B cells are producing the intended sequence.
+
+2) Sheet: annex f — incorrect formula for % variance of “Total Funds”
+- Cell: K68
+- Current formula: =K48
+- Problem: K68 (Variance as % of original forecast for Total Funds) is referencing K48 (Variance % for Total Net Assets). That copies the percent from a different line instead of calculating the % change for Total Funds.
+- Why it matters: The % shown in K68 will be the wrong percent (it will mirror K48) and will not reflect J68/H68 (the intended variance percent for Total Funds).
+- Suggested correction: Use the same % pattern used elsewhere. For example:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+  (or, if you want to keep formatting, adapt to the workbook’s existing pattern for percent cells)
+
+3) Sheet: annex f — Endowments linking looks unusual (check intent)
+- Cell(s): H58 and I58 (H58 = H15 and I58 = I15)
+- What I see: Row “Endowments” (H58/I58) is directly set equal to H15/I15 which in this sheet are labelled “Endowment Asset Investments” (row 15).
+- Concern: That may be intended (if you want “Endowments” to equal the sheet’s “Endowment Asset Investments”), but it is a non‑obvious duplicate link. Confirm that the Endowments line should indeed equal the Endowment Asset Investments line rather than, for example, linking to an income or deferred endowment movement elsewhere.
+- Suggested action: If intentional, add a comment or note. If not, correct the reference to the intended source.
+
+4) Sheet: annex g — T26 and T49 reconciliation formulas (spot‑check)
+- Cells: T26 and T49
+- Formulas:
+  - T26 = T19 - ('annex f'!H20 + 'annex f'!H21)
+  - T49 = T42 - ('annex f'!I20 + 'annex f'!I21)
+- Observation: These formulas subtract annex f’s Investments (row 20) and Cash at bank/in hand (row 21) from the consolidated total to reconcile with balance sheet figures. This approach is reasonable (reconciling cash/short term investments) but double‑check that the two referenced annex f rows are the intended items for reconciliation (H20/H21 and I20/I21 correspond to Investments and Cash at Bank/In Hand on annex f).
+- Suggested action: Confirm the intended mapping; if you need to reconcile against different balance-sheet lines, update the references.
+
+5) Sheet: annex g — T19 and T42 (Totals for balance rows)
+- Cells: T19 and T42
+- Current formulas: T19 = S19 and T42 = S42
+- Observation: Many “Total” (T column) cells are SUM(H:S). T19/T42 are set to the July column (S19/S42) — that is consistent with keeping the T column as the closing month rather than a sum. This may be intentional, but it differs from other T cells that show SUM(H:S). Verify that the semantics are correct: T normally represents the total across months, but for balance c/f you may want the value equal to the last month (S). Ensure this is deliberate.
+- Suggested action: either leave as is (if T should reflect the July closing balance) or change to =SUM(H19:S19) (or similar) if T should be the sum across months.
+
+6) Sheet: Annex I — sum range may be too broad
+- Cell: H27 has formula =SUM(H10:H26)
+- Observation: The underlying operating surplus / deficit is intended to be a sum of the relevant add‑backs (H11, H14, maybe specific one‑off rows). Summing H10:H26 will include blank/unused rows; that is harmless numerically (adds zeros) but may mask that the intended rows to sum are discontinuous.
+- Suggested action: Consider explicitly summing the intended rows (e.g. =H11+H14+H17+...) for clarity and to avoid accidentally including unintended rows later.
+
+Other notes (minor / stylistic)
+- Many percentage cells follow the safe pattern IF(Hx=0,"N/A",(Jx/Hx)*100) — that is good.
+- There are several places where label/line numbering in column B is produced by formulas. Mixed use of hardcoded numbers and incremental formulas (as in annex e) creates the numbering issue noted above — prefer one consistent method.
+- No obvious circular references were detected from the formulas you supplied (carried‑forward balances use next/previous column referencing as expected).
+
+If you want, I can:
+- produce exact replacement formulas for the cells noted (I already gave K68 replacement),
+- generate a short list of all B-column label cells that are out of sequence in annex e,
+- or open the workbook and apply the fixes (if you can provide the file or allow edits).
+
+Which would you like me to do next?

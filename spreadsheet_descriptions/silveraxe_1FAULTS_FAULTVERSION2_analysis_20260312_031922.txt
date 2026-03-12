@@ -1,0 +1,58 @@
+Sheet name: Silver Axe
+
+Purpose/overview
+- A single character sheet for the Villains & Vigilantes 2nd Edition character "Silver Axe" (Julia Cochran). Left-hand columns store identity, stats, powers, biography and computed outputs. Right-hand area (columns Q–AW / R–AG) contains multiple horizontal lookup tables (attribute value → modifiers/HP mods/damage/healing/etc.) used by HLOOKUP formulas.
+
+Layout / key blocks
+- Header/identity (A1–H4): Game title, Identity, Name, Side (Evil), Level (H4=2), Age (J4=25), Experience (B4=0).
+- Powers & descriptive text (A5–A11, A6 includes magic weapon description). A8–A11 list specific powers.
+- Core attributes (A15–G18, A16–B17 etc):
+  - Strength B16 = 30
+  - Agility B17 = 34
+  - Endurance G16 = 12
+  - Intelligence G17 = 11
+  - Charisma B18 = 15
+  - Weight B15 = 170
+- Lookup tables (columns Q through AW; primary ranges used):
+  - R2:AG2 — Weight breakpoints
+  - R3:AG3 — Agility modifier by weight
+  - Q5:AW15 — Big attribute/value table: header row Q5..AW5 = attribute values (0,1,3,6,...90) and subsequent rows give Str HP Mod, End HP Mod, End Heal Rate, Int HP Mod, Int Dmg Mod, Det Hidden, Det Danger, Agl HP Mod, Agl Dmg Mod, Agl Acc Mod, etc.
+  - R17:AN17 and R18:AN18 — Charisma → Reaction lookup table
+- Biography and legal status (A28–A43, A32–C33).
+
+Important formulas / computed cells
+- Basic Hits (E15): =ROUNDUP(B15/50,0) → ROUNDUP(170/50) = 4 basic hits.
+- Agility Mod (H15): =HLOOKUP(B15,R2:AG3,2,TRUE) → uses weight (B15) against R2:AG3 to pick agility modifier (for weight 170 this returns -2).
+- Reaction Mod (H18): =HLOOKUP(B18,R17:AN18,2,TRUE) → charisma 15 → Reaction = 2.
+- Hit Mod components:
+  - B19: =HLOOKUP(B16,R5:AW15,2,TRUE) — looks up Strength (30) to a Strength HP modifier (returns 2.4 for Str=30).
+  - C19: =HLOOKUP(H16,R5:AW15,3,TRUE) — looks up H16 (note: H16 is blank in the sheet; likely intended to use G16 = Endurance). This appears to be a cell-reference error to correct.
+  - D19: =HLOOKUP(G17,R5:AW15,5,TRUE) — Intelligence-based lookup.
+  - E19: =HLOOKUP(B17,R5:AW15,9,TRUE) — Agility-based lookup.
+  - F19: =PRODUCT(B19:E19) — multiplies those modifiers together.
+- Hit Points (H19): =(F19*E15)+0.49 — total HP = product of attribute HP modifiers × Basic Hits, with +0.49 offset (probably to assist rounding).
+- Damage Modifier (B20): =HLOOKUP(G17,R5:AW15,6,TRUE)+HLOOKUP(B17,R5:AW15,10,TRUE) — sums Intelligence and Agility damage modifiers.
+- Healing Rate (G20): =E15*HLOOKUP(G16,R5:AW15,4,TRUE) — Basic Hits × Endurance heal-rate modifier.
+- Accuracy (B21): =HLOOKUP(B17,R5:AW15,11,TRUE) — Agility → accuracy modifier.
+- Power (G21): =SUM(B16:B17,G16:G17) — sum of Strength + Agility + Endurance + Intelligence.
+- Carrying Capacity (C22): =((B16/10)^3+(G16/10))*(B15/2) — uses Strength, Endurance and Weight.
+- Base HTH damage (H22): =HLOOKUP(C22,R2:AG4,3,TRUE) — looks up carrying capacity in the weight/HTH table (R2:AG4) to pick base hand-to-hand damage.
+- Other derived values:
+  - Movement sum (C23) = SUM(B16:B17,G16)
+  - Detection and reaction related outputs use HLOOKUPs against the large Q..AW table (Det. Hidden, Det. Danger, etc).
+  - Inventing points and Inventing: C26 = (G17/10)*H4; B27 = G17*3.
+
+Key static values to note
+- Character: Julia Cochran / Silver Axe (Evil).
+- Level: 2; Age: 25.
+- Strength 30, Agility 34, Endurance 12, Intelligence 11, Charisma 15.
+- Weight = 170 lb → Basic Hits = 4; Agility modifier from weight table = -2; Reaction = 2.
+- Magic weapon: Silver Handaxe +2 to hit, HTH+d12, and powers: Heightened Attack (+4 with axe), Detect Magic (100' radius), Heightened Strength B (+19), Heightened Endurance A (+6), Heightened Agility A (+16).
+
+Potential issues / notes
+- C19 references H16, but Endurance is in G16; that HLOOKUP will fail or return wrong value. Likely intended: =HLOOKUP(G16,R5:AW15,3,TRUE) or similar. Check row-index arguments in each HLOOKUP to ensure they target the intended lookup-row within R5:AW15.
+- The sheet relies heavily on HLOOKUP with approximate match (TRUE) against monotonic header rows — ensure the header rows are sorted ascending as they appear to be.
+
+If you want, I can:
+- Correct the HLOOKUP references (e.g., change C19 to use G16) and recompute the derived numeric values (HP, damage mod, carrying capacity, base HTH), or
+- Produce a compact summary table of final computed stats (HP, damage mod, accuracy, carry capacity, etc.). Which would you prefer?

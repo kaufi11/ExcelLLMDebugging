@@ -1,0 +1,48 @@
+Summary — what’s wrong (short)
+- Several formulas reference the wrong cells (typos) and some return text/blank ("") instead of numbers.  
+- The sheet uses COUNT where it should SUM, so point totals are calculated incorrectly.  
+- The half-fee logic is checking the wrong box.
+
+Exact problems + fixes (copy/paste these formulas into the listed cells)
+
+1) General Permit (C34)
+- Problem: checks B35 and returns "" — wrong cell and returns text.
+- Current: =IF(B35="",(IF(B34<>"",10,0)),"")
+- Fix: =IF(B34<>"",10,0)
+- Why: should test B34 (the "x if present" for General Permit) and return a numeric 0 if not present.
+
+2) Streamlined is fine (C35) but relies on C34 being numeric. Keep:
+- C35 = IF(B35<>"",B35*10,0)
+
+3) PSD Netting (C30)
+- Problem: returns "" when B31 is not blank (blank breaks numeric totals); odd reference logic.
+- Current: =IF(B31="",(IF(B30<>"",20,0)),"")
+- Fix (safe numeric version preserving intent): =IF(B31="",IF(B30<>"",20,0),0)
+- Why: return 0 (number) instead of "" so totals are numeric.
+
+4) Total Points (C41)
+- Problem: uses COUNT(C9:C31) — COUNT only counts numeric cells, it does not add point values.
+- Current: =IF(OR(C34>0,C35>0),C36,COUNT(C9:C31))
+- Fix: =IF(OR(C34>0,C35>0),C36,SUM(C9:C31))
+- Why: SUM adds the point values; COUNT just counts how many numeric cells exist.
+
+5) Half fee for small business (C43)
+- Problem: checks B34 instead of the small-business box B38; returns "N/A" incorrectly.
+- Current: =IF(B34<>"","N/A",IF(B38<>"",C42/2,"N/A"))
+- Fix (simple correct logic): =IF(B38<>"",C42/2,"N/A")
+- Alternative robust version for F5 compatibility: =IF(ISNUMBER(C42) * (B38<>""), C42/2, "N/A")
+- Why: C43 should contain the half-fee amount when the small-business box (B38) is checked; otherwise "N/A".
+
+6) Total Fee display (F5) — optional improvement
+- Current: =IF(C43="N/A",C42,C43)
+- Better (handles any non-numeric C43): =IF(ISNUMBER(C43),C43,C42)
+- Why: this uses the numeric half-fee when present, otherwise the full fee.
+
+Short explanation of impact
+- Wrong cell references and returning "" cause the point total (C41) to be wrong or blank. COUNT instead of SUM means you were counting rows, not totaling points. The small-business half-fee was blocked by the wrong test cell so it may never have been applied.
+
+What to do now (quick)
+- Replace C30, C34, C41, C43 (and optionally F5) with the corrected formulas above.  
+- Re-check a test case: enter some points in rows C9–C31 and verify C41 = SUM of those cells. Check B38 = "x" to see half-fee applied in C43 and F5.
+
+If you want, I can produce the full corrected formulas for the whole range as a single paste-ready block.

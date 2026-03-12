@@ -1,0 +1,33 @@
+Errors found
+1. A34 =A33+604 — obvious typo. This jumps the sequence from ~? to +604.
+2. A40 is a hard-coded 35 (not a formula) — it will not update if you add/delete rows.
+3. Broken chaining around the blank row 27: A28 =A26+1 rather than =A27+1 (the chain of =A(prev)+1 is fragile when you have blank/separator rows).
+
+Why this matters
+- The sequence in column A is intended to be automatic. The +604 typo and the hard-coded 35 break automatic numbering and will give wrong totals or confuse filters/sorts.
+
+Quick fixes (fast, minimal changes)
+- Fix the typo: change A34 to =A33+1.
+- Replace the hard-coded 35 in A40 with =A39+1.
+- Make A28 refer to the immediate previous cell (A27) if you want strict contiguous row-based numbering: set A28 =A27+1 and put 0/blank or correct formula in A27 as needed.
+
+Better, robust solution (recommended)
+Use a formula that generates a continuous record number based on whether the row has data (so blanks/separator rows won’t break the count). For example, in A3 enter:
+=IF($B3="","",COUNTA($B$3:$B3))
+and fill down through your data rows.
+
+How that works
+- COUNTA($B$3:$B3) counts non-empty First Name cells from the top (B3) down to the current row. For the first filled row it returns 1, next filled 2, etc. IF($B3="","",...) keeps separators blank (no number) when there is no first name. This ignores accidental formula chaining and never produces huge jumps or requires manual numbers.
+
+Alternative (if you want numbering regardless of blanks)
+- If you want a simple row-based index (i.e., number every physical row whether blank or not), use: =ROW()-2 in A3 and fill down (adjust the -2 offset so A3 becomes 1).
+
+Additional recommendation
+- Convert the range to an Excel Table (Insert > Table). Then add an index column with a formula using structured references (or the COUNTA approach above). Tables make formulas fill automatically when you add/remove rows.
+
+Summary action list (do these)
+1. Fix the obvious typo: change A34 to =A33+1.
+2. Replace A40 with =A39+1 (or apply the robust formula below).
+3. Best: in A3 put =IF($B3="","",COUNTA($B$3:$B3)) and fill down to the last row (this will automatically produce a correct, continuous numbering for filled rows).
+
+If you want, I can give the exact steps to convert to a Table and add the index column, or provide the single formula adjusted for Excel 365 (SEQUENCE) — tell me which you prefer.

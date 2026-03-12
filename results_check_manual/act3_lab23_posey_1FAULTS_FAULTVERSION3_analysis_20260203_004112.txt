@@ -1,0 +1,58 @@
+Summary of the problems I found and how to fix them (short, clear):
+
+1) Week 4 cells (E7:E11) are wrong
+- Problem: E7:E11 contain =AVERAGE(Bx:Dx) instead of the actual Week‑4 hours. That makes Week4 hours incorrect.
+- Fix: Replace each E7:E11 formula with the actual Week‑4 hours (enter the number). If you meant to calculate Week‑4 differently, put the correct value/formula — but do not use AVERAGE(B:D) here.
+
+2) Total Hours (F7:F11) exclude Week 4
+- Problem: F7:F11 use =SUM(Bx:Dx) (sums only 3 weeks). F6 is correct (=SUM(B6:E6)).
+- Fix: Change each total to include E: e.g. in F7 use:
+  =SUM(B7:E7)
+  (Do the same for F8:F11.)
+
+3) Overtime (G6:G11) formulas are inconsistent / missing Week 4
+- Problem: Some G cells use =MAX(Bx-40,0) (only week1), others sum MAX for B,C,D (missing E), so overtime is wrong or inconsistent.
+- Decide how overtime should be calculated:
+  - Weekly overtime (pay overtime for each week >40): use
+    =MAX(Bx-40,0)+MAX(Cx-40,0)+MAX(Dx-40,0)+MAX(Ex-40,0)
+  - Or monthly overtime (if you pay overtime only on the monthly total): use
+    =MAX(Fx-40,0)
+- Fix: pick one approach and apply the correct formula consistently in G6:G11. Example (weekly overtime):
+  G7 -> =MAX(B7-40,0)+MAX(C7-40,0)+MAX(D7-40,0)+MAX(E7-40,0)
+
+4) Wrong formula / character in D20
+- Problem: D20 shows a stray character "ƒ" instead of the tax formula.
+- Fix: Replace with the same tax formula as other rows, e.g.:
+  D20 -> =C20*0.15
+
+5) Wrong hourly multiply in C22
+- Problem: C22 is =(F11+G11)*782 — 782 is wrong (looks like a typo). Should multiply by the hourly rate in B22.
+- Fix: Change to:
+  C22 -> =(F11+G11)*B22
+
+6) Minor consistency issue: D17 hardcoded
+- Problem: D17 is 28.96 (hard value) while other tax cells use =C*0.15.
+- Suggestion: For consistency use:
+  D17 -> =C17*0.15
+  (Only change if you want all tax cells to calculate the same way.)
+
+7) After fixes, update Totals
+- C24, D24, E24 formulas are fine (=SUM(C17:C22); =C24*0.15; =C24-D24), they will recalculate correctly once the above are fixed.
+
+Quick checklist of corrected formulas to paste in (example for row 7 and problematic cells):
+
+- E7: (enter actual week 4 hours, e.g. 19) — do not use =AVERAGE(B7:D7)
+- F7: =SUM(B7:E7)
+- G7 (weekly overtime example): =MAX(B7-40,0)+MAX(C7-40,0)+MAX(D7-40,0)+MAX(E7-40,0)
+- D20: =C20*0.15
+- C22: =(F11+G11)*B22
+- (Optional) D17: =C17*0.15
+
+Why these fixes work (short):
+- Week‑4 must be the actual hours, otherwise totals miss or miscount a week.
+- Totals must include all weeks to be correct (SUM(B:E)).
+- Overtime should be computed consistently — either per week (sum of MAX(week-40,0)) or by monthly total (MAX(total-40,0)). Use one method for every row.
+- Replace typos / stray characters with the intended formula so taxes and pay calculate correctly.
+
+If you want, tell me:
+- Do you want overtime computed weekly or by monthly total? I can give a single formula to copy down that matches your policy.

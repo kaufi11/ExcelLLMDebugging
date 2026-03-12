@@ -1,0 +1,29 @@
+I looked through the layout and formulas you provided and found a few concrete errors / inconsistencies that will give wrong totals or make the sheet fragile. Short summary, cause, and fix below.
+
+1) Wrong SUM range in Davidson block (row 44, column F)
+- Error: F44 contains =SUM(F40:F43) — it omits row F39 (the Grade=5 row).
+- Effect: the total for Art: Studio Drawing (2001) for Davidson is under‑counted by the Grade=5 value (and any downstream % or averages based on F44 will be wrong).
+- Fix: change F44 to =SUM(F39:F43). Then copy that corrected formula pattern across the other subject columns in row 44 if needed.
+- Why this fixes it: including F39 ensures the total sums all five grade rows (5→1), matching how the rest of the table is built.
+
+2) Suspicious / incorrect partial SUM on row 11 (E11)
+- Error: E11 =SUM(E5:E7). Row 11 sits below the grade rows (rows 5–9) but this SUM only adds rows 5–7 (three grade rows) instead of 5–9.
+- Effect: either (a) E11 is an accidental leftover and may mislead, or (b) if any other formula refers to E11 it will use an incorrect subtotal.
+- Fix: if E11 is supposed to be the same "Total Exams" value, replace with =SUM(E5:E9) (or delete E11 if the cell is not needed). Audit similar cells in that row (AG11, AH11, AI11) for the same problem.
+- Why this fixes it: it restores consistency with the other total rows that sum the five grade rows.
+
+3) Hard‑coded totals instead of formulas (example: AI10 = 19)
+- Error: AI10 is a fixed number (19) while other "Total Exams" cells use SUM formulas (e.g. C10 =SUM(C5:C9)).
+- Effect: hard‑coded totals can become stale if grade counts change; they won't update automatically.
+- Fix: replace AI10 with =SUM(AI5:AI9). Scan the sheet for other manually entered totals and convert them to SUM formulas so totals always reflect grade counts.
+- Why this fixes it: consistency and automatic recalculation when underlying counts change.
+
+4) General recommendation and quick checks
+- Audit all "Total Exams" rows (every school block) to confirm each total formula covers the same five grade rows (e.g. =SUM(C5:C9), =SUM(C15:C19), etc.). Look for off‑by‑one ranges like SUM(...:row‑1) or SUM(row+1:...).
+- Quick discrepancy check: add an adjacent validation column with formula =TotalCell - SUM(gradeCells). Example (for column F Davidson): =F44 - SUM(F39:F43). Any nonzero result flags an error.
+- Use Excel’s Inconsistent Formula/Formula Auditing (Formulas → Error Checking → Inconsistent Formula) to find places where a formula pattern differs from neighbors.
+- Standardize: replace manual numbers with formulas, or convert grade rows to an Excel Table and use structured references so filling formulas is safer.
+
+If you want, I can:
+- Give the exact list of cells whose SUM ranges are inconsistent (I already flagged F44 & E11 & AI10),
+- Produce the validation formulas for every Total row so you can paste them and find all mismatches. Which do you want next?

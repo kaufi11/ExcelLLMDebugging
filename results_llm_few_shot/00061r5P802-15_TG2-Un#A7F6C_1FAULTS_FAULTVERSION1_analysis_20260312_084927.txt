@@ -1,0 +1,26 @@
+Summary of errors
+- Faulty cell: A42 — formula =A41-1 is wrong. It subtracts 1 and breaks the sequential numbering (creates a duplicate/incorrect number).
+- Possible issue: Column A gets inconsistent when rows are skipped (e.g. A52 = A49+1). That works but is fragile and will mis-number if rows are inserted/deleted.
+
+Why it’s wrong (simple)
+- A42 should add 1 to the previous row to continue the sequence. Subtracting creates a wrong ID.
+- Hard-coded jumps (pointing back two rows) make the column fragile.
+
+Fixes (short and easy)
+1) Quick fix for A42:
+   Replace formula in A42 with:
+   =A41+1
+
+2) Make column A robust (recommended):
+   - Put 1 in A2.
+   - In A3 enter and fill down:
+     =IF(C3="","",A2+1)
+   This keeps numbering continuous only where there is a Name in column C and automatically adjusts if you insert/delete rows.
+
+Why the recommended fix works
+- =A41+1 keeps a simple running sequence.
+- =IF(C3="","",A2+1) prevents numbers for empty rows and keeps the sequence stable when you insert/delete rows because each cell references the prior actual cell rather than an arbitrary earlier cell.
+
+If you want a pure position-based serial number (no blanks), use:
+=ROW()-1
+starting at row 2 (adjust the -1 if your start row changes).

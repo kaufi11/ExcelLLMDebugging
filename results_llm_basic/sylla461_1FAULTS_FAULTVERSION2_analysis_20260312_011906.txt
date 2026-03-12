@@ -1,0 +1,22 @@
+Summary of the errors I found and how to fix them
+
+1) Wrong large offset in sheet "2000" (typo)
+- Error: Cell B19 on the 2000 sheet contains the formula =B15+579. That jumps the date almost two years ahead (obviously a typo).
+- Why it's wrong: The schedule pattern is Tue (+0) → Thu (+2) → Fri (+1) → next Tue (+4). B19 should be the next Tuesday after B15, not +579 days.
+- Fix: Change B19 to =B15+4.
+- Explanation: Adding 4 days to the Friday date gives the next Tuesday. After fixing, the subsequent date formulas (B23, B27, ...) will align correctly.
+
+2) Wrong start date on sheet "1999" (copy/paste error)
+- Error: Cell B7 on the 1999 sheet is 2000-08-22 00:00:00 (the 2000 start date) instead of the 1999 course start date.
+- Why it's wrong: The whole 1999 schedule is built by relative formulas (B11 = B7+2, B15 = B11+1, etc.). If B7 is the wrong year, all derived dates are shifted to 2000 and are incorrect for 1999.
+- Fix: Replace B7 on the 1999 sheet with the correct 1999 start date (enter the correct calendar date for the term, e.g. if the term began on Tuesday Aug 24, 1999, enter 1999-08-24). Keep the existing relative formulas in the column so the rest of the dates update automatically.
+- Explanation: The schedule uses relative additions (+1, +2, +4) so only the anchor (B7) must be the correct date for the whole column to be correct.
+
+Additional recommendations
+- Search both workbooks for any other unusually large constants (like "+579") or any cell where a date was accidentally copied from a different year.
+- If you prefer to show only dates (no time), change cell number format to a Date format (not Date/Time).
+- After making the two fixes above, quickly scan the first few date rows to confirm the pattern Tue/Thu/Fri continues correctly.
+
+If you want, I can:
+- Give the single-step Excel change commands (exact cell edits) or
+- Fix the workbook for you if you upload it.

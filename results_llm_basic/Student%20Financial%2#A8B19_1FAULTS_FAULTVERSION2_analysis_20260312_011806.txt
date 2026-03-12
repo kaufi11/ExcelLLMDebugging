@@ -1,0 +1,27 @@
+I found the clear formula errors and a couple of risky hard‑coded values. Short fixes below.
+
+1) Wrong cell reference — Room & Board (2001–2002)
+- Problem: H8 is =I9+H10 (it uses I9, mixing years).
+- Effect: H8 (Room & Board for 2001–02) is wrong and that error flows into H11 and H12 (the comprehensive totals).
+- Fix: Change H8 to =H9+H10
+- Why: Room + Board for column H must use H9 (Room) + H10 (Board). Example: current incorrect H8 = I9+H10 = 1894 + 1806 = 3700; correct H8 = H9+H10 = 2058 + 1806 = 3864 (difference 164).
+
+2) Hard-coded value instead of formula — Required Fees (2002–2003)
+- Problem: G36 is a hard-coded 584 whereas every other year column uses a SUM of the fee rows.
+- Effect: Out‑of‑state totals in column G (G37) will be wrong if any fee lines change.
+- Fix: Change G36 to =SUM(G21:G29)
+- Why: Keeps the fee total dynamic. Example: SUM(G21:G29) = 623, so G36 should be 623 (not 584). That changes G37 accordingly.
+
+3) (Optional but recommended) Make F8 consistent with other columns
+- Problem: F8 is a fixed value (4892) while other columns compute Room+Board via formulas.
+- Suggestion: Replace F8 with =F9+F10 so it will update automatically if room or board values change.
+
+4) Quick check in Financial Aid 2 (data consistency)
+- Observation: Some “Average per recipient” values do not equal Total / #Recipients (e.g., Pell Grants averages). Those averages should be formulas like =C6/B6 (Total/Recipients) to avoid mismatches.
+- Action: Replace manual averages with formulas (e.g., D6 = C6/B6, D7 = C7/B7) and verify totals.
+
+General advice
+- Use Trace Precedents / Trace Dependents (Formulas tab) to see which cells feed into totals.
+- Avoid hard-coding totals that are sums of other rows — always use SUM() so changes propagate.
+
+If you want, I can give the exact list of corrected formulas for all affected cells and recalculate the impacted totals.

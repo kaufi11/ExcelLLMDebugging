@@ -1,0 +1,29 @@
+I inspected the workbook formulas. Summary of problems and suggested fixes:
+
+1) Wrong formula (typo) in Q'back!I5
+- Current formula: =G5/C5/100
+- Problem: All other rows in column I calculate touchdown percentage as G#/Attempts * 100 (e.g. I6 = G6/C6*100). I5 divides by 100 instead of multiplying, so I5 is tiny (0.000286458) instead of a percent.
+- Fix: Change to =G5/C5*100
+- Effect: This also affects Q'back!L5 (the points formula), because L5 uses I5. With the corrected I5 the L5 value should change from 93.5259453125 → ≈ 102.978125 (recalculated).
+
+2) Dependent cell Q'back!L5 is incorrect because of the I5 error
+- Current formula: =K5*8.4+H5+I5*3.3-J5*2 (this is fine); the result is wrong only because I5 is wrong.
+- Action: Recalculate L5 after fixing I5.
+
+3) Possible missing formulas in sheet "lookup"
+- Columns F ("Total /400"), G ("Average / 100") and H ("Letter Grade") appear as headers but there are no formulas / values for the student rows (A4:E9). If the sheet is intended to compute total / average / letter grade, those formulas are missing.
+- Suggestion:
+  - F4 (Total) example: =B4+C4+D4+E4
+  - G4 (Average /100) example: =F4/4
+  - H4 (Letter Grade) could use a lookup (VLOOKUP or LOOKUP) against the points-to-letter table at F11:G18 (ensure that table is sorted appropriately or use an INDEX/MATCH). Example (if table is descending thresholds or set up for VLOOKUP with approximate match): =VLOOKUP(G4,$F$12:$G$18,2,TRUE) — adjust ranges and sort/order accordingly.
+
+4) Grade threshold table (lookup!F12:G18) — potential logic issue
+- The thresholds include 45 and 50 both mapped to "F" (F12=45→"F", F13=50→"F"). This might be intentional, but it is an unusual ordering; ensure the threshold list order (ascending vs descending) matches the lookup function you plan to use (VLOOKUP with TRUE requires the first column sorted ascending). If you intend to use VLOOKUP(...,TRUE) with thresholds, the thresholds must be sorted ascending and represent the lowest score that maps to the letter grade.
+
+Other notes (no action required unless desired)
+- All other formulas in Q'back (columns H, I (except I5), J, K, L) appear consistent and correctly reference their row inputs.
+- Minor: headers contain some leading spaces (e.g., " TD" in G4) — cosmetic only.
+
+If you want, I can:
+- Provide the exact corrected formulas for the lookup sheet (Total/Average/Letter) and an adjusted, properly sorted grade-threshold table.
+- Recalculate and list the corrected values for Q'back row 5 (I5 and L5) and any other cells affected.

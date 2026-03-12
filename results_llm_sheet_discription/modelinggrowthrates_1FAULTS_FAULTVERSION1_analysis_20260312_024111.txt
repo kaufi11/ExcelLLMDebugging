@@ -1,0 +1,25 @@
+Short answer — main error and fix
+
+1) Error found
+- Cell C12 on the Data sheet has a hard-coded "56*$C$6" instead of using the corresponding random error in column A (A12). In other words C12 = $C$4*(1+$C$5)^B12 + 56*$C$6 instead of ... + A12*$C$6.
+
+2) Why this is wrong
+- That hard-coded 56 produces an incorrect Q for time = 4 (it adds 56 instead of the actual random error for that row). This single bad data point will bias summaries and regression results (especially the fits to Q), and can give misleading residuals/statistics.
+
+3) Example (numbers)
+- Correct exponential part at t=4: 100*(1.04)^4 = 116.985856
+- With the 56 bug: C12 = 116.985856 + 56 = 172.985856
+- With the intended A12 (1.733133...): C12 should be ≈ 116.985856 + 1.733133 = 118.718989
+- Difference between wrong and right ≈ 172.986 − 118.719 = 54.267 (large, so it materially affects fits)
+
+4) Fix (step-by-step)
+- Edit C12 and replace the "56" with A12. Set the formula to:
+  =$C$4*(1+$C$5)^B12 + A12*$C$6
+- Then copy/fill that corrected formula down for the whole C column (C8:C58) to ensure every row references its own A-value.
+- Recalculate / refresh the Regression sheets (Linear, Quadratic, ln(Q)=f(time)).
+
+5) Additional recommendations
+- Scan column C formulas for any other hard-coded constants (use Find for patterns like "+ 56*" or search for numbers inside formulas).
+- If you use additive errors but plan to log-transform Q, ensure Q>0 for all rows (otherwise LN will error). If negative/zero Q can occur consider multiplicative errors (Q*A*exp(error)) or remove/handle problematic observations.
+
+If you want, I can give the exact corrected formulas to paste, or run through expected changes in the regression outputs after you fix C12.

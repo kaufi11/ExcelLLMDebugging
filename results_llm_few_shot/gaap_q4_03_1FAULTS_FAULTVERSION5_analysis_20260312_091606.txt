@@ -1,0 +1,39 @@
+Summary — main errors I found and quick fixes:
+
+1) Division-by-zero errors in percent-change cells (causes #DIV/0! or incorrect results)
+- Where: Q1 sheet H9 and H12 (and any H-cells that divide by a prior-year cell that can be zero).
+- Problem: Formula =((D9-F9)/F9)*100 divides by F9 (or F12) when that prior-year value = 0.
+- Fix: Use a guard to avoid division by zero. Example:
+  =IF(F9=0,"", (D9-F9)/F9*100)
+- Why: Returns blank instead of an error when the denominator is zero; otherwise gives the percent change.
+
+2) Typo in Q2 percent-change multiplier
+- Where: Q2 sheet H9
+- Problem: Formula uses *397 instead of *100 -> wrong percent value.
+- Fix: Change to:
+  =IF(F9=0,"",(D9-F9)/F9*100)
+- Why: Multiplies by 100 to convert the fractional change to percent.
+
+3) Cell stored as text or incorrect literal formula (not evaluated)
+- Where: Q3 2003-4 Qtr sheet L11 shows "FORMULA =-80+40" (appears as text rather than result).
+- Problem: The expression is not evaluated or is entered as a label instead of an actual formula/value.
+- Fix: Enter the real formula or value. If intended result is -40, put:
+  =-80+40
+  or better, reference the source cells (e.g. =L11_source - L11_adjustment).
+- Why: Ensures Excel calculates the numeric result and downstream sums/percentages use a number.
+
+4) Hard-coded zeros where percent-change should be calculated
+- Where: Several sheets H11 show 0 instead of a formula (e.g., Q4 H11 = 0).
+- Problem: Manual zeros hide the actual percent change (inconsistent with other rows).
+- Fix: Replace with the percent-change formula (with divide-by-zero guard), for example:
+  =IF(F11=0,"",(D11-F11)/F11*100)
+- Why: Keeps changes automated and accurate when input numbers change.
+
+Notes and best practices
+- Use consistent percent-change formulas across all H-columns:
+  =IF(prior_cell=0,"",(current_cell-prior_cell)/prior_cell*100)
+  or =IFERROR((current_cell-prior_cell)/prior_cell*100,"")
+- Remove leading + in formulas (e.g., =+(...)) — it’s harmless but unnecessary.
+- Where numbers represent "subtract" items (negative capital expenditures), SUM(D9:D12) is OK because the items are negative; just ensure the sign convention is consistent.
+
+If you want, I can produce the exact corrected formulas for each H and L cell across all sheets and check the summary totals afterwards. Which sheets should I correct first?

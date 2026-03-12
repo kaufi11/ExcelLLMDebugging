@@ -1,0 +1,24 @@
+Summary — two errors found:
+
+1) Sheet "2000" — wrong sign in one date formula
+- Faulty cell: B19 (shows FORMULA =B15-4)
+- Problem: That subtracts 4 days, moving the date backward instead of to the next Tuesday. All other date steps use +1, +2 or +4 to advance days/weeks.
+- Fix: Change formula to =B15+4
+- Why this fixes it: It advances from the previous Friday (B15) by 4 days to the next Tuesday, matching the schedule pattern.
+
+2) Sheet "1999" — wrong start year/date
+- Faulty cell: B7 (currently contains 2000-08-22 00:00:00)
+- Problem: The 1999 worksheet’s seed date uses year 2000, so every dependent date on that sheet is one year (or otherwise) off.
+- Fix: Set B7 to the correct 1999 start date (based on A7 = T). Use 1999-08-24 00:00:00 (Tuesday) or whatever correct seed date you intended.
+- Why this fixes it: All other date cells are formulas that add fixed offsets to B7, so correcting the seed date corrects the whole sheet.
+
+Quick steps to apply fixes
+- For B19 on sheet "2000": double-click B19 (or edit bar) and replace -4 with +4, press Enter.
+- For B7 on sheet "1999": enter the correct date (1999-08-24 00:00:00) and press Enter.
+
+Suggestion to catch similar issues
+- Search for formulas with unusual negative offsets (e.g., -4) in the date columns.
+- Verify the top/seed date on each year sheet is the intended year — changing it will cascade correctly if formulas are consistent.
+- Optionally use Excel’s Trace Dependents/Precedents or Evaluate Formula to inspect date chains.
+
+If you want, I can produce a short script or Excel Find/Replace to locate all cells with “-4” or check the first date in every sheet.

@@ -1,0 +1,37 @@
+Summary — main errors found and fixes (short & clear):
+
+1) FTEE Calculation — wrong divisor cell
+- Faulty cell: C14
+- Error: Uses 302/24 instead of dividing the Hours in B14. That hard-coded 302 is wrong.
+- Fix: replace with =B14/24
+- Why: C-column is FTEE = Hours / 24. Using B14 ensures it uses the college’s hours.
+
+2) Extraneous “+1” added in several places (inflates totals by $1)
+- Faulty cells (examples): Revenues sheet C11 =141577402+1 ; General State Financial Aid B21 =3684419+1 ; FTEE sheet E27 =SUM(E11:E26)+1
+- Error: the “+1” is accidental and adds one dollar (or one unit) to those items and to totals.
+- Fix: remove “+1”. e.g. C11 -> =141577402 (or better: reference the proper source cell), B21 -> =3684419, E27 -> =SUM(E11:E26)
+- Why: that extra +1 distorts totals and percentages.
+
+3) Hard-coded addition instead of proper cell references or separate rows
+- Faulty cell: Revenues C9 =9432730+111410104
+- Error: two amounts are hard-added in one cell (hard to audit). If those are two separate components they should be in separate cells and summed.
+- Fix: put each component in its own cell (e.g. C9 and C10) and use =SUM(C9:C10) or, if it really is a single value, replace with the single summed number (=120842834).
+- Why: keeps data auditable and prevents mistakes when updating components.
+
+4) Sum ranges may not match the actual data rows (possible omissions or blanks)
+- Examples to check and correct: Revenues B15 =SUM(B9:B14) and C15 =SUM(C9:C14) — but data appears in rows 9–13; Expenditures by Function B19 =SUM(B9:B18) / C19 =SUM(C9:C18) — data appears to row 17; Expenditures by Category B15 =SUM(B9:B14) / C15 =SUM(C9:C14) — data appears to row 13.
+- Error: totals include wrong range endpoints (either include blank rows or omit the last real data row).
+- Fix: adjust each SUM to exactly cover the data rows (for example if data is B9:B13 use =SUM(B9:B13)). Better: convert each region to an Excel Table or use named ranges so totals auto-expand when you add rows.
+- Why: ensures totals and percentages are correct and update automatically.
+
+5) Leading plus signs (e.g. =+C9/$C$15)
+- Not an error technically — Excel accepts + as unary plus. No action required. But you can remove the leading + for clarity: use =C9/$C$15.
+
+Quick checklist to apply after fixes
+- Remove all accidental “+1” additions.
+- Fix C14 to =B14/24.
+- Replace any hard-coded sums with proper cell references or separate component cells + SUM.
+- Adjust SUM ranges so they exactly match the items (or use Tables).
+- Recalculate and verify that percentage columns sum to ~100% (allowing rounding differences).
+
+If you want, I can give the exact corrected formulas for each sheet (row-by-row) or provide a patched version of the workbook showing the changes. Which would you prefer?

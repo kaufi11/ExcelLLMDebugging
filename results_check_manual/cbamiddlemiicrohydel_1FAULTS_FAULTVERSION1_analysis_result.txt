@@ -1,0 +1,85 @@
+I inspected the workbook formulas you sent (sheet "CBA" and "Individ. Hh. Analysis") and found several formula mistakes and a few inconsistencies that will affect the computed present values, NPV and B/C ratio. Below I list the problems, explain the impact, and give exact corrective suggestions.
+
+Summary of the main errors (high priority)
+1) Wrong discount multiplier in the costs discount-factor row (row 19)
+- Cell X19 contains: =W19*(438/438.4382)
+- Problem: this is not the normal 1/(1+0.12) factor and breaks the discount-factor chain for the costs. From X19 onward the cost discount factors are wrong (too large), so present value of costs (row 20) from year X onward is overstated. This directly affects PV(costs), NPV and B/C.
+- Fix: replace X19 with the correct factor, e.g.
+  X19 = W19*(1/1.12)
+  (and fill AA19 = X19*(1/1.12) etc., or simply rebuild the whole row as G19=1; H19=G19/1.12; I19=H19/1.12; ...)
+
+2) Discount-factor rows for costs and benefits are inconsistent
+- You have a discount-factor row for costs (row 19) and a separate one for benefits (row 31). After the error above the two rows diverge (row 31 is internally consistent; row 19 contains the anomaly).
+- Impact: PV of costs and PV of benefits are being discounted with different sequences (due to the X19 error) which invalidates the B/C and NPV comparison.
+- Fix: correct row 19 as above. Alternatively, compute the discount factors once (e.g. keep row 31) and have all PV calculations reference the single authoritative DF row (change PV formulas in row 20 to use row 31 rather than row 19). Recommended: fix row 19 or make all PV formulas reference row 31 to avoid duplication.
+
+3) Environmental clean-up (AA17) and scrap value (AA29) use G-column values (year 2000) instead of the 2020 column where those items are placed
+- AA17 contains: =0.1*G5+0.1*G6
+- AA29 contains: =0.02*G5+0.02*G6
+- Problem: these two cells are located in column AA (year 2020) but they use G5/G6 (year 2000 values). Either they should use AA5/AA6 (the 2020-year equivalents), or the formulas should be based on the intended base-year totals (depends on your intent). Also the row label says "cost of environmental clean up in year 2020" and "scrap value (2% of total cost of the project)" — those should likely be calculated from the year-2020 project values (AA5, AA6 or AA total).
+- Fix (if you intended "10% / 2% of the project values in 2020"):
+  - AA17 = 0.1*AA5 + 0.1*AA6
+  - AA29 = 0.02*(AA5 + AA6)   (or 0.02*SUM(AA5:AA6) )
+- If scrap / clean-up should be 10%/2% of the entire project cost (not only the two lines), use =0.1*SUM(AA5:AA17) and =0.02*SUM(AA5:AA17) respectively (or whichever rows form the total project cost).
+
+Other formula inconsistencies and likely mistakes (medium priority)
+4) Scrap value definition vs formula
+- Label: "scrap value (2% of total cost of the project)"
+- Current formula (AA29) uses only G5 and G6. If scrap is truly 2% of the entire project, AA29 should use the sum of all project cost components (in the year you want the scrap to occur). Recommend: AA29 = 0.02*SUM(AA5:AA17) (if scrap is 2% of total project cost in year 2020).
+
+5) Household-wiring cost inconsistent unit used in Q10
+- Most wiring costs use 4297 (assumption B49). Q10 is =4275*7.5 (uses 4275 instead of 4297).
+- This is inconsistent — check source and change Q10 to =4297*7.5 if 4297 is the intended cost per household in the Q (year) entry.
+
+6) Use of single vs multiple SUM references
+- Many rows use C = SUM(G:AA) of the row to get totals across years (consistent), but a few "year-column" items compute values referencing G (base year) when they appear in AA (2020). See points 3 and 4 above. Audit any formula placed in year columns to ensure they reference the correct year values (e.g., AA cells should not reference G unless intentionally referencing the original value).
+
+7) In "Individ. Hh. Analysis" sheet: inconsistent conversion/deflator factors (AE column)
+- AE3, AE7, AE8, AE10 use different divisors (0.797, 0.712, 0.797, 0.712 etc.) to convert historic amounts (2500, 4800, 4200, 5000) into present-year numbers. That may be correct if each household cost occurred in a different year, but it is not documented. Suggest:
+  - Document which base year each divisor corresponds to (and why different ones are used).
+  - If all were from the same base year, standardize the deflator.
+- Also AE13 uses =AVERAGE(AE3:AE10) — ensure blanks are intended to be included/excluded.
+
+Minor / stylistic suggestions
+8) Single authoritative discount-factor row
+- To avoid divergence, compute discount factors only once in one row (e.g. row 31) and make all PV rows reference that row. For example in row 20 use =G18*$G$31, =H18*$H$31, etc., or simply =G18*G$31 if you choose row 31 as authority; this eliminates copy-paste errors.
+
+9) Clear documentation of what years inputs come from
+- Some conversion factors (240000/0.4825, 21780/0.4825) are used to convert 1993 amounts into 2000 prices — good. But other conversions in "Individ. Hh. Analysis" use different denominators; it's important to document the base year for each conversion so the spreadsheet is auditable.
+
+10) Check empty cells in per-year rows
+- For a few items the cost/benefit starts in year H (2001) and G (2000) is zero, which is valid, but confirm this is intended (e.g., G30 = SUM(G23:G29) equals 0 because benefits start in year 2001).
+
+What to change (specific formula replacements)
+- Cell X19: change from =W19*(438/438.4382) to:
+  =W19*(1/1.12)
+  then copy across to Y19 and AA19 (or rebuild the whole row as G19=1; H19=G19/1.12; I19=H19/1.12; etc.)
+
+- Cell AA17 (if the cleanup is 10% of the YEAR-2020 project cost entries in AA):
+  AA17 = 0.1*AA5 + 0.1*AA6
+  (or, if it's 10% of total costs in 2020: AA17 = 0.1 * SUM(AA5:AA17) or the rows that are construction cost)
+
+- Cell AA29 (if scrap is 2% of project cost in 2020):
+  AA29 = 0.02*(AA5 + AA6)
+  (or AA29 = 0.02*SUM(AA5:AA17) if intended to be 2% of total project cost)
+
+- Cell Q10 (if you intend to use Rs. 4297 per household everywhere):
+  Q10 = 4297 * 7.5   (instead of 4275*7.5)
+  (Verify whether 4275 was a deliberate, different-price-year figure — if so, document.)
+
+- Consider referencing discount factors in PV rows to a single DF row:
+  Example change in G20..AA20:
+  G20 = G18 * G$31    (so PV of costs uses row 31 DF)
+  H20 = H18 * H$31
+  etc.
+  Or fix row 19 as above and keep current references, but do not have two independently calculated DF rows.
+
+Notes about impact
+- The most impactful bug is the single incorrect multiplier in X19: it causes discount factors for costs from year X onward to be too large, increasing PV(costs) and therefore lowering reported NPV and B/C. Correcting that will change the PV(costs) (row 20 total), the NPV (row 39) and B/C (row 38). PV(benefits) appears to be computed with the correct DF sequence (row 31) so fixing the costs DF will align the two.
+
+If you want, I can:
+- (a) produce the corrected formulas for each affected cell (I listed the main ones above),
+- (b) recompute the PVs / NPV / B/C after applying those fixes and report the corrected numbers,
+- (c) scan for any other cells that reference the faulty discount factors and update them to reference a single DF row.
+
+Which of the follow-ups would you like me to do?

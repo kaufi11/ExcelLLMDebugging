@@ -1,0 +1,28 @@
+Here are the concrete errors I found, why they’re wrong, and how to fix them. Short and actionable.
+
+1) Problem: Many “Variance” cells in STMT OF OPERATIONS column E use the wrong sign
+- Faulty examples: E7 (=C7–A7), E9 (=C9–A9), E17:E40 (=C#–A#), E41 (=C41–A41), E43 (=C43–A43), etc.
+- Error type: Sign / logical error (formula reversed)
+- Why: Variance should be Actual minus Forecast. These are Forecast minus Actual, which flips the sign and makes variances meaningless.
+- Fix: Change those formulas to =A#-C# (Actual minus Forecast). Example: E7 => =A7-C7, E9 => =A9-C9, E17 => =A17-C17, etc.
+- Effect: Restores correct positive/negative direction for variances and keeps totals consistent.
+
+2) Problem: Typo in Forecast Gross Profit (STMT OF OPERATIONS C10)
+- Faulty formula: C10 =C8-26
+- Error type: Typo / wrong reference
+- Why: “-26” is a hard-coded number/typo; it should subtract Forecast COGS (C9).
+- Fix: C10 => =C8-C9
+- Effect: Corrects forecast gross profit and fixes any downstream totals that use C10/C15.
+
+3) Problem: Missing / blank long‑term post‑petition debt cell on BALANCE SHEET (J66)
+- Faulty symptom: J67 = J65 + J66 will be wrong if J66 is blank or not linked.
+- Error type: Omission / broken linkage
+- Why: Total post‑petition liabilities (J67) depends on J66 (long‑term debt net of current portion). If J66 is empty the liability total is understated.
+- Fix: Populate J66 with the correct value or link it to the schedule where long‑term debt is reported (example: J66 = 'SCHEDULE PG3'!<cell-with-long-term-debt>), or enter the manual number.
+- Effect: Restores correct total liabilities (J67), total liabilities+equity (J83) and all SUMMARY values that link to these.
+
+Notes / sanity checks
+- After fixing the above, recalc/check dependent totals: STMT OF OPERATIONS totals (A15/A41/A51/A53 etc), BALANCE SHEET totals (J15, J28, J37, J65, J67, J73, J82, J83) and SUMMARY cells (F15, F16, F17, F18, F26, etc).
+- =+A51-C51 (leading +) is harmless; you can leave it or remove the plus.
+
+If you want, I can generate the exact corrected formulas for every affected E cell (E6:E50) and produce a simple script / list you can paste or apply by range. Which would you prefer?

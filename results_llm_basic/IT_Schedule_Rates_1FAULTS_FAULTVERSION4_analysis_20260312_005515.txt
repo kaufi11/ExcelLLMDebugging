@@ -1,0 +1,27 @@
+Summary of the error
+- On sheet "EER SITE", row 21 (Functional Analyst, Senior) cell E21 is wrong. It contains =D22*1.04 (it points to the next row) instead of using the same row. This will give the wrong Year‑3 rate for that job.
+
+Why it’s wrong
+- E21 should compound the Year‑2 value for row 21 (D21). By referencing D22 you used the Year‑2 value for the Help Desk Manager row, producing an incorrect result and breaking the chain for subsequent years.
+
+How to fix it (quick)
+1. Edit E21 and change the formula to:
+   - =D21*1.04
+   - (or better: =D21*(1+$C21) so the escalation uses the C column cell)
+2. Copy E21 across to F21, G21, H21 (or re-fill those cells with the same correct chain formula).
+
+How to prevent this class of error
+- Use row-based escalation references instead of hard-coded 1.04. Example pattern for each row n:
+  - Dn: =Bn*(1+Cn)
+  - En: =Dn*(1+Cn)
+  - Fn: =En*(1+Cn)
+  - etc.
+  That way if you change Cn the whole row updates.
+- Use Excel tools to find similar mistakes:
+  - Show formulas (Ctrl+`) to inspect formulas visually.
+  - Trace Precedents / Trace Dependents to see cross-row references.
+  - Use consistent fill/drag to copy formulas across rows rather than manual typing.
+
+If you want, I can:
+- Provide a single formula you can fill across (using relative/absolute references) so you can drag across all rows safely.
+- Scan the rest of the workbook for other misreferences if you upload it or paste formulas showing errors.

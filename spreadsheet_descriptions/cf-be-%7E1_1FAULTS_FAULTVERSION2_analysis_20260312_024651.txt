@@ -1,0 +1,58 @@
+Summary of workbook structure and key formulas (concise)
+
+Overall layout (common to Year 1 and Year 2)
+- Purpose: Monthly Cash Flow Projection for a 12‑month period (months in columns C:N), with TOTAL in column O and % of Sales in column P.
+- Rows grouped into numbered sections:
+  1) Cash on Hand (beginning of month) — row 6
+  2) Cash Receipts (rows 8–13) with subitems a–f and O column totals
+  3) Total Cash Receipts — row 14 (monthly SUM of rows 8:13)
+  4) Total Cash Available — row 15 = beginning cash + receipts
+  5) Cash Paid Out — many expense rows (materials, labor, payroll, admin, utilities, etc.) rows 17–53
+     - Subtotals:
+       - Variable expenses subtotal: row 23 (SUM of 17:22)
+       - Fixed expenses subtotal: row 47 (SUM of 24:46)
+       - Total operating expenses: row 48 = row23 + row47
+     - Additional outflows: loan principal, capital purchases, reserve, owner withdrawal (rows 49–53)
+  6) Total Cash Paid Out — row 54 (SUM of outflow rows 48:53)
+  7) Cash Position End of Month — row 55 = Total Cash Available (row15) − Total Cash Paid Out (row54)
+- Essential Operating Data (rows 56–63): Sales Volume, AR, Bad Debt, Inventory, AP, Depreciation.
+- Contribution margin and break‑even:
+  - Total Fixed Costs (B63) = +O54 − O23
+  - Contribution Margin (B64) = 1 − P23
+  - Break‑even Sales (F64) = (O54 − O23) / B64
+
+Key formula patterns
+- Monthly totals use SUM across the month column ranges (e.g., O8: O13 summed into O14).
+- Column O generally contains row totals across months: O# = SUM(C#:N#).
+- Column P generally shows each row as a percent of sales using O$57 as denominator: P# = O# / O$57.
+- Many single‑cell subtotals use SUM() around arithmetic (e.g., B15 = SUM(B6+B14)) — functional but unnecessary.
+- Year 1 row55 (end cash) formulas: B55:N55 = row15 − row54 for each month (some formulas use SUM wrappers).
+- Year 2 starting cash (B6) pulls Year 1 N55: B6 = 'Year 1'!N55; subsequent months in Year 2 are chained from prior month end cash.
+
+Variance / Quarter sheets (Var,Y1,Q1 ... Q4 and quarter-specific variants)
+- Purpose: Variance analysis comparing Actuals to Year 1 projections and computing % variances.
+- Structure: For each month column there are Budget (Year 1 value), Actual, and Variance columns. Variance formulas are (Actual − Budget) / Budget (often written as =(D8-C8)/C8 or similar).
+- Most variance sheets fetch budget numbers directly from 'Year 1' (e.g., C8 = 'Year 1'!C8) and compute actuals & percent variance in adjacent columns.
+- Quarter sheets map sets of months to quarter comparisons (Q1..Q4 and Q2–Q4 sheets follow same pattern).
+
+Notable items / possible issues to review
+- Several formulas use SUM() around simple arithmetic (e.g., SUM(B6+B14)) — no error but unnecessary.
+- A few apparent mistakes/oddities:
+  - Year 1 K55 formula shows SUM(K15-90) — likely a typo; should be SUM(K15-K54) or K15-K54.
+  - Year 2 P57 formula is =+O57/O57 which always yields 1 — probably intended to be =O57/O$57 or a different reference.
+  - Some payroll / expense row references in Year 2 are misaligned (e.g., row20 uses O22 in Year 2 listing) — check row mapping.
+  - Many formulas include a leading "+" or use SUM on single differences — these are harmless but inconsistent style.
+- Percent of sales denominators use O$57 (total sales in row 57) — ensure O57 is populated correctly each year; otherwise P‑column %s will be wrong.
+
+Sheets present
+- Year 1 — full 12‑month projection (master)
+- Year 2 — second year projection, seeded from Year 1 ending cash
+- VARIANCE ANALYSIS (Var,Y1,Q1) — variance analysis for months 1–3 (Q1)
+- Var,Y1,Q2 — variance analysis for months 4–6
+- Var,Y1,Q3 — variance analysis for months 7–9
+- Var,Y1,Q4 — variance analysis for months 10–12
+- Several additional quarter mapping sheets that pull specific Year 1 months and compute variances across different month groupings (Q2, Q3, Q4 layouts).
+
+If you want, I can:
+- Produce a short list of cells to correct (typos) and a cleaned set of corrected formulas.
+- Generate a compact map (range references) for each section to aid auditing.

@@ -1,0 +1,96 @@
+High-level overview
+- Workbook is a Chapter 11 Monthly Operating Report template. It consolidates financial schedules (balance sheet, operations, cash receipts/disbursements, cash flows) and supporting schedules (PG1–PG3) into a SUMMARY sheet that reports current month, prior month and petition-date positions.
+
+Sheet-by-sheet summary (purpose, layout, key formulas / links)
+
+1) SUMMARY
+- Purpose: One-page report of key financial status and checkboxes/qualitative questions.
+- Layout: Header (court/case info), numbered items 1–15, three-column snapshot (Current Month, Prior Month, As of Petition Filing) in F/H/J ranges.
+- Key links: 
+  - Current assets F15 = 'BALANCE SHEET'!J15
+  - Total assets F16 = 'BALANCE SHEET'!J37
+  - Current liabilities F17 = 'BALANCE SHEET'!J65
+  - Total liabilities F18 = 'BALANCE SHEET'!J73
+  - Receipts/disbursements: F20 = 'STMT OF CASH REC AND DISB'!F17, F21 = 'STMT OF CASH REC AND DISB'!F47; cumulative equivalents pull H/H or J/H cells on same cash sheet
+  - Profit/(Loss) F26 = 'STMT OF OPERATIONS'!A53
+  - A/R F27 = 'BALANCE SHEET'!J9; post-petition liabilities F28 = 'BALANCE SHEET'!J67
+  - Past-due payables F29 = 'SCHEDULES PG1'!L8
+
+2) STMT OF OPERATIONS (Statement of Operations)
+- Purpose: Monthly income statement showing Actual, Forecast, Variance, Cumulative (Case to Date), Next Month Forecast.
+- Layout: Revenues then Expenses, numbered rows with subtotals and reorganization items.
+- Key formulas:
+  - Variance columns compute differences (e.g., E6 = A6 - C6).
+  - Gross Sales → Net Sales → Gross Profit flows using SUM and subtracts (e.g., A10 = A8 - A9).
+  - Cost of goods sold links to supporting schedule: A9 = +'SCHEDULES PG1'!L31.
+  - Net profit before taxes and final Net Profit rows are sums/differences across subtotals (A51, A53).
+- Many rolling cumulative/forecast columns mirror Actual column calculations.
+
+3) BALANCE SHEET
+- Purpose: Assets, Liabilities and Equity (market values for property & equipment).
+- Layout: Current Assets (J7:J14), Property & Equipment (J17:J27), Other Assets (J30:J35), totals and Liabilities (current & post-petition) plus Pre-Petition claim totals and Equity.
+- Key formulas/links:
+  - Total Current Assets J15 = SUM(J7:J14)
+  - Property & Equipment total J28 = SUM(J17:J27)
+  - Total Assets J37 = J15 + J28 + J36
+  - Current Liabilities total J65 = SUM(J51:J64)
+  - Total Post-Petition Liabilities J67 = J65 + J66
+  - Pre-petition claims pulled from SCHEDULE PG3: J69 = 'SCHEDULE PG3'!I29, J70 = 'SCHEDULE PG3'!I30+'SCHEDULE PG3'!I31, J71 = 'SCHEDULE PG3'!I32
+  - Total Liabilities J73 = J67 + J72
+  - Total Equity J82 = SUM(J75:J81); Total Liabilities & Equity J83 = J73 + J82
+
+4) SCHEDULES PG1 (Schedule A & B)
+- Purpose: Accounts receivable/payable aging and inventory / COGS detail.
+- Layout: AR aging (H6:H9), AP aging (J6:J9), past-due post-petition L8, inventory components and COGS calculation area.
+- Key formulas/links:
+  - AR net H12 = H10 - H11; H10 = SUM(H6:H9)
+  - AP total J10 = SUM(J6:J9); Past due L8 = SUM(J7:J9)
+  - Inventory total F32 = SUM of inventory category end balances
+  - COGS L31 = SUM(L16:L24) - SUM(L27:L29) which feeds STMT OF OPERATIONS A9
+
+5) SCHEDULES PG2 (Schedule C & D)
+- Purpose: Real property and other depreciable assets schedules with cost and market value detail.
+- Layout: Breakouts for Real Property (G3:G8), Machinery & Equipment, Furniture & Fixtures, Office Equip, Leasehold Improvements, Vehicles with subtotals.
+- Key formulas:
+  - Totals per category = SUM of detail rows (e.g., G9 = SUM(G3:G8)); these feed BALANCE SHEET J17:J22 (e.g., BALANCE SHEET J17 = 'SCHEDULES PG2'!G9).
+
+6) SCHEDULE PG3 (Schedule E, F, H)
+- Purpose: Tax aging (federal/state/local), pre-petition claim recapitulation, bank account recapitulation.
+- Layout: Tax aging columns (0-30,31-60,61-90,91+, total) with row-level totals and sums; Schedule F guidance; Schedule H lists bank accounts and end balances.
+- Key formulas/links:
+  - Tax totals computed by column (e.g., C12 = SUM(C6:C11)); K totals are sums across aging buckets
+  - Pre-petition totals feed BALANCE SHEET J69:J71
+  - Bank accounts: C46 = C45+E45+G45+I45 used for total funds on hand
+
+7) STMT OF CASH REC AND DISB (Statement of Cash Receipts & Disbursements)
+- Purpose: Primary cash receipts and cash disbursements schedule and month / cumulative totals.
+- Layout: Cash receipts rows F6:F16 (Actual Current Month), cash disbursements F19:F46, totals and beginning/ending cash.
+- Key formulas:
+  - Total Cash Receipts F17 = SUM(F6:F16) (and H17 cumulative)
+  - Total Cash Disbursements F47 = SUM(F19:F46) (and H47 cumulative)
+  - Net Increase F48 = F17 - F47; Cash End F50 = F49 + F48
+- These totals are pulled into SUMMARY (F20,F21,F23 etc.)
+
+8) STMT OF CASH FLOWS
+- Purpose: Optional detailed cash flow statement (Operating, Reorganization, Investing, Financing) with Actual and Cumulative columns.
+- Layout: Operating activity inflows/outflows (G5:G33), reorganization items (G36:G39), investing (G43:G45) and financing (G48:G52).
+- Key formulas:
+  - Operating net G34 = G5+G6+G7 - SUM(G8:G33)
+  - Reorg net G40 = G36 - G37 - G38 - G39
+  - Net cash by type summed into G54; Ending cash G56 = G54 + G55
+- Links: mirrors STMT OF CASH REC AND DISB totals if populated.
+
+Data flow / key dependencies
+- Summary pulls top-line balances from BALANCE SHEET, STMT OF CASH REC AND DISB and STMT OF OPERATIONS.
+- BALANCE SHEET asset and liability line-items derive from SCHEDULES PG1–PG3 and PG2 (property, AR, AP, pre-petition claims).
+- STMT OF OPERATIONS uses COGS from SCHEDULES PG1 L31 and aggregates to Net Profit A53 which the SUMMARY references.
+- Cash receipts/disbursements sheet drives SUMMARY cash lines and cash balances; STMT OF CASH FLOWS reconciles cash by activity.
+
+Notes on inputs vs formulas
+- Many detail rows (AR/AP aging, inventory line-item balances, schedule details, cash receipts/disbursements rows, property cost/market values, tax aging buckets) are intended as manual inputs.
+- Most totals, subtotals and inter-sheet rollups are automated via SUM and direct cell references (explicit formulas shown throughout).
+
+If you want, I can:
+- Map every live data-entry cell range,
+- Produce a dependency diagram, or
+- Validate that BALANCE SHEET balances (Assets = Liabilities + Equity) with current sample values.

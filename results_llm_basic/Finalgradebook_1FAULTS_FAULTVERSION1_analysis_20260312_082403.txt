@@ -1,0 +1,65 @@
+Summary — main problems
+1. Mixed scales (0–100 vs 0–1): homework/test averages are on a 0–100 scale but midterm/final/participation are entered as decimals (0.88 etc). That makes the Final Grade math wrong and VLOOKUP fail (lookup table K is 0–100).
+2. Wrong weight multipliers in Final Grade formulas: some I formulas use 25 or 12.5 instead of decimal weights 0.25 and 0.125.
+3. Bad/typo references in Sheet3:
+   - Many P (student average) formulas reference wrong rows (L40, L41 …) instead of L4, L5 …
+   - One typo: F14 =510/$F$24 should be =E14/$F$24.
+   - Many AVERAGE formulas in Sheet3 refer to wrong cells (so test averages are wrong).
+4. Summary range errors on Sheet1: Min/Max/Average ranges are inconsistent / off-by-one (e.g., C20 uses C4:C18, C21 uses MAX(C5:C19) etc).
+
+What to do (simple, step-by-step fixes)
+
+A — Standardize scales (recommended)
+- Make all component scores use the same scale (recommend 0–100 so they match the K lookup thresholds).
+  - In Sheet3 convert test-percent formulas to percentages (0–100). Replace every D/F/H/J/L formula with:
+    D4 = C4 / $D$24 * 100
+    F4 = E4 / $F$24 * 100
+    H4 = G4 / $H$24 * 100
+    J4 = I4 / $J$24 * 100
+    L4 = K4 / $L$24 * 100
+  - Copy those down for all student rows.
+  - Fix the typo F14 -> =E14/$F$24*100 (instead of 510).
+  - Fix P4 (and the P column) to average the same-row percent cells:
+    P4 = AVERAGE(D4, F4, H4, J4, L4)
+    Copy down.
+
+B — Fix the Final Grade formula on Sheet1
+- Use decimal weights that add to 1 (12.5% = 0.125, 25% = 0.25). Example corrected formula for I3 (and copy down):
+  I3 = (C3 * 0.125) + (D3 * 0.25) + (E3 * 0.25) + (F3 * 0.25) + (G3 * 0.125)
+- Important: After step A, C3, D3, E3, F3, G3 must all be on 0–100. If your E/F/G are still entered as decimals (0.88), change them to 88 (or format as % but ensure calculations expect the 0–100 scale).
+
+C — Fix Sheet1 summary ranges
+- High Grade row 19: use MAX over the student rows C3:C17 etc:
+  C19 = MAX(C3:C17)
+  D19 = MAX(D3:D17)
+  E19 = MAX(E3:E17)
+  F19 = MAX(F3:F17)
+  G19 = MAX(G3:G17)
+  I19 = MAX(I3:I17)
+- Low Grade row 20:
+  C20 = MIN(C3:C17)
+  D20 = MIN(D3:D17)
+  E20 = MIN(E3:E17)
+  F20 = MIN(F3:F17)
+  G20 = MIN(G3:G17)
+  I20 = MIN(I3:I17)
+- Class Average row 21:
+  C21 = AVERAGE(C3:C17)
+  D21 = AVERAGE(D3:D17)
+  E21 = AVERAGE(E3:E17)
+  F21 = AVERAGE(F3:F17)
+  G21 = AVERAGE(G3:G17)
+  I21 = AVERAGE(I3:I17)
+
+D — VLOOKUP (letter grade)
+- The VLOOKUP in J uses K5:L17 as lookup table. That table must be sorted ascending by the numeric cutoffs in K (it appears OK). After you make I values 0–100 (step A+B), the VLOOKUP will return correct letters.
+
+Why these fixes work (short)
+- All components must be in the same numeric scale before you weight and add them. Mixing 0–100 and 0–1 produces wrong totals.
+- Weights must be fractions of 1 (0.25 not 25). Using 25 multiplies a 0–1 value into ~25, which mis-scales the final.
+- Broken references (L40 etc) and typos produce wrong or #REF values; fixing them makes per-student test averages correct.
+- Summary ranges must match the student rows; off-by-one ranges give incorrect class stats.
+
+If you want, I can:
+- Give the exact corrected formulas for every cell that is wrong (I can output a short list to paste), or
+- Provide the minimal edits you can paste into your workbook (Sheet3 corrections + Sheet1 I formula + summary fixes). Which would you prefer?

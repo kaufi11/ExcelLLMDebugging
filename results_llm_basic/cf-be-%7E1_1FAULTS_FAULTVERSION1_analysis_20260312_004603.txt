@@ -1,0 +1,55 @@
+I reviewed the workbook formulas. I found several real errors (circular references, wrong hard-coded values, mis‑aligned row references, wrong totals used for break‑even) and a few robustness issues (DIV/0 risk, unnecessary SUM() wrappers). Below are the problems, why they are wrong, and simple fixes with short explanations.
+
+1) Circular reference: Year 1 — Beginning Cash (B6)
+- Problem: B6 =SUM(B55) and B55 depends on B6 (B55 = B15 - B54; B15 includes B6). This creates a circular reference and Excel will not calculate correctly.
+- Fix: Replace B6 with the actual starting cash (manual input) or a proper link to your startup input cell (example: =StartUp!B1). Leave month 2 beginning cash as C6 = B55, month 3 as D6 = C55, etc.
+- Why: The beginning-of-month cash for month 1 must be an input (opening balance). Months 2+ should pull the previous month’s ending cash.
+
+2) Hard-coded / wrong formula: Year 1 L14
+- Problem: L14 (TOTAL CASH RECEIPTS for month 10) =1 (hard-coded).
+- Fix: Change L14 to =SUM(L8:L13).
+- Why: Totals must sum their month rows, not be a fixed value.
+
+3) Wrong “Total Fixed Costs” formula: Year 1 B63
+- Problem: B63 = +O54 - O23 (this subtracts variable subtotal from total cash paid out — not the fixed cost subtotal).
+- Fix: Change B63 to the fixed-expenses subtotal: =O47 or =SUM(O24:O46).
+- Why: Total fixed costs should come from the fixed‑expense subtotal (O47), not from an arithmetic combination of unrelated totals.
+
+4) Wrong Break‑even numerator: Year 1 F64
+- Problem: F64 = +(O54 - O23)/B64 — uses O54 - O23 as “fixed costs.”
+- Fix: Change to use fixed costs: =O47 / B64 (or =B63 / B64 after B63 fix).
+- Why: Break‑even sales = Total fixed costs ÷ Contribution margin. O47 (subtotal fixed) is the correct numerator.
+
+5) Mis‑aligned / shifted formulas (example): Year 2 row 20
+- Problem: Row label is “d. Payroll Expenses (Direct Labor)” but O22 (not O20) is used in the formula area — rows are shifted so some O/P totals refer to the wrong rows.
+- Fix: For every row in Year 2 ensure the month total cell uses its own row: e.g., O20 =SUM(C20:N20) and P20 = O20 / O$57. Scan other rows for similar shifts and correct to O[row] =SUM(C[row]:N[row]).
+- Why: Summing the wrong row gives wrong totals and %s.
+
+6) Variance sheets — DIV/0 and fragile %‑change formulas
+- Problem: Variance formulas like =(D8-C8)/C8 will produce #DIV/0 if C8 = 0 and will error/noisy output.
+- Fix: Use a safe formula: =IF(C8=0,"", (D8-C8)/C8) or =IFERROR((D8-C8)/C8,"").
+- Why: Prevents #DIV/0 and makes the sheet cleaner and more robust.
+
+7) General cleanup suggestions (not strictly errors but recommended)
+- Remove SUM() around single-cell arithmetic where unnecessary. Example: =SUM(B15+B14) → =B15+B14 or =B15-B54 → =B15-B54. (SUM(B15-B54) works but is confusing.)
+- Standardize absolute references for the sales total denominator: use O$57 for percent-of-sales calculations so copying formulas doesn’t break references.
+- Scan all Oxx / Pxx cells across Year 1 & Year 2 to make sure each Oxx = SUM(Cxx:Nxx) and Pxx = Oxx / O$57 (or blank if O$57 = 0).
+
+Quick list of the exact corrections to enter now (Year 1):
+- B6 → Replace with starting cash input (e.g., enter number or =StartUp!B1).
+- C6 → =B55  (keep)
+- D6 → =C55  (keep)
+- L14 → =SUM(L8:L13)
+- B63 → =O47
+- F64 → =O47 / B64
+
+And Year 2 example correction:
+- O20 → =SUM(C20:N20)
+- P20 → =O20 / O$57
+(Then scan rows 17–53 to correct any other Oxx/Pxx misalignments.)
+
+If you want, I can:
+- Produce a small checklist (rows to scan) and exact replacement formulas for all mis‑aligned rows, or
+- Produce a corrected copy of the workbook if you upload the file.
+
+Which would you like?

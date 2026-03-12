@@ -1,0 +1,36 @@
+Summary — main errors found
+1) Typo in Hardware Gross Profit % (Seven-Year): J14 uses =+J13/37. That divisor (37) is wrong — it should divide by Hardware Revenue for FY1997 (J5). Result: J14 shows a meaningless value.
+
+2) Income From Operations (Seven-Year) is hard-coded instead of calculated: D31 (38222) — and likely some other years in row 31 — are values, not formulas. They should be D19 − D28 (Total Gross Profit − Total Operating Expenses). Result: D31 is inconsistent with the components (off by 101 for FY2003), and any % based on it may be wrong.
+
+3) Placeholders "-" in numeric rows (e.g., Office Closure Costs E26,F26,G26 etc) can break percent-change formulas in column C (divide by text or zero). Result: percent-change formulas may return #VALUE! or #DIV/0!.
+
+Quick fixes (apply these directly in the workbook)
+
+A) Fix J14 (Hardware Gross Profit % for FY1997)
+- Replace the bad formula with the correct one:
+  =J13 / J5
+
+B) Make Income From Operations a formula for all years (row 31)
+- In D31 enter:
+  =D19 - D28
+- Copy/fill this formula across E31:J31 (so each quarter/year calculates from its own columns).
+This will ensure Income From Operations always equals Total Gross Profit minus Total Operating Expenses and eliminate the 101-point mismatch.
+
+C) Handle "-" placeholders so percent-change formulas work
+Option 1 — replace "-" with zeros where appropriate (if the value is truly zero).
+Option 2 — protect percent-change formulas from dividing by missing/zero values. Example for C5 (2003 vs 2002):
+  =IF(E5=0,"", (D5-E5)/E5)
+- Use IF or IFERROR around all (D - E) / E formulas in column C so they return blank (or a message) instead of errors when the prior-year value is "-" or zero.
+
+Optional cleanups / recommendations
+- Replace redundant leading plus signs (=+) with normal =; not required but cleaner.
+- Standardize totals: use formulas (SUM or additions) consistently across years instead of hard-coded numbers so the sheet updates automatically.
+- If Book Value per Share or other ratios should use averages (e.g., ROE uses average equity), document the intended formula and compute it explicitly (e.g., ROE = NetIncome / ((Equity_this_year + Equity_prior_year)/2)).
+
+Why these fixes matter (short)
+- J14 typo produces a nonsensical gross-profit percentage for FY1997.
+- Hard-coded Income From Operations causes inconsistencies and wrong ratios downstream.
+- "-" placeholders cause divide-by-zero or value errors in percent-change cells.
+
+If you want, I can provide a small list of exact formulas to paste into each affected cell (J14, D31:J31, and example C-column percent-change formulas) and a short macro to replace "-" with zeros or to apply IF wrappers across column C. Which would you prefer?

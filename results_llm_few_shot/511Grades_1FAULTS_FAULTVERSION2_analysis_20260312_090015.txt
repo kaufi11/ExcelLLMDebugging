@@ -1,0 +1,31 @@
+Summary — I found three types of errors. Short fixes are below.
+
+1) Wrong operator in O14 (big, obvious bug)
+- Problem: O14 is =N14*$N$3 (multiplying instead of dividing). That produces wildly wrong normalized scores and breaks downstream formulas.
+- Fix: Change O14 to a division, and use a locked reference to the row-3 totals when you copy the formula down. Example:
+  - In O3 put: =N3/N$3
+  - In O14 (or after you copy O3 down) it will be correct as =N14/N$3
+- Why: you want each student's total Nxx divided by the master/maximum total in row 3, so use division and lock the row (N$3) so the denominator stays pointing to row 3 when you fill down.
+
+2) Inconsistent / incorrect absolute references (copy-down will break)
+- Problem: Some formulas use $N$3 (dollar on the column) instead of N$3 (dollar on the row). That locks the column but lets the row change when copied, so denominators don't stay fixed to row 3 as intended.
+- Fix: For any formula that must always reference the row-3 master totals, use the row-locked form (example N$3, AN$3, AS$3). Example conversions:
+  - Change N3/$N$3 → N3/N$3 (put N$3 in the denominator)
+  - Change AN3/AN$3 → AN3/AN$3 (if you meant to lock row 3, write AN$3)
+  - Change AS4/AS$3 → AS4/AS$3 (make the row absolute with $ before 3)
+- Why: locking the row (N$3) guarantees every copied formula uses the master total in row 3.
+
+3) Some grade cells are hard-coded instead of using the BD formula
+- Problem: Most BD cells use the IF(BCx>=...) formula to compute letter grades, but a few rows have manual text entered (e.g. BD9 = "B-", BD14 = "B-" appear as literal entries). Hard-coded grades will not update when BC values change.
+- Fix: Re-enter the BD formula in those rows and fill down. Example formula (as used elsewhere):
+  =IF(BC4>=0.915,"A",IF(BC4>=0.895,"A-",IF(BC4>=0.875,"B+",IF(BC4>0.815,"B",IF(BC4>=0.795,"B-",IF(BC4>=0.775,"C+",IF(BC4>0.715,"C",IF(BC4>=0.695,"C-","D"))))))))  
+  Put correct relative row references (BC9 for row 9) and then copy/fill down the column.
+
+Quick checklist to fix everything safely
+- In column O: put =N3/N$3 in O3, then Fill Down through all student rows.
+- In columns AO, AT, etc. that currently divide by AN$3, AS$3, etc. confirm the denominator uses the row-locked form (AN$3, AS$3, etc.) and re-fill down.
+- Replace any manually typed BD grades with the IF(...) BD formula and Fill Down.
+- Fix O14 (and any other accidental * instead of /) — search for "*$N$3" or "*N$3" to find similar mistakes.
+- After changes, spot-check a few rows (O, AO, AT, BC, BD) to confirm values look reasonable.
+
+If you want I can produce a small Find/Replace map (exact strings to replace) or a copy-ready set of formulas for the first row (row 3) so you can paste in and fill down. Which would you prefer?

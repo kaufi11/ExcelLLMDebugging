@@ -1,0 +1,36 @@
+Short summary of detected errors, causes and fixes:
+
+1) Wrong formula in FRF!I20
+- Error: I20 contains =SUM(H20-85) (subtracts literal 85) so the result is wrong.
+- Cause: a hard-coded number was used instead of referencing the gauge depth cell J20.
+- Fix: replace with =H20-J20
+- Why: column I is supposed to be "height off bottom" = Depth (H) minus Gauge Depth (J). Using H20-J20 fixes the logic and uses the actual value.
+
+2) Inconsistent / unnecessary use of SUM for subtraction in FRF column I
+- Error: many cells use =SUM(H5-J5) instead of a simple subtraction.
+- Cause: someone wrote subtraction inside SUM; Excel accepts it but it's misleading and can hide mistakes.
+- Fix: replace those formulas with =H5-J5 (copy down).
+- Why: =H#-J# is clearer and less error-prone.
+
+3) Negative or suspicious values in FRF column I (height above bottom)
+- Symptom: e.g. I16 = H16-J16 gives a negative value (H16=7.168, J16=7.65 → -0.482).
+- Cause: either the gauge depth (J) or the depth (H) was entered incorrectly (swapped, wrong units, or wrong sign).
+- Fix: audit the source values for rows with negative results. Use conditional formatting to highlight negatives: Home → Conditional Formatting → New Rule → "Format only cells that contain" → Cell Value < 0.
+- Why: height above bottom should normally be ≥ 0; negatives indicate data-entry or unit errors.
+
+4) Ambiguous sensor count in RHB sheets (question: "Are there 5 or 6 sensors collecting Pore Pressure data??")
+- Symptom: RHBJune lists PA0, PA1, PD0..PD5 (total 8 IDs) yet the worksheet question asks if there are 5 or 6 sensors.
+- Cause: metadata ambiguity — which IDs are considered "pore pressure" (PA vs PD) is unclear, or duplicates/missing entries.
+- Fix (quick audit): add a count formula to remove ambiguity. For example, on RHBJune use:
+  - =COUNTIF(A10:A17,"PD*")  — counts PD0..PD5 (should return 6)
+  - =COUNTIF(A10:A17,"PA*")  — counts PA0..PA1 (should return 2)
+  - Or count all pore-pressure types by type column: =COUNTIFS(M10:M17,"*Pressure*")
+- Why: these formulas give an immediate, unambiguous count so you can update the question or correct the list.
+
+Additional practical cleanup steps
+- Replace all =SUM(H#-J#) with =H#-J# (use Find/Replace: replace "=SUM(" with "=" and remove the trailing ")" carefully).
+- After fixing formulas, use a quick check: in FRF add a helper column to flag unexpected values:
+  - =IF(I5<0,"CHECK","OK") and copy down.
+- If some rows have N/A in H or J, either remove the formula or wrap with IFERROR/IF: =IF(OR(H5="N/A",J5="N/A"),"",H5-J5).
+
+If you want, I can provide the exact Find/Replace steps, the COUNTIF formulas inserted into the sheets, and a conditional formatting rule you can paste. Which would you like?

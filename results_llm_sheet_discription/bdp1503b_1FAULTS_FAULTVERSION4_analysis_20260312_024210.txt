@@ -1,0 +1,28 @@
+Summary of errors
+1. Cell G19 (Crown cars/hire of vehicles) contains a hard-coded value (=3). It should be calculated as Remaining = Annual allocation − Year‑to‑date actual (C19 − E19). With C19 = 2 and E19 blank/0, G19 = 3 is impossible and incorrect.
+
+2. Many formulas use SUM unnecessarily around simple subtractions, e.g. G13 = SUM(C13-E13). This is redundant (not a calculation error) but inconsistent and can confuse maintenance.
+
+3. Some total formulas use SUM around a single evaluated expression with plus signs, e.g. C61 = SUM(C10+C24+C30+…), which works but is nonstandard and harder to read. This can lead to mistakes if you later edit ranges/rows (risk of accidental double counting).
+
+Fixes (quick steps you can do)
+1. Correct the hard-coded remaining value:
+   - Change G19 to: =C19-E19
+
+2. Make subtraction formulas clear and consistent (optional but recommended):
+   - Replace formulas like =SUM(C13-E13) with =C13-E13 for all G cells.
+
+3. Make subtotal/grand-total formulas clearer and safer:
+   - Replace C61 = SUM(C10+C24+C30+C37+C45+C51+C59) with one of:
+     a) =C10+C24+C30+C37+C45+C51+C59 (explicit sum of subtotals), or
+     b) =SUM(C10,C24,C30,C37,C45,C51,C59) (use commas), or
+     c) If you want a contiguous range of only the detail rows (no subtotals), use =SUM(C10:C59) but be careful not to include subtotal rows twice.
+   - Do the same cleanup for E61 and G61 and for other totals like C71/E71/G71.
+
+Why this fixes it
+- Replacing the hard-coded number with =C19-E19 ensures the remaining amount always reflects the actual allocation and actuals; no manual override can cause wrong totals.
+- Removing unnecessary SUM wrappers makes formulas simpler and reduces chance of formula-edit errors.
+- Using clear, consistent total formulas (either sum subtotals explicitly or sum the detail range) prevents accidental double-counting and makes auditing easier.
+
+One-line recommendation
+Fix G19 to =C19-E19 now, then optionally standardize the formula style across column G and the subtotal/total formulas for clarity and safety.

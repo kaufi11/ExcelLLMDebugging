@@ -1,0 +1,48 @@
+Summary of the problem
+- Several cells on the three applicant sheets (Ap1, Ap2, Ap3) were copy/paste-misaligned. That causes wrong labels and wrong score calculations, so summary totals are wrong.
+
+What’s wrong (short)
+1. B19 on Ap1/Ap2/Ap3 is linked to Rate!G16 but should be Rate!G14. Result: duplicate label (G16 appears twice) and one proficiency item (G14) missing from the applicant sheet.
+2. L32 and L33 on all Ap sheets reference the wrong Rate!E cells:
+   - L32 uses Rate!E17 but should use Rate!E19.
+   - L33 uses Rate!E18 but should use Rate!E20.
+   Result: the two last experience items use the wrong weight values (double-count E17/E18 and omit E19/E20).
+3. Ap3 L20 has a logic bug: it uses "<>" (not-equal) instead of "=" in the IF tests (so it never evaluates as intended).
+
+Why it matters
+- Wrong labels (B19) confuse reviewers.
+- Wrong cell references (L32/L33) give incorrect scores and wrong totals on the Summary sheet.
+- The incorrect IF in Ap3 L20 makes that proficiency score always wrong.
+
+How to fix it (exact corrections)
+For each applicant sheet (Ap1, Ap2, Ap3) make these edits:
+
+1) Fix the misplaced label (one cell):
+- Change B19 from:
+  =Rate!G16
+  to:
+  =Rate!G14
+
+2) Fix the two experience formulas (L32, L33). Replace the current formulas with these:
+
+- L32:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+
+- L33:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+3) Fix the Ap3 L20 IF logic:
+- Replace the bad formula
+  =IF(K20<>2,Rate!E15*0.33,IF(K20<>3,Rate!E15*0.66,IF(K20<>4,Rate!E15*1,0)))
+  with the correct:
+  =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+
+Quick verification after fixes
+- Proficiency L16..L20 should now use Rate!E11..E15 (labels B16..B20 = Rate!G11..G15).
+- Experience L29..L33 should use Rate!E16..E20.
+- Summary sheet formulas (which pull L16..L33 from Ap sheets) will then reflect the correct item weights and totals.
+
+Prevention tip
+- Use a consistent mapping approach (INDEX/MATCH or structured table) instead of hard-coded individual cell links; it prevents copy/paste misalignment if you add/move rows later.
+
+If you want, I can give you the exact copy/paste-ready corrected formulas for every affected L cell on each of Ap1/Ap2/Ap3. Which sheet should I show first?

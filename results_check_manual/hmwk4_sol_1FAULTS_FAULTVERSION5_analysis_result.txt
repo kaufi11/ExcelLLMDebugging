@@ -1,0 +1,95 @@
+I scanned the formulas in sheet "hmwk4" and found a number of incorrect / inconsistent formulas (likely copy/paste / relative-reference mistakes and a few obvious math errors). I list the problems I found, with examples and recommended fixes.
+
+Top-level summary (most important / likely wrong):
+- Many altitude/airmass (V column) formulas use H*3600 instead of H/3600 (wrong conversion of seconds), and the U1 sign usage is inconsistent across rows.
+- Many AA-column formulas (stddev of P scaled by N/O) use the wrong denominator references (they divide by two N-cells instead of N and O).
+- Several AN / AO / AP cells reference the wrong row (they point to AH/AI/AJ from a different row, apparently offset by +10 or +9).
+- One ST/time-conversion coefficient is wrong (T145 uses a different multiplier than the other T rows).
+- Miscellaneous inconsistent use of -1* or 1* multipliers in trig formulas and other small inconsistencies.
+
+Detailed list (cell-by-cell / pattern-based), with recommended corrections
+
+1) Wrong seconds conversion (H*3600 vs H/3600)
+- Examples: V55, V65, V75, V85, V95, V105, V115, V125, V135, V145, V155, V165 (and many similar V formulas after row ~55).
+- Problem: Many V-row formulas include expressions like (ABS(F55)+G55/60+H55*3600). The seconds term should be divided by 3600 (H/3600), not multiplied by 3600.
+- Effect: altitude/airmass calculation is massively wrong for those rows.
+- Fix: change Hnn*3600 to Hnn/3600 (make consistent with earlier rows such as V5, V15, V25 which use /3600).
+
+2) Inconsistent / incorrect sign usage of U1 in trig functions
+- Examples: V5 uses SIN(-1*$U$1*(...))*SIN($U$1*$S$2)+COS($U$1*(...))*COS($U$1*$S$2)*COS($U$1*U5*15) — note the -1 only in the first SIN; other rows use SIN($U$1*(...)) or SIN(-1*$U$1*(...)) inconsistently.
+- Problem: inconsistent sign application to latitude conversion (U1 is rad/deg). If you intended to use southern latitudes with a negative sign, apply the sign consistently to both SIN and COS arguments; otherwise remove the -1. Current mixing is inconsistent and will produce wrong airmass values in some rows.
+- Fix: Decide on the intended convention (e.g., use ABS(Fn) then apply a hemisphere sign variable, or use Fn directly) and make the formula consistent for all rows. Example consistent form:
+  =1/( SIN($U$1*(IF(Fn<0,-ABS(Fn),ABS(Fn)) + Gn/60 + Hn/3600))*SIN($U$1*$S$2) + COS($U$1*(...))*COS($U$1*$S$2)*COS($U$1*Un*15) )
+  (or simply use $U$1*(ABS(Fn)+... ) without ad-hoc -1 multipliers, and use the sign of Fn where needed).
+
+3) AA column denominators use wrong references (should be /Nrow/Orow)
+- Pattern: AA5 is correct (=STDEV(P5:P14)/N5/O5). But AA15, AA25, AA35, AA45, AA55, ... use expressions like /N15/N24 or /N25/N34 etc.
+- Examples:
+  - AA15 formula: =STDEV(P15:P24)/N15/N24 (should be /N15/O15)
+  - AA25: =STDEV(P25:P34)/N25/N34 (should be /N25/O25)
+  - AA35: =STDEV(P35:P44)/N35/N44 (should be /N35/O35)
+  - AA45: =STDEV(P45:P54)/N45/N54 (should be /N45/O45)
+  - AA55: =STDEV(P55:P64)/N55/N64, etc.
+- Problem: dividing by an unrelated N cell (often the last N in the block) instead of dividing by the row's N and O (exposure/gain) yields incorrect scaled standard deviations.
+- Fix: change each AA row formula to /Nn/On (i.e., divide by the row's N and O cells like AA5 did). For example AA15 -> =STDEV(P15:P24)/N15/O15.
+
+4) AN / AO / AP rows referencing wrong row (offset error)
+- Pattern: In row 5 AN5/AO5/AP5 reference AH5/AI5/AJ5 (ok). But for rows 6–14 (and elsewhere) AN6 references AH15, AN7 references AH25, AN8 -> AH35, etc. (i.e. offset by +9 or +10).
+- Examples:
+  - AN6 =AH15 (should very likely be =AH6)
+  - AO6 =AI15 (should =AI6)
+  - AP6 =AJ15 (should =AJ6)
+  - AN7 =AH25 (should =AH7)
+  - AO7 =AI25, AP7 =AJ25, etc.
+- Problem: these are copy/paste errors introducing cross-row dependencies that are incorrect; the values in AN/AO/AP should reflect the current-row AH/AI/AJ, not a different block’s results.
+- Fix: set ANn = AHn, AOn = AIn, APn = AJn for the corresponding rows.
+
+5) T145 uses wrong sidereal-time multiplier
+- Example: T145 = $S$1 + 1.21436947432701*S145 - $S$3
+- Problem: almost every other T-row uses 1.0027379093*Srow (the accepted conversion factor for UT→sidereal-day scaling). T145 uses 1.21436947432701, which is different and likely a typo.
+- Effect: T145 (and downstream U145, V145, etc.) are wrong because the initial ST calculation is off.
+- Fix: change to 1.0027379093 (consistent with other T cells): = $S$1 + 1.0027379093*S145 - $S$3 (unless there is a specific, documented reason for a different coefficient).
+
+6) Miscellaneous trig/format inconsistencies
+- Some V-row formulas include "1*$U$1" or "COS(1*$U$1*(...))" — the 1* is harmless but inconsistent; can be simplified to $U$1.
+- Some earlier V formulas use SIN(-1*$U$1*((ABS(F)+...)) and COS($U$1*((ABS(F)+...))): applying -1 to only SIN is inconsistent; either apply sign consistently or remove.
+- Recommendation: standardize the trig formulas (use $U$1*(latitude_deg) consistently, and if hemisphere sign is needed apply it explicitly and consistently).
+
+7) AG column formula referencing AF5 constant
+- Examples:
+  - AG5 = $AF$5 - AF5  -> yields 0 (fine).
+  - AG15 = $AF$5 - AF15 -> uses AF5 as constant reference rather than AF15; AG25 also uses $AF$5 - AF25 etc.
+- Note: This might be intentional (comparing every measurement's true magnitude to the reference AF5 = 3.61). If not intentional, you should change to =AFn - AFn? (likely AG should be AFn - AF_reference or AF_reference - AFn). Check intent. I flag this only as "inconsistent usage" because AG5 used AF5 - AF5 too, but AG15 uses AF5 - AF15 rather than AF15 - AF15; confirm intended sign and reference.
+
+8) Several AB/AC/AD/AE formulas assume AB>0 (log) — OK but be careful for zero/negative counts
+- Example: AD5 = -2.5*LOG10(AB5). If AB5 ≤ 0 this will error. Not an immediate formula bug here but beware if counts - sky yield zero or negative.
+
+9) Copy/paste reference pattern issues across blocks
+- Many blocks of rows follow similar layout and many formulas were copied; I spotted a recurring pattern of off-by-block mistakes (the AA denominator issue, AN/AO/AP offset, V formulas with *3600) that repeat across blocks. When you correct the pattern in one block, scan the sheet and apply the corrections consistently to all blocks.
+
+Suggested concrete corrections (examples)
+- Fix AA15: change to =STDEV(P15:P24)/N15/O15
+- Fix AA25: =STDEV(P25:P34)/N25/O25
+- Fix AN6: =AH6, AO6: =AI6, AP6: =AJ6 (and similarly for AN7..AN14, AO7.., AP7..)
+- Fix V55 (example): change H55*3600 to H55/3600 and ensure sign is consistent; for example:
+  =1/(SIN($U$1*(ABS(F55)+G55/60+H55/3600))*SIN($U$1*$S$2) + COS($U$1*(ABS(F55)+G55/60+H55/3600))*COS($U$1*$S$2)*COS($U$1*U55*15))
+  (adjust +/- according to hemisphere convention)
+- Fix T145: = $S$1 + 1.0027379093*S145 - $S$3 (unless you can justify 1.214369...).
+
+How these issues will affect results
+- The H*3600 vs H/3600 and the AA denominator mistakes will produce large, clearly incorrect values (airmass and error estimates).
+- The AN/AO/AP misreferences will populate rows with values copied from other star blocks, corrupting the per-row results and propagating errors downstream (e.g., AOn is used later to compute AO-based values).
+- The T145 wrong coefficient directly shifts computed sidereal time for that row and any dependent HA/airmass calculations.
+
+Next steps I recommend
+1. Fix the three patterns first (H*3600 -> H/3600; AA formulas to /Nn/On; AN/AO/AP references to AHn/AIn/AJn).
+2. Standardize the V (airmass) formula template and re-fill it for all rows so sign and conversion are consistent.
+3. Correct T145 multiplier to match the other rows unless there's a documented reason for difference.
+4. After the formula repairs, re-check any resulting mags (AD, AI, AK, etc.) for outliers (negative/NaN) and ensure no divide-by-zero occurs (especially STDEV and AVERAGE ranges).
+5. Optionally: replace ad-hoc multipliers like 1* or -1* with explicit sign handling for clarity, e.g., define a hemisphere sign cell and use it.
+
+If you want I can:
+- produce a small patch list of exact cell formulas to paste in (I can generate corrected formulas for all affected rows),
+- or produce a corrected copy of the sheet (if you can let me write back).
+
+Tell me which you prefer and I will prepare the fixes (I can list each corrected formula block-by-block).

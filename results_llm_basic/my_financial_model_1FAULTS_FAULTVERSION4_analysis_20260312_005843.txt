@@ -1,0 +1,40 @@
+Thanks — I inspected the workbook and found the main formula errors that will materially break the numbers. Short summary, explanation and exact fixes below.
+
+1) Total Revenue is missing Street Sales (big error)
+- Where: Income row 12 (E12:P12). Current formula example: E12 = SUM(E10:E10)
+- Problem: each total only sums the Online sales line (E10) and ignores the Street sales line (E11). That under‑states Revenue and everything downstream (Gross Profit, Net Profit, Cashflow, Retained Earnings, etc).
+- Fix: change each column to sum both revenue rows. Example:
+  - E12 → =SUM(E10:E11)
+  - Copy that to F12:P12.
+- Why: totals must include both revenue sources.
+
+2) Sugar price growth references the wrong growth cell
+- Where: Income row 8 (sugar price). Example current: F8 = E8*(1+$D$7)
+- Problem: F8 (and the copied formulas across row 8) point to $D$7 (the lemon-price growth cell) instead of $D$8 (the sugar-price growth rate). It currently works only because D7/D8 are both set to 0.08/12; it will break if those become different.
+- Fix: change the formula to reference $D$8. Example:
+  - F8 → =E8*(1+$D$8)
+  - Copy across G8:P8.
+- Optional: better to keep one single growth-rate input (e.g. a named cell) if you intended the same inflation for all prices.
+
+3) Simple Income sheet: sugar COGS cell has a hard-coded wrong number
+- Where: Sheet "simple income", cell F8. Current formula: =284
+- Problem: F8 should be linked to E8 (carry the same sugar quantity) but contains a hard-coded 284 (typo). This makes the column totals and gross profit wrong.
+- Fix: change F8 → =E8 (or whatever the correct reference should be).
+- Why: keeps the monthly series consistent when copied.
+
+4) Balance Sheet: Original long‑term asset value references a liability
+- Where: Balance Sheet cell D8 (labelled "Original Value"). Current formula: =D14
+- Problem: D14 is a liability (Lear Jet Finance Co. loan = 1,000,000). D8 should be the original asset cost, not the loan number. This mis-link feeds Depreciation and the Balance Sheet asset values incorrectly.
+- Fix: set D8 to the correct original long‑term asset cost (enter the cost value or link to the cashflow purchase). Examples:
+  - If you bought a $100,000 asset in Cashflow!D9 (shown as -100000), use D8 → =ABS(Cashflow!D9)
+  - Or simply type the correct asset cost into D8 (e.g., 100000).
+- Why: Depreciation and balance‑sheet values must start from the asset cost, not the liability.
+
+Other smaller issues (optional to fix)
+- Many SUM formulas use single-cell ranges (e.g. SUM(E10:E10), SUM(E14:E14)). Not wrong per se, but fragile if you add rows. Use explicit row ranges (SUM(E10:E11), SUM(E22:E28) etc.) where you mean to include multiple lines.
+- Depreciation sheet: some Total Depreciation row formulas are incomplete/misaligned (check the running totals in row 11 for missing chained sums).
+- Many rows duplicate the same 0.08/12 growth in several D-cells (D4, D7, D8). Consider using one named cell (e.g., InflationRate) to avoid mismatches.
+
+If you want, I can:
+- Produce the exact corrected formulas for every affected cell and show them in one list, or
+- Generate a small macro / step list to apply the fixes automatically. Which would you prefer?

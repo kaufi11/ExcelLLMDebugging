@@ -1,0 +1,31 @@
+I inspected the workbook formulas and found one clear formula error that propagates large incorrect numbers in the "Select Financial Data" sheet. I also note a couple of minor/possible clarity points.
+
+1) Critical formula error (copy/paste/operator mistake)
+- Sheet: Select Financial Data
+- Cell with error: H12
+  - Current formula: =H8+H11
+  - Correct formula: =H8-H11
+  - Reason: Every other column in row 12 computes "Total revenues minus Cost of operations" (e.g. B12 = B8 - B11). Column H is the only column with a plus instead of a minus.
+
+- Cells affected (dependents that therefore contain incorrect values):
+  - H12 (should be 1029189 - 866419 = 162,770)
+  - H14 (Earnings from Operations — currently =H12 - H13):
+    - Correct: 162,770 - (-2,110) = 164,880
+  - H18 (=H14 - H15 - H16):
+    - Correct: 164,880 - 16,899 - (-3,231) = 151,212
+  - H21 (=H18 - H19):
+    - Correct: 151,212 - 52,683 = 98,529
+  - H25 (=SUM(H20:H24)):
+    - With the corrected H21, H25 should be 98,529 (assuming H20, H22-H24 are blank or unchanged)
+  - Any other figures downstream that draw on H12/H14/H18/H21/H25 will also be wrong until H12 is corrected.
+
+Recommendation: change H12 to =H8-H11 and then re-calc the sheet. That single change will fix the propagated errors.
+
+2) Minor items / things to consider (not necessarily errors)
+- There are a number of SUM ranges that include blank rows (for example many nets are =SUM(B20:B24) where B20 may be a label/blank row). These are harmless but can be confusing; consider tightening ranges to explicit cells with data to make intent clearer.
+- In the Cash Flow sheet, the "Cash and Cash Equivalents, beginning of year" row uses formulas that point to the next column's end-of-year (e.g. B42 = C44). That is a correct pattern for "beginning = prior end," but it is unusual and easy to mis-edit — keep that in mind if editing sideways.
+- Some one-off values (K23, K28 etc.) appear in single columns only — verify these are intentionally located where they are.
+
+If you want, I can:
+- produce an updated list of all corrected H-column values to paste in,
+- or scan for similar operator/copy-paste mistakes across the entire workbook (search for any formula that differs from the pattern in other columns). Which would you prefer?

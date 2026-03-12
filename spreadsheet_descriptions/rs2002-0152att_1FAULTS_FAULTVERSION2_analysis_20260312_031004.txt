@@ -1,0 +1,66 @@
+High-level structure (all sheets)
+- Common layout: header text in rows 2–5, column headers in row 6, data rows start at row 7. Key columns (B:I):
+  - B: Program/Region tag or Region #
+  - C: RFP# (proposal ID)
+  - D: Applicant
+  - E: Project Title
+  - F: Results (Fund / Not Fund / Non-Competitive)
+  - G: Project Funds Requested
+  - H: Approved / Awarded Funds (0 if not funded)
+  - I: Cumulative total of Awarded Funds (running sum) — used to track against the sheet funding limit shown in the header
+
+- Column I uses formulas that cumulatively add the Awarded Funds in H down the list (typically I7 = H7 then In = I(n-1) + Hn). Some sheets use G instead of H for the initial cell.
+
+Sheets, key contents, formulas and notable items
+
+1) Sheet: CALFED Drinking Water
+- Program: CALFED Drinking Water Grant Program (header notes funding limit $10,000,000).
+- Columns as above. I7 = H7, subsequent rows I8 = I7 + H8, I9 = I8 + H9, etc.
+- Typical pattern: most projects marked Fund with H = G (full award). Row 13 (RFP#447) partial award: G13 = 333,040 but H13 = 145,680.
+- No special notes/annotations on this sheet.
+
+2) Sheet: NPS Pollution
+- Program: Nonpoint Source Pollution Grant Program (funding limit $22,300,000).
+- Same column layout. Cumulative formula pattern generally I7 = H7; In = I(n-1) + Hn.
+- Notable anomalies:
+  - Row 32 (RFP#612): G32 = 722,500 requested, H32 = 238,115 awarded, A32 and B32 flagged with “**”. The I32 formula is shown as =47+H32 (appears erroneous—should be prior cumulative + H32).
+  - Several “Not Fund” rows where H = 0.
+  - Footer note: “** Funding limit With $238,115.00 available for Project #612” (indicates remaining balance and special handling).
+
+3) Sheet: CALFED Watershed
+- Program: CALFED Watershed Grant Program (funding limit $10,000,000).
+- Standard cumulative pattern: I7 = H7; In = previous + Hn.
+- Several partial awards (H < G) — e.g., RFP#25 (H8 = 175,000 of 355,451), RFP#10 (H10 = 360,000 of 423,000), RFP#14 (H14 = 200,000 of 908,238), RFP#17 (H17 = 493,175 of 625,780), RFP#27 (H27 = 350,000 of 360,000), RFP#28 (H28 = 200,000 of 605,100), RFP#35 (H35 = 300,536 of 1,011,575), etc.
+
+4) Sheet: Watershed Protection
+- Program: Watershed Protection Grant Program (funding limit $10,600,000).
+- Slight inconsistency: I7 is set to =G7 (uses requested funds) rather than =H7 (awarded); subsequent rows use In = I(n-1) + G or + H inconsistently (headers show I formulas as I7 = G7 and later I8 = I7+G8 etc.). This likely is a formula inconsistency (should sum Awarded funds H).
+- Notable partial awards: H12 = 500,000 of G12 = 1,500,000; H15 = 1,290,725 of G15 = 2,000,000, etc.
+- Footer: line with “** Funding limit - All available funding has been committed”.
+
+5) Sheet: Coastal NPS-Reg 4,8,9
+- Program: Coastal Nonpoint Source Control Grant Program (Regions 4,8,9). Funding limit $11,800,000.
+- Standard layout, cumulative In = I(n-1) + Hn with I7 = H7.
+- Example partial awards: RFP#100 (McMalibu?) shows G10=631,757 but H10=509,543; RFP#18 shows G18=311,280.25 and H18=311,280 (rounded).
+- Several Not Fund rows where H = 0.
+- Footer note: “** Funding limit With $182,419.00 available for Project # 76” (remaining amount and flagged project).
+
+6) Sheet: Coastal NPS-Reg 1,2,3
+- Program: Coastal Nonpoint Source Control Grant Program (Regions 1,2,3). Funding limit $18,300,000.
+- Standard cumulative In formulas, many funded projects with some partial awards (e.g., RFP#9 H9 = 650,000 of G9 = 801,080; RFP#13 H13 = 339,000 of G13 = 1,074,080; RFP#19 H19 = 858,000 of G19 = 1,242,000).
+- Notable large full awards (e.g., G24 = 2,271,877.6 with H24 equal to that full amount).
+- Later section repeats header (rows ~38–46) and continues the list; RFP#477 (Marin County RCD) flagged (A49 = **) with G49 = 800,000 and H49 = 509,759.4.
+- Footer: “** Funding limit With $509,759.40 available for Project # 477”
+
+General observations / potential issues
+- Consistent structure across sheets simplifies aggregation by program, region, or applicant.
+- Column I is intended as a running total of awarded funds; most sheets implement this via I7 = H7 and In = I(n-1) + Hn. However there are inconsistencies:
+  - Watershed Protection I7 = G7 (uses requested instead of awarded).
+  - NPS Pollution I32 formula =47+H32 likely a mistake.
+- Several projects received partial awards (H < G); many “Not Fund” rows have H = 0.
+- Header rows include each sheet’s funding limit — these are the control totals to compare against the cumulative column I.
+- A few numeric rounding/format differences (e.g., 311,280.25 requested but 311,280 awarded).
+
+If you want, I can:
+- Extract and return a table of funding used vs funding limit per sheet (summing H column and showing remaining balance).
+- Flag all rows with formula inconsistencies and propose corrected formulas for column I.

@@ -1,0 +1,63 @@
+I inspected the formulas and values on Sheet1. I found several formula-range inconsistencies and a couple of likely data-entry/formula mistakes that will distort the summary statistics. Below are the issues, why they are problems, and recommended fixes.
+
+1) Summary MAX formulas use inconsistent ranges
+- Cells: B69 (=MAX(B33:B68)), C69 (=MAX(C33:C68)), D69 (=MAX(D33:D68))
+- Problem: The AVERAGE and STDEV summaries use B2:B68, C2:C68, D2:D68, but the MAX formulas start at row 33. This means MAX is computed on a different subset than AVERAGE/STDEV.
+- Recommendation: Make the MAX ranges consistent with the other summaries (e.g. =MAX(B2:B68), =MAX(C2:C68), =MAX(D2:D68)), unless you intentionally want a restricted subset.
+
+2) N and Q MAX formulas omit early rows
+- Cells: N69 (=MAX(N17:N68)), Q69 (=MAX(Q17:Q68))
+- Problem: AVERAGE/STDEV for column N use N2:N68 and Q average uses Q2:Q68. Starting the MAX at row 17 omits rows 2–16.
+- Recommendation: Change to =MAX(N2:N68) and =MAX(Q2:Q68) (or otherwise make the ranges consistent with the AVERAGE/STDEV ranges).
+
+3) MIN formulas include the summary row and use odd starts
+- Cells: N70 (=MIN(N17:N69)), Q70 (=MIN(Q17:Q69))
+- Problems:
+  - The ranges include the summary row (N69 / Q69). Including a summary cell in a summary calculation can cause self‑contamination and incorrect results.
+  - They also start at row 17, omitting rows 2–16.
+- Recommendation: Use ranges that only include the raw data (e.g. =MIN(N2:N68) and =MIN(Q2:Q68)). Do not include the summary rows in the ranges.
+
+4) Inconsistent / suspicious MIN results
+- Cell: C70 (=MIN(C2:C68)) shows 0.
+- Cell: G70 (=MIN(G2:G68)) shows 0.
+- Problem: Looking through the sheet cells presented, there are no obvious 0 values in many C and G cells — a 0 in the MIN usually means either:
+  - there is an explicit 0 in the data range that you may have missed, or
+  - a formula in the range returns 0, or
+  - there's a cell with a non‑numeric value causing Excel to behave unexpectedly (less likely).
+- Recommendation: Inspect the C2:C68 and G2:G68 ranges for any explicit zero values, formulas returning zero, or erroneous entries. If the intention was to ignore missing cells, verify they are truly blank and not 0.
+
+5) Obvious outlier / probable data-entry error in N column
+- Cell: N19 has value 470 via formula =466+4.
+- Problem: All other N values are around the mid‑teens/low twenties. 470 is an extreme outlier and is almost certainly a typo (466 was probably typed instead of, say, 16 or 6).
+- Consequences: This single outlier dramatically inflates STDEV(N2:N68) (N72 shows ~55.53) and will affect MIN/MAX/AVERAGE if included.
+- Recommendation: Confirm the intended value for N19. If it was meant to be 14 or 16 or 10+4 etc., correct the formula/value (for example =10+4 or =14). After correction recompute summaries.
+
+6) Summary ranges should not include summary rows
+- General note: Some summary formulas (e.g. the MIN formulas you have that reference N69/Q69) include the summary cells themselves. This creates a fragile setup and can produce circular/incorrect results if ranges are not carefully chosen.
+- Recommendation: Always point summary functions to the raw-data block only (rows with student data), e.g. rows 2:68 (or whatever your data block is). Place summary lines outside those rows and do not include them in ranges.
+
+7) Use consistent row ranges across summary rows
+- AVERAGE and STDEV use B2:B68, C2:C68, D2:D68, etc., but MAX/MIN use different starts (33, 17...). This inconsistency will confuse interpretation and can silently give mismatched statistics.
+- Recommendation: Decide on the data block (e.g. rows 2–68) and use that same block for all summary functions unless you have an explicit reason to exclude some rows. Update formulas accordingly.
+
+8) Minor: lots of single-cell arithmetic formulas
+- Many N and Q entries are typed as small arithmetic formulas like =20+4, =14+4, =17+5/2, etc.
+- This is not wrong, but it is inconsistent styling (some are constants, some are arithmetic). It’s fine if deliberate, but be aware these are formulas and will recompute if you change one of the addends.
+
+Summary of immediate actionable fixes
+1. Fix the obvious data error: correct N19 (remove 466 typo).
+2. Standardize all summary ranges to the same data block (likely rows 2:68). e.g.
+   - B69: =MAX(B2:B68)
+   - C69: =MAX(C2:C68)
+   - D69: =MAX(D2:D68)
+   - N69: =MAX(N2:N68)
+   - Q69: =MAX(Q2:Q68)
+   - N70: =MIN(N2:N68) (and Q70: =MIN(Q2:Q68))
+   - And ensure AVERAGE/STDEV use the same rows.
+3. After fixing N19 and the ranges, recompute and verify STDEV(N2:N68) and other summaries; they should fall to reasonable values.
+4. Inspect C2:C68 and G2:G68 for unexpected zeros (if MIN returns 0 but you expect a positive minimum).
+
+If you want, I can:
+- produce the corrected formulas for all summary cells,
+- or scan the sheet for any other outlier-like arithmetic formulas (I already flagged N19 and the 466 typo),
+- or output a list of exact cells whose ranges differ from the (assumed) standard data range 2:68.

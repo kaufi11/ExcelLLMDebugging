@@ -1,0 +1,44 @@
+Summary of problems (concise)
+- Several score formulas on sheets Ap1, Ap2, Ap3 point to the wrong Rate!E cells (wrong rows) or contain a literal number instead of a cell reference. That makes the per-item scores and the Summary totals incorrect.
+
+Faulty cells and fixes
+(Each L## is the cell that calculates the weighted score and should reference the matching Rate!E row.)
+
+Ap1
+- L19 — Wrong reference: used Rate!E14. Fix:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+  (Reason: B19 pulls Rate!G16 so the score must come from Rate!E16.)
+- L32 — Wrong reference: used Rate!E17. Fix:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+  (B32 = Rate!G19 → use Rate!E19.)
+- L33 — Wrong reference: used Rate!E18. Fix:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap2
+- L19 — Wrong reference: used Rate!E14. Fix (same reasoning as Ap1 L19):
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 — Wrong reference: used Rate!E17. Fix:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 — Wrong reference: used Rate!E18. Fix:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap3
+- L19 — Wrong reference: used Rate!E14. Fix:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L20 — Wrong: contains IF(784=2,...) (literal 784). Fix:
+  =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+  (Reason: B20 points to Rate!G15 so use Rate!E15 and K20.)
+- L32 — Wrong reference: used Rate!E17. Fix:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 — Wrong reference: used Rate!E18. Fix:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Why this matters
+- Those L cells feed the Summary sheet (Summary L8:L10 and totals). Wrong references produce wrong per-item scores and incorrect totals.
+
+Quick robustness improvement (recommended)
+- To avoid row-offset mistakes, use INDEX/MATCH to pull the correct Rate!E value based on the text in column B. Example (replace the IF nesting if you prefer):
+  =IF(K16=2,INDEX(Rate!E:E,MATCH(B16,Rate!G:G,0))*0.33,IF(K16=3,INDEX(Rate!E:E,MATCH(B16,Rate!G:G,0))*0.66,IF(K16=4,INDEX(Rate!E:E,MATCH(B16,Rate!G:G,0))*1,0)))
+- Benefit: copies correctly even if rows shift or you paste blocks.
+
+If you want, I can produce the corrected formulas pasted into each faulty cell or give a single INDEX/MATCH formula you can copy down for all L-columns. Which would you prefer?

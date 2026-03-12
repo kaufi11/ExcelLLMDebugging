@@ -1,0 +1,40 @@
+Summary — main error found
+- Cell G21 has a wrong formula: it divides 1 by the weight instead of multiplying by the weight. That will massively overstate the weighted score for question 6 of Section II and break the section total.
+
+Why it's wrong (simple)
+- Current: =IF(C21="yes",(1/F21),IF(C21="no",(0/F21),""))
+- Intended logic in this sheet is: if answer = Yes, score = 1 * weight; if No, score = 0. The current formula produces 1/weight (a large number) instead of weight.
+
+Quick fix (copy/paste)
+- Replace G21 with this correct formula:
+  =IF(TRIM(LOWER(C21))="yes",F21,IF(TRIM(LOWER(C21))="no",0,""))
+  (This also tolerates capitalisation/extra spaces in column C.)
+
+Other recommended fixes (short, practical)
+1) Make all G formulas consistent and robust to spelling/capitalisation:
+   - For Yes/No questions (Sections I–III), use:
+     =IF(TRIM(LOWER(Cx))="yes",Fx,IF(TRIM(LOWER(Cx))="no",0,""))
+   - For Section IV (handles small/large extent), use:
+     =IF(TRIM(LOWER(Cx))="yes",Fx,
+       IF(TRIM(LOWER(Cx))="no",0,
+         IF(TRIM(LOWER(Cx))="small extent",0.33*Fx,
+           IF(TRIM(LOWER(Cx))="large extent",0.67*Fx,""))))
+
+2) Make the weight-sum checks tolerant of tiny rounding errors:
+   - Replace e.g. F12 =IF(SUM(F6:F10)<>100%,"ERROR","100%")
+   - With:
+     =IF(ROUND(SUM(F6:F10),4)<>1,"ERROR",1)
+   - Format the cell as Percentage. (Using ROUND avoids floating-point mismatches.)
+
+3) Add data validation for column C (allowed entries):
+   - Limit answers to the exact allowed strings (Yes, No, N/A, Small Extent, Large Extent). This prevents typos that would produce blanks in G.
+
+How these fixes help (short)
+- Fixing G21 returns the correct weighted contribution for that question and prevents an inflated section total.
+- Using TRIM/LOWER makes formulas resilient to capitalization/spacing mistakes.
+- Rounding the weight-sum check prevents false "ERROR" messages from floating‑point rounding.
+- Data validation prevents user-entry errors that break scoring formulas.
+
+If you want, I can:
+- Provide corrected formulas for every G cell (I can generate them for the full sheet), or
+- Give step-by-step instructions to apply data validation to column C. Which would you like?

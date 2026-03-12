@@ -1,0 +1,19 @@
+I reviewed the formulas in the three sheets you gave ("Select Financial Data", "Statements of Earnings", "Cash Flow"). I found one clear formula error and a few minor inconsistencies/oddities you may want to tidy up.
+
+1) Definite formula error (needs correction)
+- Sheet: Select Financial Data
+- Cell: J12 (row label: the item that other columns compute as "Total revenues – Cost of operations" / same role as B12..I12,K12)
+- Current formula: =J9-J11
+- Why it's wrong: All other columns (B12:H12, I12, K12) use =<Total revenues> - <Cost of operations> (i.e. =J8-J11). J9 is "Cost of sales, other costs and expenses" (not "Total revenues"), so J9-J11 subtracts cost-of-operations from cost-of-sales producing an incorrect negative number.
+- Observed symptom: J12 = -88269 (matches J9-J11) but should be computed as J8-J11 (consistent with other columns).
+- Recommended fix: change J12 formula to =J8-J11.
+
+2) Minor inconsistencies / possible improvements (not strictly errors)
+- Many SUM ranges include blank/label rows (e.g. Select Financial Data: Net Earnings uses SUM(B20:B24) rather than explicitly summing the computed "Earnings before extraordinary" cell + extraordinary + cumulative effect). Functionally this works, but it reduces readability and increases chance of future misreferences. Consider using explicit cell references or named ranges for the key intermediate values.
+- Inconsistent row locations between the "Select Financial Data" and "Statements of Earnings" sheets (e.g. the intermediate subtotals are on different row numbers). That's OK, but it makes spot-checking harder. Consider aligning layouts (or using named ranges) to avoid off-by-one/reference mistakes.
+- Cash Flow sheet: beginning-of-year cash rows (B42..J42) intentionally reference the next column's end-of-year (e.g. B42 = C44). This creates a forward-linked chain back to the earliest year (K42 is a hard-coded starting value). This is an acceptable technique but is fragile (hard to follow and easy to break if columns are moved). Consider using explicit references to the prior-year end-of-year cell (e.g. B42 = 'previous column'!<cell>) or setting the historical beginning-of-period values as constants in a dedicated area.
+- Hard-coded value: K42 = 2084 is hard-coded (earliest period beginning cash). That is probably intentional but note it differs from the pattern of using prior-column end-of-year values.
+
+If you want, I can:
+- Generate a corrected version of the workbook with J12 fixed and any other changes you want (standardize SUM ranges, convert to named ranges, align layouts).
+- Run a cell-by-cell consistency check (recalculate expected values and flag mismatches) and return a list of all cells whose formula results don't match the stored values.

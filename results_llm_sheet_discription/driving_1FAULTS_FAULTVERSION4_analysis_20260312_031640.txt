@@ -1,0 +1,28 @@
+Summary — I found 2 real problems and 2 potential issues to prevent future errors.
+
+1) Wrong hard‑coded numerator in Balance of Business (real error)
+- Problem: C10 shows =189/B$15 (189 is hard‑coded in the formula). All other rows use the department’s Sales cell (B10) as the numerator. This is inconsistent and will produce an incorrect % for row 10.
+- Fix: Replace C10 with the consistent formula: =B10/$B$15
+- Explanation: that makes row 10 compute Sales ÷ Total Sales like the other rows. Use $B$15 (absolute column & row) if you want to lock the total cell when copying formulas.
+
+2) Division by zero risk on %‑to‑total calculations (potential error)
+- Problem: C5 (and similar percent cells) use formulas like =B5/B$15. If the total in B15 is zero or blank you get #DIV/0!.
+- Fix (safer formula): =IF($B$15=0,"",B5/$B$15)  or  =IFERROR(B5/$B$15,0)
+- Explanation: IF prevents the #DIV/0! and keeps the sheet tidy; IFERROR returns 0 (or your chosen default).
+
+3) Consistency / anchoring suggestion (prevent copy/structure problems)
+- Use absolute references for the totals column when copying formulas across or editing layout:
+  - Example full set for column C (copy down): =IF($B$15=0,"",B5/$B$15)
+  - Column E should use =IF($D$15=0,"",D5/$D$15), and similarly for G (F$15), I (H$15) and K (J$15).
+- Explanation: $B$15 (both $ signs) prevents accidental reference shifts if you insert/move columns.
+
+4) Display of variance (clarification)
+- Current L formulas =C5-E5 produce a decimal result (e.g., 0.12). If you want percentage points shown, format L as Percentage; if you want points (e.g., 12.0 instead of 0.12), use =(C5-E5)*100.
+- Explanation: choose formatting or multiply by 100 depending on how you want to present variance.
+
+Quick checklist to apply:
+- Fix C10 to =B10/$B$15 (or safer version with IF).
+- Scan C5:C14, E5:E14, G5:G14, I5:I14, K5:K14 and replace plain divisions with IF($Total=0,"",value/total).
+- Decide formatting for column L and apply consistent formula/format.
+
+If you want, I can generate the exact corrected formulas for every affected cell (C5:C14, E5:E14, G5:G14, I5:I14, K5:K14, L5:L14) ready to paste. Which format do you prefer for L (percentage or percentage points)?

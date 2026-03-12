@@ -1,0 +1,30 @@
+Summary of errors
+- Typo in row 5: L5 uses (881+F5+G5)*12.5/1700 instead of (D5+F5+G5)*12.5/1700 — that row’s total will be wrong.
+- Column K (Pop Quiz #4) is never used in the cumulative formula. If PQ4 should count, the formula is incomplete.
+- Many input cells are blank. Excel treats blanks as zero in arithmetic — that may be intended, but if not you should handle blanks explicitly (or fill them with 0 / correct values).
+
+Corrected formula (simple)
+Paste this into L2 and fill down:
+=(B2/100) + (2*C2+2*E2+H2)*12.5/1000 + (D2+F2+G2)*12.5/1700 + (I2+J2)*70/4000
+
+What fixed
+- Replaces the hard-coded 881 with D2 (so each row uses that row’s Pop-quiz #1, not a typo).
+
+Robust formula (handles blanks safely)
+If you want blanks treated explicitly as zero, use this version in L2 and fill down:
+=IFERROR( N(B2)/100 + (2*N(C2)+2*N(E2)+N(H2))*12.5/1000 + (N(D2)+N(F2)+N(G2))*12.5/1700 + (N(I2)+N(J2))*70/4000 , "" )
+
+What this does
+- N(cell) converts blank/non-numeric to 0 so empty inputs won’t cause unexpected behavior.
+- IFERROR keeps the cell blank if something else goes wrong.
+
+If Pop Quiz #4 (column K) should be included
+Add K into the pop-quiz sum portion. Example (simple):
+=(B2/100) + (2*C2+2*E2+H2)*12.5/1000 + (D2+F2+G2+K2)*12.5/1700 + (I2+J2)*70/4000
+
+Action steps
+1. Fix L5 to use D5 (or replace whole L column by pasting one corrected formula in L2 and fill down).
+2. Decide how to treat blanks (leave as zero or enforce entry). If you want explicit zeros use the robust formula.
+3. Decide whether K should be counted; if yes, modify formula as shown.
+
+If you want I can: (a) give a version of the formula that uses named ranges for clarity, or (b) list every row that currently has missing key inputs (B, C, D, E, F, G, H, I or J). Which would you prefer?

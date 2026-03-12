@@ -1,0 +1,18 @@
+I checked the three sheets. Two clear formula errors (and one risky formula pattern) stand out in the Select Financial Data sheet. Short, specific fixes below.
+
+1) Wrong formula in J12 (Gross profit / “Earnings from continuing operations before other”)
+- Problem: J12 is =J9-J11. That subtracts Cost of Operations from Cost of Sales (effectively gives -Freight cost). It should subtract Cost of Operations from Total Revenues.
+- Fix: Change J12 to =J8-J11
+- Why: Gross profit = Total revenues (row 8) − Cost of operations (row 11). Using J9 instead returns an incorrect value.
+
+2) Net Earnings totals in row 25 use the wrong start row (off by one)
+- Problem: B25..K25 are using =SUM(...:... ) from row 20 to row 24 (e.g. =SUM(B20:B24)). Row 20 is a label row; the actual earnings-before-extraordinary value is in row 21. Using row20 is a semantic error (blank now, so current numeric result matches), but it’s fragile and wrong logically.
+- Fix: Change the range to start at row 21. Example: B25 → =SUM(B21:B24). Apply the same change for C25..K25 (=SUM(C21:C24), etc.).
+- Why: Net earnings should sum the numeric rows: earnings before extraordinary (row 21), extraordinary items (row 23), cumulative effect (row 24). Using a label row in your SUM can hide future mistakes and is incorrect.
+
+Optional / housekeeping suggestions
+- After fixing formulas, recalc and verify totals (gross profit, earnings, net earnings) for all columns.
+- Replace any SUM ranges that include label rows elsewhere (they work now only because blanks = 0) — use explicit numeric ranges to avoid future errors.
+- Example: in the Select Financial Data sheet also consider changing any SUM(B20:B24) patterns elsewhere to SUM(B21:B24) for clarity.
+
+If you want, I can give an updated list of exact cell formulas for the entire row 12 and row 25 (for all years), or produce a small macro to correct all off-by-one SUMs automatically.

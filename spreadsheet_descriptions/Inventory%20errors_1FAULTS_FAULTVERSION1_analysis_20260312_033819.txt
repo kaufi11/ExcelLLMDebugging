@@ -1,0 +1,40 @@
+High-level overview
+- Workbook has 3 sheets (Sheet1, Sheet2, Sheet3). Each sheet shows a 3‑year income statement (2001–2003) and a balance sheet, laid out side‑by‑side by year.
+- Year headings are in C5 (2001), E5 (2002), G5 (2003). For each year the detailed inventory/asset inputs use the left column of a two‑column pair (B / D / F) and the computed totals (COGS, Net Income, Totals) appear in the right column of the pair (C / E / G).
+
+Common layout and key formulas (applies across sheets)
+- Cost of goods section:
+  - Beginning inventory in B8 / D8 / F8
+  - Purchases in B9 / D9 / F9
+  - Cost of goods available = beginning inventory + purchases (B10 = B8+B9 etc.)
+  - Ending inventory in B11 / D11 / F11
+  - Cost of goods sold = available − ending inventory (C12 = B10−B11; E12 = D10−D11; G12 = F10−F11)
+  - Gross profit = Sales − COGS (C13 = C6−C12 etc.)
+  - Net income = Gross profit − Operating expenses (C15 = C13−C14 etc.)
+- Balance sheet:
+  - Inventory on balance sheet = ending inventory (B21 = B11; D21 = D11; F21 = F11)
+  - Total assets = SUM of Cash, Inventory, Building, Land (C24 = SUM(B20:B23) etc.)
+  - Total liabilities = SUM(Accounts Payable, Mortgage) (C29 = SUM(B27:B28) etc.)
+  - Retained earnings = linked to Net Income (B33 = C15; D33 = E15; F33 = G15) except where explicitly adjusted
+  - Total equity = Shareholders equity + Retained earnings
+  - Total liabilities & equity = SUM(total liabilities : total equity)
+
+Sheet-specific notes
+- Sheet1 (Inventory error example)
+  - Displays the basic example; many inputs are hardcoded (Sales 440k/510k/460k; Purchases 220k/180,200/167,200; Operating expenses 60k/85,930/80,060; assets and liabilities also given).
+  - Ending inventories: B11 = 179,800; D11 = 147,200; F11 = 203,970.
+  - Retained earnings cells are directly linked to current year net income (B33=C15 etc.), so a misstatement in inventory affects COGS → Net Income but prior‑year retained earnings are not adjusted. Result: balance sheet does not balance (note in A1–A4).
+- Sheet2 (shows raw inventory error amounts)
+  - Same structure but explicitly shows the inventory errors in the ending inventory formulas:
+    - B11 = 179,800 + 17,000 (2001 ending inventory increased by 17k)
+    - D11 = 147,200 − 25,000 (2002 ending inventory decreased by 25k)
+  - Because retained earnings are not yet adjusted here, the balance sheet is out of balance by the error amount (matches the comment on the sheet).
+- Sheet3 (error corrected / closed to retained earnings)
+  - Shows the corrected presentation where prior‑year inventory error has been closed into retained earnings:
+    - Ending inventory formulas same as Sheet2 (B13 = 179,800 + 17,000; D13 = 147,200 − 25,000; F13 = 203,970)
+    - Retained earnings adjusted: D35 = E17 + 17,000 (adds prior‑year error), F35 = G17 − 25,000 (removes 2002 error), so Total Liabilities & Equity balances with Total Assets.
+  - This sheet demonstrates how closing prior errors to retained earnings restores balance.
+
+Key takeaway
+- Formulas implement standard COGS → Gross profit → Net income and balance sheet aggregation.
+- The imbalance in Sheet1/Sheet2 is caused by not adjusting retained earnings for prior‑period inventory misstatements. Sheet3 shows the proper closing adjustment to retained earnings so the balance sheet balances.

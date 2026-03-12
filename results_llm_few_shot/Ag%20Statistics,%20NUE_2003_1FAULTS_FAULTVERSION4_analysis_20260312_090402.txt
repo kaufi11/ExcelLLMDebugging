@@ -1,0 +1,43 @@
+I checked the workbook and found several clear errors (wrong references, wrong constants, and inconsistent notes). Short fixes and explanations below.
+
+1) Sheet "World 1996" — E19
+- Faulty cell: E19
+- Error type: Wrong constant / reference
+- Explanation: E19 uses =710*(C19/100). 710 is not the rice production cell — every other crop uses its production cell (e.g. E6, E7…). This gives a nonsense N removal value for rice.
+- Repair formula: =E8*(C19/100)
+- Why: rice N removal should be rice production (E8) × %N (C19).
+
+2) Sheet "World 1996" — E4 (hard-coded total)
+- Faulty cell: E4
+- Error type: Hard-coded literal instead of cell reference
+- Explanation: E4 is =0.6*82906340 while E2 already contains 82906340. Hard-coding makes the sheet brittle and inconsistent if the total changes.
+- Repair formula: =0.6*E2
+- Why: always reference the total cell (E2) so the cereal consumption updates automatically.
+
+3) Sheets "Developed 96" and "Developing 96" — label vs formula mismatch (example: Developed 96 B3 / E3)
+- Faulty items: the text label “0.60 * 82,906,340 = 49,743,804 MT in cereals” vs the formula E3 = 0.6*E1
+- Error type: Documentation/data mismatch
+- Explanation: The comment shows multiplication by 82,906,340 (World total) but the sheet actually uses the sheet’s E1 (different value). This leads to confusion and possibly incorrect interpretation.
+- Repair: Either (a) change the formula to reference the intended total (e.g. =0.6*82906340) OR (b) update the label/text so it reflects the sheet’s E1 value. Best practice: use =0.6*E1 and edit the text to remove the hard-coded number.
+- Why: keep numbers and notes consistent; prefer cell references.
+
+4) Multiple sheets — incorrect percent vs factor (multiply by 67 instead of 0.67)
+- Faulty cells: World 1996 G33, G34 (FORMULA =E33*67, =E34*67); World 2002 F45, F46 (FORMULA =D45*67, =D46*67) — and any similar occurrences
+- Error type: Scale / unit error (67 vs 0.67)
+- Explanation: The sheet shows 0.67 (67%) in nearby cells but formulas multiply monetary values by 67 (x67) instead of 0.67 — that overstates results by factor 100.
+- Repair formulas: e.g.
+  - G33 → =E33*0.67 (or =E33*$G$32 if G32 holds 0.67)
+  - G34 → =E34*0.67 (or reference the cell with 0.67)
+  - F45 → =D45*0.67, etc.
+- Why: 67% must be applied as 0.67. Use a cell reference for the 0.67 constant so it’s explicit.
+
+5) General recommendation (covers many small inconsistencies)
+- Problem: many cells use hard-coded numbers or repeated literal constants in text/comments that don't match cell values (makes auditing error-prone).
+- Fix: replace literals with cell references where possible (e.g. use E2 or named ranges), and update explanatory text so it doesn’t show fixed numbers that can become stale.
+- Why: improves accuracy and makes the workbook maintainable.
+
+If you want, I can:
+- produce a corrected copy of the workbook with those fixes applied, or
+- give a short list of every cell that uses a hard-coded literal (so you can convert them to references).
+
+Which would you prefer?

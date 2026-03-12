@@ -1,0 +1,44 @@
+I reviewed the three main tables and found several clear formula errors. Short summary first, then quick fixes and why.
+
+1) Table 1.0 I & E (Annex D)
+- Faulty cell: B34
+- Error type: Hard-coded/wrong cell reference (mechanical)
+- Problem: B34 contains =525+1 (returns 526). This breaks the row-numbering pattern and is obviously a typo.
+- Fix: replace with =B31+1 (to continue the incremental sequence).  
+
+Why: the B-column is being used to increment line numbers; a hard-coded 525 is a mistake and can confuse anyone reading/formula-writing.
+
+2) Table 2.0 Balance Sheet (Annex E)
+- Faulty cells: H59 and I59 (Endowments)
+- Error type: Incorrect link / logical
+- Problem: H59 = H15 and I59 = I15 (endowments are linked to Total Income). Endowments should be an independent balance-sheet input, not the income total.
+- Fix: remove the link and enter the correct endowment values into H59 and I59 (or use a proper formula that sums actual endowment components). Then keep J59 = I59-H59 and K59 = IF(H59=0,"N/A",(J59/H59)*100).  
+
+Why: linking an asset line to total income produces nonsense numbers and will break totals/reconciliations.
+
+- Faulty cell: K69
+- Error type: Wrong cell reference / copy-paste error
+- Problem: K69 is set to =K49 (pulls the % variance for Total Net Assets). It should show the % variance for Total Funds.
+- Fix: replace with =IF(H69=0,"N/A",(J69/H69)*100)  
+
+Why: K69 must be computed from Total Funds (H69/J69), not copied from another row.
+
+3) Table 3.0 Cash Flow (Annex F)
+- Faulty cells: T19, T41, T42 (Total column for monthly rows)
+- Error type: Omission / inconsistent totals
+- Problems:
+  - T19 = S19 (only July value, not year total)
+  - T41 = H41 (only August value, not year total)
+  - T42 = S42 (only July value)
+- Fix: change to full-month sums:
+  - T19 -> =SUM(H19:S19)
+  - T41 -> =SUM(H41:S41)
+  - T42 -> =SUM(H42:S42)
+
+Why: the T (Total) column should sum all months H:S. Pointing to a single month makes the annual totals wrong and will break reconciliation formulas (T25, T26, T49 etc).
+
+Other notes (quick):
+- Once you fix T19/T41/T42, re-check any reconciliation formulas that reference those totals (T25, T26, T49, T48, etc.) — they should then balance.
+- Scan for any other K... percent cells that were set by copying (=Kxx) instead of calculating; the pattern of IF(Hx=0,"N/A",(Jx/Hx)*100) should be used consistently.
+
+If you want, I can produce an exact list of Replace formulas (ready to paste) for every faulty cell above, or give a small VBA macro to find other potential copy-paste errors (cells in % columns that contain a cell reference instead of the IF(...) percent formula). Which would you prefer?

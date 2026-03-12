@@ -1,0 +1,26 @@
+Summary of the problem
+- Cell A40 is wrong: it contains the literal formula =565+1 instead of referencing the previous row. That forces the sequence to jump to 566 and every number after A40 is offset/wrong.
+- There are a few inconsistent formula patterns (leading + signs like =+A4+1) and some places where the formula skips rows because header rows were inserted. Those are not fatal but make the sheet fragile.
+
+Why this is incorrect
+- The numbering in column A is supposed to be a simple +1 from the previous numbered row (A5 = A4+1, A6 = A5+1, ...). A40 using a fixed number breaks that chain and causes wrong numbers downstream.
+
+Quick fix (recommended)
+1. Edit A40 and replace =565+1 with =A39+1 (or =+A39+1 if you prefer the same style).  
+2. Select A40 and drag the fill handle down to the end of the list to restore the correct sequential formulas.
+
+How to check for other breaks
+- Use Home → Find (Ctrl+F) and search for "=" then inspect formulas, or use Formulas → Evaluate Formula / Go To Special → Formulas to list all formulas and visually check any that do not reference the cell above (A(row-1)+1).
+- Fix any formula that uses a hard-coded number (like =565+1) so it references the previous numeric cell.
+
+Better, more robust approach (prevents break when you insert header rows)
+- Replace the simple A-above +1 pattern with a formula that finds the last numeric in the block above and adds 1. Example to put in row 5 and copy down:
+  =LOOKUP(9.99999999999999E+307,$A$4:A4)+1
+  (Wrap with IF to leave the cell blank when you want no number.)
+- Example with blanking when column B is a header/empty: =IF($B5="","",LOOKUP(9.99999999999999E+307,$A$4:A4)+1)
+- This LOOKUP form always finds the last numeric in the range above and increments it, so inserted header rows won't break the sequence.
+
+Notes / housekeeping
+- The leading plus in formulas (=+A4+1) is harmless but unnecessary; =A4+1 is cleaner.
+- After fixing A40, run the fill-down step so all subsequent rows get corrected.
+- If you want, I can give the exact formula to paste into A5 (and copy down) that will skip header rows automatically based on a criterion (e.g., when column B contains header text).

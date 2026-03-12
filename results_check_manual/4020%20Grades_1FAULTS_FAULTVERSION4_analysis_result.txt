@@ -1,0 +1,34 @@
+I inspected the formulas in column L ("Cumulative Total") and the input coverage for the cells they reference (B–J). Findings and recommended fixes below.
+
+1) Explicit formula error (typo)
+- Cell L5 contains a clear typo:
+  - Current formula: =(B5/100)+(2*C5+2*E5+H5)*12.5/1000+(881+F5+G5)*12.5/1700+(I5+J5)*70/4000
+  - The "881" is almost certainly a mistaken constant — all other rows use (D# + F# + G#) in that term. This causes L5 to be orders of magnitude larger than all other totals.
+  - Fix: change the (881+F5+G5) fragment to (D5+F5+G5).
+
+2) Formula consistency
+- Aside from L5, every L cell uses the same formula pattern:
+  =(B#/100) + (2*C# + 2*E# + H#)*12.5/1000 + (D# + F# + G#)*12.5/1700 + (I# + J#)*70/4000
+  So the formula structure is consistent across rows.
+
+3) Missing input cells referenced by the formulas (potential data / unintended-zero issues)
+- Many rows have one or more of the input cells B–J blank. Blank cells evaluate as zero in your formula, which may or may not be intended. If blanks mean "no submission" that may be fine; if blanks mean "missing data" you should correct them.
+- Rows with one or more referenced inputs blank (based on the data provided): 
+  5, 7, 11, 12, 13, 15, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59.
+  - Example consequences: B is often the "Student Questionnaire" (many rows blank there will reduce that contribution to zero); L58 and L59 evaluate to 0.05 because only B is present (5/100).
+
+4) Possible logical/scaling checks (recommend you confirm these)
+- The formula uses the scaling constants 12.5/1000, 12.5/1700 and 70/4000. These are unusual denominators — verify these are the intended weight/scaling factors:
+  - B/100 gives a maximum of 0.05 when B=5 (i.e., questionnaire worth 5%).
+  - (I+J)*70/4000 gives up to 0.7 (70%) if I+J = 40 — consistent with midterm ~70% weight.
+  - The other two terms produce smaller percentages; confirm that the 1000 and 1700 denominators are intentional and not misplaced zeros or swapped numbers.
+
+Summary / action items
+- Correct L5: replace 881 with D5.
+- Review rows listed in (3) and fill missing B–J values if those blanks were unintentional.
+- Confirm the intended weighting/scaling constants (12.5/1000, 12.5/1700, 70/4000) to ensure they reflect the course grading policy.
+
+If you want, I can:
+- produce corrected formulas for the whole L column,
+- recalculate L5 and any other affected totals, or
+- generate a table showing exactly which input columns are blank for each row. Which would you like?

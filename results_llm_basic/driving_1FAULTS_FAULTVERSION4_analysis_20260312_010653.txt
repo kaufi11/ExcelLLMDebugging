@@ -1,0 +1,24 @@
+I reviewed the workbook and found the key problems and simple fixes. Short, clear items below.
+
+1) Balance of Business — hard‑coded value in percent column (row 10)
+- Problem: C10 contains =189/B$15 (189 is hard‑coded) instead of using B10. That makes % to total wrong when B10 changes.
+- Fix: Replace C10 with =B10/B$15 and then fill/copy that formula for the other % cells in column C (as the other rows do).
+- Why: Percent to total must divide the row's sales by the total (B$15). Hard codes break the dynamic calculation.
+
+2) Maintained Margin Worksheet — inconsistent/placeholder text instead of formula
+- Problem: B9 shows the text "FORMULA = Inventory to be accounted for" (a label/plain text), and C9 is a value (16650) — it’s not clear whether C9 is a live formula. If C9 is a hard value, it will not update when the inputs change.
+- Fix: Put the real formula into C9 so it updates. Example: C9 =SUM(C4:C8). (D9 already uses =SUM(D4:D8) — mirror that pattern.)
+- Why: Inventory to be accounted for should sum the component rows so the worksheet is dynamic.
+
+3) CashFlow — beginning/ending cash not being carried forward
+- Problem: Row 40 (Cash available beginning of month) uses C39 + C38, but C39 (Line D - Cash on Hand / beginning cash) is not generated anywhere in the sheet. For monthly chains you must carry the prior month’s end balance forward; otherwise month 2+ values will be wrong or blank.
+- Fix: For Month 1 put your actual beginning cash into C39. For each subsequent month, link the beginning cash to the prior month’s end-of-month cell. Example: if Month 1 end-of-month is C41, then set Month 2 beginning cash cell (E39) = C41; Month 3 beginning (G39) = E41, etc.
+- Why: Cash flow requires carrying the prior month’s end balance into the next month’s beginning balance.
+
+4) General: watch for other hard‑coded numbers and mismatched references
+- What to do: scan for any other formulas that embed numbers (like that 189) or reference incorrect rows/columns. Replace hard codes with cell references so totals and %s update automatically.
+- Quick way: use Excel Find for "=" formulas and visually check any that contain literal numbers instead of a cell reference (e.g., "=189/..." or "=+15000" where a referenced cell should be used).
+
+If you want, I can:
+- produce the exact corrected formulas for every affected cell,
+- or give a short VBA macro that finds formulas containing numeric literals and highlights them. Which would you prefer?

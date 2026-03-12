@@ -1,0 +1,28 @@
+Findings (short)
+- One clear formula error: cell D8 (1992, Urban — Functionally) uses subtraction instead of addition. Current formula: =4186-3424-4479-5125-3339-5690. It should be adding these components.
+- Other suspicious items (example: G10 has a small 1195 term) are actually consistent when you add the components — no obvious error besides D8.
+- The sheet also mixes hard-coded sums inside formulas (hard to audit). Recommendation below.
+
+Fix (exact)
+- Change D8 from:
+  =4186-3424-4479-5125-3339-5690
+  to:
+  =4186+3424+4479+5125+3339+5690
+
+Why this fixes it (simple)
+- The row is intended to sum component counts. Using minus signs turns the result negative/incorrect. Replacing with plus signs restores the intended total for that category.
+
+Corrected value (so you can check)
+- New D8 = 26,243.
+- This will update related totals automatically:
+  - D6 (Urban deficient total) becomes 42,566 (D7 + D8).
+  - D12 (All deficient total) becomes 199,091 (D6 + D9), etc.
+
+Recommended best practices (short & practical)
+1. Replace inline arithmetic constants with cell references (one cell per subcomponent) and use SUM(range). Example: =SUM(Dx:Dy) instead of =123+456+789. This makes errors easier to find and update.
+2. Use Excel error checking / Find (search for "-" inside formulas) to locate accidental subtraction signs in arithmetic formulas.
+3. Where possible keep totals as formulas referencing subtotals (e.g., D3 = D4 + D5) — you already do this in many places; apply consistently.
+
+If you want, I can:
+- Update all incorrect formulas and recalc the sheet, or
+- Convert the hard-coded sums into proper ranges/references for you. Which would you prefer?

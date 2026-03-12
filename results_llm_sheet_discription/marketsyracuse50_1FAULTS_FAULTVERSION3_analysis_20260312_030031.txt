@@ -1,0 +1,29 @@
+Problems found
+1. Cell G12 (KEYCORP) has a typo: the formula is = $F12 / $F$36 / 100 instead of = $F12 / $F$36 * 100. That makes KEYCORP’s market share 100× too small (about 0.13% instead of ≈13.04%).  
+2. Because of (1) the totals row G36 does not sum to 100% (it will be ≈87.09% currently) and the HHI (H36) is understated by the squared error for that row.  
+3. (Recommendation) The H column’s scale/formatting can be confusing. The sheet appears to square the percentage value in G; be explicit about whether HHI should be (a) sum of squared decimals (0–1 scale), (b) sum of squared percentages (0–100^2 scale), or (c) the usual HHI on 0–10,000 scale.
+
+Fix and explanation
+1. Correct the typo in G12:
+   - Change G12 to: =$F12/$F$36*100
+   - Explanation: you must multiply by 100 (or use percentage formatting) to convert the fraction F12/F36 into a percent. The current /100 divides again by 100 and makes the percent 100× too small.
+
+2. Recalculate totals:
+   - After fixing G12, G36 will sum to 100% (assuming all other G formulas are consistent).  
+   - H12 will change from ~0.0000017 (current wrong square of 0.00130419) to ~0.017011 (square of 0.130419). H36 (HHI) will increase by ~0.017009 (decimal units). Interpret that increase according to your chosen HHI scale (see note below).
+
+3. Check for other inconsistent formulas:
+   - Search column G for any other cells using “/100” instead of “*100” or simply standardize G formulas to =Fx/$F$36 and format the G cells as Percentage (preferred).
+
+Recommended clean approach (less error-prone)
+- Put G10 (and copy down) = $F10 / $F$36 (no *100). Then format column G as Percentage with 2 decimals.  
+- Decide HHI scale and use an explicit formula:
+  - If you want the “percent-squared” display used now, use H = G^2 (but know G must be in percent-format and Excel stores it as decimal).  
+  - If you want the standard HHI on a 0–10,000 scale, use = (G_decimal)^2 * 10000, i.e. =($F10/$F$36)^2*10000.
+
+Quick numbers after fix
+- G12 ≈ 13.04% (instead of ≈0.13%).  
+- G36 will be 100%.  
+- H12 changes from ~0.0000017 to ~0.017011 (difference ≈0.017009). If you use percent formatting for H this difference appears as ≈1.701%; if you use the 0–10,000 HHI scale the difference is ≈170.09 units.
+
+If you want, I can: (a) give the corrected G and H values for every row, or (b) provide the exact corrected H36 (HHI) in whichever scale you prefer.

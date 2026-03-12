@@ -1,0 +1,44 @@
+High-level summary
+- Workbook contains 3 sheets (SecA, SecB, SecC). All three use the same gradebook template; SecA shows the instructor/coordinator (I2 = "Goelz") and one small anomaly (see below).
+- Purpose: course grade tracking for CS 110 (course title in A4). Metadata (year, semester, subject, course, section, TA/instructor/coordinator) in row 1–2 and A4.
+
+Layout and key ranges
+- Header rows:
+  - Row 1: field labels (Year, Semester, School, Subject, Course, Section, TA, Instructor, Coordinator).
+  - Row 4: course title (A4).
+  - Row 5: "Grades as of" and B5 contains =NOW().
+  - Row 8–10: export/print shortcuts and the assignment/test categories with their maximum points in row 10.
+- Student table starts at row 13 (labels) with actual student rows beginning at row 14 and continuing down (template shows formulas through row 50).
+- Columns:
+  - A–F: Last/First/SSN/CID/NetID/Comments.
+  - G: Final Grade (manual).
+  - H: Attendance (manual).
+  - I: Total Points (formula).
+  - J: Assignment Points (formula summing assignment columns).
+  - K–M: Test 1, Test 2, Final Exam (numeric maxs in row 10: 100, 100, 150).
+  - N–Q: Late / Free Late / TA Extra Credit / Software Extra Credit.
+  - R–AE: Individual assignment or software-task columns (labels: WWW, Email, HomePage, Excel, PowerPoint, Database, Paint, Basic 2, … Basic 9). Row 10 contains per-item max points (e.g., R10=10, U10=15, Y10=5, etc.).
+
+Important formulas / logic
+- B5 = NOW() — last-updated timestamp.
+- Upload URL: B10 = https://lists.fas.rutgers.edu/cgi-bin/gradebook/gb.pl
+- Row 10 summary formulas:
+  - I10 = SUM(J10:M10) — totals of assignment + tests? (template total)
+  - J10 = SUM(R10:AF10) — total possible assignment points (note AF10 included in sum).
+- Student-row formulas (repeated down the sheet):
+  - Jn = SUM(Rn:AEn) — assignment points for student n (column J).
+  - In = MIN(500, SUM(Jn:Mn, Pn:Qn)) — total points for student n, capped at 500, summing assignment points (J), tests (K–M) and extra credit (P–Q).
+    - This pattern repeats for rows 14 through the shown bottom row (to row 50 in SecC).
+- SecA anomaly: J47 is hard-coded to 6 (J47 = 6) instead of SUM(R47:AE47) used in SecB and SecC for that row.
+
+Repetitions and ranges
+- The same formulas for J and I are copied row-by-row from row 14 down (examples: I14/I15/... use MIN(500,SUM(...)); J14/J15/... use SUM(R:AE) ).
+- Assignment max points in row 10 drive grading scale per assignment; individual student assignment cells are in R:AE per student row.
+
+Notes / observations
+- The sheets are a consistent gradebook template designed to:
+  - capture student identifiers and attendance,
+  - automatically sum assignment scores,
+  - add test scores and extras,
+  - cap totals at 500.
+- Small inconsistency: SecA J47 is fixed =6 while SecB/C use the usual SUM formula for that row.

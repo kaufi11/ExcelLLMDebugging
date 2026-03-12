@@ -1,0 +1,29 @@
+I checked the workbook and found the clear errors plus one robustness issue. Short fixes and explanations below.
+
+1) Big typo in Problem 4 — mean if item 4 deleted (cell E46)
+- Error: E46 uses 706 instead of the proper cell reference. That “706” is a typo and destroys the average.
+- Why it’s wrong: 706 is not a correlation value; it should be the correlation between item1 & item2 (cell B38).
+- Fix (repair formula): = (B38 + B39 + B41 + C39 + C41 + D41) / 6
+- Explanation: these six cells are the 6 pairwise correlations among items {1,2,3,5} (item 4 deleted). Replace 706 with B38.
+
+2) KR‑21 missing the k/(k−1) multiplier (cell B104)
+- Error: B104 = 1 - ((B102*(5 - B102))/(5*B103)) — it omits the test-length adjustment k/(k−1).
+- Why it’s wrong: KR‑21 formula is KR21 = (k/(k−1)) * [1 − (mean*(k - mean)) / (k * variance)]. Without the multiplier you get an unadjusted value.
+- Fix (repair formula): = (5 / (5 - 1)) * (1 - ((B102 * (5 - B102)) / (5 * B103)))
+- Explanation: multiplying by 5/(5−1) = k/(k−1) scales the index correctly for k=5. (You already have this in F104 — mirror it to B104 or keep one cell.)
+
+3) Robustness / maintenance recommendation (several places)
+- Issue: many formulas hard-code means (e.g. D5 = B5 - 2.93333, D23 = B23 - 2.777767). Hard-coded constants are easy to mistype and break if data change.
+- Fix: compute and reference the mean cells instead of typing numbers. Example (Problem 1):
+  - Put mean in B9 using =AVERAGE(B5:B7)
+  - Change D5 to =B5 - $B$9 (use absolute ref if copying)
+- Explanation: using AVERAGE() (or referencing the computed mean cell) prevents inconsistent numbers and reduces typos like the 706.
+
+Optional quick scan notes (no immediate formula break found but watch these):
+- Problem2 uses hard-coded means (same robustness point).
+- Problem5 expected counts: verify manual numbers versus formulas (e.g. C75 was shown as 8). If you expect all expected cells to be formulas, convert them to (Ri*Cj)/N consistently.
+- Problem2 and Problem4 use different styles for averages (SUM(...)/n vs AVERAGE()). AVERAGE is clearer.
+
+If you want, I can:
+- Produce an edited list of exact replaced formulas for every affected cell (apply fixes across sheet),
+- Or return a version that replaces all hard-coded means with AVERAGE() references. Which do you prefer?

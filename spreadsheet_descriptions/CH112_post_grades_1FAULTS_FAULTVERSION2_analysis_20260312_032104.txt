@@ -1,0 +1,38 @@
+Spreadsheet: one sheet (Sheet1) — Grades CH 112 Lecture Fall 2003
+
+Layout / contents (high level)
+- Title: A1 = "Grades CH 112 Lecture Fall 2003".
+- Header rows:
+  - Row 2: group headings (B2 "Exam Grades", G2 "OWL Homework Grades", N2 "Final Exam", O2 "Overall Grade", P2 "Letter Grade").
+  - Row 3: column subheaders: A3 "Student #", B3–F3 exams labeled 1–5, G3–M3 OWL homework by chapter (Ch.9–Ch.17), N3 final exam (points), O3–P3 are calculated fields.
+- Student data: rows 4:46 (43 students). Columns B–F contain exam scores (often out of 100; some >100), G–M contain OWL homework chapter scores (typically 0–15 for G–J and 0–30 for K–M, with fractional partial-credit values), N contains final exam points (appears to be out of 150), O and P are calculated.
+
+Key formulas
+- Overall percent (column O, e.g. O4):
+  =(SUM(Bx:Fx)+SUM(Gx:Mx)+Nx) / (COUNT(Bx:Fx)*100 + COUNT(Gx:Jh)*15 + COUNT(Kx:Mx)*30 + COUNT(Nx)*150) * 100
+  - Purpose: computes percentage = total points earned ÷ total points possible (denominator built dynamically by COUNT of nonblank cells per section and the section max points).
+  - Note: COUNT counts numeric (nonblank) cells, so missing scores reduce denominator (i.e., the formula adapts to dropped/missing items).
+- Letter grade (column P, e.g. P4):
+  =IF(Ox<59.4,"F",IF(Ox<69.4,"D",IF(Ox<79.4,"C",IF(Ox<89.4,"B","A"))))
+  - Thresholds: F <59.4, D <69.4, C <79.4, B <89.4, otherwise A.
+- Aggregate statistics (rows 47–48):
+  - Row 47: AVERAGE for each numeric column (B47:M47, N47, O47).
+  - Row 48: STDEV for each numeric column (B48:M48, N48, O48).
+- Grade distribution counts (rows 49–53):
+  - For exams B–F: COUNTIF ranges to compute #A (>=90), #B, #C, #D, #F using combinations of COUNTIF thresholds.
+  - For Final (N): bins use absolute point ranges (A >=135, B 120–134.999, etc., consistent with 150-point max).
+  - For Overall (O): bins use percent ranges (A >=90, B 80–89.999, etc.).
+
+Important observations / issues
+- Total students: 43 (rows 4–46).
+- Dynamic denominator: overall formula uses COUNT to only count cells with numeric entries — this lets the denominator shrink if items are blank (likely intended for dropped/missing items), but be aware it changes comparability if students have different numbers of graded items.
+- Formula error: O11 appears to be incorrect — it multiplies instead of dividing:
+  O11 shows =(SUM(B11:F11)+SUM(G11:M11)+N11)*(COUNT(B11:F11)*100+...)*100
+  It should use division like the other O-row formulas. This will produce a large incorrect overall percent for row 11.
+- Some student rows have many blanks (e.g., row 17, 25, 28, 35, 43) — overall percent will be computed from whatever items are present because of the COUNT-based denominator.
+- Homework score scales: G–J appear to be 15-point items, K–M 30-point items; final appears to be 150 points (consistent with denominator multipliers used).
+- Averages and distributions are calculated per column (exams, OWL chapters, final, overall) using standard functions.
+
+If you want, I can:
+- Fix the O11 formula and/or scan for other inconsistent formulas.
+- Produce a class summary (mean, median, grade counts) or a corrected overall-percent column that treats missing items as zeros instead of dropping them.

@@ -1,0 +1,63 @@
+Summary of the errors I found (most important first), why they matter, and exactly how to fix them.
+
+1) DRAM cost side — wrong price used in var profit per wafer (major logic bug)
+- Problem: Cell D21 (var profit wafer for 2001 column) uses D31 (price AFTER adding a fab) instead of the baseline price D13. This makes the profit/cash‑flow for 2001 wrong and propagates to cash flows and IRR.
+- Wrong formula (as given): D21 = +D31*D9*D10 - D16 - (D9)*D17
+- Fix: use the baseline price D13, consistent with the other columns.
+- Correct formula: D21 = D13*D9*D10 - D16 - D9*D17
+- Why: profit per wafer should be computed with the baseline predicted price (row 13). Using the post‑fab price (row 31) mixes scenarios and misstates profits and IRRs.
+
+2) fisher sheet — inconsistent / incorrect formulas for Paasche/Laspeyres in some years (index errors)
+- Problem(s):
+  a) D38 (Paasche for 2002) has an extra and incorrect factor and mismatched parentheses compared with other years; it does not follow the same formula structure and will return a wrong Paasche index for 2002.
+  b) H37 (Laspeyres for year 2006) uses the wrong ranges: it references G25:G28 and H32:H35 (offset ranges) instead of the consistent pattern used for earlier years (should use G24:G28 and H31:H35 or matching sets). Similar range misalignments appear in later Paasche/Fisher rows for the last year(s).
+- Examples of wrong formulas seen:
+  - D38 = 1/((D24*1/D31+D25*1/D32+D26*1/D33+D27*1/D34)*(1/(1-D28)))  ← extra *(1/(1-D28)) is wrong
+  - H37 = SUMPRODUCT(G25:G28,H32:H35)  ← ranges misaligned (should align with other year formulas)
+- Fixes:
+  a) Make Paasche formulas consistent. Use the same pattern as E38 (which is correct). For D38 the correct formula should be:
+     D38 = 1/( D24*(1/D31) + D25*(1/D32) + D26*(1/D33) + D27*(1/D34) + D28*(1/D35) )
+     (i.e. no extra multiplier, include the term for the 5th density just like other years)
+  b) Fix Laspeyres and Paasche ranges so each year uses the same relative ranges:
+     - For Laspeyres (row 37), the general pattern is SUMPRODUCT(<units shares>, <price relatives>). For column H it should be:
+       H37 = SUMPRODUCT(G24:G28, H31:H35)
+       (or match the exact pattern used for columns D–G: C24:C27 with D31:D34 etc; adjust to the appropriate 5-term ranges if that’s the pattern in the sheet).
+     - For Paasche (row 38) ensure the same 5-term summation is used for every year (no omitted or extra terms).
+  c) After correcting D38 and H37, copy the corrected formulas across the row to replace any other mis‑typed formulas (E38..G38 already look correct — ensure F/G/H use the same template).
+
+- Why: fisher!D39..H39 (Fisher indices), chained fisher (fisher!C40..H40) and the functionality & price indices used by every other sheet (lots of dependent formulas) come from the Laspeyres/Paasche/Fisher calculations. Wrong index formulas produce incorrect price anchors which cascade into demand curves, prices, variable costs comparisons, economic capacity, delta revenues, and all IRR outputs. Fixing these index formulas will correct large parts of the workbook.
+
+3) (Minor / pattern) Several formulas have inconsistent signs/extra unary + or stray minus signs
+- Examples: in DRAM sheet some cells use formula forms like =+(D11-fisher!D49)/-fisher!D50 or negative duplicated signs =-(G11-fisher!G49)/-fisher!G50. These are not syntactically wrong but are confusing and increase the chance of a sign error when copying formulas. Not strictly necessary to change, but recommend cleaning to a clear form:
+  - e.g. D13 = (D11 - fisher!D49) / (-fisher!D50)  → clearer as D13 = (fisher!D49 - D11) / fisher!D50 if that matches the intention (check sign logic).
+
+How to implement fixes quickly (step‑by‑step)
+1) Fix DRAM D21:
+   - Edit D21 and replace with: =D13*D9*D10 - D16 - D9*D17
+   - Copy that corrected logic to any other cell in that row if you find other columns mistakenly pointing to the “after‑fab” price.
+
+2) Fix fisher Paasche / Laspeyres mis‑references:
+   - Open the fisher sheet.
+   - For row 38 (Paasche), replace the formula in D38 with:
+     =1/( D24*(1/D31) + D25*(1/D32) + D26*(1/D33) + D27*(1/D34) + D28*(1/D35) )
+     (then copy the corrected template to E38..H38 adjusting column references automatically by Excel when you copy across)
+   - For row 37 (Laspeyres) check each column’s SUMPRODUCT ranges and make them consistent. For column H use:
+     =SUMPRODUCT(G24:G28, H31:H35)
+     (or the exact 5-term range consistent with D37..G37 — adjust if your sheet uses 4 or 5 terms; the key is both arrays in SUMPRODUCT must be the same length and the intended rows).
+   - After these two fixes, recalc workbook and check fisher!D39..H39 and fisher!C40..H40 change to expected values.
+
+3) Validate
+   - After fixes, recalc and check:
+     - fisher!C40..H40 (chained fisher P index) — values should look monotonic and consistent with other years.
+     - Capacity&Price and LEM Demand Calibration that reference fisher!C40.. should update.
+     - DRAM sheet D21 and downstream cash flows/IRR should change — check IRR outputs (they should be materially different if prior errors were significant).
+   - If you see any #DIV/0 or mismatched ranges error, inspect the SUMPRODUCT / SUM ranges in the fisher formulas — they must be same length.
+
+Why these fixes will resolve the model errors
+- The fisher sheet is a foundational price index and many demand/price formulas read directly from it. Correcting the index computes the right baseline prices and demand elasticities.
+- Using the correct baseline price (D13) for DRAM profit calculations ensures profits are based on the intended scenario (baseline) rather than a post‑fab scenario, giving correct cash flows and IRR.
+
+If you want, I can:
+- Provide the exact corrected formulas for every affected cell (I already gave the key ones).
+- Point out any additional suspicious formula instances (I can scan for other mismatched SUMPRODUCT ranges and inconsistent references).
+- Recompute expected numerical outcomes (IRRs, prices, economic capacity) after the fix if you paste the corrected critical cells’ values here.

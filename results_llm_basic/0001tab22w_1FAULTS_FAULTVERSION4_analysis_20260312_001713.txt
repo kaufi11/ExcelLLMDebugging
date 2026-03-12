@@ -1,0 +1,48 @@
+Summary of the errors
+1. Misplaced (shifted) data in several rows — numbers are in the wrong columns (columns F, H, Z, etc.). That misalignment means the "Other" residual formulas are summing the wrong cells and upper/lower-level percentages are inconsistent.
+   - Examples: Education row (row 18) has values in F18 and H18 that should be in the standard grade columns (E, G, I, K, M). Engineering upper‑level has a value in Z22 that does not belong to any header column.
+2. Wrong sign in one formula: O30 uses =SUM(100+(E30+G30+I30+K30+M30)) — the plus should be a minus.
+3. Inconsistent / confusing formula style: the formula pattern SUM(100-(...)) works but is unusual. Also text like "n/appl" in percentage cells will break arithmetic formulas if left in referenced cells.
+
+Why these are problems
+- When percentages are shifted right, the formula that computes "Other" (=100-(sum of the five grade categories)) does not include the shifted values, so "Other" is incorrect and totals no longer add to 100%.
+- O30 with + produces a number >100 (or nonsense), so the Total University "Other" is wrong.
+- Text entries ("n/appl") in cells used in arithmetic produce errors or unexpected results.
+
+Quick fixes (step-by-step)
+1. Fix misaligned cells
+   - For each college row that shows values in F, H, Z, etc., cut those values and paste them into the correct header columns:
+     - Lower-level grade columns: E = A, G = B, I = C, K = D, M = F/WF
+     - Upper-level grade columns: S = A, U = B, W = C, Y = D, AA = F/WF
+   - Clear any stray values in the intermediate columns (F, H, J, L, N, Z, etc.) after moving.
+   - After realigning, the five grade cells will sum correctly and the "Other" residual will compute properly.
+
+2. Correct the formula in O30
+   - Replace =SUM(100+(E30+G30+I30+K30+M30))
+   - With =100-(E30+G30+I30+K30+M30)
+   - (Do the same replacement if you find any other formulas that use + instead of -.)
+
+3. Use a clearer formula for residual "Other"
+   - Replace formulas like =SUM(100-(E6+G6+I6+K6+M6)) with either
+     - =100-(E6+G6+I6+K6+M6)
+     - or =100-SUM(E6,G6,I6,K6,M6)
+   - Do the same for upper-level "Other" cells: =100-(S6+U6+W6+Y6+AA6) or =100-SUM(S6,U6,W6,Y6,AA6)
+
+4. Handle non-applicable text entries
+   - If a row is "n/appl" for all grades, either:
+     - Put "n/appl" in the whole row and remove the formula from "Other", OR
+     - Use formulas that ignore text (e.g., =IFERROR(100-SUM(E15,G15,I15,K15,M15), "n/appl")) so you don't get #VALUE! errors.
+
+5. Verify totals after fixes
+   - Recalculate or check: lower-level five grades + Other should equal 100 (allow small rounding error).
+   - Check Total University formulas Q30 and AF30 to ensure they sum all college totals (they look correct but re-verify after fixing misaligned Q values).
+
+Short examples (exact formulas to paste)
+- O6 (Other, lower level): =100-(E6+G6+I6+K6+M6)
+- AC6 (Other, upper level): =100-(S6+U6+W6+Y6+AA6)
+- O30 (Total University, lower Other): =100-(E30+G30+I30+K30+M30)
+
+Final check
+- After moving misplaced numbers and updating formulas, scan columns F, H, J, L, N, Z etc. for any leftover numbers and clear them. Confirm each row's five grade percentages + Other ≈ 100%.
+
+If you want, tell me one row number (for example row 18) and I will show exactly which cells to cut/paste and the corrected cell formulas.

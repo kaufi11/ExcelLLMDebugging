@@ -1,0 +1,38 @@
+Summary — I found 4 clear errors. Short fixes and why they work.
+
+1) Faulty cell: pricing!C15
+- Error type: Wrong constant / hard-coded value
+- Why: C15 is 3 (hard-coded) while every other Layoff cost row uses Layoffs * LayoffCost. It should multiply the number laid off (C5) by the per-worker layoff cost (Sheet1!$B$20).
+- Fix/formula: =C5*Sheet1!$B$20
+- Explanation: this makes the cell dynamic so if layoffs change the cost updates.
+
+2) Faulty cells: Sheet2 E16:E20 (Overtime cost rows)
+- Error type: Relative-reference / copy-down error (incorrect parameter row)
+- Why: the formulas were copied down without anchoring the parameter cell, so they reference Sheet1!B24, B25, B26... instead of the overtime rate in Sheet1!B23.
+- Fix: change the column E formulas to use the absolute parameter, e.g. for period 1..6 use:
+  - Row15 (period1): =E5*Sheet1!$B$23
+  - Row16: =E6*Sheet1!$B$23
+  - … and so on (or write once as =E15*Sheet1!$B$23 and copy down if rows align).
+- Explanation: put $ (absolute) on the parameter cell (Sheet1!$B$23) or use a named range for OvertimeRate so copying does not shift the reference.
+
+3) Faulty cells: Sheet3 B15:B20 (Hiring cost rows)
+- Error type: Wrong-sheet reference (copy-paste error)
+- Why: these hiring-cost formulas point to Sheet2!B5..B10 instead of the local decision variables on Sheet3 (Sheet3!B5..B10). So hiring cost is using numbers from the wrong sheet.
+- Fix/formula (example for period1): =Sheet1!$B$19 * Sheet3!B5
+  - Copy down for rows 16:20 replacing B5→B6 etc.
+- Explanation: ensure costs use the decision variables on the same sheet (Sheet3), not from Sheet2.
+
+4) Faulty cell: Sheet3 C24 (Total Revenue)
+- Error type: Wrong formula / logic
+- Why: C24 = SUM(J5:J10)*31 is meaningless here (multiplies demand-sum by 31). Revenue should be sum of (demand * price) or sum of (production * price), not demand-sum*31.
+- Fix options (choose one appropriate to your model):
+  - If price per period is in pricing!K5:K10: =SUMPRODUCT(J5:J10, pricing!K5:K10)
+  - If price is a constant 40: =SUM(J5:J10)*40
+- Explanation: SUMPRODUCT multiplies each period’s units by its price and sums correctly; using *31 is wrong unless 31 is a justified per-period price (it’s not here).
+
+Short recommended housekeeping (to avoid repeat errors)
+- Use absolute references for parameter cells (Sheet1!$B$16, $B$17, $B$23, $B$19, $B$20, etc.) or define named ranges (e.g., OvertimeRate).
+- When copying formulas between sheets, check sheet-qualified references (Sheet2! vs Sheet3!).
+- Replace hard-coded numbers with formulas that reference the correct variable/parameter cells.
+
+If you want, I can produce the exact corrected formulas for every affected cell and apply the fixes (show before → after) — tell me which sheet(s) to update.

@@ -1,0 +1,30 @@
+Short answer — two problems I see:
+
+1) Wrong weighted deposit for row 12 (KEYCORP)
+- Error: F12 contains the value 5 instead of the weighted deposits (=1 * E12). This makes the F total, every market share in column G, and the HHI in column H incorrect.
+- Fix: Put the correct formula in F12. Example:
+  - F12 = 1 * E12
+  - Better (to avoid manual mistakes): in F10:F33 use =IF(C10="Thrift",0.5*E10,E10) and fill down.
+
+2) Possible percent/scale inconsistency in column G / H (common source of wrong HHI)
+- Symptom: G formulas use =F10/$F$36*100 (so G returns percent points like 30), but the header says (%) and you may have formatted G as Percentage. If you both multiply by 100 and format as % you get values 100× too large; likewise H (squares of G) will be off by 10,000× if scales mix.
+- Two clean, consistent approaches (pick one):
+
+  Option A — keep G as decimal percent (recommended)
+  - G10 = F10 / $F$36
+  - Format column G as Percentage (e.g. 2 decimals). G36 should show 100%.
+  - H10 = (G10^2) * 10000  — this produces the standard HHI on 0–10,000 scale (e.g. 30% -> 900).
+    (Equivalent: H10 = (G10*100)^2)
+
+  Option B — keep G as percent points (numbers 0–100)
+  - G10 = F10 / $F$36 * 100
+  - Format column G as Number (not %). G36 should be 100.
+  - H10 = G10^2
+
+Summary of recommended steps
+1. Fix F12 to =IF(C12="Thrift",0.5*E12,E12) or simply =E12 for KEYCORP.
+2. Replace the G formulas with one consistent formula (pick Option A or B above) and apply it to all rows.
+3. Replace H formulas consistent with the G approach (Option A or B).
+4. Confirm G36 equals 100 (if using percent points) or 100% (if using percent format) and H36 is the sum of H10:H33.
+
+If you want, tell me which format you prefer (G as Percentage or as Number) and I’ll give the exact formulas to paste into your sheet.

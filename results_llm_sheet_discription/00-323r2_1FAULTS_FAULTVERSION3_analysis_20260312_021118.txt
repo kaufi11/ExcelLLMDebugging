@@ -1,0 +1,45 @@
+Short summary of the problems I found and clear fixes you can apply.
+
+1) Typo (obvious)
+- Error: K13 is = $C13/951 (typo).
+- Fix: change K13 to = $C13/2
+- Why: every J/K/L cell is using half the C input; /951 is clearly wrong and causes a near-zero K13 value that corrupts totals.
+
+2) Mixing full-cycle C-values with half-cycle split columns (J/K/L)
+- Symptom: many P/Q formulas subtract Cxx (full-period error) instead of the half-cycle contribution in J/K/L. Examples:
+  - P12 (Trnsmt Asrtn prd) = +C5 - C9 - C12 - C15 - C21  (uses full C9, C12, C15, C21)
+  - P10 (Receive Asrtn prd) = +P12 - C16 - C17
+- Why this is wrong: A2 and the sheet notes say "assumes all terms can be divided by two except skew" and the sheet builds per-item half-cycle values in J/K/L. Device-level timing (P/Q) should subtract the half-cycle contributions (J/K/L) — not the full C inputs — otherwise you double the error and give incorrect setup/hold margins.
+- Fix (apply consistently across P/Q formulas):
+  - Replace uses of Cxx in device-level subtraction with the matching Jxx (or Kxx/Lxx depending whether you are computing setup or hold) cell. Concrete replacements:
+    - P12 should be: = C5 - J9 - J12 - J15 - J21   (instead of - C9 - C12 - C15 - C21)
+    - P10 should be: = P12 - J16 - J17   (instead of - C16 - C17)
+  - Alternatively (if you prefer direct references): use C16/2 and C17/2, etc. (for example =P12 - C16/2 - C17/2). But pick one style (use J/K/L or use /2) and apply everywhere.
+- Result: device-level periods and net setup/hold margins will use the intended half-cycle contributions and will match the labelled J/K/L breakdown and totals.
+
+3) Potential double counting flagged in comments
+- Symptom: Several rows are annotated "Double counting" (rows 12, 14, 18, and comments near others). If those items are included both in non-compensatable totals and again in compensatable or compensation blocks they will be counted twice.
+- Fix: decide which category each flagged item belongs to and make the SUM ranges match that decision. Two options:
+  - Remove the duplicate cells from the SUM ranges (edit the SUM ranges so that an item appears only once), or
+  - Set the duplicate input cell to 0 where it should not contribute.
+- Why: double counting inflates totals and produces incorrect post-compensation error, minimum windows, and final setup/hold outputs.
+
+4) Clean up inconsistent absolute references (cosmetic but reduces errors)
+- Symptom: Some complex formulas mix relative and absolute references ($) inconsistently (e.g., P17 uses -J13 without $).
+- Fix: standardize to $J$13 / $P$15 etc in the complex P/Q formulas so copying and future edits don't accidentally shift references.
+- Why: prevents accidental broken references if you copy formulas or insert/delete rows.
+
+Quick checklist to apply now (minimum changes to get correct numbers)
+1. Fix the typo:
+   - K13 := $C13/2
+2. Replace full-C subtractions with J/K/L halves in P/Q formulas (apply consistently). Minimum immediate changes:
+   - P12 := =C5 - J9 - J12 - J15 - J21
+   - P10 := =P12 - J16 - J17
+3. Review any other P/Q formulas that currently subtract Cxx (or Bxx) directly — change them to subtract the matching J/K/L cells.
+4. Remove/resolve double-counted rows in the SUM ranges (rows flagged as "Double counting").
+
+If you want I can:
+- Provide a list of every P/Q cell that currently references a Cxx and show the exact replacement to Jxx/Kxx/Lxx, or
+- Show the corrected final setup/hold numbers for Fast-80 and Fast-160 after applying these fixes.
+
+Which follow-up would you prefer?

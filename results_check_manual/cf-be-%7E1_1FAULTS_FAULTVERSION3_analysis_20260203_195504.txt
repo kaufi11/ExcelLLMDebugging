@@ -1,0 +1,63 @@
+Summary — main errors found
+1. Circular references in Year 1 beginning cash (row 6). Each month’s beginning cash (B6, C6, D6, …) points to the end-of-month cash in the same column (B55, C55, …). That creates circular formulas and is logically wrong. Beginning-of-month must come from the previous month’s end (previous column) or from a dedicated starting cash input for month 1.
+
+2. A typo: Year 1 E6 =COUNT(D55) — wrong function, should be a cell reference (SUM / plain reference) to previous month end.
+
+3. Misaligned row formulas (Year 2): some O-column formulas are on the wrong rows (for example O20 / O21 are missing and O22 was used where O20 was expected). That misplaces totals and breaks subtotals.
+
+4. Percent-of-sales formulas often use relative references to the total (e.g., =O23/O57). They should use an absolute reference ($O$57 or O$57) so the denominator does not shift when copied.
+
+5. Many variance formulas divide by a base month value without checking for zero (e.g., =(D8-C8)/C8). If C8 = 0 this yields #DIV/0!. Consider guarding against divide-by-zero.
+
+6. Minor: many uses of SUM(single cell) or SUM(A+B) are unnecessary (they work but are confusing). Not an error but can be cleaned.
+
+How to fix — concise instructions and corrected formulas
+A. Fix Year 1 beginning cash (row 6)
+- Create a dedicated starting cash input cell (for example put the starting cash value in cell B2 or another clearly labeled input cell).
+- Set month 1 beginning cash (B6) to that input. Example:
+  B6 = <StartingCashCell>  (e.g. =B2)
+- For month 2 and later, set each beginning cell to the previous month’s end-of-month cash:
+  C6 =B55
+  D6 =C55
+  E6 =D55
+  … 
+  N6 =M55
+- Replace the incorrect COUNT(D55) with the proper reference:
+  E6 =D55 (if E is month3 beginning and should be previous month end)
+
+B. Fix misaligned O-column formulas in Year 2
+- Inspect every O-row for rows 17–53 and ensure each O(row) is SUM of the same row across C:N. For example:
+  O17 =SUM(C17:N17)
+  O18 =SUM(C18:N18)
+  ...
+  O20 =SUM(C20:N20)
+  O21 =SUM(C21:N21)
+  O22 =SUM(C22:N22)
+  (Correct whichever rows are currently shifted.)
+- After you fix those, re-check subtotals that sum those O cells.
+
+C. Make % of sales denominators absolute
+- Wherever you have Pxx =Oxx/O57, change denominator to absolute so it always divides by the total sales cell:
+  Pxx = Oxx / $O$57
+  (Example: P23 = O23 / $O$57)
+- That prevents the denominator from changing when formulas are copied across rows/columns.
+
+D. Prevent divide-by-zero in variance formulas
+- Replace formulas like =(D8-C8)/C8 with a safe formula:
+  =IF(C8=0, NA(), (D8-C8)/C8)
+  or
+  =IFERROR((D8-C8)/C8, 0)
+  Choose NA(), 0 or "" depending on how you want to display undefined variances.
+
+E. Clean-up (optional)
+- Replace SUM(B6+B14) with the simpler B6+B14 (works the same). Replace SUM(single cell) with direct reference for clarity.
+
+Why these fixes work (short)
+- Beginning-of-month cash must come from the previous month’s end (or a fixed starting input). Pointing to the same column’s end creates circular logic and prevents Excel from calculating correctly.
+- Misplaced O-row formulas cause rows to sum the wrong data — subtotals and totals become incorrect.
+- Absolute references ($O$57) prevent the denominator from moving when copied, ensuring percentages are always calculated against the correct total.
+- The IF/IFERROR guards prevent #DIV/0! errors and make variance outputs meaningful or explicitly blank/NA when base = 0.
+
+If you want, I can:
+- Give you the exact formulas to paste (I’ll assume a cell for starting cash), or
+- Produce a corrected copy of the problematic rows (if you tell me which cell you want for starting cash).

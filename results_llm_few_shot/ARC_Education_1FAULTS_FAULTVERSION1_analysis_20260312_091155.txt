@@ -1,0 +1,63 @@
+I reviewed the workbook. Below are the clear errors I found, why they happen, and the simple fixes (short and actionable).
+
+1) Sheet "Student-teacher" — Teachers total (wrong function)
+- Faulty cell: F56
+- Error type: Wrong function (COUNT used instead of SUM)
+- Fix: Replace =COUNT(F45:F55) with =SUM(F45:F55)
+- Why: COUNT counts how many numeric cells exist; SUM adds teacher headcounts.
+
+2) Sheet "Student-teacher" — Missing/incorrect totals (hard‑coded or empty)
+- Faulty cells: B18, C18, (and other “TOTAL” cells showing ** or manual numbers)
+- Error type: Omitted formula / manual entry
+- Fix example: B18 =SUM(B7:B17), C18 =SUM(C7:C17), E18 =SUM(E7:E17), H18 =SUM(H7:H17), etc.
+- Why: Totals should be computed from the system rows (Clayton→Marietta). Replace hard-coded numbers or ** with SUM formulas so totals update automatically.
+
+3) Sheet "Student-teacher" — Erroneous decimal entry
+- Faulty cell: E15 (shows 1.548)
+- Error type: Data-entry (decimal misplaced)
+- Fix: Replace 1.548 with 1548 (or correct integer attendance value from source)
+- Why: Attendance should be an integer in the thousands; the decimal point was accidentally inserted.
+
+4) Sheet "University" — Two‑year totals use wrong ranges
+- Faulty cells: C15, D15, E15, F15, G15, H15, I15, J15, K15
+- Error type: Range/omission error (includes four‑year rows)
+- Fix examples:
+  - C15 =SUM(C12:C14)
+  - D15 =SUM(D12:D14)
+  - E15 =SUM(E12:E14)
+  - …repeat for columns F:K using rows 12:14
+- Why: The two‑year college total must sum only rows 12–14 (the two‑year colleges). Current formulas include rows 5–8 (four‑year colleges), giving wrong totals.
+
+5) Sheet "Teachers adv degrees" — Percent values inconsistent / counts fractional
+- Faulty cells: B21:B31 (and similar percentile cells showing 0.4690338563…), and total counts like C13 = 1995.8, I13 = 1789.9, K13 = 1891.2
+- Error types: Formatting/scale error and non-integer counts
+- Fix:
+  - If the numbers like 0.469033… are meant to be percents, format them as Percentage (Home → Number Format → Percentage) and set decimals as desired. If they should be 46.9 (not 0.469), multiply by 100 or fix the generating formula.
+  - For personnel counts that are fractional (e.g., 1995.8), wrap the formula with ROUND(...,0) or use INT/ROUNDUP as appropriate: e.g., =ROUND(original_formula,0)
+- Why: Some percent cells are stored as decimals (0.47) while the sheet uses plain percent numbers (50.9). Personnel must be whole people, so fractional results mean the calculation needs rounding.
+
+6) Sheet "Student-teacher" and other sheets — Ratio columns stored as text
+- Faulty cells: many Ratio columns (e.g., D7: "15.5-1", G7: "16-1", etc.)
+- Error type: Text labels instead of numeric ratio (not an error if purely display, but prevents calculations)
+- Fix: If you need numeric ratios, store them as numeric values (e.g., 15.5 or use a helper column =Attendance/Teachers) and keep the "15.5-1" only as display text.
+- Why: Text like "16-1" cannot be used in math. Use numeric helpers for calculations.
+
+7) Sheets "State test" and "SAT" — inconsistent scales / suspicious values
+- Faulty observation: Columns B–C show values ~200, later columns D:K show many values in the 30–70 or truncated two‑/three‑digit numbers (e.g., D10=43, D11=43, D25=50 etc.; SAT has some entries like D10 = 99 which looks incomplete)
+- Error type: Likely data-entry / scaling problem (values truncated, shifted or wrong format)
+- Fix: Trace the original data or formula that produced those columns. Quick checks:
+  - Select a suspicious cell and check formula bar (is it a value or formula?).
+  - Check Number Format (General vs. Text vs. Percent).
+  - Compare a known good row across years; if one year’s values are all ~200 and the next drop to ~50, the data source or a transformation step (divide/multiply/format) is wrong — replace values from the source or correct the transformation.
+- Why: The pattern suggests an accidental scale change or truncated entry; confirm against original data.
+
+General troubleshooting steps (fast):
+- Use Find (Ctrl+F) to locate =COUNT where you need =SUM.
+- Use Error Checking (Formulas → Error Checking) to find inconsistent formulas in a column.
+- For totals: replace manual totals with SUMs referencing the exact data rows.
+- For percentages: decide on one representation (either 0.47 formatted as 47% or 47.0 as number) and apply consistent formatting. For counts, wrap formulas with ROUND(...,0).
+
+If you want, I can:
+- Provide the exact corrected formulas for each total cell in "Student-teacher" (list per column), and
+- Convert the Teachers sheet percent/round fixes with the exact formulas (show original → corrected).
+Which sheet(s) should I correct first?

@@ -1,0 +1,32 @@
+Summary — 4 important errors I found and how to fix them (short & clear).
+
+1) Fault: 2002 Report!C13 — wrong conversion
+- Error type: mechanical (wrong operator)
+- Problem: C13 is "FORMULA =G13*1000000" but G13 is in pounds and the sheet uses Millions of Pounds. This multiplies instead of converting to millions.
+- Fix: replace with =G13/1000000
+- Why: dividing converts pounds → millions; multiplying produces a huge wrong number.
+
+2) Fault: 2002 Report (Joint‑Venture table) — M46:M55 reference the wrong rows
+- Error type: reference/offset error (copy/paste)
+- Problem: each M cell (M46→M55) uses SUM(B14:D14), SUM(B15:D15), … etc — those are 32 rows above the JV table, so SVEP values are pulling the wrong years.
+- Fix: change M46 to =SUM(B46:D46) then fill down through M55 (so each row sums its own B:D).
+- Why: the JV table needs the sum of that same row's B:D values (SVEP). Using the earlier rows gives incorrect differences (N) and ratios (O).
+
+3) Fault: 1999 Report (the same JV block) — same offset error
+- Error type: reference/offset error
+- Problem: M46:M55 on the 1999 Report sheet use the identical wrong references (B14:D14 etc).
+- Fix: same remedy — set M46 =SUM(B46:D46) and fill down through M55.
+- Why: same cause and same downstream effects on N and O.
+
+4) Fault: data sheet — some recycled values are hard-coded instead of using formula
+- Error type: consistency / maintainability
+- Problem: rows like data!C10, C11, C12 (and notes sheet entries) contain literal values while the pattern elsewhere is C = E - B (total recycled = total recycled+incinerated − incinerated). That makes updates error-prone.
+- Fix: replace each hard-coded C with =Erow - Brow (e.g. data!C10 = E10 - B10) and fill down.
+- Why: keeps calculations consistent and prevents mismatch when totals or incinerated values change.
+
+Notes / downstream checks to do after fixes
+- After correcting M in the JV tables, recalc N (L−M) and O (N/L) — they will change and should be verified.
+- After fixing C13, check any totals or charts that consume that row.
+- Search for any other copy/paste offsets (look for formulas that reference a fixed distant row instead of same-row ranges) — same issue recurs commonly.
+
+If you want, I can provide the exact formulas to paste for each affected cell/range and a short VBA or Find/Replace pattern to fix all offset formulas (if there are many).

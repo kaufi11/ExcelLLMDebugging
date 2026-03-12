@@ -1,0 +1,60 @@
+Summary — main problems found
+- Several formulas contain stray additions like “+1” or add two hard-coded numbers; these inflate totals and skew percentages.
+- Several SUM ranges include the wrong rows (they include a blank/total row or miss the last data row).
+- One sign error creates a negative FTEE for a college (H14).
+- Consequence: totals, percent columns and charts will be wrong.
+
+Fixes (cell-by-cell, short and exact)
+
+Revenues by Source (Sheet: Revenues by Source)
+- Faulty: C9 =9432730+111410104
+  - Error: hard‑coded addition of two constants (almost certainly unintended).
+  - Fix: replace with the correct single value or the correct cell references. Example (if 9,432,730 is the intended value): C9 = 9432730
+  - Why: percentages (B9 = C9/$C$15) should use a single correct dollar amount.
+- Faulty: C11 =141577402+1
+  - Error: stray “+1”.
+  - Fix: C11 = 141577402
+- Faulty (totals): C15 =SUM(C9:C14) and B15 =SUM(B9:B14)
+  - Error: ranges include a blank/total row (C14/B14 don’t hold data); should sum only data rows C9:C13 / B9:B13.
+  - Fix: C15 =SUM(C9:C13) and B15 =SUM(B9:B13)
+
+General check: search the sheet for any formulas containing “+1” or unexpected literal additions and remove them or replace with proper cell refs.
+
+Expenditures by Function (Sheet: Expenditures by Function)
+- Faulty (totals): C19 =SUM(C9:C18) and B19 =SUM(B9:B18)
+  - Error: categories go from row 9 to row 17; the sums include a non‑data row (row 18) or miss the correct end.
+  - Fix: C19 =SUM(C9:C17) and B19 =SUM(B9:B17)
+
+Expenditures by Category (Sheet: Expenditures by Category)
+- Faulty (totals): C15 =SUM(C9:C14) and B15 =SUM(B9:B14)
+  - Fix: C15 =SUM(C9:C13) and B15 =SUM(B9:B13)
+
+General State Financial Aid (Sheet: General State Financial Aid)
+- Faulty: B21 =3684419+1
+  - Error: stray “+1”.
+  - Fix: B21 = 3684419
+- Verify totals: B25 =SUM(B9:B23) is correct; after removing the +1 the C% column (C9:C23 = Bn/$B$25) will recalc correctly.
+
+FTEE Calculation (Sheet: FTEE Calculation)
+- Faulty sign: H14 = -C14 - F14
+  - Error: negative sign makes the college’s total FTEE negative.
+  - Fix: H14 = C14 + F14
+- Faulty extra +1 in totals: E27 =SUM(E11:E26)+1
+  - Error: stray “+1”.
+  - Fix: E27 =SUM(E11:E26)
+- Faulty total ranges include a blank/extra row:
+  - Currently B27 =SUM(B11:B26), C27 =SUM(C11:C26), H27 =SUM(H11:H26), I27 =SUM(I11:I26)
+  - Better fix them to match the actual data rows (your data runs row 11..25). Use:
+    - B27 =SUM(B11:B25)
+    - C27 =SUM(C11:C25)
+    - H27 =SUM(H11:H25)
+    - I27 =SUM(I11:I25)
+  - Why: avoid summing blank/extra rows and keep the totals aligned with the denominator cells used elsewhere.
+
+Other recommendations (short)
+- Search workbook for “+1” or formulas that add literal numbers (Ctrl+F for “+1”, “+1114…”, etc.). Remove accidental literals.
+- Use consistent, explicit ranges that exactly match your data rows (don’t include the totals row in the summed range).
+- After fixes, recalc and check that percentage columns sum to ~100% (rounding allowed).
+- Use Evaluate Formula (Formulas → Evaluate Formula) on suspicious cells to see how Excel computes them.
+
+If you want, I can generate the exact replacement formulas for every total/percent cell in the workbook or produce a corrected copy — tell me which approach you prefer.

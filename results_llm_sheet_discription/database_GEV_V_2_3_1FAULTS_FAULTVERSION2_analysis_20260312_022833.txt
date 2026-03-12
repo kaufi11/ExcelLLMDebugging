@@ -1,0 +1,38 @@
+Thanks — I reviewed the workbook description and found a few real problems that will cause wrong totals or broken formulas. Short, clear list with fixes and why.
+
+1) Typo in visualizza_gruppo: double plus signs
+- Error: formulas for total-hours (column Q) are written like =D7++G7+J7+M7 (the extra +).
+- Fix: remove the extra plus. Example corrected formula for Q7 (and Q8:Q18): =D7+G7+J7+M7
+- Why: the double + is a typo and can cause Excel parse problems or unexpected behavior. Fix all Q rows the same way.
+
+2) Wrong count of participating GEV (calcoli!H11)
+- Error: H11 = 5-COUNT(J15:N15) — this counts the J15:N15 cells (which in your design contain 0 or names) and inverts the logic, producing wrong active‑member counts (often 0).
+- Fix: count the input flags (row 11), not the result cells. Use for example:
+  - =SUM(J11:N11)  (if J11:N11 are 1 for present, 0 for absent)
+  - OR =COUNTIF(J11:N11,1) (if they contain 1 for present)
+- Why: J15:N15 are set to 0 or a name string by formulas, so COUNT on them is not the correct measure of how many GEVs were selected. Summing/COUNTIF on the original flags (J11:N11) returns the actual number of participants; that corrects hours-per-service (H15 = G15*H11).
+
+3) Counting services: calcoli!B60 uses COUNTA on a column with formulas that return "" (empty string)
+- Error: B60 =COUNTA(db!A3:A4) — COUNTA counts even empty strings produced by formulas ("") so it may overcount rows you intended as empty.
+- Fix: if A contains numeric IDs use COUNT instead:
+  - =COUNT(db!A3:A1000)  (adjust range to your data)
+  If A can contain text IDs, use a robust non-blank test:
+  - =SUMPRODUCT(--(LEN(TRIM(db!A3:A1000))>0))
+- Why: COUNT ignores empty strings and counts only real numbers; SUMPRODUCT+LEN counts truly non-empty text. This avoids counting rows that look empty but contain "" from formulas.
+
+4) Counting number of GEV (calcoli!B61) is fragile
+- Error: B61 =COUNTA(parametri!A1:A4)-1 subtracts 1 (probably to ignore a header) — fragile if layout changes.
+- Fix: point the count to the actual list (skip header) or use a named/dynamic range. Example:
+  - =COUNTA(parametri!A2:A100)  (if A2:A100 store GEV names)
+  - Or define a table/named range (e.g., GEV_List) and use =COUNTA(GEV_List)
+- Why: small layout changes (header moved, extra blank rows) make the -1 adjustment wrong; use the proper range or a named range.
+
+Summary of action steps (apply in workbook)
+- Replace all Qx formulas in visualizza_gruppo from D#++G#+... to D#+G#+J#+M#.
+- Change calcoli!H11 to =SUM(J11:N11) (or COUNTIF(...,1) if appropriate).
+- Change calcoli!B60 to =COUNT(db!A3:A1000) (or SUMPRODUCT version if IDs are text).
+- Change calcoli!B61 to count the real GEV name range (e.g., parametri!A2:A100) or use a named range.
+
+If you want I can:
+- Give the exact Find/Replace list for all affected cells (Q7:Q18, etc.), or
+- Provide exact formulas ready to paste for each cell you want fixed.

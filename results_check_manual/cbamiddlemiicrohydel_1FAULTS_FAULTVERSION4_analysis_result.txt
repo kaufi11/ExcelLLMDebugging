@@ -1,0 +1,50 @@
+I reviewed the workbook formulas (sheet "CBA" and the discounting / totals in "Individ. Hh. Analysis") and found several formula mistakes and some likely inconsistencies that will change the project PVs, B/C and NPV. Below I list the issues, explain the effect, and give concrete corrections.
+
+1) Wrong discount-factor formula in the costs discount row (row 19)
+- Problem cell: U19
+- Current formula: =T19*(1*1.12)
+- Why it's wrong: everywhere else the DF chain uses multiplication by (1/1.12) to step discount factors forward (e.g. H19 = G19*(1/1.12), I19 = H19*(1/1.12), ...). U19 uses multiplication by 1.12 instead of dividing by 1.12, so it increases the DF instead of decreasing it. This breaks the discount factor sequence from column U onward.
+- Correct formula: =T19*(1/1.12)  (or simply =T19/1.12)
+- Impact: U19 is wrong, which makes U20 (and V20..AA20 that depend on U19) incorrect. The present-value-of-costs row (row 20), the PV totals (C20, G36, C36), B/C ratio (C38/G38) and NPV (C39) are therefore incorrect. The discount factor row for benefits (row 31) is correct, so costs are being discounted with a different, erroneous DF series than benefits — causing an inconsistency in the analysis.
+
+2) Discount-factor rows mismatch (row 19 vs row 31)
+- Observation: Row 31 (DF for benefits) is consistent and follows the correct chain. Row 19 (DF for costs) should be identical to row 31 but because of the error at U19 they differ.
+- Recommendation: Make row 19 formula chain match row 31 exactly (or vice versa). After fixing U19, verify all DF values in row19 equal corresponding ones in row31 (G19..AA19 = G31..AA31). Then recalc row20 and row32 totals.
+
+3) PV of costs and subsequent totals are therefore incorrect
+- Affected cells: U20, V20, W20, X20, Y20, Z20, AA20 (and possibly earlier if other manual edits were made), C20 (sum of G20:AA20), G36 (SUM(G20:AA20)), C36, C38, G38, C39, G39.
+- Action required: After fixing U19, re-evaluate row20 (PV of costs) and then recompute C20, G36/C36, B/C ratio and NPV. Expect the numeric PV/C and B/C to change.
+
+4) Inconsistent referencing for environmental cleanup and scrap-value (AA17 and AA29)
+- AA17 formula: =0.1*G5+0.1*G6  (environmental clean-up placed in year 2020)
+- AA29 formula: =0.02*G5+0.02*G6  (scrap value placed in year 2020)
+- Why this is suspicious:
+  - Both formulas reference G5 and G6 (the year-2000 values for AKRSP and community contributions), then put that 10% (AA17) / 2% (AA29) figure into the year-2020 column (AA). That's valid if the intention is "in 2020 pay X% of the original 2000 value". But it is inconsistent with typical patterns where a same-year cell uses same-column references.
+  - The AA29 description says "scrap value (2% of total cost of the project)" but the formula uses only G5 and G6 (AKRSP contribution and community contribution). That does NOT equal 2% of the total project cost – it is only 2% of those two components. If the scrap value is intended to be 2% of total project cost, you should use SUM of all construction cost components (e.g. =0.02*SUM(G5:G??) or whichever columns/rows represent the total project cost).
+- Recommended fixes (pick one depending on intent):
+  - If cleanup/scrap should be 10% / 2% of the original (year-2000) AKRSP+community amounts and be paid in 2020: then keep the G5/G6 reference but make intent explicit (comment) or use =0.1*(G5+G6).
+  - If they should be 10% / 2% of the total project construction cost: change formulas to reference the total construction component, e.g. AA17 = 0.1*SUM(G5:G6:G10:...) or AA17 = 0.1*G18 (if G18 is the total initial-year costs), and similarly AA29 = 0.02*SUM(all construction rows) (or =0.02*C18 if C18 is total across years--but be careful with year alignment).
+- Impact: If AA29/AA17 should be of the whole project but currently only use G5/G6, the benefits/costs and totals will be underestimated.
+
+5) Minor / suggested cleanups (not strictly formula errors but worth reviewing)
+- Many per-year rows compute costs/benefits by repeating the same formula in each annual column (H..AA). That is fine but error-prone — consider placing year-specific input in one place and filling horizontally by relative references.
+- Row sums and annual totals sometimes use different ranges:
+  - C5 uses =SUM(G5:AA5) — OK, but confirm that all expected annual values are in G:AA for that row.
+  - C18 uses =SUM(G18:AA18) where G18 is =SUM(G5:G17) and AA18 is =SUM(AA5:AA17) — this works but is slightly confusing; keep consistent patterns.
+- In the "Individ. Hh. Analysis" sheet:
+  - AE13 uses =AVERAGE(AE3:AE10) while AE3..AE10 contain various calculated vs manual values — verify that the intended averaging range is correct (AE10 exists, AE11 maybe missing).
+
+Summary of required corrections (action list)
+1. Fix the discount factor error:
+   - Change U19 to =T19/1.12 (or =T19*(1/1.12)).
+   - Verify row19 from G19..AA19 now matches row31 G31..AA31.
+2. Recalculate row20 (Present value of costs) after fixing row19.
+   - Recompute C20, G36/C36 and then B/C (C38) and NPV (C39).
+3. Decide intended logic for AA17 and AA29 and fix formulas:
+   - If they are percentages of the entire project cost, change to reference the full project cost (e.g. =0.1*SUM(G5:G17) or =0.02*SUM(G5:G17) or =0.02*G18 if G18 is total for year 2000).
+   - If they are intentionally percentages of only G5 & G6, make formula clearer (e.g. =0.1*(G5+G6)).
+4. After fixing the above, recheck all totals and B/C and NPV to confirm results are now consistent.
+
+If you want, I can:
+- supply the corrected numeric PV totals and a re-computed B/C ratio and NPV (I will recalculate the affected rows), or
+- produce exact replacement formulas for AA17 and AA29 if you tell me whether scrap/cleanup should be percentage of "AKRSP+community only" or of "total project cost".

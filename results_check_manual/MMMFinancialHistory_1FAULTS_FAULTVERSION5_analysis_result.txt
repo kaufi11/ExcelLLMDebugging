@@ -1,0 +1,24 @@
+I checked the formulas in the workbook and found one clear formula error plus a couple of small inconsistencies/oddities you should review.
+
+1) Incorrect function (clear error)
+- Sheet: Select Financial Data
+- Cell: J11
+- Current formula: =COUNT(J9:J10)
+- Problem: COUNT returns the number of numeric cells in J9:J10 (that returns 2), not their numeric sum. J9 and J10 are monetary amounts (cost of sales and freight costs); J11 is supposed to be "Cost of operations" (the sum of those two lines).
+- Effect: J11=2 is wrong and propagates incorrect results downstream in column J:
+  - J12 (=J8-J11)
+  - J14 (=J12-J13)
+  - J18 (=J14-J15-J16)
+  - J21 (=J18-J19)
+  - J25 (=SUM(J20:J24)) and any other dependent cells (EPS, ratios, etc.) that rely on those values will be wrong.
+- Fix: change J11 to =SUM(J9:J10)
+
+2) Other items to review (not necessarily errors, but unusual / potentially confusing)
+- Sheet: Cash Flow
+  - Cells B42..J42 (beginning-of-year cash) are implemented by referencing the next-column end-of-year value (B42 = C44, C42 = D44, …, J42 = K44). This is a valid approach for "beginning = prior year end", but it's an unusual pattern and easy to confuse. Make sure this is intentional. The earliest column (K42) is hard-coded (value 2084) because prior-year data are unavailable — that’s acceptable but document it.
+- Search for COUNT vs SUM usage:
+  - I only found the COUNT usage in J11. All other "sum-of-two-lines" cells use SUM appropriately. If you have other columns containing many numbers, a quick workbook-wide search for COUNT(range) might be worthwhile to ensure no other accidental COUNTs were used where SUM was intended.
+
+Recommendation
+- Fix J11 to =SUM(J9:J10) and then recalc / review all values in column J (and any other sheets that reference those J values) — the fix will change a number of downstream results.
+- Optionally, add a small comment to the Cash Flow beginning-of-year cells explaining the cross-column linking (e.g., "B42 = prior year end (C44)") so future readers do not treat it as an error.

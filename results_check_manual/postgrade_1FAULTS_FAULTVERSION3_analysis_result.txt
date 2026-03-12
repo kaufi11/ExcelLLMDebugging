@@ -1,0 +1,44 @@
+I reviewed the formulas and values in sheet "PHYS102-0101". I found several formula mistakes and inconsistent calculation approaches that will cause wrong results (especially averages). Below are the problems I found, why they are problems, and suggested fixes.
+
+Major / high-impact problems
+- G47: formula is "=10*40*100" (result 40,000). This is almost certainly a typo — it inflates the G-column average (G105 = 548.719...). Context: other G cells use score/40*100. Suggested fix: change to =10/40*100 (which yields 25) or to the correct denominator/operation that matches how G is calculated for other rows.
+
+- Column G average (G105 = 548.7198795): caused by the G47 outlier above. After fixing G47 the average should be in the expected percentage range. Until G47 is fixed, the average is meaningless.
+
+Inconsistent scaling / mixed formula styles (these create hidden errors)
+- Column F (Quiz? — many different approaches used)
+  - Several F cells use "*2" to scale values (examples: F15 = "=34.5*2", F23 = "=21.5*2", F29 = "=31.5*2", F55 = "=27.5*2", F83 = "=28*2", F91 = "=23.5*2", F99 = "=46*2").
+  - Other F cells use division by the maximum and *100 (example: F81 = "=20/30*100").
+  - Many F cells are plain numbers (already percentages).
+  - Why this is a problem: these are three different ways to represent the same thing (double raw, divide by max*100, or store percent). They must be standardized; otherwise the column average and any further calculations are inconsistent.
+  - Suggested fix: pick one canonical storage (recommended: store the raw score as a percent using =rawScore/maxScore*100). Convert all "*2" style formulas to division-by-max form (if max is 30, use =raw/30*100). Document the max for column F.
+
+- Column R and S (small quiz / mini-assessments)
+  - Mostly consistent formulas like =x/15*100, but a number of rows use constants or approximations instead of the same fraction (e.g. R64 uses "=93.3" rather than "=14/15*100"). That introduces tiny inconsistencies. Suggest replacing hard-coded constants by the canonical fraction (=14/15*100 or similar) for consistency/precision.
+
+Other noteworthy oddities (manual formulas or likely typos)
+- Cells with odd/hard-coded formulas instead of the same fractional formula pattern:
+  - R64: "=93.3" (should be "=14/15*100" if that is the intent; otherwise confirm).
+  - R17: "93.3" present as value (no formula) — inconsistent with other R entries that compute exactly.
+  - Several cells in S, T, etc. use "=100" instead of keeping the raw percent; not harmful but inconsistent.
+
+- Column L:
+  - L101 uses "=18/20*100" — this is different denominator than many other L cells (most are out of 100 or already percent). If L has varying maxima in different rows, document; otherwise standardize.
+
+- Cell P35 formula "=14+1+12": this is mathematically fine (equals 27) but unusual; verify that it matches the intended breakdown.
+
+- Several cells use approximate constants instead of formulas that mirror the other rows (examples scattered throughout). These do not produce formula errors but reduce consistency and auditability.
+
+Recommendations / next steps
+1. Correct the clear typo: change G47 from =10*40*100 to =10/40*100 (or the correct fraction for that assessment).
+2. Standardize the scaling method for each assessment column. For example:
+   - For columns that represent scores out of 40: use =score/40*100 for every row.
+   - For columns that are out of 35: use =score/35*100 etc.
+   This will remove the mix of "*2", raw percentages and hard-coded constants.
+3. Recalculate averages after cleaning the above. G105 will be wrong until the G47 outlier is fixed.
+4. (Optional) Add a check column or conditional formatting to flag any percent >100 or <0 so mistakes (like 40,000) are obvious immediately.
+5. (Optional) Use AVERAGEIF or trimmed statistics to avoid a single data-entry typo from skewing the summary if you expect occasional outliers.
+
+If you want, I can:
+- produce a cell-by-cell list of all locations that use "*2", hard-coded constants or denominators different from the majority, or
+- produce a corrected version of the workbook (fixing G47 and standardizing one column as an example).

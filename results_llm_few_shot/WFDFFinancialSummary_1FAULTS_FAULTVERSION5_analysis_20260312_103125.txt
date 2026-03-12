@@ -1,0 +1,31 @@
+I checked the workbook and found the key errors that are causing incorrect Net Income, Ending Cash and Balance Sheet numbers. Below are the problems, short explanations and the fixes.
+
+1) Faulty cell: Financial summary!K30
+- Error: wrong sign (logical/formula error).
+- Problem: K30 is K15+K27 (it adds expenses instead of subtracting them).
+- Fix: change formula to =K15-K27
+- Why: Net Income = Total Income − Total Expenses. Fixing the sign corrects K30 and all downstream balances (K33, subsequent beginning balances, Balance Sheet items).
+
+2) Faulty cell: Balance Sheet!G4
+- Error: hard-coded value (mechanical/data-entry error).
+- Problem: G4 contains 12323.99 instead of linking to the Financial summary checking account for that date.
+- Fix: replace the value with the link to the correct cell: ='Financial summary'!I35
+- Why: that makes the Balance Sheet pull the actual checking account ending balance for Dec 31, 2001 (keeps numbers consistent & update automatically).
+
+3) Faulty cells: Stork - 2002 Expenditures!D59 and D60 (labels and references swapped)
+- Error: reference/label swap (logical error).
+- Problem: D59 is labeled "Receipts" but contains =C55 (expenditures total). D60 is labeled "Expenditures" but contains the receipts total from 'Stork - 2002 Receipts'.
+- Fix:
+  - D59 → set to ='Stork - 2002 Receipts'!C43
+  - D60 → set to =C55
+- Why: D59 should show total receipts and D60 total expenditures so the net (D61 = D59−D60) computes correctly.
+
+4) Cascade note (important)
+- After fixing K30, update/verify any cells that reference K30 (for example Balance Sheet!H13 and any Beginning Cash links like E4, G4 etc) so they now pull the corrected numbers. A wrong K30 propagates wrong balances across multiple sheets.
+
+Extra (optional) checks to run after fixes
+- Recalculate and confirm Financial summary Ending Cash (C33,E33,G33,I33,K33,M33) roll forward properly.
+- Confirm Balance Sheet Totals (TOTAL ASSETS and TOTAL LIABILITIES & EQUITY) match after the corrections.
+- Scan for any other hard-coded numbers that should be links (values that look like balances but are entered manually).
+
+If you want, I can produce the exact cell-by-cell change list and check the workbook further for any remaining mismatches.

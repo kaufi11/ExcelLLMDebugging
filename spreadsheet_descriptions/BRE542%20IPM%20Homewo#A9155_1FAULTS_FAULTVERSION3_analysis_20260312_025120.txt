@@ -1,0 +1,57 @@
+Summary of workbook structure and contents
+
+1) Sheet: "van Genuchten fit theta-h"
+- Purpose: fit van Genuchten water retention model (theta vs pressure) and compute sum-of-squared errors (SSE) for optimization.
+- Key parameter cells (A2:A6 / B3:B6):
+  - theta_r (B3) = 0.009957388864981173
+  - theta_s (B4) = 0.45020068560206356
+  - alpha (B5) = 0.00014665857868120281
+  - n (B6) = 3.12346573314838
+- SSE:
+  - B7 is set to =E19 (so B7 mirrors the sum in E19).
+  - D19 label = "Sum Sq Er"; E19 formula =SUM(E14:E18) (see issues below).
+- Observed / predicted table (rows 11–16):
+  - Columns:
+    - A: Position
+    - B: Pressure (negative values)
+    - C: Observed theta
+    - D: Predicted theta (van Genuchten model)
+    - E: Error (squared difference)
+    - F: Ln P (natural log of suction)
+  - Predicted theta formula (example in D12):
+    =$B$3 + ($B$4-$B$3)/((1 + $B$5 * (-B12)^$B$6)^(1 - 1/$B$6))
+    - Notes: uses -B12 to convert negative pressure to positive suction; follows standard van Genuchten functional form.
+  - Error formula (example in E12): =(C12 - D12)^2
+  - Ln P formula (example in F12): =LN(-B12)
+
+- Notable anomalies on this sheet:
+  - Row 15 error formula: E15 is =(C15-563)^2 (hard-coded 563) — likely a mistake; should be (C15 - D15)^2.
+  - SSE summation range: E19 = SUM(E14:E18) excludes E12–E13 and includes E18 (which may be empty). B7 links to E19, so SSE may be incorrect unless ranges are corrected.
+  - Ensure pressures are always negative (so LN(-B) is valid) or add error handling.
+
+2) Sheet: "Data set"
+- Purpose: raw measured time series (pressure and volumetric water content) at multiple depths and placeholders for flux/gradient/K calculations.
+- Header/instructions at top (A1:A20 and B11) describe the workflow: plot data, fit van Genuchten retention curve (use the other sheet), compute fluxes, use Darcy’s law to estimate conductivity, and fit Ksat.
+- Spatial/flux layout:
+  - Column groups for depths: 0.5 m (B,C), 1.0 m (E,F), 1.5 m (K,L), 2.5 m (Q,R), 3.5 m (T,U).
+  - Additional header positions for computed flux/gradient/K at intermediary elevations (H21: 0.75 m, N21: 1.25 m, W21: 1.25 m — W21 appears duplicated/incorrect label; likely should be 3.0 m).
+  - Row 22 contains labels: depth names and column headers (Flux, Gradient, K) for the intermediary elevations.
+- Time series table (rows 24–42):
+  - A = time (hrs) from 0 to 2400 (selected points)
+  - For each depth: head (m) and theta (volumetric water content). Example at time 0:
+    - 0.5 m: head B25 = -0.01 m, theta C25 = 0.4596
+    - 1.0 m: head E25 = -0.01 m, theta F25 = 0.4596
+    - etc.
+  - Heads are negative (suction), theta decreases with increasing suction/time.
+- Calculations for flux, gradient and K are implied by header columns (H.., N.., W..) but no explicit formulas are listed for these in the extract.
+
+Recommendations / quick fixes
+- Correct E15 to =(C15-D15)^2.
+- Fix SSE sum range to include all error rows (e.g., E19 = SUM(E12:E16) or the appropriate full range), and ensure B7 pointing to E19 is intentional.
+- Verify the repeating/incorrect header W21 (1.25 m) — likely a label typo (should be 3.0 m or 3.00 m).
+- Confirm sign convention: predicted theta uses (-B)^n and LN(-B) — ensure all pressure values are negative to avoid errors; add IF or ABS guards if needed.
+- If using Solver: target B7 (SSE) by changing B3:B6 (or selected parameter subset), subject to bounds/constraints.
+
+If you want, I can:
+- Produce a corrected list of the exact formula fixes and cell edits, or
+- Show how to set up the Solver configuration to fit theta_r, theta_s, alpha, n (or only alpha and n) and/or Ksat.

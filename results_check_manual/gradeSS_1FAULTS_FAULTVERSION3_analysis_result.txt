@@ -1,0 +1,37 @@
+I reviewed the formulas and values on sheet "335". I found one clear formula/value error and a related units/formatting inconsistency that causes the final grade calculation to be wrong. Summary and recommended fixes below.
+
+Problems found
+1) E7 contains a hard-coded value/formula =5 (value = 5)
+   - Location: E7
+   - Problem: E7 is used in the final grade calculation (O14 uses E7*D7). All other category percentages are stored as fractions (e.g. E13 = E11/D11 = 0.85, K13 = K11/J11 = 0.875, K25 = K23/J23 = 0.857142857). E7 having the value 5 mixes units (5 instead of 0.85), which makes the final total > 1 (O14 = 1.8955).
+   - Result: Final percentage (O14) is incorrect (1.8955) and letter grade logic evaluates incorrectly.
+
+2) O5 references E7
+   - Location: O5 formula =E7 (value shown = 5)
+   - Problem: Because E7 is wrong, O5 is wrong. Also O5 is labeled "Percentage Grade - Exam 1 (25%)" so it should show the exam1 percent (as a fraction/percentage), not the literal 5.
+
+Why this matters
+- Mixing scales (raw points like 5 or 85 versus decimal fraction like 0.85) breaks the weighted-sum calculation in O14. At present O14 sums (E7*D7)+(E13*D13)+(K13*J13)+(K25*J25) — with E7==5 this term is 5*0.25 = 1.25 and drives the total above 1.
+
+Recommended fixes (exact formulas)
+- Replace the hard-coded E7 with a percent-of-possible formula:
+  - E7 -> =E5/D5
+  - This yields 0.85 (or 85% when formatted Percent) for Exam 1.
+
+- Keep or set O5 consistently to show the exam percent (optional):
+  - O5 -> =E7  (or directly =E5/D5)
+  - Format E7 and O5 as Percentage (e.g. 2 decimals) so values display as 85.00%.
+
+- After fixing E7, O14 can remain:
+  - O14 = (E7*D7)+(E13*D13)+(K13*J13)+(K25*J25)
+  - With E7 corrected, O14 will be ~0.858035714 (85.80%), not 1.8955.
+
+Notes about letter-grade formula
+- O16 uses IF thresholds like 89.99% etc. Excel treats 89.99% as 0.8999, so the IF comparisons are consistent if O14 is a fraction (0.858). After E7 is fixed, O16 will evaluate correctly.
+
+Additional suggestions
+- Format percentage cells (E7, E13, K13, K25, O5, O7, O10, O12, O14) as Percentage to avoid confusion between 0.85 and 85.
+- Avoid hard-coded literals like "=5" for values that should be computed (these are fragile and lead to the exact inconsistency seen).
+- Optionally add comments or headers indicating whether a cell stores "fraction (0–1)" or "percent (0–100%)" to keep units explicit.
+
+If you want, I can produce the corrected workbook formulas (or a patch file) showing these exact replacements.

@@ -1,0 +1,36 @@
+I checked the two sheets and found the main formula errors and a couple of likely omissions. Short, clear fixes below.
+
+1) Faulty cell: STEP 1 OF 2!M65
+- Problem: Contains the hard-coded value 6 instead of summing the monthly debt cells. This breaks any downstream calculations that use M65 (for example STEP 2 uses 'STEP 1 OF 2'!M65).
+- Fix: Replace with a sum of the monthly debt range. Example:
+  =SUM(M53:M63)
+- Why: totals must be calculated from the input rows so changes in debt automatically update.
+
+2) Faulty cell: STEP 2 OF 2!F10
+- Problem: F10 (SAVING %) uses H8/H6 — that divides GIVING by earnings (duplicate of F8) instead of dividing SAVINGS by earnings.
+- Fix:
+  =H10/H6
+- Why: H10 holds the savings total; F10 should show savings as a % of earnings.
+
+3) Faulty cell: STEP 1 OF 2!E33
+- Problem: E33 is =SUM(E29:E30) but the giving lines run 29:31, so row 31 is omitted.
+- Fix:
+  =SUM(E29:E31)
+- Why: include all giving rows so the row-total and downstream totals are correct.
+
+4) Minor / stylistic issues to clean (not strictly errors but confusing / fragile):
+- I33 and M33 are written as =SUM(G32+I32) and =SUM(K32+M32). They return correct results but are non‑standard. Prefer:
+  =G32+I32
+  =K32+M32
+- SUM(E42) and SUM(E42:E42) are unnecessary; =E42 is clearer.
+
+5) Verify H6 source (optional check)
+- H6 = 'STEP 1 OF 2'!E22 — confirm E22 is the correct cell that holds total earnings on Step 1. If earnings are actually in another column (e.g. D22), point H6 to that cell.
+
+Summary of repairs to enter:
+- M65: =SUM(M53:M63)
+- F10: =H10/H6
+- E33: =SUM(E29:E31)
+- (Optional cleanups) I33: =G32+I32 ; M33: =K32+M32
+
+If you want, I can produce a corrected formula list as a paste-ready block for you to copy into the workbook.

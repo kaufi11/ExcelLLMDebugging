@@ -1,0 +1,27 @@
+Findings (short)
+- Error #1 (actual error): F27 uses =AVERAGE(F8:F26). That excludes the student in row 7, so the column F average is wrong.
+- Error #2 (likely mistake): B28:J28 are all 1 and the label in K28 says "Highest Possible Score, %". Using 1 here is misleading/wrong if you intend these to be maximum scores or denominators for percent/weighted calculations.
+- Minor: I6 text "quizes" is misspelled (should be "quizzes").
+
+Fixes and why (short)
+1) Fix the F27 range
+- Problem: =AVERAGE(F8:F26) skips F7 so column average omits one student.
+- Fix: change F27 to =AVERAGE(F7:F26).
+- Why: Now the average includes all students in rows 7–26, matching the other column averages.
+
+2) Correct row 28 (Highest possible scores / weights)
+- Problem: putting 1's under "Highest Possible Score, %" is ambiguous and will give wrong results if used to compute percentages or weighted averages.
+- Fix options (choose one depending on intent):
+  a) If row 28 should show maximum points (for percent calculations), enter the real maxima for each column (e.g., B28 = 105 if column B has 105 as top score, others 100, etc.).
+  b) If row 28 is meant to be weights (fractions summing to 1), label it "Weights" and set the actual weights (e.g., 0.20, 0.15 ...) that sum to 1.
+- Why: Correct maxima let you convert raw scores to percent =Score/Max. Correct weights let you compute a weighted final grade.
+
+3) Optional: fix spelling
+- Change I6 "(includes quizes)" → "(includes quizzes)".
+
+If you need a weighted-student-average example
+- If B28:H28 hold max points: student % across B–H = SUM(B7:H7 / B$28:H$28) / COUNT(B$28:H$28) — or better, percent across columns with different maxima:
+  =SUMPRODUCT(B7:H7,1/B$28:H$28)/COUNTA(B$28:H$28)
+- If B28:H28 are weights summing to 1: weighted average =SUMPRODUCT(B7:H7,$B$28:$H$28)
+
+If you want, tell me which approach you want (simple average, percent-normalized, or weighted) and I will give the exact formulas to put in I7:I26 and row 27.

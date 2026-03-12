@@ -1,0 +1,41 @@
+I checked the workbook and found a small set of real formula / sign errors that break the cash‑flow and make some totals inconsistent. I’ll state the problems, the simple fixes and a one‑line explanation for each so you can correct them quickly.
+
+1) Main problem — Cash flow “Cash paid to suppliers and employees” (C121) and the derived “Cash (applied to) / generated from operations” (C122)
+- Symptom: C121 is a hard‑coded arithmetic string ("=-26907-7561074") instead of a proper formula reference; C122 is hard‑coded (-26908) instead of being calculated from the reconciliation totals. These produce an incorrect / inconsistent net cash from operations and thus wrong C117 and closing cash.
+- Why it’s wrong: hard‑coding keeps these cells out of the normal reconciliation chain; values don’t update when the underlying reconciliation (C511) or receipts (C120) change.
+- Fix (apply both):
+  a) Replace C122 with a formula that takes the reconciliation total: set C122 = C511
+     - Explanation: C511 (SUM of C504:C510) is the reconciliation of surplus to cash from operations; C122 must equal that.
+  b) Replace C121 with a formula based on C120 and C122: set C121 = C122 - C120
+     - Explanation: Cash from operations = Cash received (C120) + Cash paid (C121) → C121 = C122 - C120. This removes the hard‑coded arithmetic and keeps the table internally consistent.
+- Result: C117 (SUM(C122:C125)) and subsequent cash totals will update automatically and consistently.
+
+2) Interest paid consistency in cash flow and reconciliation
+- Symptom: C124 (Interest paid in the cash flow section) is currently =+C84 (which is an income‑statement cell and may be zero/positive), while the reconciliation row C503 (‑Interest paid) is blank. Signs are inconsistent.
+- Fix:
+  a) Use a consistent sign for cash outflow: set C124 = -C84 (so cash paid is negative).
+  b) Set C503 = -C124 (or = C84 if you prefer) so the reconciliation picks up the cash interest paid with the correct sign.
+- Explanation: interest is a cash outflow and must be negative in the cash flow and correctly reflected in the operating reconciliation.
+
+3) Replace hard‑coded arithmetic and isolated numbers with references (general housekeeping)
+- Examples: C121, C122, C72 (shows "FORMULA =1416" instead of a numeric value or cell reference).
+- Fix: Where possible, use SUM() or direct cell references (e.g., =SUM(range) or =Sheet!Cell) instead of embedding numeric arithmetic strings. This avoids transcription/typing errors and keeps numbers traceable.
+- Explanation: spreadsheet best practise — link to source cells rather than retyping numbers.
+
+4) Minor note about C29 referencing C330
+- Symptom: C29 = +C330 (accumulated funds value comes from the notes block below).
+- Comment: This is not an error per se (Excel allows downward references) but it is confusing for readers and can make tracing harder.
+- Recommendation: keep as is if you prefer the notes to drive the balance sheet, or alternatively populate C29 directly with SUM(C324:C329) to make the Balance Sheet block self‑contained and easier to audit visually.
+
+Quick checklist of exact edits to make
+1. In C122: replace the hard value with =C511
+2. In C121: replace the current content with =C122 - C120
+3. In C124: change to =-C84
+4. In C503 (reconciliation): enter =-C124 (so reconciliation picks interest paid)
+5. Replace any other hard numeric arithmetic strings with SUM() or cell references where possible.
+
+After these changes
+- The operating cash flow (C117), net increase in cash (C144) and closing cash (C147) will be calculated from the reconciliation and will update automatically.
+- Signage and traceability will be consistent across the cash‑flow statement and reconciliation.
+
+If you want, I can show the exact resulting values after these fixes (i.e. compute the new C117 / C144 / C147) — tell me whether you want me to recalc the sheet numbers for you.

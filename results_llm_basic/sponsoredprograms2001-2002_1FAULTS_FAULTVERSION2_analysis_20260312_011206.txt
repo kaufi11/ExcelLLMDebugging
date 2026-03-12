@@ -1,0 +1,35 @@
+Summary — main errors I found
+1. H15 (grand total for column H) is summing the wrong range. It currently is =SUM(H8:H14) and therefore excludes H7 (*Gift Pledges & Cash), under‑reporting the FY02 Total row total.
+2. Two cells use hard‑coded numeric subtractions instead of referencing cells: B10 =1672298-748584 and C10 =2824612-1091293. Hard‑coding like this is error‑prone and makes auditing/maintenance hard.
+3. Minor: the header text in F6 and G6 reads "4rd Qtr." (typo). (Not a calculation error, but confusing.)
+
+Why these are problems (short)
+- H15 excludes H7, so any totals or summaries that use H15 are wrong. Fixing H15 will change the totals by +H7 (3,527,011) — corrected H15 should be 29,207,412 (current H8:H14 sum 25,680,401 + H7 3,527,011).
+- Hard‑coded constants can become inconsistent with values elsewhere; if B9 or C9 change you will not get the correct result.
+- The header typo may confuse users.
+
+Exactly what to change (copy/paste formulas)
+1. Fix the H total:
+   - Replace the formula in H15 with:
+     =SUM(H7:H14)
+   - Result after change: H15 = 29,207,412 (assuming the H7:H14 values you provided).
+
+2. Replace the hard‑coded subtraction formulas with either the computed values or with references. Two options:
+   - Quick fix (enter result values):
+     - B10 = 923,714  (because 1,672,298 − 748,584 = 923,714)
+     - C10 = 1,733,319 (because 2,824,612 − 1,091,293 = 1,733,319)
+   - Better fix (use cell references so the sheet stays consistent):
+     - If the 1,672,298 and 2,824,612 are totals that exist elsewhere on the sheet, change the formulas to reference those cells, for example:
+       =<cell_with_1672298> - B9
+       =<cell_with_2824612> - C9
+     - If those "total" constants are not stored anywhere, create cells that hold them (label them) and reference those cells. That avoids hard coding.
+
+3. Optional: Fix header typos:
+   - Change F6 and G6 to "4th Qtr." (or "4th Qtr FY01" / "4th Qtr FY02") for clarity.
+
+Quick explanation of the H15 fix
+- You intended to sum the FY02 totals for all listed categories (rows 7–14). SUM(H8:H14) omits row 7. Changing to SUM(H7:H14) includes Gift Pledges & Cash and gives the correct grand total.
+
+If you want I can:
+- Give the corrected workbook formulas for other summary cells so everything cross‑checks (e.g., verify row 17 or any reconciliation numbers), or
+- Walk you through using Excel’s Trace Precedents/Dependents and Error Checking to find more hidden inconsistencies.

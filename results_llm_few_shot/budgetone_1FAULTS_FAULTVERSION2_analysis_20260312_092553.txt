@@ -1,0 +1,21 @@
+Summary — key error
+- Faulty cell: F7 (Total Sales Revenue).
+- Error type: Mechanical / range-omission. F7 =SUM(B7:D7) omits E7, so Total Sales is too low.
+
+Why this breaks the sheet
+- F7 is used by other formulas (F5 ASP/Unit =F7/F4 and every % column that divides by $F$7). Because F7 is too small, ASP and all %-of-sales numbers are wrong. Many downstream totals appear inconsistent.
+
+Fixes (simple)
+1) Correct F7:
+   - Replace with: =SUM(B7:E7)
+
+2) (Optional) Make ASP robust to divide-by-zero:
+   - Replace F5 with: =IF($F$4=0,0,F7/$F$4)
+
+3) Verify all percent formulas use absolute total sales:
+   - Examples: G8 should be =F8/$F$7, G9 =F9/$F$7, etc. (They already use $F$7 — just confirm they reference the corrected F7.)
+
+Short explanation of the fix
+- Including E7 in the SUM makes Total Sales equal the sum of all four quarters. That corrects any calculations that rely on total sales (average price and percent-of-sales). The optional IF prevents a #DIV/0! if total units are zero.
+
+If you want, I can show which cells will change value after the fix or provide the corrected sheet formulas for every cell.

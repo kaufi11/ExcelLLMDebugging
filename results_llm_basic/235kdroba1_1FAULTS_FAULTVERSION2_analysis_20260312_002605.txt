@@ -1,0 +1,22 @@
+I reviewed Sheet1 and the supporting sheets. I found the main formula errors and a couple of fragile formulas that could cause incorrect results later. Short list, explanation and fix below.
+
+1) Wrong operator in AC8 (Fraction % for row S)
+- Problem: AC8 is written as =AB8*$AB$33 (multiplication). Every other ACn cell is ABn/$AB$33 (division). AC8 therefore gives a huge wrong number.
+- Fix: Change AC8 to =AB8/$AB$33
+- Why: AC column is meant to show the fraction of the maximum (ABn divided by column total AB33). Multiplying gives an incorrect value.
+
+2) Fragile total-of-tests formula in AF33
+- Problem: AF33 is =SUM(Z33:AD33). That sums Z33, AA33, AB33, AC33, AD33. You currently get the right total because AA33 and AC33 are blank, but this is fragile: if anything is placed in AA or AC row33 in future it will be included unexpectedly.
+- Fix (safer): Replace with =SUM(Z33,AB33,AD33) or =Z33+AB33+AD33
+- Why: You only want to sum the three test component totals (Z, AB, AD). Explicitly listing them prevents accidental inclusion of intermediary columns.
+
+3) Recommended quick checks (to find similar mistakes)
+- Search formulas for any unexpected "*" where other rows use "/" (e.g. find "*$AB$33" or other "*$...$33" occurrences).
+- Scan row 33 totals and any SUM(rangewith:range) that span across columns that should not be included; replace with explicit SUM of the specific columns needed.
+
+4) Small consistency note (no immediate error but keep an eye on it)
+- Many per-row percent columns use absolute references like $E$33, $J$33, $O$33 etc. These are correct, but if you change the layout (insert/delete columns) those absolute references may point to wrong totals. Consider naming the total cells (e.g., name Z33 "Test1Max") and use names in formulas for robustness.
+
+If you want, I can:
+- Give the exact Excel formula text to paste for the fixes, or
+- Provide a quick script to scan the workbook for other operator mistakes and suspicious SUM ranges.

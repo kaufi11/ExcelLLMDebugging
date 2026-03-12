@@ -1,0 +1,65 @@
+I reviewed the two sheets and found several concrete errors that will cause incorrect numbers or make the workbook fragile. Below I list the problems, the fix (exact formula to put in the cell) and a short plain-English explanation for each.
+
+1) Hyphens ("-") used instead of numeric zero
+- Problem cells: many places (examples: C39, C267, C15/E15 in places where "-" appears). Those cells contain the text "-" instead of 0.
+- Fix: Replace "-" with 0 (a numeric zero).
+- Why: "-" is text so SUM and other arithmetic ignore it or behave inconsistently. Use 0 so totals and ratios calculate correctly.
+
+2) Duplicated / hard-coded reconciliation values in the cash-flow (inconsistent and error-prone)
+- Problem cells: C122, C121, C117
+  - C122 is currently a hard-coded number (-26908) but the real calculation is done later in C511 (Cash from operations).  
+  - C121 is a hard-coded expression (= -26907-7561074).
+- Fix:
+  - Put this in C122: =C511
+  - Put this in C121: =C511 - C120
+  - Keep C117 as =SUM(C122:C125) (it already is)
+- Why: C511 is the detailed reconciliation (C504:C510). Use it as the single source of truth. C121 should be calculated from receipts (C120) and the operations result (C511) instead of hard-coded constants. This removes inconsistencies between E- and C-columns.
+
+3) Capital expenditure / disposals split not linked to totals (hard-coded values)
+- Problem cells: C266 = 57520 (hard-coded) while C277 = SUM(C272:C276) calculates the components; C267='-' but E267 = +E280.
+- Fix:
+  - Set C266 to: =C277
+  - Set C267 to: =C281 (or =C280 if you want the raw component)
+- Why: Keep component sums (C272:C276 and C280) as the single data sources and have the totals reference them. Avoids mismatches when you change a component.
+
+4) Summary "Accumulated funds" in balance sheet: inconsistent linking between columns
+- Problem cells: C29 = +C330 (OK) but E29 was entered as a hard number (690869) rather than linking to E330.
+- Fix: change E29 to: =E330
+- Why: both columns must follow the same logic and be driven by the notes (E330 is the notes’ accumulated-funds total). Hard-coding E29 makes the balance-sheet total vulnerable to changes in the notes.
+
+5) Cells containing arithmetic constants instead of references (examples)
+- Problem cells: many E-column cells (e.g. E79 contains =476555.8+3116.33; E87 contains =103735.39+26083.05+11314.95; E95 etc.)
+- Fix: replace those constants with references to the component lines (or create hidden component items) and use SUM ranges, e.g. =SUM(E<component1>:E<componentN>).
+- Why: Makes numbers auditable and prevents transcription errors.
+
+6) Bank overdraft / cash-equivalents summation: beware text vs numeric
+- Problem cells: C529 = +C39 (C39 is "-" text) and C532 = SUM(C529:C531). Because C39 was '-' (text), the sum may be incorrect.
+- Fix: After step (1) set C39 = 0 (or the actual numeric value); ensure C529 and C532 are formulas:
+  - C529 = C39 (or =IF(C39="-",0,C39) if you have to accept old hyphens)
+  - C532 = SUM(C529:C531)
+- Why: Consistent numeric values ensure C532 equals cash+short-term investments+overdraft as intended.
+
+7) General: remove hard-coded signs and duplicates
+- Problem: Many formulas use literal numbers (for example in C121) or duplicate computations in multiple places.
+- Fix: Always calculate totals from their component cells (use SUM ranges). Keep one canonical calculation for each aggregated value and reference it where needed.
+- Why: This avoids inconsistent numbers between sections (balance sheet vs notes vs 5-year review).
+
+Quick checklist of the specific formulas to enter/change (copy/paste these into the specified cells):
+
+- C122 := C511
+- C121 := C511 - C120
+- C266 := C277
+- C267 := C281   (or =C280 if you prefer)
+- E29  := E330
+- Replace any "-" that represents zero with 0 (e.g. C39, C267)
+- Wherever you see hard-coded sums like =103735.39+26083.05+11314.95 change to =SUM(range_of_components)
+
+How to proceed (recommended order)
+1. Convert hyphens to zeros for numeric cells (C39, C267, etc.).  
+2. Change C122 to =C511 and C121 to =C511 - C120. Check C117 result.  
+3. Change C266 and C267 to reference C277/C281.  
+4. Change E29 to =E330.  
+5. Replace remaining hard-coded arithmetic with SUM references.  
+6. Recalculate and verify Assets = Equity + Liabilities and Cash-flow totals.
+
+If you want, I can produce a list of every cell that currently contains hard-coded arithmetic or a hyphen and give the exact replacement formula for each one. Do you want me to list all such cells or generate a corrected copy of the workbook (step-by-step)?

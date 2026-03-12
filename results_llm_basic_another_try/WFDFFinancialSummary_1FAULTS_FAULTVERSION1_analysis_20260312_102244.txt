@@ -1,0 +1,50 @@
+Errors found:
+
+1. Circular Reference in Financial summary Beginning Cash Balance (Row 4):
+- Cells E4, G4, I4, K4, M4 reference C33, E33, G33, I33, K33 respectively.
+- But C33, E33, etc. are calculated as C4 + C30, E4 + E30, etc.
+- This creates a circular reference: Beginning Cash Balance depends on Ending Cash Balance, which depends on Beginning Cash Balance.
+
+2. Balance Sheet Total Equity in H14:
+- Formula is =ROUND(COUNT(H10:H13),5), which counts non-empty cells instead of summing values.
+- Should sum values in H10:H13, not count.
+
+3. Balance Sheet Total Liabilities & Equity in H15:
+- Formula is =ROUND(H9+H14,5), but H9 (Liabilities) is missing or zero.
+- This may cause imbalance if liabilities are not included properly.
+
+4. In Financial summary Row 21 (Events inc.travel) K21 formula:
+- K21 = 8821.24 - 118.52 (manual subtraction).
+- Better to sum detailed components or use consistent formulas.
+
+Solutions:
+
+1. Fix Circular Reference:
+- Beginning Cash Balance for each year should come from previous year's Ending Cash Balance.
+- For 1999 (E4), formula should be =C33 (ending cash 1998).
+- For 2000 (G4), formula should be =E33 (ending cash 1999).
+- But since C33 depends on C4, this creates circularity.
+- Solution: Remove formulas in C4 (1998) and set it as fixed opening balance.
+- Then for subsequent years, Beginning Cash Balance = previous year's Ending Cash Balance.
+- Ensure C33 formula does not include C4 but uses previous year's Ending Cash Balance.
+
+2. Fix H14 formula:
+- Change from =ROUND(COUNT(H10:H13),5) to =ROUND(SUM(H10:H13),5).
+
+3. Check Liabilities in Balance Sheet:
+- Confirm liabilities are included in H9.
+- If no liabilities, set H9=0 explicitly.
+- Then H15 = ROUND(H9 + H14,5) will be correct.
+
+4. For K21:
+- Replace manual subtraction with a formula summing components or referencing detailed data.
+- This improves transparency and reduces errors.
+
+Summary:
+
+- Remove circular references by setting fixed opening balance and linking subsequent beginning balances properly.
+- Correct sum/count mistake in Balance Sheet Total Equity.
+- Verify liabilities inclusion.
+- Use consistent formulas for expense line items.
+
+This will ensure accurate and error-free financial statements.

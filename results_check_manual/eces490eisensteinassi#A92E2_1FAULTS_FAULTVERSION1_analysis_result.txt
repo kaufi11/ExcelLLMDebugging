@@ -1,0 +1,24 @@
+I inspected the formulas and values on the sheet and found one clear formula error plus a resulting incorrect entropy total. Summary and recommended fixes:
+
+1) Typo in F19 (wrong log base)
+- Problem: F19 contains =-LOG(E19,642) (base 642), not base 2. This is a typing error.
+- Effect: F19 (info content for E19) and G19 (E19*F19) are incorrect, which makes the total entropy in G46 wrong.
+- Fix: Change F19 to =-LOG(E19,2)
+  - Or equivalently =LOG(1/E19,2) or =-LN(E19)/LN(2).
+
+2) Corrected numeric impact (after fixing F19)
+- Current (incorrect) G46 = SUM(G19:G44) = 3.9509545421223
+- After fixing F19, the corrected G46 (entropy for the E-distribution) should be ≈ 4.26164474318244 bits.
+  - Breakdown: for p = 0.108695652173913, -LOG(p,2) ≈ 3.20163386116965 → p * I ≈ 0.348003680561918 (per such symbol)
+  - for p = 0.0217391304347826, -LOG(p,2) ≈ 5.52356195605701 → p * I ≈ 0.120077433827326 (per such symbol)
+  - Total H(A) = 5*(0.348003680561918) + 21*(0.120077433827326) ≈ 4.26164474318244
+
+Other checks
+- Part 1 (5-symbol) formulas look consistent: B7:B11 use -LOG(Ax,2), Cx = Ax*Bx, and C13 sums these correct.
+- Part 2 (A19:A44 distribution, C19:C44 and C46) appear correct and consistent.
+- Max entropy formulas (C47 and G47) are correct: they compute log2(26).
+
+Recommendations
+- Fix F19 to use base 2.
+- Consider validating probability columns with SUM(...) to ensure they sum to 1, and/or use consistent formula patterns (copy down rather than retyping) to avoid similar typos.
+- After fixing, re-evaluate G46 (and any dependent cells) to confirm results.

@@ -1,0 +1,27 @@
+Summary — key errors found (short, clear):
+
+1) Faulty cell: H9
+   - Error: Wrong function (COUNT used instead of SUM).
+   - Why it’s wrong: COUNT(H7:H8) returns the number of cells (2), not the sum of the two revenue amounts.
+   - Fix: Replace with =SUM(H7:H8)
+   - Effect: Fixes all downstream H-column calculations (H20, H27, H33, H36, H39, etc.) that depend on Total revenues.
+
+2) Faulty cell: J17 (Charge for in‑process R&D)
+   - Error: Hard-coded/incorrect formula " =12615-5000 ".
+   - Why it’s wrong: That subtracts the write‑off here even though the write‑off already has its own row (J23). This double‑nets the amounts and is inconsistent with other periods (F17 = 2615, H17 = 0, L17 = 0).
+   - Fix: Enter the correct charge amount (e.g. =12615 if that is the intended charge) OR link to the source cell that contains the charge (e.g. =SheetWithSource!A1). Do NOT subtract the write‑off from this line. If intention was to show net effect, move that netting to a reconciliation row — keep each line as reported.
+   - Effect: Keeps expense rows consistent and prevents double-counting/subtraction errors in totals J18, J20, J27, J33, etc.
+
+3) Faulty cell: G13 (Balance Sheet — Total current assets)
+   - Error: Range includes an extra row: =SUM(G7:G12)
+   - Why it’s wrong: The current assets listed are G7:G11; including G12 may capture a blank/unintended cell or a different item and leads to mismatch vs the I‑column subtotal (I13 =SUM(I7:I11)).
+   - Fix: Change to =SUM(G7:G11)
+   - Effect: Total current assets (G13) will match the intended components and keep totals (G22) correct.
+
+Notes / quick checks after fixes:
+- After fixing H9, recompute H20, H27, H33, and EPS formulas in column H — they should update automatically.
+- After fixing J17, verify J18 (total costs and expenses) and all J‑column totals and net income values.
+- Review row 17 across all periods (F17, H17, J17, L17) for consistency — ensure each period reflects the correct reported charge (enter actual numbers or consistent references).
+- Avoid hard‑coding subtractions across rows that are already separately reported (e.g., do not net row 17 and row 23 in one place).
+
+If you want, I can provide the exact corrected formulas for every affected cell (H20, H27, H33, J18, J20, J27, etc.) and a short verification checklist to confirm totals balance. Which would you prefer?

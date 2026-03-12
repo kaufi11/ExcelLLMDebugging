@@ -1,0 +1,31 @@
+Summary — 3 real problems I found and how to fix them.
+
+1) Wrong weighting for latent-load-per-person (logical/math error)
+- Where it appears: Occupancy!F10 and the same “Latent load per person” formulas copied on Occ L0, Occ L1-WD, Occ L1-DU, Occ L1-LR, Occ L2-WD-DU (and any other sheets that copy that formula).
+- Problem: The formula multiplies latent values by the sensible-per-person values and divides by the sum of the sensible values, e.g.
+  =(Occupancy!F22*Occupancy!F19+Occupancy!F23*Occupancy!F20)/(Occupancy!F19+Occupancy!F20)
+  That mixes apples and oranges. The sensible-case (F9) correctly weights by the schedule sums (Occupancy!F38 and F39), so the latent should use the same schedule weights.
+- Fix (replace the bad formula with):
+  =(Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+- Why: This weights latent gains by the same living/bedroom schedule totals used for sensible weighting so the result is the correctly weighted latent per person.
+
+2) Day‑fraction formulas divide by 365 even though the sheet says “simulation year of 2000” (leap year) — (data/assumption error)
+- Where: G28:G31 (they use =F28/365, =F29/365, etc.)
+- Problem: Year 2000 is a leap year (366 days). Also hard-coding 365 makes these formulas fragile.
+- Fix: Use a robust denominator: =F28/SUM(F28:F31) (and similarly for the others) — or set a single cell with the simulation days (e.g. Occupancy!F26 = 366) and use =F28/Occupancy!$F$26.
+- Why: Using SUM(F28:F31) automatically respects the actual counts entered; using a cell for the year length makes it explicit (and supports leap years).
+
+3) Sign typo (mechanical error) in Occ L2-WD-DU (single cell)
+- Where: Occ L2-WD-DU!F27
+- Problem: The formula is =-'Occ L3-WD-DU-LR'!J27-'Occ L3-WD-DU-LR'!K27 (it subtracts both source cells).
+- Fix: Change to addition like the other rows:
+  ='Occ L3-WD-DU-LR'!J27 + 'Occ L3-WD-DU-LR'!K27
+- Why: All other rows sum the two source columns; the minus signs are a copy/paste typo that will produce wrong (negative) occupancy fractions.
+
+Quick checklist for you
+- Replace the latent formulas listed in (1) everywhere they occur.
+- Update the day-fraction formulas to use SUM(F28:F31) or a year-days cell.
+- Fix the single minus typo at Occ L2-WD-DU!F27.
+- After fixes, check for any #REF! errors — they indicate incorrect sheet names or broken references (if you see those, correct the sheet names in the formulas).
+
+If you want, I can produce the exact Find/Replace steps (or an Excel macro) to apply these fixes across the workbook. Which would you prefer?

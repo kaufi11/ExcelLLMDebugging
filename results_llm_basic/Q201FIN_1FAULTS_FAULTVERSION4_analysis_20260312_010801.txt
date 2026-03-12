@@ -1,0 +1,37 @@
+Summary — main errors found and short fixes
+
+1) H9 (Total revenues, 3 months ended 1999)
+- Error: formula is =SUM(H8:H8) — it only sums Maintenance (H8) and omits Software licenses (H7).
+- Fix: change to =SUM(H7:H8)
+- Why: totals must include both revenue lines. This error makes downstream rows (H20, H27, H33, EPS) incorrect.
+
+2) J17 (Charge for in‑process R&D, six months ended 2000)
+- Error: formula is =12615-5000 (uses hard-coded numbers and not consistent with other rows).
+- Fix options:
+  - If the correct value is 7,615, replace formula with the value 7615, or
+  - Better: reference the source cells (example: =<cell_with_12615> + J23) or at minimum =12615+J23 (since J23 = -5000).  
+- Why: hard-coded arithmetic is brittle and unclear; using cell references keeps the sheet auditable and consistent.
+
+3) G13 (Total current assets, Dec 31, 2000)
+- Error: formula is =SUM(G7:G12) but current items run G7:G11 (G12 appears to be blank/nonexistent). I13 correctly uses I7:I11.
+- Fix: change to =SUM(G7:G11)
+- Why: avoids accidentally including an unintended row if G12 later gets data.
+
+4) Pro‑forma EPS denominators (F46, J46, F52, J52 and L equivalents)
+- Error: formulas use hard-coded share counts (32703, 32761, etc.) while the sheet already has weighted average shares (F37, J37, etc.). Some pro‑forma cells (H46/H52/L46/L52) are static numbers like 0.05 or -0.05.
+- Fix: place the pro‑forma diluted shares in a dedicated cell (e.g., put 32703 in a cell labeled "Pro‑forma diluted shares") and change formulas to reference that cell (e.g., =F44 / $X$1). Or, if pro‑forma should use the same shares as above, use =F44 / F37 (or the correct reference).
+- Why: hard-coded denominators cause maintenance errors and inconsistent results; using references keeps calculations transparent.
+
+5) General: avoid hard-coded constants in formulas
+- Problem: several places use constants (e.g., =12615-5000, =-1526) rather than referencing underlying adjustments or source rows.
+- Fix: convert constants into referenced cells (create rows for each adjustment amount) and use references (e.g., =OriginalNetIncome + Adjustment1 + Adjustment2).
+- Why: makes the model auditable, reproducible, and prevents silent errors when values change.
+
+How these fixes affect the sheet
+- Correcting H9 will update H20 (income from operations), H27 (income before taxes), H33 (net income), and the EPS cells that depend on H33.
+- Correcting J17 (and other hard-coded adjustments) ensures total costs/expenses (J18) and downstream income/tax/eps are accurate.
+- Making denominators and adjustments referenced ensures future changes flow through correctly.
+
+If you want, I can:
+- Give the exact corrected formulas for each cell and recalculate affected totals (show before/after numbers), or
+- Produce a short list of new cells to add (e.g., "Pro‑forma diluted shares", "Adjustment: amortization of goodwill") and the formulas that should reference them. Which would you prefer?

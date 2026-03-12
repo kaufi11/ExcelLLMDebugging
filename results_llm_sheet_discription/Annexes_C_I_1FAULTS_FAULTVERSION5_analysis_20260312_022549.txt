@@ -1,0 +1,20 @@
+I inspected the workbook structure and found two clear formula mistakes that will give wrong reconciliation/percent results. Short summary, then exact fixes and why.
+
+1) Wrong % variance formula for "Total Funds" (annex f, cell K68)
+- Problem: K68 currently equals K48 (it copies the % variance for Total Net Assets). That is incorrect — the % variance for Total Funds should be based on Total Funds (H68) and its variance (J68), not on Total Net Assets.
+- Fix: Replace K68 with a proper percent formula that matches the pattern used elsewhere:
+  =IF(H68=0,"N/A",(J68/H68)*100)
+- Why: This computes % variance = (Revised − Original) / Original for Total Funds and avoids incorrectly showing the Net Assets % for a different total.
+
+2) Cash reconciliation formulas omit bursary/hardship cash (annex g, T26 and T49)
+- Problem: T26 (original section) = T19 - ('annex f'!H20+'annex f'!H21) and T49 (revised) = T42 - ('annex f'!I20+'annex f'!I21). The “Financed by: Cash as in balance sheet inc short term investments and bursary/hardship funds” label indicates these checks must include bursary/hardship cash. The current formulas only add short‑term investments (annex f H20/I20) + cash at bank (H21/I21) and therefore can miss the unspent bursary/hardship balance (annex f H31/I31), producing a non‑zero reconciliation even when everything is correct.
+- Fix: include the unspent bursary/hardship cell in the sum. Change:
+  T26 → =T19-('annex f'!H20+'annex f'!H21+'annex f'!H31)
+  T49 → =T42-('annex f'!I20+'annex f'!I21+'annex f'!I31)
+- Alternative (cleaner): reference a single cell that explicitly holds “cash + short-term investments + bursary funds” if you add that helper on annex f, then subtract that single cell. But the direct fix above matches the current layout.
+- Why: unspent bursaries/hardship funds are cash held (but shown also as a creditor). To reconcile cashflow closing balance to balance sheet cash you must include those funds.
+
+Quick additional recommendation
+- Do a quick scan of column K (all percent cells) to ensure there are no other stray references copying unrelated K cells (copy/paste mistakes happen). Any percent cell should follow the pattern: =IF(Hx=0,"N/A",(Jx/Hx)*100).
+
+If you want, I can produce the exact cell-change steps (or a VBA snippet) to apply these three formula fixes across the workbook.

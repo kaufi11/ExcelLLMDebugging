@@ -1,0 +1,53 @@
+Summary of the problems I found (short):
+
+1) Fragile / incorrect numbering in column B
+- Many B cells use formulas like =+B12+1, but some are hard-coded (B14 = 5) or refer to cells later in the sheet (forward references) such as B40 = +B53+1 and B97 = +B221+1.  
+- That creates jumps, duplicates, and a fragile dependency chain that breaks if you insert/move rows or reorder sections. It can also hide circular-reference risk.
+
+2) Volatile date in D1
+- D1 =TODAY() updates every day. If you intended a fixed "report date" it will change automatically.
+
+3) Mixed/ambiguous data in columns
+- Column I is used for both "Leader/Contact" and "Customer" text in different sections. That makes filtering, sorting, or exporting unreliable.
+- Emails and contact cells are inconsistent (domains and casing). Example suspicious address: sfeng@cotton.Stanford.EDU (likely a typo).
+
+4) Typos / text mistakes (minor, but affect clarity)
+- Examples: "Protype" (should be Prototype), "snyc" (sync), "ntetworking" (networking), "Acount" (Account), "Propogation" (Propagation), etc.
+
+What to do (simple, step-by-step fixes):
+
+A — Make column B numbering robust (recommended)
+1. Pick the first row in a block where numbering should start (for example B12 = 1). Replace hard-coded or forward-referencing formulas with a single consistent rule.
+2. Put this formula in the row immediately after the start and copy it down for the whole sheet:
+   - If you want blanks to stay blank when column C is empty:
+     =IF(TRIM($C12)="","",B11+1)
+   - Adjust row numbers to match your layout (example assumes the formula is in B12 and previous number is in B11).
+3. Fill (drag) the formula down through all rows in column B. This makes each number depend only on the previous row and on whether Column C has an item. No forward references, no fragile cross-section links.
+
+Alternative: use ROW-based numbering if you want fixed relation to sheet rows:
+   =IF(TRIM($C12)="","",ROW()-11)
+(again adjust the constant so the first item becomes 1).
+
+B — Remove forward references / check for circulars
+- Find formulas that reference cells below themselves (Ctrl+F for "=+B") and change them to reference the previous row only (as above). This removes hidden dependencies and prevents circular-reference problems when reorganizing rows.
+
+C — Fix the date behavior
+- If you want a fixed snapshot date: replace =TODAY() with the current date value (select D1, press F2 then Enter after typing =TODAY(); or copy D1 and Paste Special → Values). Or enter today’s date with Ctrl+; .
+- If you want it dynamic, leave =TODAY().
+
+D — Separate contacts and customer fields
+- Add a dedicated column for "Owner/Leader" and another for "Customer". Move email addresses to a dedicated "Email" column.
+- This normalizes data and makes sorting/filtering safe.
+
+E — Clean up obvious typos / inconsistent emails
+- Run a quick text review or use Find to locate suspicious strings (e.g., "cotton.Stanford.EDU") and fix to the correct domain/case (e.g., stanford.edu). Fix spelling in Notes and column headings.
+
+Why these fixes help (brief):
+- Using a simple Bn = Bn-1 + 1 pattern keeps numbering stable when inserting/deleting rows and avoids cross-section dependencies and circular references.
+- Separating Owner/Customer/Email makes the table a proper dataset for filtering, lookups, and exports.
+- Replacing volatile TODAY() with a value prevents accidental date changes for historical snapshots.
+- Fixing typos and email domains improves communication and reduces bouncebacks.
+
+If you want, I can:
+- Give the exact formula lines adjusted to your actual starting rows (tell me which row should be the first numbered item), or
+- Provide a small macro to fix column B numbering for the entire sheet automatically. Which do you prefer?

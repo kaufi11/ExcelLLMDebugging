@@ -1,0 +1,33 @@
+I reviewed the workbook formulas and found two distinct problems (one in each sheet) plus a couple of smaller issues/notes. Summary and suggested fixes below.
+
+1) Sheet "Early or Late" — incorrect formula (typo) in E27
+- Problem: E27 contains "=B27+D27+D27" (D27 is added twice and C27 is omitted). Current E27 value (44043.1727356086) is the result of double‑counting D27.
+- Why it matters: B28 is "=E27" and many subsequent rows depend on E27, so this single typo corrupts the entire tail of the Early Saver chain (B28, E28..E48, and all further dependent cells).
+- Fix: Replace the formula in E27 with the correct sum including the deposit cell:
+  - Correct formula: =B27+C27+D27
+- After fixing E27, recalculate the sheet (or allow Excel to recalc) so all dependent balances update.
+
+2) Sheet "Vanguard" — textual "formulas" / non-calculation strings instead of real formulas (D15:D21)
+- Problem: Cells D15:D21 contain display strings like "= Ending Balance - Beginning Balance" and "= $23,833.35 - $10,000" rather than numeric formulas that reference the sheet cells. These will not produce live results (and can produce errors if entered as formulas because "Ending Balance" is not a named range).
+- Likely intent: compute capital gain and holding period return for the 10‑year example (Beginning balance = B4 = 10000, Ending balance = F13 = 23833.3497411956).
+- Fix / suggestions:
+  - D15 (label row): keep as label text ("Capital Gain/(Loss)").
+  - Put actual formula for capital gain in D16 (or a proper result cell). Example formulas:
+    - D16: =F13 - B4
+    - D17: =D16 (or just show the numeric value)
+  - For holding period return:
+    - D18 (label): keep label text ("Holding Period Return")
+    - D19 (formula cell): =(F13 - B4) / B4
+    - Format D19 as percentage.
+- Result example (using current F13 and B4): D16 → 13,833.3497411956, D19 ≈ 1.38333497411956 → 138.33%.
+- Note: adjust cell references if you intended a different beginning/ending period (e.g., if beginning balance is not B4 or ending balance not F13).
+
+Other notes / non-critical items
+- In "Early or Late", some early-deposit cells (C19..C48) are intentionally blank (zero) because the Early Saver stops depositing after year 15; correspondingly the Late Saver begins deposits at I19. This looks intentional and matches C49 = SUM(C4:C48) = 15000 and I49 = SUM(I4:I48) = 30000. Blank deposit cells evaluate as zero in the formulas, so that's acceptable.
+- In "Vanguard", the deposit column C4:C13 uses formulas of the form =0*B# (which returns 0). That works but is unnecessary; you can simply enter 0.
+- After correcting E27, re-check totals and graphs (if any) because many downstream values depend on that cell.
+
+If you want, I can:
+- Provide the exact corrected formulas to paste into the workbook,
+- Recompute the affected numeric values for the Early Saver plan (E27..E48 and downstream),
+- Or produce a short macro to find cells where a cell of the form "=B# + D# + D#" (common typo pattern) occurs.

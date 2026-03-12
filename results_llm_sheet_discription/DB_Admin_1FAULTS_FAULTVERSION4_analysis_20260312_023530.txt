@@ -1,0 +1,48 @@
+Short answer — what’s wrong
+1) Many applicant-score formulas point to the wrong weight cells on the Rate sheet. Any applicant L-cell that is supposed to score Rate!G16..G20 is instead using the wrong Rate!E row (off by 1–2 rows). This appears in Ap1, Ap2 and Ap3.
+2) Ap3 L20 uses inequality tests (<>), not equality (=), so its logic is inverted/incorrect.
+
+Why that breaks results
+- The wrong Rate!E reference uses the wrong numeric weight (E11..E20 are the intended weights). Scores therefore are calculated from incorrect weights and totals are wrong.
+- The <> tests in Ap3 L20 produce wrong multipliers for K20.
+
+Exact cells that are wrong and the fixes
+Replace these formulas with the corrected ones below.
+
+Ap1
+- L19 (was using Rate!E14) — correct:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 (was using Rate!E17) — correct:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (was using Rate!E18) — correct:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap2
+- L19 (was using Rate!E14) — correct:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L32 (was using Rate!E17) — correct:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (was using Rate!E18) — correct:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+Ap3
+- L19 (was using Rate!E14) — correct:
+  =IF(K19=2,Rate!E16*0.33,IF(K19=3,Rate!E16*0.66,IF(K19=4,Rate!E16*1,0)))
+- L20 (used <> instead of =) — correct:
+  =IF(K20=2,Rate!E15*0.33,IF(K20=3,Rate!E15*0.66,IF(K20=4,Rate!E15*1,0)))
+- L32 (was using Rate!E17) — correct:
+  =IF(K32=2,Rate!E19*0.25,IF(K32=3,Rate!E19*0.5,IF(K32=4,Rate!E19*0.75,IF(K32=5,Rate!E19*1,0))))
+- L33 (was using Rate!E18) — correct:
+  =IF(K33=2,Rate!E20*0.25,IF(K33=3,Rate!E20*0.5,IF(K33=4,Rate!E20*0.75,IF(K33=5,Rate!E20*1,0))))
+
+How to implement
+- Edit each listed cell and paste the corrected formula.
+- After fixing, check Summary totals (Summary L8:L10) — they should change to reflect corrected scores.
+
+Prevent this in future (quick tips)
+- Use a single reliable lookup rather than hard-coded E references. Example: store the weight next to each preference and use INDEX/MATCH or VLOOKUP to fetch the weight by the preference text. That avoids hard-coded row-number mistakes.
+- Keep the same formula structure for all applicants and copy/paste rather than hand-edit cell references.
+
+If you want, I can:
+- Provide INDEX/MATCH-based replacement formulas to make the sheets robust, or
+- Compute the corrected numeric totals for Ap1/Ap2/Ap3 using the current K values. Which do you prefer?

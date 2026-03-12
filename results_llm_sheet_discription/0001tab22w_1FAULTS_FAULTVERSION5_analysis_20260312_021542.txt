@@ -1,0 +1,40 @@
+Summary of errors
+1) Wrong operators in Hospitality O14:
+   - O14 =SUM(100-(E14-G14-I14-K14-M14)) uses subtraction (E14-G14-...) instead of adding the five grade percentages. This produces a wrong "Other" value.
+
+2) Misplaced values in non‑grade columns (alignment problem):
+   - Several rows have extra numbers in columns F, H or Z (e.g. F18, H18, H10, Z22). Those columns are not part of the grade columns (grade columns are E, G, I, K, M for lower level and S, U, W, Y, AA for upper). Values in F/H/Z are therefore "orphan" and not included in the residual formula — causing incorrect totals/appearance and possible calculation errors if other formulas expect contiguous data.
+
+3) Unnecessary use of SUM around a single value:
+   - Formulas like =SUM(100-(E6+G6+I6+K6+M6)) are awkward (but not fatal). Using 100-SUM(...) is clearer and less error‑prone.
+
+How to fix (quick, clear steps)
+1) Fix the wrong formula (Hospitality O14)
+   - Replace it with either of these correct formulas:
+     - =100 - SUM(E14, G14, I14, K14, M14)
+     - or =100 - (E14+G14+I14+K14+M14)
+   - Do the same for the matching upper‑level cell (AC14) if needed.
+
+2) Fix alignment (move misplaced values into correct grade columns)
+   - For each row, ensure the five lower‑level percents are in E / G / I / K / M and the five upper‑level percents are in S / U / W / Y / AA.
+   - If a value appears in F, H or Z, cut it from that cell and paste it into the correct grade column for that row.
+   - After moving, clear the old cell (Delete) so there are no stray values.
+   - Practical way: use Home → Find & Select → Go To Special → Constants to highlight unexpected values in blank columns (F, H, Z, R, etc.), then move them.
+
+3) Replace residual formulas with clearer version (optional but recommended)
+   - Replace all O# and AC# formulas of the form =SUM(100-(...)) with =100 - SUM(...).
+   - Example: change =SUM(100-(E6+G6+I6+K6+M6)) to =100 - SUM(E6,G6,I6,K6,M6).
+
+4) Add quick checks to catch future problems
+   - Add a validation cell/formula for each row: =IF(ROUND(SUM(E#,G#,I#,K#,M#),1)=100,"OK","CHECK") and similarly for upper level. Or use =ABS(100-SUM(...))>0.1 to flag rows not summing to 100.
+   - Apply conditional formatting to highlight rows where the five‑percent sum ≠ 100.
+
+Why these fixes work
+- O14 was subtracting instead of adding, so flipping to 100 - SUM(...) ensures "Other" equals the residual to 100%.
+- Misplaced values produce invisible errors because the residual formula only references the five correct columns. Moving values into the correct columns ensures percentages sum correctly and "Other" is accurate.
+- Using 100 - SUM(range) is clearer, less error prone (no weird SUM wrapper) and easier to audit.
+
+If you want, I can:
+- Give the exact list of rows that have misplaced values (based on your sheet excerpt),
+- Provide the corrected formulas for all O and AC cells,
+- Or generate conditional formatting rules/formulas to auto‑flag misaligned rows. Which would you like next?

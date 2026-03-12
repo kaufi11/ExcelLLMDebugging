@@ -1,0 +1,43 @@
+Summary of the problem (short)
+- I found at least one clear formula typo and many inconsistent SUM ranges across sheets. These cause some "Have" / "Have Foil" / "Have Total" numbers to be wrong because the formulas are summing the wrong columns (they start one column too far to the right in some rows/sheets).
+
+Concrete / obvious error I found
+- Mines of Moria sheet, cell F52 is wrong:
+  - Current: =SUM(L52:O52)
+  - Correct: =SUM(K52:O52)
+  - Why: that formula skips the 1st‑Printing column (K) and therefore leaves out one printing count for that row.
+
+Why this is a bigger issue
+- Different sheets use different column ranges for "1st printing" vs "foil" columns. For example:
+  - Some sheets use =SUM(Kx:Ox) and =SUM(Px:Tx)
+  - Others (copied with a different header layout) use =SUM(Kx:Px) and =SUM(Qx:Ux)
+- When a formula was copied between sheets that have different header columns (German / Misprint / extra language columns), the SUM start/end shifted and produced wrong totals or omitted/duplicated a column.
+- Result: totals (Have / Have Foil / Have Total) can be undercounted or misallocated.
+
+How to fix (simple, actionable)
+1. Fix the obvious typo now:
+   - On Mines of Moria, change F52 to:
+     =SUM(K52:O52)
+   - Then re-calc or press F9 to see totals update.
+
+2. Standardize the SUM ranges across the workbook:
+   - Decide the correct layout once (which header columns belong to first-printing group and which to foil group).
+   - For sheets that use K..O for 1st printing and P..T for foil, make all "Have" formulas =SUM(Kx:Ox) and "Have Foil" formulas =SUM(Px:Tx).
+   - For sheets that include an extra column (German) so printing ranges are K..P and Q..U, use that pattern consistently on those sheets — but don't mix patterns on the same sheet.
+
+3. Find other occurrences of the error quickly:
+   - Use Find (Ctrl+F) and search for "SUM(L" — that will catch formulas that start at L (likely accidental). Inspect each found formula and correct the start column to K if K is the first printing column on that sheet.
+   - Also search for SUM(K:* ) and SUM(P:* ) (or the other pattern SUM(K:P) and SUM(Q:U)) and compare against the header row on that sheet to make sure the range matches the intended columns.
+
+4. Prevent the problem going forward (recommended)
+   - Option A (simple): Make all sheets use the same header column order (insert/remove columns so K..O and P..T are the same meaning on every sheet), then copy the corrected formulas down. This is easiest to maintain.
+   - Option B (safer, slightly advanced): Replace the positional SUM formulas with header-aware formulas so columns are chosen by header label (e.g. SUM of the columns whose header equals "1st Printing","Unlimited",… ). That avoids breakage if columns move. Example pattern (conceptual):
+     =SUMPRODUCT((K$1:U$1={"1st Printing","Unlimited","A","Tengwar","Misprint"})*(K2:U2))
+     (Adapt the header list to your sheet; this sums only the columns whose header text you list.)
+   - Option C: Use named ranges for the printing groups and use the names in SUMs.
+
+What I would do first (one-line instruction)
+- Fix Mines F52 to =SUM(K52:O52), then run a Find for formulas starting with SUM(L and audit them; standardize the header-layout across sheets so all SUM formulas use the same column set.
+
+If you want I can
+- Provide a small Find/Replace checklist or a one‑cell formula you can paste to test header-based summing (an example SUMPRODUCT that you can adapt), or scan the workbook for inconsistent SUM ranges and list the offending cells. Which would you prefer?

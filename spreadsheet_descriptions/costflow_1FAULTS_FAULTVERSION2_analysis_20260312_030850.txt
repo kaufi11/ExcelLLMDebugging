@@ -1,0 +1,70 @@
+Summary of workbook structure and contents
+
+Overall
+- Workbook contains 4 sheets: "Errors", "Valuing Ending Inventory", "NetIncome and Cash Flow", and an empty "Sheet3".
+- Purpose: illustrate inventory valuation methods (periodic & perpetual), show impact of inventory errors on financial statements, and compare effects on net income and cash flow.
+- Common formula patterns: SUM, multiplication (units * unit cost), negative signs for outflows or ending inventory, average unit cost = total cost / total units, and inter‑cell references across scenarios (periodic vs perpetual columns).
+
+Sheet: Errors
+- Layout: three scenarios across columns B (Correct), D (Understating), F (Overstating). Two years: Year 1 (rows 5–21) and Year 2 (rows 24–40).
+- Key input values:
+  - Beginning inventory (B8/D8/F8) = 100,000
+  - Purchases Year 1 (B9/D9/F9) = 500,000
+  - Ending inventory (correct) B11 = -150,000; understated D11 = -125,000; overstated F11 = -175,000
+  - Sales Year 1 B15/D15/F15 = 1,000,000
+  - Expenses Year 1 B18 = -100,000
+  - Year 2 purchases B28/D28/F28 = 600,000; Year 2 ending inventory fixed at -150,000 (row 30)
+  - Taxes use 40% (row 20 formulas)
+- Key formulas:
+  - Goods available = SUM(beginning inventory, purchases) (row 10)
+  - COGS = goods available + (-ending inventory) (row 12 / row 31)
+  - Gross profit = Sales + (-COGS) (row 17 / row 36)
+  - Pretax, taxes = pretax * 40%, net income = pretax + taxes
+  - Year‑2 beginning inventory is driven by prior year ending inventory (row 27 references prior ending inventory)
+- Purpose: shows how understating/overstating ending inventory in Year 1 affects COGS, gross profit, taxes and Year 2 beginning inventory and results.
+
+Sheet: Valuing Ending Inventory
+- Layout: long worksheet demonstrating inventory flows and valuations under many methods:
+  - Top: raw transactions (dates, units, unit cost, extended cost) and totals (rows ~8–14).
+  - Sections for: Weighted Average (periodic), FIFO (periodic), LIFO (periodic), Moving Average (perpetual), FIFO (perpetual), LIFO (perpetual).
+  - Columns repeated for Units, Unit Cost, Extended Cost, Sold, Remaining, and computed averages.
+- Key inputs / transactions:
+  - Beginning inventory: 1,000 units @ $5 (row 8)
+  - Purchase 12/28: 6,000 units @ $5.25 (row 9)
+  - Purchases in Jan: 5,000 @ $5.50 (row 12) and 5,000 @ $5.75 (row 13)
+  - Sales: -4,000 (1/5) and -7,000 (1/25) (rows 17–18)
+- Key formulas:
+  - Extended costs = units * unit cost (E8, E9, etc.)
+  - Totals: SUM ranges for units and extended (C10, E10, etc.)
+  - Average unit cost = total cost / total units (e.g., K10/I10)
+  - Ending inventory and COGS computed differently per method using the transactions and the relevant logic (periodic average, FIFO/LIFO layering, moving average updates)
+- Notes / issues:
+  - Some cells are placeholders or unresolved (e.g., K11 and K12 marked "?" ), and several formulas reference I$11 (ending inventory units) which must be consistent to compute closing values.
+  - Many intermediate formulas compute remaining units per lot (e.g., F37:F40, F53:F56).
+  - Moving average (perpetual) section updates average after each purchase and uses current average to value sales (rows ~68–79).
+- Purpose: detailed worked example comparing valuation outputs (ending inventory & COGS) across methods.
+
+Sheet: NetIncome and Cash Flow
+- Layout: compares results of different inventory methods (columns B–G) under Periodic (B–D) and Perpetual (E–G) headings. Sections:
+  - Income statement: Net Sales, COGS (given), Gross Profit, Pretax, Taxes (40%), Net Income.
+  - Cash flows: cash from sales, cash for purchases (constant -56,250), cash for taxes, net cash flow.
+  - Holding profit (future profit attributable to ending inventory) and GP% calculations (historical and future).
+- Key values:
+  - Net sales = 110,000 (row 20)
+  - COGS by method (row 21): e.g., Weighted periodic B21 = -60,014.71, FIFO periodic C21 = -58,500, LIFO periodic D21 = -61,500; Perpetual average E21 = -58,607.14, FIFO F21 = -58,500, LIFO G21 = -59,000.
+  - Cash for purchases = -56,250 (row 33)
+  - Tax computed as -GrossProfit * 40% (rows 25)
+- Key formulas:
+  - Gross profit = Net sales + COGS (rows 22)
+  - Taxes = -GrossProfit * 0.4 (row 25)
+  - Net income and net cash flow are SUMs of relevant rows.
+  - Holding profit computes future profit on remaining 6,000 units and derives historical/future GP% (rows 45–51).
+- Purpose: summarizes income & cash effects of each inventory method and computes deferred profit embedded in ending inventory.
+
+Sheet: Sheet3
+- Empty / no content.
+
+Overall remarks and potential issues to check
+- Many formulas rely on absolute references to ending inventory units (I$11) — ensure that I11 correctly reflects the intended ending inventory units (some formulas like I11 = -I10 - SUM(C17:C18) look nonstandard).
+- Some cells show placeholders ("?") or appear incomplete (e.g., K11, K12). Review those cells before finalizing totals.
+- The workbook effectively links transactions → method calculations → income statement / cash flow summary; typical Excel functions used: SUM and arithmetic operations, with consistent cross‑references between sheets.

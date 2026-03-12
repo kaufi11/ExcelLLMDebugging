@@ -1,0 +1,23 @@
+Summary — the sheet has one clear formula typo and a couple of reference/anchoring inconsistencies that can produce wrong objective values.
+
+1) Wrong operator (bug)
+- Cell C41 currently: = $C19 / C$6
+- Correct formula: = $C19 * C$6
+- Why: C41 is the annual check-processing cost for Midwest checks handled in the California lockbox. It should be (yearly # checks) × (processing cost per check). Using “/” gives a much larger (wrong) number (4,500,000 / 0.3 = 15,000,000) instead of the correct 1,350,000 (4,500,000 × 0.3). That will distort the objective and the solver’s choice of lockbox.
+
+2) Inconsistent absolute references (recommendation)
+- Several check-processing cells use $C17, $C18, $C19 (column locked but row not fully absolute). To avoid accidental changes when copying, make them fully absolute:
+  - B39: change to =$C$17*B$6
+  - C39: =$C$17*C$6
+  - B40: =$C$18*B$6
+  - C40: =$C$18*C$6
+  - B41: =$C$19*B$6
+  - C41: =$C$19*C$6
+- Why: locking both row and column ($C$17 instead of $C17) prevents accidental misreferences if you copy formulas.
+
+3) What to do now
+- Fix C41 to multiply.
+- Update the check-processing formulas to use $C$17/$C$18/$C$19 (recommended).
+- Recalculate the sheet and re-run the solver/optimization. The objective and optimal lockbox assignment may change after the correction.
+
+If you want, I can compute the corrected objective value and show how the optimal assignment changes after the fix — tell me whether you want the recalculation.

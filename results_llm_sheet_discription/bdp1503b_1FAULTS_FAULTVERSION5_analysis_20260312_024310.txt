@@ -1,0 +1,30 @@
+Summary of errors
+1) Wrong cell reference: G19 =SUM(D19-E19) — D19 is empty. This makes the Remaining for "Crown cars/hire of vehicles" wrong and it will propagate into subtotal/total Remaining amounts.  
+2) Unnecessary / inconsistent formulas: many "Remaining" cells use =SUM(Cx-Ex) (or =SUM(C69-E69) etc). SUM around a single subtraction is redundant and non-standard.  
+3) Totals written as SUM(C10+C24+...) use SUM with a list of additions instead of SUM with commas or direct addition. These work, but are fragile and harder to review.  
+4) Blank Year-to-date (E) cells are treated as zero by formulas. If blanks represent missing data, totals will be understated/unreliable.
+
+Fixes (quick, exact formula replacements)
+1) Fix G19:
+   - Replace G19 with =C19-E19
+2) Replace "Remaining" formulas (optional but recommended for clarity):
+   - Change any =SUM(Cx-Ex) to =Cx-Ex (e.g., G10 becomes =C10-E10, G13 =C13-E13, etc.)
+3) Improve total formulas (recommended):
+   - Change C61 from =SUM(C10+C24+C30+C37+C45+C51+C59) to =C10+C24+C30+C37+C45+C51+C59 or =SUM(C10,C24,C30,C37,C45,C51,C59)
+   - Do the same for E61 and G61 (use commas or plain addition): e.g., E61 =E10+E24+E30+E37+E45+E51+E59 or =SUM(E10,E24,E30,E37,E45,E51,E59)
+4) Handle blanks explicitly:
+   - If a blank E cell means zero, leave it or enter 0 to be explicit.
+   - If blank means "not provided yet", mark with NA text and update formulas to ignore text (or use IFERROR/IF to handle).
+
+Why these fixes matter (short)
+- G19 currently points to D19 (empty), so Remaining there will be wrong (0 or negative) and will make the administration subtotal and campaign Remaining totals incorrect. Correcting to C19-E19 fixes the immediate error and corrects downstream sums.  
+- Removing unnecessary SUM() around subtractions and using SUM with commas or simple addition for totals makes the workbook easier to read, less error-prone, and easier to update.
+
+What to do next (practical steps)
+1. Edit G19 → =C19-E19.  
+2. Scan G-column formulas for any other D### or wrong references; correct to C###-E###.  
+3. Optionally replace all =SUM(Cx-Ex) with =Cx-Ex for clarity.  
+4. Replace the C61/E61/G61 formulas with explicit SUM(...,...) or plain addition as shown.  
+5. Enter 0 in any E cells that legitimately equal zero, or fill actuals where missing.
+
+If you want, I can produce the exact list of corrected formulas for every affected cell or a small macro to fix the patterns automatically. Which would you prefer?

@@ -1,0 +1,74 @@
+Errors found:
+
+1. **Summary Sheet, Financial Aid row (A9):**
+   - D9 and E9 use `=-Detail!D15` and `=-Detail!E15` (correct to invert sign).
+   - But F9 to N9 sum ranges `Detail!F9:F11`, `Detail!G9:G11`, etc., which include Tuition rows (F9:F11 includes F9 Financial Aid - Graduate, F10 Tuition - Summer, F11 Subtotal tuition).
+   - This incorrectly mixes Financial Aid and Tuition data.
+
+2. **Summary Sheet, Subtotal net tuition row (A10):**
+   - F10 to N10 sum ranges `Detail!F10:F17`, etc., which again includes Tuition and Financial Aid rows incorrectly.
+   - Should sum only net tuition (tuition + financial aid).
+
+3. **RCM Report Sheet, Financial Aid row (A9):**
+   - D9 formula is `=-SUM(Detail!D13:D14)` (correct sign inversion).
+   - But J9 sums `D9:I9` which includes columns with no data or zeros, which is okay.
+   - No error here.
+
+4. **Detail Sheet, Total Salaries/Wages subtotal (A42):**
+   - Formula sums `D36:D41` but rows 36 and 40 have no values (A36 and A40 are labels).
+   - This may cause incorrect sums or zeros included.
+
+5. **Detail Sheet, Beginning fund balance (E64, F64, K64, N64):**
+   - E64 and F64 reference `D65`, which is Current/Projected fund balance.
+   - This creates circular reference because D65 depends on D63 and D64.
+   - Circular reference error.
+
+6. **Detail Sheet, Net Change in fund balance (A63):**
+   - Formula uses `SUM(D25-D61)` which is incorrect use of SUM with subtraction.
+   - Should be just `=D25-D61` without SUM.
+
+7. **Summary Sheet, Beginning fund balance (E37, F37, K37, N37):**
+   - E37 and F37 reference `D38` (Current/Projected fund balance).
+   - Circular reference similar to Detail sheet.
+
+8. **Summary Sheet, Financial Aid row (A9) and Subtotal net tuition (A10) inconsistent with Detail sheet:**
+   - Detail sheet calculates Total Net Tuition as `D11 + D15` (tuition subtotal + financial aid subtotal).
+   - Summary sheet splits Tuition and Financial Aid separately but formulas for Financial Aid and Subtotal net tuition are inconsistent and include wrong ranges.
+
+---
+
+**Solutions:**
+
+1. **Fix Financial Aid formulas in Summary sheet (A9):**
+   - Change F9 to N9 formulas to `=-Detail!F15`, `=-Detail!G15`, etc. (direct cell reference to financial aid subtotal).
+   - This matches the sign inversion and avoids mixing tuition rows.
+
+2. **Fix Subtotal net tuition formulas in Summary sheet (A10):**
+   - Change formulas to `=D8+D9`, `=E8+E9`, etc. (sum Tuition + Financial Aid rows).
+   - Do not sum ranges that include unrelated rows.
+
+3. **Fix circular references in Beginning fund balance rows (Detail E64, F64, K64, N64 and Summary E37, F37, K37, N37):**
+   - Replace references to Current/Projected fund balance with actual beginning balance values or remove references causing circularity.
+   - For example, set E64 = 500000 (or correct static value) instead of `=D65`.
+   - Same for Summary E37, F37, etc.
+
+4. **Fix Net Change in fund balance formulas (Detail A63 and Summary A36):**
+   - Remove SUM function and use simple subtraction: `=D25-D61` and `=D19-D34` respectively.
+   - SUM is not needed and causes errors when used with subtraction.
+
+5. **Fix Total Salaries/Wages subtotal in Detail sheet (A42):**
+   - Adjust sum ranges to only include rows with numeric data.
+   - For example, sum `D37:D41` but ensure rows like A36 and A40 are not included if they have no data.
+   - Or explicitly sum only rows with values.
+
+---
+
+**Explanation:**
+
+- Using SUM with subtraction like `SUM(D25-D61)` is incorrect; subtraction should be direct.
+- Circular references occur when a cell refers back to itself directly or indirectly; avoid referencing Current/Projected fund balance in Beginning fund balance.
+- Summing ranges that include labels or unrelated rows causes wrong totals.
+- Consistent sign handling is important for Financial Aid (negative revenue).
+- Direct cell references are better than summing ranges that include unrelated rows.
+
+Fixing these will ensure accurate and error-free calculations.

@@ -1,0 +1,35 @@
+Summary of errors found
+1) Wrong cell reference in one row balance
+   - J41 currently =193 - H41 - I41 (should use G41). This produces an incorrect balance for that project.
+
+2) Inconsistent SUM ranges for totals
+   - G217 = SUM(G7:G216) — OK.
+   - H218 = SUM(H9:H216) — WRONG: it omits H7 and H8 (and any H8 if used). Should start at H7 to match the budget range.
+   - I219 = SUM(I10:I217) — WRONG: it starts at I10 and ends at I217; it omits I7:I9 and includes I217 (a total row). Ranges must match the data rows used for G217.
+
+3) One invalid date
+   - F94 = 2673-12-22 — obviously a typo (year 2673). Dates should be corrected.
+
+Why these are problems
+- The incorrect J41 cell causes that project's balance to be wrong.
+- The wrong SUM ranges make the Expended, Commitments and therefore Total Balance (J220) incorrect because not all rows are included (and a total-row may be included by mistake).
+- The invalid date breaks sorting/filters and is misleading.
+
+Quick fixes (exact formulas to replace)
+1) Fix that balance cell:
+   - In J41 put: =G41 - H41 - I41
+
+2) Make totals consistent (match G217 = SUM(G7:G216)):
+   - H218: =SUM(H7:H216)
+   - I219: =SUM(I7:I216)
+   - J220 can remain: =G217 - H218 - I219 (this will now be correct)
+
+3) Fix the bad date:
+   - Change F94 from 2673-12-22 to the intended year (likely 2003 or 2004). Example: 2003-12-22.
+
+Recommended preventive improvements
+- Put the data into an Excel Table (Insert > Table). Then use structured formulas like =[@Budget]-[@Expended]-[@Commitments] for each row and =SUM(Table[Expended]) for totals — this avoids mis-typed ranges.
+- Use a consistent row formula for column J and fill down (e.g. J7 =G7-H7-I7 and fill).
+- Optionally wrap the row-balance formula in IFERROR/IF to hide blanks: =IF(AND(ISNUMBER(G7),OR(ISNUMBER(H7),H7<>""),OR(ISNUMBER(I7),I7<>"")),G7-H7-I7,"")
+
+If you want, I can produce the full corrected list of formulas or a copy of the sheet with these fixes applied.

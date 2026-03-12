@@ -1,0 +1,70 @@
+Summary of workbook structure and contents (concise)
+
+Overview
+- Workbook contains 8 sheets (indexed 0–7). Columns across sheets are years (mostly 1992–2003, placed in row 2 or row 15 depending on sheet). Monetary amounts are in "Millions of yen" except EPS/stock metrics (Yen, thousand, Mil. Yen as noted).
+- Recurrent formula patterns: SUM() for subtotals/totals, IF(...,"",...) or IF(...,"-  ",...) used to compute percent-of-sales and avoid divide-by-zero, and arithmetic (e.g., Gross profit = Net sales − Cost of sales).
+- Many segment/sub‑totals roll up to consolidated totals via SUM across component rows.
+
+Sheet-by-sheet (key rows, formulas, notable items)
+
+Sheet 0 — Table of Contents
+- Title in B3 and a simple table of contents (A6:C18) mapping pages/items to page numbers (e.g., 1 = Consolidated Statements of Income, 2 = Consolidated Balance Sheets, etc.).
+- A timestamp in B25.
+
+Sheet 1 — Consolidated Statements of Income
+- Row 2: Years 1992–2003 (C2:N2). Row 3 notes units (Millions of yen).
+- Key line items: Net Sales (A4), Cost of Sales (A5), Gross profit (B6 with C6 = C4−C5 etc.), % of sales (B7 with IF to avoid division by zero), S.G.&A. (A8), Operating profit (B9 = Gross − S.G.&A.; note H9 contains H6+H8 which appears to be a typo/inconsistency), Other income/(deductions) broken into Interest & dividends, Interest expense, Other net (C12:C14) and their sum (row 15 uses SUM), Income before taxes (row 16 = Operating profit + Other), Income taxes and Minority interests (rows 18–19), Income before cumulative effect (row 20 = row16 − SUM(row18:row19)), Cumulative effect (only L21 = 3,692 is populated), Net income (row 22 = SUM(row20:row21)), and % of sales for net income (row 23).
+- Additional rows: EPS basic/diluted (row 27–28, Yen), average exchange rates (rows 31–33), footnotes for accounting changes.
+
+Sheet 2 — Consolidated Balance Sheets
+- Row 2: Years 1992–2003. Units millions.
+- Assets section: Current assets (cash, marketable securities, receivables, inventories, other) with Total current assets (row 11 = SUM of rows 6–10), Noncurrent receivables, Investments, Net PP&E, Other assets, and Total assets (row 16 = SUM(rows 11:15)).
+- Liabilities and equity: Current liabilities (short-term loans, trade payables, income taxes, accrued expenses, other) with Total current liabilities (row 25 = SUM 20:24), long-term debt, accrued pension, other noncurrent liabilities, Total liabilities (row 29 = SUM 25:28).
+- Minority interests (row 30), Stockholders' equity components (common stock, paid-in capital, retained earnings, accumulated OCI, treasury stock) with Total equity (row 37 = SUM 32:36).
+- Total liabilities and stockholders' equity (row 38 = SUM(total liabilities, minority interests, total equity) via SUM(C29:C30,C37)).
+
+Sheet 3 — Consolidated Statements of Cash Flows
+- Years 1992–2003 in columns D:O.
+- Cash flows from operating activities: Net income followed by standard reconciling items (depreciation, gains/losses, deferred taxes, working capital changes). Net cash provided by operating activities (row 17) = SUM(net income + reconciling lines) using a SUM range.
+- Investing activities: capital expenditures, proceeds from sale of PP&E, marketable securities and investments activity, Other; Net cash used in investing (row 25 = SUM 19:24).
+- Financing activities: proceeds/repayment of long-term debt, change in short-term loans, dividends, Other; Net cash from financing (row 32 = SUM 27:31).
+- Effect of FX on cash, Net change in cash (row 34 = SUM of operating, investing, financing, FX), beginning and end cash (ending cash = beginning + net change). Free cash flow (row 38) = operating (row17) + investing (row25).
+
+Sheet 4 — Sales by Product (and region start)
+- Sales by product lines: Business machines (with subrows Office imaging, Computer peripherals, Business information products), Cameras, Optical & other, totals. Uses SUM to aggregate segment components into totals and consolidated totals.
+- Footnote about accounting standard adoption.
+
+Sheet 5 — Segment Information by Product (detailed)
+- Segment P&L and asset data for Business machines (net sales, operating profit, % of sales, assets, depreciation, capex), Cameras, Optical & other, Corporate & Eliminations, and Consolidated rows.
+- Consolidated net sales and operating profit are computed by summing segment rows (row 33/34 use SUM of segment rows).
+- Many % lines use IF to avoid divide‑by‑zero.
+
+Sheet 6 — Segment Information by Geographic Area
+- Data by region (Japan, Americas, Europe, Others) including Net sales, Operating profit, % of sales, Assets; Corporate & Eliminations and Consolidated totals.
+- Consolidated rows computed with SUM across the regions (rows 30–33).
+
+Sheet 7 — Capital Expenditure, R&D, Financial Indexes, Employees
+- Capital expenditure and R&D totals (with R&D / Net sales ratio).
+- Financial indexes: ROA, ROE, Net sales/Total assets (turnover), Equity/Total assets, Total debt/Total assets, inventories in days, interest coverage, net interest income/expense, stock price, PER, PBR, number of shares, market cap.
+- Number of employees by region, with totals computed via SUM.
+
+Notable formula patterns and issues
+- SUM across ranges is used extensively to aggregate components into totals and consolidated figures.
+- Percentage-of-sales formulas use IF(C$4=0,"-  ",value/total) or IF(...,"",...) to avoid division by zero and display a placeholder.
+- One inconsistent/likely erroneous formula: Sheet 1, Operating profit row B9 for 1997 (cell H9) is set to H6+H8 (addition) whereas all other years use H6−H8 (gross profit − S.G.&A.). This should be reviewed.
+- Cumulative accounting effect is present only for 2001 (L21 = 3,692) and is included in Net income rows via SUM formulas.
+
+Key/highlighted values (examples)
+- Consolidated Net Sales (Sheet 1): 1992–2003 across row 4; 2003 = 3,198,072 (Millions of yen).
+- Consolidated EPS (basic, Sheet 1 row 27): 2003 = 313.81 Yen (basic), 310.75 Yen (diluted).
+- Consolidated Total assets (Sheet 2 row 16): computed as SUM(current + noncurrent asset groups per year).
+- Capital expenditure (Sheet 3 row 19 and Sheet 7 row 8): 2003 ~210,038 million yen (per cash flow / capex lines).
+
+Layout conventions
+- Years run left-to-right in columns, items run top-to-bottom in rows.
+- Units are explicit near the top of each sheet. Footnotes about accounting standards are repeated on multiple sheets.
+- Negative amounts are represented with a leading minus sign (e.g., -52,694).
+
+If you want:
+- I can validate totals for a particular year (recompute and show any mismatches) or
+- produce a short list of formulas to correct (e.g., H9) and suggested corrections.

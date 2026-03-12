@@ -1,0 +1,35 @@
+Summary of errors
+1) Wrong per-row formula:
+   - J41 is incorrect. It uses =G41+H41+I41 but should subtract Expended and Commitments.
+
+2) Inconsistent total ranges:
+   - G217 = SUM(G7:G216) (OK).
+   - H218 = SUM(H9:H216) — starts at H9 and therefore omits H7 (and H8).
+   - I219 = SUM(I10:I217) — starts at I10 and ends at I217, omitting I7:I9 and possibly mismatching the budget range.
+
+These cause the sheet totals and the "Balance" (J220) to be wrong.
+
+Fixes (exact changes)
+1) Fix the J41 formula:
+   - Change J41 to: =G41 - H41 - I41
+
+2) Make all totals cover the same data rows (adjust if your last data row is different):
+   - Change H218 to: =SUM(H7:H216)
+   - Change I219 to: =SUM(I7:I216)
+
+3) Standardize the Balance column so every project uses the same formula:
+   - In J7:J216 use: =G7 - H7 - I7 (fill down)
+
+4) Recalculate the overall balance (J220 will then work):
+   - J220 already =G217 - H218 - I219 — no change needed after fixes.
+
+Why this works (simple explanation)
+- Per-row balance must be Budget minus Expended minus Commitments. J41 was adding, producing an obviously wrong positive number.
+- The totals must sum the same set of rows for Budget, Expended and Commitments. H218 and I219 were skipping early rows, so "Expended" and "Commitments" totals were too small, making the sheet Balance (J220) incorrect.
+- Standardizing J formulas ensures every row is computed the same way and prevents hidden manual mistakes.
+
+Optional improvements (recommended)
+- If row count may change, use dynamic ranges (Excel Table) or SUM(G:G) minus header/totals checks, or convert the data to an Excel Table and use structured references so sums always include all data rows.
+- Highlight negative balances (conditional formatting) to spot over‑spent projects.
+
+If you want, tell me the exact last data row and I will give the precise formulas to use (or provide the steps to convert the range to an Excel Table and auto-update totals).

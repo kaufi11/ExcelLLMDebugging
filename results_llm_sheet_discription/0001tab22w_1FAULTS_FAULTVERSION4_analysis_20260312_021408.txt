@@ -1,0 +1,45 @@
+Summary of problems
+1) Wrong formula for TOTAL UNIVERSITY lower-level "Other" (O30).
+   - O30 = SUM(100+(E30+G30+I30+K30+M30)) — wrong sign and unnecessary SUM(). This makes the "Other" percentage incorrect.
+
+2) Misaligned / stray numeric entries in adjacent columns (data shifted into even columns such as F, H, Z).
+   - Examples: F10, H10 (Business Admin); F18, H18 (Education rows repeated for 1998–2000); Z22, Z23 (Engineering rows). These values should not be in those columns and likely belong to the main percent columns (E,G,I,K,M or S,U,W,Y,AA) or are accidental duplicates.
+   - Impact: Misplaced numbers can cause wrong displays, confuse readers, and produce incorrect totals if formulas use the intended columns only.
+
+3) Minor: many "Other" cells use SUM(100-(...)) which is redundant (works but unnecessary). Not an error, but can be simplified to improve clarity.
+
+How to fix (step‑by‑step, simple)
+1) Fix O30 formula
+   - Replace O30 with: =100 - (E30 + G30 + I30 + K30 + M30)
+   - Or: =100 - SUM(E30,G30,I30,K30,M30)
+   - Why: It computes the residual percent that makes the lower-level percentages add to 100. Current formula used a plus sign so it gives a wrong value.
+
+2) Correct misaligned data
+   - Inspect every row for numbers in the even columns (F, H, Z, etc.). For each such number:
+     a) Determine whether it belongs to the previous odd column (the intended percent column) or is an accidental duplicate.
+     b) If it belongs to the percent column, cut the value and paste it into the correct odd-column cell (e.g., move Z22 → AA22 if AA22 is the intended F/WF percent).
+     c) If it is an accidental/duplicate value, delete it (clear the cell).
+   - Specific suggested checks:
+     - Row 10 (Business 2000): H10 = 0 → likely stray; clear or move if it belongs somewhere else.
+     - Rows 18–20 (Education): F18/F19/F20 and H18/H19/H20 contain extra numbers — verify and move/clear as appropriate.
+     - Rows 22–23 (Engineering): Z22 and Z23 likely should be moved to AA22 and AA23 (shift left one column).
+   - Why: The table uses every-other-column for the percent categories (E,G,I,K,M and S,U,W,Y,AA). Numbers in the columns between those (F,H,Z, etc.) indicate misplacement.
+
+3) Simplify "Other" formulas (optional but clearer)
+   - Replace formulas like =SUM(100-(E6+G6+I6+K6+M6)) with =100 - SUM(E6,G6,I6,K6,M6) or =100 - (E6+G6+I6+K6+M6).
+   - Why: Cleaner and reduces chance of sign mistakes.
+
+4) Validate after fixes
+   - For every row, check:
+     - Lower-level: E+G+I+K+M+O = 100 (or within rounding error).
+     - Upper-level: S+U+W+Y+AA+AC = 100.
+   - Check totals Q30, AF30 formulas still reference the correct row Q/AF cells.
+
+Why this fixes the problems
+- Changing O30 fixes a logic/sign error so the TOTAL UNIVERSITY Other percent is computed correctly.
+- Moving/clearing misaligned cells ensures each percent value sits in the column that formulas and readers expect; otherwise residual ("Other") and total checks will be wrong or misleading.
+- Simplifying formulas reduces human error and improves maintainability.
+
+If you want, I can:
+- Provide the exact list of cells that should be moved/cleared based on the sheet text, and the corrected values after the moves.
+- Give a corrected formula set you can paste into the sheet.

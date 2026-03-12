@@ -1,0 +1,51 @@
+I checked the workbook and found several clear mistakes that will give wrong reliability results. Below are the errors, why they’re wrong, and simple fixes (short and direct).
+
+1) Problem 1 — wrong value in H5
+- Fault: H5 contains the constant 5 instead of the product of deviations.
+- Why wrong: H5 should be the cross-product (x1-mn1)*(x2-mn2). Using 5 inflates the covariance and the correlation.
+- Fix: replace H5 with =D5*F5
+- Explanation: that makes H5 the correct per-subject cross-product so H8 (the covariance sum) and rxx' compute correctly.
+
+2) Problem 1 — hard-coded means used instead of cell references
+- Fault: D5:D7 use B?-2.93333 and F5:F7 use C?-2 (hard-coded mean values).
+- Why wrong: hard-coded constants break if you change data and are error-prone.
+- Fix (set the means from the computed cells and use absolute refs):
+  - B9: =B8/3 (if you want the mean)
+  - C9: =C8/3
+  - D5: =B5 - $B$9  (copy D5 down)
+  - F5: =C5 - $C$9  (copy F5 down)
+- Explanation: using $B$9/$C$9 keeps formulas dynamic and correct if data change.
+
+3) Problem 2 (odd/even split) — more hard-coded means
+- Fault: formulas like =B23-2.777767, =C23-3.166667, =K23-1.777667, etc. use hard-coded means.
+- Why wrong: same problem as above — not robust and likely inconsistent.
+- Fix examples:
+  - D23: =B23 - $B$27
+  - F23: =C23 - $C$27
+  - M23: =K23 - $K$27
+  - O23: =L23 - $L$27
+  - Copy these down for each subject.
+- Explanation: reference the computed mean cells (B27, C27, K27, L27) so sums of squares/covariances are computed correctly.
+
+4) KR‑21 (Problem 6) — missing k/(k−1) factor in B104
+- Fault: B104 = 1 - ((B102*(5-B102))/(5*B103)) — missing the k/(k−1) multiplier.
+- Why wrong: KR‑21 formula is r = (k/(k−1)) * [1 − mean*(k-mean)/(k*var)]. Without the multiplier the estimate is too small.
+- Fix: B104 = (5/(5-1))*(1 - ((B102*(5-B102))/(5*B103)))
+- Explanation: multiply by 5/4 to convert the inner quantity to the KR‑21 coefficient.
+
+5) KR‑20 (Problem 6) — variance denominator wrong (population vs sample)
+- Fault: B124 = (C121-(B122/5))/5 (labelled “Population Variance” but then used in KR‑20).
+- Why wrong: KR‑20 uses the observed variance of the total scores (sample variance for these computations). Using /5 (population divisor) will give the wrong variance and a wrong KR‑20.
+- Fix: replace with sample variance consistent with KR‑21 B103 style:
+  - B124 = (C121 - (B122/5))/4
+- Then KR‑20 (B125) can remain:
+  - B125 = (5/(5-1))*(1 - (J113 / B124))
+- Explanation: use denominator n−1 = 4 for the variance when computing KR20 here so both KR20 and KR21 use the same variance base.
+
+6) General / recommended cleanups (short)
+- Don’t hard-code means and other constants. Always reference the computed mean cells (use $ to anchor when copying).
+- Replace ad-hoc sums such as B9: =8.8/3 with B9: =B8/3 (use the sum cell).
+- Fix any single-cell constants you find (e.g., H5) to real formulas.
+- Where you compute correlations by sums-of-deviations, keep the pattern: deviation = value − mean; sumSq = SUM(deviation^2); cov = SUM(deviation_x * deviation_y); r = cov / SQRT(sumSq_x * sumSq_y).
+
+If you want, I can produce the exact quick-change patch (a list of exact cell-by-cell formulas to paste) so you can paste them into the sheet and correct everything automatically. Which would you prefer?

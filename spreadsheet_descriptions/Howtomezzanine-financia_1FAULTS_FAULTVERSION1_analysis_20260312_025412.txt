@@ -1,0 +1,72 @@
+Summary of workbook structure and contents (concise)
+
+Overall
+- Two sheets: "Rules of thumb" (simple per-desk pricing/profit calculator) and "Mezzanine financial model" (detailed costing, revenues, CAPEX, breakeven and NPV).
+- Inputs (changeable) are grouped near the top/left of each sheet; calculated/dependent values use SUM, SUMPRODUCT, PMT and NPV formulas and are presented as per sq ft, per desk (annual and monthly).
+- Common formula types used: arithmetic, SUM, SUMPRODUCT, PMT (loan payment), NPV, IF (for conditional cashflows).
+
+Sheet: Rules of thumb
+- Purpose: quick, high-level estimate of cost per desk, charge to tenant and simple profitability including set-up amortisation.
+- Key inputs (shaded/changeable):
+  - Space per desk B4 = 90 sq ft/desk
+  - Rent & service charge B7 = 15 per sq ft
+  - Operating costs + office manager B8 = 5 per sq ft
+  - Unoccupied fraction B11 = 0.15 (15%)
+  - Average mark up B19 = 0.15 (15%)
+  - Set up cost B26 = 20 per sq ft
+  - Lease length B27 = 10 yrs
+  - Interest rate B28 = 0.08
+- Important formulas / outputs:
+  - Total operating cost per sq ft B9 = B7 + B8
+  - Cost of unoccupied space B12 = B11 * B9
+  - Total cost per sq ft B14 = B9 + B12
+  - Total cost per desk B15 = B4 * B14 (shows as per desk)
+  - Annual charge to tenant per desk B21 = B15 * (1 + B19)
+  - Per sq ft and monthly equivalents: B22 = B21 / B4; B23 = B21 / 12
+  - Annual payment to amortize setup B29 = PMT(B28,B27,-1*B26,0,0) (per sq ft)
+  - Annual operating profit per sq ft B30 = B19 * B15 / B4
+  - Gross profit (loss) per sq ft B32 = B30 - B29
+- Notes: assumes 1 staff servicing 19,000 sq ft (comment only).
+
+Sheet: Mezzanine financial model
+- Purpose: detailed annual operating cost and revenue model, initial investment schedule, funding, break-even calculations and NPV analysis.
+- Key high-level inputs:
+  - Total Area C5 = 14,000 sq ft
+  - % Common Area C6 = 0.33
+  - Number of desks C8 = 160 (average area per desk C7 = C5 / C8)
+  - Operating cost items listed in C12:C35 (annual £ or currency)
+  - Mark-ups / adjustments per line in F12:F35
+  - Additional revenue F39 = 3,000 (e.g., conference hire)
+  - Initial investment items C43:C55 (CAPEX)
+  - Startup funding/grants F59 = 20,000
+  - Assumptions: Lease length C65 = 5 yrs, Occupancy C67 = 0.95, WACC C69 = 0.08
+- Structure / calculations:
+  - For each operating line (rows 12–35) the sheet computes:
+    - Per sq ft (H columns): =Cxx / C$5
+    - Per sq ft with mark-up (I): =Cxx*(1+Fxx)/C$5
+    - Per desk (J): =Cxx / C$8
+    - Per desk with mark-up (K): =Cxx*(1+Fxx)/C$8
+    - Per desk/month (L and M): J/12 and K/12
+  - Basic charge totals: SUM ranges H12:H27, I12:I27, J12:J27, etc. (row 29)
+  - Totals including additional costs: C37 = SUM(C12:C35)*0.9 (note: 0.9 applied here); F37 = C37 + SUMPRODUCT(C12:C35,F12:F35)
+  - Initial investment total C57 = SUM(C43:C55). Startup funding accounted in F59 and subtracted to give Net Initial Investment (F76).
+- Breakeven / financial metrics:
+  - Net initial investment per area/desk: F76 / I76 / K76
+  - Operating costs F78 = C$37 (per year); Operating revenues adjusted by occupancy F79 = (F37 + F39) * C67
+  - Operating profit F80 = F79 - F78 (and analogous desk/sqft columns)
+  - Break-even payment F82 / F90 = PMT(C69,C65,-F76,0,0) (annual payment required to amortize net initial investment at WACC)
+  - Required operating revenue to break even F92 = (Break-even payment + Operating costs) / Occupancy
+  - Required per-desk charge derived (per year / month)
+  - NPV F85 = NPV(C69, cashflows up to lease length using IF(...) to include F80 each year ) - F76 — returns project NPV (accept if > 0)
+  - Average mark-up required to breakeven F95 = (F92 - F39) / F91 - 1 (gives markup on operating costs needed)
+- Key formulas used: SUM, SUMPRODUCT, PMT, NPV, IF for conditional multi-year cashflows.
+
+Layout & navigation tips
+- Inputs in column C (and F for mark-up/other small inputs); calculations expand to the right (H, I, J, K, L, M) to show per-sqft, per-desk, monthly and revenue-with-markup views.
+- Results and summary blocks (Initial Investment, Results, Breakeven, NPV) are in lower sections (rows ~41–95).
+- Change the shaded input cells (top-left blocks) to see immediate impact on per-desk charges, breakeven revenue and NPV.
+
+If you want, I can:
+- Extract and list only the user-changeable input cells,
+- Verify any particular formula for correctness,
+- Recreate a simplified input/output dashboard for quick scenario testing.

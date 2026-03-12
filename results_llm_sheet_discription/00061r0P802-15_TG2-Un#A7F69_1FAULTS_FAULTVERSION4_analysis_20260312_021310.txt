@@ -1,0 +1,41 @@
+Findings (short)
+- Critical formula error: A19 is =A18-1. This creates a duplicate "16" (A17 and A19) and makes every number from row 19 onward shift one down (off-by-one).
+- Header / column mislabel: I1 is missing in the header row (your header list jumps from H1 to J1). Several rows use column I for address parts, so a blank I1 will confuse users/exports.
+- Data consistency issues (not formula bugs but will cause problems): duplicated person entries (Joseph A. Paradiso / Joe Paradiso), many missing emails shown as "?", address lines split inconsistently across H/I/J, and inconsistent phone/fax formats.
+- URLs sheet layout: labels and links alternate in one column with irregular blank rows — hard to maintain or hyperlink.
+
+Why the A19 error matters
+- Duplicate ID (16) and mis-numbering breaks sorting, filtering, lookups, index/key integrity and any formulas that rely on a continuous sequence in column A.
+
+How to fix (step-by-step, simple)
+1. Fix numbering (immediate):
+   - Change A19 to =A18+1.
+   - Then copy A19 down through A63 (or drag the fill handle) so column A becomes sequential again.
+   - Alternative robust formula: replace the column A formulas with =ROW()-1 in A2 and copy down (this always gives 1 in row2, 2 in row3, …).
+
+2. Add the missing header:
+   - Put a proper label into I1 (for example "Address line 2" or "Address cont.") so headers A:O are all filled and column meanings are clear.
+
+3. Clean inconsistent address/email/phone:
+   - Standardize address columns: decide H=Address1, I=Address2, J=City, K=State, L=Country, M=Zip. Move/split text to match (use Text to Columns with delimiters or copy/paste).
+   - Replace "?" email cells with blanks or a flag like "missing" and keep a separate column for data quality if needed.
+   - Normalize phone formats (choose one style) using formulas/text functions (SUBSTITUTE, REGEXREPLACE if available) or a simple manual format rule.
+
+4. Remove/merge duplicates:
+   - Find duplicates by name: use Conditional Formatting or =COUNTIF($B:$B,B2)>1 and review those rows manually to merge or remove (e.g., Joseph A. Paradiso / Joe Paradiso).
+
+5. Improve URLs sheet:
+   - Convert to two columns: Column A = Label, Column B = URL. Remove blank rows. Optionally use HYPERLINK(B#, A#) to create clickable labels.
+   - This makes lookup and maintenance easier.
+
+Why these solutions work (brief)
+- Fixing A19 restores a proper primary key sequence so sorting/filtering and any index-based operations behave correctly.
+- Adding the missing header clarifies each column and prevents mapping/CSV-export errors.
+- Standardization (addresses, phones, emails) makes the data machine-readable and reliable for mail merges, lookups or exports.
+- Converting URLs into a two-column table is a normal relational layout that’s easier to reference from the Profs sheet.
+
+If you want, I can give the exact steps for:
+- Replacing A19 and autofilling A2:A63, or
+- A small formula (ROW()-1) to auto-number, or
+- A Text-to-Columns walkthrough to split addresses, or
+- A conditional-format rule/formula to find duplicates. Which would you like?

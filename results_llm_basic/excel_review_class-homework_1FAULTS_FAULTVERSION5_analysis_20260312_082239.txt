@@ -1,0 +1,28 @@
+I checked the three sheets. Main errors and fixes are below — short and actionable.
+
+1) Sheet "Q'back" (Quarterback Efficiency)
+- Error: Cell H5 has a wrong formula: =D5/845*100. That 845 is a hard-coded, incorrect denominator, so Bryant’s Completion % (H5) and the Points (L5) are wrong.
+- Why it’s wrong: Completion % should be Completions ÷ Attempts (D5 ÷ C5). Using 845 produces a meaningless percent.
+- Fix: Replace H5 with:
+  =D5/C5*100
+  then fill/copy that formula down H5:H11.
+- Extra (format): Format H, I and J as Percentage (or Number with 1 decimal) so they display properly. After fixing H5 the Points formula in L5 (which uses H5) will also be corrected automatically.
+
+2) Optional / recommended cleanup for "Q'back"
+- Consistency note: You currently store completion/touchdown/interception values as percentages multiplied by 100 (e.g., 48.7). That’s fine if intended, but be consistent. If you prefer true percent cells (0.487 shown as 48.7%), use formulas without *100 (e.g., =D5/C5) and format as Percentage — then adjust any formulas that expect a 0–100 scale (the L column) accordingly.
+
+3) Sheet "lookup"
+- Missing formulas (not necessarily an error but incomplete):
+  - Totals (F): put totals of four classes.
+    F4: =SUM(B4:E4) and copy down.
+  - Average /100 (G): average per 100 (since total is out of 400) — divide total by 4:
+    G4: =F4/4 and copy down.
+  - Letter grade (H) using the table at F12:G18:
+    H4: =VLOOKUP(G4,$F$12:$G$18,2,TRUE) and copy down. (Ensure the lookup table in F12:F18 is sorted ascending — it already is.)
+- These formulas will automatically compute Total, Average, and Letter.
+
+4) Sheet "drug bust"
+- Issue: Column E contains metadata/notes (filename, source, contact) mixed into the rows. This will interfere with any data operations if you expect all rows to be numeric table rows.
+- Fix: Move metadata (E3–E10 notes) out of the data table area (put them in a separate Notes cell range or a header block) so columns A–C remain a clean numeric table for analysis/graphs.
+
+If you want, I can give the exact corrected workbook formulas and show before/after values for Bryant (row 5) so you can verify the change.

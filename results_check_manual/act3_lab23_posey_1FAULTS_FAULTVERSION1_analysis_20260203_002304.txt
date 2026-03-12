@@ -1,0 +1,35 @@
+Summary — immediate cause for Smith's low gross pay
+- Cell C18 (Smith Gross Pay) uses =(F7+G7)/B18 — it divides by the hourly rate instead of multiplying. That produces a very small number. Change the / to *.
+
+Other errors I found (you should fix these too)
+1. Week 4 cells (E7, E8, E9, E10, E11) contain AVERAGE(B:D) instead of the actual Week‑4 hours. That makes totals wrong.
+2. Total Hours (F6:F11) use SUM(B:D) — they omit Week 4. They should sum B:E.
+3. Overtime (G) is inconsistent:
+   - Some rows use only MAX(Bx-40,0) (looks at Week1 only).
+   - Others sum per‑week MAX(...).
+   - Pick one consistent rule. I recommend overtime = MAX(Fx-40,0) (hours over 40 in the pay period).
+4. Gross pay formula pattern (C17:C22) uses (F+G)*Rate which double-counts overtime if G is already included in F. Use the standard overtime pay calculation.
+5. D20 contains a stray character (ƒ) instead of a tax formula. Replace with =C20*0.15.
+6. Some hardcoded taxes (e.g., D17 = 28.96) should be formulas =C17*0.15 for consistency.
+
+Recommended fixes (simple, consistent approach)
+- Put real Week‑4 numbers in E6:E11 (remove the AVERAGE formulas).
+- Change Total Hours:
+  - F6 -> =SUM(B6:E6) and copy down for F7:F11.
+- Calculate overtime (based on total period hours):
+  - G6 -> =MAX(F6-40,0) and copy down for G7:G11.
+- Use a correct gross pay formula that pays overtime at 1.5×:
+  - Option A (explicit): Cx = MIN(Fx,40)*Bx + Gx*Bx*1.5
+  - Option B (short): Cx = (Fx + 0.5*Gx) * Bx
+  Either is correct if Gx = MAX(Fx-40,0).
+- Fix taxes:
+  - Dx = Cx*0.15
+- Fix Smith immediately:
+  - Change C18 from =(F7+G7)/B18 to =(F7+G7)*B18 (note: if you adopt the recommended overtime method above, use C18 = (F7 + 0.5*G7)*B18 or the explicit MIN(...)+... formula).
+
+Quick example (using current B7:D7 = 15,18,20.5)
+- Before fix (wrong): C18 = (53.5+0)/7.25 = 7.38 (very low)
+- After fixing only the operator: C18 = (53.5+0)*7.25 = 387.88
+- After fixing Week‑4 and overtime correctly, Gross will change further (and likely be higher if Week‑4 hours were omitted).
+
+If you want, I can give you the exact formulas to paste into each cell (F6:F11, G6:G11, C17:C22, D17:D22, D20, etc.). Which would you prefer?

@@ -1,0 +1,35 @@
+Summary of errors I found
+1) Hard-coded wrong value in Occ L2-DU-LR
+   - Cell E22 contains the literal 7 (shown as "E22: FORMULA =7"). All other hourly fractions are 0–1; 7 is clearly wrong and will massively bias any sums/averages that use this sheet.
+
+2) Wrong cell references in the "Latent load per person" formulas (repeated across sheets)
+   - Many sheets compute Latent per person using the formula pattern:
+     = (Occupancy!F22*Occupancy!F19 + Occupancy!F23*Occupancy!F20) / (Occupancy!F19 + Occupancy!F20)
+   - This is wrong: it weights latent gains by the sensible-per-person numbers (F19,F20) instead of by the time spent in each area (the schedule sums F38,F39). That makes the latent-per-person number incorrect and inconsistent with the sensible-per-person weighting (F9).
+
+Why these are problems
+- The 7 in E22 will propagate through L2 → L1 → Occ L1-LR → Occupancy!F38/F39 and distort all weighted averages and DOE2 schedule outputs (huge, wrong totals).
+- The latent-per-person formula uses wrong weights (F19,F20). Latent should be weighted by where people spend time (living vs bedroom), i.e. by the schedule totals (F38,F39). Using sensible-load values to weight latent mixes units and gives an incorrect result.
+
+How to fix (exact fixes)
+1) Fix the hard-coded 7 (Occ L2-DU-LR!E22)
+   - Replace E22 with the correct formula used on the same sheet for other hours. Based on the sheet pattern, set:
+     =+'Occ L3-WD-DU-LR'!H22 + 'Occ L3-WD-DU-LR'!I22
+   - (This sums the two L3 columns that correspond to that L2 column; if your sheet naming differs slightly, match the formula pattern used in rows 16–21 or 23.)
+
+2) Fix the latent-per-person formula(s)
+   - Replace the incorrect formula(s):
+     =(Occupancy!F22*Occupancy!F19 + Occupancy!F23*Occupancy!F20) / (Occupancy!F19 + Occupancy!F20)
+   - With the correct weighting by schedule sums:
+     =(Occupancy!F22*Occupancy!F38 + Occupancy!F23*Occupancy!F39) / (Occupancy!F38 + Occupancy!F39)
+   - Update this wherever it appears (examples: Occ L0 F10, Occ L1-WD F10, Occ L1-DU F10, Occ L1-LR F10, Occ L2-WD-DU F11, etc.). In short: any "Latent load per person" that currently references Occupancy!F19 and Occupancy!F20 should be changed to use Occupancy!F38 and Occupancy!F39.
+
+Quick verification steps after changes
+- Check Occ L2-DU-LR row 22 now has a fraction between 0 and 1 and matches neighboring rows logic.
+- Recompute Occupancy!F38 and F39 (they should be reasonable numbers; not huge because of the earlier 7).
+- Compare Occ L0 (simplest schedule) C41 (Total hours/person) and the DOE2.2 text outputs — numbers should be consistent and sensible.
+- Spot-check latent-per-person (new F10) to confirm it is in expected range and consistent with F9 weighting.
+
+If you want, I can:
+- Provide the exact list of sheets/cells where the latent formula appears so you can replace them in one pass, or
+- Generate the corrected formulas pasted ready to use.

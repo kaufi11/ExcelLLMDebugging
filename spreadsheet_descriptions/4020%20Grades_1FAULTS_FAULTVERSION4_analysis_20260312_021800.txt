@@ -1,0 +1,44 @@
+Sheet name
+- "4020 status after midterm#1" — single sheet with student records in rows 2–59.
+
+Columns / headers (A1:L1)
+- A: Student ID Num
+- B: Student Questionnaire
+- C: Homework #1
+- D: Pop-quiz #1
+- E: Homework #2
+- F: Pop-quiz #2
+- G: Pop-quiz #3
+- H: Homework #3
+- I: Midterm #1, multiple choice
+- J: Midterm #1, Short Answer
+- K: Pop Quiz #4 (header present; no data shown in your extract)
+- L: Cumulative Total (per-row formula)
+
+Rows
+- Rows 2–59 contain one student per row with numeric scores in the columns above. Many cells are blank for some students (no entry), which Excel treats as zero in arithmetic expressions.
+
+Cumulative total formula (per row, shown as L2…L59)
+- Template shown repeatedly:
+  =(Bn/100) + (2*Cn + 2*En + Hn)*12.5/1000 + (Dn + Fn + Gn)*12.5/1700 + (In + Jn)*70/4000
+- Simplified numeric weights:
+  - Bn/100  — questionnaire contribution (B as fraction of 1).
+  - (2*Cn + 2*En + Hn) * 0.0125  — homework block (C and E double-weighted; H single).
+  - (Dn + Fn + Gn) * 0.0073529412  — pop-quiz block.
+  - (In + Jn) * 0.0175  — midterm total (MC + short answer), largest per-point weight.
+
+Key observations / issues
+- Column K (Pop Quiz #4) is never used in the cumulative formula and no data shown.
+- Several rows contain missing cells (B, C, D, E, F, G, H) — formulas will treat blanks as zero; verify this is intended.
+- A clear typo/inconsistency: row 5’s formula uses (881+F5+G5)*12.5/1700 (an apparent hard-coded 881) instead of (D5 + F5 + G5). That will produce incorrect totals for that row.
+- Many L formulas are identical except for that row; consider filling L2:L59 with a single consistent formula to avoid errors.
+
+Suggested fixes / improvements (brief)
+- Correct row 5 to use D5 rather than 881.
+- Replace blanks with 0 where appropriate or wrap inputs with N() or IF(ISBLANK(...),0,...) if you want explicit handling.
+- If Pop Quiz #4 should count, add it to the formula and ensure K column is populated.
+- For maintainability, enter one corrected formula in L2 and fill down; consider named ranges for components (Questionnaire, Homeworks, PopQuizzes, Midterm) to make the formula clearer.
+
+If you want, I can:
+- Produce the corrected formula ready to paste into L2 and fill down.
+- Scan the data and list rows with missing inputs or anomalies (e.g., the 881).

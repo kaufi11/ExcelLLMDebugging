@@ -1,0 +1,22 @@
+Summary — found 2 problems that will distort scores:
+
+1) Wrong multiplier (typo)
+- Faulty cell: I21
+- Current formula: =H21*38
+- Error: 38 is a typo. Column I should be the weighted score = score (H21) * weight (C21). Using 38 massively inflates Oracle's weighted score and the Oracle total.
+- Fix: replace with =H21*C21
+- Why: C21 is the intended weight (3). Using the cell reference keeps the sheet correct if you ever change the weight.
+
+2) Hard‑coded weighted scores (mechanical/consistency issue)
+- Faulty cells: R8 and R9 (they contain constant numbers: 2 and 3)
+- Error: Those should be formulas (=Q8*C8 and =Q9*C9), not pasted values. If you change a score or weight later the numbers won't update.
+- Fixes:
+  - R8 → =Q8*C8
+  - R9 → =Q9*C9
+- Why: All other WS cells use formula S*Weight (I,L,O,R columns). Hard-coded values break consistency and make auditing/error-prone.
+
+Quick checks you should run after fixing:
+- Recalculate totals (I44, L44, O44, R44) and the final Overall scores (C55, D55) to see corrected totals.
+- Use Go To Special → Constants (or ISFORMULA) to find any other weighted-score cells accidentally entered as constants and convert them to =S*Weight.
+
+If you want, I can give a list of every WS cell that should contain a formula and verify them against the sheet.

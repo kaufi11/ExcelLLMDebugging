@@ -1,0 +1,45 @@
+Summary — main problems found
+1) Misplaced/extra numeric entries in unused columns (F, H, Z, etc.). These cells contain percentage numbers but are outside the five columns the formulas add (E, G, I, K, M). Result: the calculated "Other" (column O / AC) = 100 - (E+G+I+K+M) omits those stray values so rows don’t sum to 100.
+
+2) Wrong operator in one formula (mechanical typo).
+   - O14 (Hospitality, Lower Level) uses =SUM(100-(E14-G14-I14-K14-M14)) — minus signs instead of plus signs. That gives an incorrect “Other” value.
+
+3) Unnecessary use of SUM around a single expression: =SUM(100-(...)). Not an error but confusing and can hide mistakes. Use =100-(...) or =100-SUM(range) instead.
+
+What to fix (step-by-step)
+1) Fix misplaced numbers
+   - Inspect columns F, H, Z (and any other columns between the defined percent columns) and look for numeric percentage entries.
+   - For each stray value decide whether it should be part of the five-category percentages (A,B,C,D,F/WF). If yes, move it into the correct column (E, G, I, K, or M). If it is a stray/duplicate entry, clear it.
+   - Quick method: sort or Filter the sheet by column F (and H, Z) to find rows with numbers and then correct them.
+   - After moving/clearing, verify each row’s percent columns (E, G, I, K, M) add to ≤100 and that O (Other) = 100 - SUM(those five).
+
+2) Fix the hospitality formula typo
+   - Change O14 from:
+       =SUM(100-(E14-G14-I14-K14-M14))
+     to:
+       =100 - (E14 + G14 + I14 + K14 + M14)
+   - Or equivalently:
+       =100 - SUM(E14,G14,I14,K14,M14)
+
+3) Simplify all "Other" formulas (recommended)
+   - Replace all occurrences like =SUM(100-(E6+G6+I6+K6+M6)) with:
+       =100 - SUM(E6,G6,I6,K6,M6)
+   - This is clearer and less error-prone.
+
+4) Validate totals
+   - After corrections, check each "Other" column (O/AC) that:
+       Other = 100 - SUM(A,B,C,D,F/WF)
+   - And check any row where some categories are "n/appl" — ensure those get treated consistently (blank or zero) so formula behaves correctly.
+
+Why this fixes it (short)
+- Moving stray numbers ensures they’re actually included in the 5-category sum the "Other" formula relies on. If a percentage sits in the wrong column it is invisible to the formula.
+- The Hospitality formula had subtraction signs, so it was subtracting values instead of adding them — fixing operators makes the math correct.
+- Using =100 - SUM(...) is clearer and avoids hidden mistakes caused by wrapping a single arithmetic expression in SUM().
+
+Examples of corrected formulas
+- O6 (Other) -> =100 - SUM(E6,G6,I6,K6,M6)
+- O14 (Hospitality) -> =100 - SUM(E14,G14,I14,K14,M14)
+
+If you want, I can:
+- List every specific stray cell (e.g., H10, F18, H18, Z22, Z23, ...) found in this sheet text and tell you exactly whether to move or clear it; or
+- Provide a small macro to find numeric entries in the unused columns and list them for correction. Which would you prefer?

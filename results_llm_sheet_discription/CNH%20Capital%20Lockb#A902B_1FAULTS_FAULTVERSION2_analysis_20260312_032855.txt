@@ -1,0 +1,35 @@
+Short answer — primary error and fix
+
+1) Error found
+- Cell C41 (California processing charge for Midwest) currently has:
+  = $C19 / C$6
+  (division instead of multiplication)
+
+Why it's wrong
+- Processing cost should be: yearly number of checks * per-check charge.
+- Using division returns a meaningless number and corrupts the objective and assignment costs.
+
+2) Fix (what to change)
+- Replace C41 with:
+  = $C19 * C$6
+  (or simply = C19 * C$6)
+
+3) Quick consistency check (recommended corrected formulas)
+- East processing:
+  B39 = C17 * B$6
+  C39 = C17 * C$6
+- West processing:
+  B40 = C18 * B$6
+  C40 = C18 * C$6
+- Midwest processing:
+  B41 = C19 * B$6
+  C41 = C19 * C$6
+
+4) Short explanation of the fix
+- Multiplying yearly checks (column C) by the per-check charge (row 6 in the lockbox’s column) gives the annual processing cost for that region → correct units and correct contribution to the objective.
+
+Optional recommendations
+- Lock references where helpful (e.g., use C17 as the yearly-check column reference when copying formulas): e.g., B39 = $C17 * B$6 so the check-count column stays C when copying left/right.
+- Before running Solver: make sure open/assignment variables (B53:C53 and B57:C59) are declared binary and objective cell H52 is selected. Add the region-equals-1 constraints (D57:D59 = E57:E59) and the capacity constraints (B60 = B61, C60 = C61).
+
+That single formula (C41) is the concrete error; correcting it to multiplication will fix the wrong Midwest/California processing cost and restore the correct objective value.

@@ -1,0 +1,31 @@
+Summary — main errors found
+1) Wrong ATAN2 argument order (affects all VS and IS angle columns).
+   - Where you compute angles you used ATAN2(Gx,Hx) and ATAN2(Kx,Lx).
+   - Excel's ATAN2 expects ATAN2(y, x) (first argument = imaginary/vertical, second = real/horizontal). Your G = Real and H = Imag, so those are swapped.
+
+   Fix (example):
+   - J4 currently: =ATAN2(G4,H4)*180/PI()
+   - Correct J4: =ATAN2(H4,G4)*180/PI()
+   - N4 currently: =ATAN2(K4,L4)*180/PI()
+   - Correct N4: =ATAN2(L4,K4)*180/PI()
+   - Apply the same swap for every row in J and N (fill down).
+
+   Why: Using ATAN2(real,imag) returns atan(real/imag) and gives wrong quadrant/angle. Use ATAN2(imag,real) to get the proper phasor angle.
+
+2) Typo in the cosine argument for row 21 (affects E21 and downstream results for row 21).
+   - E21 is: =COS($B$15*D21*1922) — the 1922 is a typo.
+   - Correct E21: =COS($B$15*D21*1000)
+   - (F21 is already =SIN($B$15*D21*1000) — keep that.)
+
+   Why: All other rows use *1000 for km→m conversion; 1922 gives wrong trig inputs and wrong derived values.
+
+Quick repair steps
+- Fix one cell in J (e.g. J4) to =ATAN2(H4,G4)*180/PI() and drag/fill down the entire J column range.
+- Fix one cell in N (e.g. N4) to =ATAN2(L4,K4)*180/PI() and fill down.
+- Edit E21 to replace 1922 with 1000.
+- Recalculate / check rows 21 and any rows where angles changed.
+
+Optional check
+- After fixes, verify a few angles by hand (atan2(imag,real)) to ensure quadrant and sign are correct.
+
+If you want, I can give a Find/Replace pattern or the exact corrected formulas for a set of rows.

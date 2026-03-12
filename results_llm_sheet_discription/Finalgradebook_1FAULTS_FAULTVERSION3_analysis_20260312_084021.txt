@@ -1,0 +1,38 @@
+Nice summary — I found the concrete errors and give exact corrections plus short explanations.
+
+1) Major typo in the final-grade formula (Sheet1)
+- Error: I15 contains (15*25) instead of using the Final column cell.
+- Fix: replace I15 with:
+  =(C15*0.125)+(D15*25)+(E15*25)+(F15*25)+(G15*12.5)
+- Why: (15*25) evaluates to 375, massively inflating the numeric grade and producing an incorrect letter.
+
+2) Test-average formulas reference wrong rows (Sheet3)
+- Error pattern: P4..P18 use L40, L41, L42, … (out-of-range cells) instead of the same-row percentage cell.
+- Fix (apply to each row n = 4..18):
+  Pn = AVERAGE(Dn,Fn,Hn,Jn,Ln)
+  e.g. P4 = AVERAGE(D4,F4,H4,J4,L4)
+- Why: The AVERAGE must use the five test percentage cells for that student. Referencing L40..L54 produces wrong values/#REFs.
+
+3) Off-by-one / wrong function in Sheet1 summary rows
+- Errors:
+  - C20 = MIN(C4:C18) → should cover the student homework cells C3:C17
+  - C21 = MAX(C5:C19) → row21 is "Class Average" but uses MAX and wrong range
+- Fixes:
+  - C20 = MIN(C3:C17)
+  - C21 = AVERAGE(C3:C17)
+- Why: Summary/aggregate rows must use the exact student range (Sheet1 students are in rows 3:17). Using wrong ranges or MAX instead of AVERAGE gives incorrect class stats.
+
+4) General consistency check (apply quickly)
+- Students ranges to standardize:
+  - Sheet1 student rows: C3:C17, D3:D17, E3:E17, F3:F17, G3:G17, I3:I17
+  - Sheet2 student rows: C5:L19 (averages P5:P19)
+  - Sheet3 student rows: D4,F4,H4,J4,L4 → P4:P18
+- Why: Many summary/min/max/average errors come from off-by-one ranges; standardizing prevents future mistakes.
+
+5) Minor / cosmetic
+- Spelling in headers: "Sudents" (Sheet1 A1) and "Studnets" (Sheet3 A1) — no calculation impact but worth fixing.
+- VLOOKUP: J3:J17 uses VLOOKUP(I#, $K$5:$L$17, 2, TRUE()). TRUE() is fine but can be written as TRUE. Ensure K5:K17 is sorted ascending (it is), or use INDEX/MATCH to be safer.
+
+If you want, I can:
+- Provide a list of every cell that needs changing so you can paste them, or
+- Give an INDEX/MATCH alternative for the letter grade lookup (safer than approximate VLOOKUP).

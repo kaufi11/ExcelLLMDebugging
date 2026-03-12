@@ -1,0 +1,20 @@
+Summary — two errors found:
+
+1) Wrong ATAN2 argument order (many cells)
+- Faulty pattern: J4..J54 use =ATAN2(Gx,Hx)*180/PI() and N4..N54 use =ATAN2(Kx,Lx)*180/PI().
+- Why it's wrong: To compute the complex angle you must call ATAN2(imaginary, real). In Excel the ATAN2 arguments must be (y,x) i.e. (imag, real). Your formulas pass (real, imag), so angles and quadrants are incorrect.
+- Fix (apply to every affected row):
+  - Replace =ATAN2(Gx,Hx)*180/PI() with =ATAN2(Hx,Gx)*180/PI()
+  - Replace =ATAN2(Kx,Lx)*180/PI() with =ATAN2(Lx,Kx)*180/PI()
+
+2) Typo in G43
+- Faulty cell: G43 currently =($B$6/1000/E43-$B$14/$B$24/F43)/1000
+- Why it's wrong: All other G‑column rows use the pattern ($B$6*1000*E - $B$14*$B$24*F)/1000. G43 uses divisions instead of multiplications and misplaced parentheses, producing a completely different value.
+- Fix: Replace with the consistent formula:
+  =($B$6*1000*E43 - $B$14*$B$24*F43) / 1000
+
+Quick implementation tips
+- Use Find/Replace on the sheet to change ATAN2( G, H ) → ATAN2( H, G ) (and similarly for K/L) so you don’t have to edit every row manually.
+- After fixing G43 and the ATAN2 calls, recalc the sheet — many dependent angle/magnitude values will update.
+
+If you want, I can provide an Excel-safe find/replace string or a short VBA macro to fix all ATAN2 occurrences automatically.

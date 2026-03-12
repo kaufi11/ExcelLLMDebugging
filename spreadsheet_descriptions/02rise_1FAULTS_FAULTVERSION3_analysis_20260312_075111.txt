@@ -1,0 +1,63 @@
+Summary of the workbook (concise)
+
+Sheets
+- Jan.-Dec. 2002 (large detail sheet, shown as "Sheet4 / Jan.-Dec. 2002")
+  - Row layout: repeating blocks for each class:
+    - Data row (e.g., row 3): A = class title, B = class date, C = number of class days, D = public cost (per class or per student-day depending on context), E = RISE cost (per student), columns F through BG = participant counts by company (one company per column).
+    - Immediately below each class row there are three summary rows labelled "Total", "Total Savings" (and sometimes intermediate totals). These compute per-company totals, totals per class and savings.
+  - Key per-row formulas:
+    - BK (per class, column BK) = =SUM(F#:BG#) → total participants in that class.
+    - BL (column BL) = =C#*BK# → total student-days for that class.
+    - Per-company "Total" cells (e.g., F4, G4, ...) = company_count * $E$row (e.g., =F3*$E$3) — cost attribution using the RISE cost for that class.
+    - BM (per-class total public cost) = =D#*BK# (e.g., BM4 = D3*BK3).
+    - BO (per-class total actual RISE cost) = =SUM(F4:BG4) (sum of all company totals for the class).
+    - BN (per-class savings) = =BM# - BO# (public cost minus RISE cost total).
+    - Total Savings "Total" row for companies: each cell = company_total - (public_cost * company_count) or similar pattern (the sheet uses many SUM(...) patterns to compute savings by company across the block).
+  - Workbook-level aggregates (bottom of the sheet):
+    - Row 268–271 supply grand totals and aggregates:
+      - C268 (C total) = SUM of class days count (C3:C264).
+      - BI268 = grand total public cost (sum across F268:BG268).
+      - BI269 = grand total RISE cost (sum across F269:BG269).
+      - BI270 = grand total RISE savings (sum across F270:BG270).
+      - BK268 = total participants across all classes (=SUM of BK per-class).
+      - BL268 = total student-days (=SUM of BL per-class).
+      - BO268 and BO269/BO270 are large SUM(...) formulas adding up all per-class BO/BM/BN results.
+  - Layout note: columns F..BG are one column per participating company (column headers list roughly 70+ companies); the sheet repeats the same calculation block for each class.
+
+- Companies (summary by company)
+  - Columns: A = Company name, B = total class participants (sum across the year), C = Total Public Cost, D = Total RISE Cost, E = Total RISE Savings (C - D).
+  - Row 58 provides Grand Totals:
+    - Example key rows/values (selected):
+      - Capital One (A5): B5 = 39 participants; C5 = 60,045 public cost; D5 = 23,225 RISE cost; E5 computed = C5 - D5.
+      - Dominion Resources (A22): B22 = 327; C22 = 432,445; D22 = 175,843.
+      - VDOT (A51): B51 = 138; C51 = 148,965; D51 = 52,327.
+    - Grand totals at bottom: B58 = SUM(B3:B56), C58 = SUM(C3:C56), D58 = SUM(D3:D56), E58 = SUM(E3:E56).
+
+- Financial Info
+  - High-level year-by-year comparison table (rows A4:G16) showing 1997–2002 metrics:
+    - Key 2002 values (column G):
+      - Number of classes held: 88
+      - Number of students trained: 1,023
+      - Number of student days: 2,406
+      - Average class length: 2.35 days
+      - Average cost per day: 218.44
+      - Average cost per class: 513.33
+      - Total RISE tuition dollars: 525,562
+      - Total RISE savings: 838,743
+      - Total public cost (assumes $200/day): 1,364,305
+  - Some explanatory formulas are documented in plain text below (how averages and totals are computed).
+
+General structure & formula patterns
+- The detailed class sheet uses a consistent block pattern: class row → "Total" row(s) → next class. All per-company calculations are done by multiplying participant counts by the class's RISE cost (cell E#) and by aggregating with SUM across columns.
+- Company participation columns (F:BG) are summed horizontally per class (BK) and vertically across classes (Companies sheet and totals rows).
+- Savings are computed as Public Cost totals minus RISE Cost totals (BM - BO or equivalent).
+- The workbook relies heavily on SUM across large cell ranges and on a few absolute references (e.g., $E$#) to compute per-company cost allocations.
+
+Key takeaways
+- Primary purpose: track each RISE class in 2002, capture per-company participant counts and compute costs (public cost vs. RISE tuition), aggregate total student-days, RISE revenue, and estimated public-sector savings.
+- Two summary views: (1) Companies sheet — totals per organization (participants, costs, savings); (2) Financial Info — year-over-year metrics and 2002 summary values (tuition, savings, student-days, averages).
+- Main calculation fields to inspect when auditing: BK (participants per class), BL (student-days per class), BM/BO/BN (per-class public cost / RISE cost / savings), and the grand total rows (row ~268–271) that combine all per-class results.
+
+If you want, I can:
+- Produce a small list of the exact grand totals (participants, RISE tuition, public cost, savings) extracted from the workbook rows, or
+- Point out any suspicious formula references (e.g., incorrect absolute references) if you want a quick formula audit.

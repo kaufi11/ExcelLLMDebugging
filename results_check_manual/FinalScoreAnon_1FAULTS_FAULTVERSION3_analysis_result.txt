@@ -1,0 +1,61 @@
+I reviewed the workbook formulas and the computed values. I found several real issues (probable mistakes) and a number of inconsistencies / fragile formulas you should be aware of. I list them below with cell addresses, why each is a problem, and recommended fixes.
+
+1) Wrong function used — COUNT instead of SUM
+- Cell: Sheet1!T19
+- Problem: formula is =COUNT(F19:S19) but every other row’s T cell uses SUM(Fx:Sx). COUNT returns the number of numeric cells (14) instead of the sum of the scores; this propagates wrong deviations (U19), AO19, AP19, etc.
+- Fix: change to =SUM(F19:S19).
+
+2) Unexpected external reference (inconsistent with other rows)
+- Cell: Sheet1!T31
+- Formula: =SUM(Sheet2!G31:T31)
+- Problem: all other T cells in Sheet1 use =SUM(Fx:Sx) (sum of that row’s raw HW columns). T31 pulls its sum from Sheet2 instead (Sheet2!G31:T31). That is possibly intentional but is inconsistent and a likely source of confusion or error if Sheet2 is changed.
+- Fix: Confirm intended source: if you mean to sum Sheet1 row 31 HWs, use =SUM(F31:S31). If you truly need the Sheet2 range, document it clearly.
+
+3) Obvious data-entry typos in AU column (huge numbers)
+- Cells: Sheet1!AU21, Sheet1!AU38 (and possibly others)
+- Problem: values are 293294 (very large) while typical AU values are ~294. These look like a misplaced extra "293" or incorrect paste (should likely be 294).
+- Impact: these bad values may be used downstream (sorting, filtering, manual checks).
+- Fix: Correct these to the intended value (e.g., 294) or remove if incorrect.
+
+4) Fragile / inconsistent average formulas (hardcoded divisors rather than using COUNT/AVERAGE)
+- Cells: Sheet1 row 54 (F54, G54, H54, ...), many use SUM(range)/<hard-coded number> where the divisor varies (e.g., F54 = SUM(F6:F52)/47, H54 = SUM(H6:H52)/46, J54 = SUM(J6:J52)/43, etc.)
+- Problem: the denominators are hard-coded and differ across columns. This makes these average calculations fragile and inconsistent (if you add/remove rows or if some rows are blank these will become incorrect). It’s also harder to verify correctness because you must track how many non-empty entries there are for each column.
+- Recommendation: use =AVERAGE(range) or =SUM(range)/COUNT(range) (or COUNTA if appropriate) so the formula automatically uses the actual number of data points. That ensures the average adapts to missing data and is consistent.
+
+5) Inconsistent use of local vs. external totals in AO dev calculations
+- Example: Many AO formulas on Sheet1 are =+(Tn/$T$55)+Z n/100+AF n/100+AL n/100 which mixes an absolute total cell $T$55 with per-row sums. This is OK if intended, but be aware:
+  - Some rows (e.g., row31) get T31 from Sheet2 (see item 2), so AO31 differs in provenance from AO other rows.
+- Recommendation: standardize the source for Tn (all from Sheet1 or all from Sheet2), or add inline comments/notes in the sheet indicating rows intentionally sourced from Sheet2.
+
+6) Inconsistent formulas / missing formulas in AF / AL in some rows
+- Observation: Some AF (P2 total) or AL (P3 total) values are manually entered rather than computed by SUM(AC:AE) or SUM(AI:AK). For example AF36 is present but AC36:AE36 may be blank; AL36 is computed but not all AI:AK are filled.
+- Problem: Manual entries are error-prone and inconsistent with the rest of the sheet where totals are computed. It’s harder to audit.
+- Fix: Use =SUM(ACn:AEn) and =SUM(AIn:AKn) consistently for AF and AL columns, and ensure missing puzzle pieces are intentionally blank (and documented).
+
+7) Summation/averaging denominators differ across sheets
+- Example: In Sheet2 row 54 (averages) you use SUM(C6:C52)/47 etc. Numbers of rows per column differ (for example I54 used /46). Same fragility as item 4.
+- Fix: use AVERAGE() or COUNT-based division so averages reflect actual data points.
+
+8) Several small inconsistencies / potential mistakes to check (data & formulas)
+- Sheet1!AU entries — check all AU values; besides the large typos noted, AU has many repeated 294 values; ensure those are intended (some rows show 293 or 336 — e.g., AU30=336, AU21=293294). Example: Sheet1!AU30 = 336 (others 294); verify those.
+- Sheet1!T11 shows =SUM(F11:S11) but many of the intermediate columns in that row are blank; verify the intended total and ensure blank cells were intended rather than accidental deletions.
+- Sheet2 U55 formula =+SUM(G55:T55)-100 looks odd (subtracting 100) — it seems intended to make the "Total possible" align with other scaling factors, but document that logic.
+- Presence of many leading + signs in formulas (e.g. =+(T6-$T$54)/$T$54) — harmless, but inconsistent style.
+
+9) Suggestion: use more robust functions for averages / counts
+- Where you want averages of non-empty cells, use AVERAGE(range) which ignores blanks, or explicitly use SUM(range)/COUNT(range) so that the divisor is computed from the actual dataset and you avoid hard-coded divisors which likely were manually set to “how many entries I thought there were”.
+
+10) Propagation impact
+- Because many deviation columns rely on the T54 and AO54 aggregate values, any mistake in an individual Tn (like the COUNT in T19) or in the averages (wrong divisor) will change many downstream computed deviations and scaled totals (U, AA, AG, AM, AP, etc.). Fixing the T19 COUNT -> SUM and switching the averages to AVERAGE/COUNT will likely change many deviation values; you should re-check the grade cutoffs afterwards.
+
+Summary of immediate actions I recommend
+1. Correct Sheet1!T19 to =SUM(F19:S19).
+2. Correct obvious data-entry typos in Sheet1!AU21 and Sheet1!AU38 (change 293294 -> correct value, e.g. 294) and audit the rest of AU for outliers (AU30=336, AU31=294 etc).
+3. Decide whether Sheet1!T31 should sum Sheet1 F31:S31 or really read Sheet2; make the pattern consistent and document why row 31 is different.
+4. Replace hard-coded average denominators in row-54 (both sheets) with AVERAGE(range) or SUM/COUNT(range) to make them adaptive and correct when data presence changes.
+5. Audit any manually-entered totals (AF, AL, etc.) and replace with SUM formulas where appropriate to ensure consistency and easier auditing.
+
+If you want I can:
+- produce a small script (or list) of every cell that uses a hard-coded divisor (and suggest replacement formulas),
+- list all AU values that deviate from 294,
+- or create corrected formulas for any specific rows you point out.

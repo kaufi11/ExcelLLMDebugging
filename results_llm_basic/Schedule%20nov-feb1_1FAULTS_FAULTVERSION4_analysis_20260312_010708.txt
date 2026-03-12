@@ -1,0 +1,37 @@
+Summary of errors found
+1) Wrong operator in D6 — shows "FORMULA =200/C6" (division). This gives 200/Days instead of Price = Rate × Days.
+2) Many D-cells appear stored as literal text "FORMULA =250*C4" (including D4, D5, D6…): Excel will not evaluate those as formulas if the cell text begins with the word "FORMULA ".
+3) Missing Days value (blank C82) but D82 has =250*C82 — this returns 0 (or an unexpected result) instead of an empty Price.
+4) Possible data-format issue: some formula cells may be formatted as Text, so even a correct leading "=" will be treated as text.
+
+What to do (quick fixes)
+1) Fix the D6 formula
+- Change D6 to: =200*C6
+- Why: Price = daily rate × #days. 200/C6 was dividing by days.
+
+2) Convert the literal "FORMULA =..." text into real formulas
+- Use Find & Replace:
+  - Select column D (or the whole sheet).
+  - Ctrl+H: Find what: FORMULA =    Replace with: =
+  - Replace All.
+- After replacing, if any cells still show the text instead of calculating, force re-evaluation:
+  - Select the changed range → Data → Text to Columns → Finish
+  - Or set cell format to General and press F2 then Enter for a sample cell; use Fill Down if needed.
+- Why: Excel formulas must begin with "=". The word "FORMULA " prevents evaluation.
+
+3) Handle blank Days (so price isn't 0)
+- If you want Price blank when Days is blank, use an IF:
+  - Example D82: =IF(C82="","",250*C82)
+- Why: Prevents misleading zero prices when Days is missing.
+
+4) Check cell formats
+- Ensure column D is formatted General or Number, not Text.
+- If previously formatted Text, set to General and force re-evaluation (Text to Columns or F2+Enter).
+
+Notes / sanity checks
+- Verify the correct daily rates (200, 250, 300) are intentional for each course before mass changes.
+- After fixes, scan column D for any remaining unexpected zeros or very small numbers (these indicate either missing Days or wrong operators).
+
+If you want, I can:
+- Provide a single Find/Replace string or a macro to fix all cells automatically.
+- Point out any other specific rows that still look wrong after you apply these fixes.

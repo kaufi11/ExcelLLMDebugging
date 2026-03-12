@@ -1,0 +1,47 @@
+Summary — what’s wrong (short)
+1) Option‑4 uplift is inconsistent: many Option‑4 (N‑column) formulas use +2.3% (0.023) instead of the established +2% (0.02).  
+2) Some cascade formulas hard‑code numbers instead of referencing the prior option (example: T&M K20 = 670+(670*0.02)). That breaks automatic updates.  
+3) Grand Total formulas omit the last option (Option 7). Example: Total LOE B70 = SUM(B68:H68) misses I68; T&M B62 = SUM(B60:T60) misses W60.  
+4) Possible missing/incorrect extended‑price formulas (not shown explicitly) — verify each Extended Price = Hours × Rate/Unit Price.  
+5) A few rows (e.g., Program Director, Program Manager on Total LOE) repeat the same number in all option columns instead of cascading — confirm whether intentional.
+
+Why these are problems (one line each)
+- Using 0.023 vs 0.02 changes Option‑4 hours/rates unexpectedly (inflates Option‑4 relative to the pattern).  
+- Hard‑coded numbers stop the cascade; if the Base or prior option changes, downstream options won’t update.  
+- Omitting the last option means Grand Totals understate the total workload/cost.  
+- Wrong/missing extended‑price formulas cause incorrect cost calculations.  
+- Repeated constants may be right, but if they were intended to follow the 2% cascade they are wrong.
+
+How to fix (concrete, easy steps + sample formulas)
+1) Make Option‑4 use 2% (consistent cascade)  
+- Replace any formula like =K5+(K5*0.023) with =K5*1.02 (or =K5+(K5*0.02)).  
+- Quick: on each sheet filter/select the Option‑4 (N) column and change .023 → .02, or edit formula to K#*1.02.
+
+2) Replace hard‑coded numeric references with relative references  
+- Example (T&M sheet row 20): change K20 from =670+(670*0.02) to =H20*1.02.  
+- General pattern: NextOption = PreviousOption * 1.02. Use that everywhere to keep the chain dynamic.
+
+3) Fix Grand Total formulas so they include Option‑7 totals  
+- Total LOE sheet B70: change =SUM(B68:H68) → =SUM(B68:I68) (includes Base + Opt1–Opt7 totals).  
+- T&M sheet B62: replace =SUM(B60:T60) with a sum of the option total cells explicitly: =SUM(B60,E60,H60,K60,N60,Q60,T60,W60) (safer) — or, if your totals are placed in a contiguous block that only contains totals, use a contiguous SUM that includes the final column. Check which is appropriate before using B60:W60.
+
+4) Verify and fix Extended Price formulas (Fixed Price / Cost / T&M)  
+- Example Fixed Price row: D5 (Base Extended Price) should be =B5*C5; G5 (Opt1 Extended) =E5*F5; J5 =H5*I5; etc.  
+- If any Extended price is a manual value, replace it with Hours × Unit Price (or Hours × Loaded Rate).
+
+5) Confirm intentional constants vs cascades for specific roles  
+- If Program Director/Manager were intended to follow the 2% cascade, change C43 (Opt1) =B43*1.02, D43 =C43*1.02, etc. If they are intentionally fixed per option, keep as is but document it.
+
+Quick examples you can paste into cells
+- Standard cascade: in Opt1 column (C) put =B14*1.02; then copy C→D→E etc changing references accordingly or use C14=B14*1.02, D14=C14*1.02, …  
+- Replace N formula example: change N5 (Option 4) to =K5*1.02.  
+- Extended price example (Fixed Price D5) =B5*C5.
+
+What you’ll get after fixing
+- Consistent 2% uplift across all option steps.  
+- Option‑7 included in Grand Totals so Grand Totals reflect all periods.  
+- Cascade maintained so a change to Base updates all subsequent options automatically.  
+- Correct extended prices (costs) calculated from hours and rates.
+
+If you want next
+- I can generate an exact list of every cell that currently uses 0.023 or any hard‑coded numeric and give the corrected formula for each. Would you like that?

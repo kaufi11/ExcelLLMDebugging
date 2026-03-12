@@ -1,0 +1,32 @@
+Summary of errors (short)
+
+1) Q4 Homework sheet — wrong formula in H5:
+- Cell H5 currently: =COUNT(B5:G5)
+- Error: COUNT counts numeric cells (returns 6), not the sum of scores. Evans’ total is wrong.
+
+Fix:
+- Change H5 to: =SUM(B5:G5)
+- Effect: Evans’ row total becomes correct and all downstream references (Q4 Summary E6 and Year Summary G4) update correctly.
+
+2) Q4 Summary sheet — wrong term used in weighted-score formulas (many rows):
+- Cells F3 and F4:F12 use D*0.2 instead of E*0.2 (e.g., F3 = B3*0.3 + C3*0.1 + D3*0.4 + D3*0.2).
+- Error: Homework column (E) is omitted; Projects (D) counted twice. Weighted scores and % (column G) are incorrect for every student and the Points Possible row.
+
+Fix (one of these):
+- Replace each row formula with the correct explicit formula, e.g. for row 4:
+  =B4*0.3 + C4*0.1 + D4*0.4 + E4*0.2
+- Or (better, easier to copy): use SUMPRODUCT with the weight row:
+  =SUMPRODUCT(B4:E4,$B$2:$E$2)
+  This automatically uses the weights in B2:E2 and is less error-prone when copied down.
+- Also fix F3 (points possible row) similarly: =B3*0.3 + C3*0.1 + D3*0.4 + E3*0.2 or =SUMPRODUCT(B3:E3,$B$2:$E$2).
+
+Why these fixes:
+- SUM(B5:G5) gives the actual total points for Evans.
+- Using E*0.2 (or SUMPRODUCT) ensures the Homework category is weighted correctly rather than double-counting Projects.
+- Fixing these two issues corrects Q4 Summary percents (G column) and thus the Year Summary Q4 inputs, final averages, and letter grades.
+
+Optional improvements (recommended)
+- In Q4 Summary column G, instead of dividing by 300 hard-coded, use the Points Possible cell: =(F4/$B$3)*100 so it updates if total possible changes.
+- Keep weights in B2:E2 and use SUMPRODUCT(B4:E4,$B$2:$E$2) to reduce formula mistakes.
+
+If you want, I can give the exact corrected formulas for every affected cell or a step-by-step list to paste.

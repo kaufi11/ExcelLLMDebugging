@@ -1,0 +1,56 @@
+Summary of workbook (concise)
+
+Overall structure
+- Multiple sheets; only Sheet1 and Sheet2 contain detailed gradebooks. Sheets 3–16 are present but empty.
+- Layout on both gradebook sheets: student rows (names, IDs) with three main score blocks:
+  1) Homework/weekly assignments (columns D:R with a Sum in T and % in U)
+  2) Research/projects (columns Y:AP with a Sum in AQ and % in AR)
+  3) Lab / Exams / Other components (columns AV:… through BR with subtotal columns BA, BF, BM, BS, and overall exam/subtotal BT and % in BU)
+- Final aggregations: consolidated point total in CE (sum of assignment + project + exam totals) and overall percentage in CF; letter grade in CG (Sheet1).
+
+Key columns & headings (representative)
+- A: Student name; B: Instructor first name; C: ID
+- D:R: Individual homework/skill scores (Header row labels D1 “Homework Assignments (10 points each)”; row 2 shows assignment numbers 1–15)
+- T: Sum of D:R (per student)
+- U: Assignment % (T divided by assignment max)
+- Y:AP: First and second research project itemized scores
+- AF / AO: AF1 = SUM(Y2:AF2) and AO1 = SUM(AG2:AO2) used as intermediate sums in row 1
+- AQ: Sum of Y:AP (per student)
+- AR: Research % (AQ divided by research max)
+- AV:AZ: Lab/activity small items; BA = SUM(AV:AZ)
+- BB:BE and BG:BL etc: other exam / rubric components; BF = SUM(BB:BE); BM = SUM(BG:BL)
+- BN:BR: final or additional components; BS = SUM(BN:BR)
+- BT: overall subtotal for exam/lab block = BA+BF+BM+BS
+- BU: exam/lab % = BT divided by exam block max
+- BZ, CA, CB: mirrored totals (BZ = AQ, CA = BT, CB = T)
+- CE: FORMULA = SUM(BZ:CD) (aggregate points for each student)
+- CF: FORMULA = CE / (total possible) *100 (overall percent)
+- CG: Letter grade (manual or from grade thresholds)
+
+Representative formulas and denominators
+- Assignment sum: Tn = SUM(Dn:Sn) (most rows use Dn:S n); percent Un = Tn / 150 * 100 on Sheet1 (assignment max = 150).
+- Research sum: AQn = SUM(Yn:APn); percent ARn = AQn / 350 * 100 on Sheet1 (research max = 350).
+- Exam/lab totals: BA = SUM(AV:AZ), BF = SUM(BB:BE), BM = SUM(BG:BL), BS = SUM(BN:BR); BT = BA+BF+BM+BS; percent BU = BT / 400 * 100 on Sheet1 (exam/lab max = 400).
+- Overall points: CE = SUM(BZ:CD) (effectively AQ + BT + T + possibly extra columns); overall % CF = CE / 830 * 100 on Sheet1 (total possible = 830).
+- Sheet2 uses different maxima and absolute refs:
+  - T1 = 80 (assignments), AQ1 = 130 (projects), BS1 = 200 (exams). CE1 = T1 + BS1 + AQ1 (sum = 410).
+  - Per-student percentages use absolute references, e.g., Un = Tn / $T$1 * 100, ARn = AQn / $AQ$1 * 100, BUn = BTn / $BS$1 * 100.
+- Aggregate summary rows (Sheet1 and Sheet2): averages of columns (e.g., U22 = AVERAGE(U5:U21), AR22 = AVERAGE(AR5:AR21), CF22 = AVERAGE(CF5:CF21) on Sheet1; similar on Sheet2).
+
+Key constants / totals
+- Sheet1 overall total used in percent calc: 830 points (CF = CE/830*100).
+- Sheet2 top-row maxima: T1 = 80 (assignments), AQ1 = 130 (projects), BS1 = 200 (exams); CE1 = 410 (sum).
+- Many students’ totals and letter grades are present in rows 5–19 (Sheet1) and rows ~5–17 (Sheet2).
+
+Notable details / data quality
+- Some cells contain non-numeric placeholders or annotations (X, x, #, ., +) which will break SUM/AVERAGE if they are text (currently they appear as text so Excel ignores them in numeric sums, but they may indicate missing/miscoded data).
+- Many per-student formulas are copied consistently down rows (SUM of ranges, percent divisions using fixed denominators or hard-coded denominators).
+- Bottom of Sheet2 contains grade-bucket thresholds (T21:T25, AQ21:AQ25, AZ21:AZ25 etc.) and average rows for the section.
+
+How the sheets differ
+- Sheet1 appears to be a full course gradebook with maxima: assignments 150, projects 350, exams 400, total 830.
+- Sheet2 is another section with different maxima (assignment max in T1=80, projects AQ1=130, exams BS1=200, total CE1=410) and uses absolute references for percent calculations.
+
+If you want, I can:
+- Produce a compact mapping of each column range to its meaning (e.g., D:R = HW1–HW15; Y:AF = First research items; AG:AO = Second research items; etc.), or
+- Identify rows/cells with non-numeric anomalies (X, #, .) and list them for cleanup.

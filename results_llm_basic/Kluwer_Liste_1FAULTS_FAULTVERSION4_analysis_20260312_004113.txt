@@ -1,0 +1,20 @@
+Summary — I found three issues:
+
+1) Cell I2 contains an openpyxl ArrayFormula object (not a number)  
+   - Why it’s wrong: I2 should hold the e‑book retail price (calculated from the print price). Instead of a numeric value or Excel formula it contains an object placeholder (<openpyxl.worksheet.formula.ArrayFormula …>), so the sheet shows nothing usable for that row.  
+   - Fix: replace I2 with the correct formula/value and fill down. Recommended formula: =H2*0.7 (your I column is H*0.7 in all other rows). To keep 2 decimal places use =ROUND(H2*0.7,2). After entering it in I2, drag the fill handle down to copy for all rows. If the file was produced by openpyxl: open the workbook in Excel, re-enter the formula (or press Ctrl+Shift+Enter if it was an array formula), save — Excel will evaluate it.
+
+2) Cell J41 has the wrong formula (division instead of multiplication)  
+   - Why it’s wrong: J column is institutional price = H * 1.5 for every row except J41, which currently reads =H41/1.5. That produces a much smaller, incorrect value.  
+   - Fix: change J41 to =H41*1.5 (or =ROUND(H41*1.5,2)). Then copy this corrected formula down the J column (or reapply =H2*1.5 for the whole column).
+
+3) Potential data-entry outlier: H280 = 982 (very large compared to surrounding prices)  
+   - Why it’s suspicious: most print prices in the sheet are ~30–540; 982 looks like a digit-entry or decimal-placing error (maybe 98.2). It produces I280 = 687.4 and J280 = 1473, which are likely wrong.  
+   - Fix: verify H280 against source. If it should be 98.2 (or 98), correct H280 and then re-run the I/J formulas (I=H*0.7, J=H*1.5).
+
+Extra suggestions to avoid problems:
+- If you want consistent, rounded prices use ROUND(Hn*0.7,2) and ROUND(Hn*1.5,2).  
+- If you generate spreadsheets with openpyxl remember: openpyxl does not evaluate formulas. Either write the computed values, or open & save in Excel so Excel calculates formulas.  
+- After fixes, spot-check a few random rows to confirm I = H*0.7 and J = H*1.5.
+
+If you want, I can give the exact step-by-step Excel actions (keystrokes) to fix and fill the columns, or provide a small VBA script or openpyxl snippet to correct the file automatically. Which would you prefer?

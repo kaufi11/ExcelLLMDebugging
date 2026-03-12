@@ -1,0 +1,49 @@
+I reviewed Sheet1. I found the main calculation bugs, a few risky formulas, and some inconsistent inputs. Short summary, then concrete fixes.
+
+1) Hard-coded incorrect value (bug)
+- Problem: Cell G86 contains the literal 7 instead of the expected formula. That breaks the Putaway/Picking/Shipping subtotal, the average (I86) and all downstream summaries that use G86.
+- Fix: Replace G86 with the proper formula consistent with the other rows:
+  G86 = C86 * C87 * C88 * 0.25
+- Why: All similar rows use C*Hrs*Rate*maxPercent (0.25). The 7 is almost certainly an accidental paste.
+
+2) Division-by-zero / #DIV/0 risk for payback & ROI
+- Problem: Payback formulas (C262, E262, G262, I262) are (B+C)/A * 12. If the corresponding total annual savings (C255 / E255 / G255 / I255) = 0, the formula returns #DIV/0.
+- Fix: Wrap with IF or IFERROR. Example for min (C262):
+  C262 = IF(C255=0, "", ((C257+C258)/C255)*12)
+  Or
+  C262 = IFERROR(((C257+C258)/C255)*12, "N/A")
+- Why: Prevents #DIV/0 and gives a clear blank or message when savings are not entered.
+
+3) Inconsistent “Range of Savings” input cells (possible user confusion)
+- Problem: Some “Range of Savings” cells are populated inconsistently (some have min values, some max). Examples:
+  - C12 = 0.16 (min) — OK.
+  - C57 = 0.25 while label says “Range = 16–25%” (this is the max, not the min), so it’s unclear whether that cell is intended to hold min, max, or user-chosen value.
+  - C89 = 0.16 though the label says 16–25% (again ambiguous).
+- Fix / Recommendation:
+  - Pick a consistent convention: dedicate one cell for MIN percent and one for MAX percent for each category or a single “Your %” cell that the K-column formulas read.
+  - Alternatively define named cells (e.g., MinRate=0.16, MaxRate=0.25) and revise formulas to use names. Example:
+    E54 = C54 * C55 * C56 * MinRate
+    G54 = C54 * C55 * C56 * MaxRate
+    K54 = C54 * C55 * C56 * YourRateCell
+- Why: That removes ambiguity and reduces accidental wrong values (like the 7 above).
+
+4) Blank / missing input cells will yield zeros—check key inputs
+- Problem: Several driver/truck/maintenance input cells are blank (C104, C106, C110, C111, C130, etc.). The formulas referencing them produce 0 or misleading results if left blank.
+- Fix: Populate required input cells or add validation/warnings. Example: add data validation or conditional formatting to highlight blanks used in calculations.
+- Why: Avoids misleading subtotals and ROI numbers.
+
+5) Clean up / robustness suggestions (small but important)
+- Replace occasional unnecessary leading “+” in formulas (e.g., =+E31) — harmless but inconsistent.
+- Use IFERROR where appropriate for averages/divisions to avoid #VALUE or #DIV/0 spilling through the summary.
+- Consider naming the major percentage cells (MinPercent, MaxPercent) and using them everywhere. That makes future changes safe.
+
+Quick checklist you can apply now
+1. Change G86 to =C86*C87*C88*0.25.
+2. Wrap payback formulas with IFERROR or IF(...=0,"",...).
+3. Standardize the “Range of Savings / Your Savings” cells — decide which cells store MIN, MAX and which hold the user-chosen percentage. Update K-column formulas to point to the chosen “Your %” cell.
+4. Fill important inputs (drivers, costs, inventory value) or mark them with validation.
+5. Scan the sheet for any other stray hard-coded numbers in place of formulas (search for single numbers in the G columns where formula patterns exist).
+
+If you want, I can:
+- produce the exact corrected formulas for all affected cells and
+- generate named ranges (MinRate, MaxRate, YourRate) and rewrite formulas to use them — tell me which conventional cells you want to use for the common min/max/your % and I’ll provide the full replacements.

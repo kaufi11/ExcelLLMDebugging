@@ -1,0 +1,62 @@
+Summary of workbook structure and contents
+
+General
+- Workbook contains 3 sheets:
+  - Sheet "0": Title/index and notes (目次、注記). Notes state negative numbers shown in parentheses and accounting restatements. Timestamp present (B25: 2004-01-29).
+  - Sheet "1": "1. 四半期実績推移(1)" — product-level sales, simplified income statement, and region sales by quarter (units: 百万円).
+  - Sheet "2": "2. 四半期実績推移(2)" — business-segment information (sales, operating profit and margins) by quarter.
+
+Layout and common structure
+- Columns C–R represent four years (2000–2003) with each year split into 4 quarters (列 C–F = 2000 Q1–Q4, G–J = 2001 Q1–Q4, K–N = 2002 Q1–Q4, O–R = 2003 Q1–Q4).
+- Monetary values are in millions of yen (百万円). Negative values appear as negatives (note indicates shown in parentheses).
+- Many totals computed with SUM across categories/quarters; ratios use IF(...) to avoid divide-by-zero.
+
+Sheet 1 (四半期実績推移(1))
+- Section: 製品別売上高および簡易損益計算書
+  - Product rows: オフィスイメージング機器, コンピュータ周辺機器, ビジネス情報機器 (C9:R11).
+  - 事務機 計: row 12 uses SUM of the three product rows per quarter (e.g., C12 = SUM(C9:C11)).
+  - カメラ and 光学機器その他: rows 13–14 (values provided).
+  - 売上合計 (row 15): SUM of rows 12–14 per quarter (e.g., C15 = SUM(C12:C14)).
+  - 純売上高 (row 17) references 売上合計 (C17 = C15).
+  - 売上原価 (row 18) given; 売上総利益 row 19 = 純売上高 − 売上原価.
+  - 売上総利益率 (row 20) formula: IF([net sales]=0,"-  ",gross profit/net sales).
+  - 販売費及び一般管理費 (row 21) given; 営業利益 row 22 = gross profit − SG&A; 営業利益率 (row 23) similar IF ratio.
+  - 営業外収益及び費用 (rows 25–27) with C28 = SUM(C25:C27).
+  - 税引前当期純利益 (row 29) = 営業利益 + 営業外計 (C29 = C22 + C28); 税等、少数株主など rows 31–32.
+  - 会計原則の変更等の調整 (rows 33–34) with most columns calculated (C33 = C29 − SUM(C31:C32)); only G34 has an explicit value (3692).
+  - 当期純利益 (row 35) = SUM(調整行) (C35 = SUM(C33:C34)). 当期純利益率 (row 36) uses IF ratio to net sales.
+
+- Section: 地域別売上高 (rows 40–46)
+  - 国内 (row 40) and 海外 breakdown 米州/欧州/その他 (rows 42–44).
+  - 海外 計 row 45 = SUM(regional components); 合計 row 46 = 国内 + 海外.
+
+Sheet 2 (四半期実績推移(2))
+- Section: 事業の種類別セグメント情報
+  - 事務機： rows 9–11 give 売上高 (C9:R9), 営業利益 (C10:R10) and 営業利益率 (row 11 uses IF(C9=0,"",C10/C9)).
+  - カメラ： rows 16–18 with same pattern (sales, op profit, margin).
+  - 光学機器その他： rows 23–25 likewise.
+  - 消去又は全社： rows 30–31 contain elimination or corporate items (negative sales/profits).
+  - 合計： rows 37–39 compute totals across segments:
+    - 売上高 row 37 = SUM(segment sales) (e.g., C37 = SUM(C9,C16,C23,C30)).
+    - 営業利益 row 38 = SUM(segment operating profits) (C38 = SUM(C10,C17,C24,C31)).
+    - 営業利益率 row 39 uses IF(total sales=0,"",operating profit/total sales).
+
+Key formula patterns and links
+- Repeating use of SUM to aggregate category totals (e.g., SUM of product rows to form totals).
+- Profit-flow calculations: Net sales → Cost of sales → Gross profit → SG&A → Operating profit → Add non-op items → Pre-tax profit → Tax/minority adjustments → Net profit.
+- Ratio formulas always guard against division by zero using IF(...).
+- Many cells are direct links between sections (e.g., C17 = C15).
+
+Notable explicit values/examples (selected)
+- Example product totals: C15 (2000 Q1 売上合計) is computed from product rows; specific product values include C9=211,320 (オフィスイメージング機器), C10=259,320 (コンピュータ周辺機器).
+- Example costs/profits (2000 Q1): 売上原価 C18 = 372,574; 販売費及び一般管理費 C21 = 197,959; 営業利益 C22 = (C19 − C21).
+- Segment totals (2000 Q1): 事務機 売上高 C9 = 527,665; 営業利益 C10 = 88,715.
+
+Notes and metadata
+- Workbook uses Japanese labels and accounting notes about restatements (EITF00-14/00-22) and presentation changes.
+- Timestamp on sheet 0 indicates data extracted/compiled around 2004-01-29.
+
+If you want, I can:
+- Produce a dependency map (which cells feed key totals),
+- Extract a single quarter's full P&L and region/segment summary,
+- Or convert key rows into a CSV-style table for further analysis.

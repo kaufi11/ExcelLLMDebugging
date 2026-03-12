@@ -1,0 +1,39 @@
+Summary of the problems I found
+1. Overtime formulas (column G) reference the wrong rows and have sign errors.
+   - Example: G3 uses E4 instead of E3; G4 uses E5 instead of E4, etc. G8 also uses +40 instead of -40 and references E10.
+   - Cause: an off‑by‑one relative reference when formulas were entered/copied; one formula was also edited incorrectly.
+
+2. Gross pay formulas (column C, rows 15–20) double‑count overtime.
+   - Example: C15 = (F3+G3)*B15 adds total hours (F) and overtime hours (G) then multiplies by rate. That counts overtime hours twice.
+   - Likely intent is to pay overtime at a higher rate (typically 1.5×). The current formula does not do that.
+
+3. Optional: Week 4 column (E) contains AVERAGE(B:D) for each employee. That is fine if you intentionally estimate week 4 as the average of weeks 1–3, but incorrect if you should be entering actual week‑4 hours.
+
+Correct formulas and short fixes
+1. Fix overtime (G3:G8)
+   - Replace each G formula with (for row 3 as example):
+     =MAX(B3-40,0)+MAX(C3-40,0)+MAX(D3-40,0)+MAX(E3-40,0)
+   - Then copy this corrected formula down to G4:G8.
+   - This fixes the wrong row references and the +40 errors.
+
+2. Fix gross pay (C15:C20) — assume overtime = 1.5× pay
+   - In C15 use:
+     =(F3-G3)*B15 + G3*B15*1.5
+     (This pays regular hours at normal rate and overtime at 1.5×.)
+   - A simpler algebraic equivalent you can use:
+     =F3*B15 + G3*B15*0.5
+     (same result; easier to copy down)
+   - Copy the chosen formula down C16:C20. Make sure you use relative row references so row numbers increment as you copy.
+
+If you do NOT pay time‑and‑a‑half and overtime is paid at the same rate, then correct gross pay is simply:
+   =F3*B15
+(i.e., do not add G at all).
+
+Why these fixes work (brief)
+- Overtime must be calculated from the correct cells (the four weeks for the same employee); your formulas pointed at other rows, so they were pulling the wrong week values.
+- (F + G) multiplies total hours plus overtime again, which double-counts the overtime portion. Paying overtime properly requires splitting the hours into regular and overtime portions and paying the overtime portion at the overtime rate (example above uses 1.5×).
+
+If you want, I can:
+- Provide the exact corrected formulas for every cell to paste in, or
+- Update the sheet to use a single formula copied down (to avoid future copy errors), or
+- Adjust the overtime logic if your overtime rule is different (daily, weekly aggregate, or different multiplier).

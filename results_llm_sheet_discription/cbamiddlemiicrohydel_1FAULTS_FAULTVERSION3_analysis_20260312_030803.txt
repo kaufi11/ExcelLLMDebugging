@@ -1,0 +1,52 @@
+I found several clear errors (typos / wrong cell references) that will produce seriously wrong PVs and outputs. Short list of problems, why they matter, and how to fix them.
+
+1) Discount factor error in costs (row 19)
+- Error: K19 = 69*(1/1.12) (should be chain of discount factors). This single typo multiplies the discount factor by 69 from column K onward, so all present values of costs from 2004 (col K) onward are wrong (much too large). That breaks PV of costs, B/C and NPV.
+- Fix: Replace K19 with the correct chained formula:
+  - K19 = J19*(1/1.12)
+  - Then ensure L19 = K19*(1/1.12), M19 = L19*(1/1.12), etc.
+- Better (safer) option: replace the whole row with a power formula to avoid propagation errors. Example for column H (first discounted year) put:
+  - H19 = 1/(1.12)^(COLUMN(H)-COLUMN($G))  (or H19 = 1/(1.12)^(1) )
+  - In general use: =1/(1.12)^(yearIndex) so each cell is independent.
+
+Why this matters: wrong discount factors => wrong PV(costs) => wrong B/C and NPV.
+
+2) Possible mismatch between cost and benefit discount rows
+- Issue: Row 19 (cost DF) had the 69 typo; row 31 (benefit DF) appears to be correct. That means costs and benefits are discounted using different (inconsistent) DF series — results are invalid even after the single fix if other typos exist.
+- Fix: After correcting the K19 typo, verify the entire DF series in both rows (row19 and row31) use the same method (prefer the power formula for both rows). Confirm G19=G31=1 and subsequent cells follow 1/(1.12)^n consistently.
+
+3) Wrong year references for end-of-life / salvage / clean-up (columns AA)
+- Errors:
+  - AA17 (environmental clean-up in 2020) = 0.1*G5 + 0.1*G6 — this uses the values from year 2000 (G5, G6) rather than the values in column AA (2020). If you intend cleanup = 10% of construction cost at 2020 prices, reference AA5 and AA6. If you intend 10% of original cost (2000 prices), keep G5/G6 but document it.
+  - AA29 (scrap 2%) = 0.02*G5 + 0.02*G6 — same issue/ambiguity.
+- Fix: Decide which you want:
+  - 10% (or 2%) of original 2000 construction cost but paid in 2020: keep formula but be explicit; it's okay but note you are using 2000 prices and discounting will handle PV.
+  - 10% (or 2%) of construction cost in 2020 prices: change to AA17 = 0.1*(AA5+AA6) and AA29 = 0.02*(AA5+AA6).
+- Recommendation: use AA5/AA6 if you mean "10% of construction cost at the time it occurs (2020)."
+
+4) Wiring re‑work typo in year 2009
+- Error: Q10 = 4275*7.5. Assumption and other wiring cells use 4297 unit cost. 4275 looks like a typo.
+- Fix: Change Q10 to =4297*7.5 (if re-wiring 25% of 30 households -> 7.5 households at cost 4297 each). Also confirm you intended to do the re-wiring in that year and that the amount matches the sensitivity note (4297*30 * 25%).
+
+5) Minor consistency / clarity suggestions (not necessarily calculation errors, but can cause confusion)
+- Many end-of-life/salvage items reference G5/G6 (2000 data) while placed in 2020 column — be explicit whether you are (a) valuing them in 2000 prices and discounting, or (b) valuing in nominal 2020 prices. Use consistent convention across the workbook.
+- Replace chained DF formulas with a direct power formula: e.g. in column H (year 2) use =1/(1.12)^(columnYear - startYear). This prevents single-cell typos from breaking the whole series.
+- After fixes, re-calculate:
+  - C20 (PV costs total), C32 (PV benefits total), C38 (B/C) and C39 (NPV) and check whether results change substantially.
+
+Quick action list you can copy/paste into Excel
+1. Fix the bad DF cell:
+   - Select K19 and change formula to: =J19*(1/1.12)
+   - Then drag/fill right to AA19 (or re-enter correct power formulas).
+2. Fix wiring typo:
+   - Change Q10 to: =4297*7.5
+3. Decide and fix AA17 / AA29:
+   - If you want 10% / 2% of construction at 2020 prices, set:
+     - AA17 = 0.1*(AA5+AA6)
+     - AA29 = 0.02*(AA5+AA6)
+   - Otherwise leave as 0.1*(G5+G6) but document the choice.
+4. Recalculate totals (rows 18, 20, 30, 32) and then check C35/C36/C38/C39.
+
+If you want I can:
+- Provide the exact formulas for row19/row31 using the column headers (so you can paste them in).
+- Recompute the PV totals and show how much B/C and NPV change after the fixes (I’ll need the workbook or the numeric column results).

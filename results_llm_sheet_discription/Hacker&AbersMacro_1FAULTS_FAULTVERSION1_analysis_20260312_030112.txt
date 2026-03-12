@@ -1,0 +1,40 @@
+Thanks — I inspected the workbook and found the likely problems that will break calculations or give wrong rock results. Short, clear list of errors and how to fix each one.
+
+1) “FORMULA = …” strings in the Database sheet (cells shown as literal text)
+- Problem: many cells are shown as "FORMULA =56400000000*…" (the word FORMULA + an equals sign). If those are literal text in Excel (not true formulas starting with =), downstream sheets (minerals, rocks) will not evaluate them and calculations will be wrong or return values of zero/text.
+- How to check: on the Database sheet look for cells that show the word FORMULA (or where the formula bar shows text rather than a formula beginning with =).
+- Fix: replace the literal text with a real Excel formula. Remove the leading "FORMULA " and leave the leading "=" only. Example: change
+  "FORMULA =56400000000*1.01097683452934/(1+F6*0.42*R6*298)"
+  to
+  =56400000000*1.01097683452934/(1+F6*0.42*R6*298)
+- Why this works: Excel only computes expressions that begin with "="; removing the extra text makes the cell evaluate and lets downstream sheets use the numeric result.
+
+2) Single minerals sheet P & T vs multiple rock columns (mismatch of P/T handling)
+- Problem: the minerals sheet holds one P (B1) and one T (B2) and is overwritten when the macro runs. The Rocks sheet allows separate P & T for many rock columns (B59:H60). If you do NOT run the minerals macro for each rock column's P/T and copy the mineral results back to the Rocks sheet, the rock calculations will use mineral properties computed at the wrong P & T.
+- How to check: compare the P,T values shown in Rocks (row 59–60 per column) against the single P,T in Minerals (B1,B2). If they differ, likely the rock values were computed with the wrong mineral state.
+- Fix (choose one):
+  a) For one-off work: set Minerals B1/B2 to the P & T you want, run the macro, then copy the computed minerals column into the Rocks column for that rock. Repeat for each rock column.
+  b) Automate: modify the macro to loop through the Rocks columns — for each rock column read P,T, set Minerals B1/B2, run the mineral calculations and paste results into that rock column automatically.
+- Why this works: mineral elastic moduli and density change with P & T; rock effective properties must use mineral values computed at the same P & T.
+
+3) Modal percentages may not sum to 100% (normalization/sum check)
+- Problem: rock mixing assumes the modal columns sum to 100 vol%. If the SUM() (row 57) for a rock column is not 100, the averaged properties will be scaled incorrectly.
+- How to check: on the Rocks sheet check row 57 for each rock column — these are SUM(B5:B56) etc. If any are ≠ 100 (or the expected total), that's a red flag.
+- Fix:
+  - Manually adjust mineral modal percentages so the column sum = 100.
+  - Or add a normalization step in the calculation: divide each modal fraction by the column sum before mixing (so mixing uses modal_fraction / SUM(column)). That can be implemented by changing the aggregation formulas or adding an intermediate normalized modal column.
+- Why this works: averaging formulas require correct fractions; if totals are not 100, the weights are wrong and aggregate K,G,ρ,Vp,Vs will be biased.
+
+4) Minor: references in note columns pointing to other sheet cells (possible broken links)
+- Problem: some “notes/ref” cells contain references like "L80", "H96" or point to other sheet addresses. If those target cells are moved or deleted the note becomes invalid and some derived formulas (if they reference those note cells) can break.
+- Fix: inspect any formulas that use note/reference cells; replace fragile hard-coded cross-sheet references with named ranges or copy the required numeric reference into the data column. Use Excel Name Manager to make references robust.
+
+Quick checklist to get things working now
+1. On database sheet, convert all "FORMULA =…" text to real formulas beginning with "=".
+2. Ensure Minerals B1/B2 are set to the P & T you want and run the macro before calculating Rocks — OR update the macro to handle multiple rock columns automatically.
+3. Verify each rock column SUM (row 57) = 100 (or normalize modal fractions in the mixing formulas).
+4. If any downstream values still look wrong, test one rock: set P/T to that rock, re-run minerals, then recompute the rock; compare results.
+
+If you want, I can:
+- Give the exact VBA snippet to loop P/T through all rock columns and paste the minerals results automatically; or
+- Scan the workbook for cells that currently contain literal text "FORMULA" and produce a list so you can fix them quickly. Which would you prefer?

@@ -1,0 +1,55 @@
+I reviewed the workbook and found several formula errors caused by inconsistent/incorrect cell references (some hard-coded values, wrong sheet references, and relative references that shifted when formulas were copied). Below are the problems, why they are wrong, and simple fixes you can apply.
+
+Summary of key errors and fixes
+
+1) Hard‑coded layoff cost in pricing sheet
+- Problem: pricing!C15 is just the number 3 (should be layoff cost × # laid off).
+- Fix: change C15 to
+  =C5*Sheet1!$B$20
+- Why: C5 is # laid off in period 1; Sheet1!$B$20 is Layoff cost/worker.
+
+2) Overtime cost formulas shifted on Sheet2 (relative reference problem)
+- Problem: on Sheet2 the overtime cost formulas (E16:E20) reference Sheet1!B24, B25, B26... (wrong cells). This happened because the reference to the overtime rate was not locked, so copying moved the row reference.
+- Fix: set every overtime cost cell on Sheet2 to use the fixed overtime rate:
+  E15: =E5*Sheet1!$B$23
+  E16: =E6*Sheet1!$B$23
+  E17: =E7*Sheet1!$B$23
+  E18: =E8*Sheet1!$B$23
+  E19: =E9*Sheet1!$B$23
+  E20: =E10*Sheet1!$B$23
+- Why: Sheet1!$B$23 is the overtime cost/hour and must be absolute so row changes don’t shift it.
+
+3) Wrong sheet referenced for hiring cost on Sheet3
+- Problem: Sheet3 B15:B20 use Sheet2!B5:B10 (they pull hires from Sheet2) instead of the local Sheet3 hires. So hiring cost on Sheet3 reflects Sheet2 values.
+- Fix: change Sheet3 B15..B20 to reference Sheet3’s hires (or use local relative cell), for example:
+  B15: =Sheet1!$B$19 * B5
+  B16: =Sheet1!$B$19 * B6
+  … through …
+  B20: =Sheet1!$B$19 * B10
+- Why: hiring cost = # hired (on the same sheet) × hiring cost/worker (Sheet1!$B$19).
+
+4) Incorrect Total Revenue formula on Sheet3
+- Problem: Sheet3 C24 = SUM(J5:J10)*31 (nonsensical multiplier 31).
+- Fix: if revenue is Demand × Price, use SUMPRODUCT with the correct price column. If prices are on the pricing sheet (K5:K10), use:
+  C24: =SUMPRODUCT(J5:J10,pricing!K5:K10)
+- Why: SUMPRODUCT multiplies demand by corresponding price; the previous formula multiplied sum of demand by 31 which is wrong.
+
+5) General consistency / copy‑paste errors
+- Problem: Several similar formulas were inconsistently written across sheets (some use Sheet1!$B$23, others used Sheet1!B24 etc). This is caused by not using absolute references when copying formulas between rows/sheets.
+- Fix / recommendation:
+  - Lock parameter cells with absolute references (e.g., use Sheet1!$B$23 for overtime rate, Sheet1!$B$19 for hiring cost, Sheet1!$B$20 for layoff cost, Sheet1!$B$16 for material cost).
+  - When copying down, use relative references for variables (B5, C5, etc.) and absolute references for parameters (Sheet1!$B$23).
+  - After fixing, search the workbook for references like Sheet1!B24, Sheet1!B25, Sheet1!B26 (or any unintended shifted parameter) — those are flags.
+
+Quick checklist to apply now
+- On pricing sheet: fix C15 → =C5*Sheet1!$B$20.
+- On Sheet2: replace E16:E20 so each row multiplies that row’s overtime hours by Sheet1!$B$23 (absolute).
+- On Sheet3: change B15:B20 to use Sheet3’s hires: =Sheet1!$B$19 * B5, etc.
+- On Sheet3: change C24 to =SUMPRODUCT(J5:J10,pricing!K5:K10) (or to whichever sheet has the correct prices).
+- Scan for other instances where a parameter cell (like Sheet1!B23) has been accidentally shifted (B24, B25…).
+
+If you want, I can:
+- Provide an exact list of every cell that currently contains a bad reference (I can output the cells and corrected formulas), or
+- Generate corrected formulas for an entire cost table per sheet so you can paste them in one go.
+
+Which would you prefer?

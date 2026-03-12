@@ -1,0 +1,46 @@
+Summary of workbook structure and contents (concise)
+
+Sheets
+- Q4 Homework
+  - Purpose: raw scores for six assignment types per student and points-possible row.
+  - Layout: Row 1 headers (Assignment types in B1:G1, Total in H1). Row 2 = Points Possible (B2:G2). Rows 3–11 = students with scores in B:G.
+  - Key formulas:
+    - H2 = SUM(B2:G2) — total points possible (300).
+    - H3:H11 = SUM(Bn:Gn) except H5 which is =SUM(B5:F5) (see issue below).
+  - Note: H5 currently omits column G (Personal Shield) from Evans’ total.
+
+- Q4 Summary
+  - Purpose: apply category weights to quarter totals and compute weighted averages.
+  - Layout: Row 1 = Category headings (Tests, Quizzes, Projects, Homework, etc.). Row 2 = weight values (B2=0.3, C2=0.1, D2=0.4, E2=0.2). Row 3 = Points Possible per category; rows 4–12 = students’ category totals and weighted scores.
+  - Key formulas / links:
+    - F2 = SUM(B2:E2) (verifies weights sum to 1).
+    - E3 = 'Q4 Homework'!H2 (links Homework points-possible from Q4 Homework).
+    - E4:E12 = 'Q4 Homework'!H3:H11 (pull each student’s homework total).
+    - F4:F12 = Bn*0.3 + Cn*0.1 + Dn*0.4 + En*0.2 (weighted score per student).
+    - G4:G12 = (Fn / 300) * 100 (quarter percent).
+  - Issue: F3 (Points Possible row) is written as =B3*0.3 + C3*0 + D3*0.4 + E3*0.2 — C3 is multiplied by 0 (should be 0.1 to reflect quiz weighting). Correct to include C3*0.1.
+
+- Year Summary
+  - Purpose: aggregate quarterly percentages into a final average and assign letter grades; also stores student info (last, first, SSN).
+  - Layout: Columns D–G = Q1–Q4 percentages, column H = Final Average, I = Final Grade.
+  - Key formulas / links:
+    - G2:G10 = 'Q4 Summary'!G4:G12 (pull Q4 percent for each student).
+    - H2:H10 = AVERAGE(Dn:Gn) (final numeric average across quarters).
+    - I2:I10 = nested IF to assign letter grade: IF(H<60,"F",IF(H<70,"D",IF(H<80,"C",IF(H<90,"B",IF(H<101,"A"))))).
+    - Row 11 = class averages: D11..G11 = AVERAGE(D2:D10), etc.; H11 = AVERAGE(H2:H10); I11 uses same grade IF on H11.
+  - Note: Column C contains SSNs (sensitive personal data).
+
+- Chart of Quarter Grades
+  - Present but no detailed contents provided (presumably a chart based on Year Summary or Q4 Summary).
+
+Key values and totals
+- Total points possible for Q4 assignments = 300 (H2).
+- Category weights sum = 1.0 (F2).
+- Q4 Summary and Year Summary pull homework totals via links to Q4 Homework H2:H11.
+
+Errors / recommended fixes (quick)
+- Q4 Homework H5 = SUM(B5:F5) — should be SUM(B5:G5) to include Personal Shield for Evans.
+- Q4 Summary F3 uses C3*0 (quizzes weighted 0) — should use C3*0.1 to correctly compute weighted points-possible.
+- Check consistency across any other manual formulas to ensure all category weights (0.3/0.1/0.4/0.2) are applied uniformly.
+
+If you want, I can produce a corrected-cell list (exact corrected formulas) ready to paste into the workbook.

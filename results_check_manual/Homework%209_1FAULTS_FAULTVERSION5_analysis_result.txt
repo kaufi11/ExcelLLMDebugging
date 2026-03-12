@@ -1,0 +1,63 @@
+I inspected every formula in the workbook and checked for syntax problems, operator precedence pitfalls, unit-conversion mistakes and logical inconsistencies. Nothing is syntactically broken (no #DIV/0!, #NAME? etc.), but I found a few places where the formulas are ambiguous, likely incorrect in unit handling, or produce a physical inconsistency that should be investigated. Summary and recommendations below.
+
+Summary of flagged cells (by severity)
+
+1) C19 — unit / operator error (likely wrong: divisions instead of multiplications) — HIGH
+2) C42 (and C40/C41) — physical/equilibrium inconsistency (resulting reaction is negative) — MEDIUM
+3) C12, C31 — correct numerically but have awkward/ambiguous grouping (suggest simplification/clarification) — LOW
+4) Minor: C18 uses ^(-1) which is valid but less clear than 1/(…) — LOW
+
+Details and recommended corrections
+
+1) C19: incorrect unit conversion / wrong use of division vs multiplication
+- Current formula: =(5/2/(C15/(10^10))/(5.97/(10^24)))/C18
+- Problems:
+  - C15 is labeled "x 10^10 kg" (cell contains 6.8 meaning 6.8 × 10^10 kg). To convert that to kg you must multiply by 10^10 (C15 * 10^10), not divide by 10^10.
+  - Earth mass is 5.97 × 10^24 kg. The formula currently uses 5.97/(10^24) (which is 5.97e-24), instead of 5.97*10^24 (5.97e24).
+  - The parenthesization is hard to read and likely not what you intended.
+- Likely intended expression (convert C15 to kg, compare to Earth mass, then use that ratio):
+  - Clearer / corrected version (one plausible interpretation):
+    =(5/2) / ( (C15 * 10^10) / (5.97 * 10^24) ) / C18
+  - Or equivalently:
+    =(5/2) / ( (C15*10^10) / (5.97*10^24) ) / C18
+- Action: confirm the physical formula you want and use *10^n for conversions, not /10^n.
+
+2) C40 / C41 / C42: equilibrium check fails (vertical reaction is negative)
+- Formulas:
+  - C40 = (C34*C39 + C39/2*C35)/(SIN(C37)*C38)
+  - C41 = C40*COS(C37)
+  - C42 = C34 + C35 - SIN(C37)*C40
+- Observed: C42 = -10.370370... N (not near zero). That means C34 + C35 - vertical_component_of_F != 0, i.e. vertical equilibrium yields a negative reaction (support would need to pull down), which is suspicious.
+- Possible causes:
+  - The moment arm used in C40 denominator may be wrong (should use perpendicular distance from line of action of F to pivot). You are using SIN(C37)*C38 as the perpendicular arm; perhaps the correct perpendicular arm is COS(C37)*C38, or the distances C38/C39 may be defined along the beam and need projection before use.
+  - Sign convention or ordering of distances in the numerator might be incorrect.
+- Suggested checks / fixes:
+  - Recalculate the perpendicular lever arm explicitly and clearly. Example variants to test:
+    - If C38 is the radial length along the beam and the perpendicular component is C38 * SIN(theta): your formula is consistent. Then if C42 ≠ 0, either the geometry/inputs are incorrect or reaction can indeed be negative.
+    - If the perpendicular lever arm is C38 * COS(theta), try:
+      =(C34*C39 + (C35*(C39/2))) / (C38 * COS(C37))
+  - Verify whether C39 is measured along the beam or horizontal; be explicit and use parentheses. If the expected result is zero for C42, adjust moment-arm formula until the vertical sum closes.
+- Action: check geometry (what distances are measured along which axes) and replace SIN/COS accordingly. If needed, explicitly compute moments with projected distances to make the formula readable.
+
+3) C12 and C31: correct but could be simplified and made less error-prone
+- C12 current: =(12*(C8*C7/4*C10-C8*C7/4*C11))/(C9*(C7^2))
+  - This is mathematically fine (it equals 12*(C8*C7/4*(C10-C11))/(C9*C7^2)), but the repeated pattern is hard to read. Simplify to avoid operator precedence mistakes:
+    = 12 * (C8 * C7 / 4 * (C10 - C11)) / (C9 * C7^2)
+  - Even simpler algebraic simplification (if you want): = 3 * C8 * (C10 - C11) / (C9 * C7)
+- C31 current: =(C28*0.5*C27*9.81-C29*0.5*C27*9.81)/(C30*9.81)
+  - 9.81 cancels; formula simplifies without loss:
+    = 0.5 * C27 * (C28 - C29) / C30
+  - Use simplifications to reduce numeric cancellation issues and make intent clearer.
+
+4) C18: stylistic suggestion
+- Current: =(((2*PI()/86400)^(-1))*(C16*(10^4))*SIN(C17))/((6.38*(10^6)))+1
+- This is valid but using ^(-1) is less transparent. Consider writing 1/(2*PI()/86400) or even invert 2*PI() explicitly:
+  = ( 1 / (2*PI()/86400) * (C16*10^4) * SIN(C17) ) / (6.38*10^6) + 1
+
+Other minor remarks
+- Using 10^n is fine (Excel computes 10^4 etc). For clarity and to avoid mistakes, you may prefer the scientific notation (1E4, 1E24) or explicit multiplication by POWER(10,n) or simply type the actual numeric constant (e.g. 1E24).
+- Ensure units are consistent across cells (many cells use compact labels like "x10^10 kg" — it's easy to get the conversion backwards; always document whether the numeric value includes the 10^n factor or not).
+
+If you want, I can:
+- Propose the exact corrected formulas placed back into the sheet (with the C19 correction options), or
+- Recompute C40/C42 variants using COS vs SIN to show which variant yields vertical equilibrium ≈ 0, which will help identify the correct geometric projection.

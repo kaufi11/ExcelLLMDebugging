@@ -1,0 +1,59 @@
+Summary — main errors found
+1. Inconsistent summary ranges
+   - Some summary formulas use different start rows (e.g. B69 = MAX(B33:B68) while B71 = AVERAGE(B2:B68)). That skips rows 2–32 for MAX and gives inconsistent statistics.
+   - Some MIN/MAX formulas include the summary row itself (e.g. N70 = MIN(N17:N69) includes N69), which is wrong practice and can produce unexpected results.
+
+2. Mixed arithmetic formulas in data cells (columns N and Q)
+   - Many HW4 (N) and Final (Q) cells contain ad-hoc formulas like =20+4, =17+5/2, =12/2+3, =58+2+3. These evaluate in Excel but:
+     - They create inconsistency (some are constants, some are formulas).
+     - Some use ambiguous operator precedence (e.g. 17+5/2 = 19.5 in Excel, whereas you might have intended (17+5)/2 = 11).
+
+3. Possible data-entry outliers
+   - Student IDs A16 = 98,227,577 and A68 = 99,650,185 look like mistakes (most IDs are 6–7 digits). These will distort any ID-based checks or sorts.
+
+Why these are problems
+- Using inconsistent ranges gives wrong MIN/MAX and comparisons across students.
+- Including summary cells in ranges can cause self-referential or misleading results.
+- Ambiguous arithmetic may produce wrong grade values.
+- Outlier IDs can break filters, lookups, or create false results when searching/validating.
+
+Recommended fixes (short and clear steps)
+
+1) Make all summary formulas use the same student-data range and exclude summary rows
+   Replace the summary formulas so they all use rows 2:68 (or whichever exact data range you want). Example replacements:
+   - B69: =MAX(B2:B68)
+   - C69: =MAX(C2:C68)
+   - D69: =MAX(D2:D68)
+   - G69: =MAX(G2:G68)
+   - N69: =MAX(N2:N68)
+   - Q69: =MAX(Q2:Q68)
+   - B70: =MIN(B2:B68)  (and similarly for C70, D70, G70, N70:=MIN(N2:N68), Q70:=MIN(Q2:Q68))
+   - B71: =AVERAGE(B2:B68) etc. (keep AVERAGE/STDEV but ensure ranges are N2:N68 and Q2:Q68 too)
+   - B72: =STDEV(B2:B68) etc.
+
+2) Normalize / evaluate formulas in N and Q (make them numeric values)
+   - If the expressions are just arithmetic results, convert them to numbers to avoid inconsistency.
+   - How: select N2:N68 and Q2:Q68 → Copy → Paste Special → Values.
+   - If any formula uses division/addition where meaning is ambiguous, first correct with parentheses (see step 3), then paste values.
+
+3) Fix ambiguous arithmetic (add parentheses where needed)
+   - Check cells like N10 (=17+5/2). Decide intended result:
+     - If you wanted (17+5)/2 → change to =(17+5)/2
+     - If you wanted 17 + (5/2) → leave as 17+5/2
+   - Do this for every cell using / or * with +/− to ensure operator precedence matches intent.
+
+4) Check and correct outlier student IDs
+   - Filter A2:A68 for unusually large values (> 9,999,999) and correct them (or mark them as text if they include leading zeros).
+   - Example: verify A16 and A68.
+
+5) Recalculate and verify summaries
+   - After steps 1–4, recalc (F9 or press F9) or just check summary rows — they should now be consistent and correct.
+
+Optional / helpful checks
+- Use Data → Filter to spot blanks and outliers quickly.
+- Use conditional formatting to highlight IDs > 10,000,000.
+- Keep all calculated grade components as numeric values (not ad-hoc formulas) for readability and downstream processing.
+
+If you want, I can:
+- Give you the full set of corrected formulas for rows 69–72, or
+- Provide a small VBA macro or step-by-step button sequence to convert the N/Q formulas to values and fix the summary ranges automatically. Which would you prefer?
