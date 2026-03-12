@@ -3,18 +3,15 @@ import json
 from pathlib import Path
 from collections import defaultdict
 
-# Folders to check
 folders = [
     "results_llm_basic_found",
     "results_llm_sheet_discription_found",
     "results_llm_few_shot_found"
 ]
 
-# Data structure: {filename_stem: [list of errorFound/solutionFound per folder]}
 error_dict = defaultdict(list)
 solution_dict = defaultdict(list)
 
-# Gather all results
 for folder_path in folders:
     folder = Path(folder_path)
     if not folder.exists():
@@ -33,7 +30,6 @@ for folder_path in folders:
         except json.JSONDecodeError:
             print(f"Skipping {file_path.name}: invalid JSON")
 
-# Count only if all entries for a file are "No"
 error_all_no = sum(1 for statuses in error_dict.values() if all(s == "No" for s in statuses))
 solution_all_no = sum(1 for statuses in solution_dict.values() if all(s == "No" for s in statuses))
 

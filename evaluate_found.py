@@ -30,7 +30,6 @@ for filename in os.listdir(folder_path):
 
             other_points_raw = data.get("otherPoints", 0)
 
-            # Extract number safely
             match = re.search(r"\d+", str(other_points_raw))
 
             if match:
