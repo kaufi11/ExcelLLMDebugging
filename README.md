@@ -9,7 +9,7 @@ Language Models".
 - LLM_Raw_Output_Files
   - The debug-feedback form the llm devided into the different approaches
 - LLM_Result_Files
-  - The evaluation form the LLM_Raw_Output_Files
+  - The evaluation form the LLM_Raw_Output_Files devided into the different approaches. Evaluated to "faultyCell", "repairFormula", "errorFound", "solutionFound", "otherPoints"
 - Scripts
   - main_ files for the different approaches (API Key needed)
   - convert file for converting spreadsheets from .xls to .xlsx
