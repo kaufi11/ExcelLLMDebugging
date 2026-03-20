@@ -3,10 +3,10 @@ import json
 import re
 from collections import Counter
 
-#folder_path = "../results_llm_basic_2"
-#folder_path = "../results_llm_few_shot_2"
-folder_path = "../results_llm_sheet_discription_2"
-#folder_path = "../results_llm_basic_one_error_2"
+folder_path = "../LLM_Result_Files/results_llm_basic_2"
+#folder_path = "../LLM_Result_Files/results_llm_few_shot_2"
+#folder_path = "../LLM_Result_Files/results_llm_sheet_discription_2"
+#folder_path = "../LLM_Result_Files/results_llm_basic_one_error_2"
 
 error_counter = Counter()
 solution_counter = Counter()
@@ -34,12 +34,12 @@ for filename in os.listdir(folder_path):
             if match:
                 other_points = int(match.group())
 
-                if other_points <= 20:
+                if other_points <= 25:
                     total_other_points += other_points
                     counted_files += 1
                 else:
                     skipped_large += 1
-                    #print(filename)
+                    print(filename)
 
         except json.JSONDecodeError:
             print(f"Skipping {filename}: invalid JSON")
